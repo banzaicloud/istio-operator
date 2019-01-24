@@ -1,0 +1,7 @@
+apiVersion: istio.io/v1alpha1
+kind: Istio
+metadata:
+  name: example-istio
+spec:
+  # Add fields here
+  size: 3
