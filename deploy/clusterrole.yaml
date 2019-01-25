@@ -10,4 +10,13 @@ rules:
   - customresourcedefinitions
   verbs:
   - '*'
-
+- apiGroups:
+  - '*'
+  resources:
+  - '*'
+  verbs:
+  - '*'
+- nonResourceURLs:
+  - '*'
+  verbs:
+  - '*'

@@ -16,6 +16,10 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/source"
 )
 
+const (
+	Namespace = "istio-system"
+)
+
 var log = logf.Log.WithName("controller_istio")
 
 // Add creates a new Istio Controller and adds it to the Manager. The Manager will set fields on the Controller
@@ -107,7 +111,12 @@ func (r *ReconcileIstio) Reconcile(request reconcile.Request) (reconcile.Result,
 	if err != nil {
 		return reconcile.Result{}, err
 	}
-	
+
+	err = r.ReconcileGalley(reqLogger, istio)
+	if err != nil {
+		return reconcile.Result{}, err
+	}
+
 	// TODO: install galley,mixer,pilot,etc...
 
 	// TODO: install custom resources

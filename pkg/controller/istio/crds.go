@@ -30,7 +30,7 @@ func (r *ReconcileIstio) ReconcileCrds(log logr.Logger, istio *istiov1alpha1.Ist
 		if err == nil {
 			crd.ResourceVersion = oldCRD.ResourceVersion
 			if _, err := crdClient.Update(crd); err != nil {
-				return emperror.WrapWith(err, "creating CRD", "kind", crd.Spec.Names.Kind)
+				return emperror.WrapWith(err, "updating CRD failed", "kind", crd.Spec.Names.Kind)
 			}
 			log.Info("CRD updated", "crd", crd.Spec.Names.Kind)
 		}
@@ -55,31 +55,11 @@ type crdConfig struct {
 }
 
 var crdConfigs = map[configType]crdConfig{
-	Networking: {
-		"v1alpha3",
-		"networking",
-		[]string{"istio-io", "networking-istio-io"},
-	},
-	Authentication: {
-		"v1alpha1",
-		"authentication",
-		[]string{"istio-io", "authentication-istio-io"},
-	},
-	Apim: {
-		"v1alpha2",
-		"config",
-		[]string{"istio-io", "apim-istio-io"},
-	},
-	Policy: {
-		"v1alpha2",
-		"config",
-		[]string{"istio-io", "policy-istio-io"},
-	},
-	Rbac: {
-		"v1alpha1",
-		"rbac",
-		[]string{"istio-io", "rbac-istio-io"},
-	},
+	Networking:     {"v1alpha3", "networking", []string{"istio-io", "networking-istio-io"}},
+	Authentication: {"v1alpha1", "authentication", []string{"istio-io", "authentication-istio-io"}},
+	Apim:           {"v1alpha2", "config", []string{"istio-io", "apim-istio-io"}},
+	Policy:         {"v1alpha2", "config", []string{"istio-io", "policy-istio-io"}},
+	Rbac:           {"v1alpha1", "rbac", []string{"istio-io", "rbac-istio-io"}},
 }
 
 var crds = []*extensionsobj.CustomResourceDefinition{

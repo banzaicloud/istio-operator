@@ -4,3 +4,4 @@ metadata:
   name: istio-mesh
 spec:
   # Add fields here
+  version: 1.0.5
