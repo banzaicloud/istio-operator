@@ -1,7 +1,6 @@
 apiVersion: istio.io/v1alpha1
 kind: Istio
 metadata:
-  name: example-istio
+  name: istio-mesh
 spec:
   # Add fields here
-  size: 3

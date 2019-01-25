@@ -52,3 +52,7 @@ required = [
   [[prune.project]]
     name = "k8s.io/code-generator"
     non-go = false
+
+[[constraint]]
+  name = "github.com/goph/emperror"
+  version = "0.16.0"

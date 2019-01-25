@@ -4,6 +4,7 @@ import (
 	"context"
 
 	istiov1alpha1 "github.com/banzaicloud/istio-operator/pkg/apis/istio/v1alpha1"
+	apiextensionsclient "k8s.io/apiextensions-apiserver/pkg/client/clientset/clientset"
 	"k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
@@ -20,12 +21,24 @@ var log = logf.Log.WithName("controller_istio")
 // Add creates a new Istio Controller and adds it to the Manager. The Manager will set fields on the Controller
 // and Start it when the Manager is Started.
 func Add(mgr manager.Manager) error {
-	return add(mgr, newReconciler(mgr))
+	reconciler, err := newReconciler(mgr)
+	if err != nil {
+		return err
+	}
+	return add(mgr, reconciler)
 }
 
 // newReconciler returns a new reconcile.Reconciler
-func newReconciler(mgr manager.Manager) reconcile.Reconciler {
-	return &ReconcileIstio{client: mgr.GetClient(), scheme: mgr.GetScheme()}
+func newReconciler(mgr manager.Manager) (reconcile.Reconciler, error) {
+	crdC, err := apiextensionsclient.NewForConfig(mgr.GetConfig())
+	if err != nil {
+		return nil, err
+	}
+	return &ReconcileIstio{
+		client:    mgr.GetClient(),
+		crdClient: crdC,
+		scheme:    mgr.GetScheme(),
+	}, nil
 }
 
 // add adds a new Controller to mgr with r as the reconcile.Reconciler
@@ -61,8 +74,9 @@ var _ reconcile.Reconciler = &ReconcileIstio{}
 type ReconcileIstio struct {
 	// This client, initialized using mgr.Client() above, is a split client
 	// that reads objects from the cache and writes to the apiserver
-	client client.Client
-	scheme *runtime.Scheme
+	client    client.Client
+	crdClient apiextensionsclient.Interface
+	scheme    *runtime.Scheme
 }
 
 // Reconcile reads that state of the cluster for a Istio object and makes changes based on the state read
@@ -75,21 +89,25 @@ func (r *ReconcileIstio) Reconcile(request reconcile.Request) (reconcile.Result,
 	reqLogger.Info("Reconciling Istio")
 
 	// Fetch the Istio instance
-	instance := &istiov1alpha1.Istio{}
-	err := r.client.Get(context.TODO(), request.NamespacedName, instance)
+	istio := &istiov1alpha1.Istio{}
+	err := r.client.Get(context.TODO(), request.NamespacedName, istio)
 	if err != nil {
 		if errors.IsNotFound(err) {
 			// Request object not found, could have been deleted after reconcile request.
 			// Owned objects are automatically garbage collected. For additional cleanup logic use finalizers.
 			// Return and don't requeue
+
 			return reconcile.Result{}, nil
 		}
 		// Error reading the object - requeue the request.
 		return reconcile.Result{}, err
 	}
 
-	// TODO: reconcile CRD definitions
-
+	err = r.ReconcileCrds(reqLogger, istio)
+	if err != nil {
+		return reconcile.Result{}, err
+	}
+	
 	// TODO: install galley,mixer,pilot,etc...
 
 	// TODO: install custom resources
