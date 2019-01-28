@@ -9,22 +9,24 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/controller/controllerutil"
 	"github.com/banzaicloud/istio-operator/pkg/k8sutil"
 	"github.com/goph/emperror"
+	"k8s.io/apimachinery/pkg/runtime"
 )
 
 func (r *ReconcileIstio) ReconcileGalley(log logr.Logger, istio *istiov1alpha1.Istio) error {
-	ns := &apiv1.Namespace{
+
+	galleyResources := make(map[string]runtime.Object)
+
+	galleySa := &apiv1.ServiceAccount{
 		ObjectMeta: metav1.ObjectMeta{
-			Name: Namespace,
+			Name:      "istio-galley-service-account",
+			Namespace: istio.Namespace,
 			Labels: map[string]string{
-				"name": "istio-system",
+				"app": "istio-galley",
 			},
 		},
 	}
-	controllerutil.SetControllerReference(istio, ns, r.scheme)
-	err := k8sutil.ReconcileResource(log, r.client, "", ns.Name, ns)
-	if err != nil {
-		return emperror.WrapWith(err, "failed to reconcile istio namespace", "namespace", ns.Name)
-	}
+	controllerutil.SetControllerReference(istio, galleySa, r.scheme)
+	galleyResources[galleySa.Name] = galleySa
 
 	galleyCr := &rbacv1.ClusterRole{
 		ObjectMeta: metav1.ObjectMeta{
@@ -59,24 +61,37 @@ func (r *ReconcileIstio) ReconcileGalley(log logr.Logger, istio *istiov1alpha1.I
 		},
 	}
 	controllerutil.SetControllerReference(istio, galleyCr, r.scheme)
-	err = k8sutil.ReconcileResource(log, r.client, "", galleyCr.Name, galleyCr)
-	if err != nil {
-		return emperror.WrapWith(err, "failed to reconcile cluster role", "clusterRole", galleyCr.Name)
-	}
+	galleyResources[galleyCr.Name] = galleyCr
 
-	galleySa := &apiv1.ServiceAccount{
+	galleyCrb := &rbacv1.ClusterRoleBinding{
 		ObjectMeta: metav1.ObjectMeta{
-			Name:      "istio-galley-service-account",
-			Namespace: Namespace,
+			Name: "istio-galley-admin-role-binding",
 			Labels: map[string]string{
 				"app": "istio-galley",
 			},
 		},
+		RoleRef: rbacv1.RoleRef{
+			Kind:     "ClusterRole",
+			APIGroup: "rbac.authorization.k8s.io",
+			Name:     "istio-galley-cluster-role",
+		},
+		Subjects: []rbacv1.Subject{
+			{
+				Kind:      "ServiceAccount",
+				Name:      "istio-galley-service-account",
+				Namespace: istio.Namespace,
+			},
+		},
 	}
-	controllerutil.SetControllerReference(istio, galleySa, r.scheme)
-	err = k8sutil.ReconcileResource(log, r.client, Namespace, galleySa.Name, galleySa)
-	if err != nil {
-		return emperror.WrapWith(err, "failed to reconcile service account", "serviceAccount", galleySa.Name)
+	controllerutil.SetControllerReference(istio, galleyCrb, r.scheme)
+	galleyResources[galleyCrb.Name] = galleyCrb
+
+	for name, res := range galleyResources {
+		err := k8sutil.ReconcileResource(log, r.client, istio.Namespace, name, res)
+		if err != nil {
+			return emperror.WrapWith(err, "failed to reconcile resource", "resource", res.GetObjectKind().GroupVersionKind().Kind, "name", name)
+		}
 	}
+
 	return nil
 }

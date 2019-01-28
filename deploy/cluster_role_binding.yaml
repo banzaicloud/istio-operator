@@ -5,7 +5,7 @@ metadata:
 subjects:
 - kind: ServiceAccount
   name: istio-operator
-  namespace: default
+  namespace: istio-system
 roleRef:
   kind: ClusterRole
   name: istio-operator

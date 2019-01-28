@@ -43,6 +43,10 @@ func ReconcileResource(log logr.Logger, client client.Client, namespace string, 
 			cr := desired.(*rbacv1.ClusterRole)
 			cr.ResourceVersion = current.(*rbacv1.ClusterRole).ResourceVersion
 			desired = cr
+		case *rbacv1.ClusterRoleBinding:
+			crb := desired.(*rbacv1.ClusterRoleBinding)
+			crb.ResourceVersion = current.(*rbacv1.ClusterRoleBinding).ResourceVersion
+			desired = crb
 		}
 		if err := client.Update(context.TODO(), desired); err != nil {
 			return emperror.WrapWith(err, "updating resource failed", "name", name, "type", reflect.TypeOf(desired))

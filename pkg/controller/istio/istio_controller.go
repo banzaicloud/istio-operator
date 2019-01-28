@@ -16,10 +16,6 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/source"
 )
 
-const (
-	Namespace = "istio-system"
-)
-
 var log = logf.Log.WithName("controller_istio")
 
 // Add creates a new Istio Controller and adds it to the Manager. The Manager will set fields on the Controller
