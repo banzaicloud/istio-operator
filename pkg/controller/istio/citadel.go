@@ -105,10 +105,7 @@ func (r *ReconcileIstio) ReconcileCitadel(log logr.Logger, istio *istiov1alpha1.
 					Labels: map[string]string{
 						"istio": "citadel",
 					},
-					Annotations: map[string]string{
-						"sidecar.istio.io/inject":                    "false",
-						"scheduler.alpha.kubernetes.io/critical-pod": "",
-					},
+					Annotations: defaultDeployAnnotations(),
 				},
 				Spec: apiv1.PodSpec{
 					ServiceAccountName: "istio-citadel-service-account",

@@ -1,20 +1,23 @@
 package istio
 
 import (
+	"fmt"
+
 	istiov1alpha1 "github.com/banzaicloud/istio-operator/pkg/apis/istio/v1alpha1"
 	"github.com/banzaicloud/istio-operator/pkg/k8sutil"
 	"github.com/banzaicloud/istio-operator/pkg/util"
 	"github.com/go-logr/logr"
 	"github.com/goph/emperror"
+	yamlv2 "gopkg.in/yaml.v2"
 	appsv1 "k8s.io/api/apps/v1"
+	autoscalev2beta1 "k8s.io/api/autoscaling/v2beta1"
 	apiv1 "k8s.io/api/core/v1"
 	rbacv1 "k8s.io/api/rbac/v1"
+	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
-	"sigs.k8s.io/controller-runtime/pkg/controller/controllerutil"
 	"k8s.io/apimachinery/pkg/util/intstr"
-	"k8s.io/apimachinery/pkg/api/resource"
-	autoscalev2beta1 "k8s.io/api/autoscaling/v2beta1"
+	"sigs.k8s.io/controller-runtime/pkg/controller/controllerutil"
 )
 
 func (r *ReconcileIstio) ReconcilePilot(log logr.Logger, istio *istiov1alpha1.Istio) error {
@@ -114,6 +117,25 @@ func (r *ReconcileIstio) ReconcilePilot(log logr.Logger, istio *istiov1alpha1.Is
 	controllerutil.SetControllerReference(istio, pilotCrb, r.scheme)
 	pilotResources[pilotCrb.Name] = pilotCrb
 
+	meshConfig, err := meshConfig(istio.Namespace)
+	if err != nil {
+		return emperror.With(err)
+	}
+	istioCm := &apiv1.ConfigMap{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      "istio",
+			Namespace: istio.Namespace,
+			Labels: map[string]string{
+				"app": "istio",
+			},
+		},
+		Data: map[string]string{
+			"mesh": meshConfig,
+		},
+	}
+	controllerutil.SetControllerReference(istio, istioCm, r.scheme)
+	pilotResources[istioCm.Name] = istioCm
+
 	pilotDeploy := &appsv1.Deployment{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      "istio-pilot-deployment",
@@ -139,10 +161,7 @@ func (r *ReconcileIstio) ReconcilePilot(log logr.Logger, istio *istiov1alpha1.Is
 						"istio": "pilot",
 						"app":   "pilot",
 					},
-					Annotations: map[string]string{
-						"sidecar.istio.io/inject":                    "false",
-						"scheduler.alpha.kubernetes.io/critical-pod": "",
-					},
+					Annotations: defaultDeployAnnotations(),
 				},
 				Spec: apiv1.PodSpec{
 					ServiceAccountName: "istio-pilot-service-account",
@@ -230,35 +249,7 @@ func (r *ReconcileIstio) ReconcilePilot(log logr.Logger, istio *istiov1alpha1.Is
 								"--controlPlaneAuthPolicy",
 								"NONE",
 							},
-							Env: []apiv1.EnvVar{
-								{
-									Name: "POD_NAME",
-									ValueFrom: &apiv1.EnvVarSource{
-										FieldRef: &apiv1.ObjectFieldSelector{
-											APIVersion: "v1",
-											FieldPath:  "metadata.name",
-										},
-									},
-								},
-								{
-									Name: "POD_NAMESPACE",
-									ValueFrom: &apiv1.EnvVarSource{
-										FieldRef: &apiv1.ObjectFieldSelector{
-											APIVersion: "v1",
-											FieldPath:  "metadata.namespace",
-										},
-									},
-								},
-								{
-									Name: "INSTANCE_IP",
-									ValueFrom: &apiv1.EnvVarSource{
-										FieldRef: &apiv1.ObjectFieldSelector{
-											APIVersion: "v1",
-											FieldPath:  "status.podIP",
-										},
-									},
-								},
-							},
+							Env:       istioProxyEnv(),
 							Resources: defaultResources(),
 							VolumeMounts: []apiv1.VolumeMount{
 								{
@@ -334,15 +325,7 @@ func (r *ReconcileIstio) ReconcilePilot(log logr.Logger, istio *istiov1alpha1.Is
 				Kind:       "Deployment",
 				APIVersion: "apps/v1",
 			},
-			Metrics: []autoscalev2beta1.MetricSpec{
-				{
-					Type: autoscalev2beta1.ResourceMetricSourceType,
-					Resource: &autoscalev2beta1.ResourceMetricSource{
-						Name:                     apiv1.ResourceCPU,
-						TargetAverageUtilization: util.IntPointer(80),
-					},
-				},
-			},
+			Metrics: targetAvgCpuUtil80(),
 		},
 	}
 	controllerutil.SetControllerReference(istio, pilotAutoscaler, r.scheme)
@@ -356,4 +339,36 @@ func (r *ReconcileIstio) ReconcilePilot(log logr.Logger, istio *istiov1alpha1.Is
 	}
 
 	return nil
+}
+
+func meshConfig(ns string) (string, error) {
+	meshConfig := map[string]interface{}{
+		"disablePolicyChecks": false,
+		"enableTracing":       true,
+		"accessLogFile":       "/dev/stdout",
+		"mixerCheckServer":    fmt.Sprintf("istio-policy.%s.svc.cluster.local:9091", ns),
+		"mixerReportServer":   fmt.Sprintf("istio-telemetry.%s.svc.cluster.local:9091", ns),
+		"policyCheckFailOpen": false,
+		"sdsUdsPath":          "",
+		"sdsRefreshDelay":     "15s",
+		"defaultConfig": map[string]interface{}{
+			"connectTimeout":         "10s",
+			"configPath":             "/etc/istio/proxy",
+			"binaryPath":             "/usr/local/bin/envoy",
+			"serviceCluster":         "istio-proxy",
+			"drainDuration":          "45s",
+			"parentShutdownDuration": "1m0s",
+			"proxyAdminPort":         15000,
+			"concurrency":            0,
+			"zipkinAddress":          fmt.Sprintf("zipkin.%s:9411", ns),
+			"controlPlaneAuthPolicy": "NONE",
+			"discoveryAddress":       fmt.Sprintf("istio-pilot.%s:15007", ns),
+		},
+	}
+	marshaledConfig, err := yamlv2.Marshal(meshConfig)
+	if err != nil {
+		return "", emperror.Wrap(err, "failed to marshal istio config")
+	}
+	return string(marshaledConfig), nil
+
 }

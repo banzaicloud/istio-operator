@@ -139,10 +139,7 @@ func (r *ReconcileIstio) ReconcileGalley(log logr.Logger, istio *istiov1alpha1.I
 					Labels: map[string]string{
 						"istio": "galley",
 					},
-					Annotations: map[string]string{
-						"sidecar.istio.io/inject":                    "false",
-						"scheduler.alpha.kubernetes.io/critical-pod": "",
-					},
+					Annotations: defaultDeployAnnotations(),
 				},
 				Spec: apiv1.PodSpec{
 					ServiceAccountName: "istio-galley-service-account",
