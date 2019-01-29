@@ -112,6 +112,7 @@ func (r *ReconcileIstio) Reconcile(request reconcile.Request) (reconcile.Result,
 		r.ReconcileGalley,
 		r.ReconcilePilot,
 		r.ReconcileMixer,
+		r.ReconcileGateways,
 	}
 
 	for _, rec := range reconcilers {
