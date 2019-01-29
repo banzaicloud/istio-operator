@@ -14,6 +14,7 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/reconcile"
 	logf "sigs.k8s.io/controller-runtime/pkg/runtime/log"
 	"sigs.k8s.io/controller-runtime/pkg/source"
+	"github.com/go-logr/logr"
 )
 
 var log = logf.Log.WithName("controller_istio")
@@ -79,6 +80,8 @@ type ReconcileIstio struct {
 	scheme    *runtime.Scheme
 }
 
+type ReconcileComponent func(log logr.Logger, istio *istiov1alpha1.Istio) error
+
 // Reconcile reads that state of the cluster for a Istio object and makes changes based on the state read
 // and what is in the Istio.Spec
 // Note:
@@ -103,19 +106,19 @@ func (r *ReconcileIstio) Reconcile(request reconcile.Request) (reconcile.Result,
 		return reconcile.Result{}, err
 	}
 
-	err = r.ReconcileCrds(reqLogger, istio)
-	if err != nil {
-		return reconcile.Result{}, err
+	reconcilers := []ReconcileComponent{
+		r.ReconcileCrds,
+		r.ReconcileCitadel,
+		r.ReconcileGalley,
+		r.ReconcilePilot,
 	}
 
-	err = r.ReconcileGalley(reqLogger, istio)
-	if err != nil {
-		return reconcile.Result{}, err
+	for _, rec := range reconcilers {
+		err = rec(reqLogger, istio)
+		if err != nil {
+			return reconcile.Result{}, err
+		}
 	}
-
-	// TODO: install galley,mixer,pilot,etc...
-
-	// TODO: install custom resources
 
 	return reconcile.Result{}, nil
 }

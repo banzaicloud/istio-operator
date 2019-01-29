@@ -1,8 +1,11 @@
 package istio
 
 import (
+	"fmt"
+
 	istiov1alpha1 "github.com/banzaicloud/istio-operator/pkg/apis/istio/v1alpha1"
 	"github.com/banzaicloud/istio-operator/pkg/k8sutil"
+	"github.com/banzaicloud/istio-operator/pkg/util"
 	"github.com/go-logr/logr"
 	"github.com/goph/emperror"
 	yamlv2 "gopkg.in/yaml.v2"
@@ -13,9 +16,6 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 	"sigs.k8s.io/controller-runtime/pkg/controller/controllerutil"
-	"k8s.io/apimachinery/pkg/util/intstr"
-	"fmt"
-	"k8s.io/apimachinery/pkg/api/resource"
 )
 
 func (r *ReconcileIstio) ReconcileGalley(log logr.Logger, istio *istiov1alpha1.Istio) error {
@@ -122,11 +122,11 @@ func (r *ReconcileIstio) ReconcileGalley(log logr.Logger, istio *istiov1alpha1.I
 			},
 		},
 		Spec: appsv1.DeploymentSpec{
-			Replicas: intPointer(1),
+			Replicas: util.IntPointer(1),
 			Strategy: appsv1.DeploymentStrategy{
 				RollingUpdate: &appsv1.RollingUpdateDeployment{
-					MaxSurge:       intstrPointer(1),
-					MaxUnavailable: intstrPointer(0),
+					MaxSurge:       util.IntstrPointer(1),
+					MaxUnavailable: util.IntstrPointer(0),
 				},
 			},
 			Selector: &metav1.LabelSelector{
@@ -146,7 +146,6 @@ func (r *ReconcileIstio) ReconcileGalley(log logr.Logger, istio *istiov1alpha1.I
 				},
 				Spec: apiv1.PodSpec{
 					ServiceAccountName: "istio-galley-service-account",
-					PriorityClassName:  "",
 					Containers: []apiv1.Container{
 						{
 							Name:            "validator",
@@ -186,11 +185,7 @@ func (r *ReconcileIstio) ReconcileGalley(log logr.Logger, istio *istiov1alpha1.I
 							},
 							LivenessProbe:  galleyProbe(),
 							ReadinessProbe: galleyProbe(),
-							Resources: apiv1.ResourceRequirements{
-								Requests: apiv1.ResourceList{
-									apiv1.ResourceCPU: resource.MustParse("10m"),
-								},
-							},
+							Resources:      defaultResources(),
 						},
 					},
 					Volumes: []apiv1.Volume{
@@ -275,7 +270,7 @@ func validatingWebhookConfig(ns string) (string, error) {
 					Service: &admissionv1beta1.ServiceReference{
 						Name:      "istio-galley",
 						Namespace: ns,
-						Path:      strPointer("/admitpilot"),
+						Path:      util.StrPointer("/admitpilot"),
 					},
 					CABundle: []byte{},
 				},
@@ -333,7 +328,7 @@ func validatingWebhookConfig(ns string) (string, error) {
 					Service: &admissionv1beta1.ServiceReference{
 						Name:      "istio-galley",
 						Namespace: ns,
-						Path:      strPointer("/admitmixer"),
+						Path:      util.StrPointer("/admitmixer"),
 					},
 					CABundle: []byte{},
 				},
@@ -403,17 +398,4 @@ func galleyProbe() *apiv1.Probe {
 		InitialDelaySeconds: 5,
 		PeriodSeconds:       5,
 	}
-}
-
-func strPointer(s string) *string {
-	return &s
-}
-
-func intPointer(i int32) *int32 {
-	return &i
-}
-
-func intstrPointer(i int) *intstr.IntOrString {
-	is := intstr.FromInt(i)
-	return &is
 }
