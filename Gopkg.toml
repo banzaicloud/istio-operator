@@ -56,3 +56,7 @@ required = [
 [[constraint]]
   name = "github.com/goph/emperror"
   version = "0.16.0"
+
+[[constraint]]
+  name = "github.com/ghodss/yaml"
+  version = "1.0.0"

@@ -6,9 +6,9 @@ import (
 	istiov1alpha1 "github.com/banzaicloud/istio-operator/pkg/apis/istio/v1alpha1"
 	"github.com/banzaicloud/istio-operator/pkg/k8sutil"
 	"github.com/banzaicloud/istio-operator/pkg/util"
+	"github.com/ghodss/yaml"
 	"github.com/go-logr/logr"
 	"github.com/goph/emperror"
-	yamlv2 "gopkg.in/yaml.v2"
 	admissionv1beta1 "k8s.io/api/admissionregistration/v1beta1"
 	appsv1 "k8s.io/api/apps/v1"
 	apiv1 "k8s.io/api/core/v1"
@@ -373,7 +373,7 @@ func validatingWebhookConfig(ns string) (string, error) {
 			},
 		},
 	}
-	marshaledConfig, err := yamlv2.Marshal(webhook)
+	marshaledConfig, err := yaml.Marshal(webhook)
 	if err != nil {
 		return "", emperror.Wrap(err, "failed to marshal webhook config")
 	}
