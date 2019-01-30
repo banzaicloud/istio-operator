@@ -87,8 +87,7 @@ func (r *ReconcileIstio) ReconcileGateways(log logr.Logger, istio *istiov1alpha1
 				},
 			},
 			Spec: apiv1.ServiceSpec{
-				Type:           apiv1.ServiceTypeLoadBalancer,
-				LoadBalancerIP: "",
+				Type:           serviceType(gw),
 				Ports:          servicePorts(gw),
 				Selector: map[string]string{
 					"app":   fmt.Sprintf("istio-%s", gw),
@@ -284,4 +283,14 @@ func servicePorts(gw string) []apiv1.ServicePort {
 		}
 	}
 	return []apiv1.ServicePort{}
+}
+
+func serviceType(gw string) apiv1.ServiceType{
+	switch gw {
+	case "ingressgateway":
+		return apiv1.ServiceTypeLoadBalancer
+	case "egressgateway":
+		return apiv1.ServiceTypeClusterIP
+	}
+	return ""
 }
