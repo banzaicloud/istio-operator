@@ -6,9 +6,9 @@ import (
 	istiov1alpha1 "github.com/banzaicloud/istio-operator/pkg/apis/istio/v1alpha1"
 	"github.com/banzaicloud/istio-operator/pkg/k8sutil"
 	"github.com/banzaicloud/istio-operator/pkg/util"
+	"github.com/ghodss/yaml"
 	"github.com/go-logr/logr"
 	"github.com/goph/emperror"
-	yamlv2 "gopkg.in/yaml.v2"
 	appsv1 "k8s.io/api/apps/v1"
 	autoscalev2beta1 "k8s.io/api/autoscaling/v2beta1"
 	apiv1 "k8s.io/api/core/v1"
@@ -104,12 +104,12 @@ func (r *ReconcileIstio) ReconcilePilot(log logr.Logger, istio *istiov1alpha1.Is
 		RoleRef: rbacv1.RoleRef{
 			Kind:     "ClusterRole",
 			APIGroup: "rbac.authorization.k8s.io",
-			Name:     "istio-pilot-cluster-role",
+			Name:     pilotCr.Name,
 		},
 		Subjects: []rbacv1.Subject{
 			{
 				Kind:      "ServiceAccount",
-				Name:      "istio-pilot-service-account",
+				Name:      pilotSa.Name,
 				Namespace: istio.Namespace,
 			},
 		},
@@ -164,7 +164,7 @@ func (r *ReconcileIstio) ReconcilePilot(log logr.Logger, istio *istiov1alpha1.Is
 					Annotations: defaultDeployAnnotations(),
 				},
 				Spec: apiv1.PodSpec{
-					ServiceAccountName: "istio-pilot-service-account",
+					ServiceAccountName: pilotSa.Name,
 					Containers: []apiv1.Container{
 						{
 							Name:            "discovery",
@@ -265,7 +265,7 @@ func (r *ReconcileIstio) ReconcilePilot(log logr.Logger, istio *istiov1alpha1.Is
 							Name: "istio-certs",
 							VolumeSource: apiv1.VolumeSource{
 								Secret: &apiv1.SecretVolumeSource{
-									SecretName: "istio.istio-pilot-service-account",
+									SecretName: fmt.Sprintf("istio.%s", pilotSa.Name),
 									Optional:   util.BoolPointer(true),
 								},
 							},
@@ -365,10 +365,9 @@ func meshConfig(ns string) (string, error) {
 			"discoveryAddress":       fmt.Sprintf("istio-pilot.%s:15007", ns),
 		},
 	}
-	marshaledConfig, err := yamlv2.Marshal(meshConfig)
+	marshaledConfig, err := yaml.Marshal(meshConfig)
 	if err != nil {
 		return "", emperror.Wrap(err, "failed to marshal istio config")
 	}
 	return string(marshaledConfig), nil
-
 }

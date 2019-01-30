@@ -71,12 +71,12 @@ func (r *ReconcileIstio) ReconcileCitadel(log logr.Logger, istio *istiov1alpha1.
 		RoleRef: rbacv1.RoleRef{
 			Kind:     "ClusterRole",
 			APIGroup: "rbac.authorization.k8s.io",
-			Name:     "istio-citadel-cluster-role",
+			Name:     citadelCr.Name,
 		},
 		Subjects: []rbacv1.Subject{
 			{
 				Kind:      "ServiceAccount",
-				Name:      "istio-citadel-service-account",
+				Name:      citadelSa.Name,
 				Namespace: istio.Namespace,
 			},
 		},
@@ -108,7 +108,7 @@ func (r *ReconcileIstio) ReconcileCitadel(log logr.Logger, istio *istiov1alpha1.
 					Annotations: defaultDeployAnnotations(),
 				},
 				Spec: apiv1.PodSpec{
-					ServiceAccountName: "istio-citadel-service-account",
+					ServiceAccountName: citadelSa.Name,
 					Containers: []apiv1.Container{
 						{
 							Name:            "citadel",

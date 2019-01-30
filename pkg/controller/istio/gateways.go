@@ -60,12 +60,12 @@ func (r *ReconcileIstio) ReconcileGateways(log logr.Logger, istio *istiov1alpha1
 			RoleRef: rbacv1.RoleRef{
 				Kind:     "ClusterRole",
 				APIGroup: "rbac.authorization.k8s.io",
-				Name:     fmt.Sprintf("istio-%s-cluster-role", gw),
+				Name:     gatewayCr.Name,
 			},
 			Subjects: []rbacv1.Subject{
 				{
 					Kind:      "ServiceAccount",
-					Name:      fmt.Sprintf("istio-%s-service-account", gw),
+					Name:      gatewaySa.Name,
 					Namespace: istio.Namespace,
 				},
 			},
@@ -73,7 +73,7 @@ func (r *ReconcileIstio) ReconcileGateways(log logr.Logger, istio *istiov1alpha1
 		controllerutil.SetControllerReference(istio, gatewayCrb, r.scheme)
 		gatewayResources[gatewayCrb.Name] = gatewayCrb
 
-		gatewayDeploy := gatewayDeployment(gw, istio.Namespace)
+		gatewayDeploy := gatewayDeployment(gw, istio.Namespace, gatewaySa.Name)
 		controllerutil.SetControllerReference(istio, gatewayDeploy, r.scheme)
 		gatewayResources[gatewayDeploy.Name] = gatewayDeploy
 
@@ -128,7 +128,7 @@ func (r *ReconcileIstio) ReconcileGateways(log logr.Logger, istio *istiov1alpha1
 	return nil
 }
 
-func gatewayDeployment(gw, ns string) *appsv1.Deployment {
+func gatewayDeployment(gw, ns, serviceAccount string) *appsv1.Deployment {
 	istioProxy := apiv1.Container{
 		Name:            "istio-proxy",
 		Image:           "docker.io/istio/proxyv2:1.0.5",
@@ -223,7 +223,7 @@ func gatewayDeployment(gw, ns string) *appsv1.Deployment {
 					Annotations: defaultDeployAnnotations(),
 				},
 				Spec: apiv1.PodSpec{
-					ServiceAccountName: fmt.Sprintf("istio-%s-service-account", gw),
+					ServiceAccountName: serviceAccount,
 					Containers: []apiv1.Container{
 						istioProxy,
 					},
@@ -232,7 +232,7 @@ func gatewayDeployment(gw, ns string) *appsv1.Deployment {
 							Name: "istio-certs",
 							VolumeSource: apiv1.VolumeSource{
 								Secret: &apiv1.SecretVolumeSource{
-									SecretName: fmt.Sprintf("istio.istio-%s-service-account", gw),
+									SecretName: fmt.Sprintf("istio.%s", serviceAccount),
 									Optional:   util.BoolPointer(true),
 								},
 							},

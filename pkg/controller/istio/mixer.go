@@ -86,12 +86,12 @@ func (r *ReconcileIstio) ReconcileMixer(log logr.Logger, istio *istiov1alpha1.Is
 		RoleRef: rbacv1.RoleRef{
 			Kind:     "ClusterRole",
 			APIGroup: "rbac.authorization.k8s.io",
-			Name:     "istio-mixer-cluster-role",
+			Name:     mixerCr.Name,
 		},
 		Subjects: []rbacv1.Subject{
 			{
 				Kind:      "ServiceAccount",
-				Name:      "istio-mixer-service-account",
+				Name:      mixerSa.Name,
 				Namespace: istio.Namespace,
 			},
 		},
@@ -126,8 +126,8 @@ func (r *ReconcileIstio) ReconcileMixer(log logr.Logger, istio *istiov1alpha1.Is
 					Annotations: defaultDeployAnnotations(),
 				},
 				Spec: apiv1.PodSpec{
-					ServiceAccountName: "istio-mixer-service-account",
-					Volumes:            mixerVolumes(),
+					ServiceAccountName: mixerSa.Name,
+					Volumes:            mixerVolumes(mixerSa.Name),
 					Affinity:           &apiv1.Affinity{},
 					Containers: []apiv1.Container{
 						mixerContainer(true, istio.Namespace),
@@ -167,8 +167,8 @@ func (r *ReconcileIstio) ReconcileMixer(log logr.Logger, istio *istiov1alpha1.Is
 					Annotations: defaultDeployAnnotations(),
 				},
 				Spec: apiv1.PodSpec{
-					ServiceAccountName: "istio-mixer-service-account",
-					Volumes:            mixerVolumes(),
+					ServiceAccountName: mixerSa.Name,
+					Volumes:            mixerVolumes(mixerSa.Name),
 					Affinity:           &apiv1.Affinity{},
 					Containers: []apiv1.Container{
 						mixerContainer(false, istio.Namespace),
@@ -217,13 +217,13 @@ func (r *ReconcileIstio) ReconcileMixer(log logr.Logger, istio *istiov1alpha1.Is
 	return nil
 }
 
-func mixerVolumes() []apiv1.Volume {
+func mixerVolumes(serviceAccount string) []apiv1.Volume {
 	return []apiv1.Volume{
 		{
 			Name: "istio-certs",
 			VolumeSource: apiv1.VolumeSource{
 				Secret: &apiv1.SecretVolumeSource{
-					SecretName: "istio.istio-mixer-service-account",
+					SecretName: fmt.Sprintf("istio.%s", serviceAccount),
 					Optional:   util.BoolPointer(true),
 				},
 			},

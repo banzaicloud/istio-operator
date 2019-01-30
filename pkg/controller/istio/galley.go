@@ -79,12 +79,12 @@ func (r *ReconcileIstio) ReconcileGalley(log logr.Logger, istio *istiov1alpha1.I
 		RoleRef: rbacv1.RoleRef{
 			Kind:     "ClusterRole",
 			APIGroup: "rbac.authorization.k8s.io",
-			Name:     "istio-galley-cluster-role",
+			Name:     galleyCr.Name,
 		},
 		Subjects: []rbacv1.Subject{
 			{
 				Kind:      "ServiceAccount",
-				Name:      "istio-galley-service-account",
+				Name:      galleySa.Name,
 				Namespace: istio.Namespace,
 			},
 		},
@@ -142,7 +142,7 @@ func (r *ReconcileIstio) ReconcileGalley(log logr.Logger, istio *istiov1alpha1.I
 					Annotations: defaultDeployAnnotations(),
 				},
 				Spec: apiv1.PodSpec{
-					ServiceAccountName: "istio-galley-service-account",
+					ServiceAccountName: galleySa.Name,
 					Containers: []apiv1.Container{
 						{
 							Name:            "validator",
@@ -190,7 +190,7 @@ func (r *ReconcileIstio) ReconcileGalley(log logr.Logger, istio *istiov1alpha1.I
 							Name: "certs",
 							VolumeSource: apiv1.VolumeSource{
 								Secret: &apiv1.SecretVolumeSource{
-									SecretName: "istio.istio-galley-service-account",
+									SecretName: fmt.Sprintf("istio.%s", galleySa.Name),
 								},
 							},
 						},
