@@ -15,6 +15,7 @@ import (
 	"fmt"
 	"github.com/ghodss/yaml"
 	admissionv1beta1 "k8s.io/api/admissionregistration/v1beta1"
+	"strings"
 )
 
 func (r *ReconcileIstio) ReconcileSidecarInjector(log logr.Logger, istio *istiov1alpha1.Istio) error {
@@ -31,7 +32,7 @@ func (r *ReconcileIstio) ReconcileSidecarInjector(log logr.Logger, istio *istiov
 		},
 	}
 	controllerutil.SetControllerReference(istio, siSa, r.scheme)
-	siResources[siSa.Name] = siSa
+	siResources["serviceaccount."+siSa.Name] = siSa
 
 	siCr := &rbacv1.ClusterRole{
 		ObjectMeta: metav1.ObjectMeta{
@@ -54,7 +55,7 @@ func (r *ReconcileIstio) ReconcileSidecarInjector(log logr.Logger, istio *istiov
 		},
 	}
 	controllerutil.SetControllerReference(istio, siCr, r.scheme)
-	siResources[siCr.Name] = siCr
+	siResources["clusterrole."+siCr.Name] = siCr
 
 	siCrb := &rbacv1.ClusterRoleBinding{
 		ObjectMeta: metav1.ObjectMeta{
@@ -77,7 +78,7 @@ func (r *ReconcileIstio) ReconcileSidecarInjector(log logr.Logger, istio *istiov
 		},
 	}
 	controllerutil.SetControllerReference(istio, siCrb, r.scheme)
-	siResources[siCrb.Name] = siCrb
+	siResources["clusterrolebinding."+siCrb.Name] = siCrb
 
 	siConfig, err := siConfig()
 	if err != nil {
@@ -97,7 +98,7 @@ func (r *ReconcileIstio) ReconcileSidecarInjector(log logr.Logger, istio *istiov
 		},
 	}
 	controllerutil.SetControllerReference(istio, siCm, r.scheme)
-	siResources[siCm.Name] = siCm
+	siResources["configmap."+siCm.Name] = siCm
 
 	siDeploy := &appsv1.Deployment{
 		ObjectMeta: metav1.ObjectMeta{
@@ -202,7 +203,7 @@ func (r *ReconcileIstio) ReconcileSidecarInjector(log logr.Logger, istio *istiov
 		},
 	}
 	controllerutil.SetControllerReference(istio, siDeploy, r.scheme)
-	siResources[siDeploy.Name] = siDeploy
+	siResources["deployment."+siDeploy.Name] = siDeploy
 
 	siSvc := &apiv1.Service{
 		ObjectMeta: metav1.ObjectMeta{
@@ -222,12 +223,12 @@ func (r *ReconcileIstio) ReconcileSidecarInjector(log logr.Logger, istio *istiov
 		},
 	}
 	controllerutil.SetControllerReference(istio, siSvc, r.scheme)
-	siResources[siSvc.Name] = siSvc
+	siResources["service."+siSvc.Name] = siSvc
 
 	fail := admissionv1beta1.Fail
 	siWebhook := &admissionv1beta1.MutatingWebhookConfiguration{
 		ObjectMeta: metav1.ObjectMeta{
-			Name:      "istio-sidecar-injector-mutatingwebhook",
+			Name:      "istio-sidecar-injector",
 			Namespace: istio.Namespace,
 			Labels: map[string]string{
 				"app": "istio-sidecar-injector",
@@ -266,10 +267,10 @@ func (r *ReconcileIstio) ReconcileSidecarInjector(log logr.Logger, istio *istiov
 		},
 	}
 	controllerutil.SetControllerReference(istio, siWebhook, r.scheme)
-	siResources[siWebhook.Name] = siWebhook
+	siResources["mutatingwebhook."+siWebhook.Name] = siWebhook
 
 	for name, res := range siResources {
-		err := k8sutil.ReconcileResource(log, r.client, istio.Namespace, name, res)
+		err := k8sutil.ReconcileResource(log, r.client, istio.Namespace, strings.Split(name, ".")[1], res)
 		if err != nil {
 			return emperror.WrapWith(err, "failed to reconcile resource", "resource", res.GetObjectKind().GroupVersionKind().Kind, "name", name)
 		}
@@ -296,14 +297,9 @@ func siProbe() *apiv1.Probe {
 }
 
 func siConfig() (string, error) {
-	siConfig := map[string]interface{}{
-		"policy": "enabled",
-		// TODO: this is a string
-		"template": map[string]interface{}{
-			"initContainers": initContainersConfig(),
-			"containers":     containersConfig(),
-			"volumes":        volumesConfig(),
-		},
+	siConfig := map[string]string{
+		"policy":   "enabled",
+		"template": templateConfig(),
 	}
 	marshaledConfig, err := yaml.Marshal(siConfig)
 	if err != nil {
@@ -313,24 +309,25 @@ func siConfig() (string, error) {
 
 }
 
-func initContainersConfig() string {
-	return `- name: istio-init
+func templateConfig() string {
+	return `initContainers:
+- name: istio-init
   image: docker.io/istio/proxy_init:1.0.5
   args:
   - "-p"
-  - "[[ .MeshConfig.ProxyListenPort ]]
+  - [[ .MeshConfig.ProxyListenPort ]]
   - "-u"
   - 1337
   - "-m"
   - [[ annotation .ObjectMeta ` + "`" + `sidecar.istio.io/interceptionMode` + "`" + ` .ProxyConfig.InterceptionMode ]]
   - "-i"
-  - \"[[ annotation .ObjectMeta ` + "`" + `traffic.sidecar.istio.io/includeOutboundIPRanges` + "`" + ` * ]]\"
+  - "[[ annotation .ObjectMeta ` + "`" + `traffic.sidecar.istio.io/includeOutboundIPRanges` + "`" + ` "*" ]]"
   - "-x"
-  - \"[[ annotation .ObjectMeta ` + "`" + `traffic.sidecar.istio.io/excludeOutboundIPRanges` + "`" + ` "" ]]\"
+  - "[[ annotation .ObjectMeta ` + "`" + `traffic.sidecar.istio.io/excludeOutboundIPRanges` + "`" + ` "" ]]"
   - "-b"
-  - \"[[ annotation .ObjectMeta ` + "`" + `traffic.sidecar.istio.io/includeInboundPorts` + "`" + ` (includeInboundPorts .Spec.Containers) ]]\"
+  - "[[ annotation .ObjectMeta ` + "`" + `traffic.sidecar.istio.io/includeInboundPorts` + "`" + ` (includeInboundPorts .Spec.Containers) ]]"
   - "-d"
-  - \"[[ excludeInboundPort (annotation .ObjectMeta ` + "`" + `status.sidecar.istio.io/port` + "`" + ` 0) (annotation .ObjectMeta ` + "`" + `traffic.sidecar.istio.io/excludeInboundPorts` + "`" + ` "" ) ]]\"
+  - "[[ excludeInboundPort (annotation .ObjectMeta ` + "`" + `status.sidecar.istio.io/port` + "`" + ` "0" ) (annotation .ObjectMeta ` + "`" + `traffic.sidecar.istio.io/excludeInboundPorts` + "`" + ` "" ) ]]"
   imagePullPolicy: IfNotPresent
   securityContext:
     capabilities:
@@ -338,12 +335,9 @@ func initContainersConfig() string {
       - NET_ADMIN
     privileged: true
   restartPolicy: Always
-`
-}
-
-func containersConfig() string {
-	return `- name: istio-proxy
-  image: "[[ annotation .ObjectMeta ` + "`" + `sidecar.istio.io/proxyImage` + "`" + ` \"docker.io/istio/proxyv2:1.0.5\" ]]"
+containers:
+- name: istio-proxy
+  image: "[[ annotation .ObjectMeta ` + "`" + `sidecar.istio.io/proxyImage` + "`" + ` "docker.io/istio/proxyv2:1.0.5" ]]"
   ports:
   - containerPort: 15090
     protocol: TCP
@@ -356,8 +350,8 @@ func containersConfig() string {
   - --binaryPath
   - [[ .ProxyConfig.BinaryPath ]]
   - --serviceCluster
-  [[ if ne \"\" (index .ObjectMeta.Labels \"app\") -]]
-  - [[ index .ObjectMeta.Labels \"app\" ]]
+  [[ if ne "" (index .ObjectMeta.Labels "app") -]]
+  - [[ index .ObjectMeta.Labels "app" ]]
   [[ else -]]
   - "istio-proxy"
   [[ end -]]
@@ -381,11 +375,11 @@ func containersConfig() string {
   [[ end -]]
   - --controlPlaneAuthPolicy
   - [[ annotation .ObjectMeta ` + "`" + `sidecar.istio.io/controlPlaneAuthPolicy` + "`" + ` .ProxyConfig.ControlPlaneAuthPolicy ]]
-[[- if (ne (annotation .ObjectMeta ` + "`" + `status.sidecar.istio.io/port` + "`" + ` 0 ) \"0\") ]]
+[[- if (ne (annotation .ObjectMeta ` + "`" + `status.sidecar.istio.io/port` + "`" + ` "0" ) "0") ]]
   - --statusPort
-  - [[ annotation .ObjectMeta ` + "`" + `status.sidecar.istio.io/port` + "`" + ` 0 ]]
+  - [[ annotation .ObjectMeta ` + "`" + `status.sidecar.istio.io/port` + "`" + ` "0" ]]
   - --applicationPorts
-  - \"[[ annotation .ObjectMeta ` + "`" + `readiness.status.sidecar.istio.io/applicationPorts` + "`" + ` (applicationPorts .Spec.Containers) ]]\"
+  - [[ annotation .ObjectMeta ` + "`" + `readiness.status.sidecar.istio.io/applicationPorts` + "`" + ` (applicationPorts .Spec.Containers) ]]
 [[- end ]]
   env:
   - name: POD_NAME
@@ -405,7 +399,7 @@ func containersConfig() string {
       fieldRef:
         fieldPath: metadata.name
   - name: ISTIO_META_INTERCEPTION_MODE
-    value: [[ or (index .ObjectMeta.Annotations \"sidecar.istio.io/interceptionMode\") .ProxyConfig.InterceptionMode.String ]]
+    value: [[ or (index .ObjectMeta.Annotations "sidecar.istio.io/interceptionMode") .ProxyConfig.InterceptionMode.String ]]
   [[ if .ObjectMeta.Annotations ]]
   - name: ISTIO_METAJSON_ANNOTATIONS
     value: |
@@ -417,18 +411,18 @@ func containersConfig() string {
            [[ toJson .ObjectMeta.Labels ]]
   [[ end ]]
   imagePullPolicy: IfNotPresent
-  [[ if (ne (annotation .ObjectMeta ` + "`" + `status.sidecar.istio.io/port` + "`" + ` 0 ) \"0\") ]]
+  [[ if (ne (annotation .ObjectMeta ` + "`" + `status.sidecar.istio.io/port` + "`" + ` "0" ) "0") ]]
   readinessProbe:
     httpGet:
       path: /healthz/ready
-      port: [[ annotation .ObjectMeta ` + "`" + `status.sidecar.istio.io/port` + "`" + ` 0 ]]
-    initialDelaySeconds: [[ annotation .ObjectMeta ` + "`" + `readiness.status.sidecar.istio.io/initialDelaySeconds` + "`" + ` 1 ]]
-    periodSeconds: [[ annotation .ObjectMeta ` + "`" + `readiness.status.sidecar.istio.io/periodSeconds` + "`" + ` 2 ]]
-    failureThreshold: [[ annotation .ObjectMeta ` + "`" + `readiness.status.sidecar.istio.io/failureThreshold` + "`" + ` 30 ]]
+      port: [[ annotation .ObjectMeta ` + "`" + `status.sidecar.istio.io/port` + "`" + ` "0" ]]
+    initialDelaySeconds: [[ annotation .ObjectMeta ` + "`" + `readiness.status.sidecar.istio.io/initialDelaySeconds` + "`" + ` "1" ]]
+    periodSeconds: [[ annotation .ObjectMeta ` + "`" + `readiness.status.sidecar.istio.io/periodSeconds` + "`" + ` "2" ]]
+    failureThreshold: [[ annotation .ObjectMeta ` + "`" + `readiness.status.sidecar.istio.io/failureThreshold` + "`" + ` "30" ]]
   [[ end -]]
   securityContext:
     readOnlyRootFilesystem: true
-    [[ if eq (annotation .ObjectMeta ` + "`" + `sidecar.istio.io/interceptionMode` + "`" + ` .ProxyConfig.InterceptionMode) \"TPROXY\" -]]
+    [[ if eq (annotation .ObjectMeta ` + "`" + `sidecar.istio.io/interceptionMode` + "`" + ` .ProxyConfig.InterceptionMode) "TPROXY" -]]
     capabilities:
       add:
       - NET_ADMIN
@@ -440,32 +434,29 @@ func containersConfig() string {
   resources:
     [[ if (isset .ObjectMeta.Annotations ` + "`" + `sidecar.istio.io/proxyCPU` + "`" + `) -]]
     requests:
-      cpu: \"[[ index .ObjectMeta.Annotations ` + "`" + `sidecar.istio.io/proxyCPU` + "`" + ` ]]\"
-      memory: \"[[ index .ObjectMeta.Annotations ` + "`" + `sidecar.istio.io/proxyMemory` + "`" + ` ]]\"
-    [[ else -]]
+      cpu: [[ index .ObjectMeta.Annotations ` + "`" + `sidecar.istio.io/proxyCPU` + "`" + ` ]]
+      memory: [[ index .ObjectMeta.Annotations ` + "`" + `sidecar.istio.io/proxyMemory` + "`" + ` ]]
+  [[ else -]]
     requests:
       cpu: 10m
-    [[ end -]]
+  [[ end -]]
   volumeMounts:
   - mountPath: /etc/istio/proxy
     name: istio-envoy
   - mountPath: /etc/certs/
     name: istio-certs
     readOnly: true
-`
-}
-
-func volumesConfig() string {
-	return `- emptyDir:
+volumes:
+- emptyDir:
     medium: Memory
   name: istio-envoy
 - name: istio-certs
   secret:
     optional: true
-    "[[ if eq .Spec.ServiceAccountName \"\" -]]"
+    [[ if eq .Spec.ServiceAccountName "" -]]
     secretName: istio.default
-    "[[ else -]]"
-    secretName: [[ printf \"istio.%s\" .Spec.ServiceAccountName ]]"
-    "[[ end -]]"
+    [[ else -]]
+    secretName: [[ printf "istio.%s" .Spec.ServiceAccountName ]]
+    [[ end -]]
 `
 }
