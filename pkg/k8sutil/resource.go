@@ -13,6 +13,8 @@ import (
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/runtime"
 	runtimeClient "sigs.k8s.io/controller-runtime/pkg/client"
+	"istio.io/api/pkg/kube/apis/networking/v1alpha3"
+	"k8s.io/api/autoscaling/v2beta1"
 )
 
 func ReconcileResource(log logr.Logger, client runtimeClient.Client, namespace string, name string, desired runtime.Object) error {
@@ -59,11 +61,20 @@ func ReconcileResource(log logr.Logger, client runtimeClient.Client, namespace s
 		case *apiv1.Service:
 			svc := desired.(*apiv1.Service)
 			svc.ResourceVersion = current.(*apiv1.Service).ResourceVersion
+			svc.Spec.ClusterIP = current.(*apiv1.Service).Spec.ClusterIP
 			desired = svc
 		case *appsv1.Deployment:
 			deploy := desired.(*appsv1.Deployment)
 			deploy.ResourceVersion = current.(*appsv1.Deployment).ResourceVersion
 			desired = deploy
+		case *v2beta1.HorizontalPodAutoscaler:
+			hpa := desired.(*v2beta1.HorizontalPodAutoscaler)
+			hpa.ResourceVersion = current.(*v2beta1.HorizontalPodAutoscaler).ResourceVersion
+			desired = hpa
+		case *v1alpha3.Gateway:
+			gw := desired.(*v1alpha3.Gateway)
+			gw.ResourceVersion = current.(*v1alpha3.Gateway).ResourceVersion
+			desired = gw
 		}
 		if err := client.Update(context.TODO(), desired); err != nil {
 			return emperror.WrapWith(err, "updating resource failed", "name", name, "type", reflect.TypeOf(desired))
