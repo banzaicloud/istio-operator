@@ -60,3 +60,12 @@ required = [
 [[constraint]]
   name = "github.com/ghodss/yaml"
   version = "1.0.0"
+
+[[override]]
+  name = "github.com/golang/protobuf"
+  revision = "05f48f4eaf0e05663b562bab533cdd472238ce29"
+
+[[constraint]]
+  branch = "istio-8772"
+  name = "istio.io/api"
+  source = "github.com/rcernich/istio-api"

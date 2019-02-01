@@ -247,6 +247,21 @@ func (r *ReconcileIstio) ReconcileGalley(log logr.Logger, istio *istiov1alpha1.I
 		}
 	}
 
+	//TODO: wait until galley deployment is available
+	//while true; do
+	///kubectl -n {{ .Release.Namespace }} get deployment istio-galley 2>/dev/null
+	//if [ "$?" -eq 0 ]; then
+	//break
+	//fi
+	//sleep 1
+	//done
+	///kubectl -n {{ .Release.Namespace }} rollout status deployment istio-galley
+	//if [ "$?" -ne 0 ]; then
+	//echo "istio-galley deployment rollout status check failed"
+	//exit 1
+	//fi
+	//echo "istio-galley deployment ready for configuration validation"
+
 	return nil
 }
 

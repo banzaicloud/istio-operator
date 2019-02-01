@@ -112,8 +112,11 @@
   digest = "1:932970e69f16e127aa0653b8263ae588cd127fa53273e19ba44332902c9826f2"
   name = "github.com/gogo/protobuf"
   packages = [
+    "gogoproto",
     "proto",
+    "protoc-gen-gogo/descriptor",
     "sortkeys",
+    "types",
   ]
   pruneopts = "NT"
   revision = "4cbf7e384e768b4e01799441fdf2a706a5635ae7"
@@ -136,7 +139,7 @@
   revision = "c65c006176ff7ff98bb916961c7abbc6b0afc0aa"
 
 [[projects]]
-  digest = "1:d7cb4458ea8782e6efacd8f4940796ec559c90833509c436f40c4085b98156dd"
+  digest = "1:e9dfa9d6e978ea7cdb9517e9c6f1ea4242dd26444bc312a5bc14f96c50f458be"
   name = "github.com/golang/protobuf"
   packages = [
     "proto",
@@ -146,8 +149,7 @@
     "ptypes/timestamp",
   ]
   pruneopts = "NT"
-  revision = "aa810b61a9c79d51363740d207bb46cf8e620ed5"
-  version = "v1.2.0"
+  revision = "05f48f4eaf0e05663b562bab533cdd472238ce29"
 
 [[projects]]
   branch = "master"
@@ -366,6 +368,14 @@
   revision = "bf6a532e95b1f7a62adf0ab5050a5bb2237ad2f4"
 
 [[projects]]
+  branch = "istio-8772"
+  digest = "1:9cda24439cc6f1714c38821fc80f644f6378993831a4f632c929b384264ba38b"
+  name = "github.com/rcernich/istio-api"
+  packages = ["pkg/kube/apis/networking/v1alpha3"]
+  pruneopts = "NT"
+  revision = "152cda46cb060e4aa6a347cdbb7b925ef4426b8e"
+
+[[projects]]
   digest = "1:9d8420bbf131d1618bde6530af37c3799340d3762cc47210c1d9532a4c3a2779"
   name = "github.com/spf13/pflag"
   packages = ["."]
@@ -539,6 +549,19 @@
   pruneopts = "NT"
   revision = "51d6538a90f86fe93ac480b35f37b2be17fef232"
   version = "v2.2.2"
+
+[[projects]]
+  branch = "istio-8772"
+  digest = "1:9cda24439cc6f1714c38821fc80f644f6378993831a4f632c929b384264ba38b"
+  name = "istio.io/api"
+  packages = [
+    "networking/v1alpha3",
+    "pkg/kube/apis/networking/v1alpha3",
+    "util",
+  ]
+  pruneopts = "NT"
+  revision = "152cda46cb060e4aa6a347cdbb7b925ef4426b8e"
+  source = "github.com/rcernich/istio-api"
 
 [[projects]]
   digest = "1:b3f8152a68d73095a40fdcf329a93fc42e8eadb3305171df23fdb6b4e41a6417"
@@ -839,7 +862,9 @@
     "github.com/operator-framework/operator-sdk/pkg/leader",
     "github.com/operator-framework/operator-sdk/pkg/ready",
     "github.com/operator-framework/operator-sdk/version",
-    "gopkg.in/yaml.v2",
+    "github.com/rcernich/istio-api/pkg/kube/apis/networking/v1alpha3",
+    "istio.io/api/networking/v1alpha3",
+    "istio.io/api/pkg/kube/apis/networking/v1alpha3",
     "k8s.io/api/admissionregistration/v1beta1",
     "k8s.io/api/apps/v1",
     "k8s.io/api/autoscaling/v2beta1",

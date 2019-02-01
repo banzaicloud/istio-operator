@@ -12,14 +12,17 @@ import (
 	rbacv1 "k8s.io/api/rbac/v1"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/runtime"
-	"k8s.io/apimachinery/pkg/types"
-	"sigs.k8s.io/controller-runtime/pkg/client"
+	runtimeClient "sigs.k8s.io/controller-runtime/pkg/client"
 )
 
-func ReconcileResource(log logr.Logger, client client.Client, namespace string, name string, desired runtime.Object) error {
+func ReconcileResource(log logr.Logger, client runtimeClient.Client, namespace string, name string, desired runtime.Object) error {
 	log = log.WithValues("type", reflect.TypeOf(desired))
 	var current = desired.DeepCopyObject()
-	err := client.Get(context.TODO(), types.NamespacedName{Namespace: namespace, Name: name}, current)
+	key, err := runtimeClient.ObjectKeyFromObject(current)
+	if err != nil {
+		return emperror.With(err)
+	}
+	err = client.Get(context.TODO(), key, current)
 	if err != nil && !apierrors.IsNotFound(err) {
 		return emperror.WrapWith(err, "getting resource failed", "name", name, "type", reflect.TypeOf(desired))
 	}
