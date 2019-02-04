@@ -14,21 +14,15 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package controller
+package apis
 
 import (
-	"sigs.k8s.io/controller-runtime/pkg/manager"
+	"github.com/banzaicloud/istio-operator/pkg/apis/istio/v1beta1"
+	"istio.io/api/pkg/kube/apis/networking/v1alpha3"
 )
 
-// AddToManagerFuncs is a list of functions to add all Controllers to the Manager
-var AddToManagerFuncs []func(manager.Manager) error
-
-// AddToManager adds all Controllers to the Manager
-func AddToManager(m manager.Manager) error {
-	for _, f := range AddToManagerFuncs {
-		if err := f(m); err != nil {
-			return err
-		}
-	}
-	return nil
+func init() {
+	// Register the types with the Scheme so the components can map objects to GroupVersionKinds and back
+	AddToSchemes = append(AddToSchemes, v1beta1.SchemeBuilder.AddToScheme)
+	AddToSchemes = append(AddToSchemes, v1alpha3.AddToScheme)
 }

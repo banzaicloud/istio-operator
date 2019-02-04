@@ -1,7 +1,0 @@
-apiVersion: istio.io/v1alpha1
-kind: Istio
-metadata:
-  name: istio-mesh
-spec:
-  # Add fields here
-  version: 1.0.5

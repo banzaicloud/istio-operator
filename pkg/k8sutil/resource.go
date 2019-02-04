@@ -7,14 +7,14 @@ import (
 
 	"github.com/go-logr/logr"
 	"github.com/goph/emperror"
+	"istio.io/api/pkg/kube/apis/networking/v1alpha3"
 	appsv1 "k8s.io/api/apps/v1"
+	"k8s.io/api/autoscaling/v2beta1"
 	apiv1 "k8s.io/api/core/v1"
 	rbacv1 "k8s.io/api/rbac/v1"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/runtime"
 	runtimeClient "sigs.k8s.io/controller-runtime/pkg/client"
-	"istio.io/api/pkg/kube/apis/networking/v1alpha3"
-	"k8s.io/api/autoscaling/v2beta1"
 )
 
 func ReconcileResource(log logr.Logger, client runtimeClient.Client, namespace string, name string, desired runtime.Object) error {

@@ -10,7 +10,7 @@ func IntPointer(i int32) *int32 {
 	return &i
 }
 
-func BoolPointer(b bool) *bool{
+func BoolPointer(b bool) *bool {
 	return &b
 }
 
