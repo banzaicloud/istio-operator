@@ -12,10 +12,12 @@ import (
 	extensionsobj "k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1beta1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"os"
+	"sigs.k8s.io/controller-runtime/pkg/controller/controllerutil"
 )
 
 func (r *ReconcileConfig) ReconcileCrds(log logr.Logger, istio *istiov1beta1.Config) error {
 	for _, crd := range crds {
+		controllerutil.SetControllerReference(istio, crd, r.scheme)
 		err := k8sutil.ReconcileResource(log, r.Client, istio.Namespace, crd.Name, crd)
 		if err != nil {
 			return emperror.WrapWith(err, "failed to reconcile resource", "resource", crd.GetObjectKind().GroupVersionKind().Kind, "name", crd.Name)

@@ -18,18 +18,21 @@ package config
 
 import (
 	"context"
-
 	istiov1beta1 "github.com/banzaicloud/istio-operator/pkg/apis/istio/v1beta1"
 	"github.com/go-logr/logr"
 	"k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/runtime"
+	"k8s.io/client-go/rest"
+	"sigs.k8s.io/controller-runtime/pkg/cache"
 	"sigs.k8s.io/controller-runtime/pkg/client"
+	"sigs.k8s.io/controller-runtime/pkg/client/apiutil"
 	"sigs.k8s.io/controller-runtime/pkg/controller"
 	"sigs.k8s.io/controller-runtime/pkg/handler"
 	"sigs.k8s.io/controller-runtime/pkg/manager"
 	"sigs.k8s.io/controller-runtime/pkg/reconcile"
 	logf "sigs.k8s.io/controller-runtime/pkg/runtime/log"
 	"sigs.k8s.io/controller-runtime/pkg/source"
+	"sync"
 )
 
 var log = logf.Log.WithName("controller")
@@ -45,6 +48,7 @@ func newReconciler(mgr manager.Manager) reconcile.Reconciler {
 	return &ReconcileConfig{
 		Client: mgr.GetClient(),
 		scheme: mgr.GetScheme(),
+		config: mgr.GetConfig(),
 	}
 }
 
@@ -82,6 +86,54 @@ var _ reconcile.Reconciler = &ReconcileConfig{}
 type ReconcileConfig struct {
 	client.Client
 	scheme *runtime.Scheme
+	config *rest.Config
+	mux    sync.Mutex
+}
+
+func (r *ReconcileConfig) ResetClient(ns string) error {
+	// Create the mapper provider
+	mapper, err := apiutil.NewDiscoveryRESTMapper(r.config)
+	if err != nil {
+		log.Error(err, "Failed to get API Group-Resources")
+		return err
+	}
+
+	// Create the Client for Write operations.
+	writeObj, err := client.New(r.config, client.Options{Scheme: r.scheme, Mapper: mapper})
+	if err != nil {
+		return err
+	}
+
+	cache, err := cache.New(r.config, cache.Options{Scheme: r.scheme, Mapper: mapper, Resync: nil, Namespace: ns})
+	if err != nil {
+		return err
+	}
+
+	client := client.DelegatingClient{
+		Reader: &client.DelegatingReader{
+			CacheReader:  cache,
+			ClientReader: writeObj,
+		},
+		Writer:       writeObj,
+		StatusClient: writeObj,
+	}
+	r.mux.Lock()
+	r.Client = client
+	r.mux.Unlock()
+
+	stop := make(chan struct{})
+
+	go func() {
+		if err := cache.Start(stop); err != nil {
+			//cm.errChan <- err
+			//TODO: handle error
+		}
+	}()
+
+	// Wait for the caches to sync.
+	cache.WaitForCacheSync(stop)
+
+	return nil
 }
 
 type ReconcileComponent func(log logr.Logger, istio *istiov1beta1.Config) error
@@ -109,8 +161,17 @@ func (r *ReconcileConfig) Reconcile(request reconcile.Request) (reconcile.Result
 		return reconcile.Result{}, err
 	}
 
+	err = r.ReconcileCrds(reqLogger, instance)
+	if err != nil {
+		return reconcile.Result{}, err
+	}
+
+	err = r.ResetClient(request.Namespace)
+	if err != nil {
+		log.Error(err, "failed to reset reconciler client")
+	}
+
 	reconcilers := []ReconcileComponent{
-		r.ReconcileCrds,
 		r.ReconcileCitadel,
 		r.ReconcileGalley,
 		r.ReconcilePilot,
