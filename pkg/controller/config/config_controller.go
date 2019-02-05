@@ -21,7 +21,6 @@ import (
 
 	istiov1beta1 "github.com/banzaicloud/istio-operator/pkg/apis/istio/v1beta1"
 	"github.com/go-logr/logr"
-	apiextensionsclient "k8s.io/apiextensions-apiserver/pkg/client/clientset/clientset"
 	"k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
@@ -38,19 +37,14 @@ var log = logf.Log.WithName("controller")
 // Add creates a new Config Controller and adds it to the Manager with default RBAC. The Manager will set fields on the Controller
 // and Start it when the Manager is Started.
 func Add(mgr manager.Manager) error {
-	crdC, err := apiextensionsclient.NewForConfig(mgr.GetConfig())
-	if err != nil {
-		return err
-	}
-	return add(mgr, newReconciler(mgr, crdC))
+	return add(mgr, newReconciler(mgr))
 }
 
 // newReconciler returns a new reconcile.Reconciler
-func newReconciler(mgr manager.Manager, crdC *apiextensionsclient.Clientset) reconcile.Reconciler {
+func newReconciler(mgr manager.Manager) reconcile.Reconciler {
 	return &ReconcileConfig{
-		Client:    mgr.GetClient(),
-		crdClient: crdC,
-		scheme:    mgr.GetScheme(),
+		Client: mgr.GetClient(),
+		scheme: mgr.GetScheme(),
 	}
 }
 
@@ -67,6 +61,7 @@ func add(mgr manager.Manager, r reconcile.Reconciler) error {
 	if err != nil {
 		return err
 	}
+
 	//
 	//// TODO(user): Modify this to be the types you create
 	//// Uncomment watch a Deployment created by Config - change this for objects you create
@@ -86,8 +81,7 @@ var _ reconcile.Reconciler = &ReconcileConfig{}
 // ReconcileConfig reconciles a Config object
 type ReconcileConfig struct {
 	client.Client
-	crdClient apiextensionsclient.Interface
-	scheme    *runtime.Scheme
+	scheme *runtime.Scheme
 }
 
 type ReconcileComponent func(log logr.Logger, istio *istiov1beta1.Config) error

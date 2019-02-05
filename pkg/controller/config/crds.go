@@ -4,37 +4,27 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/banzaicloud/istio-operator/pkg/apis"
 	istiov1beta1 "github.com/banzaicloud/istio-operator/pkg/apis/istio/v1beta1"
+	"github.com/banzaicloud/istio-operator/pkg/k8sutil"
 	"github.com/go-logr/logr"
 	"github.com/goph/emperror"
 	extensionsobj "k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1beta1"
-	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"sigs.k8s.io/controller-runtime/pkg/controller/controllerutil"
+	"os"
 )
 
 func (r *ReconcileConfig) ReconcileCrds(log logr.Logger, istio *istiov1beta1.Config) error {
-	crdClient := r.crdClient.ApiextensionsV1beta1().CustomResourceDefinitions()
 	for _, crd := range crds {
-		// TODO: parallelize
-		oldCRD, err := crdClient.Get(crd.Name, metav1.GetOptions{})
-		if err != nil && !apierrors.IsNotFound(err) {
-			return emperror.WrapWith(err, "getting CRD failed", "kind", crd.Spec.Names.Kind)
+		err := k8sutil.ReconcileResource(log, r.Client, istio.Namespace, crd.Name, crd)
+		if err != nil {
+			return emperror.WrapWith(err, "failed to reconcile resource", "resource", crd.GetObjectKind().GroupVersionKind().Kind, "name", crd.Name)
 		}
-		if apierrors.IsNotFound(err) {
-			controllerutil.SetControllerReference(istio, crd, r.scheme)
-			if _, err := crdClient.Create(crd); err != nil {
-				return emperror.WrapWith(err, "creating CRD failed", "kind", crd.Spec.Names.Kind)
-			}
-			log.Info("CRD created", "crd", crd.Spec.Names.Kind)
-		}
-		if err == nil {
-			crd.ResourceVersion = oldCRD.ResourceVersion
-			if _, err := crdClient.Update(crd); err != nil {
-				return emperror.WrapWith(err, "updating CRD failed", "kind", crd.Spec.Names.Kind)
-			}
-			log.Info("CRD updated", "crd", crd.Spec.Names.Kind)
-		}
+	}
+	log.Info("setting up scheme")
+	if err := apis.AddToScheme(r.scheme); err != nil {
+		log.Error(err, "unable add APIs to scheme")
+		os.Exit(1)
 	}
 	return nil
 }

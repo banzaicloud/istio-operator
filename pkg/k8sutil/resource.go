@@ -12,6 +12,7 @@ import (
 	"k8s.io/api/autoscaling/v2beta1"
 	apiv1 "k8s.io/api/core/v1"
 	rbacv1 "k8s.io/api/rbac/v1"
+	extensionsobj "k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1beta1"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/runtime"
 	runtimeClient "sigs.k8s.io/controller-runtime/pkg/client"
@@ -75,6 +76,10 @@ func ReconcileResource(log logr.Logger, client runtimeClient.Client, namespace s
 			gw := desired.(*v1alpha3.Gateway)
 			gw.ResourceVersion = current.(*v1alpha3.Gateway).ResourceVersion
 			desired = gw
+		case *extensionsobj.CustomResourceDefinition:
+			crd := desired.(*extensionsobj.CustomResourceDefinition)
+			crd.ResourceVersion = current.(*extensionsobj.CustomResourceDefinition).ResourceVersion
+			desired = crd
 		}
 		if err := client.Update(context.TODO(), desired); err != nil {
 			return emperror.WrapWith(err, "updating resource failed", "name", name, "type", reflect.TypeOf(desired))
