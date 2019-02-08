@@ -8,6 +8,8 @@ import (
 	"github.com/banzaicloud/istio-operator/pkg/util"
 	"github.com/go-logr/logr"
 	"github.com/goph/emperror"
+	configv1alpha2 "istio.io/api/pkg/kube/apis/config/v1alpha2"
+	"istio.io/api/policy/v1beta1"
 	appsv1 "k8s.io/api/apps/v1"
 	autoscalev2beta1 "k8s.io/api/autoscaling/v2beta1"
 	apiv1 "k8s.io/api/core/v1"
@@ -209,6 +211,11 @@ func (r *ReconcileConfig) ReconcileMixer(log logr.Logger, istio *istiov1beta1.Co
 	controllerutil.SetControllerReference(istio, statsdPromBridgeCm, r.scheme)
 	mixerResources[statsdPromBridgeCm.Name] = statsdPromBridgeCm
 
+	crs := r.mixerCustomResources(istio)
+	for name, cr := range crs {
+		mixerResources[name] = cr
+	}
+
 	for name, res := range mixerResources {
 		err := k8sutil.ReconcileResource(log, r.Client, istio.Namespace, name, res)
 		if err != nil {
@@ -216,6 +223,169 @@ func (r *ReconcileConfig) ReconcileMixer(log logr.Logger, istio *istiov1beta1.Co
 		}
 	}
 	return nil
+}
+
+func (r *ReconcileConfig) mixerCustomResources(istio *istiov1beta1.Config) map[string]runtime.Object {
+	crs := make(map[string]runtime.Object)
+
+	istioproxy := &configv1alpha2.AttributeManifest{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      "istioproxy",
+			Namespace: istio.Namespace,
+		},
+		Spec: v1beta1.AttributeManifest{
+			Attributes: map[string]*v1beta1.AttributeManifest_AttributeInfo{
+				"origin.ip":                        {ValueType: v1beta1.IP_ADDRESS},
+				"origin.uid":                       {ValueType: v1beta1.STRING},
+				"origin.user":                      {ValueType: v1beta1.STRING},
+				"request.headers":                  {ValueType: v1beta1.STRING_MAP},
+				"request.id":                       {ValueType: v1beta1.STRING},
+				"request.host":                     {ValueType: v1beta1.STRING},
+				"request.method":                   {ValueType: v1beta1.STRING},
+				"request.path":                     {ValueType: v1beta1.STRING},
+				"request.reason":                   {ValueType: v1beta1.STRING},
+				"request.referer":                  {ValueType: v1beta1.STRING},
+				"request.scheme":                   {ValueType: v1beta1.STRING},
+				"request.total_size":               {ValueType: v1beta1.INT64},
+				"request.size":                     {ValueType: v1beta1.INT64},
+				"request.time":                     {ValueType: v1beta1.TIMESTAMP},
+				"request.useragent":                {ValueType: v1beta1.STRING},
+				"response.code":                    {ValueType: v1beta1.INT64},
+				"response.duration":                {ValueType: v1beta1.DURATION},
+				"response.headers":                 {ValueType: v1beta1.STRING_MAP},
+				"response.total_size":              {ValueType: v1beta1.INT64},
+				"response.size":                    {ValueType: v1beta1.INT64},
+				"response.time":                    {ValueType: v1beta1.TIMESTAMP},
+				"source.uid":                       {ValueType: v1beta1.STRING},
+				"source.user":                      {ValueType: v1beta1.STRING},
+				"source.principal":                 {ValueType: v1beta1.STRING},
+				"destination.uid":                  {ValueType: v1beta1.STRING},
+				"destination.port":                 {ValueType: v1beta1.INT64},
+				"destination.principal":            {ValueType: v1beta1.STRING},
+				"connection.event":                 {ValueType: v1beta1.STRING},
+				"connection.id":                    {ValueType: v1beta1.STRING},
+				"connection.received.bytes":        {ValueType: v1beta1.INT64},
+				"connection.received.bytes_total":  {ValueType: v1beta1.INT64},
+				"connection.sent.bytes":            {ValueType: v1beta1.INT64},
+				"connection.sent.bytes_total":      {ValueType: v1beta1.INT64},
+				"connection.v1beta1.DURATION":      {ValueType: v1beta1.DURATION},
+				"connection.mtls":                  {ValueType: v1beta1.BOOL},
+				"connection.requested_server_name": {ValueType: v1beta1.STRING},
+				"context.protocol":                 {ValueType: v1beta1.STRING},
+				"context.v1beta1.TIMESTAMP":        {ValueType: v1beta1.TIMESTAMP},
+				"context.time":                     {ValueType: v1beta1.TIMESTAMP},
+				"context.reporter.local":           {ValueType: v1beta1.BOOL},
+				"context.reporter.kind":            {ValueType: v1beta1.STRING},
+				"context.reporter.uid":             {ValueType: v1beta1.STRING},
+				"api.service":                      {ValueType: v1beta1.STRING},
+				"api.version":                      {ValueType: v1beta1.STRING},
+				"api.operation":                    {ValueType: v1beta1.STRING},
+				"api.protocol":                     {ValueType: v1beta1.STRING},
+				"request.auth.principal":           {ValueType: v1beta1.STRING},
+				"request.auth.audiences":           {ValueType: v1beta1.STRING},
+				"request.auth.presenter":           {ValueType: v1beta1.STRING},
+				"request.auth.claims":              {ValueType: v1beta1.STRING_MAP},
+				"request.auth.raw_claims":          {ValueType: v1beta1.STRING},
+				"request.api_key":                  {ValueType: v1beta1.STRING},
+			},
+		},
+	}
+	controllerutil.SetControllerReference(istio, istioproxy, r.scheme)
+	crs[istioproxy.Name] = istioproxy
+
+	kubernetes := &configv1alpha2.AttributeManifest{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      "kubernetes",
+			Namespace: istio.Namespace,
+		},
+		Spec: v1beta1.AttributeManifest{
+			Attributes: map[string]*v1beta1.AttributeManifest_AttributeInfo{
+				"source.ip":                      {ValueType: v1beta1.IP_ADDRESS},
+				"source.labels":                  {ValueType: v1beta1.STRING_MAP},
+				"source.metadata":                {ValueType: v1beta1.STRING_MAP},
+				"source.name":                    {ValueType: v1beta1.STRING},
+				"source.namespace":               {ValueType: v1beta1.STRING},
+				"source.owner":                   {ValueType: v1beta1.STRING},
+				"source.service":                 {ValueType: v1beta1.STRING},
+				"source.serviceAccount":          {ValueType: v1beta1.STRING},
+				"source.services":                {ValueType: v1beta1.STRING},
+				"source.workload.uid":            {ValueType: v1beta1.STRING},
+				"source.workload.name":           {ValueType: v1beta1.STRING},
+				"source.workload.namespace":      {ValueType: v1beta1.STRING},
+				"destination.ip":                 {ValueType: v1beta1.IP_ADDRESS},
+				"destination.labels":             {ValueType: v1beta1.STRING_MAP},
+				"destination.metadata":           {ValueType: v1beta1.STRING_MAP},
+				"destination.owner":              {ValueType: v1beta1.STRING},
+				"destination.name":               {ValueType: v1beta1.STRING},
+				"destination.container.name":     {ValueType: v1beta1.STRING},
+				"destination.namespace":          {ValueType: v1beta1.STRING},
+				"destination.service":            {ValueType: v1beta1.STRING},
+				"destination.service.uid":        {ValueType: v1beta1.STRING},
+				"destination.service.name":       {ValueType: v1beta1.STRING},
+				"destination.service.namespace":  {ValueType: v1beta1.STRING},
+				"destination.service.host":       {ValueType: v1beta1.STRING},
+				"destination.serviceAccount":     {ValueType: v1beta1.STRING},
+				"destination.workload.uid":       {ValueType: v1beta1.STRING},
+				"destination.workload.name":      {ValueType: v1beta1.STRING},
+				"destination.workload.namespace": {ValueType: v1beta1.STRING},
+			},
+		},
+	}
+	controllerutil.SetControllerReference(istio, kubernetes, r.scheme)
+	crs[kubernetes.Name] = kubernetes
+
+	//stdioGVR := schema.GroupVersionResource{
+	//	Group:    "config.istio.io",
+	//	Version:  "v1alpha2",
+	//	Resource: "stdio",
+	//}
+
+	//apiVersion: "config.istio.io/v1alpha2"
+	//kind: stdio
+	//metadata:
+	//name: handler
+	//namespace: {{ .Release.Namespace }}
+	//spec:
+	//outputAsJson: true
+
+	//stdio := &unstructured.Unstructured{
+	//	Object: map[string]interface{}{
+	//		"metadata": metav1.ObjectMeta{
+	//			Name:      "handler",
+	//			Namespace: istio.Namespace,
+	//		},
+	//		"spec": map[string]bool{
+	//			"outputAsJson": true,
+	//		},
+	//	},
+	//}
+	//controllerutil.SetControllerReference(istio, stdio, r.scheme)
+	//crs["handler"] = kubernetes
+
+	//_, err := r.Dynamic.Resource(stdioGVR).Namespace(istio.Namespace).Create(stdio, metav1.CreateOptions{})
+	//if err != nil {
+	//	fmt.Println("***f*ckf*ck", err)
+	//}
+
+	//handler := &configv1alpha2.Rule{
+	//	ObjectMeta: metav1.ObjectMeta{
+	//		Name:      "handler",
+	//		Namespace: istio.Namespace,
+	//	},
+	//	Spec: v1beta1.Rule{
+	//		Actions: []*v1beta1.Action{
+	//			{
+	//				Instances: []string{
+	//					"metric1",
+	//				},
+	//			},
+	//		},
+	//	},
+	//}
+	//controllerutil.SetControllerReference(istio, handler, r.scheme)
+	//crs[handler.Name] = handler
+
+	return crs
 }
 
 func mixerVolumes(serviceAccount string) []apiv1.Volume {

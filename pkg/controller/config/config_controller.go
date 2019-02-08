@@ -23,9 +23,7 @@ import (
 	"k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/client-go/rest"
-	"sigs.k8s.io/controller-runtime/pkg/cache"
 	"sigs.k8s.io/controller-runtime/pkg/client"
-	"sigs.k8s.io/controller-runtime/pkg/client/apiutil"
 	"sigs.k8s.io/controller-runtime/pkg/controller"
 	"sigs.k8s.io/controller-runtime/pkg/handler"
 	"sigs.k8s.io/controller-runtime/pkg/manager"
@@ -90,52 +88,6 @@ type ReconcileConfig struct {
 	mux    sync.Mutex
 }
 
-func (r *ReconcileConfig) ResetClient(ns string) error {
-	// Create the mapper provider
-	mapper, err := apiutil.NewDiscoveryRESTMapper(r.config)
-	if err != nil {
-		log.Error(err, "Failed to get API Group-Resources")
-		return err
-	}
-
-	// Create the Client for Write operations.
-	writeObj, err := client.New(r.config, client.Options{Scheme: r.scheme, Mapper: mapper})
-	if err != nil {
-		return err
-	}
-
-	cache, err := cache.New(r.config, cache.Options{Scheme: r.scheme, Mapper: mapper, Resync: nil, Namespace: ns})
-	if err != nil {
-		return err
-	}
-
-	client := client.DelegatingClient{
-		Reader: &client.DelegatingReader{
-			CacheReader:  cache,
-			ClientReader: writeObj,
-		},
-		Writer:       writeObj,
-		StatusClient: writeObj,
-	}
-	r.mux.Lock()
-	r.Client = client
-	r.mux.Unlock()
-
-	stop := make(chan struct{})
-
-	go func() {
-		if err := cache.Start(stop); err != nil {
-			//cm.errChan <- err
-			//TODO: handle error
-		}
-	}()
-
-	// Wait for the caches to sync.
-	cache.WaitForCacheSync(stop)
-
-	return nil
-}
-
 type ReconcileComponent func(log logr.Logger, istio *istiov1beta1.Config) error
 
 // Reconcile reads that state of the cluster for a Config object and makes changes based on the state read
@@ -159,16 +111,6 @@ func (r *ReconcileConfig) Reconcile(request reconcile.Request) (reconcile.Result
 		}
 		// Error reading the object - requeue the request.
 		return reconcile.Result{}, err
-	}
-
-	err = r.ReconcileCrds(reqLogger, instance)
-	if err != nil {
-		return reconcile.Result{}, err
-	}
-
-	err = r.ResetClient(request.Namespace)
-	if err != nil {
-		log.Error(err, "failed to reset reconciler client")
 	}
 
 	reconcilers := []ReconcileComponent{

@@ -22,6 +22,7 @@ import (
 
 	"github.com/banzaicloud/istio-operator/pkg/apis"
 	"github.com/banzaicloud/istio-operator/pkg/controller"
+	"github.com/banzaicloud/istio-operator/pkg/crds"
 	"github.com/banzaicloud/istio-operator/pkg/webhook"
 	_ "k8s.io/client-go/plugin/pkg/client/auth/gcp"
 	"sigs.k8s.io/controller-runtime/pkg/client/config"
@@ -42,6 +43,19 @@ func main() {
 	cfg, err := config.GetConfig()
 	if err != nil {
 		log.Error(err, "unable to set up client config")
+		os.Exit(1)
+	}
+
+	crdOperator, err := crds.New(cfg)
+	if err != nil {
+		log.Error(err, "unable to set up crd operator")
+		os.Exit(1)
+	}
+
+	log.Info("creating CRDs")
+	err = crdOperator.Reconcile()
+	if err != nil {
+		log.Error(err, "unable to initialize CRDs")
 		os.Exit(1)
 	}
 
