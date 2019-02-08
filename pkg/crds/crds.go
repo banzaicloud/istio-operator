@@ -9,6 +9,7 @@ import (
 	apiextensionsclient "k8s.io/apiextensions-apiserver/pkg/client/clientset/clientset"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	corev1client "k8s.io/client-go/kubernetes/typed/core/v1"
 	"k8s.io/client-go/rest"
 	logf "sigs.k8s.io/controller-runtime/pkg/runtime/log"
 )
@@ -16,8 +17,10 @@ import (
 var log = logf.Log.WithName("crds")
 
 type CrdOperator struct {
-	crdClient apiextensionsclient.Interface
-	crds      []*extensionsobj.CustomResourceDefinition
+	crdClient  apiextensionsclient.Interface
+	coreClient *corev1client.CoreV1Client
+	crds       []*extensionsobj.CustomResourceDefinition
+	namespace  string
 }
 
 type configType int
@@ -44,14 +47,20 @@ var crdConfigs = map[configType]crdConfig{
 	Rbac:           {"v1alpha1", "rbac", []string{"istio-io", "rbac-istio-io"}},
 }
 
-func New(cfg *rest.Config) (*CrdOperator, error) {
-	client, err := apiextensionsclient.NewForConfig(cfg)
+func New(cfg *rest.Config, ns string) (*CrdOperator, error) {
+	corec, err := corev1client.NewForConfig(cfg)
+	if err != nil {
+		return nil, emperror.Wrap(err, "instantiating core client failed")
+	}
+	crdc, err := apiextensionsclient.NewForConfig(cfg)
 	if err != nil {
 		return nil, emperror.Wrap(err, "instantiating apiextensions client failed")
 	}
 	return &CrdOperator{
-		crdClient: client,
-		crds:      initCrds(),
+		crdClient:  crdc,
+		coreClient: corec,
+		crds:       initCrds(),
+		namespace:  ns,
 	}, nil
 }
 
@@ -151,6 +160,19 @@ func crdL(kind string, plural string, config crdConfig, appLabel string, pckLabe
 }
 
 func (r *CrdOperator) Reconcile() error {
+	ownerRefs := make([]metav1.OwnerReference, 0)
+	if len(r.namespace) > 0 {
+		ns, err := r.coreClient.Namespaces().Get(r.namespace, metav1.GetOptions{})
+		if err != nil {
+			return emperror.WrapWith(err, "failed to get namespace", "name", r.namespace)
+		}
+		ownerRefs = append(ownerRefs, metav1.OwnerReference{
+			Kind:       "Namespace",
+			APIVersion: "v1",
+			Name:       ns.Name,
+			UID:        ns.GetUID(),
+		})
+	}
 	crdClient := r.crdClient.ApiextensionsV1beta1().CustomResourceDefinitions()
 	for _, crd := range r.crds {
 		current, err := crdClient.Get(crd.Name, metav1.GetOptions{})
@@ -158,6 +180,7 @@ func (r *CrdOperator) Reconcile() error {
 			return emperror.WrapWith(err, "getting CRD failed", "kind", crd.Spec.Names.Kind)
 		}
 		if apierrors.IsNotFound(err) {
+			crd.ObjectMeta.OwnerReferences = ownerRefs
 			if _, err := crdClient.Create(crd); err != nil {
 				return emperror.WrapWith(err, "creating CRD failed", "kind", crd.Spec.Names.Kind)
 			}

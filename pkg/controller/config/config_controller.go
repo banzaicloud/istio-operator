@@ -30,7 +30,6 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/reconcile"
 	logf "sigs.k8s.io/controller-runtime/pkg/runtime/log"
 	"sigs.k8s.io/controller-runtime/pkg/source"
-	"sync"
 )
 
 var log = logf.Log.WithName("controller")
@@ -85,7 +84,6 @@ type ReconcileConfig struct {
 	client.Client
 	scheme *runtime.Scheme
 	config *rest.Config
-	mux    sync.Mutex
 }
 
 type ReconcileComponent func(log logr.Logger, istio *istiov1beta1.Config) error

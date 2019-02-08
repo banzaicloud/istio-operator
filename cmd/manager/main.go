@@ -46,7 +46,7 @@ func main() {
 		os.Exit(1)
 	}
 
-	crdOperator, err := crds.New(cfg)
+	crdOperator, err := crds.New(cfg, os.Getenv("POD_NAMESPACE"))
 	if err != nil {
 		log.Error(err, "unable to set up crd operator")
 		os.Exit(1)
