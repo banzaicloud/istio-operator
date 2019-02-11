@@ -20,8 +20,10 @@ import (
 	"context"
 	istiov1beta1 "github.com/banzaicloud/istio-operator/pkg/apis/operator/v1beta1"
 	"github.com/go-logr/logr"
+	"github.com/goph/emperror"
 	"k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/runtime"
+	"k8s.io/client-go/dynamic"
 	"k8s.io/client-go/rest"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/controller"
@@ -37,15 +39,20 @@ var log = logf.Log.WithName("controller")
 // Add creates a new Config Controller and adds it to the Manager with default RBAC. The Manager will set fields on the Controller
 // and Start it when the Manager is Started.
 func Add(mgr manager.Manager) error {
-	return add(mgr, newReconciler(mgr))
+	dynamic, err := dynamic.NewForConfig(mgr.GetConfig())
+	if err != nil {
+		return emperror.Wrap(err, "failed to create dynamic client")
+	}
+	return add(mgr, newReconciler(mgr, dynamic))
 }
 
 // newReconciler returns a new reconcile.Reconciler
-func newReconciler(mgr manager.Manager) reconcile.Reconciler {
+func newReconciler(mgr manager.Manager, d dynamic.Interface) reconcile.Reconciler {
 	return &ReconcileConfig{
-		Client: mgr.GetClient(),
-		scheme: mgr.GetScheme(),
-		config: mgr.GetConfig(),
+		Client:  mgr.GetClient(),
+		dynamic: d,
+		scheme:  mgr.GetScheme(),
+		config:  mgr.GetConfig(),
 	}
 }
 
@@ -82,8 +89,9 @@ var _ reconcile.Reconciler = &ReconcileConfig{}
 // ReconcileConfig reconciles a Config object
 type ReconcileConfig struct {
 	client.Client
-	scheme *runtime.Scheme
-	config *rest.Config
+	dynamic dynamic.Interface
+	scheme  *runtime.Scheme
+	config  *rest.Config
 }
 
 type ReconcileComponent func(log logr.Logger, istio *istiov1beta1.Config) error

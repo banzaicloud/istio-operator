@@ -15,7 +15,9 @@ import (
 	apiv1 "k8s.io/api/core/v1"
 	rbacv1 "k8s.io/api/rbac/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/apimachinery/pkg/runtime"
+	"k8s.io/apimachinery/pkg/runtime/schema"
 	"k8s.io/apimachinery/pkg/util/intstr"
 	"sigs.k8s.io/controller-runtime/pkg/controller/controllerutil"
 )
@@ -222,6 +224,15 @@ func (r *ReconcileConfig) ReconcileMixer(log logr.Logger, istio *istiov1beta1.Co
 			return emperror.WrapWith(err, "failed to reconcile resource", "resource", res.GetObjectKind().GroupVersionKind().Kind, "name", name)
 		}
 	}
+
+	dcrs := r.mixerDynamicCustomResources(istio)
+	for _, res := range dcrs {
+		err := k8sutil.ReconcileDynamicResource(log, r.dynamic, res)
+		if err != nil {
+			return emperror.WrapWith(err, "failed to reconcile dynamic resource", "resource", res.Gvr.Resource, "name", res.Name)
+		}
+	}
+
 	return nil
 }
 
@@ -334,39 +345,6 @@ func (r *ReconcileConfig) mixerCustomResources(istio *istiov1beta1.Config) map[s
 	controllerutil.SetControllerReference(istio, kubernetes, r.scheme)
 	crs[kubernetes.Name] = kubernetes
 
-	//stdioGVR := schema.GroupVersionResource{
-	//	Group:    "config.operator.io",
-	//	Version:  "v1alpha2",
-	//	Resource: "stdio",
-	//}
-
-	//apiVersion: "config.operator.io/v1alpha2"
-	//kind: stdio
-	//metadata:
-	//name: handler
-	//namespace: {{ .Release.Namespace }}
-	//spec:
-	//outputAsJson: true
-
-	//stdio := &unstructured.Unstructured{
-	//	Object: map[string]interface{}{
-	//		"metadata": metav1.ObjectMeta{
-	//			Name:      "handler",
-	//			Namespace: operator.Namespace,
-	//		},
-	//		"spec": map[string]bool{
-	//			"outputAsJson": true,
-	//		},
-	//	},
-	//}
-	//controllerutil.SetControllerReference(operator, stdio, r.scheme)
-	//crs["handler"] = kubernetes
-
-	//_, err := r.Dynamic.Resource(stdioGVR).Namespace(operator.Namespace).Create(stdio, metav1.CreateOptions{})
-	//if err != nil {
-	//	fmt.Println("***f*ckf*ck", err)
-	//}
-
 	//handler := &configv1alpha2.Rule{
 	//	ObjectMeta: metav1.ObjectMeta{
 	//		Name:      "handler",
@@ -385,6 +363,38 @@ func (r *ReconcileConfig) mixerCustomResources(istio *istiov1beta1.Config) map[s
 	//controllerutil.SetControllerReference(operator, handler, r.scheme)
 	//crs[handler.Name] = handler
 
+	return crs
+}
+
+func (r *ReconcileConfig) mixerDynamicCustomResources(istio *istiov1beta1.Config) []k8sutil.UnstructuredResource {
+	crs := make([]k8sutil.UnstructuredResource, 1)
+	stdio := &unstructured.Unstructured{
+		Object: map[string]interface{}{
+			"metadata": map[string]interface{}{
+				"name":      "handler",
+				"namespace": istio.Namespace,
+			},
+			"spec": map[string]interface{}{
+				"outputAsJson": true,
+			},
+		},
+	}
+	stdio.SetGroupVersionKind(schema.GroupVersionKind{
+		Group:   "config.istio.io",
+		Version: "v1alpha2",
+		Kind:    "stdio",
+	})
+	controllerutil.SetControllerReference(istio, stdio, r.scheme)
+	crs[0] = k8sutil.UnstructuredResource{
+		Name:      "handler",
+		Namespace: istio.Namespace,
+		Gvr: schema.GroupVersionResource{
+			Group:    "config.istio.io",
+			Version:  "v1alpha2",
+			Resource: "stdios",
+		},
+		Resource: stdio,
+	}
 	return crs
 }
 

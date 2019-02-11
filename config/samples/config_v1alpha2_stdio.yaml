@@ -1,9 +1,0 @@
-apiVersion: config.istio.io/v1alpha2
-kind: Stdio
-metadata:
-  labels:
-    controller-tools.k8s.io: "1.0"
-  name: stdio-sample
-spec:
-  # Add fields here
-  foo: bar
