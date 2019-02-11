@@ -4,9 +4,9 @@ metadata:
   creationTimestamp: null
   labels:
     controller-tools.k8s.io: "1.0"
-  name: configs.istio.banzaicloud.io
+  name: configs.operator.istio.io
 spec:
-  group: istio.banzaicloud.io
+  group: operator.istio.io
   names:
     kind: Config
     plural: configs

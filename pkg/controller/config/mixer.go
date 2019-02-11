@@ -3,7 +3,7 @@ package config
 import (
 	"fmt"
 
-	istiov1beta1 "github.com/banzaicloud/istio-operator/pkg/apis/istio/v1beta1"
+	istiov1beta1 "github.com/banzaicloud/istio-operator/pkg/apis/operator/v1beta1"
 	"github.com/banzaicloud/istio-operator/pkg/k8sutil"
 	"github.com/banzaicloud/istio-operator/pkg/util"
 	"github.com/go-logr/logr"
@@ -335,12 +335,12 @@ func (r *ReconcileConfig) mixerCustomResources(istio *istiov1beta1.Config) map[s
 	crs[kubernetes.Name] = kubernetes
 
 	//stdioGVR := schema.GroupVersionResource{
-	//	Group:    "config.istio.io",
+	//	Group:    "config.operator.io",
 	//	Version:  "v1alpha2",
 	//	Resource: "stdio",
 	//}
 
-	//apiVersion: "config.istio.io/v1alpha2"
+	//apiVersion: "config.operator.io/v1alpha2"
 	//kind: stdio
 	//metadata:
 	//name: handler
@@ -352,17 +352,17 @@ func (r *ReconcileConfig) mixerCustomResources(istio *istiov1beta1.Config) map[s
 	//	Object: map[string]interface{}{
 	//		"metadata": metav1.ObjectMeta{
 	//			Name:      "handler",
-	//			Namespace: istio.Namespace,
+	//			Namespace: operator.Namespace,
 	//		},
 	//		"spec": map[string]bool{
 	//			"outputAsJson": true,
 	//		},
 	//	},
 	//}
-	//controllerutil.SetControllerReference(istio, stdio, r.scheme)
+	//controllerutil.SetControllerReference(operator, stdio, r.scheme)
 	//crs["handler"] = kubernetes
 
-	//_, err := r.Dynamic.Resource(stdioGVR).Namespace(istio.Namespace).Create(stdio, metav1.CreateOptions{})
+	//_, err := r.Dynamic.Resource(stdioGVR).Namespace(operator.Namespace).Create(stdio, metav1.CreateOptions{})
 	//if err != nil {
 	//	fmt.Println("***f*ckf*ck", err)
 	//}
@@ -370,7 +370,7 @@ func (r *ReconcileConfig) mixerCustomResources(istio *istiov1beta1.Config) map[s
 	//handler := &configv1alpha2.Rule{
 	//	ObjectMeta: metav1.ObjectMeta{
 	//		Name:      "handler",
-	//		Namespace: istio.Namespace,
+	//		Namespace: operator.Namespace,
 	//	},
 	//	Spec: v1beta1.Rule{
 	//		Actions: []*v1beta1.Action{
@@ -382,7 +382,7 @@ func (r *ReconcileConfig) mixerCustomResources(istio *istiov1beta1.Config) map[s
 	//		},
 	//	},
 	//}
-	//controllerutil.SetControllerReference(istio, handler, r.scheme)
+	//controllerutil.SetControllerReference(operator, handler, r.scheme)
 	//crs[handler.Name] = handler
 
 	return crs

@@ -21,7 +21,7 @@ limitations under the License.
 // +k8s:deepcopy-gen=package,register
 // +k8s:conversion-gen=github.com/banzaicloud/istio-operator/pkg/apis/istio
 // +k8s:defaulter-gen=TypeMeta
-// +groupName=istio.banzaicloud.io
+// +groupName=operator.istio.io
 package v1beta1
 
 import (
@@ -31,7 +31,7 @@ import (
 
 var (
 	// SchemeGroupVersion is group version used to register these objects
-	SchemeGroupVersion = schema.GroupVersion{Group: "istio.banzaicloud.io", Version: "v1beta1"}
+	SchemeGroupVersion = schema.GroupVersion{Group: "operator.istio.io", Version: "v1beta1"}
 
 	// SchemeBuilder is used to add go types to the GroupVersionKind scheme
 	SchemeBuilder = &scheme.Builder{GroupVersion: SchemeGroupVersion}
