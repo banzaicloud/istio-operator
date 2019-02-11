@@ -15,7 +15,6 @@ import (
 	apiv1 "k8s.io/api/core/v1"
 	rbacv1 "k8s.io/api/rbac/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/runtime/schema"
 	"k8s.io/apimachinery/pkg/util/intstr"
@@ -227,7 +226,7 @@ func (r *ReconcileConfig) ReconcileMixer(log logr.Logger, istio *istiov1beta1.Co
 
 	dcrs := r.mixerDynamicCustomResources(istio)
 	for _, res := range dcrs {
-		err := k8sutil.ReconcileDynamicResource(log, r.dynamic, res)
+		err := res.Reconcile(log, r.dynamic)
 		if err != nil {
 			return emperror.WrapWith(err, "failed to reconcile dynamic resource", "resource", res.Gvr.Resource, "name", res.Name)
 		}
@@ -366,36 +365,23 @@ func (r *ReconcileConfig) mixerCustomResources(istio *istiov1beta1.Config) map[s
 	return crs
 }
 
-func (r *ReconcileConfig) mixerDynamicCustomResources(istio *istiov1beta1.Config) []k8sutil.UnstructuredResource {
-	crs := make([]k8sutil.UnstructuredResource, 1)
-	stdio := &unstructured.Unstructured{
-		Object: map[string]interface{}{
-			"metadata": map[string]interface{}{
-				"name":      "handler",
-				"namespace": istio.Namespace,
+func (r *ReconcileConfig) mixerDynamicCustomResources(istio *istiov1beta1.Config) []k8sutil.DynamicResource {
+	return []k8sutil.DynamicResource{
+		{
+			Gvr: schema.GroupVersionResource{
+				Group:    "config.istio.io",
+				Version:  "v1alpha2",
+				Resource: "stdios",
 			},
-			"spec": map[string]interface{}{
+			Kind:      "stdio",
+			Name:      "handler",
+			Namespace: istio.Namespace,
+			Spec: map[string]interface{}{
 				"outputAsJson": true,
 			},
+			Owner: istio,
 		},
 	}
-	stdio.SetGroupVersionKind(schema.GroupVersionKind{
-		Group:   "config.istio.io",
-		Version: "v1alpha2",
-		Kind:    "stdio",
-	})
-	controllerutil.SetControllerReference(istio, stdio, r.scheme)
-	crs[0] = k8sutil.UnstructuredResource{
-		Name:      "handler",
-		Namespace: istio.Namespace,
-		Gvr: schema.GroupVersionResource{
-			Group:    "config.istio.io",
-			Version:  "v1alpha2",
-			Resource: "stdios",
-		},
-		Resource: stdio,
-	}
-	return crs
 }
 
 func mixerVolumes(serviceAccount string) []apiv1.Volume {

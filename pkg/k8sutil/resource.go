@@ -14,20 +14,9 @@ import (
 	apiv1 "k8s.io/api/core/v1"
 	rbacv1 "k8s.io/api/rbac/v1"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/apimachinery/pkg/runtime"
-	"k8s.io/apimachinery/pkg/runtime/schema"
-	"k8s.io/client-go/dynamic"
 	runtimeClient "sigs.k8s.io/controller-runtime/pkg/client"
 )
-
-type UnstructuredResource struct {
-	Name      string
-	Namespace string
-	Gvr       schema.GroupVersionResource
-	Resource  *unstructured.Unstructured
-}
 
 func ReconcileResource(log logr.Logger, client runtimeClient.Client, namespace string, name string, desired runtime.Object) error {
 	log = log.WithValues("type", reflect.TypeOf(desired))
@@ -96,27 +85,6 @@ func ReconcileResource(log logr.Logger, client runtimeClient.Client, namespace s
 			return emperror.WrapWith(err, "updating resource failed", "name", name, "type", reflect.TypeOf(desired))
 		}
 		log.Info("resource updated", "name", name)
-	}
-	return nil
-}
-
-func ReconcileDynamicResource(log logr.Logger, client dynamic.Interface, desired UnstructuredResource) error {
-	log = log.WithValues("type", reflect.TypeOf(desired))
-	_, err := client.Resource(desired.Gvr).Namespace(desired.Namespace).Get(desired.Name, metav1.GetOptions{})
-	if err != nil && !apierrors.IsNotFound(err) {
-		return emperror.WrapWith(err, "getting resource failed", "name", desired.Name, "type", reflect.TypeOf(desired))
-	}
-	if apierrors.IsNotFound(err) {
-		if _, err := client.Resource(desired.Gvr).Namespace(desired.Namespace).Create(desired.Resource, metav1.CreateOptions{}); err != nil {
-			return emperror.WrapWith(err, "creating resource failed", "name", desired.Name, "type", reflect.TypeOf(desired))
-		}
-		log.Info("resource created", "name", desired.Name)
-	}
-	if err == nil {
-		if _, err := client.Resource(desired.Gvr).Update(desired.Resource, metav1.UpdateOptions{}); err != nil {
-			return emperror.WrapWith(err, "updating resource failed", "name", desired.Name, "type", reflect.TypeOf(desired))
-		}
-		log.Info("resource updated", "name", desired.Name)
 	}
 	return nil
 }
