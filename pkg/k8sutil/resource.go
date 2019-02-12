@@ -18,7 +18,7 @@ import (
 	runtimeClient "sigs.k8s.io/controller-runtime/pkg/client"
 )
 
-func ReconcileResource(log logr.Logger, client runtimeClient.Client, namespace string, name string, desired runtime.Object) error {
+func ReconcileResource(log logr.Logger, client runtimeClient.Client, desired runtime.Object) error {
 	log = log.WithValues("type", reflect.TypeOf(desired))
 	var current = desired.DeepCopyObject()
 	key, err := runtimeClient.ObjectKeyFromObject(current)
@@ -27,13 +27,13 @@ func ReconcileResource(log logr.Logger, client runtimeClient.Client, namespace s
 	}
 	err = client.Get(context.TODO(), key, current)
 	if err != nil && !apierrors.IsNotFound(err) {
-		return emperror.WrapWith(err, "getting resource failed", "name", name, "type", reflect.TypeOf(desired))
+		return emperror.WrapWith(err, "getting resource failed", "resource", desired.GetObjectKind().GroupVersionKind(), "type", reflect.TypeOf(desired))
 	}
 	if apierrors.IsNotFound(err) {
 		if err := client.Create(context.TODO(), desired); err != nil {
-			return emperror.WrapWith(err, "creating resource failed", "name", name, "type", reflect.TypeOf(desired))
+			return emperror.WrapWith(err, "creating resource failed", "resource", desired.GetObjectKind().GroupVersionKind(), "type", reflect.TypeOf(desired))
 		}
-		log.Info("resource created", "name", name)
+		log.Info("resource created", "resource", desired.GetObjectKind().GroupVersionKind())
 	}
 	if err == nil {
 		switch desired.(type) {
@@ -82,9 +82,9 @@ func ReconcileResource(log logr.Logger, client runtimeClient.Client, namespace s
 			desired = am
 		}
 		if err := client.Update(context.TODO(), desired); err != nil {
-			return emperror.WrapWith(err, "updating resource failed", "name", name, "type", reflect.TypeOf(desired))
+			return emperror.WrapWith(err, "updating resource failed", "resource", desired.GetObjectKind().GroupVersionKind(), "type", reflect.TypeOf(desired))
 		}
-		log.Info("resource updated", "name", name)
+		log.Info("resource updated", "resource", desired.GetObjectKind().GroupVersionKind())
 	}
 	return nil
 }

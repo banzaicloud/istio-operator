@@ -32,6 +32,8 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/reconcile"
 	logf "sigs.k8s.io/controller-runtime/pkg/runtime/log"
 	"sigs.k8s.io/controller-runtime/pkg/source"
+	"github.com/banzaicloud/istio-operator/pkg/controller/config/citadel"
+	"github.com/banzaicloud/istio-operator/pkg/controller/config/galley"
 )
 
 var log = logf.Log.WithName("controller")
@@ -119,17 +121,13 @@ func (r *ReconcileConfig) Reconcile(request reconcile.Request) (reconcile.Result
 		return reconcile.Result{}, err
 	}
 
-	reconcilers := []ReconcileComponent{
-		r.ReconcileCitadel,
-		r.ReconcileGalley,
-		r.ReconcilePilot,
-		r.ReconcileMixer,
-		r.ReconcileGateways,
-		r.ReconcileSidecarInjector,
+	reconcilers := []ComponentReconciler{
+		citadel.New(r.Client, instance),
+		galley.New(r.Client, instance),
 	}
 
 	for _, rec := range reconcilers {
-		err = rec(reqLogger, instance)
+		err = rec.Reconcile(reqLogger)
 		if err != nil {
 			return reconcile.Result{}, err
 		}

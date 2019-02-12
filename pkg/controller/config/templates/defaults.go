@@ -1,4 +1,4 @@
-package config
+package templates
 
 import (
 	"github.com/banzaicloud/istio-operator/pkg/util"
@@ -7,14 +7,14 @@ import (
 	"k8s.io/apimachinery/pkg/api/resource"
 )
 
-func defaultDeployAnnotations() map[string]string {
+func DefaultDeployAnnotations() map[string]string {
 	return map[string]string{
 		"sidecar.istio.io/inject":                    "false",
 		"scheduler.alpha.kubernetes.io/critical-pod": "",
 	}
 }
 
-func defaultResources() apiv1.ResourceRequirements {
+func DefaultResources() apiv1.ResourceRequirements {
 	return apiv1.ResourceRequirements{
 		Requests: apiv1.ResourceList{
 			apiv1.ResourceCPU: resource.MustParse("10m"),
@@ -22,7 +22,7 @@ func defaultResources() apiv1.ResourceRequirements {
 	}
 }
 
-func targetAvgCpuUtil80() []autoscalev2beta1.MetricSpec {
+func TargetAvgCpuUtil80() []autoscalev2beta1.MetricSpec {
 	return []autoscalev2beta1.MetricSpec{
 		{
 			Type: autoscalev2beta1.ResourceMetricSourceType,
@@ -34,7 +34,7 @@ func targetAvgCpuUtil80() []autoscalev2beta1.MetricSpec {
 	}
 }
 
-func istioProxyEnv() []apiv1.EnvVar {
+func IstioProxyEnv() []apiv1.EnvVar {
 	return []apiv1.EnvVar{
 		{
 			Name: "POD_NAME",
