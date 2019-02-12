@@ -19,6 +19,7 @@ import (
 	"k8s.io/apimachinery/pkg/runtime/schema"
 	"k8s.io/apimachinery/pkg/util/intstr"
 	"sigs.k8s.io/controller-runtime/pkg/controller/controllerutil"
+	"strings"
 )
 
 func (r *ReconcileConfig) ReconcileMixer(log logr.Logger, istio *istiov1beta1.Config) error {
@@ -35,7 +36,7 @@ func (r *ReconcileConfig) ReconcileMixer(log logr.Logger, istio *istiov1beta1.Co
 		},
 	}
 	controllerutil.SetControllerReference(istio, mixerSa, r.scheme)
-	mixerResources[mixerSa.Name] = mixerSa
+	mixerResources["serviceaccount."+mixerSa.Name] = mixerSa
 
 	mixerCr := &rbacv1.ClusterRole{
 		ObjectMeta: metav1.ObjectMeta{
@@ -78,7 +79,7 @@ func (r *ReconcileConfig) ReconcileMixer(log logr.Logger, istio *istiov1beta1.Co
 		},
 	}
 	controllerutil.SetControllerReference(istio, mixerCr, r.scheme)
-	mixerResources[mixerCr.Name] = mixerCr
+	mixerResources["clusterrole."+mixerCr.Name] = mixerCr
 
 	mixerCrb := &rbacv1.ClusterRoleBinding{
 		ObjectMeta: metav1.ObjectMeta{
@@ -101,11 +102,11 @@ func (r *ReconcileConfig) ReconcileMixer(log logr.Logger, istio *istiov1beta1.Co
 		},
 	}
 	controllerutil.SetControllerReference(istio, mixerCrb, r.scheme)
-	mixerResources[mixerCrb.Name] = mixerCrb
+	mixerResources["crb."+mixerCrb.Name] = mixerCrb
 
 	policyDeploy := &appsv1.Deployment{
 		ObjectMeta: metav1.ObjectMeta{
-			Name:      "istio-policy-deployment",
+			Name:      "istio-policy",
 			Namespace: istio.Namespace,
 			Labels: map[string]string{
 				"istio": "mixer",
@@ -142,11 +143,11 @@ func (r *ReconcileConfig) ReconcileMixer(log logr.Logger, istio *istiov1beta1.Co
 		},
 	}
 	controllerutil.SetControllerReference(istio, policyDeploy, r.scheme)
-	mixerResources[policyDeploy.Name] = policyDeploy
+	mixerResources["deployment."+policyDeploy.Name] = policyDeploy
 
 	telemetryDeploy := &appsv1.Deployment{
 		ObjectMeta: metav1.ObjectMeta{
-			Name:      "istio-telemetry-deployment",
+			Name:      "istio-telemetry",
 			Namespace: istio.Namespace,
 			Labels: map[string]string{
 				"istio": "mixer",
@@ -183,16 +184,16 @@ func (r *ReconcileConfig) ReconcileMixer(log logr.Logger, istio *istiov1beta1.Co
 		},
 	}
 	controllerutil.SetControllerReference(istio, telemetryDeploy, r.scheme)
-	mixerResources[telemetryDeploy.Name] = telemetryDeploy
+	mixerResources["deployment."+telemetryDeploy.Name] = telemetryDeploy
 
 	for _, mixer := range []string{"policy", "telemetry"} {
 		mixerSvc := mixerService(mixer, istio.Namespace)
 		controllerutil.SetControllerReference(istio, mixerSvc, r.scheme)
-		mixerResources[mixerSvc.Name] = mixerSvc
+		mixerResources["service."+mixerSvc.Name] = mixerSvc
 
 		mixerAs := mixerAutoscaler(mixer, istio.Namespace)
 		controllerutil.SetControllerReference(istio, mixerAs, r.scheme)
-		mixerResources[mixerAs.Name] = mixerAs
+		mixerResources["hpa."+mixerAs.Name] = mixerAs
 	}
 
 	// not sure if it's needed or not
@@ -210,18 +211,11 @@ func (r *ReconcileConfig) ReconcileMixer(log logr.Logger, istio *istiov1beta1.Co
 		},
 	}
 	controllerutil.SetControllerReference(istio, statsdPromBridgeCm, r.scheme)
-	mixerResources[statsdPromBridgeCm.Name] = statsdPromBridgeCm
+	mixerResources["configmap."+statsdPromBridgeCm.Name] = statsdPromBridgeCm
 
 	crs := r.mixerCustomResources(istio)
 	for name, cr := range crs {
 		mixerResources[name] = cr
-	}
-
-	for name, res := range mixerResources {
-		err := k8sutil.ReconcileResource(log, r.Client, istio.Namespace, name, res)
-		if err != nil {
-			return emperror.WrapWith(err, "failed to reconcile resource", "resource", res.GetObjectKind().GroupVersionKind().Kind, "name", name)
-		}
 	}
 
 	dcrs := r.mixerDynamicCustomResources(istio)
@@ -229,6 +223,13 @@ func (r *ReconcileConfig) ReconcileMixer(log logr.Logger, istio *istiov1beta1.Co
 		err := res.Reconcile(log, r.dynamic)
 		if err != nil {
 			return emperror.WrapWith(err, "failed to reconcile dynamic resource", "resource", res.Gvr.Resource, "name", res.Name)
+		}
+	}
+
+	for name, res := range mixerResources {
+		err := k8sutil.ReconcileResource(log, r.Client, istio.Namespace, strings.Split(name, ".")[1], res)
+		if err != nil {
+			return emperror.WrapWith(err, "failed to reconcile resource", "resource", res.GetObjectKind().GroupVersionKind().Kind, "name", name)
 		}
 	}
 
@@ -240,11 +241,11 @@ func (r *ReconcileConfig) mixerCustomResources(istio *istiov1beta1.Config) map[s
 
 	istioPolicyDr := destinationRule(istio.Namespace, "istio-policy")
 	controllerutil.SetControllerReference(istio, istioPolicyDr, r.scheme)
-	crs[istioPolicyDr.Name] = istioPolicyDr
+	crs["destinationrule."+istioPolicyDr.Name] = istioPolicyDr
 
 	istioTelemetryDr := destinationRule(istio.Namespace, "istio-telemetry")
 	controllerutil.SetControllerReference(istio, istioTelemetryDr, r.scheme)
-	crs[istioTelemetryDr.Name] = istioTelemetryDr
+	crs["destinationrule."+istioTelemetryDr.Name] = istioTelemetryDr
 	return crs
 }
 
@@ -582,7 +583,7 @@ func (r *ReconcileConfig) mixerDynamicCustomResources(istio *istiov1beta1.Config
 			Kind:      "kubernetesenv",
 			Name:      "handler",
 			Namespace: istio.Namespace,
-			Spec:      map[string]interface{}{},
+			Spec:      nil,
 			Owner:     istio,
 		},
 		rule("kubeattrgenrulerule", "", "handler.kubernetesenv", []string{"attributes.kubernetes"}, istio),
@@ -744,6 +745,7 @@ func metricDimensions() map[string]interface{} {
 	md := tcpMetricDimensions()
 	md["request_protocol"] = `api.protocol | context.protocol | "unknown"`
 	md["response_code"] = `response.code | 200`
+	md["destination_service"] = `destination.service.host | "unknown"`
 	return md
 }
 
@@ -760,7 +762,7 @@ func tcpMetricDimensions() map[string]interface{} {
 		"destination_principal":          `destination.principal | "unknown"`,
 		"destination_app":                `destination.labels["app"] | "unknown"`,
 		"destination_version":            `destination.labels["version"] | "unknown"`,
-		"destination_service":            `destination.service.host | "unknown"`,
+		"destination_service":            `destination.service.name | "unknown"`,
 		"destination_service_name":       `destination.service.name | "unknown"`,
 		"destination_service_namespace":  `destination.service.namespace | "unknown"`,
 		"connection_security_policy":     `conditional((context.reporter.kind | "inbound") == "outbound", "unknown", conditional(connection.mtls | false, "mutual_tls", "none"))`,
