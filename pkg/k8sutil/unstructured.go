@@ -16,6 +16,7 @@ import (
 type DynamicResource struct {
 	Name      string
 	Namespace string
+	Labels    map[string]string
 	Spec      map[string]interface{}
 	Gvr       schema.GroupVersionResource
 	Kind      string
@@ -30,6 +31,9 @@ func (d *DynamicResource) Unstructured() *unstructured.Unstructured {
 	}
 	u.SetName(d.Name)
 	u.SetNamespace(d.Namespace)
+	if d.Labels != nil {
+		u.SetLabels(d.Labels)
+	}
 	u.SetGroupVersionKind(schema.GroupVersionKind{
 		Group:   d.Gvr.Group,
 		Version: d.Gvr.Version,
