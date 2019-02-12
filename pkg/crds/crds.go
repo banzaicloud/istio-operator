@@ -78,7 +78,7 @@ func initCrds() []*extensionsobj.CustomResourceDefinition {
 		crd("QuotaSpecBinding", "QuotaSpecBindings", crdConfigs[Apim], "", "", "", extensionsobj.NamespaceScoped),
 		crd("QuotaSpec", "QuotaSpecs", crdConfigs[Apim], "", "", "", extensionsobj.NamespaceScoped),
 		crd("rule", "rules", crdConfigs[Policy], "mixer", "istio.io.mixer", "core", extensionsobj.NamespaceScoped),
-		crd("AttributeManifest", "AttributeManifests", crdConfigs[Policy], "mixer", "istio.io.mixer", "core", extensionsobj.NamespaceScoped),
+		crd("attributemanifest", "attributemanifests", crdConfigs[Policy], "mixer", "istio.io.mixer", "core", extensionsobj.NamespaceScoped),
 		crd("bypass", "bypasses", crdConfigs[Policy], "mixer", "bypass", "mixer-adapter", extensionsobj.NamespaceScoped),
 		crd("circonus", "circonuses", crdConfigs[Policy], "mixer", "circonus", "mixer-adapter", extensionsobj.NamespaceScoped),
 		crd("denier", "deniers", crdConfigs[Policy], "mixer", "denier", "mixer-adapter", extensionsobj.NamespaceScoped),
