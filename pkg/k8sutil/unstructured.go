@@ -30,7 +30,9 @@ func (d *DynamicResource) Unstructured() *unstructured.Unstructured {
 		},
 	}
 	u.SetName(d.Name)
-	u.SetNamespace(d.Namespace)
+	if len(d.Namespace) > 0 {
+		u.SetNamespace(d.Namespace)
+	}
 	if d.Labels != nil {
 		u.SetLabels(d.Labels)
 	}

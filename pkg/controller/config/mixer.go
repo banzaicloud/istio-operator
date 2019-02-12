@@ -521,7 +521,7 @@ func (r *ReconcileConfig) mixerDynamicCustomResources(istio *istiov1beta1.Config
 						"label_names":   metricLabels(),
 						"buckets": map[string]interface{}{
 							"explicit_buckets": map[string]interface{}{
-								"bounds": "[0.005, 0.01, 0.025, 0.05, 0.1, 0.25, 0.5, 1, 2.5, 5, 10]",
+								"bounds": fSlice(0.005, 0.01, 0.025, 0.05, 0.1, 0.25, 0.5, 1, 2.5, 5, 10),
 							},
 						},
 					},
@@ -627,16 +627,15 @@ func (r *ReconcileConfig) mixerDynamicCustomResources(istio *istiov1beta1.Config
 		},
 		{
 			Gvr: schema.GroupVersionResource{
-				Group:    "config.istio.io",
-				Version:  "v1alpha2",
-				Resource: "MeshPolicies",
+				Group:    "authentication.istio.io",
+				Version:  "v1alpha1",
+				Resource: "meshpolicies",
 			},
 			Kind: "MeshPolicy",
 			Name: "default",
 			Labels: map[string]string{
 				"app": "istio-security",
 			},
-			Namespace: istio.Namespace,
 			Spec: map[string]interface{}{
 				"peers": []map[string]interface{}{
 					{
@@ -655,6 +654,14 @@ func iSlice(s ...string) []interface{} {
 	ret := make([]interface{}, len(s))
 	for i := 0; i < len(s); i++ {
 		ret[i] = s[i]
+	}
+	return ret
+}
+
+func fSlice(f ...float64) []interface{} {
+	ret := make([]interface{}, len(f))
+	for i := 0; i < len(f); i++ {
+		ret[i] = f[i]
 	}
 	return ret
 }
