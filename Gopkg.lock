@@ -81,6 +81,7 @@
   name = "github.com/gogo/protobuf"
   packages = [
     "gogoproto",
+    "jsonpb",
     "proto",
     "protoc-gen-gogo/descriptor",
     "sortkeys",
@@ -687,7 +688,7 @@
 
 [[projects]]
   branch = "istio-8772"
-  digest = "1:13db10f89f8b8ee55f50f9b2d2b8d838b2c6fde2f1e9f777ce96e87ce816cd05"
+  digest = "1:ea15f3cd8d52de360c92685161da82f7034ae61087f9ae05a0d879f5c50849b7"
   name = "istio.io/api"
   packages = [
     "mixer/v1",
@@ -699,7 +700,7 @@
     "util",
   ]
   pruneopts = "T"
-  revision = "bb6ccce4f7ce580c4762129e03941497e73005f9"
+  revision = "23148abe2cc60e73c836252a482c6bebcbc39a3c"
   source = "github.com/rcernich/istio-api"
 
 [[projects]]
@@ -1022,13 +1023,13 @@
     "istio.io/api/networking/v1alpha3",
     "istio.io/api/pkg/kube/apis/config/v1alpha2",
     "istio.io/api/pkg/kube/apis/networking/v1alpha3",
-    "istio.io/api/policy/v1beta1",
     "k8s.io/api/admissionregistration/v1beta1",
     "k8s.io/api/apps/v1",
     "k8s.io/api/autoscaling/v2beta1",
     "k8s.io/api/core/v1",
     "k8s.io/api/rbac/v1",
     "k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1beta1",
+    "k8s.io/apiextensions-apiserver/pkg/client/clientset/clientset",
     "k8s.io/apimachinery/pkg/api/errors",
     "k8s.io/apimachinery/pkg/api/resource",
     "k8s.io/apimachinery/pkg/apis/meta/v1",
@@ -1039,13 +1040,12 @@
     "k8s.io/apimachinery/pkg/util/intstr",
     "k8s.io/client-go/dynamic",
     "k8s.io/client-go/kubernetes/scheme",
+    "k8s.io/client-go/kubernetes/typed/core/v1",
     "k8s.io/client-go/plugin/pkg/client/auth/gcp",
     "k8s.io/client-go/rest",
     "k8s.io/code-generator/cmd/client-gen",
     "k8s.io/code-generator/cmd/deepcopy-gen",
-    "sigs.k8s.io/controller-runtime/pkg/cache",
     "sigs.k8s.io/controller-runtime/pkg/client",
-    "sigs.k8s.io/controller-runtime/pkg/client/apiutil",
     "sigs.k8s.io/controller-runtime/pkg/client/config",
     "sigs.k8s.io/controller-runtime/pkg/controller",
     "sigs.k8s.io/controller-runtime/pkg/controller/controllerutil",
