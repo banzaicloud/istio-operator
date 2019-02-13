@@ -2,6 +2,8 @@
 # Image URL to use all building/pushing image targets
 IMG ?= controller:latest
 
+DEP_VERSION = 0.5.0
+
 all: test manager
 
 # Run tests
@@ -16,12 +18,35 @@ manager: generate fmt vet
 run: generate fmt vet
 	go run ./cmd/manager/main.go
 
+# Install kustomize
+install-kustomize:
+	@ if ! which kustomize &>/dev/null; then\
+		scripts/install_kustomize.sh;\
+	fi
+
+# Install kubebuilder
+install-kubebuilder:
+	@ if ! which kubebuilder &>/dev/null; then\
+		scripts/install_kubebuilder.sh;\
+	fi
+
+bin/dep: bin/dep-${DEP_VERSION}
+	@ln -sf dep-${DEP_VERSION} bin/dep
+bin/dep-${DEP_VERSION}:
+	@mkdir -p bin
+	curl https://raw.githubusercontent.com/golang/dep/master/install.sh | INSTALL_DIRECTORY=bin DEP_RELEASE_TAG=v${DEP_VERSION} sh
+	@mv bin/dep $@
+
+.PHONY: vendor
+vendor: bin/dep ## Install dependencies
+	bin/dep ensure -v -vendor-only
+
 # Install CRDs into a cluster
 install: manifests
 	kubectl apply -f config/crds
 
 # Deploy controller in the configured Kubernetes cluster in ~/.kube/config
-deploy: manifests
+deploy: install-kustomize install-kubebuilder manifests
 	kubectl apply -f config/crds
 	kubectl apply -f config/manager/namespace.yaml
 	kustomize build config/default | kubectl apply -f -
@@ -39,7 +64,7 @@ vet:
 	go vet ./pkg/... ./cmd/...
 
 # Generate code
-generate:
+generate: vendor
 ifndef GOPATH
 	$(error GOPATH not defined, please define GOPATH. Run "go help gopath" to learn more about GOPATH)
 endif
