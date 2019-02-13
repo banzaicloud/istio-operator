@@ -1,6 +1,6 @@
 # Istio-operator
 
-Istio-operator is a Kubernetes operator for [Istio](https://istio.io/) to deploy and manage Istio resources for a Kubernetes cluster.
+Istio-operator is a Kubernetes operator to deploy and manage [Istio](https://istio.io/) resources for a Kubernetes cluster.
 
 ## Installation
 
