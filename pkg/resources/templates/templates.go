@@ -10,16 +10,14 @@ func ObjectMeta(name string, labels map[string]string, owner *istiov1beta1.Confi
 		Name:      name,
 		Namespace: owner.Namespace,
 		Labels:    labels,
-	}
-	if owner != nil {
-		o.OwnerReferences = []metav1.OwnerReference{
+		OwnerReferences: []metav1.OwnerReference{
 			{
 				APIVersion: owner.APIVersion,
 				Kind:       owner.Kind,
 				Name:       owner.Name,
 				UID:        owner.UID,
 			},
-		}
+		},
 	}
 	return o
 }

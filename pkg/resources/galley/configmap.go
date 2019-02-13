@@ -7,6 +7,7 @@ import (
 	"github.com/ghodss/yaml"
 	admissionv1beta1 "k8s.io/api/admissionregistration/v1beta1"
 	apiv1 "k8s.io/api/core/v1"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 )
 
@@ -26,7 +27,11 @@ func (r *Reconciler) configMap(owner *istiov1beta1.Config) runtime.Object {
 func (r *Reconciler) validatingWebhookConfig(ns string) string {
 	fail := admissionv1beta1.Fail
 	webhook := admissionv1beta1.ValidatingWebhookConfiguration{
-		ObjectMeta: templates.ObjectMeta(webhookName, galleyLabels, nil),
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      webhookName,
+			Namespace: ns,
+			Labels:    galleyLabels,
+		},
 		Webhooks: []admissionv1beta1.Webhook{
 			{
 				Name: "pilot.validation.istio.io",
