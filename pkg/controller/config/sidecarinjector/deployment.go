@@ -1,4 +1,4 @@
-package galley
+package sidecarinjector
 
 import (
 	"fmt"
@@ -14,64 +14,52 @@ import (
 
 func (r *Reconciler) deployment(owner *istiov1beta1.Config) runtime.Object {
 	return &appsv1.Deployment{
-		ObjectMeta: templates.ObjectMeta(deploymentName, util.MergeLabels(galleyLabels, labelSelector), owner),
+		ObjectMeta: templates.ObjectMeta(deploymentName, util.MergeLabels(sidecarInjectorLabels, labelSelector), owner),
 		Spec: appsv1.DeploymentSpec{
 			Replicas: util.IntPointer(1),
-			Strategy: appsv1.DeploymentStrategy{
-				RollingUpdate: &appsv1.RollingUpdateDeployment{
-					MaxSurge:       util.IntstrPointer(1),
-					MaxUnavailable: util.IntstrPointer(0),
-				},
-			},
 			Selector: &metav1.LabelSelector{
 				MatchLabels: labelSelector,
 			},
 			Template: apiv1.PodTemplateSpec{
 				ObjectMeta: metav1.ObjectMeta{
-					Labels:      labelSelector,
+					Labels: labelSelector,
 					Annotations: templates.DefaultDeployAnnotations(),
 				},
 				Spec: apiv1.PodSpec{
 					ServiceAccountName: serviceAccountName,
 					Containers: []apiv1.Container{
 						{
-							Name:            "validator",
-							Image:           "docker.io/istio/galley:1.0.5",
+							Name:            "sidecar-injector-webhook",
+							Image:           "docker.io/istio/sidecar_injector:1.0.5",
 							ImagePullPolicy: apiv1.PullIfNotPresent,
-							Ports: []apiv1.ContainerPort{
-								{
-									ContainerPort: 443,
-								},
-								{
-									ContainerPort: 9093,
-								},
-							},
-							Command: []string{
-								"/usr/local/bin/galley",
-								"validator",
-								fmt.Sprintf("--deployment-namespace=%s", owner.Namespace),
+							Args: []string{
 								"--caCertFile=/etc/istio/certs/root-cert.pem",
 								"--tlsCertFile=/etc/istio/certs/cert-chain.pem",
 								"--tlsKeyFile=/etc/istio/certs/key.pem",
-								"--healthCheckInterval=1s",
+								"--injectConfig=/etc/istio/inject/config",
+								"--meshConfig=/etc/istio/config/mesh",
+								"--healthCheckInterval=2s",
 								"--healthCheckFile=/health",
-								"--webhook-config-file",
-								"/etc/istio/config/validatingwebhookconfiguration.yaml",
 							},
 							VolumeMounts: []apiv1.VolumeMount{
+								{
+									Name:      "config-volume",
+									MountPath: "/etc/istio/config",
+									ReadOnly:  true,
+								},
 								{
 									Name:      "certs",
 									MountPath: "/etc/istio/certs",
 									ReadOnly:  true,
 								},
 								{
-									Name:      "config",
-									MountPath: "/etc/istio/config",
+									Name:      "inject-config",
+									MountPath: "/etc/istio/inject",
 									ReadOnly:  true,
 								},
 							},
-							LivenessProbe:  r.galleyProbe(),
-							ReadinessProbe: r.galleyProbe(),
+							ReadinessProbe: siProbe(),
+							LivenessProbe:  siProbe(),
 							Resources:      templates.DefaultResources(),
 						},
 					},
@@ -85,11 +73,27 @@ func (r *Reconciler) deployment(owner *istiov1beta1.Config) runtime.Object {
 							},
 						},
 						{
-							Name: "config",
+							Name: "config-volume",
+							VolumeSource: apiv1.VolumeSource{
+								ConfigMap: &apiv1.ConfigMapVolumeSource{
+									LocalObjectReference: apiv1.LocalObjectReference{
+										Name: "istio", // TODO: istio config map name
+									},
+								},
+							},
+						},
+						{
+							Name: "inject-config",
 							VolumeSource: apiv1.VolumeSource{
 								ConfigMap: &apiv1.ConfigMapVolumeSource{
 									LocalObjectReference: apiv1.LocalObjectReference{
 										Name: configMapName,
+									},
+									Items: []apiv1.KeyToPath{
+										{
+											Key:  "config",
+											Path: "config",
+										},
 									},
 								},
 							},
@@ -102,19 +106,20 @@ func (r *Reconciler) deployment(owner *istiov1beta1.Config) runtime.Object {
 	}
 }
 
-func (r *Reconciler) galleyProbe() *apiv1.Probe {
+func siProbe() *apiv1.Probe {
 	return &apiv1.Probe{
 		Handler: apiv1.Handler{
 			Exec: &apiv1.ExecAction{
 				Command: []string{
-					"/usr/local/bin/galley",
+					"/usr/local/bin/sidecar-injector",
 					"probe",
 					"--probe-path=/health",
-					"--interval=10s",
+					"--interval=4s",
 				},
 			},
 		},
-		InitialDelaySeconds: 5,
-		PeriodSeconds:       5,
+		InitialDelaySeconds: 4,
+		PeriodSeconds:       4,
 	}
 }
+

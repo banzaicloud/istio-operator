@@ -143,7 +143,7 @@ func (r *Reconciler) deployment(owner *istiov1beta1.Config) runtime.Object {
 							VolumeSource: apiv1.VolumeSource{
 								ConfigMap: &apiv1.ConfigMapVolumeSource{
 									LocalObjectReference: apiv1.LocalObjectReference{
-										Name: "istio",
+										Name: configMapName,
 									},
 								},
 							},
