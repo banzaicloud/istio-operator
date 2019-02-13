@@ -37,22 +37,21 @@ func New(client client.Client, istio *istiov1beta1.Config) *Reconciler {
 		Reconciler: config.Reconciler{
 			Client: client,
 			Owner:  istio,
-			Resources: []config.Resource{
-				serviceAccount,
-				clusterRole,
-				clusterRoleBinding,
-				configMap,
-				deployment,
-				service,
-				horizontalPodAutoscaler,
-				gateway,
-			},
 		},
 	}
 }
 
 func (r *Reconciler) Reconcile(log logr.Logger) error {
-	for _, res := range r.Resources {
+	for _, res := range []config.Resource{
+		r.serviceAccount,
+		r.clusterRole,
+		r.clusterRoleBinding,
+		r.configMap,
+		r.deployment,
+		r.service,
+		r.horizontalPodAutoscaler,
+		r.gateway,
+	} {
 		o := res(r.Owner)
 		err := k8sutil.ReconcileResource(log, r.Client, o)
 		if err != nil {

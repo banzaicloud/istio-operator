@@ -12,7 +12,7 @@ import (
 	"k8s.io/apimachinery/pkg/runtime"
 )
 
-func deployment(owner *istiov1beta1.Config) runtime.Object {
+func (r *Reconciler) deployment(owner *istiov1beta1.Config) runtime.Object {
 	return &appsv1.Deployment{
 		ObjectMeta: templates.ObjectMeta(deploymentName, util.MergeLabels(citadelLabels, labelSelector), owner),
 		Spec: appsv1.DeploymentSpec{

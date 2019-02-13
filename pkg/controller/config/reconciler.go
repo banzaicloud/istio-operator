@@ -15,6 +15,5 @@ type Resource func(owner *istiov1beta1.Config) runtime.Object
 
 type Reconciler struct {
 	client.Client
-	Owner     *istiov1beta1.Config
-	Resources []Resource
+	Owner *istiov1beta1.Config
 }

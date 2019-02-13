@@ -12,7 +12,7 @@ var gatewaySelector = map[string]string{
 	"istio": "ingress",
 }
 
-func gateway(owner *istiov1beta1.Config) runtime.Object {
+func (r *Reconciler) gateway(owner *istiov1beta1.Config) runtime.Object {
 	return &networkingv1alpha3.Gateway{
 		ObjectMeta: templates.ObjectMeta(gatewayName, nil, owner),
 		Spec: v1alpha3.Gateway{

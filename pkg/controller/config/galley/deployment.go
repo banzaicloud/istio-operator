@@ -12,7 +12,7 @@ import (
 	"k8s.io/apimachinery/pkg/runtime"
 )
 
-func deployment(owner *istiov1beta1.Config) runtime.Object {
+func (r *Reconciler) deployment(owner *istiov1beta1.Config) runtime.Object {
 	return &appsv1.Deployment{
 		ObjectMeta: templates.ObjectMeta(deploymentName, util.MergeLabels(galleyLabels, labelSelector), owner),
 		Spec: appsv1.DeploymentSpec{
@@ -70,8 +70,8 @@ func deployment(owner *istiov1beta1.Config) runtime.Object {
 									ReadOnly:  true,
 								},
 							},
-							LivenessProbe:  galleyProbe(),
-							ReadinessProbe: galleyProbe(),
+							LivenessProbe:  r.galleyProbe(),
+							ReadinessProbe: r.galleyProbe(),
 							Resources:      templates.DefaultResources(),
 						},
 					},
@@ -102,7 +102,7 @@ func deployment(owner *istiov1beta1.Config) runtime.Object {
 	}
 }
 
-func galleyProbe() *apiv1.Probe {
+func (r *Reconciler) galleyProbe() *apiv1.Probe {
 	return &apiv1.Probe{
 		Handler: apiv1.Handler{
 			Exec: &apiv1.ExecAction{

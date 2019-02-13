@@ -14,16 +14,16 @@ var cmLabels = map[string]string{
 	"istio": "mixer",
 }
 
-func configMap(owner *istiov1beta1.Config) runtime.Object {
+func (r *Reconciler) configMap(owner *istiov1beta1.Config) runtime.Object {
 	return &apiv1.ConfigMap{
 		ObjectMeta: templates.ObjectMeta(configMapName, util.MergeLabels(galleyLabels, cmLabels), owner),
 		Data: map[string]string{
-			"validatingwebhookconfiguration.yaml": validatingWebhookConfig(owner.Namespace),
+			"validatingwebhookconfiguration.yaml": r.validatingWebhookConfig(owner.Namespace),
 		},
 	}
 }
 
-func validatingWebhookConfig(ns string) string {
+func (r *Reconciler) validatingWebhookConfig(ns string) string {
 	fail := admissionv1beta1.Fail
 	webhook := admissionv1beta1.ValidatingWebhookConfiguration{
 		ObjectMeta: templates.ObjectMeta(webhookName, galleyLabels, nil),

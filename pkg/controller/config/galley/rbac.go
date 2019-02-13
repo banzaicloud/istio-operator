@@ -8,13 +8,13 @@ import (
 	"k8s.io/apimachinery/pkg/runtime"
 )
 
-func serviceAccount(owner *istiov1beta1.Config) runtime.Object {
+func (r *Reconciler) serviceAccount(owner *istiov1beta1.Config) runtime.Object {
 	return &apiv1.ServiceAccount{
 		ObjectMeta: templates.ObjectMeta(serviceAccountName, galleyLabels, owner),
 	}
 }
 
-func clusterRole(owner *istiov1beta1.Config) runtime.Object {
+func (r *Reconciler) clusterRole(owner *istiov1beta1.Config) runtime.Object {
 	return &rbacv1.ClusterRole{
 		ObjectMeta: templates.ObjectMeta(clusterRoleName, galleyLabels, owner),
 		Rules: []rbacv1.PolicyRule{
@@ -44,7 +44,7 @@ func clusterRole(owner *istiov1beta1.Config) runtime.Object {
 	}
 }
 
-func clusterRoleBinding(owner *istiov1beta1.Config) runtime.Object {
+func (r *Reconciler) clusterRoleBinding(owner *istiov1beta1.Config) runtime.Object {
 	return &rbacv1.ClusterRoleBinding{
 		ObjectMeta: templates.ObjectMeta(clusterRoleBindingName, galleyLabels, owner),
 		RoleRef: rbacv1.RoleRef{

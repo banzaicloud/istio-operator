@@ -13,16 +13,16 @@ var cmLabels = map[string]string{
 	"app": "istio",
 }
 
-func configMap(owner *istiov1beta1.Config) runtime.Object {
+func (r *Reconciler) configMap(owner *istiov1beta1.Config) runtime.Object {
 	return &apiv1.ConfigMap{
 		ObjectMeta: templates.ObjectMeta(configMapName, cmLabels, owner),
 		Data: map[string]string{
-			"mesh": meshConfig(owner.Namespace),
+			"mesh": r.meshConfig(owner.Namespace),
 		},
 	}
 }
 
-func meshConfig(ns string) string {
+func (r *Reconciler) meshConfig(ns string) string {
 	meshConfig := map[string]interface{}{
 		"disablePolicyChecks": false,
 		"enableTracing":       true,

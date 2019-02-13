@@ -18,7 +18,7 @@ var appLabels = map[string]string{
 	"app": "pilot",
 }
 
-func deployment(owner *istiov1beta1.Config) runtime.Object {
+func (r *Reconciler) deployment(owner *istiov1beta1.Config) runtime.Object {
 	return &appsv1.Deployment{
 		ObjectMeta: templates.ObjectMeta(deploymentName, util.MergeLabels(pilotLabels, labelSelector), owner),
 		Spec: appsv1.DeploymentSpec{

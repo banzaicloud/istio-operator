@@ -1,4 +1,4 @@
-package pilot
+package gateways
 
 import (
 	istiov1beta1 "github.com/banzaicloud/istio-operator/pkg/apis/operator/v1beta1"
@@ -8,14 +8,14 @@ import (
 	"k8s.io/apimachinery/pkg/runtime"
 )
 
-func (r *Reconciler) horizontalPodAutoscaler(owner *istiov1beta1.Config) runtime.Object {
+func (r *Reconciler) horizontalPodAutoscaler(gw string, owner *istiov1beta1.Config) runtime.Object {
 	return &autoscalev2beta1.HorizontalPodAutoscaler{
-		ObjectMeta: templates.ObjectMeta(hpaName, nil, owner),
+		ObjectMeta: templates.ObjectMeta(hpaName(gw), nil, owner),
 		Spec: autoscalev2beta1.HorizontalPodAutoscalerSpec{
 			MaxReplicas: 5,
 			MinReplicas: util.IntPointer(1),
 			ScaleTargetRef: autoscalev2beta1.CrossVersionObjectReference{
-				Name:       deploymentName,
+				Name:       gatewayName(gw),
 				Kind:       "Deployment",
 				APIVersion: "apps/v1",
 			},

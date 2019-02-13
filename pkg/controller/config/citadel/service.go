@@ -12,7 +12,7 @@ var serviceLabels = map[string]string{
 	"app": "istio-citadel",
 }
 
-func service(owner *istiov1beta1.Config) runtime.Object {
+func (r *Reconciler) service(owner *istiov1beta1.Config) runtime.Object {
 	return &apiv1.Service{
 		ObjectMeta: templates.ObjectMeta(serviceName, serviceLabels, owner),
 		Spec: apiv1.ServiceSpec{
