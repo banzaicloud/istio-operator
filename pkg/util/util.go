@@ -18,3 +18,10 @@ func IntstrPointer(i int) *intstr.IntOrString {
 	is := intstr.FromInt(i)
 	return &is
 }
+
+func MergeLabels(l map[string]string, l2 map[string]string) map[string]string {
+	for lKey, lValue := range l2 {
+		l[lKey] = lValue
+	}
+	return l
+}

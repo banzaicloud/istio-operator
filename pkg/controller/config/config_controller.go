@@ -18,7 +18,15 @@ package config
 
 import (
 	"context"
+
 	istiov1beta1 "github.com/banzaicloud/istio-operator/pkg/apis/operator/v1beta1"
+	"github.com/banzaicloud/istio-operator/pkg/resources"
+	"github.com/banzaicloud/istio-operator/pkg/resources/citadel"
+	"github.com/banzaicloud/istio-operator/pkg/resources/galley"
+	"github.com/banzaicloud/istio-operator/pkg/resources/gateways"
+	"github.com/banzaicloud/istio-operator/pkg/resources/mixer"
+	"github.com/banzaicloud/istio-operator/pkg/resources/pilot"
+	"github.com/banzaicloud/istio-operator/pkg/resources/sidecarinjector"
 	"github.com/go-logr/logr"
 	"github.com/goph/emperror"
 	"k8s.io/apimachinery/pkg/api/errors"
@@ -119,17 +127,17 @@ func (r *ReconcileConfig) Reconcile(request reconcile.Request) (reconcile.Result
 		return reconcile.Result{}, err
 	}
 
-	reconcilers := []ReconcileComponent{
-		r.ReconcileCitadel,
-		r.ReconcileGalley,
-		r.ReconcilePilot,
-		r.ReconcileMixer,
-		r.ReconcileGateways,
-		r.ReconcileSidecarInjector,
+	reconcilers := []resources.ComponentReconciler{
+		citadel.New(r.Client, instance),
+		galley.New(r.Client, instance),
+		pilot.New(r.Client, instance),
+		gateways.New(r.Client, instance),
+		mixer.New(r.Client, r.dynamic, instance),
+		sidecarinjector.New(r.Client, instance),
 	}
 
 	for _, rec := range reconcilers {
-		err = rec(reqLogger, instance)
+		err = rec.Reconcile(reqLogger)
 		if err != nil {
 			return reconcile.Result{}, err
 		}
