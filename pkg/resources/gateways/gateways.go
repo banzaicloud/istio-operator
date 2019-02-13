@@ -21,9 +21,10 @@ type GwResource func(gw string, owner *istiov1beta1.Config) runtime.Object
 
 func rr(gw string, gwResources []GwResource) []resources.Resource {
 	resources := make([]resources.Resource, 0)
-	for _, r := range gwResources {
+	for i := range gwResources {
+		i := i
 		resources = append(resources, func(owner *istiov1beta1.Config) runtime.Object {
-			return r(gw, owner)
+			return gwResources[i](gw, owner)
 		})
 	}
 	return resources

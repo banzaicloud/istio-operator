@@ -16,7 +16,7 @@ func (r *Reconciler) serviceAccount(owner *istiov1beta1.Config) runtime.Object {
 
 func (r *Reconciler) clusterRole(owner *istiov1beta1.Config) runtime.Object {
 	return &rbacv1.ClusterRole{
-		ObjectMeta: templates.ObjectMeta(clusterRoleName, mixerLabels, owner),
+		ObjectMeta: templates.ObjectMetaClusterScope(clusterRoleName, mixerLabels, owner),
 		Rules: []rbacv1.PolicyRule{
 			{
 				APIGroups: []string{"config.istio.io"},
@@ -54,7 +54,7 @@ func (r *Reconciler) clusterRole(owner *istiov1beta1.Config) runtime.Object {
 
 func (r *Reconciler) clusterRoleBinding(owner *istiov1beta1.Config) runtime.Object {
 	return &rbacv1.ClusterRoleBinding{
-		ObjectMeta: templates.ObjectMeta(clusterRoleBindingName, mixerLabels, owner),
+		ObjectMeta: templates.ObjectMetaClusterScope(clusterRoleBindingName, mixerLabels, owner),
 		RoleRef: rbacv1.RoleRef{
 			Kind:     "ClusterRole",
 			APIGroup: "rbac.authorization.k8s.io",

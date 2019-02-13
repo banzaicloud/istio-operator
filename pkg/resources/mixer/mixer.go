@@ -37,9 +37,10 @@ type MixerResource func(t string, owner *istiov1beta1.Config) runtime.Object
 
 func rr(t string, tResources []MixerResource) []resources.Resource {
 	resources := make([]resources.Resource, 0)
-	for _, r := range tResources {
+	for i := range tResources {
+		i := i
 		resources = append(resources, func(owner *istiov1beta1.Config) runtime.Object {
-			return r(t, owner)
+			return tResources[i](t, owner)
 		})
 	}
 	return resources

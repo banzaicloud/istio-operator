@@ -16,7 +16,7 @@ func (r *Reconciler) serviceAccount(owner *istiov1beta1.Config) runtime.Object {
 
 func (r *Reconciler) clusterRole(owner *istiov1beta1.Config) runtime.Object {
 	return &rbacv1.ClusterRole{
-		ObjectMeta: templates.ObjectMeta(clusterRoleName, galleyLabels, owner),
+		ObjectMeta: templates.ObjectMetaClusterScope(clusterRoleName, galleyLabels, owner),
 		Rules: []rbacv1.PolicyRule{
 			{
 				APIGroups: []string{"admissionregistration.k8s.io"},
@@ -46,7 +46,7 @@ func (r *Reconciler) clusterRole(owner *istiov1beta1.Config) runtime.Object {
 
 func (r *Reconciler) clusterRoleBinding(owner *istiov1beta1.Config) runtime.Object {
 	return &rbacv1.ClusterRoleBinding{
-		ObjectMeta: templates.ObjectMeta(clusterRoleBindingName, galleyLabels, owner),
+		ObjectMeta: templates.ObjectMetaClusterScope(clusterRoleBindingName, galleyLabels, owner),
 		RoleRef: rbacv1.RoleRef{
 			Kind:     "ClusterRole",
 			APIGroup: "rbac.authorization.k8s.io",

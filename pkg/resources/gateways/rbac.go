@@ -16,7 +16,7 @@ func (r *Reconciler) serviceAccount(gw string, owner *istiov1beta1.Config) runti
 
 func (r *Reconciler) clusterRole(gw string, owner *istiov1beta1.Config) runtime.Object {
 	return &rbacv1.ClusterRole{
-		ObjectMeta: templates.ObjectMeta(clusterRoleName(gw), gwLabels(gw), owner),
+		ObjectMeta: templates.ObjectMetaClusterScope(clusterRoleName(gw), gwLabels(gw), owner),
 		Rules: []rbacv1.PolicyRule{
 			{
 				APIGroups: []string{"extensions"},
@@ -29,7 +29,7 @@ func (r *Reconciler) clusterRole(gw string, owner *istiov1beta1.Config) runtime.
 
 func (r *Reconciler) clusterRoleBinding(gw string, owner *istiov1beta1.Config) runtime.Object {
 	return &rbacv1.ClusterRoleBinding{
-		ObjectMeta: templates.ObjectMeta(clusterRoleBindingName(gw), gwLabels(gw), owner),
+		ObjectMeta: templates.ObjectMetaClusterScope(clusterRoleBindingName(gw), gwLabels(gw), owner),
 		RoleRef: rbacv1.RoleRef{
 			Kind:     "ClusterRole",
 			APIGroup: "rbac.authorization.k8s.io",
