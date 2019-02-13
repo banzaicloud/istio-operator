@@ -18,7 +18,15 @@ package config
 
 import (
 	"context"
+
 	istiov1beta1 "github.com/banzaicloud/istio-operator/pkg/apis/operator/v1beta1"
+	"github.com/banzaicloud/istio-operator/pkg/resources"
+	"github.com/banzaicloud/istio-operator/pkg/resources/citadel"
+	"github.com/banzaicloud/istio-operator/pkg/resources/galley"
+	"github.com/banzaicloud/istio-operator/pkg/resources/gateways"
+	"github.com/banzaicloud/istio-operator/pkg/resources/mixer"
+	"github.com/banzaicloud/istio-operator/pkg/resources/pilot"
+	"github.com/banzaicloud/istio-operator/pkg/resources/sidecarinjector"
 	"github.com/go-logr/logr"
 	"github.com/goph/emperror"
 	"k8s.io/apimachinery/pkg/api/errors"
@@ -32,8 +40,6 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/reconcile"
 	logf "sigs.k8s.io/controller-runtime/pkg/runtime/log"
 	"sigs.k8s.io/controller-runtime/pkg/source"
-	"github.com/banzaicloud/istio-operator/pkg/controller/config/citadel"
-	"github.com/banzaicloud/istio-operator/pkg/controller/config/galley"
 )
 
 var log = logf.Log.WithName("controller")
@@ -121,9 +127,13 @@ func (r *ReconcileConfig) Reconcile(request reconcile.Request) (reconcile.Result
 		return reconcile.Result{}, err
 	}
 
-	reconcilers := []ComponentReconciler{
+	reconcilers := []resources.ComponentReconciler{
 		citadel.New(r.Client, instance),
 		galley.New(r.Client, instance),
+		pilot.New(r.Client, instance),
+		gateways.New(r.Client, instance),
+		mixer.New(r.Client, r.dynamic, instance),
+		sidecarinjector.New(r.Client, instance),
 	}
 
 	for _, rec := range reconcilers {

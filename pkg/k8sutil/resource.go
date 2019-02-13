@@ -18,7 +18,7 @@ import (
 	runtimeClient "sigs.k8s.io/controller-runtime/pkg/client"
 )
 
-func ReconcileResource(log logr.Logger, client runtimeClient.Client, desired runtime.Object) error {
+func Reconcile(log logr.Logger, client runtimeClient.Client, desired runtime.Object) error {
 	log = log.WithValues("type", reflect.TypeOf(desired))
 	var current = desired.DeepCopyObject()
 	key, err := runtimeClient.ObjectKeyFromObject(current)
