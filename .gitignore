@@ -25,5 +25,6 @@ bin
 
 .idea/*
 vendor/*
+/.licensei.cache
 bin/*
 cover.out
