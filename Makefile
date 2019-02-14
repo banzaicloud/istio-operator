@@ -3,10 +3,24 @@
 IMG ?= controller:latest
 
 DEP_VERSION = 0.5.0
+GOLANGCI_VERSION = 1.10.2
 LICENSEI_VERSION = 0.0.7
 
 all: test manager
 
+.PHONY: check
+check: test lint ## Run tests and linters
+
+bin/golangci-lint: bin/golangci-lint-${GOLANGCI_VERSION}
+	@ln -sf golangci-lint-${GOLANGCI_VERSION} bin/golangci-lint
+bin/golangci-lint-${GOLANGCI_VERSION}:
+	@mkdir -p bin
+	curl -sfL https://install.goreleaser.com/github.com/golangci/golangci-lint.sh | bash -s -- -b ./bin v${GOLANGCI_VERSION}
+	@mv bin/golangci-lint $@
+
+.PHONY: lint
+lint: bin/golangci-lint ## Run linter
+	@bin/golangci-lint run -v
 
 bin/licensei: bin/licensei-${LICENSEI_VERSION}
 	@ln -sf licensei-${LICENSEI_VERSION} bin/licensei
