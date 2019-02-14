@@ -5,6 +5,7 @@ Istio-operator is a Kubernetes operator for [Istio](https://istio.io/) to deploy
 ## Installation
 
 1. Set `KUBECONFIG` for your cluster
+2. Run `make vendor`
 2. Run `make deploy`
 
 If you make changes and would like to try your own version create your own image before `make deploy`:

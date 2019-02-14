@@ -64,7 +64,7 @@ vet:
 	go vet ./pkg/... ./cmd/...
 
 # Generate code
-generate: vendor
+generate:
 ifndef GOPATH
 	$(error GOPATH not defined, please define GOPATH. Run "go help gopath" to learn more about GOPATH)
 endif
