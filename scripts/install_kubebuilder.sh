@@ -9,10 +9,7 @@ curl -L -O "https://github.com/kubernetes-sigs/kubebuilder/releases/download/v${
 
 # extract the archive
 tar -zxvf kubebuilder_${version}_${opsys}_${arch}.tar.gz
-mv kubebuilder_${version}_${opsys}_${arch} kubebuilder && sudo mv kubebuilder /usr/local/
+mv kubebuilder_${version}_${opsys}_${arch} kubebuilder && mkdir -p bin && mv kubebuilder bin/
 
 # delete tar file
 rm kubebuilder_${version}_${opsys}_${arch}.tar.gz
-
-# update your PATH to include /usr/local/kubebuilder/bin
-export PATH=$PATH:/usr/local/kubebuilder/bin

@@ -7,8 +7,8 @@ DEP_VERSION = 0.5.0
 all: test manager
 
 # Run tests
-test: generate fmt vet manifests
-	go test ./pkg/... ./cmd/... -coverprofile cover.out
+test: install-kubebuilder generate fmt vet manifests
+	KUBEBUILDER_ASSETS="$${PWD}/bin/kubebuilder/bin" go test ./pkg/... ./cmd/... -coverprofile cover.out
 
 # Build manager binary
 manager: generate fmt vet
@@ -20,13 +20,13 @@ run: generate fmt vet
 
 # Install kustomize
 install-kustomize:
-	@ if ! which kustomize &>/dev/null; then\
+	@ if ! which bin/kustomize &>/dev/null; then\
 		scripts/install_kustomize.sh;\
 	fi
 
 # Install kubebuilder
 install-kubebuilder:
-	@ if ! which kubebuilder &>/dev/null; then\
+	@ if ! which bin/kubebuilder/bin/kubebuilder &>/dev/null; then\
 		scripts/install_kubebuilder.sh;\
 	fi
 
@@ -46,10 +46,10 @@ install: manifests
 	kubectl apply -f config/crds
 
 # Deploy controller in the configured Kubernetes cluster in ~/.kube/config
-deploy: install-kustomize install-kubebuilder manifests
+deploy: install-kustomize manifests
 	kubectl apply -f config/crds
 	kubectl apply -f config/manager/namespace.yaml
-	kustomize build config/default | kubectl apply -f -
+	bin/kustomize build config/default | kubectl apply -f -
 
 # Generate manifests e.g. CRD, RBAC etc.
 manifests:
