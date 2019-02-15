@@ -19,7 +19,6 @@ package citadel
 import (
 	"fmt"
 
-	istiov1beta1 "github.com/banzaicloud/istio-operator/pkg/apis/operator/v1beta1"
 	"github.com/banzaicloud/istio-operator/pkg/resources/templates"
 	"github.com/banzaicloud/istio-operator/pkg/util"
 	appsv1 "k8s.io/api/apps/v1"
@@ -28,9 +27,9 @@ import (
 	"k8s.io/apimachinery/pkg/runtime"
 )
 
-func (r *Reconciler) deployment(owner *istiov1beta1.Config) runtime.Object {
+func (r *Reconciler) deployment() runtime.Object {
 	return &appsv1.Deployment{
-		ObjectMeta: templates.ObjectMeta(deploymentName, util.MergeLabels(citadelLabels, labelSelector), owner),
+		ObjectMeta: templates.ObjectMeta(deploymentName, util.MergeLabels(citadelLabels, labelSelector), r.Config),
 		Spec: appsv1.DeploymentSpec{
 			Replicas: util.IntPointer(1),
 			Selector: &metav1.LabelSelector{
@@ -52,8 +51,8 @@ func (r *Reconciler) deployment(owner *istiov1beta1.Config) runtime.Object {
 								"--append-dns-names=true",
 								"--grpc-port=8060",
 								"--grpc-hostname=citadel",
-								fmt.Sprintf("--citadel-storage-namespace=%s", owner.Namespace),
-								fmt.Sprintf("--custom-dns-names=istio-pilot-service-account.%[1]s:istio-pilot.%[1]s,istio-ingressgateway-service-account.%[1]s:istio-ingressgateway.%[1]s", owner.Namespace),
+								fmt.Sprintf("--citadel-storage-namespace=%s", r.Config.Namespace),
+								fmt.Sprintf("--custom-dns-names=istio-pilot-service-account.%[1]s:istio-pilot.%[1]s,istio-ingressgateway-service-account.%[1]s:istio-ingressgateway.%[1]s", r.Config.Namespace),
 								"--self-signed-ca=true",
 							},
 							Resources: templates.DefaultResources(),

@@ -17,16 +17,15 @@ limitations under the License.
 package gateways
 
 import (
-	istiov1beta1 "github.com/banzaicloud/istio-operator/pkg/apis/operator/v1beta1"
 	"github.com/banzaicloud/istio-operator/pkg/resources/templates"
 	apiv1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/util/intstr"
 )
 
-func (r *Reconciler) service(gw string, owner *istiov1beta1.Config) runtime.Object {
+func (r *Reconciler) service(gw string) runtime.Object {
 	return &apiv1.Service{
-		ObjectMeta: templates.ObjectMeta(gatewayName(gw), labelSelector(gw), owner),
+		ObjectMeta: templates.ObjectMeta(gatewayName(gw), labelSelector(gw), r.Config),
 		Spec: apiv1.ServiceSpec{
 			Type:     serviceType(gw),
 			Ports:    servicePorts(gw),

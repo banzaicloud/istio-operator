@@ -17,13 +17,12 @@ limitations under the License.
 package mixer
 
 import (
-	istiov1beta1 "github.com/banzaicloud/istio-operator/pkg/apis/operator/v1beta1"
 	"github.com/banzaicloud/istio-operator/pkg/k8sutil"
 	"github.com/banzaicloud/istio-operator/pkg/util"
 	"k8s.io/apimachinery/pkg/runtime/schema"
 )
 
-func (r *Reconciler) prometheusHandler(owner *istiov1beta1.Config) *k8sutil.DynamicObject {
+func (r *Reconciler) prometheusHandler() *k8sutil.DynamicObject {
 	return &k8sutil.DynamicObject{
 		Gvr: schema.GroupVersionResource{
 			Group:    "config.istio.io",
@@ -32,18 +31,18 @@ func (r *Reconciler) prometheusHandler(owner *istiov1beta1.Config) *k8sutil.Dyna
 		},
 		Kind:      "prometheus",
 		Name:      "handler",
-		Namespace: owner.Namespace,
+		Namespace: r.Config.Namespace,
 		Spec: map[string]interface{}{
 			"metrics": []map[string]interface{}{
 				{
 					"name":          "requests_total",
-					"instance_name": "requestcount.metric." + owner.Namespace,
+					"instance_name": "requestcount.metric." + r.Config.Namespace,
 					"kind":          "COUNTER",
 					"label_names":   metricLabels(),
 				},
 				{
 					"name":          "request_duration_seconds",
-					"instance_name": "requestduration.metric." + owner.Namespace,
+					"instance_name": "requestduration.metric." + r.Config.Namespace,
 					"kind":          "DISTRIBUTION",
 					"label_names":   metricLabels(),
 					"buckets": map[string]interface{}{
@@ -54,7 +53,7 @@ func (r *Reconciler) prometheusHandler(owner *istiov1beta1.Config) *k8sutil.Dyna
 				},
 				{
 					"name":          "request_bytes",
-					"instance_name": "requestsize.metric." + owner.Namespace,
+					"instance_name": "requestsize.metric." + r.Config.Namespace,
 					"kind":          "DISTRIBUTION",
 					"label_names":   metricLabels(),
 					"buckets": map[string]interface{}{
@@ -67,7 +66,7 @@ func (r *Reconciler) prometheusHandler(owner *istiov1beta1.Config) *k8sutil.Dyna
 				},
 				{
 					"name":          "response_bytes",
-					"instance_name": "responsesize.metric." + owner.Namespace,
+					"instance_name": "responsesize.metric." + r.Config.Namespace,
 					"kind":          "DISTRIBUTION",
 					"label_names":   metricLabels(),
 					"buckets": map[string]interface{}{
@@ -80,23 +79,23 @@ func (r *Reconciler) prometheusHandler(owner *istiov1beta1.Config) *k8sutil.Dyna
 				},
 				{
 					"name":          "tcp_sent_bytes_total",
-					"instance_name": "tcpbytesent.metric." + owner.Namespace,
+					"instance_name": "tcpbytesent.metric." + r.Config.Namespace,
 					"kind":          "COUNTER",
 					"label_names":   tcpMetricLabels(),
 				},
 				{
 					"name":          "tcp_received_bytes_total",
-					"instance_name": "tcpbytereceived.metric." + owner.Namespace,
+					"instance_name": "tcpbytereceived.metric." + r.Config.Namespace,
 					"kind":          "COUNTER",
 					"label_names":   tcpMetricLabels(),
 				},
 			},
 		},
-		Owner: owner,
+		Owner: r.Config,
 	}
 }
 
-func (r *Reconciler) requestCountMetric(owner *istiov1beta1.Config) *k8sutil.DynamicObject {
+func (r *Reconciler) requestCountMetric() *k8sutil.DynamicObject {
 	return &k8sutil.DynamicObject{
 		Gvr: schema.GroupVersionResource{
 			Group:    "config.istio.io",
@@ -105,17 +104,17 @@ func (r *Reconciler) requestCountMetric(owner *istiov1beta1.Config) *k8sutil.Dyn
 		},
 		Kind:      "metric",
 		Name:      "requestcount",
-		Namespace: owner.Namespace,
+		Namespace: r.Config.Namespace,
 		Spec: map[string]interface{}{
 			"value":                   "1",
 			"dimensions":              metricDimensions(),
 			"monitored_resource_type": `"UNSPECIFIED"`,
 		},
-		Owner: owner,
+		Owner: r.Config,
 	}
 }
 
-func (r *Reconciler) requestDurationMetric(owner *istiov1beta1.Config) *k8sutil.DynamicObject {
+func (r *Reconciler) requestDurationMetric() *k8sutil.DynamicObject {
 	return &k8sutil.DynamicObject{
 		Gvr: schema.GroupVersionResource{
 			Group:    "config.istio.io",
@@ -124,17 +123,17 @@ func (r *Reconciler) requestDurationMetric(owner *istiov1beta1.Config) *k8sutil.
 		},
 		Kind:      "metric",
 		Name:      "requestduration",
-		Namespace: owner.Namespace,
+		Namespace: r.Config.Namespace,
 		Spec: map[string]interface{}{
 			"value":                   `response.duration | "0ms"`,
 			"dimensions":              metricDimensions(),
 			"monitored_resource_type": `"UNSPECIFIED"`,
 		},
-		Owner: owner,
+		Owner: r.Config,
 	}
 }
 
-func (r *Reconciler) requestSizeMetric(owner *istiov1beta1.Config) *k8sutil.DynamicObject {
+func (r *Reconciler) requestSizeMetric() *k8sutil.DynamicObject {
 	return &k8sutil.DynamicObject{
 		Gvr: schema.GroupVersionResource{
 			Group:    "config.istio.io",
@@ -143,17 +142,17 @@ func (r *Reconciler) requestSizeMetric(owner *istiov1beta1.Config) *k8sutil.Dyna
 		},
 		Kind:      "metric",
 		Name:      "requestsize",
-		Namespace: owner.Namespace,
+		Namespace: r.Config.Namespace,
 		Spec: map[string]interface{}{
 			"value":                   `request.size | 0`,
 			"dimensions":              metricDimensions(),
 			"monitored_resource_type": `"UNSPECIFIED"`,
 		},
-		Owner: owner,
+		Owner: r.Config,
 	}
 }
 
-func (r *Reconciler) responseSizeMetric(owner *istiov1beta1.Config) *k8sutil.DynamicObject {
+func (r *Reconciler) responseSizeMetric() *k8sutil.DynamicObject {
 	return &k8sutil.DynamicObject{
 		Gvr: schema.GroupVersionResource{
 			Group:    "config.istio.io",
@@ -162,17 +161,17 @@ func (r *Reconciler) responseSizeMetric(owner *istiov1beta1.Config) *k8sutil.Dyn
 		},
 		Kind:      "metric",
 		Name:      "responsesize",
-		Namespace: owner.Namespace,
+		Namespace: r.Config.Namespace,
 		Spec: map[string]interface{}{
 			"value":                   `response.size | 0`,
 			"dimensions":              metricDimensions(),
 			"monitored_resource_type": `"UNSPECIFIED"`,
 		},
-		Owner: owner,
+		Owner: r.Config,
 	}
 }
 
-func (r *Reconciler) tcpByteSentMetric(owner *istiov1beta1.Config) *k8sutil.DynamicObject {
+func (r *Reconciler) tcpByteSentMetric() *k8sutil.DynamicObject {
 	return &k8sutil.DynamicObject{
 		Gvr: schema.GroupVersionResource{
 			Group:    "config.istio.io",
@@ -181,17 +180,17 @@ func (r *Reconciler) tcpByteSentMetric(owner *istiov1beta1.Config) *k8sutil.Dyna
 		},
 		Kind:      "metric",
 		Name:      "tcpbytesent",
-		Namespace: owner.Namespace,
+		Namespace: r.Config.Namespace,
 		Spec: map[string]interface{}{
 			"value":                   `connection.sent.bytes | 0`,
 			"dimensions":              tcpMetricDimensions(),
 			"monitored_resource_type": `"UNSPECIFIED"`,
 		},
-		Owner: owner,
+		Owner: r.Config,
 	}
 }
 
-func (r *Reconciler) tcpByteReceivedMetric(owner *istiov1beta1.Config) *k8sutil.DynamicObject {
+func (r *Reconciler) tcpByteReceivedMetric() *k8sutil.DynamicObject {
 	return &k8sutil.DynamicObject{
 		Gvr: schema.GroupVersionResource{
 			Group:    "config.istio.io",
@@ -200,17 +199,17 @@ func (r *Reconciler) tcpByteReceivedMetric(owner *istiov1beta1.Config) *k8sutil.
 		},
 		Kind:      "metric",
 		Name:      "tcpbytereceived",
-		Namespace: owner.Namespace,
+		Namespace: r.Config.Namespace,
 		Spec: map[string]interface{}{
 			"value":                   `connection.received.bytes | 0`,
 			"dimensions":              tcpMetricDimensions(),
 			"monitored_resource_type": `"UNSPECIFIED"`,
 		},
-		Owner: owner,
+		Owner: r.Config,
 	}
 }
 
-func (r *Reconciler) promHttpRule(owner *istiov1beta1.Config) *k8sutil.DynamicObject {
+func (r *Reconciler) promHttpRule() *k8sutil.DynamicObject {
 	return &k8sutil.DynamicObject{
 		Gvr: schema.GroupVersionResource{
 			Group:    "config.istio.io",
@@ -219,7 +218,7 @@ func (r *Reconciler) promHttpRule(owner *istiov1beta1.Config) *k8sutil.DynamicOb
 		},
 		Kind:      "rule",
 		Name:      "promhttp",
-		Namespace: owner.Namespace,
+		Namespace: r.Config.Namespace,
 		Spec: map[string]interface{}{
 			"actions": []interface{}{
 				map[string]interface{}{
@@ -229,11 +228,11 @@ func (r *Reconciler) promHttpRule(owner *istiov1beta1.Config) *k8sutil.DynamicOb
 			},
 			"match": `context.protocol == "http" || context.protocol == "grpc"`,
 		},
-		Owner: owner,
+		Owner: r.Config,
 	}
 }
 
-func (r *Reconciler) promTcpRule(owner *istiov1beta1.Config) *k8sutil.DynamicObject {
+func (r *Reconciler) promTcpRule() *k8sutil.DynamicObject {
 	return &k8sutil.DynamicObject{
 		Gvr: schema.GroupVersionResource{
 			Group:    "config.istio.io",
@@ -242,7 +241,7 @@ func (r *Reconciler) promTcpRule(owner *istiov1beta1.Config) *k8sutil.DynamicObj
 		},
 		Kind:      "rule",
 		Name:      "promtcp",
-		Namespace: owner.Namespace,
+		Namespace: r.Config.Namespace,
 		Spec: map[string]interface{}{
 			"actions": []interface{}{
 				map[string]interface{}{
@@ -252,7 +251,7 @@ func (r *Reconciler) promTcpRule(owner *istiov1beta1.Config) *k8sutil.DynamicObj
 			},
 			"match": `context.protocol == "tcp"`,
 		},
-		Owner: owner,
+		Owner: r.Config,
 	}
 }
 

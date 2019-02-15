@@ -19,7 +19,6 @@ package gateways
 import (
 	"fmt"
 
-	istiov1beta1 "github.com/banzaicloud/istio-operator/pkg/apis/operator/v1beta1"
 	"github.com/banzaicloud/istio-operator/pkg/resources/templates"
 	"github.com/banzaicloud/istio-operator/pkg/util"
 	appsv1 "k8s.io/api/apps/v1"
@@ -28,9 +27,9 @@ import (
 	"k8s.io/apimachinery/pkg/runtime"
 )
 
-func (r *Reconciler) deployment(gw string, owner *istiov1beta1.Config) runtime.Object {
+func (r *Reconciler) deployment(gw string) runtime.Object {
 	return &appsv1.Deployment{
-		ObjectMeta: templates.ObjectMeta(gatewayName(gw), labelSelector(gw), owner),
+		ObjectMeta: templates.ObjectMeta(gatewayName(gw), labelSelector(gw), r.Config),
 		Spec: appsv1.DeploymentSpec{
 			Replicas: util.IntPointer(1),
 			Selector: &metav1.LabelSelector{
@@ -57,10 +56,10 @@ func (r *Reconciler) deployment(gw string, owner *istiov1beta1.Config) runtime.O
 								"--parentShutdownDuration", "1m0s",
 								"--connectTimeout", "10s",
 								"--serviceCluster", fmt.Sprintf("istio-%s", gw),
-								"--zipkinAddress", fmt.Sprintf("zipkin.%s:9411", owner.Namespace),
+								"--zipkinAddress", fmt.Sprintf("zipkin.%s:9411", r.Config.Namespace),
 								"--proxyAdminPort", "15000",
 								"--controlPlaneAuthPolicy", "NONE",
-								"--discoveryAddress", fmt.Sprintf("istio-pilot.%s:8080", owner.Namespace),
+								"--discoveryAddress", fmt.Sprintf("istio-pilot.%s:8080", r.Config.Namespace),
 							},
 							Ports: r.ports(gw),
 							Env: append(templates.IstioProxyEnv(), apiv1.EnvVar{

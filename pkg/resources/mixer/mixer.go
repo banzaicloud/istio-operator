@@ -48,11 +48,11 @@ type Reconciler struct {
 	dynamic dynamic.Interface
 }
 
-func New(client client.Client, dc dynamic.Interface, istio *istiov1beta1.Config) *Reconciler {
+func New(client client.Client, dc dynamic.Interface, config *istiov1beta1.Config) *Reconciler {
 	return &Reconciler{
 		Reconciler: resources.Reconciler{
 			Client: client,
-			Owner:  istio,
+			Config: config,
 		},
 		dynamic: dc,
 	}
@@ -74,7 +74,7 @@ func (r *Reconciler) Reconcile(log logr.Logger) error {
 	rs = append(rs, resources.ResolveVariations("policy", rsv)...)
 	rs = append(rs, resources.ResolveVariations("telemetry", rsv)...)
 	for _, res := range rs {
-		o := res(r.Owner)
+		o := res()
 		err := k8sutil.Reconcile(log, r.Client, o)
 		if err != nil {
 			return emperror.WrapWith(err, "failed to reconcile resource", "resource", o.GetObjectKind().GroupVersionKind())
@@ -104,7 +104,7 @@ func (r *Reconciler) Reconcile(log logr.Logger) error {
 		r.tcpKubeAttrRule,
 	}
 	for _, dr := range drs {
-		o := dr(r.Owner)
+		o := dr()
 		err := o.Reconcile(log, r.dynamic)
 		if err != nil {
 			return emperror.WrapWith(err, "failed to reconcile dynamic resource", "resource", o.Gvr)

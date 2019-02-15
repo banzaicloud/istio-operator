@@ -17,16 +17,15 @@ limitations under the License.
 package mixer
 
 import (
-	istiov1beta1 "github.com/banzaicloud/istio-operator/pkg/apis/operator/v1beta1"
 	"github.com/banzaicloud/istio-operator/pkg/resources/templates"
 	"github.com/banzaicloud/istio-operator/pkg/util"
 	apiv1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 )
 
-func (r *Reconciler) service(t string, owner *istiov1beta1.Config) runtime.Object {
+func (r *Reconciler) service(t string) runtime.Object {
 	svc := &apiv1.Service{
-		ObjectMeta: templates.ObjectMeta(serviceName(t), labelSelector, owner),
+		ObjectMeta: templates.ObjectMeta(serviceName(t), labelSelector, r.Config),
 		Spec: apiv1.ServiceSpec{
 			Ports:    r.servicePorts(t),
 			Selector: util.MergeLabels(labelSelector, mixerTypeLabel(t)),

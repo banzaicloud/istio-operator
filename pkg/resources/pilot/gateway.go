@@ -17,7 +17,6 @@ limitations under the License.
 package pilot
 
 import (
-	istiov1beta1 "github.com/banzaicloud/istio-operator/pkg/apis/operator/v1beta1"
 	"github.com/banzaicloud/istio-operator/pkg/resources/templates"
 	"istio.io/api/networking/v1alpha3"
 	networkingv1alpha3 "istio.io/api/pkg/kube/apis/networking/v1alpha3"
@@ -28,9 +27,9 @@ var gatewaySelector = map[string]string{
 	"istio": "ingress",
 }
 
-func (r *Reconciler) gateway(owner *istiov1beta1.Config) runtime.Object {
+func (r *Reconciler) gateway() runtime.Object {
 	return &networkingv1alpha3.Gateway{
-		ObjectMeta: templates.ObjectMeta(gatewayName, nil, owner),
+		ObjectMeta: templates.ObjectMeta(gatewayName, nil, r.Config),
 		Spec: v1alpha3.Gateway{
 			Servers: []*v1alpha3.Server{
 				{

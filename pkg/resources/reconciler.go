@@ -26,26 +26,26 @@ import (
 
 type Reconciler struct {
 	client.Client
-	Owner *istiov1beta1.Config
+	Config *istiov1beta1.Config
 }
 
 type ComponentReconciler interface {
 	Reconcile(log logr.Logger) error
 }
 
-type Resource func(owner *istiov1beta1.Config) runtime.Object
+type Resource func() runtime.Object
 
-type ResourceVariation func(t string, owner *istiov1beta1.Config) runtime.Object
+type ResourceVariation func(t string) runtime.Object
 
 func ResolveVariations(t string, v []ResourceVariation) []Resource {
 	resources := make([]Resource, 0)
 	for i := range v {
 		i := i
-		resources = append(resources, func(owner *istiov1beta1.Config) runtime.Object {
-			return v[i](t, owner)
+		resources = append(resources, func() runtime.Object {
+			return v[i](t)
 		})
 	}
 	return resources
 }
 
-type DynamicResource func(owner *istiov1beta1.Config) *k8sutil.DynamicObject
+type DynamicResource func() *k8sutil.DynamicObject

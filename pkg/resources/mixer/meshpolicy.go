@@ -17,12 +17,11 @@ limitations under the License.
 package mixer
 
 import (
-	istiov1beta1 "github.com/banzaicloud/istio-operator/pkg/apis/operator/v1beta1"
 	"github.com/banzaicloud/istio-operator/pkg/k8sutil"
 	"k8s.io/apimachinery/pkg/runtime/schema"
 )
 
-func (r *Reconciler) meshPolicy(istio *istiov1beta1.Config) *k8sutil.DynamicObject {
+func (r *Reconciler) meshPolicy() *k8sutil.DynamicObject {
 	return &k8sutil.DynamicObject{
 		Gvr: schema.GroupVersionResource{
 			Group:    "authentication.istio.io",
@@ -43,6 +42,6 @@ func (r *Reconciler) meshPolicy(istio *istiov1beta1.Config) *k8sutil.DynamicObje
 				},
 			},
 		},
-		Owner: istio,
+		Owner: r.Config,
 	}
 }

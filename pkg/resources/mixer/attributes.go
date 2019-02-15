@@ -17,12 +17,11 @@ limitations under the License.
 package mixer
 
 import (
-	istiov1beta1 "github.com/banzaicloud/istio-operator/pkg/apis/operator/v1beta1"
 	"github.com/banzaicloud/istio-operator/pkg/k8sutil"
 	"k8s.io/apimachinery/pkg/runtime/schema"
 )
 
-func (r *Reconciler) istioProxyAttributeManifest(owner *istiov1beta1.Config) *k8sutil.DynamicObject {
+func (r *Reconciler) istioProxyAttributeManifest() *k8sutil.DynamicObject {
 	return &k8sutil.DynamicObject{
 		Gvr: schema.GroupVersionResource{
 			Group:    "config.istio.io",
@@ -31,7 +30,7 @@ func (r *Reconciler) istioProxyAttributeManifest(owner *istiov1beta1.Config) *k8
 		},
 		Kind:      "attributemanifest",
 		Name:      "istioproxy",
-		Namespace: owner.Namespace,
+		Namespace: r.Config.Namespace,
 		Spec: map[string]interface{}{
 			"attributes": map[string]interface{}{
 				"origin.ip":                        map[string]interface{}{"valueType": "IP_ADDRESS"},
@@ -88,11 +87,11 @@ func (r *Reconciler) istioProxyAttributeManifest(owner *istiov1beta1.Config) *k8
 				"request.api_key":                  map[string]interface{}{"valueType": "STRING"},
 			},
 		},
-		Owner: owner,
+		Owner: r.Config,
 	}
 }
 
-func (r *Reconciler) kubernetesAttributeManifest(owner *istiov1beta1.Config) *k8sutil.DynamicObject {
+func (r *Reconciler) kubernetesAttributeManifest() *k8sutil.DynamicObject {
 	return &k8sutil.DynamicObject{
 		Gvr: schema.GroupVersionResource{
 			Group:    "config.istio.io",
@@ -101,7 +100,7 @@ func (r *Reconciler) kubernetesAttributeManifest(owner *istiov1beta1.Config) *k8
 		},
 		Kind:      "attributemanifest",
 		Name:      "kubernetes",
-		Namespace: owner.Namespace,
+		Namespace: r.Config.Namespace,
 		Spec: map[string]interface{}{
 			"attributes": map[string]interface{}{
 				"source.ip":                      map[string]interface{}{"valueType": "IP_ADDRESS"},
@@ -134,6 +133,6 @@ func (r *Reconciler) kubernetesAttributeManifest(owner *istiov1beta1.Config) *k8
 				"destination.workload.namespace": map[string]interface{}{"valueType": "STRING"},
 			},
 		},
-		Owner: owner,
+		Owner: r.Config,
 	}
 }

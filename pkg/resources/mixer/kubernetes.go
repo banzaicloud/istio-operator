@@ -17,13 +17,12 @@ limitations under the License.
 package mixer
 
 import (
-	istiov1beta1 "github.com/banzaicloud/istio-operator/pkg/apis/operator/v1beta1"
 	"github.com/banzaicloud/istio-operator/pkg/k8sutil"
 	"github.com/banzaicloud/istio-operator/pkg/util"
 	"k8s.io/apimachinery/pkg/runtime/schema"
 )
 
-func (r *Reconciler) kubernetesEnvHandler(owner *istiov1beta1.Config) *k8sutil.DynamicObject {
+func (r *Reconciler) kubernetesEnvHandler() *k8sutil.DynamicObject {
 	return &k8sutil.DynamicObject{
 		Gvr: schema.GroupVersionResource{
 			Group:    "config.istio.io",
@@ -32,13 +31,13 @@ func (r *Reconciler) kubernetesEnvHandler(owner *istiov1beta1.Config) *k8sutil.D
 		},
 		Kind:      "kubernetesenv",
 		Name:      "handler",
-		Namespace: owner.Namespace,
+		Namespace: r.Config.Namespace,
 		Spec:      nil,
-		Owner:     owner,
+		Owner:     r.Config,
 	}
 }
 
-func (r *Reconciler) attributesKubernetes(owner *istiov1beta1.Config) *k8sutil.DynamicObject {
+func (r *Reconciler) attributesKubernetes() *k8sutil.DynamicObject {
 	return &k8sutil.DynamicObject{
 		Gvr: schema.GroupVersionResource{
 			Group:    "config.istio.io",
@@ -47,7 +46,7 @@ func (r *Reconciler) attributesKubernetes(owner *istiov1beta1.Config) *k8sutil.D
 		},
 		Kind:      "kubernetes",
 		Name:      "attributes",
-		Namespace: owner.Namespace,
+		Namespace: r.Config.Namespace,
 		Spec: map[string]interface{}{
 			"source_uid":       `source.uid | ""`,
 			"source_ip":        `source.ip | ip("0.0.0.0")`,
@@ -77,11 +76,11 @@ func (r *Reconciler) attributesKubernetes(owner *istiov1beta1.Config) *k8sutil.D
 				"destination.workload.namespace": `$out.destination_workload_namespace | "unknown"`,
 			},
 		},
-		Owner: owner,
+		Owner: r.Config,
 	}
 }
 
-func (r *Reconciler) kubeAttrRule(owner *istiov1beta1.Config) *k8sutil.DynamicObject {
+func (r *Reconciler) kubeAttrRule() *k8sutil.DynamicObject {
 	return &k8sutil.DynamicObject{
 		Gvr: schema.GroupVersionResource{
 			Group:    "config.istio.io",
@@ -90,7 +89,7 @@ func (r *Reconciler) kubeAttrRule(owner *istiov1beta1.Config) *k8sutil.DynamicOb
 		},
 		Kind:      "rule",
 		Name:      "kubeattrgenrulerule",
-		Namespace: owner.Namespace,
+		Namespace: r.Config.Namespace,
 		Spec: map[string]interface{}{
 			"actions": []interface{}{
 				map[string]interface{}{
@@ -99,11 +98,11 @@ func (r *Reconciler) kubeAttrRule(owner *istiov1beta1.Config) *k8sutil.DynamicOb
 				},
 			},
 		},
-		Owner: owner,
+		Owner: r.Config,
 	}
 }
 
-func (r *Reconciler) tcpKubeAttrRule(owner *istiov1beta1.Config) *k8sutil.DynamicObject {
+func (r *Reconciler) tcpKubeAttrRule() *k8sutil.DynamicObject {
 	return &k8sutil.DynamicObject{
 		Gvr: schema.GroupVersionResource{
 			Group:    "config.istio.io",
@@ -112,7 +111,7 @@ func (r *Reconciler) tcpKubeAttrRule(owner *istiov1beta1.Config) *k8sutil.Dynami
 		},
 		Kind:      "rule",
 		Name:      "tcpkubeattrgenrulerule",
-		Namespace: owner.Namespace,
+		Namespace: r.Config.Namespace,
 		Spec: map[string]interface{}{
 			"actions": []interface{}{
 				map[string]interface{}{
@@ -122,6 +121,6 @@ func (r *Reconciler) tcpKubeAttrRule(owner *istiov1beta1.Config) *k8sutil.Dynami
 			},
 			"match": `context.protocol == "tcp"`,
 		},
-		Owner: owner,
+		Owner: r.Config,
 	}
 }

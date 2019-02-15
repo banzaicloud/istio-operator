@@ -17,7 +17,6 @@ limitations under the License.
 package sidecarinjector
 
 import (
-	istiov1beta1 "github.com/banzaicloud/istio-operator/pkg/apis/operator/v1beta1"
 	"github.com/banzaicloud/istio-operator/pkg/resources/templates"
 	"github.com/banzaicloud/istio-operator/pkg/util"
 	"github.com/ghodss/yaml"
@@ -25,9 +24,9 @@ import (
 	"k8s.io/apimachinery/pkg/runtime"
 )
 
-func (r *Reconciler) configMap(owner *istiov1beta1.Config) runtime.Object {
+func (r *Reconciler) configMap() runtime.Object {
 	return &apiv1.ConfigMap{
-		ObjectMeta: templates.ObjectMeta(configMapName, util.MergeLabels(sidecarInjectorLabels, labelSelector), owner),
+		ObjectMeta: templates.ObjectMeta(configMapName, util.MergeLabels(sidecarInjectorLabels, labelSelector), r.Config),
 		Data: map[string]string{
 			"config": r.siConfig(),
 		},

@@ -32,11 +32,11 @@ type Reconciler struct {
 	resources.Reconciler
 }
 
-func New(client client.Client, istio *istiov1beta1.Config) *Reconciler {
+func New(client client.Client, config *istiov1beta1.Config) *Reconciler {
 	return &Reconciler{
 		Reconciler: resources.Reconciler{
 			Client: client,
-			Owner:  istio,
+			Config: config,
 		},
 	}
 }
@@ -51,7 +51,7 @@ func (r *Reconciler) Reconcile(log logr.Logger) error {
 		r.horizontalPodAutoscaler,
 	}
 	for _, res := range append(resources.ResolveVariations("ingressgateway", rsv), resources.ResolveVariations("egressgateway", rsv)...) {
-		o := res(r.Owner)
+		o := res()
 		err := k8sutil.Reconcile(log, r.Client, o)
 		if err != nil {
 			return emperror.WrapWith(err, "failed to reconcile resource", "resource", o.GetObjectKind().GroupVersionKind())

@@ -17,13 +17,12 @@ limitations under the License.
 package mixer
 
 import (
-	istiov1beta1 "github.com/banzaicloud/istio-operator/pkg/apis/operator/v1beta1"
 	"github.com/banzaicloud/istio-operator/pkg/k8sutil"
 	"github.com/banzaicloud/istio-operator/pkg/util"
 	"k8s.io/apimachinery/pkg/runtime/schema"
 )
 
-func (r *Reconciler) stdioHandler(owner *istiov1beta1.Config) *k8sutil.DynamicObject {
+func (r *Reconciler) stdioHandler() *k8sutil.DynamicObject {
 	return &k8sutil.DynamicObject{
 		Gvr: schema.GroupVersionResource{
 			Group:    "config.istio.io",
@@ -32,15 +31,15 @@ func (r *Reconciler) stdioHandler(owner *istiov1beta1.Config) *k8sutil.DynamicOb
 		},
 		Kind:      "stdio",
 		Name:      "handler",
-		Namespace: owner.Namespace,
+		Namespace: r.Config.Namespace,
 		Spec: map[string]interface{}{
 			"outputAsJson": true,
 		},
-		Owner: owner,
+		Owner: r.Config,
 	}
 }
 
-func (r *Reconciler) accessLogLogentry(owner *istiov1beta1.Config) *k8sutil.DynamicObject {
+func (r *Reconciler) accessLogLogentry() *k8sutil.DynamicObject {
 	return &k8sutil.DynamicObject{
 		Gvr: schema.GroupVersionResource{
 			Group:    "config.istio.io",
@@ -49,7 +48,7 @@ func (r *Reconciler) accessLogLogentry(owner *istiov1beta1.Config) *k8sutil.Dyna
 		},
 		Kind:      "logentry",
 		Name:      "accesslog",
-		Namespace: owner.Namespace,
+		Namespace: r.Config.Namespace,
 		Spec: map[string]interface{}{
 			"severity":  `"Info"`,
 			"timestamp": "request.time",
@@ -93,11 +92,11 @@ func (r *Reconciler) accessLogLogentry(owner *istiov1beta1.Config) *k8sutil.Dyna
 			},
 			"monitored_resource_type": `"global"`,
 		},
-		Owner: owner,
+		Owner: r.Config,
 	}
 }
 
-func (r *Reconciler) tcpAccessLogLogentry(owner *istiov1beta1.Config) *k8sutil.DynamicObject {
+func (r *Reconciler) tcpAccessLogLogentry() *k8sutil.DynamicObject {
 	return &k8sutil.DynamicObject{
 		Gvr: schema.GroupVersionResource{
 			Group:    "config.istio.io",
@@ -106,7 +105,7 @@ func (r *Reconciler) tcpAccessLogLogentry(owner *istiov1beta1.Config) *k8sutil.D
 		},
 		Kind:      "logentry",
 		Name:      "tcpaccesslog",
-		Namespace: owner.Namespace,
+		Namespace: r.Config.Namespace,
 		Spec: map[string]interface{}{
 			"severity":  `"Info"`,
 			"timestamp": `context.time | timestamp("2017-01-01T00:00:00Z")`,
@@ -139,11 +138,11 @@ func (r *Reconciler) tcpAccessLogLogentry(owner *istiov1beta1.Config) *k8sutil.D
 			},
 			"monitored_resource_type": `"global"`,
 		},
-		Owner: owner,
+		Owner: r.Config,
 	}
 }
 
-func (r *Reconciler) stdioRule(owner *istiov1beta1.Config) *k8sutil.DynamicObject {
+func (r *Reconciler) stdioRule() *k8sutil.DynamicObject {
 	return &k8sutil.DynamicObject{
 		Gvr: schema.GroupVersionResource{
 			Group:    "config.istio.io",
@@ -152,7 +151,7 @@ func (r *Reconciler) stdioRule(owner *istiov1beta1.Config) *k8sutil.DynamicObjec
 		},
 		Kind:      "rule",
 		Name:      "stdio",
-		Namespace: owner.Namespace,
+		Namespace: r.Config.Namespace,
 		Spec: map[string]interface{}{
 			"actions": []interface{}{
 				map[string]interface{}{
@@ -162,11 +161,11 @@ func (r *Reconciler) stdioRule(owner *istiov1beta1.Config) *k8sutil.DynamicObjec
 			},
 			"match": `context.protocol == "http" || context.protocol == "grpc"`,
 		},
-		Owner: owner,
+		Owner: r.Config,
 	}
 }
 
-func (r *Reconciler) stdioTcpRule(owner *istiov1beta1.Config) *k8sutil.DynamicObject {
+func (r *Reconciler) stdioTcpRule() *k8sutil.DynamicObject {
 	return &k8sutil.DynamicObject{
 		Gvr: schema.GroupVersionResource{
 			Group:    "config.istio.io",
@@ -175,7 +174,7 @@ func (r *Reconciler) stdioTcpRule(owner *istiov1beta1.Config) *k8sutil.DynamicOb
 		},
 		Kind:      "rule",
 		Name:      "stdiotcp",
-		Namespace: owner.Namespace,
+		Namespace: r.Config.Namespace,
 		Spec: map[string]interface{}{
 			"actions": []interface{}{
 				map[string]interface{}{
@@ -185,6 +184,6 @@ func (r *Reconciler) stdioTcpRule(owner *istiov1beta1.Config) *k8sutil.DynamicOb
 			},
 			"match": `context.protocol == "tcp"`,
 		},
-		Owner: owner,
+		Owner: r.Config,
 	}
 }

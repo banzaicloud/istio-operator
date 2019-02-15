@@ -18,7 +18,6 @@ package common
 
 import (
 	"fmt"
-	istiov1beta1 "github.com/banzaicloud/istio-operator/pkg/apis/operator/v1beta1"
 	"github.com/banzaicloud/istio-operator/pkg/resources/templates"
 	"github.com/ghodss/yaml"
 	apiv1 "k8s.io/api/core/v1"
@@ -29,11 +28,11 @@ var cmLabels = map[string]string{
 	"app": "istio",
 }
 
-func (r *Reconciler) configMap(owner *istiov1beta1.Config) runtime.Object {
+func (r *Reconciler) configMap() runtime.Object {
 	return &apiv1.ConfigMap{
-		ObjectMeta: templates.ObjectMeta(IstioConfigMapName, cmLabels, owner),
+		ObjectMeta: templates.ObjectMeta(IstioConfigMapName, cmLabels, r.Config),
 		Data: map[string]string{
-			"mesh": r.meshConfig(owner.Namespace),
+			"mesh": r.meshConfig(r.Config.Namespace),
 		},
 	}
 }

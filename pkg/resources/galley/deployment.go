@@ -19,7 +19,6 @@ package galley
 import (
 	"fmt"
 
-	istiov1beta1 "github.com/banzaicloud/istio-operator/pkg/apis/operator/v1beta1"
 	"github.com/banzaicloud/istio-operator/pkg/resources/templates"
 	"github.com/banzaicloud/istio-operator/pkg/util"
 	appsv1 "k8s.io/api/apps/v1"
@@ -28,9 +27,9 @@ import (
 	"k8s.io/apimachinery/pkg/runtime"
 )
 
-func (r *Reconciler) deployment(owner *istiov1beta1.Config) runtime.Object {
+func (r *Reconciler) deployment() runtime.Object {
 	return &appsv1.Deployment{
-		ObjectMeta: templates.ObjectMeta(deploymentName, util.MergeLabels(galleyLabels, labelSelector), owner),
+		ObjectMeta: templates.ObjectMeta(deploymentName, util.MergeLabels(galleyLabels, labelSelector), r.Config),
 		Spec: appsv1.DeploymentSpec{
 			Replicas: util.IntPointer(1),
 			Strategy: appsv1.DeploymentStrategy{
@@ -65,7 +64,7 @@ func (r *Reconciler) deployment(owner *istiov1beta1.Config) runtime.Object {
 							Command: []string{
 								"/usr/local/bin/galley",
 								"validator",
-								fmt.Sprintf("--deployment-namespace=%s", owner.Namespace),
+								fmt.Sprintf("--deployment-namespace=%s", r.Config.Namespace),
 								"--caCertFile=/etc/istio/certs/root-cert.pem",
 								"--tlsCertFile=/etc/istio/certs/cert-chain.pem",
 								"--tlsKeyFile=/etc/istio/certs/key.pem",

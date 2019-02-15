@@ -18,7 +18,6 @@ package mixer
 
 import (
 	"fmt"
-	istiov1beta1 "github.com/banzaicloud/istio-operator/pkg/apis/operator/v1beta1"
 	"github.com/banzaicloud/istio-operator/pkg/resources/templates"
 	"github.com/banzaicloud/istio-operator/pkg/util"
 	appsv1 "k8s.io/api/apps/v1"
@@ -28,9 +27,9 @@ import (
 	"k8s.io/apimachinery/pkg/util/intstr"
 )
 
-func (r *Reconciler) deployment(t string, owner *istiov1beta1.Config) runtime.Object {
+func (r *Reconciler) deployment(t string) runtime.Object {
 	return &appsv1.Deployment{
-		ObjectMeta: templates.ObjectMeta(deploymentName(t), labelSelector, owner),
+		ObjectMeta: templates.ObjectMeta(deploymentName(t), labelSelector, r.Config),
 		Spec: appsv1.DeploymentSpec{
 			Replicas: util.IntPointer(1),
 			Selector: &metav1.LabelSelector{
@@ -62,7 +61,7 @@ func (r *Reconciler) deployment(t string, owner *istiov1beta1.Config) runtime.Ob
 					},
 					Affinity: &apiv1.Affinity{},
 					Containers: []apiv1.Container{
-						mixerContainer(t, owner.Namespace),
+						mixerContainer(t, r.Config.Namespace),
 						istioProxyContainer(t),
 					},
 				},
