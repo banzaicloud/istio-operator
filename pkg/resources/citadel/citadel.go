@@ -22,6 +22,7 @@ import (
 	"github.com/banzaicloud/istio-operator/pkg/resources"
 	"github.com/go-logr/logr"
 	"github.com/goph/emperror"
+	"k8s.io/client-go/dynamic"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
@@ -43,14 +44,16 @@ var labelSelector = map[string]string{
 
 type Reconciler struct {
 	resources.Reconciler
+	dynamic dynamic.Interface
 }
 
-func New(client client.Client, config *istiov1beta1.Config) *Reconciler {
+func New(client client.Client, dc dynamic.Interface, config *istiov1beta1.Config) *Reconciler {
 	return &Reconciler{
 		Reconciler: resources.Reconciler{
 			Client: client,
 			Config: config,
 		},
+		dynamic: dc,
 	}
 }
 
@@ -66,6 +69,16 @@ func (r *Reconciler) Reconcile(log logr.Logger) error {
 		err := k8sutil.Reconcile(log, r.Client, o)
 		if err != nil {
 			return emperror.WrapWith(err, "failed to reconcile resource", "resource", o.GetObjectKind().GroupVersionKind())
+		}
+	}
+	drs := []resources.DynamicResource{
+		r.meshPolicy,
+	}
+	for _, dr := range drs {
+		o := dr()
+		err := o.Reconcile(log, r.dynamic)
+		if err != nil {
+			return emperror.WrapWith(err, "failed to reconcile dynamic resource", "resource", o.Gvr)
 		}
 	}
 	return nil

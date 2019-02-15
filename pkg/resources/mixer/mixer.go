@@ -81,7 +81,6 @@ func (r *Reconciler) Reconcile(log logr.Logger) error {
 		}
 	}
 	drs := []resources.DynamicResource{
-		r.meshPolicy,
 		r.istioProxyAttributeManifest,
 		r.kubernetesAttributeManifest,
 		r.stdioHandler,

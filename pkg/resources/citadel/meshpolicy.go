@@ -14,7 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package mixer
+package citadel
 
 import (
 	"github.com/banzaicloud/istio-operator/pkg/k8sutil"
