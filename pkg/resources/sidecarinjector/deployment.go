@@ -19,7 +19,6 @@ package sidecarinjector
 import (
 	"fmt"
 
-	istiov1beta1 "github.com/banzaicloud/istio-operator/pkg/apis/operator/v1beta1"
 	"github.com/banzaicloud/istio-operator/pkg/resources/common"
 	"github.com/banzaicloud/istio-operator/pkg/resources/templates"
 	"github.com/banzaicloud/istio-operator/pkg/util"
@@ -29,9 +28,9 @@ import (
 	"k8s.io/apimachinery/pkg/runtime"
 )
 
-func (r *Reconciler) deployment(owner *istiov1beta1.Config) runtime.Object {
+func (r *Reconciler) deployment() runtime.Object {
 	return &appsv1.Deployment{
-		ObjectMeta: templates.ObjectMeta(deploymentName, util.MergeLabels(sidecarInjectorLabels, labelSelector), owner),
+		ObjectMeta: templates.ObjectMeta(deploymentName, util.MergeLabels(sidecarInjectorLabels, labelSelector), r.Config),
 		Spec: appsv1.DeploymentSpec{
 			Replicas: util.IntPointer(1),
 			Selector: &metav1.LabelSelector{

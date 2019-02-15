@@ -21,33 +21,33 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
-func ObjectMeta(name string, labels map[string]string, owner *istiov1beta1.Config) metav1.ObjectMeta {
+func ObjectMeta(name string, labels map[string]string, config *istiov1beta1.Config) metav1.ObjectMeta {
 	o := metav1.ObjectMeta{
 		Name:      name,
-		Namespace: owner.Namespace,
+		Namespace: config.Namespace,
 		Labels:    labels,
 		OwnerReferences: []metav1.OwnerReference{
 			{
-				APIVersion: owner.APIVersion,
-				Kind:       owner.Kind,
-				Name:       owner.Name,
-				UID:        owner.UID,
+				APIVersion: config.APIVersion,
+				Kind:       config.Kind,
+				Name:       config.Name,
+				UID:        config.UID,
 			},
 		},
 	}
 	return o
 }
 
-func ObjectMetaClusterScope(name string, labels map[string]string, owner *istiov1beta1.Config) metav1.ObjectMeta {
+func ObjectMetaClusterScope(name string, labels map[string]string, config *istiov1beta1.Config) metav1.ObjectMeta {
 	o := metav1.ObjectMeta{
 		Name:   name,
 		Labels: labels,
 		OwnerReferences: []metav1.OwnerReference{
 			{
-				APIVersion: owner.APIVersion,
-				Kind:       owner.Kind,
-				Name:       owner.Name,
-				UID:        owner.UID,
+				APIVersion: config.APIVersion,
+				Kind:       config.Kind,
+				Name:       config.Name,
+				UID:        config.UID,
 			},
 		},
 	}

@@ -17,7 +17,6 @@ limitations under the License.
 package galley
 
 import (
-	istiov1beta1 "github.com/banzaicloud/istio-operator/pkg/apis/operator/v1beta1"
 	"github.com/banzaicloud/istio-operator/pkg/resources/templates"
 	"github.com/banzaicloud/istio-operator/pkg/util"
 	"github.com/ghodss/yaml"
@@ -31,11 +30,11 @@ var cmLabels = map[string]string{
 	"istio": "mixer",
 }
 
-func (r *Reconciler) configMap(owner *istiov1beta1.Config) runtime.Object {
+func (r *Reconciler) configMap() runtime.Object {
 	return &apiv1.ConfigMap{
-		ObjectMeta: templates.ObjectMeta(configMapName, util.MergeLabels(galleyLabels, cmLabels), owner),
+		ObjectMeta: templates.ObjectMeta(configMapName, util.MergeLabels(galleyLabels, cmLabels), r.Config),
 		Data: map[string]string{
-			"validatingwebhookconfiguration.yaml": r.validatingWebhookConfig(owner.Namespace),
+			"validatingwebhookconfiguration.yaml": r.validatingWebhookConfig(r.Config.Namespace),
 		},
 	}
 }

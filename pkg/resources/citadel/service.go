@@ -17,7 +17,6 @@ limitations under the License.
 package citadel
 
 import (
-	istiov1beta1 "github.com/banzaicloud/istio-operator/pkg/apis/operator/v1beta1"
 	"github.com/banzaicloud/istio-operator/pkg/resources/templates"
 	apiv1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/runtime"
@@ -28,9 +27,9 @@ var serviceLabels = map[string]string{
 	"app": "istio-citadel",
 }
 
-func (r *Reconciler) service(owner *istiov1beta1.Config) runtime.Object {
+func (r *Reconciler) service() runtime.Object {
 	return &apiv1.Service{
-		ObjectMeta: templates.ObjectMeta(serviceName, serviceLabels, owner),
+		ObjectMeta: templates.ObjectMeta(serviceName, serviceLabels, r.Config),
 		Spec: apiv1.ServiceSpec{
 			Ports: []apiv1.ServicePort{
 				{

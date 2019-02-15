@@ -29,7 +29,7 @@ import (
 	"k8s.io/client-go/dynamic"
 )
 
-type DynamicResource struct {
+type DynamicObject struct {
 	Name      string
 	Namespace string
 	Labels    map[string]string
@@ -39,7 +39,29 @@ type DynamicResource struct {
 	Owner     *istiov1beta1.Config
 }
 
-func (d *DynamicResource) Unstructured() *unstructured.Unstructured {
+func (d *DynamicObject) Reconcile(log logr.Logger, client dynamic.Interface) error {
+	log = log.WithValues("type", reflect.TypeOf(d))
+	desired := d.unstructured()
+	_, err := client.Resource(d.Gvr).Namespace(d.Namespace).Get(d.Name, metav1.GetOptions{})
+	if err != nil && !apierrors.IsNotFound(err) {
+		return emperror.WrapWith(err, "getting resource failed", "name", d.Name, "type", reflect.TypeOf(desired))
+	}
+	if apierrors.IsNotFound(err) {
+		if _, err := client.Resource(d.Gvr).Namespace(d.Namespace).Create(desired, metav1.CreateOptions{}); err != nil {
+			return emperror.WrapWith(err, "creating resource failed", "name", d.Name, "type", reflect.TypeOf(desired))
+		}
+		log.Info("resource created", "name", d.Name)
+	}
+	if err == nil {
+		if _, err := client.Resource(d.Gvr).Update(desired, metav1.UpdateOptions{}); err != nil {
+			return emperror.WrapWith(err, "updating resource failed", "name", d.Name, "type", reflect.TypeOf(desired))
+		}
+		log.Info("resource updated", "name", d.Name)
+	}
+	return nil
+}
+
+func (d *DynamicObject) unstructured() *unstructured.Unstructured {
 	u := &unstructured.Unstructured{
 		Object: map[string]interface{}{
 			"spec": d.Spec,
@@ -66,26 +88,4 @@ func (d *DynamicResource) Unstructured() *unstructured.Unstructured {
 		},
 	})
 	return u
-}
-
-func (d *DynamicResource) Reconcile(log logr.Logger, client dynamic.Interface) error {
-	log = log.WithValues("type", reflect.TypeOf(d))
-	desired := d.Unstructured()
-	_, err := client.Resource(d.Gvr).Namespace(d.Namespace).Get(d.Name, metav1.GetOptions{})
-	if err != nil && !apierrors.IsNotFound(err) {
-		return emperror.WrapWith(err, "getting resource failed", "name", d.Name, "type", reflect.TypeOf(desired))
-	}
-	if apierrors.IsNotFound(err) {
-		if _, err := client.Resource(d.Gvr).Namespace(d.Namespace).Create(desired, metav1.CreateOptions{}); err != nil {
-			return emperror.WrapWith(err, "creating resource failed", "name", d.Name, "type", reflect.TypeOf(desired))
-		}
-		log.Info("resource created", "name", d.Name)
-	}
-	if err == nil {
-		if _, err := client.Resource(d.Gvr).Update(desired, metav1.UpdateOptions{}); err != nil {
-			return emperror.WrapWith(err, "updating resource failed", "name", d.Name, "type", reflect.TypeOf(desired))
-		}
-		log.Info("resource updated", "name", d.Name)
-	}
-	return nil
 }

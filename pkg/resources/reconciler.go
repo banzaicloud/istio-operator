@@ -18,6 +18,7 @@ package resources
 
 import (
 	istiov1beta1 "github.com/banzaicloud/istio-operator/pkg/apis/operator/v1beta1"
+	"github.com/banzaicloud/istio-operator/pkg/k8sutil"
 	"github.com/go-logr/logr"
 	"k8s.io/apimachinery/pkg/runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
@@ -25,24 +26,26 @@ import (
 
 type Reconciler struct {
 	client.Client
-	Owner *istiov1beta1.Config
+	Config *istiov1beta1.Config
 }
 
 type ComponentReconciler interface {
 	Reconcile(log logr.Logger) error
 }
 
-type Resource func(owner *istiov1beta1.Config) runtime.Object
+type Resource func() runtime.Object
 
-type ResourceVariation func(t string, owner *istiov1beta1.Config) runtime.Object
+type ResourceVariation func(t string) runtime.Object
 
 func ResolveVariations(t string, v []ResourceVariation) []Resource {
 	resources := make([]Resource, 0)
 	for i := range v {
 		i := i
-		resources = append(resources, func(owner *istiov1beta1.Config) runtime.Object {
-			return v[i](t, owner)
+		resources = append(resources, func() runtime.Object {
+			return v[i](t)
 		})
 	}
 	return resources
 }
+
+type DynamicResource func() *k8sutil.DynamicObject

@@ -17,22 +17,21 @@ limitations under the License.
 package galley
 
 import (
-	istiov1beta1 "github.com/banzaicloud/istio-operator/pkg/apis/operator/v1beta1"
 	"github.com/banzaicloud/istio-operator/pkg/resources/templates"
 	apiv1 "k8s.io/api/core/v1"
 	rbacv1 "k8s.io/api/rbac/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 )
 
-func (r *Reconciler) serviceAccount(owner *istiov1beta1.Config) runtime.Object {
+func (r *Reconciler) serviceAccount() runtime.Object {
 	return &apiv1.ServiceAccount{
-		ObjectMeta: templates.ObjectMeta(serviceAccountName, galleyLabels, owner),
+		ObjectMeta: templates.ObjectMeta(serviceAccountName, galleyLabels, r.Config),
 	}
 }
 
-func (r *Reconciler) clusterRole(owner *istiov1beta1.Config) runtime.Object {
+func (r *Reconciler) clusterRole() runtime.Object {
 	return &rbacv1.ClusterRole{
-		ObjectMeta: templates.ObjectMetaClusterScope(clusterRoleName, galleyLabels, owner),
+		ObjectMeta: templates.ObjectMetaClusterScope(clusterRoleName, galleyLabels, r.Config),
 		Rules: []rbacv1.PolicyRule{
 			{
 				APIGroups: []string{"admissionregistration.k8s.io"},
@@ -60,9 +59,9 @@ func (r *Reconciler) clusterRole(owner *istiov1beta1.Config) runtime.Object {
 	}
 }
 
-func (r *Reconciler) clusterRoleBinding(owner *istiov1beta1.Config) runtime.Object {
+func (r *Reconciler) clusterRoleBinding() runtime.Object {
 	return &rbacv1.ClusterRoleBinding{
-		ObjectMeta: templates.ObjectMetaClusterScope(clusterRoleBindingName, galleyLabels, owner),
+		ObjectMeta: templates.ObjectMetaClusterScope(clusterRoleBindingName, galleyLabels, r.Config),
 		RoleRef: rbacv1.RoleRef{
 			Kind:     "ClusterRole",
 			APIGroup: "rbac.authorization.k8s.io",
@@ -72,7 +71,7 @@ func (r *Reconciler) clusterRoleBinding(owner *istiov1beta1.Config) runtime.Obje
 			{
 				Kind:      "ServiceAccount",
 				Name:      serviceAccountName,
-				Namespace: owner.Namespace,
+				Namespace: r.Config.Namespace,
 			},
 		},
 	}

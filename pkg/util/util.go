@@ -41,3 +41,19 @@ func MergeLabels(l map[string]string, l2 map[string]string) map[string]string {
 	}
 	return l
 }
+
+func EmptyTypedStrSlice(s ...string) []interface{} {
+	ret := make([]interface{}, len(s))
+	for i := 0; i < len(s); i++ {
+		ret[i] = s[i]
+	}
+	return ret
+}
+
+func EmptyTypedFloatSlice(f ...float64) []interface{} {
+	ret := make([]interface{}, len(f))
+	for i := 0; i < len(f); i++ {
+		ret[i] = f[i]
+	}
+	return ret
+}

@@ -48,11 +48,11 @@ type Reconciler struct {
 	dynamic dynamic.Interface
 }
 
-func New(client client.Client, dc dynamic.Interface, istio *istiov1beta1.Config) *Reconciler {
+func New(client client.Client, dc dynamic.Interface, config *istiov1beta1.Config) *Reconciler {
 	return &Reconciler{
 		Reconciler: resources.Reconciler{
 			Client: client,
-			Owner:  istio,
+			Config: config,
 		},
 		dynamic: dc,
 	}
@@ -74,17 +74,40 @@ func (r *Reconciler) Reconcile(log logr.Logger) error {
 	rs = append(rs, resources.ResolveVariations("policy", rsv)...)
 	rs = append(rs, resources.ResolveVariations("telemetry", rsv)...)
 	for _, res := range rs {
-		o := res(r.Owner)
+		o := res()
 		err := k8sutil.Reconcile(log, r.Client, o)
 		if err != nil {
 			return emperror.WrapWith(err, "failed to reconcile resource", "resource", o.GetObjectKind().GroupVersionKind())
 		}
 	}
-	dcrs := r.dynamicCustomResources(r.Owner)
-	for _, res := range dcrs {
-		err := res.Reconcile(log, r.dynamic)
+	drs := []resources.DynamicResource{
+		r.meshPolicy,
+		r.istioProxyAttributeManifest,
+		r.kubernetesAttributeManifest,
+		r.stdioHandler,
+		r.accessLogLogentry,
+		r.tcpAccessLogLogentry,
+		r.stdioRule,
+		r.stdioTcpRule,
+		r.prometheusHandler,
+		r.requestCountMetric,
+		r.requestDurationMetric,
+		r.requestSizeMetric,
+		r.responseSizeMetric,
+		r.tcpByteReceivedMetric,
+		r.tcpByteSentMetric,
+		r.promHttpRule,
+		r.promTcpRule,
+		r.kubernetesEnvHandler,
+		r.attributesKubernetes,
+		r.kubeAttrRule,
+		r.tcpKubeAttrRule,
+	}
+	for _, dr := range drs {
+		o := dr()
+		err := o.Reconcile(log, r.dynamic)
 		if err != nil {
-			return emperror.WrapWith(err, "failed to reconcile dynamic resource", "resource", res.Gvr.Resource, "name", res.Name)
+			return emperror.WrapWith(err, "failed to reconcile dynamic resource", "resource", o.Gvr)
 		}
 	}
 	return nil

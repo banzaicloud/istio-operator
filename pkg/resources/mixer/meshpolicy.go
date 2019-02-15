@@ -14,33 +14,34 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package galley
+package mixer
 
 import (
-	"github.com/banzaicloud/istio-operator/pkg/resources/templates"
-	apiv1 "k8s.io/api/core/v1"
-	"k8s.io/apimachinery/pkg/runtime"
+	"github.com/banzaicloud/istio-operator/pkg/k8sutil"
+	"k8s.io/apimachinery/pkg/runtime/schema"
 )
 
-var serviceLabels = map[string]string{
-	"istio": "galley",
-}
-
-func (r *Reconciler) service() runtime.Object {
-	return &apiv1.Service{
-		ObjectMeta: templates.ObjectMeta(serviceName, serviceLabels, r.Config),
-		Spec: apiv1.ServiceSpec{
-			Ports: []apiv1.ServicePort{
+func (r *Reconciler) meshPolicy() *k8sutil.DynamicObject {
+	return &k8sutil.DynamicObject{
+		Gvr: schema.GroupVersionResource{
+			Group:    "authentication.istio.io",
+			Version:  "v1alpha1",
+			Resource: "meshpolicies",
+		},
+		Kind: "MeshPolicy",
+		Name: "default",
+		Labels: map[string]string{
+			"app": "istio-security",
+		},
+		Spec: map[string]interface{}{
+			"peers": []map[string]interface{}{
 				{
-					Name: "https-validation",
-					Port: 443,
-				},
-				{
-					Name: "https-monitoring",
-					Port: 9093,
+					"mtls": map[string]interface{}{
+						"mode": "PERMISSIVE",
+					},
 				},
 			},
-			Selector: labelSelector,
 		},
+		Owner: r.Config,
 	}
 }
