@@ -22,6 +22,7 @@ import (
 	istiov1beta1 "github.com/banzaicloud/istio-operator/pkg/apis/operator/v1beta1"
 	"github.com/banzaicloud/istio-operator/pkg/resources"
 	"github.com/banzaicloud/istio-operator/pkg/resources/citadel"
+	"github.com/banzaicloud/istio-operator/pkg/resources/common"
 	"github.com/banzaicloud/istio-operator/pkg/resources/galley"
 	"github.com/banzaicloud/istio-operator/pkg/resources/gateways"
 	"github.com/banzaicloud/istio-operator/pkg/resources/mixer"
@@ -128,6 +129,7 @@ func (r *ReconcileConfig) Reconcile(request reconcile.Request) (reconcile.Result
 	}
 
 	reconcilers := []resources.ComponentReconciler{
+		common.New(r.Client, instance),
 		citadel.New(r.Client, instance),
 		galley.New(r.Client, instance),
 		pilot.New(r.Client, instance),

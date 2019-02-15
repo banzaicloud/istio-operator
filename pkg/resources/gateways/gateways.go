@@ -25,25 +25,11 @@ import (
 	"github.com/banzaicloud/istio-operator/pkg/util"
 	"github.com/go-logr/logr"
 	"github.com/goph/emperror"
-	"k8s.io/apimachinery/pkg/runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
 type Reconciler struct {
 	resources.Reconciler
-}
-
-type GwResource func(gw string, owner *istiov1beta1.Config) runtime.Object
-
-func rr(gw string, gwResources []GwResource) []resources.Resource {
-	resources := make([]resources.Resource, 0)
-	for i := range gwResources {
-		i := i
-		resources = append(resources, func(owner *istiov1beta1.Config) runtime.Object {
-			return gwResources[i](gw, owner)
-		})
-	}
-	return resources
 }
 
 func New(client client.Client, istio *istiov1beta1.Config) *Reconciler {
@@ -56,7 +42,7 @@ func New(client client.Client, istio *istiov1beta1.Config) *Reconciler {
 }
 
 func (r *Reconciler) Reconcile(log logr.Logger) error {
-	var gwResources = []GwResource{
+	var rsv = []resources.ResourceVariation{
 		r.serviceAccount,
 		r.clusterRole,
 		r.clusterRoleBinding,
@@ -64,7 +50,7 @@ func (r *Reconciler) Reconcile(log logr.Logger) error {
 		r.service,
 		r.horizontalPodAutoscaler,
 	}
-	for _, res := range append(rr("ingressgateway", gwResources), rr("egressgateway", gwResources)...) {
+	for _, res := range append(resources.ResolveVariations("ingressgateway", rsv), resources.ResolveVariations("egressgateway", rsv)...) {
 		o := res(r.Owner)
 		err := k8sutil.Reconcile(log, r.Client, o)
 		if err != nil {

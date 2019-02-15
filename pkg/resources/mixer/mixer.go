@@ -24,7 +24,6 @@ import (
 	"github.com/banzaicloud/istio-operator/pkg/resources"
 	"github.com/go-logr/logr"
 	"github.com/goph/emperror"
-	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/client-go/dynamic"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
@@ -49,19 +48,6 @@ type Reconciler struct {
 	dynamic dynamic.Interface
 }
 
-type MixerResource func(t string, owner *istiov1beta1.Config) runtime.Object
-
-func rr(t string, tResources []MixerResource) []resources.Resource {
-	resources := make([]resources.Resource, 0)
-	for i := range tResources {
-		i := i
-		resources = append(resources, func(owner *istiov1beta1.Config) runtime.Object {
-			return tResources[i](t, owner)
-		})
-	}
-	return resources
-}
-
 func New(client client.Client, dc dynamic.Interface, istio *istiov1beta1.Config) *Reconciler {
 	return &Reconciler{
 		Reconciler: resources.Reconciler{
@@ -73,21 +59,21 @@ func New(client client.Client, dc dynamic.Interface, istio *istiov1beta1.Config)
 }
 
 func (r *Reconciler) Reconcile(log logr.Logger) error {
-	res := []resources.Resource{
+	rs := []resources.Resource{
 		r.serviceAccount,
 		r.clusterRole,
 		r.clusterRoleBinding,
 		r.configMap,
 	}
-	mResources := []MixerResource{
+	rsv := []resources.ResourceVariation{
 		r.deployment,
 		r.service,
 		r.horizontalPodAutoscaler,
 		r.destinationRule,
 	}
-	res = append(res, rr("policy", mResources)...)
-	res = append(res, rr("telemetry", mResources)...)
-	for _, res := range res {
+	rs = append(rs, resources.ResolveVariations("policy", rsv)...)
+	rs = append(rs, resources.ResolveVariations("telemetry", rsv)...)
+	for _, res := range rs {
 		o := res(r.Owner)
 		err := k8sutil.Reconcile(log, r.Client, o)
 		if err != nil {
