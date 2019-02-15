@@ -125,10 +125,6 @@ func hpaName(t string) string {
 	return fmt.Sprintf("istio-%s-autoscaler", t)
 }
 
-func destinationRuleName(t string) string {
-	return fmt.Sprintf("istio-%s", t)
-}
-
 func appLabel(t string) map[string]string {
 	return map[string]string{
 		"app": t,
