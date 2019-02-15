@@ -156,7 +156,7 @@ func (r *Reconciler) stdioRule() *k8sutil.DynamicObject {
 			"actions": []interface{}{
 				map[string]interface{}{
 					"handler":   "handler.stdio",
-					"instances": util.EmptyTypedStrSlice([]string{"accesslog.logentry"}...),
+					"instances": util.EmptyTypedStrSlice("accesslog.logentry"),
 				},
 			},
 			"match": `context.protocol == "http" || context.protocol == "grpc"`,
@@ -179,7 +179,7 @@ func (r *Reconciler) stdioTcpRule() *k8sutil.DynamicObject {
 			"actions": []interface{}{
 				map[string]interface{}{
 					"handler":   "handler.stdio",
-					"instances": util.EmptyTypedStrSlice([]string{"tcpaccesslog.logentry"}...),
+					"instances": util.EmptyTypedStrSlice("tcpaccesslog.logentry"),
 				},
 			},
 			"match": `context.protocol == "tcp"`,

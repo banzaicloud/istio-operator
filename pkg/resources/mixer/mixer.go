@@ -69,7 +69,6 @@ func (r *Reconciler) Reconcile(log logr.Logger) error {
 		r.deployment,
 		r.service,
 		r.horizontalPodAutoscaler,
-		r.destinationRule,
 	}
 	rs = append(rs, resources.ResolveVariations("policy", rsv)...)
 	rs = append(rs, resources.ResolveVariations("telemetry", rsv)...)
@@ -101,6 +100,8 @@ func (r *Reconciler) Reconcile(log logr.Logger) error {
 		r.attributesKubernetes,
 		r.kubeAttrRule,
 		r.tcpKubeAttrRule,
+		r.policyDestinationRule,
+		r.telemetryDestinationRule,
 	}
 	for _, dr := range drs {
 		o := dr()
@@ -122,10 +123,6 @@ func serviceName(t string) string {
 
 func hpaName(t string) string {
 	return fmt.Sprintf("istio-%s-autoscaler", t)
-}
-
-func destinationRuleName(t string) string {
-	return fmt.Sprintf("istio-%s", t)
 }
 
 func appLabel(t string) map[string]string {

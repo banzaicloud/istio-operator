@@ -19,25 +19,56 @@ package mixer
 import (
 	"fmt"
 
-	"github.com/banzaicloud/istio-operator/pkg/resources/templates"
-	"istio.io/api/networking/v1alpha3"
-	networkingv1alpha3 "istio.io/api/pkg/kube/apis/networking/v1alpha3"
-	"k8s.io/apimachinery/pkg/runtime"
+	"github.com/banzaicloud/istio-operator/pkg/k8sutil"
+	"k8s.io/apimachinery/pkg/runtime/schema"
 )
 
-func (r *Reconciler) destinationRule(t string) runtime.Object {
-	return &networkingv1alpha3.DestinationRule{
-		ObjectMeta: templates.ObjectMeta(destinationRuleName(t), nil, r.Config),
-		Spec: v1alpha3.DestinationRule{
-			Host: fmt.Sprintf("%s.%s.svc.cluster.local", t, r.Config.Namespace),
-			TrafficPolicy: &v1alpha3.TrafficPolicy{
-				ConnectionPool: &v1alpha3.ConnectionPoolSettings{
-					Http: &v1alpha3.ConnectionPoolSettings_HTTPSettings{
-						Http2MaxRequests:         10000,
-						MaxRequestsPerConnection: 10000,
+func (r *Reconciler) policyDestinationRule() *k8sutil.DynamicObject {
+	return &k8sutil.DynamicObject{
+		Gvr: schema.GroupVersionResource{
+			Group:    "networking.istio.io",
+			Version:  "v1alpha3",
+			Resource: "destinationrules",
+		},
+		Kind:      "DestinationRule",
+		Name:      "istio-policy",
+		Namespace: r.Config.Namespace,
+		Spec: map[string]interface{}{
+			"traffic_policy": map[string]interface{}{
+				"connection_pool": map[string]interface{}{
+					"http": map[string]interface{}{
+						"http2_max_requests":          10000,
+						"max_requests_per_connection": 10000,
 					},
 				},
 			},
+			"host": fmt.Sprintf("policy.%s.svc.cluster.local", r.Config.Namespace),
 		},
+		Owner: r.Config,
+	}
+}
+
+func (r *Reconciler) telemetryDestinationRule() *k8sutil.DynamicObject {
+	return &k8sutil.DynamicObject{
+		Gvr: schema.GroupVersionResource{
+			Group:    "networking.istio.io",
+			Version:  "v1alpha3",
+			Resource: "destinationrules",
+		},
+		Kind:      "DestinationRule",
+		Name:      "istio-telemetry",
+		Namespace: r.Config.Namespace,
+		Spec: map[string]interface{}{
+			"traffic_policy": map[string]interface{}{
+				"connection_pool": map[string]interface{}{
+					"http": map[string]interface{}{
+						"http2_max_requests":          10000,
+						"max_requests_per_connection": 10000,
+					},
+				},
+			},
+			"host": fmt.Sprintf("telemetry.%s.svc.cluster.local", r.Config.Namespace),
+		},
+		Owner: r.Config,
 	}
 }

@@ -23,7 +23,6 @@ import (
 
 	"github.com/go-logr/logr"
 	"github.com/goph/emperror"
-	"istio.io/api/pkg/kube/apis/networking/v1alpha3"
 	appsv1 "k8s.io/api/apps/v1"
 	"k8s.io/api/autoscaling/v2beta1"
 	apiv1 "k8s.io/api/core/v1"
@@ -87,14 +86,6 @@ func Reconcile(log logr.Logger, client runtimeClient.Client, desired runtime.Obj
 			hpa := desired.(*v2beta1.HorizontalPodAutoscaler)
 			hpa.ResourceVersion = current.(*v2beta1.HorizontalPodAutoscaler).ResourceVersion
 			desired = hpa
-		case *v1alpha3.Gateway:
-			gw := desired.(*v1alpha3.Gateway)
-			gw.ResourceVersion = current.(*v1alpha3.Gateway).ResourceVersion
-			desired = gw
-		case *v1alpha3.DestinationRule:
-			dr := desired.(*v1alpha3.DestinationRule)
-			dr.ResourceVersion = current.(*v1alpha3.DestinationRule).ResourceVersion
-			desired = dr
 		}
 		if err := client.Update(context.TODO(), desired); err != nil {
 			return emperror.WrapWith(err, "updating resource failed", "resource", desired.GetObjectKind().GroupVersionKind(), "type", reflect.TypeOf(desired))
