@@ -29,7 +29,7 @@ import (
 	"k8s.io/client-go/dynamic"
 )
 
-type DynamicResource struct {
+type DynamicObject struct {
 	Name      string
 	Namespace string
 	Labels    map[string]string
@@ -39,7 +39,7 @@ type DynamicResource struct {
 	Owner     *istiov1beta1.Config
 }
 
-func (d *DynamicResource) Unstructured() *unstructured.Unstructured {
+func (d *DynamicObject) Unstructured() *unstructured.Unstructured {
 	u := &unstructured.Unstructured{
 		Object: map[string]interface{}{
 			"spec": d.Spec,
@@ -68,7 +68,7 @@ func (d *DynamicResource) Unstructured() *unstructured.Unstructured {
 	return u
 }
 
-func (d *DynamicResource) Reconcile(log logr.Logger, client dynamic.Interface) error {
+func (d *DynamicObject) Reconcile(log logr.Logger, client dynamic.Interface) error {
 	log = log.WithValues("type", reflect.TypeOf(d))
 	desired := d.Unstructured()
 	_, err := client.Resource(d.Gvr).Namespace(d.Namespace).Get(d.Name, metav1.GetOptions{})

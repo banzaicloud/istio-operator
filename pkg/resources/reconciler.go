@@ -18,6 +18,7 @@ package resources
 
 import (
 	istiov1beta1 "github.com/banzaicloud/istio-operator/pkg/apis/operator/v1beta1"
+	"github.com/banzaicloud/istio-operator/pkg/k8sutil"
 	"github.com/go-logr/logr"
 	"k8s.io/apimachinery/pkg/runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
@@ -46,3 +47,5 @@ func ResolveVariations(t string, v []ResourceVariation) []Resource {
 	}
 	return resources
 }
+
+type DynamicResource func(owner *istiov1beta1.Config) *k8sutil.DynamicObject

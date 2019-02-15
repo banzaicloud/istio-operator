@@ -80,11 +80,34 @@ func (r *Reconciler) Reconcile(log logr.Logger) error {
 			return emperror.WrapWith(err, "failed to reconcile resource", "resource", o.GetObjectKind().GroupVersionKind())
 		}
 	}
-	dcrs := r.dynamicCustomResources(r.Owner)
-	for _, res := range dcrs {
-		err := res.Reconcile(log, r.dynamic)
+	drs := []resources.DynamicResource{
+		r.meshPolicy,
+		r.istioProxyAttributeManifest,
+		r.kubernetesAttributeManifest,
+		r.stdioHandler,
+		r.accessLogLogentry,
+		r.tcpAccessLogLogentry,
+		r.stdioRule,
+		r.stdioTcpRule,
+		r.prometheusHandler,
+		r.requestCountMetric,
+		r.requestDurationMetric,
+		r.requestSizeMetric,
+		r.responseSizeMetric,
+		r.tcpByteReceivedMetric,
+		r.tcpByteSentMetric,
+		r.promHttpRule,
+		r.promTcpRule,
+		r.kubernetesEnvHandler,
+		r.attributesKubernetes,
+		r.kubeAttrRule,
+		r.tcpKubeAttrRule,
+	}
+	for _, dr := range drs {
+		o := dr(r.Owner)
+		err := o.Reconcile(log, r.dynamic)
 		if err != nil {
-			return emperror.WrapWith(err, "failed to reconcile dynamic resource", "resource", res.Gvr.Resource, "name", res.Name)
+			return emperror.WrapWith(err, "failed to reconcile dynamic resource", "resource", o.Gvr)
 		}
 	}
 	return nil
