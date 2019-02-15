@@ -223,7 +223,7 @@ func (r *Reconciler) promHttpRule() *k8sutil.DynamicObject {
 			"actions": []interface{}{
 				map[string]interface{}{
 					"handler":   "handler.prometheus",
-					"instances": util.EmptyTypedStrSlice([]string{"requestcount.metric", "requestduration.metric", "requestsize.metric", "responsesize.metric"}...),
+					"instances": util.EmptyTypedStrSlice("requestcount.metric", "requestduration.metric", "requestsize.metric", "responsesize.metric"),
 				},
 			},
 			"match": `context.protocol == "http" || context.protocol == "grpc"`,
@@ -246,7 +246,7 @@ func (r *Reconciler) promTcpRule() *k8sutil.DynamicObject {
 			"actions": []interface{}{
 				map[string]interface{}{
 					"handler":   "handler.prometheus",
-					"instances": util.EmptyTypedStrSlice([]string{"tcpbytesent.metric", "tcpbytereceived.metric"}...),
+					"instances": util.EmptyTypedStrSlice("tcpbytesent.metric", "tcpbytereceived.metric"),
 				},
 			},
 			"match": `context.protocol == "tcp"`,
@@ -291,7 +291,7 @@ func metricLabels() []interface{} {
 }
 
 func tcpMetricLabels() []interface{} {
-	return util.EmptyTypedStrSlice([]string{
+	return util.EmptyTypedStrSlice(
 		"reporter",
 		"source_app",
 		"source_principal",
@@ -307,5 +307,5 @@ func tcpMetricLabels() []interface{} {
 		"destination_service_name",
 		"destination_service_namespace",
 		"connection_security_policy",
-	}...)
+	)
 }

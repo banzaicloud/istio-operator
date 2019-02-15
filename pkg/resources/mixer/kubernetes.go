@@ -94,7 +94,7 @@ func (r *Reconciler) kubeAttrRule() *k8sutil.DynamicObject {
 			"actions": []interface{}{
 				map[string]interface{}{
 					"handler":   "handler.kubernetesenv",
-					"instances": util.EmptyTypedStrSlice([]string{"attributes.kubernetes"}...),
+					"instances": util.EmptyTypedStrSlice("attributes.kubernetes"),
 				},
 			},
 		},
@@ -116,7 +116,7 @@ func (r *Reconciler) tcpKubeAttrRule() *k8sutil.DynamicObject {
 			"actions": []interface{}{
 				map[string]interface{}{
 					"handler":   "handler.kubernetesenv",
-					"instances": util.EmptyTypedStrSlice([]string{"attributes.kubernetes"}...),
+					"instances": util.EmptyTypedStrSlice("attributes.kubernetes"),
 				},
 			},
 			"match": `context.protocol == "tcp"`,

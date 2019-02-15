@@ -132,7 +132,7 @@ func (r *ReconcileConfig) Reconcile(request reconcile.Request) (reconcile.Result
 		common.New(r.Client, instance),
 		citadel.New(r.Client, r.dynamic, instance),
 		galley.New(r.Client, instance),
-		pilot.New(r.Client, instance),
+		pilot.New(r.Client, r.dynamic, instance),
 		gateways.New(r.Client, instance),
 		mixer.New(r.Client, r.dynamic, instance),
 		sidecarinjector.New(r.Client, instance),

@@ -17,31 +17,38 @@ limitations under the License.
 package pilot
 
 import (
-	"github.com/banzaicloud/istio-operator/pkg/resources/templates"
-	"istio.io/api/networking/v1alpha3"
-	networkingv1alpha3 "istio.io/api/pkg/kube/apis/networking/v1alpha3"
-	"k8s.io/apimachinery/pkg/runtime"
+	"github.com/banzaicloud/istio-operator/pkg/k8sutil"
+	"github.com/banzaicloud/istio-operator/pkg/util"
+	"k8s.io/apimachinery/pkg/runtime/schema"
 )
 
-var gatewaySelector = map[string]string{
+var gatewaySelector = map[string]interface{}{
 	"istio": "ingress",
 }
 
-func (r *Reconciler) gateway() runtime.Object {
-	return &networkingv1alpha3.Gateway{
-		ObjectMeta: templates.ObjectMeta(gatewayName, nil, r.Config),
-		Spec: v1alpha3.Gateway{
-			Servers: []*v1alpha3.Server{
+func (r *Reconciler) gateway() *k8sutil.DynamicObject {
+	return &k8sutil.DynamicObject{
+		Gvr: schema.GroupVersionResource{
+			Group:    "networking.istio.io",
+			Version:  "v1alpha3",
+			Resource: "gateways",
+		},
+		Kind:      "Gateway",
+		Name:      gatewayName,
+		Namespace: r.Config.Namespace,
+		Spec: map[string]interface{}{
+			"servers": []map[string]interface{}{
 				{
-					Port: &v1alpha3.Port{
-						Name:     "http",
-						Protocol: "HTTP2",
-						Number:   80,
+					"port": map[string]interface{}{
+						"name":     "http",
+						"protocol": "HTTP2",
+						"number":   80,
 					},
-					Hosts: []string{"*"},
+					"hosts": util.EmptyTypedStrSlice("*"),
 				},
 			},
-			Selector: gatewaySelector,
+			"selector": gatewaySelector,
 		},
+		Owner: r.Config,
 	}
 }
