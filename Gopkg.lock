@@ -69,23 +69,11 @@
   version = "v1.6.12"
 
 [[projects]]
-  branch = "master"
-  digest = "1:54d5c6a784a9de9c836fc070d51d0689c3e99ee6d24dba8a36f0762039dae830"
-  name = "github.com/gogo/googleapis"
-  packages = ["google/rpc"]
-  pruneopts = "T"
-  revision = "8558fb44d2f1fc223118afc694129d2c2d2924d1"
-
-[[projects]]
   digest = "1:f5ccd717b5f093cbabc51ee2e7a5979b92f17d217f9031d6d64f337101c408e4"
   name = "github.com/gogo/protobuf"
   packages = [
-    "gogoproto",
-    "jsonpb",
     "proto",
-    "protoc-gen-gogo/descriptor",
     "sortkeys",
-    "types",
   ]
   pruneopts = "T"
   revision = "4cbf7e384e768b4e01799441fdf2a706a5635ae7"
@@ -490,9 +478,7 @@
     "http2",
     "http2/hpack",
     "idna",
-    "internal/timeseries",
     "lex/httplex",
-    "trace",
   ]
   pruneopts = "T"
   revision = "0ed95abb35c445290478a5348a7b38bb154135fd"
@@ -606,54 +592,6 @@
   version = "v1.4.0"
 
 [[projects]]
-  branch = "master"
-  digest = "1:91f75dc679abcf04b29b064a5b9c40a0b0561c86c322010fbf6fc08040cc48bc"
-  name = "google.golang.org/genproto"
-  packages = ["googleapis/rpc/status"]
-  pruneopts = "T"
-  revision = "4b09977fb92221987e99d190c8f88f2c92727a29"
-
-[[projects]]
-  digest = "1:adec72b8770ba7ad04c7a5a8ef8c6cc13a766bd11f900b60f360303b4f56e0b1"
-  name = "google.golang.org/grpc"
-  packages = [
-    ".",
-    "balancer",
-    "balancer/base",
-    "balancer/roundrobin",
-    "binarylog/grpc_binarylog_v1",
-    "codes",
-    "connectivity",
-    "credentials",
-    "credentials/internal",
-    "encoding",
-    "encoding/proto",
-    "grpclog",
-    "internal",
-    "internal/backoff",
-    "internal/binarylog",
-    "internal/channelz",
-    "internal/envconfig",
-    "internal/grpcrand",
-    "internal/grpcsync",
-    "internal/syscall",
-    "internal/transport",
-    "keepalive",
-    "metadata",
-    "naming",
-    "peer",
-    "resolver",
-    "resolver/dns",
-    "resolver/passthrough",
-    "stats",
-    "status",
-    "tap",
-  ]
-  pruneopts = "T"
-  revision = "a02b0774206b209466313a0b525d2c738fe407eb"
-  version = "v1.18.0"
-
-[[projects]]
   digest = "1:7fc160b460a6fc506b37fcca68332464c3f2cd57b6e3f111f26c5bbfd2d5518e"
   name = "gopkg.in/fsnotify.v1"
   packages = ["."]
@@ -685,23 +623,6 @@
   pruneopts = "T"
   revision = "51d6538a90f86fe93ac480b35f37b2be17fef232"
   version = "v2.2.2"
-
-[[projects]]
-  branch = "istio-8772"
-  digest = "1:ea15f3cd8d52de360c92685161da82f7034ae61087f9ae05a0d879f5c50849b7"
-  name = "istio.io/api"
-  packages = [
-    "mixer/v1",
-    "mixer/v1/config/client",
-    "networking/v1alpha3",
-    "pkg/kube/apis/config/v1alpha2",
-    "pkg/kube/apis/networking/v1alpha3",
-    "policy/v1beta1",
-    "util",
-  ]
-  pruneopts = "T"
-  revision = "23148abe2cc60e73c836252a482c6bebcbc39a3c"
-  source = "github.com/rcernich/istio-api"
 
 [[projects]]
   digest = "1:8a1af4b4d5b51e3f8d6ec2a44467e8505e25e29814c2557d1d9717834065c674"
@@ -943,7 +864,6 @@
     "pkg/client/apiutil",
     "pkg/client/config",
     "pkg/controller",
-    "pkg/controller/controllerutil",
     "pkg/envtest",
     "pkg/envtest/printer",
     "pkg/event",
@@ -1020,9 +940,6 @@
     "github.com/onsi/ginkgo",
     "github.com/onsi/gomega",
     "golang.org/x/net/context",
-    "istio.io/api/networking/v1alpha3",
-    "istio.io/api/pkg/kube/apis/config/v1alpha2",
-    "istio.io/api/pkg/kube/apis/networking/v1alpha3",
     "k8s.io/api/admissionregistration/v1beta1",
     "k8s.io/api/apps/v1",
     "k8s.io/api/autoscaling/v2beta1",
@@ -1048,7 +965,6 @@
     "sigs.k8s.io/controller-runtime/pkg/client",
     "sigs.k8s.io/controller-runtime/pkg/client/config",
     "sigs.k8s.io/controller-runtime/pkg/controller",
-    "sigs.k8s.io/controller-runtime/pkg/controller/controllerutil",
     "sigs.k8s.io/controller-runtime/pkg/envtest",
     "sigs.k8s.io/controller-runtime/pkg/handler",
     "sigs.k8s.io/controller-runtime/pkg/manager",

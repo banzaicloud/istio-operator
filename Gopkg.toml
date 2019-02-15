@@ -48,11 +48,6 @@ version="v1.4.7"
   name = "github.com/golang/protobuf"
   revision = "05f48f4eaf0e05663b562bab533cdd472238ce29"
 
-[[constraint]]
-  branch = "istio-8772"
-  name = "istio.io/api"
-  source = "github.com/rcernich/istio-api"
-
 [[override]]
   name = "k8s.io/code-generator"
   # revision for tag "kubernetes-1.12.3"
