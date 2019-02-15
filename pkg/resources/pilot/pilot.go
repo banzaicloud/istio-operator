@@ -29,7 +29,6 @@ const (
 	serviceAccountName     = "istio-pilot-service-account"
 	clusterRoleName        = "istio-pilot-cluster-role"
 	clusterRoleBindingName = "istio-pilot-cluster-role-binding"
-	configMapName          = "istio"
 	deploymentName         = "istio-pilot"
 	serviceName            = "istio-pilot"
 	hpaName                = "istio-pilot-autoscaler"
@@ -62,7 +61,6 @@ func (r *Reconciler) Reconcile(log logr.Logger) error {
 		r.serviceAccount,
 		r.clusterRole,
 		r.clusterRoleBinding,
-		r.configMap,
 		r.deployment,
 		r.service,
 		r.horizontalPodAutoscaler,

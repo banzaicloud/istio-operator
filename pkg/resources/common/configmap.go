@@ -14,7 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package pilot
+package common
 
 import (
 	"fmt"
@@ -31,7 +31,7 @@ var cmLabels = map[string]string{
 
 func (r *Reconciler) configMap(owner *istiov1beta1.Config) runtime.Object {
 	return &apiv1.ConfigMap{
-		ObjectMeta: templates.ObjectMeta(configMapName, cmLabels, owner),
+		ObjectMeta: templates.ObjectMeta(IstioConfigMapName, cmLabels, owner),
 		Data: map[string]string{
 			"mesh": r.meshConfig(owner.Namespace),
 		},

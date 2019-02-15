@@ -20,6 +20,7 @@ import (
 	"fmt"
 
 	istiov1beta1 "github.com/banzaicloud/istio-operator/pkg/apis/operator/v1beta1"
+	"github.com/banzaicloud/istio-operator/pkg/resources/common"
 	"github.com/banzaicloud/istio-operator/pkg/resources/templates"
 	"github.com/banzaicloud/istio-operator/pkg/util"
 	appsv1 "k8s.io/api/apps/v1"
@@ -93,7 +94,7 @@ func (r *Reconciler) deployment(owner *istiov1beta1.Config) runtime.Object {
 							VolumeSource: apiv1.VolumeSource{
 								ConfigMap: &apiv1.ConfigMapVolumeSource{
 									LocalObjectReference: apiv1.LocalObjectReference{
-										Name: "istio", // TODO: istio config map name
+										Name: common.IstioConfigMapName,
 									},
 								},
 							},

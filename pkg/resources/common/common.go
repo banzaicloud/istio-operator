@@ -14,35 +14,43 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package resources
+package common
 
 import (
 	istiov1beta1 "github.com/banzaicloud/istio-operator/pkg/apis/operator/v1beta1"
+	"github.com/banzaicloud/istio-operator/pkg/k8sutil"
+	"github.com/banzaicloud/istio-operator/pkg/resources"
 	"github.com/go-logr/logr"
-	"k8s.io/apimachinery/pkg/runtime"
+	"github.com/goph/emperror"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
+const (
+	IstioConfigMapName = "istio"
+)
+
 type Reconciler struct {
-	client.Client
-	Owner *istiov1beta1.Config
+	resources.Reconciler
 }
 
-type ComponentReconciler interface {
-	Reconcile(log logr.Logger) error
-}
-
-type Resource func(owner *istiov1beta1.Config) runtime.Object
-
-type ResourceVariation func(t string, owner *istiov1beta1.Config) runtime.Object
-
-func ResolveVariations(t string, v []ResourceVariation) []Resource {
-	resources := make([]Resource, 0)
-	for i := range v {
-		i := i
-		resources = append(resources, func(owner *istiov1beta1.Config) runtime.Object {
-			return v[i](t, owner)
-		})
+func New(client client.Client, istio *istiov1beta1.Config) *Reconciler {
+	return &Reconciler{
+		Reconciler: resources.Reconciler{
+			Client: client,
+			Owner:  istio,
+		},
 	}
-	return resources
+}
+
+func (r *Reconciler) Reconcile(log logr.Logger) error {
+	for _, res := range []resources.Resource{
+		r.configMap,
+	} {
+		o := res(r.Owner)
+		err := k8sutil.Reconcile(log, r.Client, o)
+		if err != nil {
+			return emperror.WrapWith(err, "failed to reconcile resource", "resource", o.GetObjectKind().GroupVersionKind())
+		}
+	}
+	return nil
 }
