@@ -45,15 +45,19 @@ var labelSelector = map[string]string{
 type Reconciler struct {
 	resources.Reconciler
 	dynamic dynamic.Interface
+
+	deployMeshPolicy bool
 }
 
-func New(client client.Client, dc dynamic.Interface, config *istiov1beta1.Config) *Reconciler {
+func New(configuration Configuration, client client.Client, dc dynamic.Interface, config *istiov1beta1.Config) *Reconciler {
 	return &Reconciler{
 		Reconciler: resources.Reconciler{
 			Client: client,
 			Config: config,
 		},
 		dynamic: dc,
+
+		deployMeshPolicy: configuration.DeployMeshPolicy,
 	}
 }
 
@@ -72,7 +76,12 @@ func (r *Reconciler) Reconcile(log logr.Logger) error {
 		}
 	}
 	var drs []resources.DynamicResource
-	if r.Config.Spec.MTLS {
+
+	if !r.deployMeshPolicy {
+		return nil
+	}
+
+	if r.Config.Spec.Config.MTLSEnabled {
 		drs = []resources.DynamicResource{
 			r.meshPolicyMTLS,
 			r.destinationRuleDefaultMtls,
@@ -83,6 +92,7 @@ func (r *Reconciler) Reconcile(log logr.Logger) error {
 			r.meshPolicy,
 		}
 	}
+
 	for _, dr := range drs {
 		o := dr()
 		err := o.Reconcile(log, r.dynamic)

@@ -21,37 +21,49 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
-// ConfigSpec defines the desired state of Config
-type ConfigSpec struct {
-	Config config.IstioConfiguration
+type IstioService struct {
+	Name          string   `json:"name"`
+	LabelSelector string   `json:"labelSelector"`
+	IPs           []string `json:"podIPs"`
 }
 
-// ConfigStatus defines the observed state of Config
-type ConfigStatus struct {
+type RemoteIstioConfiguration struct {
+	config.IstioConfiguration
+	EnabledServices []IstioService `json:"enabledServices"`
+}
+
+// RemoteConfigSpec defines the desired state of RemoteConfig
+type RemoteConfigSpec struct {
+	ClusterName string                   `json:"clusterName"`
+	Config      RemoteIstioConfiguration `json:"config"`
+}
+
+// RemoteConfigStatus defines the observed state of RemoteConfig
+type RemoteConfigStatus struct {
 }
 
 // +genclient
 // +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
 
-// Config is the Schema for the configs API
+// RemoteConfig is the Schema for the remoteconfigs API
 // +k8s:openapi-gen=true
-type Config struct {
+type RemoteConfig struct {
 	metav1.TypeMeta   `json:",inline"`
 	metav1.ObjectMeta `json:"metadata,omitempty"`
 
-	Spec   ConfigSpec   `json:"spec,omitempty"`
-	Status ConfigStatus `json:"status,omitempty"`
+	Spec   RemoteConfigSpec   `json:"spec,omitempty"`
+	Status RemoteConfigStatus `json:"status,omitempty"`
 }
 
 // +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
 
-// ConfigList contains a list of Config
-type ConfigList struct {
+// RemoteConfigList contains a list of RemoteConfig
+type RemoteConfigList struct {
 	metav1.TypeMeta `json:",inline"`
 	metav1.ListMeta `json:"metadata,omitempty"`
-	Items           []Config `json:"items"`
+	Items           []RemoteConfig `json:"items"`
 }
 
 func init() {
-	SchemeBuilder.Register(&Config{}, &ConfigList{})
+	SchemeBuilder.Register(&RemoteConfig{}, &RemoteConfigList{})
 }

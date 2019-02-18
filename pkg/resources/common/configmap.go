@@ -18,6 +18,7 @@ package common
 
 import (
 	"fmt"
+
 	"github.com/banzaicloud/istio-operator/pkg/resources/templates"
 	"github.com/ghodss/yaml"
 	apiv1 "k8s.io/api/core/v1"
