@@ -76,16 +76,11 @@ func (r *Reconciler) Reconcile(log logr.Logger) error {
 		}
 	}
 	var drs []resources.DynamicResource
-
-	if !r.deployMeshPolicy {
-		return nil
-	}
-
-	if r.Config.Spec.Config.MTLSEnabled {
+	if r.Config.Spec.MTLS {
 		drs = []resources.DynamicResource{
 			r.meshPolicyMTLS,
-			r.destinationRuleDefaultMtls,
-			r.destinationRuleApiServerMtls,
+			r.defaultMTLS,
+			r.apiServerMTLS,
 		}
 	} else {
 		drs = []resources.DynamicResource{
