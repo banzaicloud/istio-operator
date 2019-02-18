@@ -27,6 +27,9 @@ spec:
         metadata:
           type: object
         spec:
+          properties:
+            mtls:
+              type: boolean
           type: object
         status:
           type: object

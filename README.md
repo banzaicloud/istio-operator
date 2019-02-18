@@ -43,18 +43,7 @@ As a pre-requisite it needs a Kubernetes cluster (you can create one using [Pipe
 
 ## Development
 
-The Istio operator is built on the [kubebuilder](https://github.com/kubernetes-sigs/kubebuilder) project.
-
-To build the operator and run tests:
-
-1. Run `make vendor`
-2. Run `make`
-
-If you make changes and would like to try your own version, create your own image:
-
-1. `make docker-build IMG={YOUR_USERNAME}/istio-operator:v0.0.1`
-2. `make docker-push IMG={YOUR_USERNAME}/istio-operator:v0.0.1`
-3. `make deploy IMG={YOUR_USERNAME}/istio-operator:v0.0.1`
+Check out the [developer docs](docs/developer.md).
 
 ## Issues, feature requests and roadmap
 
@@ -65,6 +54,7 @@ Some of the significant features and future items from the roadmap:
 Released:
 
 - [x] - Install Istio
+- [x] - Enable global mTLS
 - [x] - Federation, flat
 
 Under development (next release)
