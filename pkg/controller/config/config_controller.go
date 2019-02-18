@@ -20,6 +20,7 @@ import (
 	"context"
 
 	istiov1beta1 "github.com/banzaicloud/istio-operator/pkg/apis/operator/v1beta1"
+	"github.com/banzaicloud/istio-operator/pkg/crds"
 	"github.com/banzaicloud/istio-operator/pkg/resources"
 	"github.com/banzaicloud/istio-operator/pkg/resources/citadel"
 	"github.com/banzaicloud/istio-operator/pkg/resources/common"
@@ -31,9 +32,7 @@ import (
 	"github.com/go-logr/logr"
 	"github.com/goph/emperror"
 	"k8s.io/apimachinery/pkg/api/errors"
-	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/client-go/dynamic"
-	"k8s.io/client-go/rest"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/controller"
 	"sigs.k8s.io/controller-runtime/pkg/handler"
@@ -52,16 +51,19 @@ func Add(mgr manager.Manager) error {
 	if err != nil {
 		return emperror.Wrap(err, "failed to create dynamic client")
 	}
-	return add(mgr, newReconciler(mgr, dynamic))
+	crd, err := crds.New(mgr.GetConfig())
+	if err != nil {
+		return emperror.Wrap(err, "unable to set up crd operator")
+	}
+	return add(mgr, newReconciler(mgr, dynamic, crd))
 }
 
 // newReconciler returns a new reconcile.Reconciler
-func newReconciler(mgr manager.Manager, d dynamic.Interface) reconcile.Reconciler {
+func newReconciler(mgr manager.Manager, d dynamic.Interface, crd *crds.CrdOperator) reconcile.Reconciler {
 	return &ReconcileConfig{
-		Client:  mgr.GetClient(),
-		dynamic: d,
-		scheme:  mgr.GetScheme(),
-		config:  mgr.GetConfig(),
+		Client:      mgr.GetClient(),
+		dynamic:     d,
+		crdOperator: crd,
 	}
 }
 
@@ -98,9 +100,8 @@ var _ reconcile.Reconciler = &ReconcileConfig{}
 // ReconcileConfig reconciles a Config object
 type ReconcileConfig struct {
 	client.Client
-	dynamic dynamic.Interface
-	scheme  *runtime.Scheme
-	config  *rest.Config
+	dynamic     dynamic.Interface
+	crdOperator *crds.CrdOperator
 }
 
 type ReconcileComponent func(log logr.Logger, istio *istiov1beta1.Config) error
@@ -125,6 +126,13 @@ func (r *ReconcileConfig) Reconcile(request reconcile.Request) (reconcile.Result
 			return reconcile.Result{}, nil
 		}
 		// Error reading the object - requeue the request.
+		return reconcile.Result{}, err
+	}
+
+	log.Info("creating CRDs")
+	err = r.crdOperator.Reconcile(instance)
+	if err != nil {
+		log.Error(err, "unable to initialize CRDs")
 		return reconcile.Result{}, err
 	}
 

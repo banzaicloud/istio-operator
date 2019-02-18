@@ -23,9 +23,10 @@ import (
 
 	"github.com/go-logr/logr"
 	"github.com/goph/emperror"
+	admissionregistrationv1beta1 "k8s.io/api/admissionregistration/v1beta1"
 	appsv1 "k8s.io/api/apps/v1"
-	"k8s.io/api/autoscaling/v2beta1"
-	apiv1 "k8s.io/api/core/v1"
+	autoscalingv2beta1 "k8s.io/api/autoscaling/v2beta1"
+	corev1 "k8s.io/api/core/v1"
 	rbacv1 "k8s.io/api/rbac/v1"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/runtime"
@@ -53,13 +54,13 @@ func Reconcile(log logr.Logger, client runtimeClient.Client, desired runtime.Obj
 		switch desired.(type) {
 		default:
 			return emperror.With(errors.New("unexpected resource type"), "type", reflect.TypeOf(desired))
-		case *apiv1.Namespace:
-			ns := desired.(*apiv1.Namespace)
-			ns.ResourceVersion = current.(*apiv1.Namespace).ResourceVersion
+		case *corev1.Namespace:
+			ns := desired.(*corev1.Namespace)
+			ns.ResourceVersion = current.(*corev1.Namespace).ResourceVersion
 			desired = ns
-		case *apiv1.ServiceAccount:
-			sa := desired.(*apiv1.ServiceAccount)
-			sa.ResourceVersion = current.(*apiv1.ServiceAccount).ResourceVersion
+		case *corev1.ServiceAccount:
+			sa := desired.(*corev1.ServiceAccount)
+			sa.ResourceVersion = current.(*corev1.ServiceAccount).ResourceVersion
 			desired = sa
 		case *rbacv1.ClusterRole:
 			cr := desired.(*rbacv1.ClusterRole)
@@ -69,23 +70,27 @@ func Reconcile(log logr.Logger, client runtimeClient.Client, desired runtime.Obj
 			crb := desired.(*rbacv1.ClusterRoleBinding)
 			crb.ResourceVersion = current.(*rbacv1.ClusterRoleBinding).ResourceVersion
 			desired = crb
-		case *apiv1.ConfigMap:
-			cm := desired.(*apiv1.ConfigMap)
-			cm.ResourceVersion = current.(*apiv1.ConfigMap).ResourceVersion
+		case *corev1.ConfigMap:
+			cm := desired.(*corev1.ConfigMap)
+			cm.ResourceVersion = current.(*corev1.ConfigMap).ResourceVersion
 			desired = cm
-		case *apiv1.Service:
-			svc := desired.(*apiv1.Service)
-			svc.ResourceVersion = current.(*apiv1.Service).ResourceVersion
-			svc.Spec.ClusterIP = current.(*apiv1.Service).Spec.ClusterIP
+		case *corev1.Service:
+			svc := desired.(*corev1.Service)
+			svc.ResourceVersion = current.(*corev1.Service).ResourceVersion
+			svc.Spec.ClusterIP = current.(*corev1.Service).Spec.ClusterIP
 			desired = svc
 		case *appsv1.Deployment:
 			deploy := desired.(*appsv1.Deployment)
 			deploy.ResourceVersion = current.(*appsv1.Deployment).ResourceVersion
 			desired = deploy
-		case *v2beta1.HorizontalPodAutoscaler:
-			hpa := desired.(*v2beta1.HorizontalPodAutoscaler)
-			hpa.ResourceVersion = current.(*v2beta1.HorizontalPodAutoscaler).ResourceVersion
+		case *autoscalingv2beta1.HorizontalPodAutoscaler:
+			hpa := desired.(*autoscalingv2beta1.HorizontalPodAutoscaler)
+			hpa.ResourceVersion = current.(*autoscalingv2beta1.HorizontalPodAutoscaler).ResourceVersion
 			desired = hpa
+		case *admissionregistrationv1beta1.MutatingWebhookConfiguration:
+			mwc := desired.(*admissionregistrationv1beta1.MutatingWebhookConfiguration)
+			mwc.ResourceVersion = current.(*admissionregistrationv1beta1.MutatingWebhookConfiguration).ResourceVersion
+			desired = mwc
 		}
 		if err := client.Update(context.TODO(), desired); err != nil {
 			return emperror.WrapWith(err, "updating resource failed", "resource", desired.GetObjectKind().GroupVersionKind(), "type", reflect.TypeOf(desired))

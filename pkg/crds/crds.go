@@ -20,12 +20,12 @@ import (
 	"fmt"
 	"strings"
 
+	istiov1beta1 "github.com/banzaicloud/istio-operator/pkg/apis/operator/v1beta1"
 	"github.com/goph/emperror"
 	extensionsobj "k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1beta1"
 	apiextensionsclient "k8s.io/apiextensions-apiserver/pkg/client/clientset/clientset"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	corev1client "k8s.io/client-go/kubernetes/typed/core/v1"
 	"k8s.io/client-go/rest"
 	logf "sigs.k8s.io/controller-runtime/pkg/runtime/log"
 )
@@ -33,10 +33,8 @@ import (
 var log = logf.Log.WithName("crds")
 
 type CrdOperator struct {
-	crdClient  apiextensionsclient.Interface
-	coreClient *corev1client.CoreV1Client
-	crds       []*extensionsobj.CustomResourceDefinition
-	namespace  string
+	crdClient apiextensionsclient.Interface
+	crds      []*extensionsobj.CustomResourceDefinition
 }
 
 type configType int
@@ -63,20 +61,14 @@ var crdConfigs = map[configType]crdConfig{
 	Rbac:           {"v1alpha1", "rbac", []string{"istio-io", "rbac-istio-io"}},
 }
 
-func New(cfg *rest.Config, ns string) (*CrdOperator, error) {
-	corec, err := corev1client.NewForConfig(cfg)
-	if err != nil {
-		return nil, emperror.Wrap(err, "instantiating core client failed")
-	}
+func New(cfg *rest.Config) (*CrdOperator, error) {
 	crdc, err := apiextensionsclient.NewForConfig(cfg)
 	if err != nil {
 		return nil, emperror.Wrap(err, "instantiating apiextensions client failed")
 	}
 	return &CrdOperator{
-		crdClient:  crdc,
-		coreClient: corec,
-		crds:       initCrds(),
-		namespace:  ns,
+		crdClient: crdc,
+		crds:      initCrds(),
 	}, nil
 }
 
@@ -175,20 +167,7 @@ func crdL(kind string, plural string, config crdConfig, appLabel string, pckLabe
 	return crd
 }
 
-func (r *CrdOperator) Reconcile() error {
-	ownerRefs := make([]metav1.OwnerReference, 0)
-	if len(r.namespace) > 0 {
-		ns, err := r.coreClient.Namespaces().Get(r.namespace, metav1.GetOptions{})
-		if err != nil {
-			return emperror.WrapWith(err, "failed to get namespace", "name", r.namespace)
-		}
-		ownerRefs = append(ownerRefs, metav1.OwnerReference{
-			Kind:       "Namespace",
-			APIVersion: "v1",
-			Name:       ns.Name,
-			UID:        ns.GetUID(),
-		})
-	}
+func (r *CrdOperator) Reconcile(config *istiov1beta1.Config) error {
 	crdClient := r.crdClient.ApiextensionsV1beta1().CustomResourceDefinitions()
 	for _, crd := range r.crds {
 		current, err := crdClient.Get(crd.Name, metav1.GetOptions{})
@@ -196,7 +175,14 @@ func (r *CrdOperator) Reconcile() error {
 			return emperror.WrapWith(err, "getting CRD failed", "kind", crd.Spec.Names.Kind)
 		}
 		if apierrors.IsNotFound(err) {
-			crd.ObjectMeta.OwnerReferences = ownerRefs
+			crd.ObjectMeta.OwnerReferences = []metav1.OwnerReference{
+				{
+					Kind:       config.Kind,
+					APIVersion: config.APIVersion,
+					Name:       config.Name,
+					UID:        config.GetUID(),
+				},
+			}
 			if _, err := crdClient.Create(crd); err != nil {
 				return emperror.WrapWith(err, "creating CRD failed", "kind", crd.Spec.Names.Kind)
 			}

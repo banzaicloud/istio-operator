@@ -21,6 +21,7 @@ import (
 	"time"
 
 	istiov1beta1 "github.com/banzaicloud/istio-operator/pkg/apis/operator/v1beta1"
+	"github.com/banzaicloud/istio-operator/pkg/crds"
 	"github.com/onsi/gomega"
 	"golang.org/x/net/context"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
@@ -38,7 +39,7 @@ var expectedRequest = reconcile.Request{NamespacedName: types.NamespacedName{Nam
 
 //var depKey = types.NamespacedName{Name: "foo-deployment", Namespace: "default"}
 
-const timeout = time.Second * 25
+const timeout = time.Second * 50
 
 func TestReconcile(t *testing.T) {
 	g := gomega.NewGomegaWithT(t)
@@ -53,7 +54,10 @@ func TestReconcile(t *testing.T) {
 	dynamic, err := dynamic.NewForConfig(mgr.GetConfig())
 	g.Expect(err).NotTo(gomega.HaveOccurred())
 
-	recFn, requests := SetupTestReconcile(newReconciler(mgr, dynamic))
+	crd, err := crds.New(mgr.GetConfig())
+	g.Expect(err).NotTo(gomega.HaveOccurred())
+
+	recFn, requests := SetupTestReconcile(newReconciler(mgr, dynamic, crd))
 	g.Expect(add(mgr, recFn)).NotTo(gomega.HaveOccurred())
 
 	stopMgr, mgrStopped := StartTestManager(mgr, g)

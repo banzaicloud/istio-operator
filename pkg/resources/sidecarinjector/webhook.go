@@ -27,7 +27,7 @@ import (
 func (r *Reconciler) webhook() runtime.Object {
 	fail := admissionv1beta1.Fail
 	return &admissionv1beta1.MutatingWebhookConfiguration{
-		ObjectMeta: templates.ObjectMeta(webhookName, sidecarInjectorLabels, r.Config),
+		ObjectMeta: templates.ObjectMetaClusterScope(webhookName, sidecarInjectorLabels, r.Config),
 		Webhooks: []admissionv1beta1.Webhook{
 			{
 				Name: "sidecar-injector.istio.io",
