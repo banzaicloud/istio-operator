@@ -1,10 +1,12 @@
 
 # Image URL to use all building/pushing image targets
-IMG ?= controller:latest
+IMG ?= banzaicloud/istio-operator:latest
 
 DEP_VERSION = 0.5.0
 GOLANGCI_VERSION = 1.10.2
 LICENSEI_VERSION = 0.0.7
+
+KUSTOMIZE_BASE = config/default
 
 all: test manager
 
@@ -81,7 +83,8 @@ install: manifests
 deploy: install-kustomize manifests
 	kubectl apply -f config/crds
 	kubectl apply -f config/manager/namespace.yaml
-	bin/kustomize build config/default | kubectl apply -f -
+	./scripts/image_patch.sh ./config/default/manager_image_patch.yaml ${IMG}
+	bin/kustomize build $(KUSTOMIZE_BASE) | kubectl apply -f -
 
 # Generate manifests e.g. CRD, RBAC etc.
 manifests:
@@ -103,10 +106,9 @@ endif
 	go generate ./pkg/... ./cmd/...
 
 # Build the docker image
-docker-build: test
-	docker build . -t ${IMG}
+docker-build:
+	docker build -f Dockerfile.dev . -t ${IMG}
 	@echo "updating kustomize image patch file for manager resource"
-	sed -i '' -e 's@image: .*@image: '"${IMG}"'@' ./config/default/manager_image_patch.yaml
 
 # Push the docker image
 docker-push:
