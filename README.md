@@ -7,13 +7,16 @@ Istio-operator is a Kubernetes operator to deploy and manage [Istio](https://ist
 1. Set `KUBECONFIG` for your cluster
 2. Run `make deploy`
 
+## Development
+
 To build and run tests:
 1. Run `make vendor`
 2. Run `make`
 
-If you make changes and would like to try your own version create your own image before `make deploy`:
+If you make changes and would like to try your own version, create your own image:
 1. `make docker-build IMG={YOUR_USERNAME}/istio-operator:v0.0.1`
 2. `make docker-push IMG={YOUR_USERNAME}/istio-operator:v0.0.1`
+3. `make deploy IMG={YOUR_USERNAME}/istio-operator:v0.0.1`
 
 ## Contributing
 
