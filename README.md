@@ -64,19 +64,19 @@ Some of the significant features and future items from the roadmap:
 
 Released:
 
-[x] - Install Istio
-[x] - Federation, flat
+- [x] - Install Istio
+- [x] - Federation, flat
 
 Under development (next release)
 
-[x] - Federation, gateway
-[x] - Istio 1.1.0 support
-[x] - Configurable node affinity
+- [x] - Federation, gateway
+- [x] - Istio 1.1.0 support
+- [x] - Configurable node affinity
 
 Short term roadmap
 
-[] - Canary releases
-[] - Servicegraph / Kiali / Certmanager
+- [ ] - Canary releases
+- [ ] - Servicegraph / Kiali / Certmanager
 
 ## Contributing
 
