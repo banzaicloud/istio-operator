@@ -39,7 +39,8 @@ As a pre-requisite it needs a Kubernetes cluster (you can create one using [Pipe
 
 
 1. Set `KUBECONFIG` pointing towards your cluster
-2. Run `make deploy`
+2. Run `make vendor`
+3. Run `make deploy`
 
 ## Development
 
