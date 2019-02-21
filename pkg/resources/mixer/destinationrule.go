@@ -42,7 +42,7 @@ func (r *Reconciler) policyDestinationRule() *k8sutil.DynamicObject {
 					},
 				},
 			},
-			"host": fmt.Sprintf("policy.%s.svc.cluster.local", r.Config.Namespace),
+			"host": fmt.Sprintf("istio-policy.%s.svc.cluster.local", r.Config.Namespace),
 		},
 		Owner: r.Config,
 	}
@@ -67,7 +67,7 @@ func (r *Reconciler) telemetryDestinationRule() *k8sutil.DynamicObject {
 					},
 				},
 			},
-			"host": fmt.Sprintf("telemetry.%s.svc.cluster.local", r.Config.Namespace),
+			"host": fmt.Sprintf("istio-telemetry.%s.svc.cluster.local", r.Config.Namespace),
 		},
 		Owner: r.Config,
 	}
