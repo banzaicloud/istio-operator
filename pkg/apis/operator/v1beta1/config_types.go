@@ -25,6 +25,8 @@ type ConfigSpec struct {
 	MTLS            bool   `json:"mtls"`
 	IncludeIPRanges string `json:"includeIPRanges,omitempty"`
 	ExcludeIPRanges string `json:"excludeIPRanges,omitempty"`
+	// List of namespaces to label with sidecar auto injection enabled
+	AutoInjectionNamespaces []string `json:"autoInjectionNamespaces,omitempty"`
 }
 
 // ConfigStatus defines the observed state of Config

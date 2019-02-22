@@ -8,4 +8,5 @@ spec:
   mtls: true
   includeIPRanges: "*"
   excludeIPRanges: ""
-
+  autoInjectionNamespaces:
+  - "default"

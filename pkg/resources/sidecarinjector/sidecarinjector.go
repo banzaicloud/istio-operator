@@ -81,5 +81,9 @@ func (r *Reconciler) Reconcile(log logr.Logger) error {
 			return emperror.WrapWith(err, "failed to reconcile resource", "resource", o.GetObjectKind().GroupVersionKind())
 		}
 	}
+	err := r.labelNamespaces(log)
+	if err != nil {
+		return emperror.WrapWith(err, "failed to label namespaces")
+	}
 	return nil
 }

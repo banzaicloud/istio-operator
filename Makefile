@@ -108,7 +108,6 @@ endif
 # Build the docker image
 docker-build:
 	docker build -f Dockerfile.dev . -t ${IMG}
-	@echo "updating kustomize image patch file for manager resource"
 
 # Push the docker image
 docker-push:

@@ -28,6 +28,12 @@ spec:
           type: object
         spec:
           properties:
+            autoInjectionNamespaces:
+              description: List of namespaces to label with sidecar auto injection
+                enabled
+              items:
+                type: string
+              type: array
             excludeIPRanges:
               type: string
             includeIPRanges:
