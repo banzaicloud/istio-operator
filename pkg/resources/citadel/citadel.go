@@ -75,8 +75,8 @@ func (r *Reconciler) Reconcile(log logr.Logger) error {
 	if r.Config.Spec.MTLS {
 		drs = []resources.DynamicResource{
 			r.meshPolicyMTLS,
-			r.defaultMTLS,
-			r.apiServerMTLS,
+			r.destinationRuleDefaultMtls,
+			r.destinationRuleApiServerMtls,
 		}
 	} else {
 		drs = []resources.DynamicResource{

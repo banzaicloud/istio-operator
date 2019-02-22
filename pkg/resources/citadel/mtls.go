@@ -46,9 +46,9 @@ func (r *Reconciler) meshPolicyMTLS() *k8sutil.DynamicObject {
 	}
 }
 
-// defaultMTLS returns a destination rule to configure client side to use mutual TLS when talking to
+// destinationRuleDefaultMtls returns a destination rule to configure client side to use mutual TLS when talking to
 // any service (host) in the mesh
-func (r *Reconciler) defaultMTLS() *k8sutil.DynamicObject {
+func (r *Reconciler) destinationRuleDefaultMtls() *k8sutil.DynamicObject {
 	return &k8sutil.DynamicObject{
 		Gvr: schema.GroupVersionResource{
 			Group:    "networking.istio.io",
@@ -73,9 +73,9 @@ func (r *Reconciler) defaultMTLS() *k8sutil.DynamicObject {
 	}
 }
 
-// apiServerMTLS returns a destination rule to disable (m)TLS when talking to API server, as API server doesn't have sidecar
+// destinationRuleApiServerMtls returns a destination rule to disable (m)TLS when talking to API server, as API server doesn't have sidecar
 // User should add similar destination rules for other services that don't have sidecar
-func (r *Reconciler) apiServerMTLS() *k8sutil.DynamicObject {
+func (r *Reconciler) destinationRuleApiServerMtls() *k8sutil.DynamicObject {
 	return &k8sutil.DynamicObject{
 		Gvr: schema.GroupVersionResource{
 			Group:    "networking.istio.io",
