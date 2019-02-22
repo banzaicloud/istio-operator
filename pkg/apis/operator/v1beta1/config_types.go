@@ -27,6 +27,8 @@ import (
 type ConfigSpec struct {
 	// INSERT ADDITIONAL SPEC FIELDS - desired state of cluster
 	// Important: Run "make" to regenerate code after modifying this file
+
+	MTLS bool `json:"mtls,omitempty"`
 }
 
 // ConfigStatus defines the observed state of Config

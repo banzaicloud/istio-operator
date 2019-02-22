@@ -29,7 +29,7 @@ const (
 	serviceAccountName     = "istio-sidecar-injector-service-account"
 	clusterRoleName        = "istio-sidecar-injector-cluster-role"
 	clusterRoleBindingName = "istio-sidecar-injector-cluster-role-binding"
-	configMapName          = "istio-sidecar-injector-config"
+	configMapName          = "istio-sidecar-injector"
 	webhookName            = "istio-sidecar-injector"
 	deploymentName         = "istio-sidecar-injector"
 	serviceName            = "istio-sidecar-injector"

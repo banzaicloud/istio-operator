@@ -71,8 +71,17 @@ func (r *Reconciler) Reconcile(log logr.Logger) error {
 			return emperror.WrapWith(err, "failed to reconcile resource", "resource", o.GetObjectKind().GroupVersionKind())
 		}
 	}
-	drs := []resources.DynamicResource{
-		r.meshPolicy,
+	var drs []resources.DynamicResource
+	if r.Config.Spec.MTLS {
+		drs = []resources.DynamicResource{
+			r.meshPolicyMTLS,
+			r.destinationRuleDefaultMtls,
+			r.destinationRuleApiServerMtls,
+		}
+	} else {
+		drs = []resources.DynamicResource{
+			r.meshPolicy,
+		}
 	}
 	for _, dr := range drs {
 		o := dr()
