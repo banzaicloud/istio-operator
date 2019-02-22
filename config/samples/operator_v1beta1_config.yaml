@@ -10,3 +10,4 @@ spec:
   excludeIPRanges: ""
   autoInjectionNamespaces:
   - "default"
+  controlPlaneSecurityEnabled: false

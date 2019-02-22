@@ -34,15 +34,8 @@ func (r *Reconciler) policyDestinationRule() *k8sutil.DynamicObject {
 		Name:      "istio-policy",
 		Namespace: r.Config.Namespace,
 		Spec: map[string]interface{}{
-			"traffic_policy": map[string]interface{}{
-				"connection_pool": map[string]interface{}{
-					"http": map[string]interface{}{
-						"http2_max_requests":          10000,
-						"max_requests_per_connection": 10000,
-					},
-				},
-			},
-			"host": fmt.Sprintf("istio-policy.%s.svc.cluster.local", r.Config.Namespace),
+			"traffic_policy": r.trafficPolicy(),
+			"host":           fmt.Sprintf("istio-policy.%s.svc.cluster.local", r.Config.Namespace),
 		},
 		Owner: r.Config,
 	}
@@ -59,16 +52,37 @@ func (r *Reconciler) telemetryDestinationRule() *k8sutil.DynamicObject {
 		Name:      "istio-telemetry",
 		Namespace: r.Config.Namespace,
 		Spec: map[string]interface{}{
-			"traffic_policy": map[string]interface{}{
-				"connection_pool": map[string]interface{}{
-					"http": map[string]interface{}{
-						"http2_max_requests":          10000,
-						"max_requests_per_connection": 10000,
-					},
-				},
-			},
-			"host": fmt.Sprintf("istio-telemetry.%s.svc.cluster.local", r.Config.Namespace),
+			"traffic_policy": r.trafficPolicy(),
+			"host":           fmt.Sprintf("istio-telemetry.%s.svc.cluster.local", r.Config.Namespace),
 		},
 		Owner: r.Config,
 	}
+}
+
+func (r *Reconciler) connectionPool() map[string]interface{} {
+	return map[string]interface{}{
+		"http": map[string]interface{}{
+			"http2_max_requests":          10000,
+			"max_requests_per_connection": 10000,
+		},
+	}
+}
+
+func (r *Reconciler) trafficPolicy() map[string]interface{} {
+	tp := map[string]interface{}{
+		"connection_pool": r.connectionPool(),
+	}
+	if r.Config.Spec.ControlPlaneSecurityEnabled {
+		tp["portLevelSettings"] = []map[string]interface{}{
+			{
+				"port": map[string]interface{}{
+					"number": 15004,
+				},
+				"tls": map[string]interface{}{
+					"mode": "ISTIO_MUTUAL",
+				},
+			},
+		}
+	}
+	return tp
 }

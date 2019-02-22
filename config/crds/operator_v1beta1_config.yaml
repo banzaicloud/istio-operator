@@ -34,6 +34,10 @@ spec:
               items:
                 type: string
               type: array
+            controlPlaneSecurityEnabled:
+              description: ControlPlaneSecurityEnabled control plane services are
+                communicating through mTLS
+              type: boolean
             excludeIPRanges:
               type: string
             includeIPRanges:
