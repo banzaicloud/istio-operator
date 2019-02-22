@@ -19,7 +19,7 @@ Watch the operator's logs with:
 
 `kubectl logs -f -n istio-system istio-operator-controller-manager-0 manager`
 
-Create CRD and let the operator set up Istio based on it in your cluster (you can change the `spec` of the `Config` for your needs in the yaml file):
+Create CR and let the operator set up Istio in your cluster (you can change the `spec` of the `Config` for your needs in the yaml file):
 
 `kubectl create -n istio-system -f config/samples/operator_v1beta1_config.yaml`
 
