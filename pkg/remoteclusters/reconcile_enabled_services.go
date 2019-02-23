@@ -52,7 +52,7 @@ func (c *Cluster) reconcileService(svc apiv1.Service) error {
 }
 
 func (c *Cluster) reconcileEnabledServices(remoteConfig *istiov1beta1.RemoteConfig) error {
-	for _, enabledSvc := range remoteConfig.Spec.Config.EnabledServices {
+	for _, enabledSvc := range remoteConfig.Spec.EnabledServices {
 		svc := apiv1.Service{
 			ObjectMeta: templates.ObjectMeta(enabledSvc.Name, map[string]string{}, c.istioConfig),
 			Spec: apiv1.ServiceSpec{

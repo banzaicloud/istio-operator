@@ -46,7 +46,7 @@ type Reconciler struct {
 	resources.Reconciler
 	dynamic dynamic.Interface
 
-	deployMeshPolicy bool
+	configuration Configuration
 }
 
 func New(configuration Configuration, client client.Client, dc dynamic.Interface, config *istiov1beta1.Config) *Reconciler {
@@ -55,9 +55,8 @@ func New(configuration Configuration, client client.Client, dc dynamic.Interface
 			Client: client,
 			Config: config,
 		},
-		dynamic: dc,
-
-		deployMeshPolicy: configuration.DeployMeshPolicy,
+		dynamic:       dc,
+		configuration: configuration,
 	}
 }
 
@@ -77,15 +76,15 @@ func (r *Reconciler) Reconcile(log logr.Logger) error {
 	}
 	var drs []resources.DynamicResource
 
-	if !r.deployMeshPolicy {
+	if !r.configuration.DeployMeshPolicy {
 		return nil
 	}
 
-	if r.Config.Spec.Config.MTLSEnabled {
+	if r.Config.Spec.MTLS {
 		drs = []resources.DynamicResource{
 			r.meshPolicyMTLS,
-			r.defaultMTLS,
-			r.apiServerMTLS,
+			r.destinationRuleDefaultMtls,
+			r.destinationRuleApiServerMtls,
 		}
 	} else {
 		drs = []resources.DynamicResource{

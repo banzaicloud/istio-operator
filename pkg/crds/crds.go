@@ -131,10 +131,6 @@ func crd(kind string, plural string, config crdConfig, appLabel string, pckLabel
 	return crdL(kind, plural, config, appLabel, pckLabel, istioLabel, scope, false)
 }
 
-func CrdL(kind string, plural string, config crdConfig, appLabel string, pckLabel string, istioLabel string, scope extensionsobj.ResourceScope, list bool) *extensionsobj.CustomResourceDefinition {
-	return crdL(kind, plural, config, appLabel, pckLabel, istioLabel, scope, list)
-}
-
 func crdL(kind string, plural string, config crdConfig, appLabel string, pckLabel string, istioLabel string, scope extensionsobj.ResourceScope, list bool) *extensionsobj.CustomResourceDefinition {
 	singularName := strings.ToLower(kind)
 	pluralName := strings.ToLower(plural)

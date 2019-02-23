@@ -17,29 +17,53 @@ limitations under the License.
 package v1beta1
 
 import (
-	"github.com/banzaicloud/istio-operator/pkg/config"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
+
+type SignCert struct {
+	CA    []byte
+	Root  []byte
+	Key   []byte
+	Chain []byte
+}
 
 type IstioService struct {
 	Name          string   `json:"name"`
 	LabelSelector string   `json:"labelSelector"`
-	IPs           []string `json:"podIPs"`
-}
-
-type RemoteIstioConfiguration struct {
-	config.IstioConfiguration
-	EnabledServices []IstioService `json:"enabledServices"`
+	IPs           []string `json:"podIPs,omitempty"`
 }
 
 // RemoteConfigSpec defines the desired state of RemoteConfig
 type RemoteConfigSpec struct {
-	ClusterName string                   `json:"clusterName"`
-	Config      RemoteIstioConfiguration `json:"config"`
+	IncludeIPRanges string         `json:"includeIPRanges,omitempty"`
+	ExcludeIPRanges string         `json:"excludeIPRanges,omitempty"`
+	EnabledServices []IstioService `json:"enabledServices"`
+
+	signCert SignCert
 }
+
+func (spec RemoteConfigSpec) SetSignCert(signCert SignCert) RemoteConfigSpec {
+	spec.signCert = signCert
+	return spec
+}
+
+func (spec RemoteConfigSpec) GetSignCert() SignCert {
+	return spec.signCert
+}
+
+type RemoteConfigState string
+
+const (
+	RemoteConfigCreated         RemoteConfigState = "Created"
+	RemoteConfigReconfileFailed RemoteConfigState = "ReconcileFailed"
+	RemoteConfigReconciling     RemoteConfigState = "Reconciling"
+	RemoteConfigReconciled      RemoteConfigState = "Reconciled"
+)
 
 // RemoteConfigStatus defines the observed state of RemoteConfig
 type RemoteConfigStatus struct {
+	Status       RemoteConfigState
+	ErrorMessage string
 }
 
 // +genclient
@@ -47,6 +71,7 @@ type RemoteConfigStatus struct {
 
 // RemoteConfig is the Schema for the remoteconfigs API
 // +k8s:openapi-gen=true
+// +kubebuilder:subresource:status
 type RemoteConfig struct {
 	metav1.TypeMeta   `json:",inline"`
 	metav1.ObjectMeta `json:"metadata,omitempty"`

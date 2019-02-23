@@ -106,8 +106,6 @@ kubectl label secret remote-cluster istio/multiCluster=true -n istio-system
 
 ```bash
 kubectl create -n istio-system -f config/samples/operator_v1beta1_remoteconfig.yaml
-kubectl config use-context ${CONTEXT_REMOTE}
-kubectl label namespace default istio-injection=enabled
 ```
 
 ### Add a simple test echo-service onto both clusters
@@ -121,6 +119,7 @@ NAME                    READY   STATUS    RESTARTS   AGE
 echo-59d4b7c4cb-v29zb   2/2     Running   0          1m
 
 kubectl config use-context ${CONTEXT_REMOTE}
+kubectl label namespace default istio-injection=enabled
 kubectl apply -f docs/remote/flat/echo-service.yml
 
 kubectl get pods
@@ -135,7 +134,7 @@ kubectl config use-context ${CONTEXT_CENTRAL}
 kubectl -n default exec $(kubectl get pods -n default -l k8s-app=echo -o jsonpath={.items..metadata.name}) -c echo-service -ti -- sh -c 'for i in `seq 1 50`; do curl -s echo | grep -i hostname | cut -d " " -f 2; done | sort | uniq -c'
 ```
 
-#### The output should be something like this
+`The output should be something like this`
 
      25 echo-59d4b7c4cb-2mptg
      25 echo-59d4b7c4cb-v29zb
@@ -147,7 +146,7 @@ kubectl config use-context ${CONTEXT_REMOTE}
 kubectl -n default exec $(kubectl get pods -n default -l k8s-app=echo -o jsonpath={.items..metadata.name}) -c echo-service -ti -- sh -c 'for i in `seq 1 50`; do curl -s echo | grep -i hostname | cut -d " " -f 2; done | sort | uniq -c'
 ```
 
-#### The output should be something like this
+`The output should be something like this`
 
      25 echo-59d4b7c4cb-2mptg
      25 echo-59d4b7c4cb-v29zb

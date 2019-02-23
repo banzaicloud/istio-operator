@@ -38,8 +38,6 @@ func (c *Cluster) reconcileConfig(remoteConfig *istiov1beta1.RemoteConfig) error
 		return err
 	}
 
-	istioConfig.Spec.Config = remoteConfig.Spec.Config.IstioConfiguration
-
 	if k8sapierrors.IsNotFound(err) {
 		istioConfig.Name = ConfigName
 		istioConfig.Namespace = remoteConfig.Namespace
@@ -47,11 +45,6 @@ func (c *Cluster) reconcileConfig(remoteConfig *istiov1beta1.RemoteConfig) error
 		if err != nil {
 			return err
 		}
-	}
-
-	err = c.ctrlRuntimeClient.Update(context.TODO(), &istioConfig)
-	if err != nil {
-		return err
 	}
 
 	crd := c.configcrd()

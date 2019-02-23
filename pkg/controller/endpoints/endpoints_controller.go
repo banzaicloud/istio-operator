@@ -110,14 +110,14 @@ func (r *ReconcileEndpoints) Reconcile(request reconcile.Request) (reconcile.Res
 	for _, cluster := range r.remoteClustersMgr.GetAll() {
 		remoteConfig := cluster.GetRemoteConfig()
 		if remoteConfig != nil {
-			for i, svc := range remoteConfig.Spec.Config.EnabledServices {
+			for i, svc := range remoteConfig.Spec.EnabledServices {
 				ls, err := labels.Parse(svc.LabelSelector)
 				if err != nil {
 					return reconcile.Result{}, err
 				}
 				if ls.Matches(labels.Set(pod.Labels)) {
 					svc.IPs = []string{pod.Status.PodIP}
-					remoteConfig.Spec.Config.EnabledServices[i] = svc
+					remoteConfig.Spec.EnabledServices[i] = svc
 				}
 			}
 

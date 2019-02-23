@@ -53,7 +53,7 @@ func (c *Cluster) reconcileServiceEndpoints(endp apiv1.Endpoints) error {
 }
 
 func (c *Cluster) ReconcileEnabledServiceEndpoints(remoteConfig *istiov1beta1.RemoteConfig) error {
-	for _, enabledSvc := range remoteConfig.Spec.Config.EnabledServices {
+	for _, enabledSvc := range remoteConfig.Spec.EnabledServices {
 		addresses := make([]apiv1.EndpointAddress, 0)
 		for _, ip := range enabledSvc.IPs {
 			if ip == "" {

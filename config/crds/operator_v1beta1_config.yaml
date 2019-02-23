@@ -28,8 +28,14 @@ spec:
           type: object
         spec:
           properties:
+            excludeIPRanges:
+              type: string
+            includeIPRanges:
+              type: string
             mtls:
               type: boolean
+          required:
+          - mtls
           type: object
         status:
           type: object

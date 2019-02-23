@@ -11,6 +11,8 @@ spec:
     kind: RemoteConfig
     plural: remoteconfigs
   scope: Namespaced
+  subresources:
+    status: {}
   validation:
     openAPIV3Schema:
       properties:
@@ -28,33 +30,28 @@ spec:
           type: object
         spec:
           properties:
-            clusterName:
+            enabledServices:
+              items:
+                properties:
+                  labelSelector:
+                    type: string
+                  name:
+                    type: string
+                  podIPs:
+                    items:
+                      type: string
+                    type: array
+                required:
+                - name
+                - labelSelector
+                type: object
+              type: array
+            excludeIPRanges:
               type: string
-            config:
-              properties:
-                enabledServices:
-                  items:
-                    properties:
-                      labelSelector:
-                        type: string
-                      name:
-                        type: string
-                      podIPs:
-                        items:
-                          type: string
-                        type: array
-                    required:
-                    - name
-                    - labelSelector
-                    - podIPs
-                    type: object
-                  type: array
-              required:
-              - enabledServices
-              type: object
+            includeIPRanges:
+              type: string
           required:
-          - clusterName
-          - config
+          - enabledServices
           type: object
         status:
           type: object

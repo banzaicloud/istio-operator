@@ -17,13 +17,14 @@ limitations under the License.
 package v1beta1
 
 import (
-	"github.com/banzaicloud/istio-operator/pkg/config"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
 // ConfigSpec defines the desired state of Config
 type ConfigSpec struct {
-	Config config.IstioConfiguration
+	MTLS            bool   `json:"mtls"`
+	IncludeIPRanges string `json:"includeIPRanges,omitempty"`
+	ExcludeIPRanges string `json:"excludeIPRanges,omitempty"`
 }
 
 // ConfigStatus defines the observed state of Config

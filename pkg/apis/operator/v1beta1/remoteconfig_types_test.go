@@ -36,10 +36,7 @@ func TestStorageRemoteConfig(t *testing.T) {
 			Namespace: "default",
 		},
 		Spec: RemoteConfigSpec{
-			ClusterName: "test-cluster",
-			Config: RemoteIstioConfiguration{
-				EnabledServices: []IstioService{},
-			},
+			EnabledServices: []IstioService{},
 		},
 	}
 	g := gomega.NewGomegaWithT(t)

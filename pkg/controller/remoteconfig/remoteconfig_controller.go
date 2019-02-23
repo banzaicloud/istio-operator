@@ -18,22 +18,30 @@ package remoteconfig
 
 import (
 	"context"
+	"reflect"
+
+	"github.com/goph/emperror"
+	"github.com/pkg/errors"
+	corev1 "k8s.io/api/core/v1"
+	k8serrors "k8s.io/apimachinery/pkg/api/errors"
+	"k8s.io/apimachinery/pkg/runtime"
+	"k8s.io/apimachinery/pkg/types"
+	"sigs.k8s.io/controller-runtime/pkg/client"
+	"sigs.k8s.io/controller-runtime/pkg/controller"
+	"sigs.k8s.io/controller-runtime/pkg/event"
+	"sigs.k8s.io/controller-runtime/pkg/handler"
+	"sigs.k8s.io/controller-runtime/pkg/manager"
+	"sigs.k8s.io/controller-runtime/pkg/predicate"
+	"sigs.k8s.io/controller-runtime/pkg/reconcile"
+	logf "sigs.k8s.io/controller-runtime/pkg/runtime/log"
+	"sigs.k8s.io/controller-runtime/pkg/source"
 
 	istiov1beta1 "github.com/banzaicloud/istio-operator/pkg/apis/operator/v1beta1"
 	operatorv1beta1 "github.com/banzaicloud/istio-operator/pkg/apis/operator/v1beta1"
 	"github.com/banzaicloud/istio-operator/pkg/remoteclusters"
-	pkgerrors "github.com/pkg/errors"
-	corev1 "k8s.io/api/core/v1"
-	"k8s.io/apimachinery/pkg/api/errors"
-	"k8s.io/apimachinery/pkg/runtime"
-	"sigs.k8s.io/controller-runtime/pkg/client"
-	"sigs.k8s.io/controller-runtime/pkg/controller"
-	"sigs.k8s.io/controller-runtime/pkg/handler"
-	"sigs.k8s.io/controller-runtime/pkg/manager"
-	"sigs.k8s.io/controller-runtime/pkg/reconcile"
-	logf "sigs.k8s.io/controller-runtime/pkg/runtime/log"
-	"sigs.k8s.io/controller-runtime/pkg/source"
 )
+
+const finalizerID = "remote-istio-operator.finializer.banzaicloud.io"
 
 var log = logf.Log.WithName("remote-istio-controller")
 
@@ -61,7 +69,7 @@ func add(mgr manager.Manager, r reconcile.Reconciler) error {
 	}
 
 	// Watch for changes to RemoteConfig
-	err = c.Watch(&source.Kind{Type: &operatorv1beta1.RemoteConfig{}}, &handler.EnqueueRequestForObject{})
+	err = c.Watch(&source.Kind{Type: &operatorv1beta1.RemoteConfig{}}, &handler.EnqueueRequestForObject{}, getWatchPredicateForRemoteConfig())
 	if err != nil {
 		return err
 	}
@@ -87,12 +95,10 @@ type ReconcileRemoteConfig struct {
 // +kubebuilder:rbac:groups=operator.istio.io,resources=remoteconfigs,verbs=get;list;watch;create;update;patch;delete
 // +kubebuilder:rbac:groups=operator.istio.io,resources=remoteconfigs/status,verbs=get;update;patch
 func (r *ReconcileRemoteConfig) Reconcile(request reconcile.Request) (reconcile.Result, error) {
-	log.Info("reconciling remote istio deployment")
-
 	remoteConfig := &operatorv1beta1.RemoteConfig{}
 	err := r.Get(context.TODO(), request.NamespacedName, remoteConfig)
 	if err != nil {
-		if !errors.IsNotFound(err) {
+		if !k8serrors.IsNotFound(err) {
 			// Error reading the object - requeue the request.
 			log.Info("remoteconfig error - requeue")
 			return reconcile.Result{}, err
@@ -102,59 +108,165 @@ func (r *ReconcileRemoteConfig) Reconcile(request reconcile.Request) (reconcile.
 		return reconcile.Result{}, nil
 	}
 
-	finalizer := "remote-istio-operator.finializer.banzaicloud.io"
+	result, err := r.reconcile(remoteConfig)
+	if err != nil {
+		updateErr := r.updateRemoteConfigStatus(remoteConfig, istiov1beta1.RemoteConfigReconfileFailed, err.Error())
+		if updateErr != nil {
+			return result, errors.WithStack(err)
+		}
+
+		return result, emperror.Wrap(err, "could not reconcile remote istio")
+	}
+
+	return result, nil
+}
+
+func (r *ReconcileRemoteConfig) reconcile(remoteConfig *istiov1beta1.RemoteConfig) (reconcile.Result, error) {
+	var err error
+
+	log := log.WithValues("cluster", remoteConfig.Name)
+
+	if remoteConfig.Status.Status == "" {
+		err = r.updateRemoteConfigStatus(remoteConfig, istiov1beta1.RemoteConfigCreated, "")
+		if err != nil {
+			return reconcile.Result{}, errors.WithStack(err)
+		}
+	}
+
 	if remoteConfig.ObjectMeta.DeletionTimestamp.IsZero() {
-		if !containsString(remoteConfig.ObjectMeta.Finalizers, finalizer) {
-			remoteConfig.ObjectMeta.Finalizers = append(remoteConfig.ObjectMeta.Finalizers, finalizer)
+		if !containsString(remoteConfig.ObjectMeta.Finalizers, finalizerID) {
+			remoteConfig.ObjectMeta.Finalizers = append(remoteConfig.ObjectMeta.Finalizers, finalizerID)
 			if err := r.Update(context.Background(), remoteConfig); err != nil {
-				return reconcile.Result{}, err
+				return reconcile.Result{}, emperror.Wrap(err, "could not add finalizer to remoteconfig")
 			}
+			// we return here and do the reconciling when this update arrives
+			return reconcile.Result{}, nil
 		}
 	} else {
-		if containsString(remoteConfig.ObjectMeta.Finalizers, finalizer) {
-			log.Info("running finalizer stuff", "instance", remoteConfig)
-			cluster, err := r.remoteClustersMgr.Get(remoteConfig.Spec.ClusterName)
+		if containsString(remoteConfig.ObjectMeta.Finalizers, finalizerID) {
+			if remoteConfig.Status.Status == istiov1beta1.RemoteConfigReconciling && remoteConfig.Status.ErrorMessage == "" {
+				log.Info("cannot remove remote istio config while reconciling")
+				return reconcile.Result{}, nil
+			}
+			log.Info("removing remote istio")
+			cluster, err := r.remoteClustersMgr.Get(remoteConfig.Name)
 			if err == nil {
 				err = cluster.RemoveConfig()
 				if err != nil {
-					return reconcile.Result{}, err
+					return reconcile.Result{}, emperror.Wrap(err, "could not remove remote config to remote istio")
 				}
 			}
 		}
 
-		remoteConfig.ObjectMeta.Finalizers = removeString(remoteConfig.ObjectMeta.Finalizers, finalizer)
+		remoteConfig.ObjectMeta.Finalizers = removeString(remoteConfig.ObjectMeta.Finalizers, finalizerID)
 		if err := r.Update(context.Background(), remoteConfig); err != nil {
-			return reconcile.Result{}, err
+			return reconcile.Result{}, emperror.Wrap(err, "could not remove finalizer from remoteconfig")
 		}
+
+		log.Info("remote istio removed")
 
 		return reconcile.Result{}, nil
 	}
 
-	remoteConfig, err = r.populateEnabledServicePodIPs(remoteConfig)
-	if err != nil {
-		return reconcile.Result{}, err
+	if remoteConfig.Status.Status != istiov1beta1.RemoteConfigReconciling {
+		err = r.updateRemoteConfigStatus(remoteConfig, istiov1beta1.RemoteConfigReconciling, "")
+		if err != nil {
+			return reconcile.Result{}, errors.WithStack(err)
+		}
 	}
 
-	cluster, _ := r.remoteClustersMgr.Get(remoteConfig.Spec.ClusterName)
+	log.Info("begin reconciling remote istio")
+	// return reconcile.Result{}, fmt.Errorf("belaaaa")
+	remoteConfig, err = r.populateEnabledServicePodIPs(remoteConfig)
+	if err != nil {
+		return reconcile.Result{}, emperror.Wrap(err, "could not populate pod ips to remoteconfig")
+	}
+
+	remoteConfig, err = r.populateSignCerts(remoteConfig)
+	if err != nil {
+		return reconcile.Result{}, emperror.Wrap(err, "could not populate sign certs to remoteconfig")
+	}
+
+	cluster, _ := r.remoteClustersMgr.Get(remoteConfig.Name)
 	if cluster == nil {
 		cluster, err = r.getRemoteCluster(remoteConfig)
 	}
 	if err != nil {
-		return reconcile.Result{}, err
+		return reconcile.Result{}, emperror.Wrap(err, "could not get remote cluster")
 	}
 
-	err = r.reconcileRemoteCluster(remoteConfig, cluster)
+	err = cluster.Reconcile(remoteConfig)
 	if err != nil {
-		return reconcile.Result{}, err
+		return reconcile.Result{}, emperror.Wrap(err, "could not reconcile remote istio")
 	}
+
+	err = r.updateRemoteConfigStatus(remoteConfig, istiov1beta1.RemoteConfigReconciled, "")
+	if err != nil {
+		return reconcile.Result{}, errors.WithStack(err)
+	}
+
+	log.Info("remote istio reconciled")
 
 	return reconcile.Result{}, nil
+}
+
+func (r *ReconcileRemoteConfig) updateRemoteConfigStatus(remoteConfig *istiov1beta1.RemoteConfig, status istiov1beta1.RemoteConfigState, errorMessage string) error {
+	remoteConfig.Status.Status = status
+	remoteConfig.Status.ErrorMessage = errorMessage
+	err := r.Status().Update(context.Background(), remoteConfig)
+	if err == nil {
+		return err
+	}
+
+	if k8serrors.IsConflict(err) {
+		err := r.Get(context.TODO(), types.NamespacedName{
+			Namespace: remoteConfig.Namespace,
+			Name:      remoteConfig.Name,
+		}, remoteConfig)
+		if err != nil {
+			return emperror.Wrap(err, "could not get remoteconfig for updating status")
+		}
+	} else if err != nil {
+		return emperror.Wrapf(err, "could not update remoteconfig status to '%s'", status)
+	}
+
+	remoteConfig.Status.Status = status
+	remoteConfig.Status.ErrorMessage = errorMessage
+
+	err = r.Status().Update(context.Background(), remoteConfig)
+	if err != nil {
+		return emperror.Wrapf(err, "could not update remoteconfig status to '%s'", status)
+	}
+
+	log.Info("remoteconfig status updated", "status", status)
+
+	return nil
+}
+
+func (r *ReconcileRemoteConfig) populateSignCerts(remoteConfig *istiov1beta1.RemoteConfig) (*istiov1beta1.RemoteConfig, error) {
+	var secret corev1.Secret
+	err := r.Get(context.TODO(), client.ObjectKey{
+		Namespace: remoteConfig.Namespace,
+		Name:      "istio-ca-secret",
+	}, &secret)
+	if err != nil {
+		return nil, err
+	}
+
+	remoteConfig.Spec = remoteConfig.Spec.SetSignCert(istiov1beta1.SignCert{
+		CA:    secret.Data["ca-cert.pem"],
+		Root:  secret.Data["ca-cert.pem"],
+		Chain: []byte(""),
+		Key:   secret.Data["ca-key.pem"],
+	})
+
+	return remoteConfig, nil
 }
 
 func (r *ReconcileRemoteConfig) populateEnabledServicePodIPs(remoteConfig *istiov1beta1.RemoteConfig) (*istiov1beta1.RemoteConfig, error) {
 	var pods corev1.PodList
 
-	for i, svc := range remoteConfig.Spec.Config.EnabledServices {
+	for i, svc := range remoteConfig.Spec.EnabledServices {
 		o := &client.ListOptions{}
 		err := o.SetLabelSelector(svc.LabelSelector)
 		if err != nil {
@@ -173,7 +285,7 @@ func (r *ReconcileRemoteConfig) populateEnabledServicePodIPs(remoteConfig *istio
 			}
 			if len(pod.Spec.Containers) == ready {
 				svc.IPs = append(svc.IPs, pod.Status.PodIP)
-				remoteConfig.Spec.Config.EnabledServices[i] = svc
+				remoteConfig.Spec.EnabledServices[i] = svc
 			}
 		}
 	}
@@ -182,14 +294,14 @@ func (r *ReconcileRemoteConfig) populateEnabledServicePodIPs(remoteConfig *istio
 }
 
 func (r *ReconcileRemoteConfig) getRemoteCluster(remoteConfig *istiov1beta1.RemoteConfig) (*remoteclusters.Cluster, error) {
-	k8sconfig, err := r.getK8SConfigForCluster(remoteConfig.ObjectMeta.Namespace, remoteConfig.Spec.ClusterName)
+	k8sconfig, err := r.getK8SConfigForCluster(remoteConfig.ObjectMeta.Namespace, remoteConfig.Name)
 	if err != nil {
 		return nil, err
 	}
 
-	log.Info("k8s config found", "cluster", remoteConfig.Spec.ClusterName)
+	log.Info("k8s config found", "cluster", remoteConfig.Name)
 
-	cluster, err := remoteclusters.NewCluster(remoteConfig.Spec.ClusterName, k8sconfig, log)
+	cluster, err := remoteclusters.NewCluster(remoteConfig.Name, k8sconfig, log)
 	if err != nil {
 		return nil, err
 	}
@@ -199,15 +311,6 @@ func (r *ReconcileRemoteConfig) getRemoteCluster(remoteConfig *istiov1beta1.Remo
 	}
 
 	return cluster, nil
-}
-
-func (r *ReconcileRemoteConfig) reconcileRemoteCluster(remoteConfig *istiov1beta1.RemoteConfig, cluster *remoteclusters.Cluster) error {
-	err := cluster.Reconcile(remoteConfig)
-	if err != nil {
-		return err
-	}
-
-	return nil
 }
 
 func (r *ReconcileRemoteConfig) getK8SConfigForCluster(namespace string, name string) ([]byte, error) {
@@ -224,7 +327,7 @@ func (r *ReconcileRemoteConfig) getK8SConfigForCluster(namespace string, name st
 		return config, nil
 	}
 
-	return nil, pkgerrors.New("could not found k8s config")
+	return nil, errors.New("could not found k8s config")
 }
 
 func containsString(slice []string, s string) bool {
@@ -244,4 +347,25 @@ func removeString(slice []string, s string) (result []string) {
 		result = append(result, item)
 	}
 	return
+}
+
+func getWatchPredicateForRemoteConfig() predicate.Funcs {
+	return predicate.Funcs{
+		CreateFunc: func(e event.CreateEvent) bool {
+			return true
+		},
+		DeleteFunc: func(e event.DeleteEvent) bool {
+			return true
+		},
+		UpdateFunc: func(e event.UpdateEvent) bool {
+			old := e.ObjectOld.(*istiov1beta1.RemoteConfig)
+			new := e.ObjectNew.(*istiov1beta1.RemoteConfig)
+			if !reflect.DeepEqual(old.Spec, new.Spec) ||
+				old.GetDeletionTimestamp() != new.GetDeletionTimestamp() ||
+				old.GetGeneration() != new.GetGeneration() {
+				return true
+			}
+			return false
+		},
+	}
 }
