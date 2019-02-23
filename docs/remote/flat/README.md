@@ -1,5 +1,9 @@
 # Istio Multi Cluster Example - Flat network
 
+## Prerequisites
+
+- [Google Cloud SDK](https://cloud.google.com/sdk/docs/quickstarts)
+
 ## Install & Deploy
 
 ### Create two GKE clusters with IP Alias feature to support flat networking
@@ -14,8 +18,8 @@ Wait for the clusters getting into `RUNNING` state and get the credentials for t
 ```bash
 gcloud container clusters get-credentials k8s-central --zone europe-west1-b
 gcloud container clusters get-credentials k8s-remote-1 --zone us-central1-a
-CONTEXT_CENTRAL=$(kubectl config get-contexts  -o name|grep k8s-central)
-CONTEXT_REMOTE=$(kubectl config get-contexts  -o name|grep k8s-remote-1)
+CONTEXT_CENTRAL=$(kubectl config get-contexts -o name | grep k8s-central)
+CONTEXT_REMOTE=$(kubectl config get-contexts -o name | grep k8s-remote-1)
 ```
 
 ### Create firewall rule to allow direct communication between the two clusters
@@ -102,6 +106,7 @@ kubectl label secret remote-cluster istio/multiCluster=true -n istio-system
 
 ```bash
 kubectl create -n istio-system -f config/samples/operator_v1beta1_remoteconfig.yaml
+kubectl config use-context ${CONTEXT_REMOTE}
 kubectl label namespace default istio-injection=enabled
 ```
 
@@ -123,11 +128,11 @@ NAME                    READY   STATUS    RESTARTS   AGE
 echo-59d4b7c4cb-2mptg   2/2     Running   0          1m
 ```
 
-### Check the setup by do some request to the echo service from the central cluster
+### Check the setup by doing some request to the echo service from the central cluster
 
 ```bash
 kubectl config use-context ${CONTEXT_CENTRAL}
-kubectl -n default exec $(k get pods -n default -l k8s-app=echo -o jsonpath={.items..metadata.name}) -c echo-service -ti -- sh -c 'for i in `seq 1 50`; do curl -s echo |grep -i hostname|cut -d " " -f 2; done |sort |uniq -c'
+kubectl -n default exec $(kubectl get pods -n default -l k8s-app=echo -o jsonpath={.items..metadata.name}) -c echo-service -ti -- sh -c 'for i in `seq 1 50`; do curl -s echo | grep -i hostname | cut -d " " -f 2; done | sort | uniq -c'
 ```
 
 #### The output should be something like this
@@ -139,7 +144,7 @@ kubectl -n default exec $(k get pods -n default -l k8s-app=echo -o jsonpath={.it
 
 ```bash
 kubectl config use-context ${CONTEXT_REMOTE}
-kubectl -n default exec $(k get pods -n default -l k8s-app=echo -o jsonpath={.items..metadata.name}) -c echo-service -ti -- sh -c 'for i in `seq 1 50`; do curl -s echo |grep -i hostname|cut -d " " -f 2; done |sort |uniq -c'
+kubectl -n default exec $(kubectl get pods -n default -l k8s-app=echo -o jsonpath={.items..metadata.name}) -c echo-service -ti -- sh -c 'for i in `seq 1 50`; do curl -s echo | grep -i hostname | cut -d " " -f 2; done | sort | uniq -c'
 ```
 
 #### The output should be something like this
