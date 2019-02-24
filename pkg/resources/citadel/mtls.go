@@ -30,8 +30,9 @@ func (r *Reconciler) meshPolicyMTLS() *k8sutil.DynamicObject {
 			Version:  "v1alpha1",
 			Resource: "meshpolicies",
 		},
-		Kind: "MeshPolicy",
-		Name: "default",
+		Kind:      "MeshPolicy",
+		Name:      "default",
+		Namespace: r.Config.Namespace,
 		Labels: map[string]string{
 			"app": "istio-security",
 		},
@@ -57,7 +58,7 @@ func (r *Reconciler) destinationRuleDefaultMtls() *k8sutil.DynamicObject {
 		},
 		Kind:      "DestinationRule",
 		Name:      "default",
-		Namespace: "default",
+		Namespace: r.Config.Namespace,
 		Labels: map[string]string{
 			"app": "istio-security",
 		},
@@ -84,6 +85,7 @@ func (r *Reconciler) destinationRuleApiServerMtls() *k8sutil.DynamicObject {
 		},
 		Kind:      "DestinationRule",
 		Name:      "api-server",
+		Namespace: r.Config.Namespace,
 		Labels: map[string]string{
 			"app": "istio-security",
 		},

@@ -5,4 +5,7 @@ metadata:
     controller-tools.k8s.io: "1.0"
   name: config-sample
 spec:
-  mtls: false
+  mtls: true
+  includeIPRanges: "*"
+  excludeIPRanges: ""
+

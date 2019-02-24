@@ -45,14 +45,23 @@ var labelSelector = map[string]string{
 
 type Reconciler struct {
 	resources.Reconciler
+
+	includeIPRanges string
+	excludeIPRanges string
 }
 
-func New(client client.Client, config *istiov1beta1.Config) *Reconciler {
+func New(configuration Configuration, client client.Client, config *istiov1beta1.Config) *Reconciler {
+	if configuration.ExcludeIPRanges == "" && configuration.IncludeIPRanges == "" {
+		configuration.IncludeIPRanges = "*"
+	}
+
 	return &Reconciler{
 		Reconciler: resources.Reconciler{
 			Client: client,
 			Config: config,
 		},
+		includeIPRanges: configuration.IncludeIPRanges,
+		excludeIPRanges: configuration.ExcludeIPRanges,
 	}
 }
 

@@ -18,6 +18,7 @@ package mixer
 
 import (
 	"fmt"
+
 	"github.com/banzaicloud/istio-operator/pkg/resources/templates"
 	"github.com/banzaicloud/istio-operator/pkg/util"
 	appsv1 "k8s.io/api/apps/v1"

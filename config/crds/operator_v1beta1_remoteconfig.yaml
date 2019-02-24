@@ -4,13 +4,15 @@ metadata:
   creationTimestamp: null
   labels:
     controller-tools.k8s.io: "1.0"
-  name: configs.operator.istio.io
+  name: remoteconfigs.operator.istio.io
 spec:
   group: operator.istio.io
   names:
-    kind: Config
-    plural: configs
+    kind: RemoteConfig
+    plural: remoteconfigs
   scope: Namespaced
+  subresources:
+    status: {}
   validation:
     openAPIV3Schema:
       properties:
@@ -28,14 +30,28 @@ spec:
           type: object
         spec:
           properties:
+            enabledServices:
+              items:
+                properties:
+                  labelSelector:
+                    type: string
+                  name:
+                    type: string
+                  podIPs:
+                    items:
+                      type: string
+                    type: array
+                required:
+                - name
+                - labelSelector
+                type: object
+              type: array
             excludeIPRanges:
               type: string
             includeIPRanges:
               type: string
-            mtls:
-              type: boolean
           required:
-          - mtls
+          - enabledServices
           type: object
         status:
           type: object

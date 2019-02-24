@@ -61,18 +61,18 @@ var crdConfigs = map[configType]crdConfig{
 	Rbac:           {"v1alpha1", "rbac", []string{"istio-io", "rbac-istio-io"}},
 }
 
-func New(cfg *rest.Config) (*CrdOperator, error) {
+func New(cfg *rest.Config, crds []*extensionsobj.CustomResourceDefinition) (*CrdOperator, error) {
 	crdc, err := apiextensionsclient.NewForConfig(cfg)
 	if err != nil {
 		return nil, emperror.Wrap(err, "instantiating apiextensions client failed")
 	}
 	return &CrdOperator{
 		crdClient: crdc,
-		crds:      initCrds(),
+		crds:      crds,
 	}, nil
 }
 
-func initCrds() []*extensionsobj.CustomResourceDefinition {
+func InitCrds() []*extensionsobj.CustomResourceDefinition {
 	return []*extensionsobj.CustomResourceDefinition{
 		crdL("VirtualService", "VirtualServices", crdConfigs[Networking], "istio-pilot", "", "", extensionsobj.NamespaceScoped, true),
 		crdL("DestinationRule", "DestinationRules", crdConfigs[Networking], "istio-pilot", "", "", extensionsobj.NamespaceScoped, true),
@@ -175,13 +175,15 @@ func (r *CrdOperator) Reconcile(config *istiov1beta1.Config) error {
 			return emperror.WrapWith(err, "getting CRD failed", "kind", crd.Spec.Names.Kind)
 		}
 		if apierrors.IsNotFound(err) {
-			crd.ObjectMeta.OwnerReferences = []metav1.OwnerReference{
-				{
-					Kind:       config.Kind,
-					APIVersion: config.APIVersion,
-					Name:       config.Name,
-					UID:        config.GetUID(),
-				},
+			if config.Name != "" {
+				crd.ObjectMeta.OwnerReferences = []metav1.OwnerReference{
+					{
+						Kind:       config.Kind,
+						APIVersion: config.APIVersion,
+						Name:       config.Name,
+						UID:        config.GetUID(),
+					},
+				}
 			}
 			if _, err := crdClient.Create(crd); err != nil {
 				return emperror.WrapWith(err, "creating CRD failed", "kind", crd.Spec.Names.Kind)

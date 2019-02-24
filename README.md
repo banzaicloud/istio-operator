@@ -49,6 +49,7 @@ kubectl create -n istio-system -f config/samples/operator_v1beta1_config.yaml
 ## Development
 
 Check out the [developer docs](docs/developer.md).
+Check out the [developer docs](docs/developer.md).
 
 ## Issues, feature requests and roadmap
 

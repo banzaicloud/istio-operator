@@ -51,7 +51,7 @@ func Add(mgr manager.Manager) error {
 	if err != nil {
 		return emperror.Wrap(err, "failed to create dynamic client")
 	}
-	crd, err := crds.New(mgr.GetConfig())
+	crd, err := crds.New(mgr.GetConfig(), crds.InitCrds())
 	if err != nil {
 		return emperror.Wrap(err, "unable to set up crd operator")
 	}
@@ -138,12 +138,18 @@ func (r *ReconcileConfig) Reconcile(request reconcile.Request) (reconcile.Result
 
 	reconcilers := []resources.ComponentReconciler{
 		common.New(r.Client, instance),
-		citadel.New(r.Client, r.dynamic, instance),
+		citadel.New(citadel.Configuration{
+			DeployMeshPolicy: true,
+			SelfSignedCA:     true,
+		}, r.Client, r.dynamic, instance),
 		galley.New(r.Client, instance),
 		pilot.New(r.Client, r.dynamic, instance),
 		gateways.New(r.Client, instance),
 		mixer.New(r.Client, r.dynamic, instance),
-		sidecarinjector.New(r.Client, instance),
+		sidecarinjector.New(sidecarinjector.Configuration{
+			IncludeIPRanges: instance.Spec.IncludeIPRanges,
+			ExcludeIPRanges: instance.Spec.ExcludeIPRanges,
+		}, r.Client, instance),
 	}
 
 	for _, rec := range reconcilers {
