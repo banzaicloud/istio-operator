@@ -35,7 +35,7 @@ const (
 func (r *Reconciler) reconcileAutoInjectionLabels(log logr.Logger) error {
 	var autoInjectLabels = map[string]string{
 		autoInjectionLabelKey:        "enabled",
-		managedAutoInjectionLabelKey: "true",
+		managedAutoInjectionLabelKey: "enabled",
 	}
 
 	managedNamespaces := make(map[string]bool)
@@ -49,7 +49,7 @@ func (r *Reconciler) reconcileAutoInjectionLabels(log logr.Logger) error {
 
 	var namespaces corev1.NamespaceList
 	o := &client.ListOptions{}
-	selector := managedAutoInjectionLabelKey + "=true"
+	selector := managedAutoInjectionLabelKey + "=" + autoInjectLabels[managedAutoInjectionLabelKey]
 	err := o.SetLabelSelector(selector)
 	if err != nil {
 		return emperror.WrapWith(err, "could set label selector to list options", "selector", selector)
