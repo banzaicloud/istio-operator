@@ -100,8 +100,8 @@ func Reconcile(log logr.Logger, client runtimeClient.Client, desired runtime.Obj
 	return nil
 }
 
-// ReconcileNamespaceLabelIgnoreNotFound patches namespaces by adding new labels, returns without error if namespace is not found
-func ReconcileNamespaceLabelIgnoreNotFound(log logr.Logger, client runtimeClient.Client, namespace string, labels map[string]string) error {
+// ReconcileNamespaceLabelsIgnoreNotFound patches namespaces by adding/removing labels, returns without error if namespace is not found
+func ReconcileNamespaceLabelsIgnoreNotFound(log logr.Logger, client runtimeClient.Client, namespace string, labels map[string]string, labelsToRemove []string) error {
 	var ns = &corev1.Namespace{}
 	err := client.Get(context.TODO(), runtimeClient.ObjectKey{Name: namespace}, ns)
 	if err != nil {
@@ -120,6 +120,12 @@ func ReconcileNamespaceLabelIgnoreNotFound(log logr.Logger, client runtimeClient
 		}
 		if clv, ok := ns.Labels[dlk]; !ok || clv != dlv {
 			ns.Labels[dlk] = dlv
+			updateNeeded = true
+		}
+	}
+	for _, labelKey := range labelsToRemove {
+		if _, ok := ns.Labels[labelKey]; ok {
+			delete(ns.Labels, labelKey)
 			updateNeeded = true
 		}
 	}

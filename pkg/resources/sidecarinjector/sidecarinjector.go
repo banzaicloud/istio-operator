@@ -45,14 +45,11 @@ var labelSelector = map[string]string{
 
 type Reconciler struct {
 	resources.Reconciler
-
-	includeIPRanges string
-	excludeIPRanges string
 }
 
-func New(configuration Configuration, client client.Client, config *istiov1beta1.Config) *Reconciler {
-	if configuration.ExcludeIPRanges == "" && configuration.IncludeIPRanges == "" {
-		configuration.IncludeIPRanges = "*"
+func New(client client.Client, config *istiov1beta1.Config) *Reconciler {
+	if config.Spec.ExcludeIPRanges == "" && config.Spec.IncludeIPRanges == "" {
+		config.Spec.IncludeIPRanges = "*"
 	}
 
 	return &Reconciler{
@@ -60,8 +57,6 @@ func New(configuration Configuration, client client.Client, config *istiov1beta1
 			Client: client,
 			Config: config,
 		},
-		includeIPRanges: configuration.IncludeIPRanges,
-		excludeIPRanges: configuration.ExcludeIPRanges,
 	}
 }
 
@@ -81,7 +76,7 @@ func (r *Reconciler) Reconcile(log logr.Logger) error {
 			return emperror.WrapWith(err, "failed to reconcile resource", "resource", o.GetObjectKind().GroupVersionKind())
 		}
 	}
-	err := r.labelNamespaces(log)
+	err := r.reconcileAutoInjectionLabels(log)
 	if err != nil {
 		return emperror.WrapWith(err, "failed to label namespaces")
 	}

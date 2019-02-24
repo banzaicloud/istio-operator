@@ -17,21 +17,60 @@ limitations under the License.
 package sidecarinjector
 
 import (
-	"github.com/banzaicloud/istio-operator/pkg/k8sutil"
+	"context"
+
 	"github.com/go-logr/logr"
 	"github.com/goph/emperror"
+	corev1 "k8s.io/api/core/v1"
+	"sigs.k8s.io/controller-runtime/pkg/client"
+
+	"github.com/banzaicloud/istio-operator/pkg/k8sutil"
 )
 
-var autoInjectLabels = map[string]string{
-	"istio-injection": "enabled",
-}
+const (
+	managedAutoInjectionLabelKey = "istio-operator-managed-injection"
+	autoInjectionLabelKey        = "istio-injection"
+)
 
-func (r *Reconciler) labelNamespaces(log logr.Logger) error {
+func (r *Reconciler) reconcileAutoInjectionLabels(log logr.Logger) error {
+	var autoInjectLabels = map[string]string{
+		autoInjectionLabelKey:        "enabled",
+		managedAutoInjectionLabelKey: "true",
+	}
+
+	managedNamespaces := make(map[string]bool)
 	for _, ns := range r.Config.Spec.AutoInjectionNamespaces {
-		err := k8sutil.ReconcileNamespaceLabelIgnoreNotFound(log, r.Client, ns, autoInjectLabels)
+		managedNamespaces[ns] = true
+		err := k8sutil.ReconcileNamespaceLabelsIgnoreNotFound(log, r.Client, ns, autoInjectLabels, nil)
 		if err != nil {
-			return emperror.Wrap(err, "failed to label namespace")
+			log.Error(err, "failed to label namespace", "namespace", ns)
 		}
 	}
+
+	var namespaces corev1.NamespaceList
+	o := &client.ListOptions{}
+	selector := managedAutoInjectionLabelKey + "=true"
+	err := o.SetLabelSelector(selector)
+	if err != nil {
+		return emperror.WrapWith(err, "could set label selector to list options", "selector", selector)
+	}
+
+	err = r.Client.List(context.Background(), o, &namespaces)
+	if err != nil {
+		return emperror.Wrap(err, "could not list namespaces")
+	}
+
+	for _, ns := range namespaces.Items {
+		if !managedNamespaces[ns.Name] {
+			err := k8sutil.ReconcileNamespaceLabelsIgnoreNotFound(log, r.Client, ns.Name, nil, []string{
+				autoInjectionLabelKey,
+				managedAutoInjectionLabelKey,
+			})
+			if err != nil {
+				log.Error(emperror.Wrap(err, "failed to label namespace"), "namespace", ns.Name)
+			}
+		}
+	}
+
 	return nil
 }
