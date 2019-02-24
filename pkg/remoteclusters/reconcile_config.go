@@ -41,7 +41,14 @@ func (c *Cluster) reconcileConfig(remoteConfig *istiov1beta1.RemoteConfig) error
 	if k8sapierrors.IsNotFound(err) {
 		istioConfig.Name = ConfigName
 		istioConfig.Namespace = remoteConfig.Namespace
+		istioConfig.Spec.AutoInjectionNamespaces = remoteConfig.Spec.AutoInjectionNamespaces
 		err = c.ctrlRuntimeClient.Create(context.TODO(), &istioConfig)
+		if err != nil {
+			return err
+		}
+	} else {
+		istioConfig.Spec.AutoInjectionNamespaces = remoteConfig.Spec.AutoInjectionNamespaces
+		err = c.ctrlRuntimeClient.Update(context.TODO(), &istioConfig)
 		if err != nil {
 			return err
 		}

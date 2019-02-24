@@ -213,6 +213,11 @@ func (in *RemoteConfigSpec) DeepCopyInto(out *RemoteConfigSpec) {
 			(*in)[i].DeepCopyInto(&(*out)[i])
 		}
 	}
+	if in.AutoInjectionNamespaces != nil {
+		in, out := &in.AutoInjectionNamespaces, &out.AutoInjectionNamespaces
+		*out = make([]string, len(*in))
+		copy(*out, *in)
+	}
 	in.signCert.DeepCopyInto(&out.signCert)
 	return
 }
