@@ -99,3 +99,42 @@ func Reconcile(log logr.Logger, client runtimeClient.Client, desired runtime.Obj
 	}
 	return nil
 }
+
+// ReconcileNamespaceLabelsIgnoreNotFound patches namespaces by adding/removing labels, returns without error if namespace is not found
+func ReconcileNamespaceLabelsIgnoreNotFound(log logr.Logger, client runtimeClient.Client, namespace string, labels map[string]string, labelsToRemove []string) error {
+	var ns = &corev1.Namespace{}
+	err := client.Get(context.TODO(), runtimeClient.ObjectKey{Name: namespace}, ns)
+	if err != nil {
+		if apierrors.IsNotFound(err) {
+			log.V(1).Info("namespace not found, ignoring", "namespace", namespace)
+			return nil
+		}
+
+		return emperror.WrapWith(err, "getting namespace failed", "namespace", namespace)
+	}
+
+	updateNeeded := false
+	for dlk, dlv := range labels {
+		if ns.Labels == nil {
+			ns.Labels = make(map[string]string)
+		}
+		if clv, ok := ns.Labels[dlk]; !ok || clv != dlv {
+			ns.Labels[dlk] = dlv
+			updateNeeded = true
+		}
+	}
+	for _, labelKey := range labelsToRemove {
+		if _, ok := ns.Labels[labelKey]; ok {
+			delete(ns.Labels, labelKey)
+			updateNeeded = true
+		}
+	}
+	if updateNeeded {
+		if err := client.Update(context.TODO(), ns); err != nil {
+			return emperror.WrapWith(err, "updating namespace failed", "namespace", namespace)
+		}
+		log.Info("namespace labels reconciled", "namespace", namespace, "labels", labels)
+	}
+
+	return nil
+}

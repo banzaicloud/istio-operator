@@ -116,9 +116,9 @@ type ReconcileComponent func(log logr.Logger, istio *istiov1beta1.Config) error
 func (r *ReconcileConfig) Reconcile(request reconcile.Request) (reconcile.Result, error) {
 	reqLogger := log.WithValues("Request.Namespace", request.Namespace, "Request.Name", request.Name)
 	reqLogger.Info("Reconciling Istio")
-	// Fetch the Config instance
-	instance := &istiov1beta1.Config{}
-	err := r.Get(context.TODO(), request.NamespacedName, instance)
+	// Fetch the Config config
+	config := &istiov1beta1.Config{}
+	err := r.Get(context.TODO(), request.NamespacedName, config)
 	if err != nil {
 		if errors.IsNotFound(err) {
 			// Object not found, return.  Created objects are automatically garbage collected.
@@ -130,26 +130,23 @@ func (r *ReconcileConfig) Reconcile(request reconcile.Request) (reconcile.Result
 	}
 
 	log.Info("creating CRDs")
-	err = r.crdOperator.Reconcile(instance)
+	err = r.crdOperator.Reconcile(config)
 	if err != nil {
 		log.Error(err, "unable to initialize CRDs")
 		return reconcile.Result{}, err
 	}
 
 	reconcilers := []resources.ComponentReconciler{
-		common.New(r.Client, instance),
+		common.New(r.Client, config),
 		citadel.New(citadel.Configuration{
 			DeployMeshPolicy: true,
 			SelfSignedCA:     true,
-		}, r.Client, r.dynamic, instance),
-		galley.New(r.Client, instance),
-		pilot.New(r.Client, r.dynamic, instance),
-		gateways.New(r.Client, instance),
-		mixer.New(r.Client, r.dynamic, instance),
-		sidecarinjector.New(sidecarinjector.Configuration{
-			IncludeIPRanges: instance.Spec.IncludeIPRanges,
-			ExcludeIPRanges: instance.Spec.ExcludeIPRanges,
-		}, r.Client, instance),
+		}, r.Client, r.dynamic, config),
+		galley.New(r.Client, config),
+		pilot.New(r.Client, r.dynamic, config),
+		gateways.New(r.Client, config),
+		mixer.New(r.Client, r.dynamic, config),
+		sidecarinjector.New(r.Client, config),
 	}
 
 	for _, rec := range reconcilers {

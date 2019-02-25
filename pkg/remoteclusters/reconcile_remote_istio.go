@@ -40,10 +40,7 @@ func (c *Cluster) reconcileDeployment(remoteConfig *istiov1beta1.RemoteConfig) e
 		return err
 	}
 
-	sidecarinjectorReconciler := sidecarinjector.New(sidecarinjector.Configuration{
-		IncludeIPRanges: remoteConfig.Spec.IncludeIPRanges,
-		ExcludeIPRanges: remoteConfig.Spec.ExcludeIPRanges,
-	}, c.ctrlRuntimeClient, c.istioConfig)
+	sidecarinjectorReconciler := sidecarinjector.New(c.ctrlRuntimeClient, c.istioConfig)
 	err = sidecarinjectorReconciler.Reconcile(c.log)
 	if err != nil {
 		return err

@@ -38,6 +38,8 @@ type RemoteConfigSpec struct {
 	IncludeIPRanges string         `json:"includeIPRanges,omitempty"`
 	ExcludeIPRanges string         `json:"excludeIPRanges,omitempty"`
 	EnabledServices []IstioService `json:"enabledServices"`
+	// List of namespaces to label with sidecar auto injection enabled
+	AutoInjectionNamespaces []string `json:"autoInjectionNamespaces,omitempty"`
 
 	signCert SignCert
 }
