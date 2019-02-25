@@ -20,17 +20,21 @@ import (
 	"fmt"
 	"strings"
 
-	istiov1beta1 "github.com/banzaicloud/istio-operator/pkg/apis/operator/v1beta1"
+	"github.com/go-logr/logr"
 	"github.com/goph/emperror"
 	extensionsobj "k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1beta1"
 	apiextensionsclient "k8s.io/apiextensions-apiserver/pkg/client/clientset/clientset"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/rest"
-	logf "sigs.k8s.io/controller-runtime/pkg/runtime/log"
+
+	istiov1beta1 "github.com/banzaicloud/istio-operator/pkg/apis/operator/v1beta1"
+	"github.com/banzaicloud/istio-operator/pkg/k8sutil/objectmatch"
 )
 
-var log = logf.Log.WithName("crds")
+const (
+	componentName = "crds"
+)
 
 type CrdOperator struct {
 	crds   []*extensionsobj.CustomResourceDefinition
@@ -148,7 +152,14 @@ func crdL(kind string, plural string, config crdConfig, appLabel string, pckLabe
 		Spec: extensionsobj.CustomResourceDefinitionSpec{
 			Group:   fmt.Sprintf("%s.istio.io", config.group),
 			Version: config.version,
-			Scope:   scope,
+			Versions: []extensionsobj.CustomResourceDefinitionVersion{
+				{
+					Name:    config.version,
+					Served:  true,
+					Storage: true,
+				},
+			},
+			Scope: scope,
 			Names: extensionsobj.CustomResourceDefinitionNames{
 				Plural:     pluralName,
 				Kind:       kind,
@@ -163,7 +174,8 @@ func crdL(kind string, plural string, config crdConfig, appLabel string, pckLabe
 	return crd
 }
 
-func (r *CrdOperator) Reconcile(config *istiov1beta1.Config) error {
+func (r *CrdOperator) Reconcile(config *istiov1beta1.Config, log logr.Logger) error {
+	log = log.WithValues("component", componentName)
 	apiExtensions, err := apiextensionsclient.NewForConfig(r.config)
 	if err != nil {
 		return emperror.Wrap(err, "instantiating apiextensions client failed")
@@ -191,6 +203,15 @@ func (r *CrdOperator) Reconcile(config *istiov1beta1.Config) error {
 			log.Info("CRD created", "kind", crd.Spec.Names.Kind)
 		}
 		if err == nil {
+			matched, err := objectmatch.Match(current, crd)
+			if err != nil {
+				log.Error(err, "could not match objects")
+				continue
+			}
+			if matched {
+				log.V(1).Info("CRD is in sync", "name", crd.Name)
+				continue
+			}
 			crd.ResourceVersion = current.ResourceVersion
 			if _, err := crdClient.Update(crd); err != nil {
 				return emperror.WrapWith(err, "updating CRD failed", "kind", crd.Spec.Names.Kind)
@@ -198,5 +219,8 @@ func (r *CrdOperator) Reconcile(config *istiov1beta1.Config) error {
 			log.Info("CRD updated", "kind", crd.Spec.Names.Kind)
 		}
 	}
+
+	log.Info("Reconciled")
+
 	return nil
 }

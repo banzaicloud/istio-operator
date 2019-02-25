@@ -19,7 +19,7 @@ package k8sutil
 import (
 	"reflect"
 
-	istiov1beta1 "github.com/banzaicloud/istio-operator/pkg/apis/operator/v1beta1"
+	"github.com/banzaicloud/istio-operator/pkg/k8sutil/objectmatch"
 	"github.com/go-logr/logr"
 	"github.com/goph/emperror"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
@@ -27,6 +27,8 @@ import (
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/apimachinery/pkg/runtime/schema"
 	"k8s.io/client-go/dynamic"
+
+	istiov1beta1 "github.com/banzaicloud/istio-operator/pkg/apis/operator/v1beta1"
 )
 
 type DynamicObject struct {
@@ -42,22 +44,31 @@ type DynamicObject struct {
 func (d *DynamicObject) Reconcile(log logr.Logger, client dynamic.Interface) error {
 	log = log.WithValues("type", reflect.TypeOf(d))
 	desired := d.unstructured()
-	o, err := client.Resource(d.Gvr).Namespace(d.Namespace).Get(d.Name, metav1.GetOptions{})
+	current, err := client.Resource(d.Gvr).Namespace(d.Namespace).Get(d.Name, metav1.GetOptions{})
 	if err != nil && !apierrors.IsNotFound(err) {
-		return emperror.WrapWith(err, "getting resource failed", "name", d.Name, "type", reflect.TypeOf(desired))
+		return emperror.WrapWith(err, "getting resource failed", "name", d.Name, "kind", reflect.TypeOf(desired))
 	}
 	if apierrors.IsNotFound(err) {
 		if _, err := client.Resource(d.Gvr).Namespace(d.Namespace).Create(desired, metav1.CreateOptions{}); err != nil {
-			return emperror.WrapWith(err, "creating resource failed", "name", d.Name, "type", reflect.TypeOf(desired))
+			return emperror.WrapWith(err, "creating resource failed", "name", d.Name, "kind", reflect.TypeOf(desired))
 		}
-		log.Info("resource created", "name", d.Name)
+		log.Info("resource created", "name", d.Name, "kind", d.Gvr.Resource)
 	}
 	if err == nil {
-		desired.SetResourceVersion(o.GetResourceVersion())
+		matched, err := objectmatch.Match(current, desired)
+		if err != nil {
+			return err
+		}
+		if matched {
+			log.V(1).Info("resource is in sync")
+			return nil
+		}
+
+		desired.SetResourceVersion(current.GetResourceVersion())
 		if _, err := client.Resource(d.Gvr).Namespace(d.Namespace).Update(desired, metav1.UpdateOptions{}); err != nil {
 			return emperror.WrapWith(err, "updating resource failed", "name", d.Name, "type", reflect.TypeOf(desired))
 		}
-		log.Info("resource updated", "name", d.Name)
+		log.Info("resource updated", "name", d.Name, "kind", d.Gvr.Resource)
 	}
 	return nil
 }

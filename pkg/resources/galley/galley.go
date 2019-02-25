@@ -26,6 +26,7 @@ import (
 )
 
 const (
+	componentName          = "galley"
 	serviceAccountName     = "istio-galley-service-account"
 	clusterRoleName        = "istio-galley-cluster-role"
 	clusterRoleBindingName = "istio-galley-admin-role-binding"
@@ -57,6 +58,10 @@ func New(client client.Client, config *istiov1beta1.Config) *Reconciler {
 }
 
 func (r *Reconciler) Reconcile(log logr.Logger) error {
+	log = log.WithValues("component", componentName)
+
+	log.Info("Reconciling")
+
 	for _, res := range []resources.Resource{
 		r.serviceAccount,
 		r.clusterRole,
@@ -72,5 +77,8 @@ func (r *Reconciler) Reconcile(log logr.Logger) error {
 		}
 	}
 	// TODO: wait for deployment to be available?
+
+	log.Info("Reconciled")
+
 	return nil
 }

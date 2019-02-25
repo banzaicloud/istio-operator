@@ -30,9 +30,8 @@ func (r *Reconciler) meshPolicyMTLS() *k8sutil.DynamicObject {
 			Version:  "v1alpha1",
 			Resource: "meshpolicies",
 		},
-		Kind:      "MeshPolicy",
-		Name:      "default",
-		Namespace: r.Config.Namespace,
+		Kind: "MeshPolicy",
+		Name: "default",
 		Labels: map[string]string{
 			"app": "istio-security",
 		},

@@ -113,9 +113,9 @@ type ReconcileComponent func(log logr.Logger, istio *istiov1beta1.Config) error
 // +kubebuilder:rbac:groups=operator.operator.io,resources=configs,verbs=get;list;watch;create;update;patch;delete
 // +kubebuilder:rbac:groups=operator.operator.io,resources=configs/status,verbs=get;update;patch
 func (r *ReconcileConfig) Reconcile(request reconcile.Request) (reconcile.Result, error) {
-	logger := log.WithValues("Request.Namespace", request.Namespace, "Request.Name", request.Name)
+	logger := log.WithValues("trigger", request.Namespace+"/"+request.Name)
 	logger.Info("Reconciling Istio")
-	// Fetch the Config config
+	// Fetch the Config instance
 	config := &istiov1beta1.Config{}
 	err := r.Get(context.TODO(), request.NamespacedName, config)
 	if err != nil {
@@ -185,7 +185,7 @@ func (r *ReconcileConfig) reconcile(log logr.Logger, config *istiov1beta1.Config
 	}
 
 	log.Info("reconciling CRDs")
-	err = r.crdOperator.Reconcile(config)
+	err = r.crdOperator.Reconcile(config, logger)
 	if err != nil {
 		log.Error(err, "unable to reconcile CRDs")
 		return reconcile.Result{}, err
@@ -205,7 +205,7 @@ func (r *ReconcileConfig) reconcile(log logr.Logger, config *istiov1beta1.Config
 	}
 
 	for _, rec := range reconcilers {
-		err = rec.Reconcile(log)
+		err = rec.Reconcile(logger)
 		if err != nil {
 			return reconcile.Result{}, err
 		}

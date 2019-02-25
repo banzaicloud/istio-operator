@@ -56,9 +56,11 @@ func (r *Reconciler) deployment() runtime.Object {
 							Ports: []apiv1.ContainerPort{
 								{
 									ContainerPort: 443,
+									Protocol:      apiv1.ProtocolTCP,
 								},
 								{
 									ContainerPort: 9093,
+									Protocol:      apiv1.ProtocolTCP,
 								},
 							},
 							Command: []string{
@@ -85,9 +87,11 @@ func (r *Reconciler) deployment() runtime.Object {
 									ReadOnly:  true,
 								},
 							},
-							LivenessProbe:  r.galleyProbe(),
-							ReadinessProbe: r.galleyProbe(),
-							Resources:      templates.DefaultResources(),
+							LivenessProbe:            r.galleyProbe(),
+							ReadinessProbe:           r.galleyProbe(),
+							Resources:                templates.DefaultResources(),
+							TerminationMessagePath:   apiv1.TerminationMessagePathDefault,
+							TerminationMessagePolicy: apiv1.TerminationMessageReadFile,
 						},
 					},
 					Volumes: []apiv1.Volume{
@@ -95,7 +99,8 @@ func (r *Reconciler) deployment() runtime.Object {
 							Name: "certs",
 							VolumeSource: apiv1.VolumeSource{
 								Secret: &apiv1.SecretVolumeSource{
-									SecretName: fmt.Sprintf("istio.%s", serviceAccountName),
+									SecretName:  fmt.Sprintf("istio.%s", serviceAccountName),
+									DefaultMode: util.IntPointer(420),
 								},
 							},
 						},
@@ -106,6 +111,7 @@ func (r *Reconciler) deployment() runtime.Object {
 									LocalObjectReference: apiv1.LocalObjectReference{
 										Name: configMapName,
 									},
+									DefaultMode: util.IntPointer(420),
 								},
 							},
 						},
@@ -131,5 +137,8 @@ func (r *Reconciler) galleyProbe() *apiv1.Probe {
 		},
 		InitialDelaySeconds: 5,
 		PeriodSeconds:       5,
+		FailureThreshold:    3,
+		SuccessThreshold:    1,
+		TimeoutSeconds:      1,
 	}
 }

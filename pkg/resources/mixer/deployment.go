@@ -48,8 +48,9 @@ func (r *Reconciler) deployment(t string) runtime.Object {
 							Name: "istio-certs",
 							VolumeSource: apiv1.VolumeSource{
 								Secret: &apiv1.SecretVolumeSource{
-									SecretName: fmt.Sprintf("istio.%s", serviceAccountName),
-									Optional:   util.BoolPointer(true),
+									SecretName:  fmt.Sprintf("istio.%s", serviceAccountName),
+									Optional:    util.BoolPointer(true),
+									DefaultMode: util.IntPointer(420),
 								},
 							},
 						},
@@ -79,9 +80,11 @@ func (r *Reconciler) mixerContainer(t string, ns string) apiv1.Container {
 		Ports: []apiv1.ContainerPort{
 			{
 				ContainerPort: 9093,
+				Protocol:      apiv1.ProtocolTCP,
 			},
 			{
 				ContainerPort: 42422,
+				Protocol:      apiv1.ProtocolTCP,
 			},
 		},
 		Args: []string{
@@ -107,13 +110,19 @@ func (r *Reconciler) mixerContainer(t string, ns string) apiv1.Container {
 		LivenessProbe: &apiv1.Probe{
 			Handler: apiv1.Handler{
 				HTTPGet: &apiv1.HTTPGetAction{
-					Path: "/version",
-					Port: intstr.FromInt(9093),
+					Path:   "/version",
+					Port:   intstr.FromInt(9093),
+					Scheme: apiv1.URISchemeHTTP,
 				},
 			},
 			InitialDelaySeconds: 5,
 			PeriodSeconds:       5,
+			FailureThreshold:    3,
+			SuccessThreshold:    1,
+			TimeoutSeconds:      1,
 		},
+		TerminationMessagePath:   apiv1.TerminationMessagePathDefault,
+		TerminationMessagePolicy: apiv1.TerminationMessageReadFile,
 	}
 	if t == "policy" {
 		c.Args = append(c.Args, "--numCheckCacheEntries=0")
@@ -127,8 +136,8 @@ func (r *Reconciler) istioProxyContainer(t string) apiv1.Container {
 		Image:           "docker.io/istio/proxyv2:1.0.5",
 		ImagePullPolicy: apiv1.PullIfNotPresent,
 		Ports: []apiv1.ContainerPort{
-			{ContainerPort: 9091},
-			{ContainerPort: 15004},
+			{ContainerPort: 9091, Protocol: apiv1.ProtocolTCP},
+			{ContainerPort: 15004, Protocol: apiv1.ProtocolTCP},
 			{ContainerPort: 15090, Protocol: apiv1.ProtocolTCP, Name: "http-envoy-prom"},
 		},
 		Args: []string{
@@ -153,5 +162,7 @@ func (r *Reconciler) istioProxyContainer(t string) apiv1.Container {
 				MountPath: "/sock",
 			},
 		},
+		TerminationMessagePath:   apiv1.TerminationMessagePathDefault,
+		TerminationMessagePolicy: apiv1.TerminationMessageReadFile,
 	}
 }

@@ -37,7 +37,7 @@ func (r *Reconciler) webhook() runtime.Object {
 						Namespace: r.Config.Namespace,
 						Path:      util.StrPointer("/inject"),
 					},
-					CABundle: []byte{},
+					CABundle: nil,
 				},
 				Rules: []admissionv1beta1.RuleWithOperations{
 					{

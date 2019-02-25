@@ -33,7 +33,7 @@ func (c *Cluster) reconcileConfigCrd(remoteConfig *istiov1beta1.RemoteConfig) er
 		return err
 	}
 
-	err = crdo.Reconcile(&istiov1beta1.Config{})
+	err = crdo.Reconcile(&istiov1beta1.Config{}, c.log)
 	if err != nil {
 		return err
 	}
