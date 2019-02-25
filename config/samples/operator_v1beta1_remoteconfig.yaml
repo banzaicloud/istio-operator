@@ -18,3 +18,4 @@ spec:
     labelSelector: "istio-mixer-type=telemetry"
   - name: "zipkin"
     labelSelector: "app=jaeger"
+  controlPlaneSecurityEnabled: true

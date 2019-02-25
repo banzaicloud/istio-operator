@@ -131,7 +131,7 @@ func (r *Reconciler) deployment() runtime.Object {
 								"--templateFile",
 								"/etc/istio/proxy/envoy_pilot.yaml.tmpl",
 								"--controlPlaneAuthPolicy",
-								"NONE",
+								templates.ControlPlaneAuthPolicy(r.Config.Spec.ControlPlaneSecurityEnabled),
 							},
 							Env:       templates.IstioProxyEnv(),
 							Resources: templates.DefaultResources(),

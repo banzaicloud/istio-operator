@@ -62,8 +62,8 @@ func (r *Reconciler) deployment(t string) runtime.Object {
 					},
 					Affinity: &apiv1.Affinity{},
 					Containers: []apiv1.Container{
-						mixerContainer(t, r.Config.Namespace),
-						istioProxyContainer(t),
+						r.mixerContainer(t, r.Config.Namespace),
+						r.istioProxyContainer(t),
 					},
 				},
 			},
@@ -71,7 +71,7 @@ func (r *Reconciler) deployment(t string) runtime.Object {
 	}
 }
 
-func mixerContainer(t string, ns string) apiv1.Container {
+func (r *Reconciler) mixerContainer(t string, ns string) apiv1.Container {
 	c := apiv1.Container{
 		Name:            "mixer",
 		Image:           "docker.io/istio/mixer:1.0.5",
@@ -121,7 +121,7 @@ func mixerContainer(t string, ns string) apiv1.Container {
 	return c
 }
 
-func istioProxyContainer(t string) apiv1.Container {
+func (r *Reconciler) istioProxyContainer(t string) apiv1.Container {
 	return apiv1.Container{
 		Name:            "istio-proxy",
 		Image:           "docker.io/istio/proxyv2:1.0.5",
@@ -138,7 +138,7 @@ func istioProxyContainer(t string) apiv1.Container {
 			"--templateFile",
 			fmt.Sprintf("/etc/istio/proxy/envoy_%s.yaml.tmpl", t),
 			"--controlPlaneAuthPolicy",
-			"NONE",
+			templates.ControlPlaneAuthPolicy(r.Config.Spec.ControlPlaneSecurityEnabled),
 		},
 		Env:       templates.IstioProxyEnv(),
 		Resources: templates.DefaultResources(),

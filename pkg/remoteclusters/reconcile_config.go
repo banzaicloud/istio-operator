@@ -42,12 +42,14 @@ func (c *Cluster) reconcileConfig(remoteConfig *istiov1beta1.RemoteConfig) error
 		istioConfig.Name = ConfigName
 		istioConfig.Namespace = remoteConfig.Namespace
 		istioConfig.Spec.AutoInjectionNamespaces = remoteConfig.Spec.AutoInjectionNamespaces
+		istioConfig.Spec.ControlPlaneSecurityEnabled = remoteConfig.Spec.ControlPlaneSecurityEnabled
 		err = c.ctrlRuntimeClient.Create(context.TODO(), &istioConfig)
 		if err != nil {
 			return err
 		}
 	} else {
 		istioConfig.Spec.AutoInjectionNamespaces = remoteConfig.Spec.AutoInjectionNamespaces
+		istioConfig.Spec.ControlPlaneSecurityEnabled = remoteConfig.Spec.ControlPlaneSecurityEnabled
 		err = c.ctrlRuntimeClient.Update(context.TODO(), &istioConfig)
 		if err != nil {
 			return err

@@ -176,7 +176,7 @@ func (r *ReconcileRemoteConfig) reconcile(remoteConfig *istiov1beta1.RemoteConfi
 	}
 
 	log.Info("begin reconciling remote istio")
-	// return reconcile.Result{}, fmt.Errorf("belaaaa")
+
 	remoteConfig, err = r.populateEnabledServicePodIPs(remoteConfig)
 	if err != nil {
 		return reconcile.Result{}, emperror.Wrap(err, "could not populate pod ips to remoteconfig")
