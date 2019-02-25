@@ -20,6 +20,8 @@ import (
 	"context"
 	"reflect"
 
+	"github.com/banzaicloud/istio-operator/pkg/util"
+
 	"github.com/goph/emperror"
 	"github.com/pkg/errors"
 	corev1 "k8s.io/api/core/v1"
@@ -134,7 +136,7 @@ func (r *ReconcileRemoteConfig) reconcile(remoteConfig *istiov1beta1.RemoteConfi
 	}
 
 	if remoteConfig.ObjectMeta.DeletionTimestamp.IsZero() {
-		if !containsString(remoteConfig.ObjectMeta.Finalizers, finalizerID) {
+		if !util.ContainsString(remoteConfig.ObjectMeta.Finalizers, finalizerID) {
 			remoteConfig.ObjectMeta.Finalizers = append(remoteConfig.ObjectMeta.Finalizers, finalizerID)
 			if err := r.Update(context.Background(), remoteConfig); err != nil {
 				return reconcile.Result{}, emperror.Wrap(err, "could not add finalizer to remoteconfig")
@@ -143,7 +145,7 @@ func (r *ReconcileRemoteConfig) reconcile(remoteConfig *istiov1beta1.RemoteConfi
 			return reconcile.Result{}, nil
 		}
 	} else {
-		if containsString(remoteConfig.ObjectMeta.Finalizers, finalizerID) {
+		if util.ContainsString(remoteConfig.ObjectMeta.Finalizers, finalizerID) {
 			if remoteConfig.Status.Status == istiov1beta1.RemoteConfigReconciling && remoteConfig.Status.ErrorMessage == "" {
 				log.Info("cannot remove remote istio config while reconciling")
 				return reconcile.Result{}, nil
@@ -158,7 +160,7 @@ func (r *ReconcileRemoteConfig) reconcile(remoteConfig *istiov1beta1.RemoteConfi
 			}
 		}
 
-		remoteConfig.ObjectMeta.Finalizers = removeString(remoteConfig.ObjectMeta.Finalizers, finalizerID)
+		remoteConfig.ObjectMeta.Finalizers = util.RemoveString(remoteConfig.ObjectMeta.Finalizers, finalizerID)
 		if err := r.Update(context.Background(), remoteConfig); err != nil {
 			return reconcile.Result{}, emperror.Wrap(err, "could not remove finalizer from remoteconfig")
 		}
@@ -328,25 +330,6 @@ func (r *ReconcileRemoteConfig) getK8SConfigForCluster(namespace string, name st
 	}
 
 	return nil, errors.New("could not found k8s config")
-}
-
-func containsString(slice []string, s string) bool {
-	for _, item := range slice {
-		if item == s {
-			return true
-		}
-	}
-	return false
-}
-
-func removeString(slice []string, s string) (result []string) {
-	for _, item := range slice {
-		if item == s {
-			continue
-		}
-		result = append(result, item)
-	}
-	return
 }
 
 func getWatchPredicateForRemoteConfig() predicate.Funcs {

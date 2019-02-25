@@ -20,6 +20,15 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
+type ConfigState string
+
+const (
+	Created         ConfigState = "Created"
+	ReconcileFailed ConfigState = "ReconcileFailed"
+	Reconciling     ConfigState = "Reconciling"
+	Available       ConfigState = "Available"
+)
+
 // ConfigSpec defines the desired state of Config
 type ConfigSpec struct {
 	MTLS            bool   `json:"mtls"`
@@ -33,6 +42,8 @@ type ConfigSpec struct {
 
 // ConfigStatus defines the observed state of Config
 type ConfigStatus struct {
+	Status       ConfigState
+	ErrorMessage string
 }
 
 // +genclient
@@ -40,6 +51,7 @@ type ConfigStatus struct {
 
 // Config is the Schema for the configs API
 // +k8s:openapi-gen=true
+// +kubebuilder:subresource:status
 type Config struct {
 	metav1.TypeMeta   `json:",inline"`
 	metav1.ObjectMeta `json:"metadata,omitempty"`
