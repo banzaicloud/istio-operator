@@ -79,27 +79,26 @@ func (r *Reconciler) Reconcile(log logr.Logger) error {
 			return emperror.WrapWith(err, "failed to reconcile resource", "resource", o.GetObjectKind().GroupVersionKind())
 		}
 	}
-	var drs []resources.DynamicResource
 
 	if !r.configuration.DeployMeshPolicy {
 		return nil
 	}
 
+	var mTLSDesiredState k8sutil.DesiredState
 	if r.Config.Spec.MTLS {
-		drs = []resources.DynamicResource{
-			r.meshPolicyMTLS,
-			r.destinationRuleDefaultMtls,
-			r.destinationRuleApiServerMtls,
-		}
+		mTLSDesiredState = k8sutil.CREATED
 	} else {
-		drs = []resources.DynamicResource{
-			r.meshPolicy,
-		}
+		mTLSDesiredState = k8sutil.DELETED
+	}
+	drs := []resources.DynamicResourceWithDesiredState{
+		{DynamicResource: r.meshPolicy, DesiredState: k8sutil.CREATED},
+		{DynamicResource: r.destinationRuleDefaultMtls, DesiredState: mTLSDesiredState},
+		{DynamicResource: r.destinationRuleApiServerMtls, DesiredState: mTLSDesiredState},
 	}
 
 	for _, dr := range drs {
-		o := dr()
-		err := o.Reconcile(log, r.dynamic)
+		o := dr.DynamicResource()
+		err := o.Reconcile(log, r.dynamic, dr.DesiredState)
 		if err != nil {
 			return emperror.WrapWith(err, "failed to reconcile dynamic resource", "resource", o.Gvr)
 		}

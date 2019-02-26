@@ -84,33 +84,33 @@ func (r *Reconciler) Reconcile(log logr.Logger) error {
 			return emperror.WrapWith(err, "failed to reconcile resource", "resource", o.GetObjectKind().GroupVersionKind())
 		}
 	}
-	drs := []resources.DynamicResource{
-		r.istioProxyAttributeManifest,
-		r.kubernetesAttributeManifest,
-		r.stdioHandler,
-		r.accessLogLogentry,
-		r.tcpAccessLogLogentry,
-		r.stdioRule,
-		r.stdioTcpRule,
-		r.prometheusHandler,
-		r.requestCountMetric,
-		r.requestDurationMetric,
-		r.requestSizeMetric,
-		r.responseSizeMetric,
-		r.tcpByteReceivedMetric,
-		r.tcpByteSentMetric,
-		r.promHttpRule,
-		r.promTcpRule,
-		r.kubernetesEnvHandler,
-		r.attributesKubernetes,
-		r.kubeAttrRule,
-		r.tcpKubeAttrRule,
-		r.policyDestinationRule,
-		r.telemetryDestinationRule,
+	drs := []resources.DynamicResourceWithDesiredState{
+		{DynamicResource: r.istioProxyAttributeManifest, DesiredState: k8sutil.CREATED},
+		{DynamicResource: r.kubernetesAttributeManifest, DesiredState: k8sutil.CREATED},
+		{DynamicResource: r.stdioHandler, DesiredState: k8sutil.CREATED},
+		{DynamicResource: r.accessLogLogentry, DesiredState: k8sutil.CREATED},
+		{DynamicResource: r.tcpAccessLogLogentry, DesiredState: k8sutil.CREATED},
+		{DynamicResource: r.stdioRule, DesiredState: k8sutil.CREATED},
+		{DynamicResource: r.stdioTcpRule, DesiredState: k8sutil.CREATED},
+		{DynamicResource: r.prometheusHandler, DesiredState: k8sutil.CREATED},
+		{DynamicResource: r.requestCountMetric, DesiredState: k8sutil.CREATED},
+		{DynamicResource: r.requestDurationMetric, DesiredState: k8sutil.CREATED},
+		{DynamicResource: r.requestSizeMetric, DesiredState: k8sutil.CREATED},
+		{DynamicResource: r.responseSizeMetric, DesiredState: k8sutil.CREATED},
+		{DynamicResource: r.tcpByteReceivedMetric, DesiredState: k8sutil.CREATED},
+		{DynamicResource: r.tcpByteSentMetric, DesiredState: k8sutil.CREATED},
+		{DynamicResource: r.promHttpRule, DesiredState: k8sutil.CREATED},
+		{DynamicResource: r.promTcpRule, DesiredState: k8sutil.CREATED},
+		{DynamicResource: r.kubernetesEnvHandler, DesiredState: k8sutil.CREATED},
+		{DynamicResource: r.attributesKubernetes, DesiredState: k8sutil.CREATED},
+		{DynamicResource: r.kubeAttrRule, DesiredState: k8sutil.CREATED},
+		{DynamicResource: r.tcpKubeAttrRule, DesiredState: k8sutil.CREATED},
+		{DynamicResource: r.policyDestinationRule, DesiredState: k8sutil.CREATED},
+		{DynamicResource: r.telemetryDestinationRule, DesiredState: k8sutil.CREATED},
 	}
 	for _, dr := range drs {
-		o := dr()
-		err := o.Reconcile(log, r.dynamic)
+		o := dr.DynamicResource()
+		err := o.Reconcile(log, r.dynamic, dr.DesiredState)
 		if err != nil {
 			return emperror.WrapWith(err, "failed to reconcile dynamic resource", "resource", o.Gvr)
 		}

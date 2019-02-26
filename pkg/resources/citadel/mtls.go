@@ -21,24 +21,37 @@ import (
 	"k8s.io/apimachinery/pkg/runtime/schema"
 )
 
-// meshPolicyMTLS returns an authentication policy to enable mutual TLS for all services (that have sidecar) in the mesh
+// mTLS returns a map to configure the default MeshPolicy
+func (r *Reconciler) mTLS() map[string]interface{} {
+	if r.Config.Spec.MTLS {
+		return map[string]interface{}{}
+	}
+
+	return map[string]interface{}{
+		"mode": "PERMISSIVE",
+	}
+}
+
+// meshPolicy returns an authentication policy to either enable or disable mutual TLS
+// for all services (that have sidecar) in the mesh
 // https://istio.io/docs/tasks/security/authn-policy/
-func (r *Reconciler) meshPolicyMTLS() *k8sutil.DynamicObject {
+func (r *Reconciler) meshPolicy() *k8sutil.DynamicObject {
 	return &k8sutil.DynamicObject{
 		Gvr: schema.GroupVersionResource{
 			Group:    "authentication.istio.io",
 			Version:  "v1alpha1",
 			Resource: "meshpolicies",
 		},
-		Kind: "MeshPolicy",
-		Name: "default",
+		Kind:      "MeshPolicy",
+		Name:      "default",
+		Namespace: r.Config.Namespace,
 		Labels: map[string]string{
 			"app": "istio-security",
 		},
 		Spec: map[string]interface{}{
 			"peers": []map[string]interface{}{
 				{
-					"mtls": map[string]interface{}{},
+					"mtls": r.mTLS(),
 				},
 			},
 		},

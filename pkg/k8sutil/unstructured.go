@@ -31,6 +31,13 @@ import (
 	istiov1beta1 "github.com/banzaicloud/istio-operator/pkg/apis/operator/v1beta1"
 )
 
+type DesiredState string
+
+const (
+	CREATED DesiredState = "created"
+	DELETED DesiredState = "deleted"
+)
+
 type DynamicObject struct {
 	Name      string
 	Namespace string
@@ -41,7 +48,7 @@ type DynamicObject struct {
 	Owner     *istiov1beta1.Config
 }
 
-func (d *DynamicObject) Reconcile(log logr.Logger, client dynamic.Interface) error {
+func (d *DynamicObject) Reconcile(log logr.Logger, client dynamic.Interface, desiredState DesiredState) error {
 	desired := d.unstructured()
 	desiredType := reflect.TypeOf(desired)
 	log = log.WithValues("type", reflect.TypeOf(d), "name", d.Name)
@@ -50,25 +57,36 @@ func (d *DynamicObject) Reconcile(log logr.Logger, client dynamic.Interface) err
 		return emperror.WrapWith(err, "getting resource failed", "name", d.Name, "kind", desiredType)
 	}
 	if apierrors.IsNotFound(err) {
-		if _, err := client.Resource(d.Gvr).Namespace(d.Namespace).Create(desired, metav1.CreateOptions{}); err != nil {
-			return emperror.WrapWith(err, "creating resource failed", "name", d.Name, "kind", desiredType)
+		if desiredState == CREATED {
+			if _, err := client.Resource(d.Gvr).Namespace(d.Namespace).Create(desired, metav1.CreateOptions{}); err != nil {
+				return emperror.WrapWith(err, "creating resource failed", "name", d.Name, "kind", desiredType)
+			}
+			log.Info("resource created", "kind", d.Gvr.Resource)
+		} else if desiredState == DELETED {
+			log.Info("resource not found, already deleted", "kind", d.Gvr.Resource)
 		}
-		log.Info("resource created", "name", d.Name, "kind", d.Gvr.Resource)
 	}
 	if err == nil {
-		objectsEquals, err := objectmatch.Match(current, desired)
-		if err != nil {
-			log.Error(err, "could not match objects", "kind", desiredType, "name", d.Name)
-		} else if objectsEquals {
-			log.V(1).Info("resource is in sync")
-			return nil
-		}
+		if desiredState == CREATED {
+			objectsEquals, err := objectmatch.Match(current, desired)
+			if err != nil {
+				log.Error(err, "could not match objects", "kind", desiredType)
+			} else if objectsEquals {
+				log.V(1).Info("resource is in sync")
+				return nil
+			}
 
-		desired.SetResourceVersion(current.GetResourceVersion())
-		if _, err := client.Resource(d.Gvr).Namespace(d.Namespace).Update(desired, metav1.UpdateOptions{}); err != nil {
-			return emperror.WrapWith(err, "updating resource failed", "name", d.Name, "kind", desiredType)
+			desired.SetResourceVersion(current.GetResourceVersion())
+			if _, err := client.Resource(d.Gvr).Namespace(d.Namespace).Update(desired, metav1.UpdateOptions{}); err != nil {
+				return emperror.WrapWith(err, "updating resource failed", "name", d.Name, "kind", desiredType)
+			}
+			log.Info("resource updated", "kind", d.Gvr.Resource)
+		} else if desiredState == DELETED {
+			if err := client.Resource(d.Gvr).Namespace(d.Namespace).Delete(d.Name, &metav1.DeleteOptions{}); err != nil {
+				return emperror.WrapWith(err, "deleting resource failed", "name", d.Name, "kind", desiredType)
+			}
+			log.Info("resource deleted", "kind", d.Gvr.Resource)
 		}
-		log.Info("resource updated", "name", d.Name, "kind", d.Gvr.Resource)
 	}
 	return nil
 }
