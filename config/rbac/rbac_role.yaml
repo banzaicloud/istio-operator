@@ -107,6 +107,26 @@ rules:
 - apiGroups:
   - admissionregistration.k8s.io
   resources:
+  - validatingwebhookconfigurations
+  verbs:
+  - get
+  - list
+  - watch
+  - create
+  - update
+  - patch
+  - delete
+- apiGroups:
+  - operator.istio.io
+  resources:
+  - configs
+  verbs:
+  - get
+  - list
+  - watch
+- apiGroups:
+  - admissionregistration.k8s.io
+  resources:
   - mutatingwebhookconfigurations
   - validatingwebhookconfigurations
   verbs:
