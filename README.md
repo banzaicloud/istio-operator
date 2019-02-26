@@ -46,6 +46,10 @@ As a pre-requisite it needs a Kubernetes cluster (you can create one using [Pipe
 kubectl create -n istio-system -f config/samples/operator_v1beta1_config.yaml
 ```
 
+## Multi-cluster federation
+
+Check out the [multi-cluster federation docs](docs/federation/README.md)
+
 ## Development
 
 Check out the [developer docs](docs/developer.md).
