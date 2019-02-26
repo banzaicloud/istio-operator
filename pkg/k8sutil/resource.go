@@ -31,29 +31,41 @@ import (
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/runtime"
 	runtimeClient "sigs.k8s.io/controller-runtime/pkg/client"
+
+	"github.com/banzaicloud/istio-operator/pkg/k8sutil/objectmatch"
 )
 
 func Reconcile(log logr.Logger, client runtimeClient.Client, desired runtime.Object) error {
-	log = log.WithValues("type", reflect.TypeOf(desired))
+	desiredType := reflect.TypeOf(desired)
 	var current = desired.DeepCopyObject()
 	key, err := runtimeClient.ObjectKeyFromObject(current)
 	if err != nil {
-		return emperror.With(err)
+		return emperror.With(err, "kind", desiredType)
 	}
+	log = log.WithValues("kind", desiredType, "name", key.Name)
+
 	err = client.Get(context.TODO(), key, current)
 	if err != nil && !apierrors.IsNotFound(err) {
-		return emperror.WrapWith(err, "getting resource failed", "resource", desired.GetObjectKind().GroupVersionKind(), "type", reflect.TypeOf(desired))
+		return emperror.WrapWith(err, "getting resource failed", "kind", desiredType, "name", key.Name)
 	}
 	if apierrors.IsNotFound(err) {
 		if err := client.Create(context.TODO(), desired); err != nil {
-			return emperror.WrapWith(err, "creating resource failed", "resource", desired.GetObjectKind().GroupVersionKind(), "type", reflect.TypeOf(desired))
+			return emperror.WrapWith(err, "creating resource failed", "kind", desiredType, "name", key.Name)
 		}
-		log.Info("resource created", "resource", desired.GetObjectKind().GroupVersionKind())
+		log.Info("resource created")
 	}
 	if err == nil {
+		objectsEquals, err := objectmatch.Match(current, desired)
+		if err != nil {
+			log.Error(err, "could not match objects", "kind", desiredType, "name", key.Name)
+		} else if objectsEquals {
+			log.V(1).Info("resource is in sync")
+			return nil
+		}
+
 		switch desired.(type) {
 		default:
-			return emperror.With(errors.New("unexpected resource type"), "type", reflect.TypeOf(desired))
+			return emperror.With(errors.New("unexpected resource type"), "kind", desiredType, "name", key.Name)
 		case *corev1.Namespace:
 			ns := desired.(*corev1.Namespace)
 			ns.ResourceVersion = current.(*corev1.Namespace).ResourceVersion
@@ -93,9 +105,9 @@ func Reconcile(log logr.Logger, client runtimeClient.Client, desired runtime.Obj
 			desired = mwc
 		}
 		if err := client.Update(context.TODO(), desired); err != nil {
-			return emperror.WrapWith(err, "updating resource failed", "resource", desired.GetObjectKind().GroupVersionKind(), "type", reflect.TypeOf(desired))
+			return emperror.WrapWith(err, "updating resource failed", "kind", desiredType, "name", key.Name)
 		}
-		log.Info("resource updated", "resource", desired.GetObjectKind().GroupVersionKind())
+		log.Info("resource updated")
 	}
 	return nil
 }

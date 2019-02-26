@@ -29,6 +29,7 @@ import (
 )
 
 const (
+	componentName          = "mixer"
 	serviceAccountName     = "istio-mixer-service-account"
 	clusterRoleName        = "istio-mixer-cluster-role"
 	clusterRoleBindingName = "istio-mixer-cluster-role-binding"
@@ -59,6 +60,10 @@ func New(client client.Client, dc dynamic.Interface, config *istiov1beta1.Config
 }
 
 func (r *Reconciler) Reconcile(log logr.Logger) error {
+	log = log.WithValues("component", componentName)
+
+	log.Info("Reconciling")
+
 	rs := []resources.Resource{
 		r.serviceAccount,
 		r.clusterRole,
@@ -110,6 +115,9 @@ func (r *Reconciler) Reconcile(log logr.Logger) error {
 			return emperror.WrapWith(err, "failed to reconcile dynamic resource", "resource", o.Gvr)
 		}
 	}
+
+	log.Info("Reconciled")
+
 	return nil
 }
 

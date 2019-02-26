@@ -67,7 +67,8 @@ func (r *Reconciler) deployment(gw string) runtime.Object {
 								ValueFrom: &apiv1.EnvVarSource{
 									FieldRef: &apiv1.ObjectFieldSelector{
 
-										FieldPath: "metadata.name",
+										FieldPath:  "metadata.name",
+										APIVersion: "v1",
 									},
 								},
 							}),
@@ -89,6 +90,8 @@ func (r *Reconciler) deployment(gw string) runtime.Object {
 									ReadOnly:  true,
 								},
 							},
+							TerminationMessagePath:   apiv1.TerminationMessagePathDefault,
+							TerminationMessagePolicy: apiv1.TerminationMessageReadFile,
 						},
 					},
 					Volumes: []apiv1.Volume{
@@ -96,8 +99,9 @@ func (r *Reconciler) deployment(gw string) runtime.Object {
 							Name: "istio-certs",
 							VolumeSource: apiv1.VolumeSource{
 								Secret: &apiv1.SecretVolumeSource{
-									SecretName: fmt.Sprintf("istio.%s", serviceAccountName(gw)),
-									Optional:   util.BoolPointer(true),
+									SecretName:  fmt.Sprintf("istio.%s", serviceAccountName(gw)),
+									Optional:    util.BoolPointer(true),
+									DefaultMode: util.IntPointer(420),
 								},
 							},
 						},
@@ -105,8 +109,9 @@ func (r *Reconciler) deployment(gw string) runtime.Object {
 							Name: fmt.Sprintf("%s-certs", gw),
 							VolumeSource: apiv1.VolumeSource{
 								Secret: &apiv1.SecretVolumeSource{
-									SecretName: fmt.Sprintf("istio-%s-certs", gw),
-									Optional:   util.BoolPointer(true),
+									SecretName:  fmt.Sprintf("istio-%s-certs", gw),
+									Optional:    util.BoolPointer(true),
+									DefaultMode: util.IntPointer(420),
 								},
 							},
 						},
@@ -114,8 +119,9 @@ func (r *Reconciler) deployment(gw string) runtime.Object {
 							Name: fmt.Sprintf("%s-ca-certs", gw),
 							VolumeSource: apiv1.VolumeSource{
 								Secret: &apiv1.SecretVolumeSource{
-									SecretName: fmt.Sprintf("istio-%s-ca-certs", gw),
-									Optional:   util.BoolPointer(true),
+									SecretName:  fmt.Sprintf("istio-%s-ca-certs", gw),
+									Optional:    util.BoolPointer(true),
+									DefaultMode: util.IntPointer(420),
 								},
 							},
 						},
@@ -131,20 +137,20 @@ func (r *Reconciler) ports(gw string) []apiv1.ContainerPort {
 	switch gw {
 	case "ingressgateway":
 		return []apiv1.ContainerPort{
-			{ContainerPort: 80},
-			{ContainerPort: 443},
-			{ContainerPort: 31400},
-			{ContainerPort: 15011},
-			{ContainerPort: 8060},
-			{ContainerPort: 853},
-			{ContainerPort: 15030},
-			{ContainerPort: 15031},
+			{ContainerPort: 80, Protocol: apiv1.ProtocolTCP},
+			{ContainerPort: 443, Protocol: apiv1.ProtocolTCP},
+			{ContainerPort: 31400, Protocol: apiv1.ProtocolTCP},
+			{ContainerPort: 15011, Protocol: apiv1.ProtocolTCP},
+			{ContainerPort: 8060, Protocol: apiv1.ProtocolTCP},
+			{ContainerPort: 853, Protocol: apiv1.ProtocolTCP},
+			{ContainerPort: 15030, Protocol: apiv1.ProtocolTCP},
+			{ContainerPort: 15031, Protocol: apiv1.ProtocolTCP},
 			{ContainerPort: 15090, Protocol: apiv1.ProtocolTCP, Name: "http-envoy-prom"},
 		}
 	case "egressgateway":
 		return []apiv1.ContainerPort{
-			{ContainerPort: 80},
-			{ContainerPort: 443},
+			{ContainerPort: 80, Protocol: apiv1.ProtocolTCP},
+			{ContainerPort: 443, Protocol: apiv1.ProtocolTCP},
 			{ContainerPort: 15090, Protocol: apiv1.ProtocolTCP, Name: "http-envoy-prom"},
 		}
 	}

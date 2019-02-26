@@ -27,6 +27,7 @@ import (
 )
 
 const (
+	componentName          = "citadel"
 	serviceAccountName     = "istio-citadel-service-account"
 	clusterRoleName        = "istio-citadel-cluster-role"
 	clusterRoleBindingName = "istio-citadel-cluster-role-binding"
@@ -61,6 +62,10 @@ func New(configuration Configuration, client client.Client, dc dynamic.Interface
 }
 
 func (r *Reconciler) Reconcile(log logr.Logger) error {
+	log = log.WithValues("component", componentName)
+
+	log.Info("Reconciling")
+
 	for _, res := range []resources.Resource{
 		r.serviceAccount,
 		r.clusterRole,
@@ -99,5 +104,8 @@ func (r *Reconciler) Reconcile(log logr.Logger) error {
 			return emperror.WrapWith(err, "failed to reconcile dynamic resource", "resource", o.Gvr)
 		}
 	}
+
+	log.Info("Reconciled")
+
 	return nil
 }

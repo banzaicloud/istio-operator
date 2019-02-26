@@ -17,10 +17,12 @@ limitations under the License.
 package mixer
 
 import (
-	"github.com/banzaicloud/istio-operator/pkg/resources/templates"
-	"github.com/banzaicloud/istio-operator/pkg/util"
 	apiv1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/runtime"
+	"k8s.io/apimachinery/pkg/util/intstr"
+
+	"github.com/banzaicloud/istio-operator/pkg/resources/templates"
+	"github.com/banzaicloud/istio-operator/pkg/util"
 )
 
 func (r *Reconciler) service(t string) runtime.Object {
@@ -41,8 +43,10 @@ func (r *Reconciler) servicePorts(t string) []apiv1.ServicePort {
 	case "telemetry":
 		ports := r.commonPorts()
 		ports = append(ports, apiv1.ServicePort{
-			Name: "prometheus",
-			Port: 42422,
+			Name:       "prometheus",
+			Port:       42422,
+			Protocol:   apiv1.ProtocolTCP,
+			TargetPort: intstr.FromInt(42422),
 		})
 		return ports
 	}
@@ -52,16 +56,22 @@ func (r *Reconciler) servicePorts(t string) []apiv1.ServicePort {
 func (r *Reconciler) commonPorts() []apiv1.ServicePort {
 	return []apiv1.ServicePort{
 		{
-			Name: "grpc-mixer",
-			Port: 9091,
+			Name:       "grpc-mixer",
+			Port:       9091,
+			Protocol:   apiv1.ProtocolTCP,
+			TargetPort: intstr.FromInt(9091),
 		},
 		{
-			Name: "grpc-mixer-mtls",
-			Port: 15004,
+			Name:       "grpc-mixer-mtls",
+			Port:       15004,
+			Protocol:   apiv1.ProtocolTCP,
+			TargetPort: intstr.FromInt(15004),
 		},
 		{
-			Name: "http-monitoring",
-			Port: 9093,
+			Name:       "http-monitoring",
+			Port:       9093,
+			Protocol:   apiv1.ProtocolTCP,
+			TargetPort: intstr.FromInt(9093),
 		},
 	}
 }

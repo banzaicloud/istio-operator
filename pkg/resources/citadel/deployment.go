@@ -49,11 +49,13 @@ func (r *Reconciler) deployment() runtime.Object {
 	}
 
 	var citadelContainer = apiv1.Container{
-		Name:            "citadel",
-		Image:           "docker.io/istio/citadel:1.0.5",
-		ImagePullPolicy: apiv1.PullIfNotPresent,
-		Args:            args,
-		Resources:       templates.DefaultResources(),
+		Name:                     "citadel",
+		Image:                    "docker.io/istio/citadel:1.0.5",
+		ImagePullPolicy:          apiv1.PullIfNotPresent,
+		Args:                     args,
+		Resources:                templates.DefaultResources(),
+		TerminationMessagePath:   apiv1.TerminationMessagePathDefault,
+		TerminationMessagePolicy: apiv1.TerminationMessageReadFile,
 	}
 
 	if !r.configuration.SelfSignedCA {
@@ -67,7 +69,13 @@ func (r *Reconciler) deployment() runtime.Object {
 	}
 
 	var podSpec = apiv1.PodSpec{
-		ServiceAccountName: serviceAccountName,
+		ServiceAccountName:            serviceAccountName,
+		DeprecatedServiceAccount:      serviceAccountName,
+		DNSPolicy:                     apiv1.DNSClusterFirst,
+		RestartPolicy:                 apiv1.RestartPolicyAlways,
+		TerminationGracePeriodSeconds: util.Int64Pointer(int64(30)),
+		SecurityContext:               &apiv1.PodSecurityContext{},
+		SchedulerName:                 "default-scheduler",
 		Containers: []apiv1.Container{
 			citadelContainer,
 		},
@@ -81,8 +89,9 @@ func (r *Reconciler) deployment() runtime.Object {
 				Name: "cacerts",
 				VolumeSource: apiv1.VolumeSource{
 					Secret: &apiv1.SecretVolumeSource{
-						SecretName: "cacerts",
-						Optional:   &optional,
+						SecretName:  "cacerts",
+						Optional:    &optional,
+						DefaultMode: util.IntPointer(420),
 					},
 				},
 			},

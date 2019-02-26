@@ -39,8 +39,10 @@ func (r *Reconciler) service() runtime.Object {
 					Protocol:   apiv1.ProtocolTCP,
 				},
 				{
-					Name: "http-monitoring",
-					Port: 9093,
+					Name:       "http-monitoring",
+					Port:       9093,
+					TargetPort: intstr.FromInt(9093),
+					Protocol:   apiv1.ProtocolTCP,
 				},
 			},
 			Selector: labelSelector,
