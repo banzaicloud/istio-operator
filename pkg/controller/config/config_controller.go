@@ -249,7 +249,6 @@ func (r *ReconcileConfig) updateStatus(config *istiov1beta1.Config, status istio
 		if !k8serrors.IsConflict(err) {
 			return emperror.Wrapf(err, "could not update Istio state to '%s'", status)
 		}
-		log.Info(err.Error())
 		err := r.Get(context.TODO(), types.NamespacedName{
 			Namespace: config.Namespace,
 			Name:      config.Name,

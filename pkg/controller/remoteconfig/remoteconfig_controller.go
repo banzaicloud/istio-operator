@@ -223,7 +223,6 @@ func (r *ReconcileRemoteConfig) updateRemoteConfigStatus(remoteConfig *istiov1be
 		if !k8serrors.IsConflict(err) {
 			return emperror.Wrapf(err, "could not update remote Istio state to '%s'", status)
 		}
-		log.Info(err.Error())
 		err := r.Get(context.TODO(), types.NamespacedName{
 			Namespace: remoteConfig.Namespace,
 			Name:      remoteConfig.Name,
