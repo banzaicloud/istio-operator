@@ -55,18 +55,9 @@ func (spec RemoteConfigSpec) GetSignCert() SignCert {
 	return spec.signCert
 }
 
-type RemoteConfigState string
-
-const (
-	RemoteConfigCreated         RemoteConfigState = "Created"
-	RemoteConfigReconfileFailed RemoteConfigState = "ReconcileFailed"
-	RemoteConfigReconciling     RemoteConfigState = "Reconciling"
-	RemoteConfigReconciled      RemoteConfigState = "Reconciled"
-)
-
 // RemoteConfigStatus defines the observed state of RemoteConfig
 type RemoteConfigStatus struct {
-	Status       RemoteConfigState
+	Status       ConfigState
 	ErrorMessage string
 }
 

@@ -112,7 +112,7 @@ func (r *ReconcileRemoteConfig) Reconcile(request reconcile.Request) (reconcile.
 
 	result, err := r.reconcile(remoteConfig)
 	if err != nil {
-		updateErr := r.updateRemoteConfigStatus(remoteConfig, istiov1beta1.RemoteConfigReconfileFailed, err.Error())
+		updateErr := r.updateRemoteConfigStatus(remoteConfig, istiov1beta1.ReconcileFailed, err.Error())
 		if updateErr != nil {
 			return result, errors.WithStack(err)
 		}
@@ -129,7 +129,7 @@ func (r *ReconcileRemoteConfig) reconcile(remoteConfig *istiov1beta1.RemoteConfi
 	log := log.WithValues("cluster", remoteConfig.Name)
 
 	if remoteConfig.Status.Status == "" {
-		err = r.updateRemoteConfigStatus(remoteConfig, istiov1beta1.RemoteConfigCreated, "")
+		err = r.updateRemoteConfigStatus(remoteConfig, istiov1beta1.Created, "")
 		if err != nil {
 			return reconcile.Result{}, errors.WithStack(err)
 		}
@@ -146,7 +146,7 @@ func (r *ReconcileRemoteConfig) reconcile(remoteConfig *istiov1beta1.RemoteConfi
 		}
 	} else {
 		if util.ContainsString(remoteConfig.ObjectMeta.Finalizers, finalizerID) {
-			if remoteConfig.Status.Status == istiov1beta1.RemoteConfigReconciling && remoteConfig.Status.ErrorMessage == "" {
+			if remoteConfig.Status.Status == istiov1beta1.Reconciling && remoteConfig.Status.ErrorMessage == "" {
 				log.Info("cannot remove remote istio config while reconciling")
 				return reconcile.Result{}, nil
 			}
@@ -158,11 +158,10 @@ func (r *ReconcileRemoteConfig) reconcile(remoteConfig *istiov1beta1.RemoteConfi
 					return reconcile.Result{}, emperror.Wrap(err, "could not remove remote config to remote istio")
 				}
 			}
-		}
-
-		remoteConfig.ObjectMeta.Finalizers = util.RemoveString(remoteConfig.ObjectMeta.Finalizers, finalizerID)
-		if err := r.Update(context.Background(), remoteConfig); err != nil {
-			return reconcile.Result{}, emperror.Wrap(err, "could not remove finalizer from remoteconfig")
+			remoteConfig.ObjectMeta.Finalizers = util.RemoveString(remoteConfig.ObjectMeta.Finalizers, finalizerID)
+			if err := r.Update(context.Background(), remoteConfig); err != nil {
+				return reconcile.Result{}, emperror.Wrap(err, "could not remove finalizer from remoteconfig")
+			}
 		}
 
 		log.Info("remote istio removed")
@@ -170,11 +169,13 @@ func (r *ReconcileRemoteConfig) reconcile(remoteConfig *istiov1beta1.RemoteConfi
 		return reconcile.Result{}, nil
 	}
 
-	if remoteConfig.Status.Status != istiov1beta1.RemoteConfigReconciling {
-		err = r.updateRemoteConfigStatus(remoteConfig, istiov1beta1.RemoteConfigReconciling, "")
-		if err != nil {
-			return reconcile.Result{}, errors.WithStack(err)
-		}
+	if remoteConfig.Status.Status == istiov1beta1.Reconciling {
+		return reconcile.Result{}, errors.New("cannot trigger reconcile while already reconciling")
+	}
+
+	err = r.updateRemoteConfigStatus(remoteConfig, istiov1beta1.Reconciling, "")
+	if err != nil {
+		return reconcile.Result{}, errors.WithStack(err)
 	}
 
 	log.Info("begin reconciling remote istio")
@@ -202,7 +203,7 @@ func (r *ReconcileRemoteConfig) reconcile(remoteConfig *istiov1beta1.RemoteConfi
 		return reconcile.Result{}, emperror.Wrap(err, "could not reconcile remote istio")
 	}
 
-	err = r.updateRemoteConfigStatus(remoteConfig, istiov1beta1.RemoteConfigReconciled, "")
+	err = r.updateRemoteConfigStatus(remoteConfig, istiov1beta1.Available, "")
 	if err != nil {
 		return reconcile.Result{}, errors.WithStack(err)
 	}
@@ -212,15 +213,17 @@ func (r *ReconcileRemoteConfig) reconcile(remoteConfig *istiov1beta1.RemoteConfi
 	return reconcile.Result{}, nil
 }
 
-func (r *ReconcileRemoteConfig) updateRemoteConfigStatus(remoteConfig *istiov1beta1.RemoteConfig, status istiov1beta1.RemoteConfigState, errorMessage string) error {
+func (r *ReconcileRemoteConfig) updateRemoteConfigStatus(remoteConfig *istiov1beta1.RemoteConfig, status istiov1beta1.ConfigState, errorMessage string) error {
+	typeMeta := remoteConfig.TypeMeta
 	remoteConfig.Status.Status = status
 	remoteConfig.Status.ErrorMessage = errorMessage
 	err := r.Status().Update(context.Background(), remoteConfig)
-	if err == nil {
-		return err
-	}
 
-	if k8serrors.IsConflict(err) {
+	if err != nil {
+		if !k8serrors.IsConflict(err) {
+			return emperror.Wrapf(err, "could not update remote Istio state to '%s'", status)
+		}
+		log.Info(err.Error())
 		err := r.Get(context.TODO(), types.NamespacedName{
 			Namespace: remoteConfig.Namespace,
 			Name:      remoteConfig.Name,
@@ -228,18 +231,16 @@ func (r *ReconcileRemoteConfig) updateRemoteConfigStatus(remoteConfig *istiov1be
 		if err != nil {
 			return emperror.Wrap(err, "could not get remoteconfig for updating status")
 		}
-	} else if err != nil {
-		return emperror.Wrapf(err, "could not update remoteconfig status to '%s'", status)
+		remoteConfig.Status.Status = status
+		remoteConfig.Status.ErrorMessage = errorMessage
+
+		err = r.Status().Update(context.Background(), remoteConfig)
+		if err != nil {
+			return emperror.Wrapf(err, "could not update remoteconfig status to '%s'", status)
+		}
 	}
-
-	remoteConfig.Status.Status = status
-	remoteConfig.Status.ErrorMessage = errorMessage
-
-	err = r.Status().Update(context.Background(), remoteConfig)
-	if err != nil {
-		return emperror.Wrapf(err, "could not update remoteconfig status to '%s'", status)
-	}
-
+	// update loses the typeMeta of the config so we're resetting it from the
+	remoteConfig.TypeMeta = typeMeta
 	log.Info("remoteconfig status updated", "status", status)
 
 	return nil

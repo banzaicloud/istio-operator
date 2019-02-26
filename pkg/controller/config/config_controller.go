@@ -20,9 +20,6 @@ import (
 	"context"
 	"reflect"
 
-	"github.com/banzaicloud/istio-operator/pkg/util"
-	"github.com/pkg/errors"
-
 	istiov1beta1 "github.com/banzaicloud/istio-operator/pkg/apis/operator/v1beta1"
 	"github.com/banzaicloud/istio-operator/pkg/crds"
 	"github.com/banzaicloud/istio-operator/pkg/resources"
@@ -33,8 +30,11 @@ import (
 	"github.com/banzaicloud/istio-operator/pkg/resources/mixer"
 	"github.com/banzaicloud/istio-operator/pkg/resources/pilot"
 	"github.com/banzaicloud/istio-operator/pkg/resources/sidecarinjector"
+	"github.com/banzaicloud/istio-operator/pkg/util"
+
 	"github.com/go-logr/logr"
 	"github.com/goph/emperror"
+	"github.com/pkg/errors"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	k8serrors "k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/types"
@@ -91,17 +91,6 @@ func add(mgr manager.Manager, r reconcile.Reconciler) error {
 		return err
 	}
 
-	//
-	//// TODO(user): Modify this to be the types you create
-	//// Uncomment watch a Deployment created by Config - change this for objects you create
-	//err = c.Watch(&source.Kind{Type: &appsv1.Deployment{}}, &handler.EnqueueRequestForOwner{
-	//	IsController: true,
-	//	OwnerType:    &istiov1beta1.Config{},
-	//})
-	//if err != nil {
-	//	return err
-	//}
-
 	return nil
 }
 
@@ -142,7 +131,8 @@ func (r *ReconcileConfig) Reconcile(request reconcile.Request) (reconcile.Result
 	if err != nil {
 		updateErr := r.updateStatus(config, istiov1beta1.ReconcileFailed, err.Error())
 		if updateErr != nil {
-			return result, errors.WithStack(updateErr)
+			log.Error(updateErr, "failed to update state")
+			return result, errors.WithStack(err)
 		}
 		return reconcile.Result{}, emperror.Wrap(err, "could not reconcile istio")
 	}
@@ -251,7 +241,7 @@ func watchPredicateForConfig() predicate.Funcs {
 }
 
 func (r *ReconcileConfig) updateStatus(config *istiov1beta1.Config, status istiov1beta1.ConfigState, errorMessage string) error {
-	current := config.DeepCopy()
+	typeMeta := config.TypeMeta
 	config.Status.Status = status
 	config.Status.ErrorMessage = errorMessage
 	err := r.Status().Update(context.Background(), config)
@@ -259,7 +249,7 @@ func (r *ReconcileConfig) updateStatus(config *istiov1beta1.Config, status istio
 		if !k8serrors.IsConflict(err) {
 			return emperror.Wrapf(err, "could not update Istio state to '%s'", status)
 		}
-		log.Error(err, "conflict: couldn't update status")
+		log.Info(err.Error())
 		err := r.Get(context.TODO(), types.NamespacedName{
 			Namespace: config.Namespace,
 			Name:      config.Name,
@@ -275,7 +265,7 @@ func (r *ReconcileConfig) updateStatus(config *istiov1beta1.Config, status istio
 		}
 	}
 	// update loses the typeMeta of the config that's used later when setting ownerrefs
-	config.TypeMeta = current.TypeMeta
+	config.TypeMeta = typeMeta
 	log.Info("Istio state updated", "status", status)
 	return nil
 }

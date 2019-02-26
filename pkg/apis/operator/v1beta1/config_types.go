@@ -20,15 +20,6 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
-type ConfigState string
-
-const (
-	Created         ConfigState = "Created"
-	ReconcileFailed ConfigState = "ReconcileFailed"
-	Reconciling     ConfigState = "Reconciling"
-	Available       ConfigState = "Available"
-)
-
 // ConfigSpec defines the desired state of Config
 type ConfigSpec struct {
 	MTLS            bool   `json:"mtls"`
