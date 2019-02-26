@@ -1,4 +1,4 @@
-# Istio Multi Cluster Example - Flat network
+# Istio Multi Cluster Federation Example
 
 ## Prerequisites
 
@@ -85,7 +85,7 @@ subjects:
   namespace: istio-system
 EOF
 
-REMOTE_KUBECONFIG_FILE=$(docs/remote/flat/generate-kubeconfig.sh)
+REMOTE_KUBECONFIG_FILE=$(docs/federation/example/generate-kubeconfig.sh)
 ```
 
 ### The kubeconfig for the remote cluster must be added to the central cluster as a secret
@@ -112,7 +112,7 @@ kubectl create -n istio-system -f config/samples/operator_v1beta1_remoteconfig.y
 
 ```bash
 kubectl config use-context ${CONTEXT_CENTRAL}
-kubectl apply -f docs/remote/flat/echo-service.yml
+kubectl apply -f docs/federation/example/echo-service.yml
 
 kubectl get pods
 NAME                    READY   STATUS    RESTARTS   AGE
@@ -120,7 +120,7 @@ echo-59d4b7c4cb-v29zb   2/2     Running   0          1m
 
 kubectl config use-context ${CONTEXT_REMOTE}
 kubectl label namespace default istio-injection=enabled
-kubectl apply -f docs/remote/flat/echo-service.yml
+kubectl apply -f docs/federation/example/echo-service.yml
 
 kubectl get pods
 NAME                    READY   STATUS    RESTARTS   AGE
