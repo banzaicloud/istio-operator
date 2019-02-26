@@ -42,8 +42,8 @@ type DynamicObject struct {
 }
 
 func (d *DynamicObject) Reconcile(log logr.Logger, client dynamic.Interface) error {
-	log = log.WithValues("type", reflect.TypeOf(d))
 	desired := d.unstructured()
+	log = log.WithValues("type", reflect.TypeOf(d), "name", desired.GetName())
 	current, err := client.Resource(d.Gvr).Namespace(d.Namespace).Get(d.Name, metav1.GetOptions{})
 	if err != nil && !apierrors.IsNotFound(err) {
 		return emperror.WrapWith(err, "getting resource failed", "name", d.Name, "kind", reflect.TypeOf(desired))

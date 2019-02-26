@@ -182,6 +182,7 @@ func (r *CrdOperator) Reconcile(config *istiov1beta1.Config, log logr.Logger) er
 	}
 	crdClient := apiExtensions.ApiextensionsV1beta1().CustomResourceDefinitions()
 	for _, crd := range r.crds {
+		log := log.WithValues("kind", crd.Spec.Names.Kind)
 		current, err := crdClient.Get(crd.Name, metav1.GetOptions{})
 		if err != nil && !apierrors.IsNotFound(err) {
 			return emperror.WrapWith(err, "getting CRD failed", "kind", crd.Spec.Names.Kind)
@@ -200,23 +201,21 @@ func (r *CrdOperator) Reconcile(config *istiov1beta1.Config, log logr.Logger) er
 			if _, err := crdClient.Create(crd); err != nil {
 				return emperror.WrapWith(err, "creating CRD failed", "kind", crd.Spec.Names.Kind)
 			}
-			log.Info("CRD created", "kind", crd.Spec.Names.Kind)
+			log.Info("CRD created")
 		}
 		if err == nil {
-			matched, err := objectmatch.Match(current, crd)
+			objectsEquals, err := objectmatch.Match(current, crd)
 			if err != nil {
-				log.Error(err, "could not match objects")
-				continue
-			}
-			if matched {
-				log.V(1).Info("CRD is in sync", "name", crd.Name)
+				log.Error(err, "could not match objects", "kind", crd.Spec.Names.Kind)
+			} else if objectsEquals {
+				log.V(1).Info("CRD is in sync")
 				continue
 			}
 			crd.ResourceVersion = current.ResourceVersion
 			if _, err := crdClient.Update(crd); err != nil {
 				return emperror.WrapWith(err, "updating CRD failed", "kind", crd.Spec.Names.Kind)
 			}
-			log.Info("CRD updated", "kind", crd.Spec.Names.Kind)
+			log.Info("CRD updated")
 		}
 	}
 

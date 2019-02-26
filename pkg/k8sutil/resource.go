@@ -42,7 +42,7 @@ func Reconcile(log logr.Logger, client runtimeClient.Client, desired runtime.Obj
 	if err != nil {
 		return emperror.With(err, "kind", desiredType)
 	}
-	log = log.WithValues("kind", desiredType, "key", key)
+	log = log.WithValues("kind", desiredType, "name", key.Name)
 
 	err = client.Get(context.TODO(), key, current)
 	if err != nil && !apierrors.IsNotFound(err) {
@@ -57,6 +57,7 @@ func Reconcile(log logr.Logger, client runtimeClient.Client, desired runtime.Obj
 	if err == nil {
 		matched, err := objectmatch.Match(current, desired)
 		if err != nil {
+			log.Error(err, "could not match objects", "kind", desiredType)
 			return err
 		}
 		if matched {

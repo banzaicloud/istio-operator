@@ -214,31 +214,31 @@ func deleteNullInObj(m map[string]interface{}) (map[string]interface{}, error) {
 	filteredMap := make(map[string]interface{})
 
 	for key, val := range m {
-		switch {
-		case val != nil:
-			switch typedVal := val.(type) {
-			default:
-				return nil, errors.Errorf("unknown type: %v", reflect.TypeOf(typedVal))
-			case []interface{}, string, float64, bool, int64, nil:
-				filteredMap[key] = val
-			case map[string]interface{}:
-				if len(typedVal) == 0 {
-					filteredMap[key] = typedVal
-					continue
-				}
+		if val == nil {
+			continue
+		}
 
-				var filteredSubMap map[string]interface{}
-				filteredSubMap, err = deleteNullInObj(typedVal)
-				if err != nil {
-					return nil, emperror.Wrap(err, "could not delete null values from filtered sub map")
-				}
+		switch typedVal := val.(type) {
+		default:
+			return nil, errors.Errorf("unknown type: %v", reflect.TypeOf(typedVal))
+		case []interface{}, string, float64, bool, int64, nil:
+			filteredMap[key] = val
+		case map[string]interface{}:
+			if len(typedVal) == 0 {
+				filteredMap[key] = typedVal
+				continue
+			}
 
-				if len(filteredSubMap) != 0 {
-					filteredMap[key] = filteredSubMap
-				}
+			var filteredSubMap map[string]interface{}
+			filteredSubMap, err = deleteNullInObj(typedVal)
+			if err != nil {
+				return nil, emperror.Wrap(err, "could not delete null values from filtered sub map")
+			}
+
+			if len(filteredSubMap) != 0 {
+				filteredMap[key] = filteredSubMap
 			}
 		}
 	}
-
 	return filteredMap, nil
 }
