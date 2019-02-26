@@ -27,8 +27,8 @@ func (r *Reconciler) horizontalPodAutoscaler(gw string) runtime.Object {
 	return &autoscalev2beta1.HorizontalPodAutoscaler{
 		ObjectMeta: templates.ObjectMeta(hpaName(gw), nil, r.Config),
 		Spec: autoscalev2beta1.HorizontalPodAutoscalerSpec{
-			MaxReplicas: 5,
-			MinReplicas: util.IntPointer(1),
+			MaxReplicas: r.Config.Spec.Gateways.MaxReplicas,
+			MinReplicas: util.IntPointer(r.Config.Spec.Gateways.MinReplicas),
 			ScaleTargetRef: autoscalev2beta1.CrossVersionObjectReference{
 				Name:       gatewayName(gw),
 				Kind:       "Deployment",

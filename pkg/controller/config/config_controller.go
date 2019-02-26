@@ -127,6 +127,8 @@ func (r *ReconcileConfig) Reconcile(request reconcile.Request) (reconcile.Result
 		// Error reading the object - requeue the request.
 		return reconcile.Result{}, err
 	}
+	// Set default values where not set
+	istiov1beta1.SetDefaults(config)
 	result, err := r.reconcile(logger, config)
 	if err != nil {
 		updateErr := r.updateStatus(config, istiov1beta1.ReconcileFailed, err.Error())
