@@ -54,12 +54,12 @@ func (d *DynamicObject) Reconcile(log logr.Logger, client dynamic.Interface, des
 	log = log.WithValues("type", reflect.TypeOf(d), "name", d.Name)
 	current, err := client.Resource(d.Gvr).Namespace(d.Namespace).Get(d.Name, metav1.GetOptions{})
 	if err != nil && !apierrors.IsNotFound(err) {
-		return emperror.WrapWith(err, "getting resource failed", "kind", desiredType)
+		return emperror.WrapWith(err, "getting resource failed", "name", d.Name, "kind", desiredType)
 	}
 	if apierrors.IsNotFound(err) {
 		if desiredState == CREATED {
 			if _, err := client.Resource(d.Gvr).Namespace(d.Namespace).Create(desired, metav1.CreateOptions{}); err != nil {
-				return emperror.WrapWith(err, "creating resource failed", "kind", desiredType)
+				return emperror.WrapWith(err, "creating resource failed", "name", d.Name, "kind", desiredType)
 			}
 			log.Info("resource created", "kind", d.Gvr.Resource)
 		} else if desiredState == DELETED {
@@ -78,12 +78,12 @@ func (d *DynamicObject) Reconcile(log logr.Logger, client dynamic.Interface, des
 
 			desired.SetResourceVersion(current.GetResourceVersion())
 			if _, err := client.Resource(d.Gvr).Namespace(d.Namespace).Update(desired, metav1.UpdateOptions{}); err != nil {
-				return emperror.WrapWith(err, "updating resource failed", "kind", desiredType)
+				return emperror.WrapWith(err, "updating resource failed", "name", d.Name, "kind", desiredType)
 			}
 			log.Info("resource updated", "kind", d.Gvr.Resource)
 		} else if desiredState == DELETED {
 			if err := client.Resource(d.Gvr).Namespace(d.Namespace).Delete(d.Name, &metav1.DeleteOptions{}); err != nil {
-				return emperror.WrapWith(err, "deleting resource failed", "kind", desiredType)
+				return emperror.WrapWith(err, "deleting resource failed", "name", d.Name, "kind", desiredType)
 			}
 			log.Info("resource deleted", "kind", d.Gvr.Resource)
 		}
