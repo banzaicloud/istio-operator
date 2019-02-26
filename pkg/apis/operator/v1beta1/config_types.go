@@ -33,6 +33,8 @@ type ConfigSpec struct {
 
 // ConfigStatus defines the observed state of Config
 type ConfigStatus struct {
+	Status       ConfigState
+	ErrorMessage string
 }
 
 // +genclient
@@ -40,6 +42,7 @@ type ConfigStatus struct {
 
 // Config is the Schema for the configs API
 // +k8s:openapi-gen=true
+// +kubebuilder:subresource:status
 type Config struct {
 	metav1.TypeMeta   `json:",inline"`
 	metav1.ObjectMeta `json:"metadata,omitempty"`

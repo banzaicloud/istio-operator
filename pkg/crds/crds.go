@@ -33,8 +33,8 @@ import (
 var log = logf.Log.WithName("crds")
 
 type CrdOperator struct {
-	crdClient apiextensionsclient.Interface
-	crds      []*extensionsobj.CustomResourceDefinition
+	crds   []*extensionsobj.CustomResourceDefinition
+	config *rest.Config
 }
 
 type configType int
@@ -62,13 +62,9 @@ var crdConfigs = map[configType]crdConfig{
 }
 
 func New(cfg *rest.Config, crds []*extensionsobj.CustomResourceDefinition) (*CrdOperator, error) {
-	crdc, err := apiextensionsclient.NewForConfig(cfg)
-	if err != nil {
-		return nil, emperror.Wrap(err, "instantiating apiextensions client failed")
-	}
 	return &CrdOperator{
-		crdClient: crdc,
-		crds:      crds,
+		crds:   crds,
+		config: cfg,
 	}, nil
 }
 
@@ -168,7 +164,11 @@ func crdL(kind string, plural string, config crdConfig, appLabel string, pckLabe
 }
 
 func (r *CrdOperator) Reconcile(config *istiov1beta1.Config) error {
-	crdClient := r.crdClient.ApiextensionsV1beta1().CustomResourceDefinitions()
+	apiExtensions, err := apiextensionsclient.NewForConfig(r.config)
+	if err != nil {
+		return emperror.Wrap(err, "instantiating apiextensions client failed")
+	}
+	crdClient := apiExtensions.ApiextensionsV1beta1().CustomResourceDefinitions()
 	for _, crd := range r.crds {
 		current, err := crdClient.Get(crd.Name, metav1.GetOptions{})
 		if err != nil && !apierrors.IsNotFound(err) {

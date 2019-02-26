@@ -18,6 +18,7 @@ package config
 
 import (
 	"context"
+	"reflect"
 
 	istiov1beta1 "github.com/banzaicloud/istio-operator/pkg/apis/operator/v1beta1"
 	"github.com/banzaicloud/istio-operator/pkg/crds"
@@ -29,18 +30,27 @@ import (
 	"github.com/banzaicloud/istio-operator/pkg/resources/mixer"
 	"github.com/banzaicloud/istio-operator/pkg/resources/pilot"
 	"github.com/banzaicloud/istio-operator/pkg/resources/sidecarinjector"
+	"github.com/banzaicloud/istio-operator/pkg/util"
+
 	"github.com/go-logr/logr"
 	"github.com/goph/emperror"
-	"k8s.io/apimachinery/pkg/api/errors"
+	"github.com/pkg/errors"
+	apierrors "k8s.io/apimachinery/pkg/api/errors"
+	k8serrors "k8s.io/apimachinery/pkg/api/errors"
+	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/client-go/dynamic"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/controller"
+	"sigs.k8s.io/controller-runtime/pkg/event"
 	"sigs.k8s.io/controller-runtime/pkg/handler"
 	"sigs.k8s.io/controller-runtime/pkg/manager"
+	"sigs.k8s.io/controller-runtime/pkg/predicate"
 	"sigs.k8s.io/controller-runtime/pkg/reconcile"
 	logf "sigs.k8s.io/controller-runtime/pkg/runtime/log"
 	"sigs.k8s.io/controller-runtime/pkg/source"
 )
+
+const finalizerID = "istio-operator.finializer.banzaicloud.io"
 
 var log = logf.Log.WithName("controller")
 
@@ -76,21 +86,10 @@ func add(mgr manager.Manager, r reconcile.Reconciler) error {
 	}
 
 	// Watch for changes to Config
-	err = c.Watch(&source.Kind{Type: &istiov1beta1.Config{}}, &handler.EnqueueRequestForObject{})
+	err = c.Watch(&source.Kind{Type: &istiov1beta1.Config{}}, &handler.EnqueueRequestForObject{}, watchPredicateForConfig())
 	if err != nil {
 		return err
 	}
-
-	//
-	//// TODO(user): Modify this to be the types you create
-	//// Uncomment watch a Deployment created by Config - change this for objects you create
-	//err = c.Watch(&source.Kind{Type: &appsv1.Deployment{}}, &handler.EnqueueRequestForOwner{
-	//	IsController: true,
-	//	OwnerType:    &istiov1beta1.Config{},
-	//})
-	//if err != nil {
-	//	return err
-	//}
 
 	return nil
 }
@@ -114,13 +113,13 @@ type ReconcileComponent func(log logr.Logger, istio *istiov1beta1.Config) error
 // +kubebuilder:rbac:groups=operator.operator.io,resources=configs,verbs=get;list;watch;create;update;patch;delete
 // +kubebuilder:rbac:groups=operator.operator.io,resources=configs/status,verbs=get;update;patch
 func (r *ReconcileConfig) Reconcile(request reconcile.Request) (reconcile.Result, error) {
-	reqLogger := log.WithValues("Request.Namespace", request.Namespace, "Request.Name", request.Name)
-	reqLogger.Info("Reconciling Istio")
+	logger := log.WithValues("Request.Namespace", request.Namespace, "Request.Name", request.Name)
+	logger.Info("Reconciling Istio")
 	// Fetch the Config config
 	config := &istiov1beta1.Config{}
 	err := r.Get(context.TODO(), request.NamespacedName, config)
 	if err != nil {
-		if errors.IsNotFound(err) {
+		if apierrors.IsNotFound(err) {
 			// Object not found, return.  Created objects are automatically garbage collected.
 			// For additional cleanup logic use finalizers.
 			return reconcile.Result{}, nil
@@ -128,11 +127,67 @@ func (r *ReconcileConfig) Reconcile(request reconcile.Request) (reconcile.Result
 		// Error reading the object - requeue the request.
 		return reconcile.Result{}, err
 	}
+	result, err := r.reconcile(logger, config)
+	if err != nil {
+		updateErr := r.updateStatus(config, istiov1beta1.ReconcileFailed, err.Error())
+		if updateErr != nil {
+			log.Error(updateErr, "failed to update state")
+			return result, errors.WithStack(err)
+		}
+		return reconcile.Result{}, emperror.Wrap(err, "could not reconcile istio")
+	}
+	return reconcile.Result{}, nil
+}
 
-	log.Info("creating CRDs")
+func (r *ReconcileConfig) reconcile(log logr.Logger, config *istiov1beta1.Config) (reconcile.Result, error) {
+
+	if config.Status.Status == "" {
+		err := r.updateStatus(config, istiov1beta1.Created, "")
+		if err != nil {
+			return reconcile.Result{}, errors.WithStack(err)
+		}
+	}
+
+	// add finalizer strings and update
+	if config.ObjectMeta.DeletionTimestamp.IsZero() {
+		if !util.ContainsString(config.ObjectMeta.Finalizers, finalizerID) {
+			config.ObjectMeta.Finalizers = append(config.ObjectMeta.Finalizers, finalizerID)
+			if err := r.Update(context.Background(), config); err != nil {
+				return reconcile.Result{}, emperror.Wrap(err, "could not add finalizer to config")
+			}
+			return reconcile.Result{}, nil
+		}
+	} else {
+		// Deletion timestamp set, config is marked for deletion
+		if util.ContainsString(config.ObjectMeta.Finalizers, finalizerID) {
+			if config.Status.Status == istiov1beta1.Reconciling && config.Status.ErrorMessage == "" {
+				log.Info("cannot remove Istio while reconciling")
+				return reconcile.Result{}, nil
+			}
+			config.ObjectMeta.Finalizers = util.RemoveString(config.ObjectMeta.Finalizers, finalizerID)
+			if err := r.Update(context.Background(), config); err != nil {
+				return reconcile.Result{}, emperror.Wrap(err, "could not remove finalizer from config")
+			}
+		}
+
+		log.Info("Istio removed")
+
+		return reconcile.Result{}, nil
+	}
+
+	if config.Status.Status == istiov1beta1.Reconciling {
+		return reconcile.Result{}, errors.New("cannot trigger reconcile while already reconciling")
+	}
+
+	err := r.updateStatus(config, istiov1beta1.Reconciling, "")
+	if err != nil {
+		return reconcile.Result{}, errors.WithStack(err)
+	}
+
+	log.Info("reconciling CRDs")
 	err = r.crdOperator.Reconcile(config)
 	if err != nil {
-		log.Error(err, "unable to initialize CRDs")
+		log.Error(err, "unable to reconcile CRDs")
 		return reconcile.Result{}, err
 	}
 
@@ -150,11 +205,66 @@ func (r *ReconcileConfig) Reconcile(request reconcile.Request) (reconcile.Result
 	}
 
 	for _, rec := range reconcilers {
-		err = rec.Reconcile(reqLogger)
+		err = rec.Reconcile(log)
 		if err != nil {
 			return reconcile.Result{}, err
 		}
 	}
 
+	err = r.updateStatus(config, istiov1beta1.Available, "")
+	if err != nil {
+		return reconcile.Result{}, errors.WithStack(err)
+	}
+	log.Info("reconcile finished")
 	return reconcile.Result{}, nil
+}
+
+func watchPredicateForConfig() predicate.Funcs {
+	return predicate.Funcs{
+		CreateFunc: func(e event.CreateEvent) bool {
+			return true
+		},
+		DeleteFunc: func(e event.DeleteEvent) bool {
+			return true
+		},
+		UpdateFunc: func(e event.UpdateEvent) bool {
+			old := e.ObjectOld.(*istiov1beta1.Config)
+			new := e.ObjectNew.(*istiov1beta1.Config)
+			if !reflect.DeepEqual(old.Spec, new.Spec) ||
+				old.GetDeletionTimestamp() != new.GetDeletionTimestamp() ||
+				old.GetGeneration() != new.GetGeneration() {
+				return true
+			}
+			return false
+		},
+	}
+}
+
+func (r *ReconcileConfig) updateStatus(config *istiov1beta1.Config, status istiov1beta1.ConfigState, errorMessage string) error {
+	typeMeta := config.TypeMeta
+	config.Status.Status = status
+	config.Status.ErrorMessage = errorMessage
+	err := r.Status().Update(context.Background(), config)
+	if err != nil {
+		if !k8serrors.IsConflict(err) {
+			return emperror.Wrapf(err, "could not update Istio state to '%s'", status)
+		}
+		err := r.Get(context.TODO(), types.NamespacedName{
+			Namespace: config.Namespace,
+			Name:      config.Name,
+		}, config)
+		if err != nil {
+			return emperror.Wrap(err, "could not get config for updating status")
+		}
+		config.Status.Status = status
+		config.Status.ErrorMessage = errorMessage
+		err = r.Status().Update(context.Background(), config)
+		if err != nil {
+			return emperror.Wrapf(err, "could not update Istio state to '%s'", status)
+		}
+	}
+	// update loses the typeMeta of the config that's used later when setting ownerrefs
+	config.TypeMeta = typeMeta
+	log.Info("Istio state updated", "status", status)
+	return nil
 }
