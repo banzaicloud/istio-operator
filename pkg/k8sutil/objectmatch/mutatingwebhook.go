@@ -39,7 +39,7 @@ func (m MutatingWebhookConfigurationMatcher) Match(old, new *admissionv1beta1.Mu
 		Webhooks:   old.Webhooks,
 	})
 	if err != nil {
-		return false, emperror.Wrap(err, "could not marshal object")
+		return false, emperror.WrapWith(err, "could not marshal old object", "name", old.Name)
 	}
 
 	newObject := MutatingWebhookConfiguration{
@@ -48,12 +48,12 @@ func (m MutatingWebhookConfigurationMatcher) Match(old, new *admissionv1beta1.Mu
 	}
 	newData, err := json.Marshal(newObject)
 	if err != nil {
-		return false, emperror.Wrap(err, "could not marshal object")
+		return false, emperror.WrapWith(err, "could not marshal new object", "name", new.Name)
 	}
 
 	matched, err := match(oldData, newData, newObject)
 	if err != nil {
-		return false, emperror.Wrap(err, "could not match objects")
+		return false, emperror.WrapWith(err, "could not match objects", "name", new.Name)
 	}
 
 	return matched, nil

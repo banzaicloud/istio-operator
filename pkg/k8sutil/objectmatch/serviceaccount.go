@@ -35,19 +35,19 @@ func (m ServiceAccountMatcher) Match(old, new *corev1.ServiceAccount) (bool, err
 		ObjectMeta: getObjectMeta(old.ObjectMeta),
 	})
 	if err != nil {
-		return false, emperror.Wrap(err, "could not marshal object")
+		return false, emperror.WrapWith(err, "could not marshal old object", "name", old.Name)
 	}
 	newObject := ServiceAccount{
 		ObjectMeta: getObjectMeta(new.ObjectMeta),
 	}
 	newData, err := json.Marshal(newObject)
 	if err != nil {
-		return false, emperror.Wrap(err, "could not marshal object")
+		return false, emperror.WrapWith(err, "could not marshal new object", "name", new.Name)
 	}
 
 	matched, err := match(oldData, newData, newObject)
 	if err != nil {
-		return false, emperror.Wrap(err, "could not match objects")
+		return false, emperror.WrapWith(err, "could not match objects", "name", new.Name)
 	}
 
 	return matched, nil

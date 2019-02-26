@@ -39,7 +39,7 @@ func (m ConfigMapMatcher) Match(old, new *corev1.ConfigMap) (bool, error) {
 		BinaryData: old.BinaryData,
 	})
 	if err != nil {
-		return false, emperror.Wrap(err, "could not marshal object")
+		return false, emperror.WrapWith(err, "could not marshal old object", "name", old.Name)
 	}
 	newConfigMap := ConfigMap{
 		ObjectMeta: getObjectMeta(new.ObjectMeta),
@@ -48,12 +48,12 @@ func (m ConfigMapMatcher) Match(old, new *corev1.ConfigMap) (bool, error) {
 	}
 	newData, err := json.Marshal(newConfigMap)
 	if err != nil {
-		return false, emperror.Wrap(err, "could not marshal object")
+		return false, emperror.WrapWith(err, "could not marshal new object", "name", new.Name)
 	}
 
 	matched, err := match(oldData, newData, newConfigMap)
 	if err != nil {
-		return false, emperror.Wrap(err, "could not match objects")
+		return false, emperror.WrapWith(err, "could not match objects", "name", new.Name)
 	}
 
 	return matched, nil

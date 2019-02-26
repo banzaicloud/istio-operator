@@ -139,7 +139,7 @@ func (r *ReconcileConfig) Reconcile(request reconcile.Request) (reconcile.Result
 	return reconcile.Result{}, nil
 }
 
-func (r *ReconcileConfig) reconcile(log logr.Logger, config *istiov1beta1.Config) (reconcile.Result, error) {
+func (r *ReconcileConfig) reconcile(logger logr.Logger, config *istiov1beta1.Config) (reconcile.Result, error) {
 
 	if config.Status.Status == "" {
 		err := r.updateStatus(config, istiov1beta1.Created, "")
@@ -205,7 +205,7 @@ func (r *ReconcileConfig) reconcile(log logr.Logger, config *istiov1beta1.Config
 	}
 
 	for _, rec := range reconcilers {
-		err = rec.Reconcile(logger)
+		err = rec.Reconcile(log)
 		if err != nil {
 			return reconcile.Result{}, err
 		}

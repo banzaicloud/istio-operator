@@ -29,16 +29,16 @@ type UnstructuredMatcher struct{}
 func (m UnstructuredMatcher) Match(old, new *unstructured.Unstructured) (bool, error) {
 	oldData, err := json.Marshal(old)
 	if err != nil {
-		return false, emperror.Wrap(err, "could not marshal object")
+		return false, emperror.WrapWith(err, "could not marshal old object", "name", old.GetName())
 	}
 	newData, err := json.Marshal(new)
 	if err != nil {
-		return false, emperror.Wrap(err, "could not marshal object")
+		return false, emperror.WrapWith(err, "could not marshal new object", "name", new.GetName())
 	}
 
 	matched, err := match(oldData, newData, new)
 	if err != nil {
-		return false, emperror.Wrap(err, "could not match objects")
+		return false, emperror.WrapWith(err, "could not match objects", "name", new.GetName())
 	}
 
 	return matched, nil
