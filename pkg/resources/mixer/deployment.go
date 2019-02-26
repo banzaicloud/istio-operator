@@ -32,7 +32,7 @@ func (r *Reconciler) deployment(t string) runtime.Object {
 	return &appsv1.Deployment{
 		ObjectMeta: templates.ObjectMeta(deploymentName(t), labelSelector, r.Config),
 		Spec: appsv1.DeploymentSpec{
-			Replicas: util.IntPointer(1),
+			Replicas: util.IntPointer(r.Config.Spec.Mixer.ReplicaCount),
 			Selector: &metav1.LabelSelector{
 				MatchLabels: util.MergeLabels(labelSelector, util.MergeLabels(appLabel(t), mixerTypeLabel(t))),
 			},

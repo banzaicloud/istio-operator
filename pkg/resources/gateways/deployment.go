@@ -31,7 +31,7 @@ func (r *Reconciler) deployment(gw string) runtime.Object {
 	return &appsv1.Deployment{
 		ObjectMeta: templates.ObjectMeta(gatewayName(gw), labelSelector(gw), r.Config),
 		Spec: appsv1.DeploymentSpec{
-			Replicas: util.IntPointer(1),
+			Replicas: util.IntPointer(r.Config.Spec.Gateways.ReplicaCount),
 			Selector: &metav1.LabelSelector{
 				MatchLabels: labelSelector(gw),
 			},

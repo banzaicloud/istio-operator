@@ -5,9 +5,27 @@ metadata:
     controller-tools.k8s.io: "1.0"
   name: config-sample
 spec:
-  mtls: true
+  mtls: false
   includeIPRanges: "*"
   excludeIPRanges: ""
   autoInjectionNamespaces:
   - "default"
-  controlPlaneSecurityEnabled: true
+  controlPlaneSecurityEnabled: false
+  pilot:
+      replicaCount: 1
+      minReplicas: 1
+      maxReplicas: 5
+  citadel:
+      replicaCount: 1
+  galley:
+      replicaCount: 1
+  gateways:
+      replicaCount: 1
+      minReplicas: 1
+      maxReplicas: 5
+  mixer:
+      replicaCount: 1
+      minReplicas: 1
+      maxReplicas: 5
+  sidecarInjector:
+      replicaCount: 1

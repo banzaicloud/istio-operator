@@ -36,16 +36,76 @@ spec:
               items:
                 type: string
               type: array
+            citadel:
+              description: Citadel configuration options
+              properties:
+                replicaCount:
+                  format: int32
+                  type: integer
+              type: object
             controlPlaneSecurityEnabled:
               description: ControlPlaneSecurityEnabled control plane services are
                 communicating through mTLS
               type: boolean
             excludeIPRanges:
               type: string
+            galley:
+              description: Galley configuration options
+              properties:
+                replicaCount:
+                  format: int32
+                  type: integer
+              type: object
+            gateways:
+              description: Gateways configuration options
+              properties:
+                maxReplicas:
+                  format: int32
+                  type: integer
+                minReplicas:
+                  format: int32
+                  type: integer
+                replicaCount:
+                  format: int32
+                  type: integer
+              type: object
             includeIPRanges:
               type: string
+            mixer:
+              description: Mixer configuration options
+              properties:
+                maxReplicas:
+                  format: int32
+                  type: integer
+                minReplicas:
+                  format: int32
+                  type: integer
+                replicaCount:
+                  format: int32
+                  type: integer
+              type: object
             mtls:
               type: boolean
+            pilot:
+              description: Pilot configuration options
+              properties:
+                maxReplicas:
+                  format: int32
+                  type: integer
+                minReplicas:
+                  format: int32
+                  type: integer
+                replicaCount:
+                  format: int32
+                  type: integer
+              type: object
+            sidecarInjector:
+              description: SidecarInjector configuration options
+              properties:
+                replicaCount:
+                  format: int32
+                  type: integer
+              type: object
           required:
           - mtls
           type: object
