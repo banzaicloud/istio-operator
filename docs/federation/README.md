@@ -17,3 +17,5 @@ The operator takes care of deploying Istio components to the remote clusters and
 The major caveat of managing a remote Istio is that it needs a constant connection to some of the components of the central Istio control plane. As we have direct pod reachability between the clusters that sounds an easy thing to do, but keeping the pod IP addresses up-to-date is something that must be solved. The operator triggers an update of those IP address for every remote cluster upon any failure or pod restart of those central components.
 
 You can find a [detailed example](example/README.md) about how to setup a 2 member federated Istio multi-cluster environment on GKE.
+
+> PS. - [Pipeline](http://beta.banzaicloud.io) can setup and automate the whole shebang for you!
