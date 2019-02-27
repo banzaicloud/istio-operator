@@ -20,19 +20,136 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
-// EDIT THIS FILE!  THIS IS SCAFFOLDING FOR YOU TO OWN!
-// NOTE: json tags are required.  Any new fields you add must have json tags for the fields to be serialized.
+const (
+	defaultIncludeIPRanges = "*"
+	defaultReplicaCount    = 1
+	defaultMinReplicas     = 1
+	defaultMaxReplicas     = 5
+)
+
+func SetDefaults(config *Config) {
+	if config.Spec.IncludeIPRanges == "" {
+		config.Spec.IncludeIPRanges = defaultIncludeIPRanges
+	}
+
+	// Pilot config
+	if config.Spec.Pilot.ReplicaCount == 0 {
+		config.Spec.Pilot.ReplicaCount = defaultReplicaCount
+	}
+	if config.Spec.Pilot.MinReplicas == 0 {
+		config.Spec.Pilot.MinReplicas = defaultMinReplicas
+	}
+	if config.Spec.Pilot.MaxReplicas == 0 {
+		config.Spec.Pilot.MaxReplicas = defaultMaxReplicas
+	}
+
+	// Citadel config
+	if config.Spec.Citadel.ReplicaCount == 0 {
+		config.Spec.Citadel.ReplicaCount = defaultReplicaCount
+	}
+
+	// Galley config
+	if config.Spec.Galley.ReplicaCount == 0 {
+		config.Spec.Galley.ReplicaCount = defaultReplicaCount
+	}
+
+	// Gateways config
+	if config.Spec.Gateways.ReplicaCount == 0 {
+		config.Spec.Gateways.ReplicaCount = defaultReplicaCount
+	}
+	if config.Spec.Gateways.MinReplicas == 0 {
+		config.Spec.Gateways.MinReplicas = defaultMinReplicas
+	}
+	if config.Spec.Gateways.MaxReplicas == 0 {
+		config.Spec.Gateways.MaxReplicas = defaultMaxReplicas
+	}
+
+	// Mixer config
+	if config.Spec.Mixer.ReplicaCount == 0 {
+		config.Spec.Mixer.ReplicaCount = defaultReplicaCount
+	}
+	if config.Spec.Mixer.MinReplicas == 0 {
+		config.Spec.Mixer.MinReplicas = defaultMinReplicas
+	}
+	if config.Spec.Mixer.MaxReplicas == 0 {
+		config.Spec.Mixer.MaxReplicas = defaultMaxReplicas
+	}
+
+	// SidecarInjector config
+	if config.Spec.SidecarInjector.ReplicaCount == 0 {
+		config.Spec.SidecarInjector.ReplicaCount = defaultReplicaCount
+	}
+}
+
+// PilotConfiguration defines config options for Pilot
+type PilotConfiguration struct {
+	ReplicaCount int32 `json:"replicaCount,omitempty"`
+	MinReplicas  int32 `json:"minReplicas,omitempty"`
+	MaxReplicas  int32 `json:"maxReplicas,omitempty"`
+}
+
+// CitadelConfiguration defines config options for Citadel
+type CitadelConfiguration struct {
+	ReplicaCount int32 `json:"replicaCount,omitempty"`
+}
+
+// GalleyConfiguration defines config options for Galley
+type GalleyConfiguration struct {
+	ReplicaCount int32 `json:"replicaCount,omitempty"`
+}
+
+// GatewaysConfiguration defines config options for Gateways
+type GatewaysConfiguration struct {
+	ReplicaCount int32 `json:"replicaCount,omitempty"`
+	MinReplicas  int32 `json:"minReplicas,omitempty"`
+	MaxReplicas  int32 `json:"maxReplicas,omitempty"`
+}
+
+// MixerConfiguration defines config options for Mixer
+type MixerConfiguration struct {
+	ReplicaCount int32 `json:"replicaCount,omitempty"`
+	MinReplicas  int32 `json:"minReplicas,omitempty"`
+	MaxReplicas  int32 `json:"maxReplicas,omitempty"`
+}
+
+// SidecarInjectorConfiguration defines config options for SidecarInjector
+type SidecarInjectorConfiguration struct {
+	ReplicaCount int32 `json:"replicaCount,omitempty"`
+}
 
 // ConfigSpec defines the desired state of Config
 type ConfigSpec struct {
-	// INSERT ADDITIONAL SPEC FIELDS - desired state of cluster
-	// Important: Run "make" to regenerate code after modifying this file
+	MTLS            bool   `json:"mtls"`
+	IncludeIPRanges string `json:"includeIPRanges,omitempty"`
+	ExcludeIPRanges string `json:"excludeIPRanges,omitempty"`
+	// List of namespaces to label with sidecar auto injection enabled
+	AutoInjectionNamespaces []string `json:"autoInjectionNamespaces,omitempty"`
+	// ControlPlaneSecurityEnabled control plane services are communicating through mTLS
+	ControlPlaneSecurityEnabled bool `json:"controlPlaneSecurityEnabled,omitempty"`
+
+	// Pilot configuration options
+	Pilot PilotConfiguration `json:"pilot,omitempty"`
+
+	// Citadel configuration options
+	Citadel CitadelConfiguration `json:"citadel,omitempty"`
+
+	// Galley configuration options
+	Galley GalleyConfiguration `json:"galley,omitempty"`
+
+	// Gateways configuration options
+	Gateways GatewaysConfiguration `json:"gateways,omitempty"`
+
+	// Mixer configuration options
+	Mixer MixerConfiguration `json:"mixer,omitempty"`
+
+	// SidecarInjector configuration options
+	SidecarInjector SidecarInjectorConfiguration `json:"sidecarInjector,omitempty"`
 }
 
 // ConfigStatus defines the observed state of Config
 type ConfigStatus struct {
-	// INSERT ADDITIONAL STATUS FIELD - define observed state of cluster
-	// Important: Run "make" to regenerate code after modifying this file
+	Status       ConfigState
+	ErrorMessage string
 }
 
 // +genclient
@@ -40,6 +157,7 @@ type ConfigStatus struct {
 
 // Config is the Schema for the configs API
 // +k8s:openapi-gen=true
+// +kubebuilder:subresource:status
 type Config struct {
 	metav1.TypeMeta   `json:",inline"`
 	metav1.ObjectMeta `json:"metadata,omitempty"`

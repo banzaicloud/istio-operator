@@ -26,6 +26,10 @@ func IntPointer(i int32) *int32 {
 	return &i
 }
 
+func Int64Pointer(i int64) *int64 {
+	return &i
+}
+
 func BoolPointer(b bool) *bool {
 	return &b
 }
@@ -56,4 +60,23 @@ func EmptyTypedFloatSlice(f ...float64) []interface{} {
 		ret[i] = f[i]
 	}
 	return ret
+}
+
+func ContainsString(slice []string, s string) bool {
+	for _, item := range slice {
+		if item == s {
+			return true
+		}
+	}
+	return false
+}
+
+func RemoveString(slice []string, s string) (result []string) {
+	for _, item := range slice {
+		if item == s {
+			continue
+		}
+		result = append(result, item)
+	}
+	return
 }

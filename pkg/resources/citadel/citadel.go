@@ -27,6 +27,7 @@ import (
 )
 
 const (
+	componentName          = "citadel"
 	serviceAccountName     = "istio-citadel-service-account"
 	clusterRoleName        = "istio-citadel-cluster-role"
 	clusterRoleBindingName = "istio-citadel-cluster-role-binding"
@@ -45,19 +46,26 @@ var labelSelector = map[string]string{
 type Reconciler struct {
 	resources.Reconciler
 	dynamic dynamic.Interface
+
+	configuration Configuration
 }
 
-func New(client client.Client, dc dynamic.Interface, config *istiov1beta1.Config) *Reconciler {
+func New(configuration Configuration, client client.Client, dc dynamic.Interface, config *istiov1beta1.Config) *Reconciler {
 	return &Reconciler{
 		Reconciler: resources.Reconciler{
 			Client: client,
 			Config: config,
 		},
-		dynamic: dc,
+		dynamic:       dc,
+		configuration: configuration,
 	}
 }
 
 func (r *Reconciler) Reconcile(log logr.Logger) error {
+	log = log.WithValues("component", componentName)
+
+	log.Info("Reconciling")
+
 	for _, res := range []resources.Resource{
 		r.serviceAccount,
 		r.clusterRole,
@@ -71,15 +79,32 @@ func (r *Reconciler) Reconcile(log logr.Logger) error {
 			return emperror.WrapWith(err, "failed to reconcile resource", "resource", o.GetObjectKind().GroupVersionKind())
 		}
 	}
-	drs := []resources.DynamicResource{
-		r.meshPolicy,
+
+	if !r.configuration.DeployMeshPolicy {
+		return nil
 	}
+
+	var mTLSDesiredState k8sutil.DesiredState
+	if r.Config.Spec.MTLS {
+		mTLSDesiredState = k8sutil.CREATED
+	} else {
+		mTLSDesiredState = k8sutil.DELETED
+	}
+	drs := []resources.DynamicResourceWithDesiredState{
+		{DynamicResource: r.meshPolicy, DesiredState: k8sutil.CREATED},
+		{DynamicResource: r.destinationRuleDefaultMtls, DesiredState: mTLSDesiredState},
+		{DynamicResource: r.destinationRuleApiServerMtls, DesiredState: mTLSDesiredState},
+	}
+
 	for _, dr := range drs {
-		o := dr()
-		err := o.Reconcile(log, r.dynamic)
+		o := dr.DynamicResource()
+		err := o.Reconcile(log, r.dynamic, dr.DesiredState)
 		if err != nil {
 			return emperror.WrapWith(err, "failed to reconcile dynamic resource", "resource", o.Gvr)
 		}
 	}
+
+	log.Info("Reconciled")
+
 	return nil
 }

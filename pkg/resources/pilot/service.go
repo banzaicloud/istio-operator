@@ -17,9 +17,11 @@ limitations under the License.
 package pilot
 
 import (
-	"github.com/banzaicloud/istio-operator/pkg/resources/templates"
 	apiv1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/runtime"
+	"k8s.io/apimachinery/pkg/util/intstr"
+
+	"github.com/banzaicloud/istio-operator/pkg/resources/templates"
 )
 
 func (r *Reconciler) service() runtime.Object {
@@ -28,19 +30,28 @@ func (r *Reconciler) service() runtime.Object {
 		Spec: apiv1.ServiceSpec{
 			Ports: []apiv1.ServicePort{
 				{
-					Name: "grpc-xds",
-					Port: 15010,
+					Name:       "grpc-xds",
+					Port:       15010,
+					TargetPort: intstr.FromInt(15010),
+					Protocol:   apiv1.ProtocolTCP,
 				},
 				{
-					Name: "https-xds",
-					Port: 15011},
-				{
-					Name: "http-legacy-discovery",
-					Port: 8080,
+					Name:       "https-xds",
+					Port:       15011,
+					TargetPort: intstr.FromInt(15011),
+					Protocol:   apiv1.ProtocolTCP,
 				},
 				{
-					Name: "http-monitoring",
-					Port: 9093,
+					Name:       "http-legacy-discovery",
+					Port:       8080,
+					TargetPort: intstr.FromInt(8080),
+					Protocol:   apiv1.ProtocolTCP,
+				},
+				{
+					Name:       "http-monitoring",
+					Port:       9093,
+					TargetPort: intstr.FromInt(9093),
+					Protocol:   apiv1.ProtocolTCP,
 				},
 			},
 			Selector: labelSelector,

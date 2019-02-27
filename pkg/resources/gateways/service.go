@@ -38,19 +38,19 @@ func servicePorts(gw string) []apiv1.ServicePort {
 	switch gw {
 	case "ingressgateway":
 		return []apiv1.ServicePort{
-			{Port: 80, TargetPort: intstr.FromInt(80), Name: "http2", NodePort: 31380},
-			{Port: 443, Name: "https", NodePort: 31390},
-			{Port: 31400, Name: "tcp", NodePort: 31400},
-			{Port: 15011, TargetPort: intstr.FromInt(15011), Name: "tcp-pilot-grpc-tls"},
-			{Port: 8060, TargetPort: intstr.FromInt(8060), Name: "tcp-citadel-grpc-tls"},
-			{Port: 853, TargetPort: intstr.FromInt(853), Name: "tcp-dns-tls"},
-			{Port: 15030, TargetPort: intstr.FromInt(15030), Name: "http2-prometheus"},
-			{Port: 15031, TargetPort: intstr.FromInt(15031), Name: "http2-grafana"},
+			{Port: 80, Protocol: apiv1.ProtocolTCP, TargetPort: intstr.FromInt(80), Name: "http2", NodePort: 31380},
+			{Port: 443, Protocol: apiv1.ProtocolTCP, TargetPort: intstr.FromInt(443), Name: "https", NodePort: 31390},
+			{Port: 31400, Protocol: apiv1.ProtocolTCP, TargetPort: intstr.FromInt(31400), Name: "tcp", NodePort: 31400},
+			{Port: 15011, Protocol: apiv1.ProtocolTCP, TargetPort: intstr.FromInt(15011), Name: "tcp-pilot-grpc-tls", NodePort: 31410},
+			{Port: 8060, Protocol: apiv1.ProtocolTCP, TargetPort: intstr.FromInt(8060), Name: "tcp-citadel-grpc-tls", NodePort: 31420},
+			{Port: 853, Protocol: apiv1.ProtocolTCP, TargetPort: intstr.FromInt(853), Name: "tcp-dns-tls", NodePort: 31430},
+			{Port: 15030, Protocol: apiv1.ProtocolTCP, TargetPort: intstr.FromInt(15030), Name: "http2-prometheus", NodePort: 31440},
+			{Port: 15031, Protocol: apiv1.ProtocolTCP, TargetPort: intstr.FromInt(15031), Name: "http2-grafana", NodePort: 31450},
 		}
 	case "egressgateway":
 		return []apiv1.ServicePort{
-			{Port: 80, Name: "http2"},
-			{Port: 443, Name: "https"},
+			{Port: 80, Name: "http2", Protocol: apiv1.ProtocolTCP, TargetPort: intstr.FromInt(80)},
+			{Port: 443, Name: "https", Protocol: apiv1.ProtocolTCP, TargetPort: intstr.FromInt(443)},
 		}
 	}
 	return []apiv1.ServicePort{}

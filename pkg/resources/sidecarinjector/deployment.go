@@ -19,20 +19,21 @@ package sidecarinjector
 import (
 	"fmt"
 
-	"github.com/banzaicloud/istio-operator/pkg/resources/common"
-	"github.com/banzaicloud/istio-operator/pkg/resources/templates"
-	"github.com/banzaicloud/istio-operator/pkg/util"
 	appsv1 "k8s.io/api/apps/v1"
 	apiv1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
+
+	"github.com/banzaicloud/istio-operator/pkg/resources/common"
+	"github.com/banzaicloud/istio-operator/pkg/resources/templates"
+	"github.com/banzaicloud/istio-operator/pkg/util"
 )
 
 func (r *Reconciler) deployment() runtime.Object {
 	return &appsv1.Deployment{
 		ObjectMeta: templates.ObjectMeta(deploymentName, util.MergeLabels(sidecarInjectorLabels, labelSelector), r.Config),
 		Spec: appsv1.DeploymentSpec{
-			Replicas: util.IntPointer(1),
+			Replicas: util.IntPointer(r.Config.Spec.SidecarInjector.ReplicaCount),
 			Selector: &metav1.LabelSelector{
 				MatchLabels: labelSelector,
 			},
@@ -74,9 +75,11 @@ func (r *Reconciler) deployment() runtime.Object {
 									ReadOnly:  true,
 								},
 							},
-							ReadinessProbe: siProbe(),
-							LivenessProbe:  siProbe(),
-							Resources:      templates.DefaultResources(),
+							ReadinessProbe:           siProbe(),
+							LivenessProbe:            siProbe(),
+							Resources:                templates.DefaultResources(),
+							TerminationMessagePath:   apiv1.TerminationMessagePathDefault,
+							TerminationMessagePolicy: apiv1.TerminationMessageReadFile,
 						},
 					},
 					Volumes: []apiv1.Volume{
@@ -84,7 +87,8 @@ func (r *Reconciler) deployment() runtime.Object {
 							Name: "certs",
 							VolumeSource: apiv1.VolumeSource{
 								Secret: &apiv1.SecretVolumeSource{
-									SecretName: fmt.Sprintf("istio.%s", serviceAccountName),
+									SecretName:  fmt.Sprintf("istio.%s", serviceAccountName),
+									DefaultMode: util.IntPointer(420),
 								},
 							},
 						},
@@ -95,6 +99,7 @@ func (r *Reconciler) deployment() runtime.Object {
 									LocalObjectReference: apiv1.LocalObjectReference{
 										Name: common.IstioConfigMapName,
 									},
+									DefaultMode: util.IntPointer(420),
 								},
 							},
 						},
@@ -111,6 +116,7 @@ func (r *Reconciler) deployment() runtime.Object {
 											Path: "config",
 										},
 									},
+									DefaultMode: util.IntPointer(420),
 								},
 							},
 						},
@@ -136,5 +142,8 @@ func siProbe() *apiv1.Probe {
 		},
 		InitialDelaySeconds: 4,
 		PeriodSeconds:       4,
+		FailureThreshold:    3,
+		TimeoutSeconds:      1,
+		SuccessThreshold:    1,
 	}
 }

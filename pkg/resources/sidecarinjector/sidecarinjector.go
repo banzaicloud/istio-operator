@@ -26,10 +26,11 @@ import (
 )
 
 const (
+	componentName          = "sidecarinjector"
 	serviceAccountName     = "istio-sidecar-injector-service-account"
 	clusterRoleName        = "istio-sidecar-injector-cluster-role"
 	clusterRoleBindingName = "istio-sidecar-injector-cluster-role-binding"
-	configMapName          = "istio-sidecar-injector-config"
+	configMapName          = "istio-sidecar-injector"
 	webhookName            = "istio-sidecar-injector"
 	deploymentName         = "istio-sidecar-injector"
 	serviceName            = "istio-sidecar-injector"
@@ -48,6 +49,10 @@ type Reconciler struct {
 }
 
 func New(client client.Client, config *istiov1beta1.Config) *Reconciler {
+	if config.Spec.ExcludeIPRanges == "" && config.Spec.IncludeIPRanges == "" {
+		config.Spec.IncludeIPRanges = "*"
+	}
+
 	return &Reconciler{
 		Reconciler: resources.Reconciler{
 			Client: client,
@@ -57,6 +62,10 @@ func New(client client.Client, config *istiov1beta1.Config) *Reconciler {
 }
 
 func (r *Reconciler) Reconcile(log logr.Logger) error {
+	log = log.WithValues("component", componentName)
+
+	log.Info("Reconciling")
+
 	for _, res := range []resources.Resource{
 		r.serviceAccount,
 		r.clusterRole,
@@ -72,5 +81,13 @@ func (r *Reconciler) Reconcile(log logr.Logger) error {
 			return emperror.WrapWith(err, "failed to reconcile resource", "resource", o.GetObjectKind().GroupVersionKind())
 		}
 	}
+
+	err := r.reconcileAutoInjectionLabels(log)
+	if err != nil {
+		return emperror.WrapWith(err, "failed to label namespaces")
+	}
+
+	log.Info("Reconciled")
+
 	return nil
 }

@@ -72,3 +72,7 @@ version="v1.4.7"
   name = "k8s.io/client-go"
   # revision for tag "kubernetes-1.12.3"
   revision = "d082d5923d3cc0bfbb066ee5fbdea3d0ca79acf8"
+
+[[constraint]]
+  name = "github.com/evanphx/json-patch"
+  version = "4.1.0"

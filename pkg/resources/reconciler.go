@@ -49,3 +49,8 @@ func ResolveVariations(t string, v []ResourceVariation) []Resource {
 }
 
 type DynamicResource func() *k8sutil.DynamicObject
+
+type DynamicResourceWithDesiredState struct {
+	DynamicResource DynamicResource
+	DesiredState    k8sutil.DesiredState
+}

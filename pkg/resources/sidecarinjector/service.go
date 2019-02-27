@@ -17,9 +17,11 @@ limitations under the License.
 package sidecarinjector
 
 import (
-	"github.com/banzaicloud/istio-operator/pkg/resources/templates"
 	apiv1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/runtime"
+	"k8s.io/apimachinery/pkg/util/intstr"
+
+	"github.com/banzaicloud/istio-operator/pkg/resources/templates"
 )
 
 func (r *Reconciler) service() runtime.Object {
@@ -28,7 +30,9 @@ func (r *Reconciler) service() runtime.Object {
 		Spec: apiv1.ServiceSpec{
 			Ports: []apiv1.ServicePort{
 				{
-					Port: 443,
+					Port:       443,
+					Protocol:   apiv1.ProtocolTCP,
+					TargetPort: intstr.FromInt(443),
 				},
 			},
 			Selector: labelSelector,

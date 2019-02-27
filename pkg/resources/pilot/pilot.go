@@ -27,6 +27,7 @@ import (
 )
 
 const (
+	componentName          = "pilot"
 	serviceAccountName     = "istio-pilot-service-account"
 	clusterRoleName        = "istio-pilot-cluster-role"
 	clusterRoleBindingName = "istio-pilot-cluster-role-binding"
@@ -60,6 +61,10 @@ func New(client client.Client, dc dynamic.Interface, config *istiov1beta1.Config
 }
 
 func (r *Reconciler) Reconcile(log logr.Logger) error {
+	log = log.WithValues("component", componentName)
+
+	log.Info("Reconciling")
+
 	for _, res := range []resources.Resource{
 		r.serviceAccount,
 		r.clusterRole,
@@ -74,15 +79,18 @@ func (r *Reconciler) Reconcile(log logr.Logger) error {
 			return emperror.WrapWith(err, "failed to reconcile resource", "resource", o.GetObjectKind().GroupVersionKind())
 		}
 	}
-	drs := []resources.DynamicResource{
-		r.gateway,
+	drs := []resources.DynamicResourceWithDesiredState{
+		{DynamicResource: r.gateway, DesiredState: k8sutil.CREATED},
 	}
 	for _, dr := range drs {
-		o := dr()
-		err := o.Reconcile(log, r.dynamic)
+		o := dr.DynamicResource()
+		err := o.Reconcile(log, r.dynamic, dr.DesiredState)
 		if err != nil {
 			return emperror.WrapWith(err, "failed to reconcile dynamic resource", "resource", o.Gvr)
 		}
 	}
+
+	log.Info("Reconciled")
+
 	return nil
 }

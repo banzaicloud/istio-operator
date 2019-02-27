@@ -19,15 +19,16 @@ package pilot
 import (
 	"fmt"
 
-	"github.com/banzaicloud/istio-operator/pkg/resources/common"
-	"github.com/banzaicloud/istio-operator/pkg/resources/templates"
-	"github.com/banzaicloud/istio-operator/pkg/util"
 	appsv1 "k8s.io/api/apps/v1"
 	apiv1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/util/intstr"
+
+	"github.com/banzaicloud/istio-operator/pkg/resources/common"
+	"github.com/banzaicloud/istio-operator/pkg/resources/templates"
+	"github.com/banzaicloud/istio-operator/pkg/util"
 )
 
 var appLabels = map[string]string{
@@ -38,7 +39,7 @@ func (r *Reconciler) deployment() runtime.Object {
 	return &appsv1.Deployment{
 		ObjectMeta: templates.ObjectMeta(deploymentName, util.MergeLabels(pilotLabels, labelSelector), r.Config),
 		Spec: appsv1.DeploymentSpec{
-			Replicas: util.IntPointer(1),
+			Replicas: util.IntPointer(r.Config.Spec.Pilot.ReplicaCount),
 			Selector: &metav1.LabelSelector{
 				MatchLabels: util.MergeLabels(appLabels, labelSelector),
 			},
@@ -58,19 +59,22 @@ func (r *Reconciler) deployment() runtime.Object {
 								"discovery",
 							},
 							Ports: []apiv1.ContainerPort{
-								{ContainerPort: 8080},
-								{ContainerPort: 15010},
+								{ContainerPort: 8080, Protocol: apiv1.ProtocolTCP},
+								{ContainerPort: 15010, Protocol: apiv1.ProtocolTCP},
 							},
 							ReadinessProbe: &apiv1.Probe{
 								Handler: apiv1.Handler{
 									HTTPGet: &apiv1.HTTPGetAction{
-										Path: "/ready",
-										Port: intstr.FromInt(8080),
+										Path:   "/ready",
+										Port:   intstr.FromInt(8080),
+										Scheme: apiv1.URISchemeHTTP,
 									},
 								},
 								InitialDelaySeconds: 5,
 								PeriodSeconds:       30,
 								TimeoutSeconds:      5,
+								FailureThreshold:    3,
+								SuccessThreshold:    1,
 							},
 							Env: []apiv1.EnvVar{
 								{
@@ -113,16 +117,18 @@ func (r *Reconciler) deployment() runtime.Object {
 									ReadOnly:  true,
 								},
 							},
+							TerminationMessagePath:   apiv1.TerminationMessagePathDefault,
+							TerminationMessagePolicy: apiv1.TerminationMessageReadFile,
 						},
 						{
 							Name:            "istio-proxy",
 							Image:           "docker.io/istio/proxyv2:1.0.5",
 							ImagePullPolicy: apiv1.PullIfNotPresent,
 							Ports: []apiv1.ContainerPort{
-								{ContainerPort: 15003},
-								{ContainerPort: 15005},
-								{ContainerPort: 15007},
-								{ContainerPort: 15011},
+								{ContainerPort: 15003, Protocol: apiv1.ProtocolTCP},
+								{ContainerPort: 15005, Protocol: apiv1.ProtocolTCP},
+								{ContainerPort: 15007, Protocol: apiv1.ProtocolTCP},
+								{ContainerPort: 15011, Protocol: apiv1.ProtocolTCP},
 							},
 							Args: []string{
 								"proxy",
@@ -131,7 +137,7 @@ func (r *Reconciler) deployment() runtime.Object {
 								"--templateFile",
 								"/etc/istio/proxy/envoy_pilot.yaml.tmpl",
 								"--controlPlaneAuthPolicy",
-								"NONE",
+								templates.ControlPlaneAuthPolicy(r.Config.Spec.ControlPlaneSecurityEnabled),
 							},
 							Env:       templates.IstioProxyEnv(),
 							Resources: templates.DefaultResources(),
@@ -142,6 +148,8 @@ func (r *Reconciler) deployment() runtime.Object {
 									ReadOnly:  true,
 								},
 							},
+							TerminationMessagePath:   apiv1.TerminationMessagePathDefault,
+							TerminationMessagePolicy: apiv1.TerminationMessageReadFile,
 						},
 					},
 					Volumes: []apiv1.Volume{
@@ -149,8 +157,9 @@ func (r *Reconciler) deployment() runtime.Object {
 							Name: "istio-certs",
 							VolumeSource: apiv1.VolumeSource{
 								Secret: &apiv1.SecretVolumeSource{
-									SecretName: fmt.Sprintf("istio.%s", serviceAccountName),
-									Optional:   util.BoolPointer(true),
+									SecretName:  fmt.Sprintf("istio.%s", serviceAccountName),
+									Optional:    util.BoolPointer(true),
+									DefaultMode: util.IntPointer(420),
 								},
 							},
 						},
@@ -161,6 +170,7 @@ func (r *Reconciler) deployment() runtime.Object {
 									LocalObjectReference: apiv1.LocalObjectReference{
 										Name: common.IstioConfigMapName,
 									},
+									DefaultMode: util.IntPointer(420),
 								},
 							},
 						},

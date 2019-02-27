@@ -56,9 +56,9 @@ func (r *Reconciler) templateConfig() string {
   - "-m"
   - [[ annotation .ObjectMeta ` + "`" + `sidecar.istio.io/interceptionMode` + "`" + ` .ProxyConfig.InterceptionMode ]]
   - "-i"
-  - "[[ annotation .ObjectMeta ` + "`" + `traffic.sidecar.istio.io/includeOutboundIPRanges` + "`" + ` "*" ]]"
+  - "[[ annotation .ObjectMeta ` + "`" + `traffic.sidecar.istio.io/includeOutboundIPRanges` + "`" + ` "` + r.Config.Spec.IncludeIPRanges + `" ]]"
   - "-x"
-  - "[[ annotation .ObjectMeta ` + "`" + `traffic.sidecar.istio.io/excludeOutboundIPRanges` + "`" + ` "" ]]"
+  - "[[ annotation .ObjectMeta ` + "`" + `traffic.sidecar.istio.io/excludeOutboundIPRanges` + "`" + ` "` + r.Config.Spec.ExcludeIPRanges + `" ]]"
   - "-b"
   - "[[ annotation .ObjectMeta ` + "`" + `traffic.sidecar.istio.io/includeInboundPorts` + "`" + ` (includeInboundPorts .Spec.Containers) ]]"
   - "-d"

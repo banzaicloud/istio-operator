@@ -26,6 +26,7 @@ import (
 )
 
 const (
+	componentName      = "common"
 	IstioConfigMapName = "istio"
 )
 
@@ -43,6 +44,10 @@ func New(client client.Client, config *istiov1beta1.Config) *Reconciler {
 }
 
 func (r *Reconciler) Reconcile(log logr.Logger) error {
+	log = log.WithValues("component", componentName)
+
+	log.Info("Reconciling")
+
 	for _, res := range []resources.Resource{
 		r.configMap,
 	} {
@@ -52,5 +57,8 @@ func (r *Reconciler) Reconcile(log logr.Logger) error {
 			return emperror.WrapWith(err, "failed to reconcile resource", "resource", o.GetObjectKind().GroupVersionKind())
 		}
 	}
+
+	log.Info("Reconciled")
+
 	return nil
 }

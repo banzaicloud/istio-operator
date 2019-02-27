@@ -18,6 +18,7 @@ package common
 
 import (
 	"fmt"
+
 	"github.com/banzaicloud/istio-operator/pkg/resources/templates"
 	"github.com/ghodss/yaml"
 	apiv1 "k8s.io/api/core/v1"
@@ -42,8 +43,8 @@ func (r *Reconciler) meshConfig(ns string) string {
 		"disablePolicyChecks": false,
 		"enableTracing":       true,
 		"accessLogFile":       "/dev/stdout",
-		"mixerCheckServer":    fmt.Sprintf("istio-policy.%s.svc.cluster.local:9091", ns),
-		"mixerReportServer":   fmt.Sprintf("istio-telemetry.%s.svc.cluster.local:9091", ns),
+		"mixerCheckServer":    fmt.Sprintf("istio-policy.%s.svc.cluster.local:%s", ns, r.mixerPort()),
+		"mixerReportServer":   fmt.Sprintf("istio-telemetry.%s.svc.cluster.local:%s", ns, r.mixerPort()),
 		"policyCheckFailOpen": false,
 		"sdsUdsPath":          "",
 		"sdsRefreshDelay":     "15s",
@@ -57,10 +58,24 @@ func (r *Reconciler) meshConfig(ns string) string {
 			"proxyAdminPort":         15000,
 			"concurrency":            0,
 			"zipkinAddress":          fmt.Sprintf("zipkin.%s:9411", ns),
-			"controlPlaneAuthPolicy": "NONE",
-			"discoveryAddress":       fmt.Sprintf("istio-pilot.%s:15007", ns),
+			"controlPlaneAuthPolicy": templates.ControlPlaneAuthPolicy(r.Config.Spec.ControlPlaneSecurityEnabled),
+			"discoveryAddress":       fmt.Sprintf("istio-pilot.%s:%s", ns, r.discoveryPort()),
 		},
 	}
 	marshaledConfig, _ := yaml.Marshal(meshConfig)
 	return string(marshaledConfig)
+}
+
+func (r *Reconciler) mixerPort() string {
+	if r.Config.Spec.ControlPlaneSecurityEnabled {
+		return "15004"
+	}
+	return "9091"
+}
+
+func (r *Reconciler) discoveryPort() string {
+	if r.Config.Spec.ControlPlaneSecurityEnabled {
+		return "15005"
+	}
+	return "15007"
 }

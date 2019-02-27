@@ -31,7 +31,7 @@ func (r *Reconciler) deployment() runtime.Object {
 	return &appsv1.Deployment{
 		ObjectMeta: templates.ObjectMeta(deploymentName, util.MergeLabels(galleyLabels, labelSelector), r.Config),
 		Spec: appsv1.DeploymentSpec{
-			Replicas: util.IntPointer(1),
+			Replicas: util.IntPointer(r.Config.Spec.Galley.ReplicaCount),
 			Strategy: appsv1.DeploymentStrategy{
 				RollingUpdate: &appsv1.RollingUpdateDeployment{
 					MaxSurge:       util.IntstrPointer(1),
@@ -56,9 +56,11 @@ func (r *Reconciler) deployment() runtime.Object {
 							Ports: []apiv1.ContainerPort{
 								{
 									ContainerPort: 443,
+									Protocol:      apiv1.ProtocolTCP,
 								},
 								{
 									ContainerPort: 9093,
+									Protocol:      apiv1.ProtocolTCP,
 								},
 							},
 							Command: []string{
@@ -85,9 +87,11 @@ func (r *Reconciler) deployment() runtime.Object {
 									ReadOnly:  true,
 								},
 							},
-							LivenessProbe:  r.galleyProbe(),
-							ReadinessProbe: r.galleyProbe(),
-							Resources:      templates.DefaultResources(),
+							LivenessProbe:            r.galleyProbe(),
+							ReadinessProbe:           r.galleyProbe(),
+							Resources:                templates.DefaultResources(),
+							TerminationMessagePath:   apiv1.TerminationMessagePathDefault,
+							TerminationMessagePolicy: apiv1.TerminationMessageReadFile,
 						},
 					},
 					Volumes: []apiv1.Volume{
@@ -95,7 +99,8 @@ func (r *Reconciler) deployment() runtime.Object {
 							Name: "certs",
 							VolumeSource: apiv1.VolumeSource{
 								Secret: &apiv1.SecretVolumeSource{
-									SecretName: fmt.Sprintf("istio.%s", serviceAccountName),
+									SecretName:  fmt.Sprintf("istio.%s", serviceAccountName),
+									DefaultMode: util.IntPointer(420),
 								},
 							},
 						},
@@ -106,6 +111,7 @@ func (r *Reconciler) deployment() runtime.Object {
 									LocalObjectReference: apiv1.LocalObjectReference{
 										Name: configMapName,
 									},
+									DefaultMode: util.IntPointer(420),
 								},
 							},
 						},
@@ -131,5 +137,8 @@ func (r *Reconciler) galleyProbe() *apiv1.Probe {
 		},
 		InitialDelaySeconds: 5,
 		PeriodSeconds:       5,
+		FailureThreshold:    3,
+		SuccessThreshold:    1,
+		TimeoutSeconds:      1,
 	}
 }

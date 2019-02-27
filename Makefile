@@ -80,7 +80,7 @@ install: manifests
 	kubectl apply -f config/crds
 
 # Deploy controller in the configured Kubernetes cluster in ~/.kube/config
-deploy: install-kustomize manifests
+deploy: install-kustomize
 	kubectl apply -f config/crds
 	kubectl apply -f config/manager/namespace.yaml
 	./scripts/image_patch.sh ./config/default/manager_image_patch.yaml ${IMG}
@@ -108,7 +108,6 @@ endif
 # Build the docker image
 docker-build:
 	docker build -f Dockerfile.dev . -t ${IMG}
-	@echo "updating kustomize image patch file for manager resource"
 
 # Push the docker image
 docker-push:

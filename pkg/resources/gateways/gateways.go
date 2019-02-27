@@ -28,6 +28,10 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
+const (
+	componentName = "gateways"
+)
+
 type Reconciler struct {
 	resources.Reconciler
 }
@@ -42,6 +46,10 @@ func New(client client.Client, config *istiov1beta1.Config) *Reconciler {
 }
 
 func (r *Reconciler) Reconcile(log logr.Logger) error {
+	log = log.WithValues("component", componentName)
+
+	log.Info("Reconciling")
+
 	var rsv = []resources.ResourceVariation{
 		r.serviceAccount,
 		r.clusterRole,
@@ -57,6 +65,9 @@ func (r *Reconciler) Reconcile(log logr.Logger) error {
 			return emperror.WrapWith(err, "failed to reconcile resource", "resource", o.GetObjectKind().GroupVersionKind())
 		}
 	}
+
+	log.Info("Reconciled")
+
 	return nil
 }
 

@@ -53,3 +53,10 @@ func ObjectMetaClusterScope(name string, labels map[string]string, config *istio
 	}
 	return o
 }
+
+func ControlPlaneAuthPolicy(enabled bool) string {
+	if enabled {
+		return "MUTUAL_TLS"
+	}
+	return "NONE"
+}

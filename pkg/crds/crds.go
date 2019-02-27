@@ -20,21 +20,25 @@ import (
 	"fmt"
 	"strings"
 
-	istiov1beta1 "github.com/banzaicloud/istio-operator/pkg/apis/operator/v1beta1"
+	"github.com/go-logr/logr"
 	"github.com/goph/emperror"
 	extensionsobj "k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1beta1"
 	apiextensionsclient "k8s.io/apiextensions-apiserver/pkg/client/clientset/clientset"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/rest"
-	logf "sigs.k8s.io/controller-runtime/pkg/runtime/log"
+
+	istiov1beta1 "github.com/banzaicloud/istio-operator/pkg/apis/operator/v1beta1"
+	"github.com/banzaicloud/istio-operator/pkg/k8sutil/objectmatch"
 )
 
-var log = logf.Log.WithName("crds")
+const (
+	componentName = "crds"
+)
 
 type CrdOperator struct {
-	crdClient apiextensionsclient.Interface
-	crds      []*extensionsobj.CustomResourceDefinition
+	crds   []*extensionsobj.CustomResourceDefinition
+	config *rest.Config
 }
 
 type configType int
@@ -61,18 +65,14 @@ var crdConfigs = map[configType]crdConfig{
 	Rbac:           {"v1alpha1", "rbac", []string{"istio-io", "rbac-istio-io"}},
 }
 
-func New(cfg *rest.Config) (*CrdOperator, error) {
-	crdc, err := apiextensionsclient.NewForConfig(cfg)
-	if err != nil {
-		return nil, emperror.Wrap(err, "instantiating apiextensions client failed")
-	}
+func New(cfg *rest.Config, crds []*extensionsobj.CustomResourceDefinition) (*CrdOperator, error) {
 	return &CrdOperator{
-		crdClient: crdc,
-		crds:      initCrds(),
+		crds:   crds,
+		config: cfg,
 	}, nil
 }
 
-func initCrds() []*extensionsobj.CustomResourceDefinition {
+func InitCrds() []*extensionsobj.CustomResourceDefinition {
 	return []*extensionsobj.CustomResourceDefinition{
 		crdL("VirtualService", "VirtualServices", crdConfigs[Networking], "istio-pilot", "", "", extensionsobj.NamespaceScoped, true),
 		crdL("DestinationRule", "DestinationRules", crdConfigs[Networking], "istio-pilot", "", "", extensionsobj.NamespaceScoped, true),
@@ -152,7 +152,14 @@ func crdL(kind string, plural string, config crdConfig, appLabel string, pckLabe
 		Spec: extensionsobj.CustomResourceDefinitionSpec{
 			Group:   fmt.Sprintf("%s.istio.io", config.group),
 			Version: config.version,
-			Scope:   scope,
+			Versions: []extensionsobj.CustomResourceDefinitionVersion{
+				{
+					Name:    config.version,
+					Served:  true,
+					Storage: true,
+				},
+			},
+			Scope: scope,
 			Names: extensionsobj.CustomResourceDefinitionNames{
 				Plural:     pluralName,
 				Kind:       kind,
@@ -167,34 +174,52 @@ func crdL(kind string, plural string, config crdConfig, appLabel string, pckLabe
 	return crd
 }
 
-func (r *CrdOperator) Reconcile(config *istiov1beta1.Config) error {
-	crdClient := r.crdClient.ApiextensionsV1beta1().CustomResourceDefinitions()
+func (r *CrdOperator) Reconcile(config *istiov1beta1.Config, log logr.Logger) error {
+	log = log.WithValues("component", componentName)
+	apiExtensions, err := apiextensionsclient.NewForConfig(r.config)
+	if err != nil {
+		return emperror.Wrap(err, "instantiating apiextensions client failed")
+	}
+	crdClient := apiExtensions.ApiextensionsV1beta1().CustomResourceDefinitions()
 	for _, crd := range r.crds {
+		log := log.WithValues("kind", crd.Spec.Names.Kind)
 		current, err := crdClient.Get(crd.Name, metav1.GetOptions{})
 		if err != nil && !apierrors.IsNotFound(err) {
 			return emperror.WrapWith(err, "getting CRD failed", "kind", crd.Spec.Names.Kind)
 		}
 		if apierrors.IsNotFound(err) {
-			crd.ObjectMeta.OwnerReferences = []metav1.OwnerReference{
-				{
-					Kind:       config.Kind,
-					APIVersion: config.APIVersion,
-					Name:       config.Name,
-					UID:        config.GetUID(),
-				},
+			if config.Name != "" {
+				crd.ObjectMeta.OwnerReferences = []metav1.OwnerReference{
+					{
+						Kind:       config.Kind,
+						APIVersion: config.APIVersion,
+						Name:       config.Name,
+						UID:        config.GetUID(),
+					},
+				}
 			}
 			if _, err := crdClient.Create(crd); err != nil {
 				return emperror.WrapWith(err, "creating CRD failed", "kind", crd.Spec.Names.Kind)
 			}
-			log.Info("CRD created", "kind", crd.Spec.Names.Kind)
+			log.Info("CRD created")
 		}
 		if err == nil {
+			objectsEquals, err := objectmatch.Match(current, crd)
+			if err != nil {
+				log.Error(err, "could not match objects", "kind", crd.Spec.Names.Kind)
+			} else if objectsEquals {
+				log.V(1).Info("CRD is in sync")
+				continue
+			}
 			crd.ResourceVersion = current.ResourceVersion
 			if _, err := crdClient.Update(crd); err != nil {
 				return emperror.WrapWith(err, "updating CRD failed", "kind", crd.Spec.Names.Kind)
 			}
-			log.Info("CRD updated", "kind", crd.Spec.Names.Kind)
+			log.Info("CRD updated")
 		}
 	}
+
+	log.Info("Reconciled")
+
 	return nil
 }

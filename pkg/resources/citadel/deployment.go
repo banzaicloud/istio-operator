@@ -28,10 +28,80 @@ import (
 )
 
 func (r *Reconciler) deployment() runtime.Object {
-	return &appsv1.Deployment{
+	var args = []string{
+		"--append-dns-names=true",
+		"--grpc-port=8060",
+		"--grpc-hostname=citadel",
+		fmt.Sprintf("--citadel-storage-namespace=%s", r.Config.Namespace),
+		fmt.Sprintf("--custom-dns-names=istio-pilot-service-account.%[1]s:istio-pilot.%[1]s,istio-ingressgateway-service-account.%[1]s:istio-ingressgateway.%[1]s", r.Config.Namespace),
+	}
+
+	if r.configuration.SelfSignedCA {
+		args = append(args, "--self-signed-ca=true")
+	} else {
+		args = append(args,
+			"--self-signed-ca=false",
+			"--signing-cert=/etc/cacerts/ca-cert.pem",
+			"--signing-key=/etc/cacerts/ca-key.pem",
+			"--root-cert=/etc/cacerts/root-cert.pem",
+			"--cert-chain=/etc/cacerts/cert-chain.pem",
+		)
+	}
+
+	var citadelContainer = apiv1.Container{
+		Name:                     "citadel",
+		Image:                    "docker.io/istio/citadel:1.0.5",
+		ImagePullPolicy:          apiv1.PullIfNotPresent,
+		Args:                     args,
+		Resources:                templates.DefaultResources(),
+		TerminationMessagePath:   apiv1.TerminationMessagePathDefault,
+		TerminationMessagePolicy: apiv1.TerminationMessageReadFile,
+	}
+
+	if !r.configuration.SelfSignedCA {
+		citadelContainer.VolumeMounts = []apiv1.VolumeMount{
+			{
+				Name:      "cacerts",
+				MountPath: "/etc/cacerts",
+				ReadOnly:  true,
+			},
+		}
+	}
+
+	var podSpec = apiv1.PodSpec{
+		ServiceAccountName:            serviceAccountName,
+		DeprecatedServiceAccount:      serviceAccountName,
+		DNSPolicy:                     apiv1.DNSClusterFirst,
+		RestartPolicy:                 apiv1.RestartPolicyAlways,
+		TerminationGracePeriodSeconds: util.Int64Pointer(int64(30)),
+		SecurityContext:               &apiv1.PodSecurityContext{},
+		SchedulerName:                 "default-scheduler",
+		Containers: []apiv1.Container{
+			citadelContainer,
+		},
+		Affinity: &apiv1.Affinity{},
+	}
+
+	var optional = true
+	if !r.configuration.SelfSignedCA {
+		podSpec.Volumes = []apiv1.Volume{
+			{
+				Name: "cacerts",
+				VolumeSource: apiv1.VolumeSource{
+					Secret: &apiv1.SecretVolumeSource{
+						SecretName:  "cacerts",
+						Optional:    &optional,
+						DefaultMode: util.IntPointer(420),
+					},
+				},
+			},
+		}
+	}
+
+	var deployment = &appsv1.Deployment{
 		ObjectMeta: templates.ObjectMeta(deploymentName, util.MergeLabels(citadelLabels, labelSelector), r.Config),
 		Spec: appsv1.DeploymentSpec{
-			Replicas: util.IntPointer(1),
+			Replicas: util.IntPointer(r.Config.Spec.Citadel.ReplicaCount),
 			Selector: &metav1.LabelSelector{
 				MatchLabels: labelSelector,
 			},
@@ -40,27 +110,10 @@ func (r *Reconciler) deployment() runtime.Object {
 					Labels:      labelSelector,
 					Annotations: templates.DefaultDeployAnnotations(),
 				},
-				Spec: apiv1.PodSpec{
-					ServiceAccountName: serviceAccountName,
-					Containers: []apiv1.Container{
-						{
-							Name:            "citadel",
-							Image:           "docker.io/istio/citadel:1.0.5",
-							ImagePullPolicy: apiv1.PullIfNotPresent,
-							Args: []string{
-								"--append-dns-names=true",
-								"--grpc-port=8060",
-								"--grpc-hostname=citadel",
-								fmt.Sprintf("--citadel-storage-namespace=%s", r.Config.Namespace),
-								fmt.Sprintf("--custom-dns-names=istio-pilot-service-account.%[1]s:istio-pilot.%[1]s,istio-ingressgateway-service-account.%[1]s:istio-ingressgateway.%[1]s", r.Config.Namespace),
-								"--self-signed-ca=true",
-							},
-							Resources: templates.DefaultResources(),
-						},
-					},
-					Affinity: &apiv1.Affinity{},
-				},
+				Spec: podSpec,
 			},
 		},
 	}
+
+	return deployment
 }
