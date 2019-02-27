@@ -45,6 +45,7 @@ import (
 
 	istiov1beta1 "github.com/banzaicloud/istio-operator/pkg/apis/istio/v1beta1"
 	"github.com/banzaicloud/istio-operator/pkg/crds"
+	"github.com/banzaicloud/istio-operator/pkg/k8sutil/objectmatch"
 	"github.com/banzaicloud/istio-operator/pkg/resources"
 	"github.com/banzaicloud/istio-operator/pkg/resources/citadel"
 	"github.com/banzaicloud/istio-operator/pkg/resources/common"
@@ -297,17 +298,18 @@ func initWatches(c controller.Controller) error {
 			OwnerType:    &istiov1beta1.Istio{},
 		}, predicate.Funcs{
 			CreateFunc: func(e event.CreateEvent) bool {
-				return true
+				return false
 			},
 			DeleteFunc: func(e event.DeleteEvent) bool {
 				return true
 			},
 			UpdateFunc: func(e event.UpdateEvent) bool {
-				//if !reflect.DeepEqual(old.Spec, new.Spec) ||
-				//	old.GetDeletionTimestamp() != new.GetDeletionTimestamp() ||
-				//	old.GetGeneration() != new.GetGeneration() {
-				//	return true
-				//}
+				objectsEquals, err := objectmatch.Match(e.ObjectOld, e.ObjectNew)
+				if err != nil {
+					log.Error(err, "could not match objects", "kind", e.ObjectOld.GetObjectKind())
+				} else if objectsEquals {
+					return false
+				}
 				return true
 			},
 		})
