@@ -91,14 +91,14 @@ REMOTE_KUBECONFIG_FILE=$(docs/federation/example/generate-kubeconfig.sh)
 
 ```bash
 kubectl config use-context ${CONTEXT_CENTRAL}
-kubectl create secret generic remote-cluster --from-file ${REMOTE_KUBECONFIG_FILE} -n istio-system
+kubectl create secret generic remoteistio-sample --from-file ${REMOTE_KUBECONFIG_FILE} -n istio-system
 rm -f ${REMOTE_KUBECONFIG_FILE}
 ```
 
 ### The added secret must be labeled for Istio
 
 ```bash
-kubectl label secret remote-cluster istio/multiCluster=true -n istio-system
+kubectl label secret remoteistio-sample istio/multiCluster=true -n istio-system
 ```
 
 ### Create the Istio remote config on the central cluster and label the default namespace for auto sidecar injection on the remote cluster as well
@@ -118,7 +118,6 @@ NAME                    READY   STATUS    RESTARTS   AGE
 echo-59d4b7c4cb-v29zb   2/2     Running   0          1m
 
 kubectl config use-context ${CONTEXT_REMOTE}
-kubectl label namespace default istio-injection=enabled
 kubectl apply -f docs/federation/example/echo-service.yml
 
 kubectl get pods

@@ -110,6 +110,8 @@ func (r *ReconcileRemoteConfig) Reconcile(request reconcile.Request) (reconcile.
 		return reconcile.Result{}, nil
 	}
 
+	// Set default values where not set
+	istiov1beta1.SetRemoteIstioDefaults(remoteConfig)
 	result, err := r.reconcile(remoteConfig)
 	if err != nil {
 		updateErr := r.updateRemoteConfigStatus(remoteConfig, istiov1beta1.ReconcileFailed, err.Error())

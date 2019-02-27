@@ -5,6 +5,8 @@ metadata:
     controller-tools.k8s.io: "1.0"
   name: remoteistio-sample
 spec:
+  autoInjectionNamespaces:
+  - "default"
   includeIPRanges: "*"
   excludeIPRanges: ""
   enabledServices:
@@ -19,3 +21,7 @@ spec:
   - name: "zipkin"
     labelSelector: "app=jaeger"
   controlPlaneSecurityEnabled: true
+  citadel:
+      replicaCount: 1
+  sidecarInjector:
+      replicaCount: 1
