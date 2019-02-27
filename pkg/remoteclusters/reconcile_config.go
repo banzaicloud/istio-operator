@@ -19,9 +19,10 @@ package remoteclusters
 import (
 	"context"
 
-	istiov1beta1 "github.com/banzaicloud/istio-operator/pkg/apis/istio/v1beta1"
 	k8sapierrors "k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/types"
+
+	istiov1beta1 "github.com/banzaicloud/istio-operator/pkg/apis/istio/v1beta1"
 )
 
 const ConfigName = "istio-config"
@@ -43,6 +44,8 @@ func (c *Cluster) reconcileConfig(remoteConfig *istiov1beta1.RemoteIstio) error 
 		istioConfig.Namespace = remoteConfig.Namespace
 		istioConfig.Spec.AutoInjectionNamespaces = remoteConfig.Spec.AutoInjectionNamespaces
 		istioConfig.Spec.ControlPlaneSecurityEnabled = remoteConfig.Spec.ControlPlaneSecurityEnabled
+		istioConfig.Spec.Citadel.ReplicaCount = remoteConfig.Spec.Citadel.ReplicaCount
+		istioConfig.Spec.SidecarInjector.ReplicaCount = remoteConfig.Spec.SidecarInjector.ReplicaCount
 		err = c.ctrlRuntimeClient.Create(context.TODO(), &istioConfig)
 		if err != nil {
 			return err
@@ -50,6 +53,8 @@ func (c *Cluster) reconcileConfig(remoteConfig *istiov1beta1.RemoteIstio) error 
 	} else {
 		istioConfig.Spec.AutoInjectionNamespaces = remoteConfig.Spec.AutoInjectionNamespaces
 		istioConfig.Spec.ControlPlaneSecurityEnabled = remoteConfig.Spec.ControlPlaneSecurityEnabled
+		istioConfig.Spec.Citadel.ReplicaCount = remoteConfig.Spec.Citadel.ReplicaCount
+		istioConfig.Spec.SidecarInjector.ReplicaCount = remoteConfig.Spec.SidecarInjector.ReplicaCount
 		err = c.ctrlRuntimeClient.Update(context.TODO(), &istioConfig)
 		if err != nil {
 			return err

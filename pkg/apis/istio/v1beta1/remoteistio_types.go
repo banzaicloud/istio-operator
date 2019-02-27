@@ -51,6 +51,10 @@ type RemoteIstioSpec struct {
 	AutoInjectionNamespaces []string `json:"autoInjectionNamespaces,omitempty"`
 	// ControlPlaneSecurityEnabled control plane services are communicating through mTLS
 	ControlPlaneSecurityEnabled bool `json:"controlPlaneSecurityEnabled,omitempty"`
+	// Citadel configuration options
+	Citadel CitadelConfiguration `json:"citadel,omitempty"`
+	// SidecarInjector configuration options
+	SidecarInjector SidecarInjectorConfiguration `json:"sidecarInjector,omitempty"`
 
 	signCert SignCert
 }
@@ -86,4 +90,18 @@ type RemoteIstioList struct {
 
 func init() {
 	SchemeBuilder.Register(&RemoteIstio{}, &RemoteIstioList{})
+}
+
+func SetRemoteIstioDefaults(remoteconfig *RemoteIstio) {
+	if remoteconfig.Spec.IncludeIPRanges == "" {
+		remoteconfig.Spec.IncludeIPRanges = defaultIncludeIPRanges
+	}
+	// Citadel config
+	if remoteconfig.Spec.Citadel.ReplicaCount == 0 {
+		remoteconfig.Spec.Citadel.ReplicaCount = defaultReplicaCount
+	}
+	// SidecarInjector config
+	if remoteconfig.Spec.SidecarInjector.ReplicaCount == 0 {
+		remoteconfig.Spec.SidecarInjector.ReplicaCount = defaultReplicaCount
+	}
 }

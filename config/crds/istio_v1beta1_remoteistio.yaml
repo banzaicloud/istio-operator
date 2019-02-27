@@ -36,6 +36,13 @@ spec:
               items:
                 type: string
               type: array
+            citadel:
+              description: Citadel configuration options
+              properties:
+                replicaCount:
+                  format: int32
+                  type: integer
+              type: object
             controlPlaneSecurityEnabled:
               description: ControlPlaneSecurityEnabled control plane services are
                 communicating through mTLS
@@ -60,6 +67,13 @@ spec:
               type: string
             includeIPRanges:
               type: string
+            sidecarInjector:
+              description: SidecarInjector configuration options
+              properties:
+                replicaCount:
+                  format: int32
+                  type: integer
+              type: object
           required:
           - enabledServices
           type: object

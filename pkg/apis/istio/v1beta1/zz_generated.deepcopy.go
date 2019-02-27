@@ -304,6 +304,8 @@ func (in *RemoteIstioSpec) DeepCopyInto(out *RemoteIstioSpec) {
 		*out = make([]string, len(*in))
 		copy(*out, *in)
 	}
+	out.Citadel = in.Citadel
+	out.SidecarInjector = in.SidecarInjector
 	in.signCert.DeepCopyInto(&out.signCert)
 	return
 }
