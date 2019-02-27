@@ -19,11 +19,13 @@ package remoteclusters
 import (
 	"context"
 
-	istiov1beta1 "github.com/banzaicloud/istio-operator/pkg/apis/istio/v1beta1"
 	corev1 "k8s.io/api/core/v1"
 	k8sapierrors "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"sigs.k8s.io/controller-runtime/pkg/client"
+
+	istiov1beta1 "github.com/banzaicloud/istio-operator/pkg/apis/istio/v1beta1"
+	"github.com/banzaicloud/istio-operator/pkg/util"
 )
 
 func (c *Cluster) reconcileSignCert(remoteConfig *istiov1beta1.RemoteIstio) error {
@@ -57,10 +59,12 @@ func (c *Cluster) reconcileSignCert(remoteConfig *istiov1beta1.RemoteIstio) erro
 		}
 		secret.SetOwnerReferences([]metav1.OwnerReference{
 			{
-				Kind:       c.istioConfig.Kind,
-				APIVersion: c.istioConfig.APIVersion,
-				Name:       c.istioConfig.Name,
-				UID:        c.istioConfig.GetUID(),
+				Kind:               c.istioConfig.Kind,
+				APIVersion:         c.istioConfig.APIVersion,
+				Name:               c.istioConfig.Name,
+				UID:                c.istioConfig.GetUID(),
+				Controller:         util.BoolPointer(true),
+				BlockOwnerDeletion: util.BoolPointer(true),
 			},
 		})
 		err = c.ctrlRuntimeClient.Create(context.TODO(), &secret)

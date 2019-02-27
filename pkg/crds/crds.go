@@ -30,6 +30,7 @@ import (
 
 	istiov1beta1 "github.com/banzaicloud/istio-operator/pkg/apis/istio/v1beta1"
 	"github.com/banzaicloud/istio-operator/pkg/k8sutil/objectmatch"
+	"github.com/banzaicloud/istio-operator/pkg/util"
 )
 
 const (
@@ -191,10 +192,12 @@ func (r *CrdOperator) Reconcile(config *istiov1beta1.Istio, log logr.Logger) err
 			if config.Name != "" {
 				crd.ObjectMeta.OwnerReferences = []metav1.OwnerReference{
 					{
-						Kind:       config.Kind,
-						APIVersion: config.APIVersion,
-						Name:       config.Name,
-						UID:        config.GetUID(),
+						Kind:               config.Kind,
+						APIVersion:         config.APIVersion,
+						Name:               config.Name,
+						UID:                config.GetUID(),
+						Controller:         util.BoolPointer(true),
+						BlockOwnerDeletion: util.BoolPointer(true),
 					},
 				}
 			}

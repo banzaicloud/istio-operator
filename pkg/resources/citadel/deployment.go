@@ -101,7 +101,7 @@ func (r *Reconciler) deployment() runtime.Object {
 	var deployment = &appsv1.Deployment{
 		ObjectMeta: templates.ObjectMeta(deploymentName, util.MergeLabels(citadelLabels, labelSelector), r.Config),
 		Spec: appsv1.DeploymentSpec{
-			Replicas: util.IntPointer(r.Config.Spec.Citadel.ReplicaCount),
+			Replicas: &r.Config.Spec.Citadel.ReplicaCount,
 			Selector: &metav1.LabelSelector{
 				MatchLabels: labelSelector,
 			},

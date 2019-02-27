@@ -18,7 +18,6 @@ package pilot
 
 import (
 	"github.com/banzaicloud/istio-operator/pkg/resources/templates"
-	"github.com/banzaicloud/istio-operator/pkg/util"
 	autoscalev2beta1 "k8s.io/api/autoscaling/v2beta1"
 	"k8s.io/apimachinery/pkg/runtime"
 )
@@ -28,7 +27,7 @@ func (r *Reconciler) horizontalPodAutoscaler() runtime.Object {
 		ObjectMeta: templates.ObjectMeta(hpaName, nil, r.Config),
 		Spec: autoscalev2beta1.HorizontalPodAutoscalerSpec{
 			MaxReplicas: r.Config.Spec.Pilot.MaxReplicas,
-			MinReplicas: util.IntPointer(r.Config.Spec.Pilot.MinReplicas),
+			MinReplicas: &r.Config.Spec.Pilot.MinReplicas,
 			ScaleTargetRef: autoscalev2beta1.CrossVersionObjectReference{
 				Name:       deploymentName,
 				Kind:       "Deployment",
