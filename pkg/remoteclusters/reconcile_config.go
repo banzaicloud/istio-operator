@@ -19,17 +19,17 @@ package remoteclusters
 import (
 	"context"
 
-	istiov1beta1 "github.com/banzaicloud/istio-operator/pkg/apis/operator/v1beta1"
+	istiov1beta1 "github.com/banzaicloud/istio-operator/pkg/apis/istio/v1beta1"
 	k8sapierrors "k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/types"
 )
 
 const ConfigName = "istio-config"
 
-func (c *Cluster) reconcileConfig(remoteConfig *istiov1beta1.RemoteConfig) error {
+func (c *Cluster) reconcileConfig(remoteConfig *istiov1beta1.RemoteIstio) error {
 	c.log.Info("reconciling config")
 
-	var istioConfig istiov1beta1.Config
+	var istioConfig istiov1beta1.Istio
 	err := c.ctrlRuntimeClient.Get(context.TODO(), types.NamespacedName{
 		Name:      ConfigName,
 		Namespace: remoteConfig.Namespace,

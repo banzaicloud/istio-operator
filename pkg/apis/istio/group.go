@@ -14,10 +14,5 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-// Package v1beta1 contains API Schema definitions for the istio v1beta1 API group
-// +k8s:openapi-gen=true
-// +k8s:deepcopy-gen=package,register
-// +k8s:conversion-gen=github.com/banzaicloud/istio-operator/pkg/apis/istio
-// +k8s:defaulter-gen=TypeMeta
-// +groupName=operator.istio.io
-package v1beta1
+// Package istio contains istio API versions
+package istio

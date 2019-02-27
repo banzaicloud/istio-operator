@@ -17,11 +17,11 @@ limitations under the License.
 package templates
 
 import (
-	istiov1beta1 "github.com/banzaicloud/istio-operator/pkg/apis/operator/v1beta1"
+	istiov1beta1 "github.com/banzaicloud/istio-operator/pkg/apis/istio/v1beta1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
-func ObjectMeta(name string, labels map[string]string, config *istiov1beta1.Config) metav1.ObjectMeta {
+func ObjectMeta(name string, labels map[string]string, config *istiov1beta1.Istio) metav1.ObjectMeta {
 	o := metav1.ObjectMeta{
 		Name:      name,
 		Namespace: config.Namespace,
@@ -38,7 +38,7 @@ func ObjectMeta(name string, labels map[string]string, config *istiov1beta1.Conf
 	return o
 }
 
-func ObjectMetaClusterScope(name string, labels map[string]string, config *istiov1beta1.Config) metav1.ObjectMeta {
+func ObjectMetaClusterScope(name string, labels map[string]string, config *istiov1beta1.Istio) metav1.ObjectMeta {
 	o := metav1.ObjectMeta{
 		Name:   name,
 		Labels: labels,

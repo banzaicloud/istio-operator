@@ -17,7 +17,7 @@ limitations under the License.
 package resources
 
 import (
-	istiov1beta1 "github.com/banzaicloud/istio-operator/pkg/apis/operator/v1beta1"
+	istiov1beta1 "github.com/banzaicloud/istio-operator/pkg/apis/istio/v1beta1"
 	"github.com/banzaicloud/istio-operator/pkg/k8sutil"
 	"github.com/go-logr/logr"
 	"k8s.io/apimachinery/pkg/runtime"
@@ -26,7 +26,7 @@ import (
 
 type Reconciler struct {
 	client.Client
-	Config *istiov1beta1.Config
+	Config *istiov1beta1.Istio
 }
 
 type ComponentReconciler interface {

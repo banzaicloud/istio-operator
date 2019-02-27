@@ -25,20 +25,24 @@ import (
 	"k8s.io/apimachinery/pkg/types"
 )
 
-func TestStorageConfig(t *testing.T) {
+func TestStorageRemoteIstio(t *testing.T) {
 	key := types.NamespacedName{
 		Name:      "foo",
 		Namespace: "default",
 	}
-	created := &Config{
+	created := &RemoteIstio{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      "foo",
 			Namespace: "default",
-		}}
+		},
+		Spec: RemoteIstioSpec{
+			EnabledServices: []IstioService{},
+		},
+	}
 	g := gomega.NewGomegaWithT(t)
 
 	// Test Create
-	fetched := &Config{}
+	fetched := &RemoteIstio{}
 	g.Expect(c.Create(context.TODO(), created)).NotTo(gomega.HaveOccurred())
 
 	g.Expect(c.Get(context.TODO(), key, fetched)).NotTo(gomega.HaveOccurred())

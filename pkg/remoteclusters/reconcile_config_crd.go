@@ -17,13 +17,14 @@ limitations under the License.
 package remoteclusters
 
 import (
-	istiov1beta1 "github.com/banzaicloud/istio-operator/pkg/apis/operator/v1beta1"
-	"github.com/banzaicloud/istio-operator/pkg/crds"
 	extensionsobj "k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1beta1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+
+	istiov1beta1 "github.com/banzaicloud/istio-operator/pkg/apis/istio/v1beta1"
+	"github.com/banzaicloud/istio-operator/pkg/crds"
 )
 
-func (c *Cluster) reconcileConfigCrd(remoteConfig *istiov1beta1.RemoteConfig) error {
+func (c *Cluster) reconcileConfigCrd(remoteConfig *istiov1beta1.RemoteIstio) error {
 	c.log.Info("reconciling config crd")
 
 	crdo, err := crds.New(c.restConfig, []*extensionsobj.CustomResourceDefinition{
@@ -33,7 +34,7 @@ func (c *Cluster) reconcileConfigCrd(remoteConfig *istiov1beta1.RemoteConfig) er
 		return err
 	}
 
-	err = crdo.Reconcile(&istiov1beta1.Config{}, c.log)
+	err = crdo.Reconcile(&istiov1beta1.Istio{}, c.log)
 	if err != nil {
 		return err
 	}
@@ -50,20 +51,20 @@ func (c *Cluster) reconcileConfigCrd(remoteConfig *istiov1beta1.RemoteConfig) er
 func (c *Cluster) configcrd() *extensionsobj.CustomResourceDefinition {
 	return &extensionsobj.CustomResourceDefinition{
 		ObjectMeta: metav1.ObjectMeta{
-			Name: "configs.operator.istio.io",
+			Name: "istios.istio.banzaicloud.io",
 			Labels: map[string]string{
 				"controller-tools.k8s.io": "1.0",
 			},
 		},
 		Spec: extensionsobj.CustomResourceDefinitionSpec{
-			Group:   "operator.istio.io",
+			Group:   "istio.banzaicloud.io",
 			Version: "v1beta1",
 			Scope:   "Namespaced",
 			Names: extensionsobj.CustomResourceDefinitionNames{
-				Plural:   "configs",
-				Kind:     "Config",
-				ListKind: "ConfigList",
-				Singular: "config",
+				Singular: "istio",
+				Plural:   "istios",
+				Kind:     "Istio",
+				ListKind: "IstioList",
 			},
 		},
 	}

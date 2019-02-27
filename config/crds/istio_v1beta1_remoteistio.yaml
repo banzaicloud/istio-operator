@@ -4,12 +4,12 @@ metadata:
   creationTimestamp: null
   labels:
     controller-tools.k8s.io: "1.0"
-  name: remoteconfigs.operator.istio.io
+  name: remoteistios.istio.banzaicloud.io
 spec:
-  group: operator.istio.io
+  group: istio.banzaicloud.io
   names:
-    kind: RemoteConfig
-    plural: remoteconfigs
+    kind: RemoteIstio
+    plural: remoteistios
   scope: Namespaced
   subresources:
     status: {}

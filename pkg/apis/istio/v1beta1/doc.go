@@ -14,13 +14,10 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package controller
-
-import (
-	"github.com/banzaicloud/istio-operator/pkg/controller/remoteconfig"
-)
-
-func init() {
-	// AddToManagerWithCMFuncs is a list of functions to create controllers and add them to a manager.
-	AddToManagerWithCMFuncs = append(AddToManagerWithCMFuncs, remoteconfig.Add)
-}
+// Package v1beta1 contains API Schema definitions for the istio v1beta1 API group
+// +k8s:openapi-gen=true
+// +k8s:deepcopy-gen=package,register
+// +k8s:conversion-gen=github.com/banzaicloud/istio-operator/pkg/apis/istio
+// +k8s:defaulter-gen=TypeMeta
+// +groupName=istio.banzaicloud.io
+package v1beta1

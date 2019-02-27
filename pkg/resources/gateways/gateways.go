@@ -19,7 +19,7 @@ package gateways
 import (
 	"fmt"
 
-	istiov1beta1 "github.com/banzaicloud/istio-operator/pkg/apis/operator/v1beta1"
+	istiov1beta1 "github.com/banzaicloud/istio-operator/pkg/apis/istio/v1beta1"
 	"github.com/banzaicloud/istio-operator/pkg/k8sutil"
 	"github.com/banzaicloud/istio-operator/pkg/resources"
 	"github.com/banzaicloud/istio-operator/pkg/util"
@@ -36,7 +36,7 @@ type Reconciler struct {
 	resources.Reconciler
 }
 
-func New(client client.Client, config *istiov1beta1.Config) *Reconciler {
+func New(client client.Client, config *istiov1beta1.Istio) *Reconciler {
 	return &Reconciler{
 		Reconciler: resources.Reconciler{
 			Client: client,

@@ -14,13 +14,13 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package config
+package istio
 
 import (
 	"context"
 	"reflect"
 
-	istiov1beta1 "github.com/banzaicloud/istio-operator/pkg/apis/operator/v1beta1"
+	istiov1beta1 "github.com/banzaicloud/istio-operator/pkg/apis/istio/v1beta1"
 	"github.com/banzaicloud/istio-operator/pkg/crds"
 	"github.com/banzaicloud/istio-operator/pkg/resources"
 	"github.com/banzaicloud/istio-operator/pkg/resources/citadel"
@@ -86,7 +86,7 @@ func add(mgr manager.Manager, r reconcile.Reconciler) error {
 	}
 
 	// Watch for changes to Config
-	err = c.Watch(&source.Kind{Type: &istiov1beta1.Config{}}, &handler.EnqueueRequestForObject{}, watchPredicateForConfig())
+	err = c.Watch(&source.Kind{Type: &istiov1beta1.Istio{}}, &handler.EnqueueRequestForObject{}, watchPredicateForConfig())
 	if err != nil {
 		return err
 	}
@@ -103,20 +103,20 @@ type ReconcileConfig struct {
 	crdOperator *crds.CrdOperator
 }
 
-type ReconcileComponent func(log logr.Logger, istio *istiov1beta1.Config) error
+type ReconcileComponent func(log logr.Logger, istio *istiov1beta1.Istio) error
 
 // Reconcile reads that state of the cluster for a Config object and makes changes based on the state read
 // and what is in the Config.Spec
 // Automatically generate RBAC rules to allow the Controller to read and write Deployments
 // +kubebuilder:rbac:groups=apps,resources=deployments,verbs=get;list;watch;create;update;patch;delete
 // +kubebuilder:rbac:groups=apps,resources=deployments/status,verbs=get;update;patch
-// +kubebuilder:rbac:groups=operator.operator.io,resources=configs,verbs=get;list;watch;create;update;patch;delete
-// +kubebuilder:rbac:groups=operator.operator.io,resources=configs/status,verbs=get;update;patch
+// +kubebuilder:rbac:groups=istio.banzaicloud.io,resources=istios,verbs=get;list;watch;create;update;patch;delete
+// +kubebuilder:rbac:groups=istio.banzaicloud.io,resources=istios/status,verbs=get;update;patch
 func (r *ReconcileConfig) Reconcile(request reconcile.Request) (reconcile.Result, error) {
 	logger := log.WithValues("trigger", request.Namespace+"/"+request.Name)
 	logger.Info("Reconciling Istio")
 	// Fetch the Config instance
-	config := &istiov1beta1.Config{}
+	config := &istiov1beta1.Istio{}
 	err := r.Get(context.TODO(), request.NamespacedName, config)
 	if err != nil {
 		if apierrors.IsNotFound(err) {
@@ -141,7 +141,7 @@ func (r *ReconcileConfig) Reconcile(request reconcile.Request) (reconcile.Result
 	return reconcile.Result{}, nil
 }
 
-func (r *ReconcileConfig) reconcile(logger logr.Logger, config *istiov1beta1.Config) (reconcile.Result, error) {
+func (r *ReconcileConfig) reconcile(logger logr.Logger, config *istiov1beta1.Istio) (reconcile.Result, error) {
 
 	if config.Status.Status == "" {
 		err := r.updateStatus(config, istiov1beta1.Created, "")
@@ -230,8 +230,8 @@ func watchPredicateForConfig() predicate.Funcs {
 			return true
 		},
 		UpdateFunc: func(e event.UpdateEvent) bool {
-			old := e.ObjectOld.(*istiov1beta1.Config)
-			new := e.ObjectNew.(*istiov1beta1.Config)
+			old := e.ObjectOld.(*istiov1beta1.Istio)
+			new := e.ObjectNew.(*istiov1beta1.Istio)
 			if !reflect.DeepEqual(old.Spec, new.Spec) ||
 				old.GetDeletionTimestamp() != new.GetDeletionTimestamp() ||
 				old.GetGeneration() != new.GetGeneration() {
@@ -242,7 +242,7 @@ func watchPredicateForConfig() predicate.Funcs {
 	}
 }
 
-func (r *ReconcileConfig) updateStatus(config *istiov1beta1.Config, status istiov1beta1.ConfigState, errorMessage string) error {
+func (r *ReconcileConfig) updateStatus(config *istiov1beta1.Istio, status istiov1beta1.ConfigState, errorMessage string) error {
 	typeMeta := config.TypeMeta
 	config.Status.Status = status
 	config.Status.ErrorMessage = errorMessage

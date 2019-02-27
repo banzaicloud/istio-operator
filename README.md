@@ -41,12 +41,11 @@ The operator (`master` branch) installs the 1.0.5 version of Istio, and requires
 As a pre-requisite it needs a Kubernetes cluster (you can create one using [Pipeline](https://github.com/banzaicloud/pipeline)).
 
 1. Set `KUBECONFIG` pointing towards your cluster
-2. Run `make vendor`
 3. Run `make deploy` (deploys the operator in the `istio-system` namespace to the cluster)
-4. Set your Istio configurations in a  Kubernetes custom resource (sample: `config/samples/operator_v1beta1_config.yaml`) and run this command to deploy the Istio components:
+4. Set your Istio configurations in a  Kubernetes custom resource (sample: `config/samples/istio_v1beta1_istio.yaml`) and run this command to deploy the Istio components:
 
 ```
-kubectl create -n istio-system -f config/samples/operator_v1beta1_config.yaml
+kubectl create -n istio-system -f config/samples/istio_v1beta1_istio.yaml
 ```
 
 ## Multi-cluster federation

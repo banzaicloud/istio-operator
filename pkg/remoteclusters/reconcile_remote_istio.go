@@ -17,13 +17,13 @@ limitations under the License.
 package remoteclusters
 
 import (
-	istiov1beta1 "github.com/banzaicloud/istio-operator/pkg/apis/operator/v1beta1"
+	istiov1beta1 "github.com/banzaicloud/istio-operator/pkg/apis/istio/v1beta1"
 	"github.com/banzaicloud/istio-operator/pkg/resources/citadel"
 	"github.com/banzaicloud/istio-operator/pkg/resources/common"
 	"github.com/banzaicloud/istio-operator/pkg/resources/sidecarinjector"
 )
 
-func (c *Cluster) reconcileDeployment(remoteConfig *istiov1beta1.RemoteConfig) error {
+func (c *Cluster) reconcileDeployment(remoteConfig *istiov1beta1.RemoteIstio) error {
 	c.log.Info("reconciling deployment")
 
 	commonReconciler := common.New(c.ctrlRuntimeClient, c.istioConfig)

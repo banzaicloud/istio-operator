@@ -38,13 +38,12 @@ gcloud compute firewall-rules create istio-multicluster-remote-test \
   --target-tags="${ALL_CLUSTER_NETTAGS}" --quiet
 ```
 
-### Install the operator onto the central cluster and label the default namespace for auto sidecar injection
+### Install the operator onto the central cluster and enable auto sidecar injection in the default namespace (the operator will do this for you if it's set in the `spec`)
 
 ```bash
 kubectl config use-context ${CONTEXT_CENTRAL}
 make deploy
-kubectl create -n istio-system -f config/samples/operator_v1beta1_config.yaml
-kubectl label namespace default istio-injection=enabled
+kubectl create -n istio-system -f config/samples/istio_v1beta1_istio.yaml
 ```
 
 #### Additional RBAC permissions maybe needed if the deployment of the operator fails
@@ -105,7 +104,7 @@ kubectl label secret remote-cluster istio/multiCluster=true -n istio-system
 ### Create the Istio remote config on the central cluster and label the default namespace for auto sidecar injection on the remote cluster as well
 
 ```bash
-kubectl create -n istio-system -f config/samples/operator_v1beta1_remoteconfig.yaml
+kubectl create -n istio-system -f config/samples/istio_v1beta1_remoteistio.yaml
 ```
 
 ### Add a simple test echo-service onto both clusters

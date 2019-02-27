@@ -14,7 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package remoteconfig
+package remoteistio
 
 import (
 	"context"
@@ -38,8 +38,8 @@ import (
 	logf "sigs.k8s.io/controller-runtime/pkg/runtime/log"
 	"sigs.k8s.io/controller-runtime/pkg/source"
 
-	istiov1beta1 "github.com/banzaicloud/istio-operator/pkg/apis/operator/v1beta1"
-	operatorv1beta1 "github.com/banzaicloud/istio-operator/pkg/apis/operator/v1beta1"
+	istiov1beta1 "github.com/banzaicloud/istio-operator/pkg/apis/istio/v1beta1"
+	operatorv1beta1 "github.com/banzaicloud/istio-operator/pkg/apis/istio/v1beta1"
 	"github.com/banzaicloud/istio-operator/pkg/remoteclusters"
 )
 
@@ -71,7 +71,7 @@ func add(mgr manager.Manager, r reconcile.Reconciler) error {
 	}
 
 	// Watch for changes to RemoteConfig
-	err = c.Watch(&source.Kind{Type: &operatorv1beta1.RemoteConfig{}}, &handler.EnqueueRequestForObject{}, getWatchPredicateForRemoteConfig())
+	err = c.Watch(&source.Kind{Type: &operatorv1beta1.RemoteIstio{}}, &handler.EnqueueRequestForObject{}, getWatchPredicateForRemoteConfig())
 	if err != nil {
 		return err
 	}
@@ -94,10 +94,10 @@ type ReconcileRemoteConfig struct {
 // Automatically generate RBAC rules to allow the Controller to read and write Deployments
 // +kubebuilder:rbac:groups=apps,resources=deployments,verbs=get;list;watch;create;update;patch;delete
 // +kubebuilder:rbac:groups=apps,resources=deployments/status,verbs=get;update;patch
-// +kubebuilder:rbac:groups=operator.istio.io,resources=remoteconfigs,verbs=get;list;watch;create;update;patch;delete
-// +kubebuilder:rbac:groups=operator.istio.io,resources=remoteconfigs/status,verbs=get;update;patch
+// +kubebuilder:rbac:groups=istio.banzaicloud.io,resources=remoteistios,verbs=get;list;watch;create;update;patch;delete
+// +kubebuilder:rbac:groups=istio.banzaicloud.io,resources=remoteistios/status,verbs=get;update;patch
 func (r *ReconcileRemoteConfig) Reconcile(request reconcile.Request) (reconcile.Result, error) {
-	remoteConfig := &operatorv1beta1.RemoteConfig{}
+	remoteConfig := &operatorv1beta1.RemoteIstio{}
 	err := r.Get(context.TODO(), request.NamespacedName, remoteConfig)
 	if err != nil {
 		if !k8serrors.IsNotFound(err) {
@@ -123,7 +123,7 @@ func (r *ReconcileRemoteConfig) Reconcile(request reconcile.Request) (reconcile.
 	return result, nil
 }
 
-func (r *ReconcileRemoteConfig) reconcile(remoteConfig *istiov1beta1.RemoteConfig) (reconcile.Result, error) {
+func (r *ReconcileRemoteConfig) reconcile(remoteConfig *istiov1beta1.RemoteIstio) (reconcile.Result, error) {
 	var err error
 
 	log := log.WithValues("cluster", remoteConfig.Name)
@@ -213,7 +213,7 @@ func (r *ReconcileRemoteConfig) reconcile(remoteConfig *istiov1beta1.RemoteConfi
 	return reconcile.Result{}, nil
 }
 
-func (r *ReconcileRemoteConfig) updateRemoteConfigStatus(remoteConfig *istiov1beta1.RemoteConfig, status istiov1beta1.ConfigState, errorMessage string) error {
+func (r *ReconcileRemoteConfig) updateRemoteConfigStatus(remoteConfig *istiov1beta1.RemoteIstio, status istiov1beta1.ConfigState, errorMessage string) error {
 	typeMeta := remoteConfig.TypeMeta
 	remoteConfig.Status.Status = status
 	remoteConfig.Status.ErrorMessage = errorMessage
@@ -245,7 +245,7 @@ func (r *ReconcileRemoteConfig) updateRemoteConfigStatus(remoteConfig *istiov1be
 	return nil
 }
 
-func (r *ReconcileRemoteConfig) populateSignCerts(remoteConfig *istiov1beta1.RemoteConfig) (*istiov1beta1.RemoteConfig, error) {
+func (r *ReconcileRemoteConfig) populateSignCerts(remoteConfig *istiov1beta1.RemoteIstio) (*istiov1beta1.RemoteIstio, error) {
 	var secret corev1.Secret
 	err := r.Get(context.TODO(), client.ObjectKey{
 		Namespace: remoteConfig.Namespace,
@@ -265,7 +265,7 @@ func (r *ReconcileRemoteConfig) populateSignCerts(remoteConfig *istiov1beta1.Rem
 	return remoteConfig, nil
 }
 
-func (r *ReconcileRemoteConfig) populateEnabledServicePodIPs(remoteConfig *istiov1beta1.RemoteConfig) (*istiov1beta1.RemoteConfig, error) {
+func (r *ReconcileRemoteConfig) populateEnabledServicePodIPs(remoteConfig *istiov1beta1.RemoteIstio) (*istiov1beta1.RemoteIstio, error) {
 	var pods corev1.PodList
 
 	for i, svc := range remoteConfig.Spec.EnabledServices {
@@ -295,7 +295,7 @@ func (r *ReconcileRemoteConfig) populateEnabledServicePodIPs(remoteConfig *istio
 	return remoteConfig, nil
 }
 
-func (r *ReconcileRemoteConfig) getRemoteCluster(remoteConfig *istiov1beta1.RemoteConfig) (*remoteclusters.Cluster, error) {
+func (r *ReconcileRemoteConfig) getRemoteCluster(remoteConfig *istiov1beta1.RemoteIstio) (*remoteclusters.Cluster, error) {
 	k8sconfig, err := r.getK8SConfigForCluster(remoteConfig.ObjectMeta.Namespace, remoteConfig.Name)
 	if err != nil {
 		return nil, err
@@ -341,8 +341,8 @@ func getWatchPredicateForRemoteConfig() predicate.Funcs {
 			return true
 		},
 		UpdateFunc: func(e event.UpdateEvent) bool {
-			old := e.ObjectOld.(*istiov1beta1.RemoteConfig)
-			new := e.ObjectNew.(*istiov1beta1.RemoteConfig)
+			old := e.ObjectOld.(*istiov1beta1.RemoteIstio)
+			new := e.ObjectNew.(*istiov1beta1.RemoteIstio)
 			if !reflect.DeepEqual(old.Spec, new.Spec) ||
 				old.GetDeletionTimestamp() != new.GetDeletionTimestamp() ||
 				old.GetGeneration() != new.GetGeneration() {

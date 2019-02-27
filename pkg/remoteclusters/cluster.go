@@ -27,7 +27,7 @@ import (
 	"k8s.io/client-go/tools/clientcmd"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
-	istiov1beta1 "github.com/banzaicloud/istio-operator/pkg/apis/operator/v1beta1"
+	istiov1beta1 "github.com/banzaicloud/istio-operator/pkg/apis/istio/v1beta1"
 )
 
 type Cluster struct {
@@ -38,8 +38,8 @@ type Cluster struct {
 	restConfig        *rest.Config
 	ctrlRuntimeClient client.Client
 	dynamicClient     dynamic.Interface
-	istioConfig       *istiov1beta1.Config
-	remoteConfig      *istiov1beta1.RemoteConfig
+	istioConfig       *istiov1beta1.Istio
+	remoteConfig      *istiov1beta1.RemoteIstio
 }
 
 func NewCluster(name string, config []byte, log logr.Logger) (*Cluster, error) {
@@ -83,10 +83,10 @@ func (c *Cluster) initK8SClients() error {
 	return nil
 }
 
-func (c *Cluster) Reconcile(remoteConfig *istiov1beta1.RemoteConfig) error {
+func (c *Cluster) Reconcile(remoteConfig *istiov1beta1.RemoteIstio) error {
 	c.log.Info("reconciling remote istio")
 
-	var ReconcilerFuncs []func(remoteConfig *istiov1beta1.RemoteConfig) error
+	var ReconcilerFuncs []func(remoteConfig *istiov1beta1.RemoteIstio) error
 
 	ReconcilerFuncs = append(ReconcilerFuncs,
 		c.reconcileConfigCrd,
@@ -108,7 +108,7 @@ func (c *Cluster) Reconcile(remoteConfig *istiov1beta1.RemoteConfig) error {
 	return nil
 }
 
-func (c *Cluster) GetRemoteConfig() *istiov1beta1.RemoteConfig {
+func (c *Cluster) GetRemoteConfig() *istiov1beta1.RemoteIstio {
 	return c.remoteConfig
 }
 

@@ -14,7 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package remoteconfig
+package remoteistio
 
 import (
 	"testing"
@@ -22,7 +22,7 @@ import (
 
 	"github.com/banzaicloud/istio-operator/pkg/remoteclusters"
 
-	operatorv1beta1 "github.com/banzaicloud/istio-operator/pkg/apis/operator/v1beta1"
+	operatorv1beta1 "github.com/banzaicloud/istio-operator/pkg/apis/istio/v1beta1"
 	"github.com/onsi/gomega"
 	"golang.org/x/net/context"
 	appsv1 "k8s.io/api/apps/v1"
@@ -43,7 +43,7 @@ const timeout = time.Second * 5
 
 func AATestReconcile(t *testing.T) {
 	g := gomega.NewGomegaWithT(t)
-	instance := &operatorv1beta1.RemoteConfig{ObjectMeta: metav1.ObjectMeta{Name: "foo", Namespace: "default"}}
+	instance := &operatorv1beta1.RemoteIstio{ObjectMeta: metav1.ObjectMeta{Name: "foo", Namespace: "default"}}
 
 	// Setup the Manager and Controller.  Wrap the Controller Reconcile function so it writes each request to a
 	// channel when it is finished.

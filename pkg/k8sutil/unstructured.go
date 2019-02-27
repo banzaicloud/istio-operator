@@ -28,7 +28,7 @@ import (
 	"k8s.io/apimachinery/pkg/runtime/schema"
 	"k8s.io/client-go/dynamic"
 
-	istiov1beta1 "github.com/banzaicloud/istio-operator/pkg/apis/operator/v1beta1"
+	istiov1beta1 "github.com/banzaicloud/istio-operator/pkg/apis/istio/v1beta1"
 )
 
 type DesiredState string
@@ -45,7 +45,7 @@ type DynamicObject struct {
 	Spec      map[string]interface{}
 	Gvr       schema.GroupVersionResource
 	Kind      string
-	Owner     *istiov1beta1.Config
+	Owner     *istiov1beta1.Istio
 }
 
 func (d *DynamicObject) Reconcile(log logr.Logger, client dynamic.Interface, desiredState DesiredState) error {

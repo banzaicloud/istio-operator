@@ -19,8 +19,8 @@ Watch the operator's logs with:
 
 `kubectl logs -f -n istio-system istio-operator-controller-manager-0 manager`
 
-Create CR and let the operator set up Istio in your cluster (you can change the `spec` of the `Config` for your needs in the yaml file):
+Create CR and let the operator set up Istio in your cluster (you can change the `spec` of `Istio` for your needs in the yaml file):
 
-`kubectl create -n istio-system -f config/samples/operator_v1beta1_config.yaml`
+`kubectl create -n istio-system -f config/samples/istio_v1beta1_istio.yaml`
 
 You should be able to setup Istio's [Bookinfo Application](https://istio.io/docs/examples/bookinfo/) at this point or start using it as you wish.

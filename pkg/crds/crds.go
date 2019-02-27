@@ -28,7 +28,7 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/rest"
 
-	istiov1beta1 "github.com/banzaicloud/istio-operator/pkg/apis/operator/v1beta1"
+	istiov1beta1 "github.com/banzaicloud/istio-operator/pkg/apis/istio/v1beta1"
 	"github.com/banzaicloud/istio-operator/pkg/k8sutil/objectmatch"
 )
 
@@ -174,7 +174,7 @@ func crdL(kind string, plural string, config crdConfig, appLabel string, pckLabe
 	return crd
 }
 
-func (r *CrdOperator) Reconcile(config *istiov1beta1.Config, log logr.Logger) error {
+func (r *CrdOperator) Reconcile(config *istiov1beta1.Istio, log logr.Logger) error {
 	log = log.WithValues("component", componentName)
 	apiExtensions, err := apiextensionsclient.NewForConfig(r.config)
 	if err != nil {
