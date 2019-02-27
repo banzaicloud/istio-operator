@@ -33,8 +33,17 @@ type IstioService struct {
 	IPs           []string `json:"podIPs,omitempty"`
 }
 
-// RemoteConfigSpec defines the desired state of RemoteConfig
-type RemoteConfigSpec struct {
+func (spec RemoteIstioSpec) SetSignCert(signCert SignCert) RemoteIstioSpec {
+	spec.signCert = signCert
+	return spec
+}
+
+func (spec RemoteIstioSpec) GetSignCert() SignCert {
+	return spec.signCert
+}
+
+// RemoteIstioSpec defines the desired state of RemoteIstio
+type RemoteIstioSpec struct {
 	IncludeIPRanges string         `json:"includeIPRanges,omitempty"`
 	ExcludeIPRanges string         `json:"excludeIPRanges,omitempty"`
 	EnabledServices []IstioService `json:"enabledServices"`
@@ -46,17 +55,8 @@ type RemoteConfigSpec struct {
 	signCert SignCert
 }
 
-func (spec RemoteConfigSpec) SetSignCert(signCert SignCert) RemoteConfigSpec {
-	spec.signCert = signCert
-	return spec
-}
-
-func (spec RemoteConfigSpec) GetSignCert() SignCert {
-	return spec.signCert
-}
-
-// RemoteConfigStatus defines the observed state of RemoteConfig
-type RemoteConfigStatus struct {
+// RemoteIstioStatus defines the observed state of RemoteIstio
+type RemoteIstioStatus struct {
 	Status       ConfigState
 	ErrorMessage string
 }
@@ -64,26 +64,26 @@ type RemoteConfigStatus struct {
 // +genclient
 // +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
 
-// RemoteConfig is the Schema for the remoteconfigs API
+// RemoteIstio is the Schema for the remoteistios API
 // +k8s:openapi-gen=true
 // +kubebuilder:subresource:status
-type RemoteConfig struct {
+type RemoteIstio struct {
 	metav1.TypeMeta   `json:",inline"`
 	metav1.ObjectMeta `json:"metadata,omitempty"`
 
-	Spec   RemoteConfigSpec   `json:"spec,omitempty"`
-	Status RemoteConfigStatus `json:"status,omitempty"`
+	Spec   RemoteIstioSpec   `json:"spec,omitempty"`
+	Status RemoteIstioStatus `json:"status,omitempty"`
 }
 
 // +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
 
-// RemoteConfigList contains a list of RemoteConfig
-type RemoteConfigList struct {
+// RemoteIstioList contains a list of RemoteIstio
+type RemoteIstioList struct {
 	metav1.TypeMeta `json:",inline"`
 	metav1.ListMeta `json:"metadata,omitempty"`
-	Items           []RemoteConfig `json:"items"`
+	Items           []RemoteIstio `json:"items"`
 }
 
 func init() {
-	SchemeBuilder.Register(&RemoteConfig{}, &RemoteConfigList{})
+	SchemeBuilder.Register(&RemoteIstio{}, &RemoteIstioList{})
 }

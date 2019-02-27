@@ -19,14 +19,14 @@ package remoteclusters
 import (
 	"context"
 
-	istiov1beta1 "github.com/banzaicloud/istio-operator/pkg/apis/operator/v1beta1"
+	istiov1beta1 "github.com/banzaicloud/istio-operator/pkg/apis/istio/v1beta1"
 	corev1 "k8s.io/api/core/v1"
 	k8sapierrors "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
-func (c *Cluster) reconcileSignCert(remoteConfig *istiov1beta1.RemoteConfig) error {
+func (c *Cluster) reconcileSignCert(remoteConfig *istiov1beta1.RemoteIstio) error {
 	c.log.Info("reconciling sign cert")
 
 	var secret corev1.Secret

@@ -19,7 +19,7 @@ package remoteclusters
 import (
 	"context"
 
-	istiov1beta1 "github.com/banzaicloud/istio-operator/pkg/apis/operator/v1beta1"
+	istiov1beta1 "github.com/banzaicloud/istio-operator/pkg/apis/istio/v1beta1"
 	"github.com/banzaicloud/istio-operator/pkg/resources/templates"
 	apiv1 "k8s.io/api/core/v1"
 	k8sapierrors "k8s.io/apimachinery/pkg/api/errors"
@@ -52,7 +52,7 @@ func (c *Cluster) reconcileServiceEndpoints(endp apiv1.Endpoints) error {
 	return nil
 }
 
-func (c *Cluster) ReconcileEnabledServiceEndpoints(remoteConfig *istiov1beta1.RemoteConfig) error {
+func (c *Cluster) ReconcileEnabledServiceEndpoints(remoteConfig *istiov1beta1.RemoteIstio) error {
 	for _, enabledSvc := range remoteConfig.Spec.EnabledServices {
 		addresses := make([]apiv1.EndpointAddress, 0)
 		for _, ip := range enabledSvc.IPs {

@@ -14,13 +14,13 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package apis
+package controller
 
 import (
-	"github.com/banzaicloud/istio-operator/pkg/apis/operator/v1beta1"
+	"github.com/banzaicloud/istio-operator/pkg/controller/remoteistio"
 )
 
 func init() {
-	// Register the types with the Scheme so the components can map objects to GroupVersionKinds and back
-	AddToSchemes = append(AddToSchemes, v1beta1.SchemeBuilder.AddToScheme)
+	// AddToManagerWithCMFuncs is a list of functions to create controllers and add them to a manager.
+	AddToManagerWithCMFuncs = append(AddToManagerWithCMFuncs, remoteistio.Add)
 }

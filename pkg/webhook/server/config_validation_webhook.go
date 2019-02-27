@@ -29,7 +29,7 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/webhook/admission/builder"
 	"sigs.k8s.io/controller-runtime/pkg/webhook/admission/types"
 
-	istiov1beta1 "github.com/banzaicloud/istio-operator/pkg/apis/operator/v1beta1"
+	istiov1beta1 "github.com/banzaicloud/istio-operator/pkg/apis/istio/v1beta1"
 )
 
 func init() {
@@ -51,7 +51,7 @@ func NewConfigValidationWebhook(mgr manager.Manager, logger logr.Logger) (*admis
 		Validating().
 		NamespaceSelector(&metav1.LabelSelector{}).
 		Operations(admissionregistrationv1beta1.Create).
-		ForType(&istiov1beta1.Config{}).
+		ForType(&istiov1beta1.Istio{}).
 		Handlers(&istioConfigValidator{
 			logger: logger,
 		}).
@@ -69,9 +69,9 @@ var _ admission.Handler = &istioConfigValidator{}
 
 // Automatically generate RBAC rules to allow the Controller to validate IstioConfigs
 // +kubebuilder:rbac:groups=admissionregistration.k8s.io,resources=validatingwebhookconfigurations,verbs=get;list;watch;create;update;patch;delete
-// +kubebuilder:rbac:groups=operator.istio.io,resources=configs,verbs=get;list;watch
+// +kubebuilder:rbac:groups=istio.banzaicloud.io,resources=istios,verbs=get;list;watch
 func (wh *istioConfigValidator) Handle(ctx context.Context, req types.Request) types.Response {
-	var configs istiov1beta1.ConfigList
+	var configs istiov1beta1.IstioList
 
 	err := wh.client.List(context.TODO(), &client.ListOptions{}, &configs)
 	if err != nil {

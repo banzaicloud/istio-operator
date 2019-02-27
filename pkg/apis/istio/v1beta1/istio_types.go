@@ -27,7 +27,7 @@ const (
 	defaultMaxReplicas     = 5
 )
 
-func SetDefaults(config *Config) {
+func SetDefaults(config *Istio) {
 	if config.Spec.IncludeIPRanges == "" {
 		config.Spec.IncludeIPRanges = defaultIncludeIPRanges
 	}
@@ -117,8 +117,8 @@ type SidecarInjectorConfiguration struct {
 	ReplicaCount int32 `json:"replicaCount,omitempty"`
 }
 
-// ConfigSpec defines the desired state of Config
-type ConfigSpec struct {
+// IstioSpec defines the desired state of Istio
+type IstioSpec struct {
 	MTLS            bool   `json:"mtls"`
 	IncludeIPRanges string `json:"includeIPRanges,omitempty"`
 	ExcludeIPRanges string `json:"excludeIPRanges,omitempty"`
@@ -146,8 +146,8 @@ type ConfigSpec struct {
 	SidecarInjector SidecarInjectorConfiguration `json:"sidecarInjector,omitempty"`
 }
 
-// ConfigStatus defines the observed state of Config
-type ConfigStatus struct {
+// IstioStatus defines the observed state of Istio
+type IstioStatus struct {
 	Status       ConfigState
 	ErrorMessage string
 }
@@ -155,26 +155,26 @@ type ConfigStatus struct {
 // +genclient
 // +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
 
-// Config is the Schema for the configs API
+// Istio is the Schema for the istios API
 // +k8s:openapi-gen=true
 // +kubebuilder:subresource:status
-type Config struct {
+type Istio struct {
 	metav1.TypeMeta   `json:",inline"`
 	metav1.ObjectMeta `json:"metadata,omitempty"`
 
-	Spec   ConfigSpec   `json:"spec,omitempty"`
-	Status ConfigStatus `json:"status,omitempty"`
+	Spec   IstioSpec   `json:"spec,omitempty"`
+	Status IstioStatus `json:"status,omitempty"`
 }
 
 // +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
 
-// ConfigList contains a list of Config
-type ConfigList struct {
+// IstioList contains a list of Istio
+type IstioList struct {
 	metav1.TypeMeta `json:",inline"`
 	metav1.ListMeta `json:"metadata,omitempty"`
-	Items           []Config `json:"items"`
+	Items           []Istio `json:"items"`
 }
 
 func init() {
-	SchemeBuilder.Register(&Config{}, &ConfigList{})
+	SchemeBuilder.Register(&Istio{}, &IstioList{})
 }

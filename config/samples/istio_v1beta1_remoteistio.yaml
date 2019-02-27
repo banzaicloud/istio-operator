@@ -1,9 +1,9 @@
-apiVersion: operator.istio.io/v1beta1
-kind: RemoteConfig
+apiVersion: istio.banzaicloud.io/v1beta1
+kind: RemoteIstio
 metadata:
   labels:
     controller-tools.k8s.io: "1.0"
-  name: remote-cluster
+  name: remoteistio-sample
 spec:
   includeIPRanges: "*"
   excludeIPRanges: ""

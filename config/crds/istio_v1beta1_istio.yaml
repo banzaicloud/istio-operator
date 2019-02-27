@@ -4,12 +4,12 @@ metadata:
   creationTimestamp: null
   labels:
     controller-tools.k8s.io: "1.0"
-  name: configs.operator.istio.io
+  name: istios.istio.banzaicloud.io
 spec:
-  group: operator.istio.io
+  group: istio.banzaicloud.io
   names:
-    kind: Config
-    plural: configs
+    kind: Istio
+    plural: istios
   scope: Namespaced
   subresources:
     status: {}

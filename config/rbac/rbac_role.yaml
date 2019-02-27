@@ -7,6 +7,26 @@ rules:
 - apiGroups:
   - apps
   resources:
+  - pods
+  verbs:
+  - get
+  - list
+  - watch
+  - create
+  - update
+  - patch
+  - delete
+- apiGroups:
+  - apps
+  resources:
+  - pods/status
+  verbs:
+  - get
+  - update
+  - patch
+- apiGroups:
+  - apps
+  resources:
   - deployments
   verbs:
   - get
@@ -47,26 +67,6 @@ rules:
 - apiGroups:
   - apps
   resources:
-  - pods
-  verbs:
-  - get
-  - list
-  - watch
-  - create
-  - update
-  - patch
-  - delete
-- apiGroups:
-  - apps
-  resources:
-  - pods/status
-  verbs:
-  - get
-  - update
-  - patch
-- apiGroups:
-  - apps
-  resources:
   - deployments
   verbs:
   - get
@@ -85,9 +85,9 @@ rules:
   - update
   - patch
 - apiGroups:
-  - operator.istio.io
+  - istio.banzaicloud.io
   resources:
-  - remoteconfigs
+  - remoteistios
   verbs:
   - get
   - list
@@ -97,9 +97,9 @@ rules:
   - patch
   - delete
 - apiGroups:
-  - operator.istio.io
+  - istio.banzaicloud.io
   resources:
-  - remoteconfigs/status
+  - remoteistios/status
   verbs:
   - get
   - update
@@ -117,9 +117,9 @@ rules:
   - patch
   - delete
 - apiGroups:
-  - operator.istio.io
+  - istio.banzaicloud.io
   resources:
-  - configs
+  - istios
   verbs:
   - get
   - list

@@ -14,7 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package remoteconfig
+package istio
 
 import (
 	stdlog "log"
@@ -38,15 +38,20 @@ func TestMain(m *testing.M) {
 	t := &envtest.Environment{
 		CRDDirectoryPaths: []string{filepath.Join("..", "..", "..", "config", "crds")},
 	}
-	apis.AddToScheme(scheme.Scheme)
 
-	var err error
+	err := apis.AddToScheme(scheme.Scheme)
+	if err != nil {
+		stdlog.Fatal(err)
+	}
+
 	if cfg, err = t.Start(); err != nil {
 		stdlog.Fatal(err)
 	}
 
 	code := m.Run()
-	t.Stop()
+	if err = t.Stop(); err != nil {
+		stdlog.Fatal(err)
+	}
 	os.Exit(code)
 }
 
@@ -56,6 +61,9 @@ func SetupTestReconcile(inner reconcile.Reconciler) (reconcile.Reconciler, chan 
 	requests := make(chan reconcile.Request)
 	fn := reconcile.Func(func(req reconcile.Request) (reconcile.Result, error) {
 		result, err := inner.Reconcile(req)
+		if err != nil {
+			log.Error(err, "reconcile failed, requeuing..")
+		}
 		requests <- req
 		return result, err
 	})
