@@ -17,10 +17,11 @@ limitations under the License.
 package remoteclusters
 
 import (
-	istiov1beta1 "github.com/banzaicloud/istio-operator/pkg/apis/istio/v1beta1"
-	"github.com/banzaicloud/istio-operator/pkg/crds"
 	extensionsobj "k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1beta1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+
+	istiov1beta1 "github.com/banzaicloud/istio-operator/pkg/apis/istio/v1beta1"
+	"github.com/banzaicloud/istio-operator/pkg/crds"
 )
 
 func (c *Cluster) reconcileConfigCrd(remoteConfig *istiov1beta1.RemoteIstio) error {
@@ -50,20 +51,20 @@ func (c *Cluster) reconcileConfigCrd(remoteConfig *istiov1beta1.RemoteIstio) err
 func (c *Cluster) configcrd() *extensionsobj.CustomResourceDefinition {
 	return &extensionsobj.CustomResourceDefinition{
 		ObjectMeta: metav1.ObjectMeta{
-			Name: "configs.operator.istio.io",
+			Name: "istios.istio.banzaicloud.io",
 			Labels: map[string]string{
 				"controller-tools.k8s.io": "1.0",
 			},
 		},
 		Spec: extensionsobj.CustomResourceDefinitionSpec{
-			Group:   "operator.istio.io",
+			Group:   "istio.banzaicloud.io",
 			Version: "v1beta1",
 			Scope:   "Namespaced",
 			Names: extensionsobj.CustomResourceDefinitionNames{
-				Plural:   "configs",
-				Kind:     "Config",
-				ListKind: "ConfigList",
-				Singular: "config",
+				Singular: "istio",
+				Plural:   "istios",
+				Kind:     "Istio",
+				ListKind: "IstioList",
 			},
 		},
 	}
