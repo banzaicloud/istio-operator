@@ -11,6 +11,8 @@ Istio-operator is a Kubernetes operator to deploy and manage [Istio](https://ist
 
 The goal of the **Istio-operator** is to automate and simplify these and enable popular service mesh use cases (multi cluster federation, canary releases, resource reconciliation, etc) by introducing easy higher level abstractions.
 
+![Istio Operator](/docs/img/operator.png)
+
 ### Motivation
 
 At [Banzai Cloud](https://banzaicloud.com) we are building a Kubernetes distribution and platform, [Pipeline](https://github.com/banzaicloud/pipeline) and operate Istio clusters for our customers. While we were comfortably operating Istio using the standard Helm deployments on 6 cloud providers and on-premise with [Pipeline](https://github.com/banzaicloud/pipeline), recently our customers were asking for multi-cloud service mesh deployments. This required lots of configurations, manual interventions during scaling or removing clusters from the mesh and become an operational burden. [Pipeline](https://github.com/banzaicloud/pipeline) automates the whole Kubernetes experience (from creating clusters, centralized logging, federated monitoring, multi-dimensional autoscaling, disaster recovery, security scans, etc) and we needed a way to `automagically` operate Istio.
@@ -49,7 +51,7 @@ kubectl create -n istio-system -f config/samples/operator_v1beta1_config.yaml
 
 ## Multi-cluster federation
 
-Check out the [multi-cluster federation docs](docs/federation/README.md)
+Check out the [multi-cluster federation docs](docs/federation/README.md).
 
 ## Development
 
@@ -59,24 +61,7 @@ Check out the [developer docs](docs/developer.md).
 
 Please note that the Istio operator is under heavy development and new releases might introduce breaking changes. We are striving to keep backward compatibility as much as possible while adding new features at a fast pace. Issues, new features or bugs are tracked on the projects [GitHub page]() - please feel free to add yours!
 
-Some of the significant features and future items from the roadmap:
-
-Released:
-
-- [x] - Install Istio
-- [x] - Enable global mTLS
-- [x] - Federation, flat
-
-Under development (next release)
-
-- [x] - Federation, gateway
-- [x] - Istio 1.1.0 support
-- [x] - Configurable node affinity
-
-Short term roadmap
-
-- [ ] - Canary releases
-- [ ] - Servicegraph / Kiali / Certmanager
+To track some of the significant features and future items from the roadmap please visit the [roadmap doc](docs/roadmap.md).
 
 ## Contributing
 
