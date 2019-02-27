@@ -110,8 +110,8 @@ type ReconcileComponent func(log logr.Logger, istio *istiov1beta1.Istio) error
 // Automatically generate RBAC rules to allow the Controller to read and write Deployments
 // +kubebuilder:rbac:groups=apps,resources=deployments,verbs=get;list;watch;create;update;patch;delete
 // +kubebuilder:rbac:groups=apps,resources=deployments/status,verbs=get;update;patch
-// +kubebuilder:rbac:groups=operator.operator.io,resources=configs,verbs=get;list;watch;create;update;patch;delete
-// +kubebuilder:rbac:groups=operator.operator.io,resources=configs/status,verbs=get;update;patch
+// +kubebuilder:rbac:groups=istio.banzaicloud.io,resources=istios,verbs=get;list;watch;create;update;patch;delete
+// +kubebuilder:rbac:groups=istio.banzaicloud.io,resources=istios/status,verbs=get;update;patch
 func (r *ReconcileConfig) Reconcile(request reconcile.Request) (reconcile.Result, error) {
 	logger := log.WithValues("trigger", request.Namespace+"/"+request.Name)
 	logger.Info("Reconciling Istio")

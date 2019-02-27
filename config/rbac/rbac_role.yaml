@@ -45,9 +45,9 @@ rules:
   - update
   - patch
 - apiGroups:
-  - operator.operator.io
+  - istio.banzaicloud.io
   resources:
-  - configs
+  - istios
   verbs:
   - get
   - list
@@ -57,9 +57,9 @@ rules:
   - patch
   - delete
 - apiGroups:
-  - operator.operator.io
+  - istio.banzaicloud.io
   resources:
-  - configs/status
+  - istios/status
   verbs:
   - get
   - update
