@@ -1,3 +1,6 @@
+[![Docker Automated build](https://img.shields.io/docker/automated/banzaicloud/istio-operator.svg)](https://hub.docker.com/r/banzaicloud/istio-operator/)
+[![CircleCI](https://circleci.com/gh/banzaicloud/istio-operator/tree/master.svg?style=shield)](https://circleci.com/gh/banzaicloud/istio-operator/tree/master)
+
 # Istio-operator
 
 Istio-operator is a Kubernetes operator to deploy and manage [Istio](https://istio.io/) resources for a Kubernetes cluster.
@@ -10,7 +13,7 @@ The goal of the **Istio-operator** is to automate and simplify these and enable 
 
 ### Motivation
 
-At [Banzai Cloud](https://banzaicloud.com) we are building a Kubernetes distribution and platform - [Pipeline](https://github.com/banzaicloud/pipeline) and operate Istio clusters for our customers. While we were comfortably operating Istio using the standard Helm deployments on 6 cloud providers and on-premise with [Pipeline](https://github.com/banzaicloud/pipeline), recently our customers were asking for multi-cloud service mesh deployments. This required lots of configurations, manual interventions during scaling or removing clusters from the mesh and become an operational burden. [Pipeline](https://github.com/banzaicloud/pipeline) automates the whole Kubernetes experience (from creating clusters, centralized logging, federated monitoring, multi-dimensional autoscaling, disaster recovery, security scans, etc) and we needed a way to `automagically` operate Istio.
+At [Banzai Cloud](https://banzaicloud.com) we are building a Kubernetes distribution and platform, [Pipeline](https://github.com/banzaicloud/pipeline) and operate Istio clusters for our customers. While we were comfortably operating Istio using the standard Helm deployments on 6 cloud providers and on-premise with [Pipeline](https://github.com/banzaicloud/pipeline), recently our customers were asking for multi-cloud service mesh deployments. This required lots of configurations, manual interventions during scaling or removing clusters from the mesh and become an operational burden. [Pipeline](https://github.com/banzaicloud/pipeline) automates the whole Kubernetes experience (from creating clusters, centralized logging, federated monitoring, multi-dimensional autoscaling, disaster recovery, security scans, etc) and we needed a way to `automagically` operate Istio.
 
 At the same time there is a huge interest in the Istio community for an [operator](https://github.com/istio/istio/issues/9333), but due to resource constraints and the need of supporting Helm, building one it was discarded. There were several initiatives to simplify Istio:
 
@@ -19,9 +22,7 @@ At the same time there is a huge interest in the Istio community for an [operato
 - [Initial implementation of Galley registers the CRDs](https://github.com/istio/istio/pull/10120)
 - [Handle upgrades with an istio-init chart](https://github.com/istio/istio/pull/10562)
 
-however, none of these gave a full solution to **automate** the Istio experience and make it consumable for the wider audience.
-
-Our motivation is to build an open source solution and a community which drives the innovation and features of the operator.
+however, none of these gave a full solution to **automate** the Istio experience and make it consumable for the wider audience. Our motivation is to build an open source solution and a community which drives the innovation and features of this operator.
 
 If you are willing to kickstart your Istio experience using Pipeline, check out the free developer beta:
 <p align="center">
@@ -35,7 +36,7 @@ If you are willing to kickstart your Istio experience using Pipeline, check out 
 
 The operator (`master` branch) installs the 1.0.5 version of Istio, and requires kubectl 1.13.0 and can run on Minikube v0.33.1+ and Kubernetes 1.10.0+.
 
-As a pre-requisite it needs a Kubernetes cluster (you can create one using [Pipeline](https://github.com/banzaicloud/pipeline).
+As a pre-requisite it needs a Kubernetes cluster (you can create one using [Pipeline](https://github.com/banzaicloud/pipeline)).
 
 1. Set `KUBECONFIG` pointing towards your cluster
 2. Run `make vendor`
