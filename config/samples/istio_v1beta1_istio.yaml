@@ -12,20 +12,27 @@ spec:
   - "default"
   controlPlaneSecurityEnabled: false
   pilot:
+      image: "istio/pilot:1.0.5"
       replicaCount: 1
       minReplicas: 1
       maxReplicas: 5
   citadel:
+      image: "istio/citadel:1.0.5"
       replicaCount: 1
   galley:
+      image: "istio/galley:1.0.5"
       replicaCount: 1
   gateways:
       replicaCount: 1
       minReplicas: 1
       maxReplicas: 5
   mixer:
+      image: "istio/mixer:1.0.5"
       replicaCount: 1
       minReplicas: 1
       maxReplicas: 5
   sidecarInjector:
+      image: "istio/sidecar_injector:1.0.5"
       replicaCount: 1
+  proxy:
+      image: "istio/proxyv2:1.0.5"

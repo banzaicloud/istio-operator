@@ -39,6 +39,8 @@ spec:
             citadel:
               description: Citadel configuration options
               properties:
+                image:
+                  type: string
                 replicaCount:
                   format: int32
                   type: integer
@@ -48,10 +50,13 @@ spec:
                 communicating through mTLS
               type: boolean
             excludeIPRanges:
+              description: ExcludeIPRanges the range where not to capture egress traffic
               type: string
             galley:
               description: Galley configuration options
               properties:
+                image:
+                  type: string
                 replicaCount:
                   format: int32
                   type: integer
@@ -70,10 +75,13 @@ spec:
                   type: integer
               type: object
             includeIPRanges:
+              description: IncludeIPRanges the range where to capture egress traffic
               type: string
             mixer:
               description: Mixer configuration options
               properties:
+                image:
+                  type: string
                 maxReplicas:
                   format: int32
                   type: integer
@@ -85,10 +93,13 @@ spec:
                   type: integer
               type: object
             mtls:
+              description: MTLS enables or disables global mTLS
               type: boolean
             pilot:
               description: Pilot configuration options
               properties:
+                image:
+                  type: string
                 maxReplicas:
                   format: int32
                   type: integer
@@ -99,9 +110,17 @@ spec:
                   format: int32
                   type: integer
               type: object
+            proxy:
+              description: Proxy configuration options
+              properties:
+                image:
+                  type: string
+              type: object
             sidecarInjector:
               description: SidecarInjector configuration options
               properties:
+                image:
+                  type: string
                 replicaCount:
                   format: int32
                   type: integer

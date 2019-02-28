@@ -45,7 +45,7 @@ func (r *Reconciler) deployment(gw string) runtime.Object {
 					Containers: []apiv1.Container{
 						{
 							Name:            "istio-proxy",
-							Image:           "docker.io/istio/proxyv2:1.0.5",
+							Image:           r.Config.Spec.Proxy.Image,
 							ImagePullPolicy: apiv1.PullIfNotPresent,
 							Args: []string{
 								"proxy",

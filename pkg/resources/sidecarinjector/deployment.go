@@ -47,7 +47,7 @@ func (r *Reconciler) deployment() runtime.Object {
 					Containers: []apiv1.Container{
 						{
 							Name:            "sidecar-injector-webhook",
-							Image:           "docker.io/istio/sidecar_injector:1.0.5",
+							Image:           r.Config.Spec.SidecarInjector.Image,
 							ImagePullPolicy: apiv1.PullIfNotPresent,
 							Args: []string{
 								"--caCertFile=/etc/istio/certs/root-cert.pem",

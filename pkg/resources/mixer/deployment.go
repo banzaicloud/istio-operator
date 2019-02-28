@@ -75,7 +75,7 @@ func (r *Reconciler) deployment(t string) runtime.Object {
 func (r *Reconciler) mixerContainer(t string, ns string) apiv1.Container {
 	c := apiv1.Container{
 		Name:            "mixer",
-		Image:           "docker.io/istio/mixer:1.0.5",
+		Image:           r.Config.Spec.Mixer.Image,
 		ImagePullPolicy: apiv1.PullIfNotPresent,
 		Ports: []apiv1.ContainerPort{
 			{
@@ -133,7 +133,7 @@ func (r *Reconciler) mixerContainer(t string, ns string) apiv1.Container {
 func (r *Reconciler) istioProxyContainer(t string) apiv1.Container {
 	return apiv1.Container{
 		Name:            "istio-proxy",
-		Image:           "docker.io/istio/proxyv2:1.0.5",
+		Image:           r.Config.Spec.Proxy.Image,
 		ImagePullPolicy: apiv1.PullIfNotPresent,
 		Ports: []apiv1.ContainerPort{
 			{ContainerPort: 9091, Protocol: apiv1.ProtocolTCP},
