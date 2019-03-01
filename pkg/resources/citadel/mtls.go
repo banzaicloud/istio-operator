@@ -17,8 +17,9 @@ limitations under the License.
 package citadel
 
 import (
-	"github.com/banzaicloud/istio-operator/pkg/k8sutil"
 	"k8s.io/apimachinery/pkg/runtime/schema"
+
+	"github.com/banzaicloud/istio-operator/pkg/k8sutil"
 )
 
 // mTLS returns a map to configure the default MeshPolicy
@@ -42,9 +43,8 @@ func (r *Reconciler) meshPolicy() *k8sutil.DynamicObject {
 			Version:  "v1alpha1",
 			Resource: "meshpolicies",
 		},
-		Kind:      "MeshPolicy",
-		Name:      "default",
-		Namespace: r.Config.Namespace,
+		Kind: "MeshPolicy",
+		Name: "default",
 		Labels: map[string]string{
 			"app": "istio-security",
 		},
