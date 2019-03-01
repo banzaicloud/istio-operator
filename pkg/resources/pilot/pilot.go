@@ -17,13 +17,14 @@ limitations under the License.
 package pilot
 
 import (
-	istiov1beta1 "github.com/banzaicloud/istio-operator/pkg/apis/istio/v1beta1"
-	"github.com/banzaicloud/istio-operator/pkg/k8sutil"
-	"github.com/banzaicloud/istio-operator/pkg/resources"
 	"github.com/go-logr/logr"
 	"github.com/goph/emperror"
 	"k8s.io/client-go/dynamic"
 	"sigs.k8s.io/controller-runtime/pkg/client"
+
+	istiov1beta1 "github.com/banzaicloud/istio-operator/pkg/apis/istio/v1beta1"
+	"github.com/banzaicloud/istio-operator/pkg/k8sutil"
+	"github.com/banzaicloud/istio-operator/pkg/resources"
 )
 
 const (
@@ -80,7 +81,7 @@ func (r *Reconciler) Reconcile(log logr.Logger) error {
 		}
 	}
 	drs := []resources.DynamicResourceWithDesiredState{
-		{DynamicResource: r.gateway, DesiredState: k8sutil.CREATED},
+		{DynamicResource: r.gateway},
 	}
 	for _, dr := range drs {
 		o := dr.DynamicResource()

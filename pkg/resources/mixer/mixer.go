@@ -19,13 +19,14 @@ package mixer
 import (
 	"fmt"
 
-	istiov1beta1 "github.com/banzaicloud/istio-operator/pkg/apis/istio/v1beta1"
-	"github.com/banzaicloud/istio-operator/pkg/k8sutil"
-	"github.com/banzaicloud/istio-operator/pkg/resources"
 	"github.com/go-logr/logr"
 	"github.com/goph/emperror"
 	"k8s.io/client-go/dynamic"
 	"sigs.k8s.io/controller-runtime/pkg/client"
+
+	istiov1beta1 "github.com/banzaicloud/istio-operator/pkg/apis/istio/v1beta1"
+	"github.com/banzaicloud/istio-operator/pkg/k8sutil"
+	"github.com/banzaicloud/istio-operator/pkg/resources"
 )
 
 const (
@@ -85,28 +86,28 @@ func (r *Reconciler) Reconcile(log logr.Logger) error {
 		}
 	}
 	drs := []resources.DynamicResourceWithDesiredState{
-		{DynamicResource: r.istioProxyAttributeManifest, DesiredState: k8sutil.CREATED},
-		{DynamicResource: r.kubernetesAttributeManifest, DesiredState: k8sutil.CREATED},
-		{DynamicResource: r.stdioHandler, DesiredState: k8sutil.CREATED},
-		{DynamicResource: r.accessLogLogentry, DesiredState: k8sutil.CREATED},
-		{DynamicResource: r.tcpAccessLogLogentry, DesiredState: k8sutil.CREATED},
-		{DynamicResource: r.stdioRule, DesiredState: k8sutil.CREATED},
-		{DynamicResource: r.stdioTcpRule, DesiredState: k8sutil.CREATED},
-		{DynamicResource: r.prometheusHandler, DesiredState: k8sutil.CREATED},
-		{DynamicResource: r.requestCountMetric, DesiredState: k8sutil.CREATED},
-		{DynamicResource: r.requestDurationMetric, DesiredState: k8sutil.CREATED},
-		{DynamicResource: r.requestSizeMetric, DesiredState: k8sutil.CREATED},
-		{DynamicResource: r.responseSizeMetric, DesiredState: k8sutil.CREATED},
-		{DynamicResource: r.tcpByteReceivedMetric, DesiredState: k8sutil.CREATED},
-		{DynamicResource: r.tcpByteSentMetric, DesiredState: k8sutil.CREATED},
-		{DynamicResource: r.promHttpRule, DesiredState: k8sutil.CREATED},
-		{DynamicResource: r.promTcpRule, DesiredState: k8sutil.CREATED},
-		{DynamicResource: r.kubernetesEnvHandler, DesiredState: k8sutil.CREATED},
-		{DynamicResource: r.attributesKubernetes, DesiredState: k8sutil.CREATED},
-		{DynamicResource: r.kubeAttrRule, DesiredState: k8sutil.CREATED},
-		{DynamicResource: r.tcpKubeAttrRule, DesiredState: k8sutil.CREATED},
-		{DynamicResource: r.policyDestinationRule, DesiredState: k8sutil.CREATED},
-		{DynamicResource: r.telemetryDestinationRule, DesiredState: k8sutil.CREATED},
+		{DynamicResource: r.istioProxyAttributeManifest},
+		{DynamicResource: r.kubernetesAttributeManifest},
+		{DynamicResource: r.stdioHandler},
+		{DynamicResource: r.accessLogLogentry},
+		{DynamicResource: r.tcpAccessLogLogentry},
+		{DynamicResource: r.stdioRule},
+		{DynamicResource: r.stdioTcpRule},
+		{DynamicResource: r.prometheusHandler},
+		{DynamicResource: r.requestCountMetric},
+		{DynamicResource: r.requestDurationMetric},
+		{DynamicResource: r.requestSizeMetric},
+		{DynamicResource: r.responseSizeMetric},
+		{DynamicResource: r.tcpByteReceivedMetric},
+		{DynamicResource: r.tcpByteSentMetric},
+		{DynamicResource: r.promHttpRule},
+		{DynamicResource: r.promTcpRule},
+		{DynamicResource: r.kubernetesEnvHandler},
+		{DynamicResource: r.attributesKubernetes},
+		{DynamicResource: r.kubeAttrRule},
+		{DynamicResource: r.tcpKubeAttrRule},
+		{DynamicResource: r.policyDestinationRule},
+		{DynamicResource: r.telemetryDestinationRule},
 	}
 	for _, dr := range drs {
 		o := dr.DynamicResource()
