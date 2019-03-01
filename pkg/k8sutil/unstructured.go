@@ -19,7 +19,6 @@ package k8sutil
 import (
 	"reflect"
 
-	"github.com/banzaicloud/istio-operator/pkg/k8sutil/objectmatch"
 	"github.com/go-logr/logr"
 	"github.com/goph/emperror"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
@@ -29,13 +28,14 @@ import (
 	"k8s.io/client-go/dynamic"
 
 	istiov1beta1 "github.com/banzaicloud/istio-operator/pkg/apis/istio/v1beta1"
+	"github.com/banzaicloud/istio-operator/pkg/k8sutil/objectmatch"
 )
 
 type DesiredState string
 
 const (
-	CREATED DesiredState = "created"
-	DELETED DesiredState = "deleted"
+	DesiredStatePresent DesiredState = "present"
+	DesiredStateAbsent  DesiredState = "absent"
 )
 
 type DynamicObject struct {
@@ -49,6 +49,9 @@ type DynamicObject struct {
 }
 
 func (d *DynamicObject) Reconcile(log logr.Logger, client dynamic.Interface, desiredState DesiredState) error {
+	if desiredState == "" {
+		desiredState = DesiredStatePresent
+	}
 	desired := d.unstructured()
 	desiredType := reflect.TypeOf(desired)
 	log = log.WithValues("type", reflect.TypeOf(d), "name", d.Name)
@@ -56,18 +59,14 @@ func (d *DynamicObject) Reconcile(log logr.Logger, client dynamic.Interface, des
 	if err != nil && !apierrors.IsNotFound(err) {
 		return emperror.WrapWith(err, "getting resource failed", "name", d.Name, "kind", desiredType)
 	}
-	if apierrors.IsNotFound(err) {
-		if desiredState == CREATED {
-			if _, err := client.Resource(d.Gvr).Namespace(d.Namespace).Create(desired, metav1.CreateOptions{}); err != nil {
-				return emperror.WrapWith(err, "creating resource failed", "name", d.Name, "kind", desiredType)
-			}
-			log.Info("resource created", "kind", d.Gvr.Resource)
-		} else if desiredState == DELETED {
-			log.Info("resource not found, already deleted", "kind", d.Gvr.Resource)
+	if apierrors.IsNotFound(err) && desiredState == DesiredStatePresent {
+		if _, err := client.Resource(d.Gvr).Namespace(d.Namespace).Create(desired, metav1.CreateOptions{}); err != nil {
+			return emperror.WrapWith(err, "creating resource failed", "name", d.Name, "kind", desiredType)
 		}
+		log.Info("resource created", "kind", d.Gvr.Resource)
 	}
 	if err == nil {
-		if desiredState == CREATED {
+		if desiredState == DesiredStatePresent {
 			objectsEquals, err := objectmatch.Match(current, desired)
 			if err != nil {
 				log.Error(err, "could not match objects", "kind", desiredType)
@@ -81,7 +80,7 @@ func (d *DynamicObject) Reconcile(log logr.Logger, client dynamic.Interface, des
 				return emperror.WrapWith(err, "updating resource failed", "name", d.Name, "kind", desiredType)
 			}
 			log.Info("resource updated", "kind", d.Gvr.Resource)
-		} else if desiredState == DELETED {
+		} else if desiredState == DesiredStateAbsent {
 			if err := client.Resource(d.Gvr).Namespace(d.Namespace).Delete(d.Name, &metav1.DeleteOptions{}); err != nil {
 				return emperror.WrapWith(err, "deleting resource failed", "name", d.Name, "kind", desiredType)
 			}

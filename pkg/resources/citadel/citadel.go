@@ -17,13 +17,14 @@ limitations under the License.
 package citadel
 
 import (
-	istiov1beta1 "github.com/banzaicloud/istio-operator/pkg/apis/istio/v1beta1"
-	"github.com/banzaicloud/istio-operator/pkg/k8sutil"
-	"github.com/banzaicloud/istio-operator/pkg/resources"
 	"github.com/go-logr/logr"
 	"github.com/goph/emperror"
 	"k8s.io/client-go/dynamic"
 	"sigs.k8s.io/controller-runtime/pkg/client"
+
+	istiov1beta1 "github.com/banzaicloud/istio-operator/pkg/apis/istio/v1beta1"
+	"github.com/banzaicloud/istio-operator/pkg/k8sutil"
+	"github.com/banzaicloud/istio-operator/pkg/resources"
 )
 
 const (
@@ -86,12 +87,12 @@ func (r *Reconciler) Reconcile(log logr.Logger) error {
 
 	var mTLSDesiredState k8sutil.DesiredState
 	if r.Config.Spec.MTLS {
-		mTLSDesiredState = k8sutil.CREATED
+		mTLSDesiredState = k8sutil.DesiredStatePresent
 	} else {
-		mTLSDesiredState = k8sutil.DELETED
+		mTLSDesiredState = k8sutil.DesiredStateAbsent
 	}
 	drs := []resources.DynamicResourceWithDesiredState{
-		{DynamicResource: r.meshPolicy, DesiredState: k8sutil.CREATED},
+		{DynamicResource: r.meshPolicy, DesiredState: k8sutil.DesiredStatePresent},
 		{DynamicResource: r.destinationRuleDefaultMtls, DesiredState: mTLSDesiredState},
 		{DynamicResource: r.destinationRuleApiServerMtls, DesiredState: mTLSDesiredState},
 	}
