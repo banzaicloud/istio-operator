@@ -51,7 +51,7 @@ func (r *Reconciler) deployment() runtime.Object {
 					Containers: []apiv1.Container{
 						{
 							Name:            "validator",
-							Image:           "docker.io/istio/galley:1.0.5",
+							Image:           r.Config.Spec.Galley.Image,
 							ImagePullPolicy: apiv1.PullIfNotPresent,
 							Ports: []apiv1.ContainerPort{
 								{

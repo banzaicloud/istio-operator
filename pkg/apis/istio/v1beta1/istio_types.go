@@ -21,10 +21,17 @@ import (
 )
 
 const (
-	defaultIncludeIPRanges = "*"
-	defaultReplicaCount    = 1
-	defaultMinReplicas     = 1
-	defaultMaxReplicas     = 5
+	defaultImageVersion         = "1.0.5"
+	defaultPilotImage           = "istio/pilot" + ":" + defaultImageVersion
+	defaultCitadelImage         = "istio/citadel" + ":" + defaultImageVersion
+	defaultGalleyImage          = "istio/galley" + ":" + defaultImageVersion
+	defaultMixerImage           = "istio/mixer" + ":" + defaultImageVersion
+	defaultSidecarInjectorImage = "istio/sidecar_injector" + ":" + defaultImageVersion
+	defaultProxyImage           = "istio/proxyv2" + ":" + defaultImageVersion
+	defaultIncludeIPRanges      = "*"
+	defaultReplicaCount         = 1
+	defaultMinReplicas          = 1
+	defaultMaxReplicas          = 5
 )
 
 func SetDefaults(config *Istio) {
@@ -33,6 +40,9 @@ func SetDefaults(config *Istio) {
 	}
 
 	// Pilot config
+	if config.Spec.Pilot.Image == "" {
+		config.Spec.Pilot.Image = defaultPilotImage
+	}
 	if config.Spec.Pilot.ReplicaCount == 0 {
 		config.Spec.Pilot.ReplicaCount = defaultReplicaCount
 	}
@@ -44,11 +54,17 @@ func SetDefaults(config *Istio) {
 	}
 
 	// Citadel config
+	if config.Spec.Citadel.Image == "" {
+		config.Spec.Citadel.Image = defaultCitadelImage
+	}
 	if config.Spec.Citadel.ReplicaCount == 0 {
 		config.Spec.Citadel.ReplicaCount = defaultReplicaCount
 	}
 
 	// Galley config
+	if config.Spec.Galley.Image == "" {
+		config.Spec.Galley.Image = defaultGalleyImage
+	}
 	if config.Spec.Galley.ReplicaCount == 0 {
 		config.Spec.Galley.ReplicaCount = defaultReplicaCount
 	}
@@ -65,6 +81,9 @@ func SetDefaults(config *Istio) {
 	}
 
 	// Mixer config
+	if config.Spec.Mixer.Image == "" {
+		config.Spec.Mixer.Image = defaultMixerImage
+	}
 	if config.Spec.Mixer.ReplicaCount == 0 {
 		config.Spec.Mixer.ReplicaCount = defaultReplicaCount
 	}
@@ -76,26 +95,37 @@ func SetDefaults(config *Istio) {
 	}
 
 	// SidecarInjector config
+	if config.Spec.SidecarInjector.Image == "" {
+		config.Spec.SidecarInjector.Image = defaultSidecarInjectorImage
+	}
 	if config.Spec.SidecarInjector.ReplicaCount == 0 {
 		config.Spec.SidecarInjector.ReplicaCount = defaultReplicaCount
+	}
+
+	// Proxy config
+	if config.Spec.Proxy.Image == "" {
+		config.Spec.Proxy.Image = defaultProxyImage
 	}
 }
 
 // PilotConfiguration defines config options for Pilot
 type PilotConfiguration struct {
-	ReplicaCount int32 `json:"replicaCount,omitempty"`
-	MinReplicas  int32 `json:"minReplicas,omitempty"`
-	MaxReplicas  int32 `json:"maxReplicas,omitempty"`
+	Image        string `json:"image,omitempty"`
+	ReplicaCount int32  `json:"replicaCount,omitempty"`
+	MinReplicas  int32  `json:"minReplicas,omitempty"`
+	MaxReplicas  int32  `json:"maxReplicas,omitempty"`
 }
 
 // CitadelConfiguration defines config options for Citadel
 type CitadelConfiguration struct {
-	ReplicaCount int32 `json:"replicaCount,omitempty"`
+	Image        string `json:"image,omitempty"`
+	ReplicaCount int32  `json:"replicaCount,omitempty"`
 }
 
 // GalleyConfiguration defines config options for Galley
 type GalleyConfiguration struct {
-	ReplicaCount int32 `json:"replicaCount,omitempty"`
+	Image        string `json:"image,omitempty"`
+	ReplicaCount int32  `json:"replicaCount,omitempty"`
 }
 
 // GatewaysConfiguration defines config options for Gateways
@@ -107,23 +137,37 @@ type GatewaysConfiguration struct {
 
 // MixerConfiguration defines config options for Mixer
 type MixerConfiguration struct {
-	ReplicaCount int32 `json:"replicaCount,omitempty"`
-	MinReplicas  int32 `json:"minReplicas,omitempty"`
-	MaxReplicas  int32 `json:"maxReplicas,omitempty"`
+	Image        string `json:"image,omitempty"`
+	ReplicaCount int32  `json:"replicaCount,omitempty"`
+	MinReplicas  int32  `json:"minReplicas,omitempty"`
+	MaxReplicas  int32  `json:"maxReplicas,omitempty"`
 }
 
 // SidecarInjectorConfiguration defines config options for SidecarInjector
 type SidecarInjectorConfiguration struct {
-	ReplicaCount int32 `json:"replicaCount,omitempty"`
+	Image        string `json:"image,omitempty"`
+	ReplicaCount int32  `json:"replicaCount,omitempty"`
+}
+
+// ProxyConfiguration defines config options for Proxy
+type ProxyConfiguration struct {
+	Image string `json:"image,omitempty"`
 }
 
 // IstioSpec defines the desired state of Istio
 type IstioSpec struct {
-	MTLS            bool   `json:"mtls"`
+	// MTLS enables or disables global mTLS
+	MTLS bool `json:"mtls"`
+
+	// IncludeIPRanges the range where to capture egress traffic
 	IncludeIPRanges string `json:"includeIPRanges,omitempty"`
+
+	// ExcludeIPRanges the range where not to capture egress traffic
 	ExcludeIPRanges string `json:"excludeIPRanges,omitempty"`
+
 	// List of namespaces to label with sidecar auto injection enabled
 	AutoInjectionNamespaces []string `json:"autoInjectionNamespaces,omitempty"`
+
 	// ControlPlaneSecurityEnabled control plane services are communicating through mTLS
 	ControlPlaneSecurityEnabled bool `json:"controlPlaneSecurityEnabled,omitempty"`
 
@@ -144,6 +188,9 @@ type IstioSpec struct {
 
 	// SidecarInjector configuration options
 	SidecarInjector SidecarInjectorConfiguration `json:"sidecarInjector,omitempty"`
+
+	// Proxy configuration options
+	Proxy ProxyConfiguration `json:"proxy,omitempty"`
 }
 
 // IstioStatus defines the observed state of Istio

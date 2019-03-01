@@ -39,22 +39,23 @@ func (c *Cluster) reconcileConfig(remoteConfig *istiov1beta1.RemoteIstio) error 
 		return err
 	}
 
+	istioConfig.Spec.AutoInjectionNamespaces = remoteConfig.Spec.AutoInjectionNamespaces
+	istioConfig.Spec.ControlPlaneSecurityEnabled = remoteConfig.Spec.ControlPlaneSecurityEnabled
+	istioConfig.Spec.Citadel.ReplicaCount = remoteConfig.Spec.Citadel.ReplicaCount
+	istioConfig.Spec.Citadel.Image = remoteConfig.Spec.Citadel.Image
+	istioConfig.Spec.SidecarInjector.ReplicaCount = remoteConfig.Spec.SidecarInjector.ReplicaCount
+	istioConfig.Spec.SidecarInjector.Image = remoteConfig.Spec.SidecarInjector.Image
+	istioConfig.Spec.Proxy.Image = remoteConfig.Spec.Proxy.Image
+
 	if k8sapierrors.IsNotFound(err) {
 		istioConfig.Name = ConfigName
 		istioConfig.Namespace = remoteConfig.Namespace
-		istioConfig.Spec.AutoInjectionNamespaces = remoteConfig.Spec.AutoInjectionNamespaces
-		istioConfig.Spec.ControlPlaneSecurityEnabled = remoteConfig.Spec.ControlPlaneSecurityEnabled
-		istioConfig.Spec.Citadel.ReplicaCount = remoteConfig.Spec.Citadel.ReplicaCount
-		istioConfig.Spec.SidecarInjector.ReplicaCount = remoteConfig.Spec.SidecarInjector.ReplicaCount
+
 		err = c.ctrlRuntimeClient.Create(context.TODO(), &istioConfig)
 		if err != nil {
 			return err
 		}
 	} else {
-		istioConfig.Spec.AutoInjectionNamespaces = remoteConfig.Spec.AutoInjectionNamespaces
-		istioConfig.Spec.ControlPlaneSecurityEnabled = remoteConfig.Spec.ControlPlaneSecurityEnabled
-		istioConfig.Spec.Citadel.ReplicaCount = remoteConfig.Spec.Citadel.ReplicaCount
-		istioConfig.Spec.SidecarInjector.ReplicaCount = remoteConfig.Spec.SidecarInjector.ReplicaCount
 		err = c.ctrlRuntimeClient.Update(context.TODO(), &istioConfig)
 		if err != nil {
 			return err

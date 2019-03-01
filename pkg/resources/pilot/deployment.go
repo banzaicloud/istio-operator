@@ -53,7 +53,7 @@ func (r *Reconciler) deployment() runtime.Object {
 					Containers: []apiv1.Container{
 						{
 							Name:            "discovery",
-							Image:           "docker.io/istio/pilot:1.0.5",
+							Image:           r.Config.Spec.Pilot.Image,
 							ImagePullPolicy: apiv1.PullIfNotPresent,
 							Args: []string{
 								"discovery",
@@ -122,7 +122,7 @@ func (r *Reconciler) deployment() runtime.Object {
 						},
 						{
 							Name:            "istio-proxy",
-							Image:           "docker.io/istio/proxyv2:1.0.5",
+							Image:           r.Config.Spec.Proxy.Image,
 							ImagePullPolicy: apiv1.PullIfNotPresent,
 							Ports: []apiv1.ContainerPort{
 								{ContainerPort: 15003, Protocol: apiv1.ProtocolTCP},

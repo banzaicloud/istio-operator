@@ -1,5 +1,7 @@
 [![Docker Automated build](https://img.shields.io/docker/automated/banzaicloud/istio-operator.svg)](https://hub.docker.com/r/banzaicloud/istio-operator/)
 [![CircleCI](https://circleci.com/gh/banzaicloud/istio-operator/tree/master.svg?style=shield)](https://circleci.com/gh/banzaicloud/istio-operator/tree/master)
+[![Go Report Card](https://goreportcard.com/badge/github.com/banzaicloud/istio-operator)](https://goreportcard.com/report/github.com/banzaicloud/istio-operator)
+![license](http://img.shields.io/badge/license-Apache%20v2-orange.svg)
 
 # Istio-operator
 
@@ -36,7 +38,7 @@ If you are willing to kickstart your Istio experience using Pipeline, check out 
 
 ## Installation
 
-The operator (`master` branch) installs the 1.0.5 version of Istio, and requires kubectl 1.13.0 and can run on Minikube v0.33.1+ and Kubernetes 1.10.0+.
+The operator (`master` branch) installs the 1.0.5 version of Istio, and can run on Minikube v0.33.1+ and Kubernetes 1.10.0+.
 
 As a pre-requisite it needs a Kubernetes cluster (you can create one using [Pipeline](https://github.com/banzaicloud/pipeline)).
 
