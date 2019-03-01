@@ -44,17 +44,29 @@ func (spec RemoteIstioSpec) GetSignCert() SignCert {
 
 // RemoteIstioSpec defines the desired state of RemoteIstio
 type RemoteIstioSpec struct {
-	IncludeIPRanges string         `json:"includeIPRanges,omitempty"`
-	ExcludeIPRanges string         `json:"excludeIPRanges,omitempty"`
+	// IncludeIPRanges the range where to capture egress traffic
+	IncludeIPRanges string `json:"includeIPRanges,omitempty"`
+
+	// ExcludeIPRanges the range where not to capture egress traffic
+	ExcludeIPRanges string `json:"excludeIPRanges,omitempty"`
+
+	// EnabledServices the Istio component services replicated to remote side
 	EnabledServices []IstioService `json:"enabledServices"`
+
 	// List of namespaces to label with sidecar auto injection enabled
 	AutoInjectionNamespaces []string `json:"autoInjectionNamespaces,omitempty"`
+
 	// ControlPlaneSecurityEnabled control plane services are communicating through mTLS
 	ControlPlaneSecurityEnabled bool `json:"controlPlaneSecurityEnabled,omitempty"`
+
 	// Citadel configuration options
 	Citadel CitadelConfiguration `json:"citadel,omitempty"`
+
 	// SidecarInjector configuration options
 	SidecarInjector SidecarInjectorConfiguration `json:"sidecarInjector,omitempty"`
+
+	// Proxy configuration options
+	Proxy ProxyConfiguration `json:"proxy,omitempty"`
 
 	signCert SignCert
 }
@@ -97,10 +109,16 @@ func SetRemoteIstioDefaults(remoteconfig *RemoteIstio) {
 		remoteconfig.Spec.IncludeIPRanges = defaultIncludeIPRanges
 	}
 	// Citadel config
+	if remoteconfig.Spec.Citadel.Image == "" {
+		remoteconfig.Spec.Citadel.Image = defaultCitadelImage
+	}
 	if remoteconfig.Spec.Citadel.ReplicaCount == 0 {
 		remoteconfig.Spec.Citadel.ReplicaCount = defaultReplicaCount
 	}
 	// SidecarInjector config
+	if remoteconfig.Spec.SidecarInjector.Image == "" {
+		remoteconfig.Spec.SidecarInjector.Image = defaultSidecarInjectorImage
+	}
 	if remoteconfig.Spec.SidecarInjector.ReplicaCount == 0 {
 		remoteconfig.Spec.SidecarInjector.ReplicaCount = defaultReplicaCount
 	}

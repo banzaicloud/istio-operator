@@ -39,6 +39,8 @@ spec:
             citadel:
               description: Citadel configuration options
               properties:
+                image:
+                  type: string
                 replicaCount:
                   format: int32
                   type: integer
@@ -48,6 +50,8 @@ spec:
                 communicating through mTLS
               type: boolean
             enabledServices:
+              description: EnabledServices the Istio component services replicated
+                to remote side
               items:
                 properties:
                   labelSelector:
@@ -64,12 +68,22 @@ spec:
                 type: object
               type: array
             excludeIPRanges:
+              description: ExcludeIPRanges the range where not to capture egress traffic
               type: string
             includeIPRanges:
+              description: IncludeIPRanges the range where to capture egress traffic
               type: string
+            proxy:
+              description: Proxy configuration options
+              properties:
+                image:
+                  type: string
+              type: object
             sidecarInjector:
               description: SidecarInjector configuration options
               properties:
+                image:
+                  type: string
                 replicaCount:
                   format: int32
                   type: integer

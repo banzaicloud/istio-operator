@@ -50,7 +50,7 @@ func (r *Reconciler) deployment() runtime.Object {
 
 	var citadelContainer = apiv1.Container{
 		Name:                     "citadel",
-		Image:                    "docker.io/istio/citadel:1.0.5",
+		Image:                    r.Config.Spec.Citadel.Image,
 		ImagePullPolicy:          apiv1.PullIfNotPresent,
 		Args:                     args,
 		Resources:                templates.DefaultResources(),
