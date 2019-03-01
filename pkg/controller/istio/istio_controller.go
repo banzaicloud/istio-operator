@@ -45,6 +45,7 @@ import (
 
 	istiov1beta1 "github.com/banzaicloud/istio-operator/pkg/apis/istio/v1beta1"
 	"github.com/banzaicloud/istio-operator/pkg/crds"
+	"github.com/banzaicloud/istio-operator/pkg/k8sutil"
 	"github.com/banzaicloud/istio-operator/pkg/k8sutil/objectmatch"
 	"github.com/banzaicloud/istio-operator/pkg/resources"
 	"github.com/banzaicloud/istio-operator/pkg/resources/citadel"
@@ -91,7 +92,7 @@ func add(mgr manager.Manager, r reconcile.Reconciler) error {
 	if err != nil {
 		return err
 	}
-	err = initWatches(c)
+	err = initWatches(c, mgr.GetScheme())
 	if err != nil {
 		return err
 	}
@@ -275,12 +276,15 @@ func watchPredicateForConfig() predicate.Funcs {
 	}
 }
 
-func initWatches(c controller.Controller) error {
+func initWatches(c controller.Controller, scheme *runtime.Scheme) error {
 	// Watch for changes to Config
 	err := c.Watch(&source.Kind{Type: &istiov1beta1.Istio{}}, &handler.EnqueueRequestForObject{}, watchPredicateForConfig())
 	if err != nil {
 		return err
 	}
+
+	// Initialize owner matcher
+	ownerMatcher := k8sutil.NewOwnerReferenceMatcher(&istiov1beta1.Istio{}, true, scheme)
 
 	// Watch for changes to resources managed by the operator
 	for _, t := range []runtime.Object{
@@ -301,6 +305,13 @@ func initWatches(c controller.Controller) error {
 				return false
 			},
 			DeleteFunc: func(e event.DeleteEvent) bool {
+				related, object, err := ownerMatcher.Match(e.Object)
+				if err != nil {
+					log.Error(err, "could not determine relation", "kind", e.Object.GetObjectKind())
+				}
+				if related {
+					log.Info("related object deleted", "trigger", object.GetName())
+				}
 				return true
 			},
 			UpdateFunc: func(e event.UpdateEvent) bool {
@@ -309,6 +320,13 @@ func initWatches(c controller.Controller) error {
 					log.Error(err, "could not match objects", "kind", e.ObjectOld.GetObjectKind())
 				} else if objectsEquals {
 					return false
+				}
+				related, object, err := ownerMatcher.Match(e.ObjectNew)
+				if err != nil {
+					log.Error(err, "could not determine relation", "kind", e.ObjectNew.GetObjectKind())
+				}
+				if related {
+					log.Info("related object changed", "trigger", object.GetName())
 				}
 				return true
 			},
