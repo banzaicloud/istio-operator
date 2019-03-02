@@ -64,15 +64,38 @@ spec:
             gateways:
               description: Gateways configuration options
               properties:
-                maxReplicas:
-                  format: int32
-                  type: integer
-                minReplicas:
-                  format: int32
-                  type: integer
-                replicaCount:
-                  format: int32
-                  type: integer
+                egress:
+                  properties:
+                    maxReplicas:
+                      format: int32
+                      type: integer
+                    minReplicas:
+                      format: int32
+                      type: integer
+                    replicaCount:
+                      format: int32
+                      type: integer
+                    serviceAnnotations:
+                      type: object
+                    serviceLabels:
+                      type: object
+                  type: object
+                ingress:
+                  properties:
+                    maxReplicas:
+                      format: int32
+                      type: integer
+                    minReplicas:
+                      format: int32
+                      type: integer
+                    replicaCount:
+                      format: int32
+                      type: integer
+                    serviceAnnotations:
+                      type: object
+                    serviceLabels:
+                      type: object
+                  type: object
               type: object
             includeIPRanges:
               description: IncludeIPRanges the range where to capture egress traffic

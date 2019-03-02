@@ -22,7 +22,7 @@ import (
 )
 
 func ObjectMeta(name string, labels map[string]string, config *istiov1beta1.Istio) metav1.ObjectMeta {
-	o := metav1.ObjectMeta{
+	return metav1.ObjectMeta{
 		Name:      name,
 		Namespace: config.Namespace,
 		Labels:    labels,
@@ -35,11 +35,16 @@ func ObjectMeta(name string, labels map[string]string, config *istiov1beta1.Isti
 			},
 		},
 	}
+}
+
+func ObjectMetaWithAnnotations(name string, labels map[string]string, annotations map[string]string, config *istiov1beta1.Istio) metav1.ObjectMeta {
+	o := ObjectMeta(name, labels, config)
+	o.Annotations = annotations
 	return o
 }
 
 func ObjectMetaClusterScope(name string, labels map[string]string, config *istiov1beta1.Istio) metav1.ObjectMeta {
-	o := metav1.ObjectMeta{
+	return metav1.ObjectMeta{
 		Name:   name,
 		Labels: labels,
 		OwnerReferences: []metav1.OwnerReference{
@@ -51,7 +56,6 @@ func ObjectMetaClusterScope(name string, labels map[string]string, config *istio
 			},
 		},
 	}
-	return o
 }
 
 func ControlPlaneAuthPolicy(enabled bool) string {

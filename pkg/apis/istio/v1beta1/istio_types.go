@@ -70,14 +70,23 @@ func SetDefaults(config *Istio) {
 	}
 
 	// Gateways config
-	if config.Spec.Gateways.ReplicaCount == 0 {
-		config.Spec.Gateways.ReplicaCount = defaultReplicaCount
+	if config.Spec.Gateways.IngressConfig.ReplicaCount == 0 {
+		config.Spec.Gateways.IngressConfig.ReplicaCount = defaultReplicaCount
 	}
-	if config.Spec.Gateways.MinReplicas == 0 {
-		config.Spec.Gateways.MinReplicas = defaultMinReplicas
+	if config.Spec.Gateways.IngressConfig.MinReplicas == 0 {
+		config.Spec.Gateways.IngressConfig.MinReplicas = defaultMinReplicas
 	}
-	if config.Spec.Gateways.MaxReplicas == 0 {
-		config.Spec.Gateways.MaxReplicas = defaultMaxReplicas
+	if config.Spec.Gateways.IngressConfig.MaxReplicas == 0 {
+		config.Spec.Gateways.IngressConfig.MaxReplicas = defaultMaxReplicas
+	}
+	if config.Spec.Gateways.EgressConfig.ReplicaCount == 0 {
+		config.Spec.Gateways.EgressConfig.ReplicaCount = defaultReplicaCount
+	}
+	if config.Spec.Gateways.EgressConfig.MinReplicas == 0 {
+		config.Spec.Gateways.EgressConfig.MinReplicas = defaultMinReplicas
+	}
+	if config.Spec.Gateways.EgressConfig.MaxReplicas == 0 {
+		config.Spec.Gateways.EgressConfig.MaxReplicas = defaultMaxReplicas
 	}
 
 	// Mixer config
@@ -130,9 +139,16 @@ type GalleyConfiguration struct {
 
 // GatewaysConfiguration defines config options for Gateways
 type GatewaysConfiguration struct {
-	ReplicaCount int32 `json:"replicaCount,omitempty"`
-	MinReplicas  int32 `json:"minReplicas,omitempty"`
-	MaxReplicas  int32 `json:"maxReplicas,omitempty"`
+	IngressConfig GatewayConfiguration `json:"ingress,omitempty"`
+	EgressConfig  GatewayConfiguration `json:"egress,omitempty"`
+}
+
+type GatewayConfiguration struct {
+	ReplicaCount       int32             `json:"replicaCount,omitempty"`
+	MinReplicas        int32             `json:"minReplicas,omitempty"`
+	MaxReplicas        int32             `json:"maxReplicas,omitempty"`
+	ServiceAnnotations map[string]string `json:"serviceAnnotations,omitempty"`
+	ServiceLabels      map[string]string `json:"serviceLabels,omitempty"`
 }
 
 // MixerConfiguration defines config options for Mixer

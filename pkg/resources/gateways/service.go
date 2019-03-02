@@ -18,14 +18,16 @@ package gateways
 
 import (
 	"github.com/banzaicloud/istio-operator/pkg/resources/templates"
+	"github.com/banzaicloud/istio-operator/pkg/util"
 	apiv1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/util/intstr"
 )
 
 func (r *Reconciler) service(gw string) runtime.Object {
+	gwConfig := r.getGatewayConfig(gw)
 	return &apiv1.Service{
-		ObjectMeta: templates.ObjectMeta(gatewayName(gw), labelSelector(gw), r.Config),
+		ObjectMeta: templates.ObjectMetaWithAnnotations(gatewayName(gw), util.MergeLabels(labelSelector(gw), gwConfig.ServiceLabels), gwConfig.ServiceAnnotations, r.Config),
 		Spec: apiv1.ServiceSpec{
 			Type:     serviceType(gw),
 			Ports:    servicePorts(gw),
@@ -36,7 +38,7 @@ func (r *Reconciler) service(gw string) runtime.Object {
 
 func servicePorts(gw string) []apiv1.ServicePort {
 	switch gw {
-	case "ingressgateway":
+	case ingress:
 		return []apiv1.ServicePort{
 			{Port: 80, Protocol: apiv1.ProtocolTCP, TargetPort: intstr.FromInt(80), Name: "http2", NodePort: 31380},
 			{Port: 443, Protocol: apiv1.ProtocolTCP, TargetPort: intstr.FromInt(443), Name: "https", NodePort: 31390},
@@ -47,7 +49,7 @@ func servicePorts(gw string) []apiv1.ServicePort {
 			{Port: 15030, Protocol: apiv1.ProtocolTCP, TargetPort: intstr.FromInt(15030), Name: "http2-prometheus", NodePort: 31440},
 			{Port: 15031, Protocol: apiv1.ProtocolTCP, TargetPort: intstr.FromInt(15031), Name: "http2-grafana", NodePort: 31450},
 		}
-	case "egressgateway":
+	case egress:
 		return []apiv1.ServicePort{
 			{Port: 80, Name: "http2", Protocol: apiv1.ProtocolTCP, TargetPort: intstr.FromInt(80)},
 			{Port: 443, Name: "https", Protocol: apiv1.ProtocolTCP, TargetPort: intstr.FromInt(443)},
@@ -58,9 +60,9 @@ func servicePorts(gw string) []apiv1.ServicePort {
 
 func serviceType(gw string) apiv1.ServiceType {
 	switch gw {
-	case "ingressgateway":
+	case ingress:
 		return apiv1.ServiceTypeLoadBalancer
-	case "egressgateway":
+	case egress:
 		return apiv1.ServiceTypeClusterIP
 	}
 	return ""
