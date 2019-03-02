@@ -19,20 +19,26 @@ package mixer
 import (
 	"fmt"
 
-	"github.com/banzaicloud/istio-operator/pkg/resources/templates"
-	"github.com/banzaicloud/istio-operator/pkg/util"
 	appsv1 "k8s.io/api/apps/v1"
 	apiv1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
+	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/apimachinery/pkg/util/intstr"
+
+	"github.com/banzaicloud/istio-operator/pkg/k8sutil"
+	"github.com/banzaicloud/istio-operator/pkg/resources/templates"
+	"github.com/banzaicloud/istio-operator/pkg/util"
 )
 
 func (r *Reconciler) deployment(t string) runtime.Object {
 	return &appsv1.Deployment{
 		ObjectMeta: templates.ObjectMeta(deploymentName(t), labelSelector, r.Config),
 		Spec: appsv1.DeploymentSpec{
-			Replicas: util.IntPointer(r.Config.Spec.Mixer.ReplicaCount),
+			Replicas: util.IntPointer(k8sutil.GetHPAReplicaCountOrDefault(r.Client, types.NamespacedName{
+				Name:      hpaName(t),
+				Namespace: r.Config.Namespace,
+			}, r.Config.Spec.Mixer.ReplicaCount)),
 			Selector: &metav1.LabelSelector{
 				MatchLabels: util.MergeLabels(labelSelector, util.MergeLabels(appLabel(t), mixerTypeLabel(t))),
 			},
