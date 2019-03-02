@@ -24,6 +24,7 @@ import (
 	"github.com/pkg/errors"
 	corev1 "k8s.io/api/core/v1"
 	k8serrors "k8s.io/apimachinery/pkg/api/errors"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/types"
 	"sigs.k8s.io/controller-runtime/pkg/client"
@@ -70,7 +71,7 @@ func add(mgr manager.Manager, r reconcile.Reconciler) error {
 	}
 
 	// Watch for changes to RemoteConfig
-	err = c.Watch(&source.Kind{Type: &operatorv1beta1.RemoteIstio{}}, &handler.EnqueueRequestForObject{}, getWatchPredicateForRemoteConfig())
+	err = c.Watch(&source.Kind{Type: &operatorv1beta1.RemoteIstio{TypeMeta: metav1.TypeMeta{Kind: "RemoteIstio", APIVersion: "istio.banzaicloud.io/v1beta1"}}}, &handler.EnqueueRequestForObject{}, getWatchPredicateForRemoteConfig())
 	if err != nil {
 		return err
 	}

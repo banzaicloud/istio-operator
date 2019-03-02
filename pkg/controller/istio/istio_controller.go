@@ -18,6 +18,7 @@ package istio
 
 import (
 	"context"
+	"flag"
 	"reflect"
 
 	"github.com/go-logr/logr"
@@ -30,6 +31,7 @@ import (
 	rbacv1 "k8s.io/api/rbac/v1"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	k8serrors "k8s.io/apimachinery/pkg/api/errors"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/client-go/dynamic"
@@ -61,6 +63,11 @@ import (
 const finalizerID = "istio-operator.finializer.banzaicloud.io"
 
 var log = logf.Log.WithName("controller")
+var watchCreatedResourcesEvents bool
+
+func init() {
+	flag.BoolVar(&watchCreatedResourcesEvents, "watch-created-resources-events", true, "Whether to watch created resources events")
+}
 
 // Add creates a new Config Controller and adds it to the Manager with default RBAC. The Manager will set fields on the Controller
 // and Start it when the Manager is Started.
@@ -92,7 +99,7 @@ func add(mgr manager.Manager, r reconcile.Reconciler) error {
 	if err != nil {
 		return err
 	}
-	err = initWatches(c, mgr.GetScheme())
+	err = initWatches(c, mgr.GetScheme(), watchCreatedResourcesEvents)
 	if err != nil {
 		return err
 	}
@@ -276,11 +283,15 @@ func watchPredicateForConfig() predicate.Funcs {
 	}
 }
 
-func initWatches(c controller.Controller, scheme *runtime.Scheme) error {
+func initWatches(c controller.Controller, scheme *runtime.Scheme, watchCreatedResourcesEvents bool) error {
 	// Watch for changes to Config
-	err := c.Watch(&source.Kind{Type: &istiov1beta1.Istio{}}, &handler.EnqueueRequestForObject{}, watchPredicateForConfig())
+	err := c.Watch(&source.Kind{Type: &istiov1beta1.Istio{TypeMeta: metav1.TypeMeta{Kind: "Istio", APIVersion: "istio.banzaicloud.io/v1beta1"}}}, &handler.EnqueueRequestForObject{}, watchPredicateForConfig())
 	if err != nil {
 		return err
+	}
+
+	if !watchCreatedResourcesEvents {
+		return nil
 	}
 
 	// Initialize owner matcher
@@ -288,14 +299,14 @@ func initWatches(c controller.Controller, scheme *runtime.Scheme) error {
 
 	// Watch for changes to resources managed by the operator
 	for _, t := range []runtime.Object{
-		&corev1.ServiceAccount{},
-		&rbacv1.ClusterRole{},
-		&rbacv1.ClusterRoleBinding{},
-		&corev1.ConfigMap{},
-		&corev1.Service{},
-		&appsv1.Deployment{},
-		&autoscalingv2beta1.HorizontalPodAutoscaler{},
-		&admissionregistrationv1beta1.MutatingWebhookConfiguration{},
+		&corev1.ServiceAccount{TypeMeta: metav1.TypeMeta{Kind: "ServiceAccount", APIVersion: "v1"}},
+		&rbacv1.ClusterRole{TypeMeta: metav1.TypeMeta{Kind: "ClusterRole", APIVersion: "v1"}},
+		&rbacv1.ClusterRoleBinding{TypeMeta: metav1.TypeMeta{Kind: "ClusterRoleBinding", APIVersion: "v1"}},
+		&corev1.ConfigMap{TypeMeta: metav1.TypeMeta{Kind: "ConfigMap", APIVersion: "v1"}},
+		&corev1.Service{TypeMeta: metav1.TypeMeta{Kind: "Service", APIVersion: "v1"}},
+		&appsv1.Deployment{TypeMeta: metav1.TypeMeta{Kind: "Deployment", APIVersion: "v1"}},
+		&autoscalingv2beta1.HorizontalPodAutoscaler{TypeMeta: metav1.TypeMeta{Kind: "HorizontalPodAutoscaler", APIVersion: "v2beta1"}},
+		&admissionregistrationv1beta1.MutatingWebhookConfiguration{TypeMeta: metav1.TypeMeta{Kind: "MutatingWebhookConfiguration", APIVersion: "v1beta1"}},
 	} {
 		err = c.Watch(&source.Kind{Type: t}, &handler.EnqueueRequestForOwner{
 			IsController: true,
