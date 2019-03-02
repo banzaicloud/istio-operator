@@ -98,7 +98,10 @@ func (r *Reconciler) deployment() runtime.Object {
 								{Name: "PILOT_CACHE_SQUASH", Value: "5"},
 								{Name: "PILOT_PUSH_THROTTLE_COUNT", Value: "100"},
 								{Name: "GODEBUG", Value: "gctrace=2"},
-								{Name: "PILOT_TRACE_SAMPLING", Value: "1.0"},
+								{
+									Name:  "PILOT_TRACE_SAMPLING",
+									Value: fmt.Sprintf("%.2f", r.Config.Spec.Pilot.TraceSampling),
+								},
 							},
 							Resources: apiv1.ResourceRequirements{
 								Requests: apiv1.ResourceList{
