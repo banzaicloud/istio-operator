@@ -152,6 +152,14 @@ type ObjectMeta struct {
 }
 
 func getObjectMeta(objectMeta metav1.ObjectMeta) ObjectMeta {
+	if len(objectMeta.Annotations) == 0 {
+		objectMeta.Annotations = make(map[string]string)
+	}
+
+	if len(objectMeta.Labels) == 0 {
+		objectMeta.Labels = make(map[string]string)
+	}
+
 	return ObjectMeta{
 		Labels:          objectMeta.Labels,
 		Annotations:     objectMeta.Annotations,
