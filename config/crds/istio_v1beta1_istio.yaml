@@ -132,6 +132,9 @@ spec:
                 replicaCount:
                   format: int32
                   type: integer
+                traceSampling:
+                  format: float
+                  type: number
               type: object
             proxy:
               description: Proxy configuration options

@@ -20,109 +20,13 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
-const (
-	defaultImageVersion         = "1.0.5"
-	defaultPilotImage           = "istio/pilot" + ":" + defaultImageVersion
-	defaultCitadelImage         = "istio/citadel" + ":" + defaultImageVersion
-	defaultGalleyImage          = "istio/galley" + ":" + defaultImageVersion
-	defaultMixerImage           = "istio/mixer" + ":" + defaultImageVersion
-	defaultSidecarInjectorImage = "istio/sidecar_injector" + ":" + defaultImageVersion
-	defaultProxyImage           = "istio/proxyv2" + ":" + defaultImageVersion
-	defaultIncludeIPRanges      = "*"
-	defaultReplicaCount         = 1
-	defaultMinReplicas          = 1
-	defaultMaxReplicas          = 5
-)
-
-func SetDefaults(config *Istio) {
-	if config.Spec.IncludeIPRanges == "" {
-		config.Spec.IncludeIPRanges = defaultIncludeIPRanges
-	}
-
-	// Pilot config
-	if config.Spec.Pilot.Image == "" {
-		config.Spec.Pilot.Image = defaultPilotImage
-	}
-	if config.Spec.Pilot.ReplicaCount == 0 {
-		config.Spec.Pilot.ReplicaCount = defaultReplicaCount
-	}
-	if config.Spec.Pilot.MinReplicas == 0 {
-		config.Spec.Pilot.MinReplicas = defaultMinReplicas
-	}
-	if config.Spec.Pilot.MaxReplicas == 0 {
-		config.Spec.Pilot.MaxReplicas = defaultMaxReplicas
-	}
-
-	// Citadel config
-	if config.Spec.Citadel.Image == "" {
-		config.Spec.Citadel.Image = defaultCitadelImage
-	}
-	if config.Spec.Citadel.ReplicaCount == 0 {
-		config.Spec.Citadel.ReplicaCount = defaultReplicaCount
-	}
-
-	// Galley config
-	if config.Spec.Galley.Image == "" {
-		config.Spec.Galley.Image = defaultGalleyImage
-	}
-	if config.Spec.Galley.ReplicaCount == 0 {
-		config.Spec.Galley.ReplicaCount = defaultReplicaCount
-	}
-
-	// Gateways config
-	if config.Spec.Gateways.IngressConfig.ReplicaCount == 0 {
-		config.Spec.Gateways.IngressConfig.ReplicaCount = defaultReplicaCount
-	}
-	if config.Spec.Gateways.IngressConfig.MinReplicas == 0 {
-		config.Spec.Gateways.IngressConfig.MinReplicas = defaultMinReplicas
-	}
-	if config.Spec.Gateways.IngressConfig.MaxReplicas == 0 {
-		config.Spec.Gateways.IngressConfig.MaxReplicas = defaultMaxReplicas
-	}
-	if config.Spec.Gateways.EgressConfig.ReplicaCount == 0 {
-		config.Spec.Gateways.EgressConfig.ReplicaCount = defaultReplicaCount
-	}
-	if config.Spec.Gateways.EgressConfig.MinReplicas == 0 {
-		config.Spec.Gateways.EgressConfig.MinReplicas = defaultMinReplicas
-	}
-	if config.Spec.Gateways.EgressConfig.MaxReplicas == 0 {
-		config.Spec.Gateways.EgressConfig.MaxReplicas = defaultMaxReplicas
-	}
-
-	// Mixer config
-	if config.Spec.Mixer.Image == "" {
-		config.Spec.Mixer.Image = defaultMixerImage
-	}
-	if config.Spec.Mixer.ReplicaCount == 0 {
-		config.Spec.Mixer.ReplicaCount = defaultReplicaCount
-	}
-	if config.Spec.Mixer.MinReplicas == 0 {
-		config.Spec.Mixer.MinReplicas = defaultMinReplicas
-	}
-	if config.Spec.Mixer.MaxReplicas == 0 {
-		config.Spec.Mixer.MaxReplicas = defaultMaxReplicas
-	}
-
-	// SidecarInjector config
-	if config.Spec.SidecarInjector.Image == "" {
-		config.Spec.SidecarInjector.Image = defaultSidecarInjectorImage
-	}
-	if config.Spec.SidecarInjector.ReplicaCount == 0 {
-		config.Spec.SidecarInjector.ReplicaCount = defaultReplicaCount
-	}
-
-	// Proxy config
-	if config.Spec.Proxy.Image == "" {
-		config.Spec.Proxy.Image = defaultProxyImage
-	}
-}
-
 // PilotConfiguration defines config options for Pilot
 type PilotConfiguration struct {
-	Image        string `json:"image,omitempty"`
-	ReplicaCount int32  `json:"replicaCount,omitempty"`
-	MinReplicas  int32  `json:"minReplicas,omitempty"`
-	MaxReplicas  int32  `json:"maxReplicas,omitempty"`
+	Image         string  `json:"image,omitempty"`
+	ReplicaCount  int32   `json:"replicaCount,omitempty"`
+	MinReplicas   int32   `json:"minReplicas,omitempty"`
+	MaxReplicas   int32   `json:"maxReplicas,omitempty"`
+	TraceSampling float32 `json:"traceSampling,omitempty"`
 }
 
 // CitadelConfiguration defines config options for Citadel

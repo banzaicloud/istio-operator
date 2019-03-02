@@ -16,6 +16,7 @@ spec:
     replicaCount: 1
     minReplicas: 1
     maxReplicas: 5
+    traceSampling: 1.0
   citadel:
     image: "istio/citadel:1.0.5"
     replicaCount: 1
