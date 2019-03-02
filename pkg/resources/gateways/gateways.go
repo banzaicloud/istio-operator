@@ -30,6 +30,8 @@ import (
 
 const (
 	componentName = "gateways"
+	ingress       = "ingressgateway"
+	egress        = "egressgateway"
 )
 
 type Reconciler struct {
@@ -58,7 +60,7 @@ func (r *Reconciler) Reconcile(log logr.Logger) error {
 		r.service,
 		r.horizontalPodAutoscaler,
 	}
-	for _, res := range append(resources.ResolveVariations("ingressgateway", rsv), resources.ResolveVariations("egressgateway", rsv)...) {
+	for _, res := range append(resources.ResolveVariations(ingress, rsv), resources.ResolveVariations(egress, rsv)...) {
 		o := res()
 		err := k8sutil.Reconcile(log, r.Client, o)
 		if err != nil {
@@ -68,6 +70,16 @@ func (r *Reconciler) Reconcile(log logr.Logger) error {
 
 	log.Info("Reconciled")
 
+	return nil
+}
+
+func (r *Reconciler) getGatewayConfig(gw string) *istiov1beta1.GatewayConfiguration {
+	switch gw {
+	case ingress:
+		return &r.Config.Spec.Gateways.IngressConfig
+	case egress:
+		return &r.Config.Spec.Gateways.EgressConfig
+	}
 	return nil
 }
 

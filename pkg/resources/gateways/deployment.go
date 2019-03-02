@@ -19,19 +19,21 @@ package gateways
 import (
 	"fmt"
 
-	"github.com/banzaicloud/istio-operator/pkg/resources/templates"
-	"github.com/banzaicloud/istio-operator/pkg/util"
 	appsv1 "k8s.io/api/apps/v1"
 	apiv1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
+
+	"github.com/banzaicloud/istio-operator/pkg/resources/templates"
+	"github.com/banzaicloud/istio-operator/pkg/util"
 )
 
 func (r *Reconciler) deployment(gw string) runtime.Object {
+	gwConfig := r.getGatewayConfig(gw)
 	return &appsv1.Deployment{
 		ObjectMeta: templates.ObjectMeta(gatewayName(gw), labelSelector(gw), r.Config),
 		Spec: appsv1.DeploymentSpec{
-			Replicas: util.IntPointer(r.Config.Spec.Gateways.ReplicaCount),
+			Replicas: util.IntPointer(gwConfig.ReplicaCount),
 			Selector: &metav1.LabelSelector{
 				MatchLabels: labelSelector(gw),
 			},
@@ -135,7 +137,7 @@ func (r *Reconciler) deployment(gw string) runtime.Object {
 
 func (r *Reconciler) ports(gw string) []apiv1.ContainerPort {
 	switch gw {
-	case "ingressgateway":
+	case ingress:
 		return []apiv1.ContainerPort{
 			{ContainerPort: 80, Protocol: apiv1.ProtocolTCP},
 			{ContainerPort: 443, Protocol: apiv1.ProtocolTCP},
@@ -147,7 +149,7 @@ func (r *Reconciler) ports(gw string) []apiv1.ContainerPort {
 			{ContainerPort: 15031, Protocol: apiv1.ProtocolTCP},
 			{ContainerPort: 15090, Protocol: apiv1.ProtocolTCP, Name: "http-envoy-prom"},
 		}
-	case "egressgateway":
+	case egress:
 		return []apiv1.ContainerPort{
 			{ContainerPort: 80, Protocol: apiv1.ProtocolTCP},
 			{ContainerPort: 443, Protocol: apiv1.ProtocolTCP},

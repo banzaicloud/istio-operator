@@ -20,8 +20,6 @@ import (
 	"context"
 	"reflect"
 
-	"github.com/banzaicloud/istio-operator/pkg/util"
-
 	"github.com/goph/emperror"
 	"github.com/pkg/errors"
 	corev1 "k8s.io/api/core/v1"
@@ -41,6 +39,7 @@ import (
 	istiov1beta1 "github.com/banzaicloud/istio-operator/pkg/apis/istio/v1beta1"
 	operatorv1beta1 "github.com/banzaicloud/istio-operator/pkg/apis/istio/v1beta1"
 	"github.com/banzaicloud/istio-operator/pkg/remoteclusters"
+	"github.com/banzaicloud/istio-operator/pkg/util"
 )
 
 const finalizerID = "remote-istio-operator.finializer.banzaicloud.io"
