@@ -40,6 +40,9 @@ func IntstrPointer(i int) *intstr.IntOrString {
 }
 
 func MergeLabels(l map[string]string, l2 map[string]string) map[string]string {
+	if l == nil {
+		l = make(map[string]string)
+	}
 	for lKey, lValue := range l2 {
 		l[lKey] = lValue
 	}
