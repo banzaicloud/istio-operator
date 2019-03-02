@@ -18,6 +18,7 @@ package objectmatch
 
 import (
 	"encoding/json"
+	"reflect"
 
 	"github.com/goph/emperror"
 	corev1 "k8s.io/api/core/v1"
@@ -30,6 +31,10 @@ func (m ServiceMatcher) Match(old, new *corev1.Service) (bool, error) {
 	type Service struct {
 		ObjectMeta
 		Spec corev1.ServiceSpec
+	}
+
+	if !reflect.DeepEqual(getObjectMeta(old.ObjectMeta), getObjectMeta(new.ObjectMeta)) {
+		return false, nil
 	}
 
 	oldData, err := json.Marshal(Service{
