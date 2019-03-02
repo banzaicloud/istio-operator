@@ -23,17 +23,23 @@ import (
 	apiv1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
+	"k8s.io/apimachinery/pkg/types"
 
+	"github.com/banzaicloud/istio-operator/pkg/k8sutil"
 	"github.com/banzaicloud/istio-operator/pkg/resources/templates"
 	"github.com/banzaicloud/istio-operator/pkg/util"
 )
 
 func (r *Reconciler) deployment(gw string) runtime.Object {
 	gwConfig := r.getGatewayConfig(gw)
+
 	return &appsv1.Deployment{
 		ObjectMeta: templates.ObjectMeta(gatewayName(gw), labelSelector(gw), r.Config),
 		Spec: appsv1.DeploymentSpec{
-			Replicas: util.IntPointer(gwConfig.ReplicaCount),
+			Replicas: util.IntPointer(k8sutil.GetHPAReplicaCountOrDefault(r.Client, types.NamespacedName{
+				Name:      hpaName(gw),
+				Namespace: r.Config.Namespace,
+			}, gwConfig.ReplicaCount)),
 			Selector: &metav1.LabelSelector{
 				MatchLabels: labelSelector(gw),
 			},
