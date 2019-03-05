@@ -18,18 +18,15 @@ package citadel
 
 import (
 	"github.com/banzaicloud/istio-operator/pkg/resources/templates"
+	"github.com/banzaicloud/istio-operator/pkg/util"
 	apiv1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/util/intstr"
 )
 
-var serviceLabels = map[string]string{
-	"app": "istio-citadel",
-}
-
 func (r *Reconciler) service() runtime.Object {
 	return &apiv1.Service{
-		ObjectMeta: templates.ObjectMeta(serviceName, serviceLabels, r.Config),
+		ObjectMeta: templates.ObjectMeta(serviceName, util.MergeLabels(labelSelector, citadelLabels), r.Config),
 		Spec: apiv1.ServiceSpec{
 			Ports: []apiv1.ServicePort{
 				{
@@ -40,8 +37,8 @@ func (r *Reconciler) service() runtime.Object {
 				},
 				{
 					Name:       "http-monitoring",
-					Port:       9093,
-					TargetPort: intstr.FromInt(9093),
+					Port:       15014,
+					TargetPort: intstr.FromInt(15014),
 					Protocol:   apiv1.ProtocolTCP,
 				},
 			},

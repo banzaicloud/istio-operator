@@ -17,13 +17,14 @@ limitations under the License.
 package v1beta1
 
 const (
-	defaultImageVersion         = "1.0.5"
-	defaultPilotImage           = "istio/pilot" + ":" + defaultImageVersion
-	defaultCitadelImage         = "istio/citadel" + ":" + defaultImageVersion
-	defaultGalleyImage          = "istio/galley" + ":" + defaultImageVersion
-	defaultMixerImage           = "istio/mixer" + ":" + defaultImageVersion
-	defaultSidecarInjectorImage = "istio/sidecar_injector" + ":" + defaultImageVersion
-	defaultProxyImage           = "istio/proxyv2" + ":" + defaultImageVersion
+	defaultImageHub             = "gcr.io/istio-release"
+	defaultImageVersion         = "release-1.1-latest-daily"
+	defaultPilotImage           = defaultImageHub + "/" + "pilot" + ":" + defaultImageVersion
+	defaultCitadelImage         = defaultImageHub + "/" + "citadel" + ":" + defaultImageVersion
+	defaultGalleyImage          = defaultImageHub + "/" + "galley" + ":" + defaultImageVersion
+	defaultMixerImage           = defaultImageHub + "/" + "mixer" + ":" + defaultImageVersion
+	defaultSidecarInjectorImage = defaultImageHub + "/" + "sidecar_injector" + ":" + defaultImageVersion
+	defaultProxyImage           = defaultImageHub + "/" + "proxyv2" + ":" + defaultImageVersion
 	defaultIncludeIPRanges      = "*"
 	defaultReplicaCount         = 1
 	defaultMinReplicas          = 1

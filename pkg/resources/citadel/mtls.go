@@ -43,11 +43,9 @@ func (r *Reconciler) meshPolicy() *k8sutil.DynamicObject {
 			Version:  "v1alpha1",
 			Resource: "meshpolicies",
 		},
-		Kind: "MeshPolicy",
-		Name: "default",
-		Labels: map[string]string{
-			"app": "istio-security",
-		},
+		Kind:   "MeshPolicy",
+		Name:   "default",
+		Labels: citadelLabels,
 		Spec: map[string]interface{}{
 			"peers": []map[string]interface{}{
 				{
@@ -71,9 +69,7 @@ func (r *Reconciler) destinationRuleDefaultMtls() *k8sutil.DynamicObject {
 		Kind:      "DestinationRule",
 		Name:      "default",
 		Namespace: r.Config.Namespace,
-		Labels: map[string]string{
-			"app": "istio-security",
-		},
+		Labels:    citadelLabels,
 		Spec: map[string]interface{}{
 			"host": "*.local",
 			"trafficPolicy": map[string]interface{}{
@@ -98,9 +94,7 @@ func (r *Reconciler) destinationRuleApiServerMtls() *k8sutil.DynamicObject {
 		Kind:      "DestinationRule",
 		Name:      "api-server",
 		Namespace: r.Config.Namespace,
-		Labels: map[string]string{
-			"app": "istio-security",
-		},
+		Labels:    citadelLabels,
 		Spec: map[string]interface{}{
 			"host": "kubernetes.default.svc.cluster.local",
 			"trafficPolicy": map[string]interface{}{
