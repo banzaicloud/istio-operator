@@ -34,12 +34,13 @@ func (r *Reconciler) deployment() runtime.Object {
 		ObjectMeta: templates.ObjectMeta(deploymentName, util.MergeLabels(sidecarInjectorLabels, labelSelector), r.Config),
 		Spec: appsv1.DeploymentSpec{
 			Replicas: &r.Config.Spec.SidecarInjector.ReplicaCount,
+			Strategy: templates.DefaultRollingUpdateStrategy(),
 			Selector: &metav1.LabelSelector{
-				MatchLabels: labelSelector,
+				MatchLabels: util.MergeLabels(sidecarInjectorLabels, labelSelector),
 			},
 			Template: apiv1.PodTemplateSpec{
 				ObjectMeta: metav1.ObjectMeta{
-					Labels:      labelSelector,
+					Labels:      util.MergeLabels(sidecarInjectorLabels, labelSelector),
 					Annotations: templates.DefaultDeployAnnotations(),
 				},
 				Spec: apiv1.PodSpec{

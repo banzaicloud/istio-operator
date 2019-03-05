@@ -76,6 +76,12 @@ type SidecarInjectorConfiguration struct {
 
 // ProxyConfiguration defines config options for Proxy
 type ProxyConfiguration struct {
+	Image      string `json:"image,omitempty"`
+	Privileged bool   `json:"privileged,omitempty"`
+}
+
+// ProxyInitConfiguration defines config options for Proxy Init containers
+type ProxyInitConfiguration struct {
 	Image string `json:"image,omitempty"`
 }
 
@@ -116,6 +122,9 @@ type IstioSpec struct {
 
 	// Proxy configuration options
 	Proxy ProxyConfiguration `json:"proxy,omitempty"`
+
+	// Proxy Init configuration options
+	ProxyInit ProxyInitConfiguration `json:"proxyInit,omitempty"`
 }
 
 // IstioStatus defines the observed state of Istio
