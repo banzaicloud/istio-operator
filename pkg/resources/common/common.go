@@ -35,13 +35,13 @@ type Reconciler struct {
 	remote bool
 }
 
-func New(client client.Client, config *istiov1beta1.Istio, r bool) *Reconciler {
+func New(client client.Client, config *istiov1beta1.Istio, isRemote bool) *Reconciler {
 	return &Reconciler{
 		Reconciler: resources.Reconciler{
 			Client: client,
 			Config: config,
 		},
-		remote: r,
+		remote: isRemote,
 	}
 }
 
