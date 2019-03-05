@@ -62,28 +62,7 @@ kubectl create namespace istio-system
 ### Create a service account and generate kubeconfig for the operator to be able to deploy resources to the remote cluster
 
 ```bash
-cat <<EOF | kubectl create -f -
----
-apiVersion: v1
-kind: ServiceAccount
-metadata:
-  name: istio-operator
-  namespace: istio-system
----
-apiVersion: rbac.authorization.k8s.io/v1beta1
-kind: ClusterRoleBinding
-metadata:
-  name: istio-operator
-roleRef:
-  apiGroup: rbac.authorization.k8s.io
-  kind: ClusterRole
-  name: cluster-admin
-subjects:
-- kind: ServiceAccount
-  name: istio-operator
-  namespace: istio-system
-EOF
-
+kubectl create -f docs/federation/example/rbac.yml
 REMOTE_KUBECONFIG_FILE=$(docs/federation/example/generate-kubeconfig.sh)
 ```
 
