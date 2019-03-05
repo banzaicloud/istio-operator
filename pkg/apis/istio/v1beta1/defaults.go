@@ -25,6 +25,7 @@ const (
 	defaultMixerImage           = defaultImageHub + "/" + "mixer" + ":" + defaultImageVersion
 	defaultSidecarInjectorImage = defaultImageHub + "/" + "sidecar_injector" + ":" + defaultImageVersion
 	defaultProxyImage           = defaultImageHub + "/" + "proxyv2" + ":" + defaultImageVersion
+	defaultProxyInitImage       = defaultImageHub + "/" + "proxy_init" + ":" + defaultImageVersion
 	defaultIncludeIPRanges      = "*"
 	defaultReplicaCount         = 1
 	defaultMinReplicas          = 1
@@ -108,6 +109,11 @@ func SetDefaults(config *Istio) {
 	// Proxy config
 	if config.Spec.Proxy.Image == "" {
 		config.Spec.Proxy.Image = defaultProxyImage
+	}
+
+	// Proxy Init config
+	if config.Spec.ProxyInit.Image == "" {
+		config.Spec.ProxyInit.Image = defaultProxyInitImage
 	}
 }
 

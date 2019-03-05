@@ -17,10 +17,12 @@ limitations under the License.
 package templates
 
 import (
-	"github.com/banzaicloud/istio-operator/pkg/util"
+	appsv1 "k8s.io/api/apps/v1"
 	autoscalev2beta1 "k8s.io/api/autoscaling/v2beta1"
 	apiv1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
+
+	"github.com/banzaicloud/istio-operator/pkg/util"
 )
 
 func DefaultDeployAnnotations() map[string]string {
@@ -34,6 +36,15 @@ func DefaultResources() apiv1.ResourceRequirements {
 	return apiv1.ResourceRequirements{
 		Requests: apiv1.ResourceList{
 			apiv1.ResourceCPU: resource.MustParse("10m"),
+		},
+	}
+}
+
+func DefaultRollingUpdateStrategy() appsv1.DeploymentStrategy {
+	return appsv1.DeploymentStrategy{
+		RollingUpdate: &appsv1.RollingUpdateDeployment{
+			MaxSurge:       util.IntstrPointer(1),
+			MaxUnavailable: util.IntstrPointer(0),
 		},
 	}
 }
