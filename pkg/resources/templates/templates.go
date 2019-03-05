@@ -18,6 +18,7 @@ package templates
 
 import (
 	istiov1beta1 "github.com/banzaicloud/istio-operator/pkg/apis/istio/v1beta1"
+	"github.com/banzaicloud/istio-operator/pkg/util"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
@@ -28,10 +29,12 @@ func ObjectMeta(name string, labels map[string]string, config *istiov1beta1.Isti
 		Labels:    labels,
 		OwnerReferences: []metav1.OwnerReference{
 			{
-				APIVersion: config.APIVersion,
-				Kind:       config.Kind,
-				Name:       config.Name,
-				UID:        config.UID,
+				APIVersion:         config.APIVersion,
+				Kind:               config.Kind,
+				Name:               config.Name,
+				UID:                config.UID,
+				Controller:         util.BoolPointer(true),
+				BlockOwnerDeletion: util.BoolPointer(true),
 			},
 		},
 	}
@@ -49,10 +52,12 @@ func ObjectMetaClusterScope(name string, labels map[string]string, config *istio
 		Labels: labels,
 		OwnerReferences: []metav1.OwnerReference{
 			{
-				APIVersion: config.APIVersion,
-				Kind:       config.Kind,
-				Name:       config.Name,
-				UID:        config.UID,
+				APIVersion:         config.APIVersion,
+				Kind:               config.Kind,
+				Name:               config.Name,
+				UID:                config.UID,
+				Controller:         util.BoolPointer(true),
+				BlockOwnerDeletion: util.BoolPointer(true),
 			},
 		},
 	}

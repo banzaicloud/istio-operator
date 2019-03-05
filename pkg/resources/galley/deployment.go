@@ -31,7 +31,7 @@ func (r *Reconciler) deployment() runtime.Object {
 	return &appsv1.Deployment{
 		ObjectMeta: templates.ObjectMeta(deploymentName, util.MergeLabels(galleyLabels, labelSelector), r.Config),
 		Spec: appsv1.DeploymentSpec{
-			Replicas: util.IntPointer(r.Config.Spec.Galley.ReplicaCount),
+			Replicas: &r.Config.Spec.Galley.ReplicaCount,
 			Strategy: appsv1.DeploymentStrategy{
 				RollingUpdate: &appsv1.RollingUpdateDeployment{
 					MaxSurge:       util.IntstrPointer(1),

@@ -18,25 +18,21 @@ package istio
 
 import (
 	"context"
+	"flag"
 	"reflect"
-
-	istiov1beta1 "github.com/banzaicloud/istio-operator/pkg/apis/istio/v1beta1"
-	"github.com/banzaicloud/istio-operator/pkg/crds"
-	"github.com/banzaicloud/istio-operator/pkg/resources"
-	"github.com/banzaicloud/istio-operator/pkg/resources/citadel"
-	"github.com/banzaicloud/istio-operator/pkg/resources/common"
-	"github.com/banzaicloud/istio-operator/pkg/resources/galley"
-	"github.com/banzaicloud/istio-operator/pkg/resources/gateways"
-	"github.com/banzaicloud/istio-operator/pkg/resources/mixer"
-	"github.com/banzaicloud/istio-operator/pkg/resources/pilot"
-	"github.com/banzaicloud/istio-operator/pkg/resources/sidecarinjector"
-	"github.com/banzaicloud/istio-operator/pkg/util"
 
 	"github.com/go-logr/logr"
 	"github.com/goph/emperror"
 	"github.com/pkg/errors"
+	admissionregistrationv1beta1 "k8s.io/api/admissionregistration/v1beta1"
+	appsv1 "k8s.io/api/apps/v1"
+	autoscalingv2beta1 "k8s.io/api/autoscaling/v2beta1"
+	corev1 "k8s.io/api/core/v1"
+	rbacv1 "k8s.io/api/rbac/v1"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	k8serrors "k8s.io/apimachinery/pkg/api/errors"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/client-go/dynamic"
 	"sigs.k8s.io/controller-runtime/pkg/client"
@@ -48,11 +44,30 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/reconcile"
 	logf "sigs.k8s.io/controller-runtime/pkg/runtime/log"
 	"sigs.k8s.io/controller-runtime/pkg/source"
+
+	istiov1beta1 "github.com/banzaicloud/istio-operator/pkg/apis/istio/v1beta1"
+	"github.com/banzaicloud/istio-operator/pkg/crds"
+	"github.com/banzaicloud/istio-operator/pkg/k8sutil"
+	"github.com/banzaicloud/istio-operator/pkg/k8sutil/objectmatch"
+	"github.com/banzaicloud/istio-operator/pkg/resources"
+	"github.com/banzaicloud/istio-operator/pkg/resources/citadel"
+	"github.com/banzaicloud/istio-operator/pkg/resources/common"
+	"github.com/banzaicloud/istio-operator/pkg/resources/galley"
+	"github.com/banzaicloud/istio-operator/pkg/resources/gateways"
+	"github.com/banzaicloud/istio-operator/pkg/resources/mixer"
+	"github.com/banzaicloud/istio-operator/pkg/resources/pilot"
+	"github.com/banzaicloud/istio-operator/pkg/resources/sidecarinjector"
+	"github.com/banzaicloud/istio-operator/pkg/util"
 )
 
 const finalizerID = "istio-operator.finializer.banzaicloud.io"
 
 var log = logf.Log.WithName("controller")
+var watchCreatedResourcesEvents bool
+
+func init() {
+	flag.BoolVar(&watchCreatedResourcesEvents, "watch-created-resources-events", true, "Whether to watch created resources events")
+}
 
 // Add creates a new Config Controller and adds it to the Manager with default RBAC. The Manager will set fields on the Controller
 // and Start it when the Manager is Started.
@@ -84,13 +99,10 @@ func add(mgr manager.Manager, r reconcile.Reconciler) error {
 	if err != nil {
 		return err
 	}
-
-	// Watch for changes to Config
-	err = c.Watch(&source.Kind{Type: &istiov1beta1.Istio{}}, &handler.EnqueueRequestForObject{}, watchPredicateForConfig())
+	err = initWatches(c, mgr.GetScheme(), watchCreatedResourcesEvents)
 	if err != nil {
 		return err
 	}
-
 	return nil
 }
 
@@ -221,27 +233,6 @@ func (r *ReconcileConfig) reconcile(logger logr.Logger, config *istiov1beta1.Ist
 	return reconcile.Result{}, nil
 }
 
-func watchPredicateForConfig() predicate.Funcs {
-	return predicate.Funcs{
-		CreateFunc: func(e event.CreateEvent) bool {
-			return true
-		},
-		DeleteFunc: func(e event.DeleteEvent) bool {
-			return true
-		},
-		UpdateFunc: func(e event.UpdateEvent) bool {
-			old := e.ObjectOld.(*istiov1beta1.Istio)
-			new := e.ObjectNew.(*istiov1beta1.Istio)
-			if !reflect.DeepEqual(old.Spec, new.Spec) ||
-				old.GetDeletionTimestamp() != new.GetDeletionTimestamp() ||
-				old.GetGeneration() != new.GetGeneration() {
-				return true
-			}
-			return false
-		},
-	}
-}
-
 func (r *ReconcileConfig) updateStatus(config *istiov1beta1.Istio, status istiov1beta1.ConfigState, errorMessage string) error {
 	typeMeta := config.TypeMeta
 	config.Status.Status = status
@@ -268,5 +259,92 @@ func (r *ReconcileConfig) updateStatus(config *istiov1beta1.Istio, status istiov
 	// update loses the typeMeta of the config that's used later when setting ownerrefs
 	config.TypeMeta = typeMeta
 	log.Info("Istio state updated", "status", status)
+	return nil
+}
+
+func watchPredicateForConfig() predicate.Funcs {
+	return predicate.Funcs{
+		CreateFunc: func(e event.CreateEvent) bool {
+			return true
+		},
+		DeleteFunc: func(e event.DeleteEvent) bool {
+			return true
+		},
+		UpdateFunc: func(e event.UpdateEvent) bool {
+			old := e.ObjectOld.(*istiov1beta1.Istio)
+			new := e.ObjectNew.(*istiov1beta1.Istio)
+			if !reflect.DeepEqual(old.Spec, new.Spec) ||
+				old.GetDeletionTimestamp() != new.GetDeletionTimestamp() ||
+				old.GetGeneration() != new.GetGeneration() {
+				return true
+			}
+			return false
+		},
+	}
+}
+
+func initWatches(c controller.Controller, scheme *runtime.Scheme, watchCreatedResourcesEvents bool) error {
+	// Watch for changes to Config
+	err := c.Watch(&source.Kind{Type: &istiov1beta1.Istio{TypeMeta: metav1.TypeMeta{Kind: "Istio", APIVersion: "istio.banzaicloud.io/v1beta1"}}}, &handler.EnqueueRequestForObject{}, watchPredicateForConfig())
+	if err != nil {
+		return err
+	}
+
+	if !watchCreatedResourcesEvents {
+		return nil
+	}
+
+	// Initialize owner matcher
+	ownerMatcher := k8sutil.NewOwnerReferenceMatcher(&istiov1beta1.Istio{}, true, scheme)
+
+	// Watch for changes to resources managed by the operator
+	for _, t := range []runtime.Object{
+		&corev1.ServiceAccount{TypeMeta: metav1.TypeMeta{Kind: "ServiceAccount", APIVersion: "v1"}},
+		&rbacv1.ClusterRole{TypeMeta: metav1.TypeMeta{Kind: "ClusterRole", APIVersion: "v1"}},
+		&rbacv1.ClusterRoleBinding{TypeMeta: metav1.TypeMeta{Kind: "ClusterRoleBinding", APIVersion: "v1"}},
+		&corev1.ConfigMap{TypeMeta: metav1.TypeMeta{Kind: "ConfigMap", APIVersion: "v1"}},
+		&corev1.Service{TypeMeta: metav1.TypeMeta{Kind: "Service", APIVersion: "v1"}},
+		&appsv1.Deployment{TypeMeta: metav1.TypeMeta{Kind: "Deployment", APIVersion: "v1"}},
+		&autoscalingv2beta1.HorizontalPodAutoscaler{TypeMeta: metav1.TypeMeta{Kind: "HorizontalPodAutoscaler", APIVersion: "v2beta1"}},
+		&admissionregistrationv1beta1.MutatingWebhookConfiguration{TypeMeta: metav1.TypeMeta{Kind: "MutatingWebhookConfiguration", APIVersion: "v1beta1"}},
+	} {
+		err = c.Watch(&source.Kind{Type: t}, &handler.EnqueueRequestForOwner{
+			IsController: true,
+			OwnerType:    &istiov1beta1.Istio{},
+		}, predicate.Funcs{
+			CreateFunc: func(e event.CreateEvent) bool {
+				return false
+			},
+			DeleteFunc: func(e event.DeleteEvent) bool {
+				related, object, err := ownerMatcher.Match(e.Object)
+				if err != nil {
+					log.Error(err, "could not determine relation", "kind", e.Object.GetObjectKind())
+				}
+				if related {
+					log.Info("related object deleted", "trigger", object.GetName())
+				}
+				return true
+			},
+			UpdateFunc: func(e event.UpdateEvent) bool {
+				objectsEquals, err := objectmatch.Match(e.ObjectOld, e.ObjectNew)
+				if err != nil {
+					log.Error(err, "could not match objects", "kind", e.ObjectOld.GetObjectKind())
+				} else if objectsEquals {
+					return false
+				}
+				related, object, err := ownerMatcher.Match(e.ObjectNew)
+				if err != nil {
+					log.Error(err, "could not determine relation", "kind", e.ObjectNew.GetObjectKind())
+				}
+				if related {
+					log.Info("related object changed", "trigger", object.GetName())
+				}
+				return true
+			},
+		})
+		if err != nil {
+			return err
+		}
+	}
 	return nil
 }

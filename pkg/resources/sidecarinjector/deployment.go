@@ -33,7 +33,7 @@ func (r *Reconciler) deployment() runtime.Object {
 	return &appsv1.Deployment{
 		ObjectMeta: templates.ObjectMeta(deploymentName, util.MergeLabels(sidecarInjectorLabels, labelSelector), r.Config),
 		Spec: appsv1.DeploymentSpec{
-			Replicas: util.IntPointer(r.Config.Spec.SidecarInjector.ReplicaCount),
+			Replicas: &r.Config.Spec.SidecarInjector.ReplicaCount,
 			Selector: &metav1.LabelSelector{
 				MatchLabels: labelSelector,
 			},
