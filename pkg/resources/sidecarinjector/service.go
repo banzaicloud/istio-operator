@@ -22,11 +22,12 @@ import (
 	"k8s.io/apimachinery/pkg/util/intstr"
 
 	"github.com/banzaicloud/istio-operator/pkg/resources/templates"
+	"github.com/banzaicloud/istio-operator/pkg/util"
 )
 
 func (r *Reconciler) service() runtime.Object {
 	return &apiv1.Service{
-		ObjectMeta: templates.ObjectMeta(serviceName, labelSelector, r.Config),
+		ObjectMeta: templates.ObjectMeta(serviceName, util.MergeLabels(sidecarInjectorLabels, labelSelector), r.Config),
 		Spec: apiv1.ServiceSpec{
 			Ports: []apiv1.ServicePort{
 				{

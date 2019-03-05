@@ -17,11 +17,14 @@ limitations under the License.
 package sidecarinjector
 
 import (
-	"github.com/banzaicloud/istio-operator/pkg/resources/templates"
-	"github.com/banzaicloud/istio-operator/pkg/util"
+	"strconv"
+
 	"github.com/ghodss/yaml"
 	apiv1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/runtime"
+
+	"github.com/banzaicloud/istio-operator/pkg/resources/templates"
+	"github.com/banzaicloud/istio-operator/pkg/util"
 )
 
 func (r *Reconciler) configMap() runtime.Object {
@@ -45,9 +48,11 @@ func (r *Reconciler) siConfig() string {
 }
 
 func (r *Reconciler) templateConfig() string {
-	return `initContainers:
+	return `rewriteAppHTTPProbe: false
+initContainers:
+[[ if ne (annotation .ObjectMeta ` + "`" + `sidecar.istio.io/interceptionMode` + "`" + ` .ProxyConfig.InterceptionMode) "NONE" ]]
 - name: istio-init
-  image: docker.io/istio/proxy_init:1.0.5
+  image: ` + r.Config.Spec.ProxyInit.Image + `
   args:
   - "-p"
   - [[ .MeshConfig.ProxyListenPort ]]
@@ -63,16 +68,27 @@ func (r *Reconciler) templateConfig() string {
   - "[[ annotation .ObjectMeta ` + "`" + `traffic.sidecar.istio.io/includeInboundPorts` + "`" + ` (includeInboundPorts .Spec.Containers) ]]"
   - "-d"
   - "[[ excludeInboundPort (annotation .ObjectMeta ` + "`" + `status.sidecar.istio.io/port` + "`" + ` "0" ) (annotation .ObjectMeta ` + "`" + `traffic.sidecar.istio.io/excludeInboundPorts` + "`" + ` "" ) ]]"
+  [[ if (isset .ObjectMeta.Annotations ` + "`" + `traffic.sidecar.istio.io/kubevirtInterfaces` + "`" + `) -]]
+  - "-k"
+  - "[[ index .ObjectMeta.Annotations ` + "`" + `traffic.sidecar.istio.io/kubevirtInterfaces` + "`" + ` ]]"
+  [[ end -]]
   imagePullPolicy: IfNotPresent
+  resources:
+    requests:
+      cpu: 10m
+      memory: 10Mi
+    limits:
+      cpu: 100m
+      memory: 50Mi
   securityContext:
     capabilities:
       add:
       - NET_ADMIN
-    privileged: true
+    privileged: ` + strconv.FormatBool(r.Config.Spec.Proxy.Privileged) + `
   restartPolicy: Always
 containers:
 - name: istio-proxy
-  image: "[[ annotation .ObjectMeta ` + "`" + `sidecar.istio.io/proxyImage` + "`" + ` "docker.io/istio/proxyv2:1.0.5" ]]"
+  image: "[[ annotation .ObjectMeta ` + "`" + `sidecar.istio.io/proxyImage` + "` " + r.Config.Spec.Proxy.Image + ` ]]"
   ports:
   - containerPort: 15090
     protocol: TCP
@@ -80,15 +96,17 @@ containers:
   args:
   - proxy
   - sidecar
+  - --domain
+  - $(POD_NAMESPACE).svc.cluster.local
   - --configPath
   - [[ .ProxyConfig.ConfigPath ]]
   - --binaryPath
   - [[ .ProxyConfig.BinaryPath ]]
   - --serviceCluster
   [[ if ne "" (index .ObjectMeta.Labels "app") -]]
-  - [[ index .ObjectMeta.Labels "app" ]]
+  - [[ index .ObjectMeta.Labels "app" ]].$(POD_NAMESPACE)
   [[ else -]]
-  - "istio-proxy"
+  - [[ valueOrDefault .DeploymentMeta.Name "istio-proxy" ]].[[ valueOrDefault .DeploymentMeta.Namespace "default" ]]
   [[ end -]]
   - --drainDuration
   - [[ formatDuration .ProxyConfig.DrainDuration ]]
@@ -96,10 +114,8 @@ containers:
   - [[ formatDuration .ProxyConfig.ParentShutdownDuration ]]
   - --discoveryAddress
   - [[ annotation .ObjectMeta ` + "`" + `sidecar.istio.io/discoveryAddress` + "`" + ` .ProxyConfig.DiscoveryAddress ]]
-  - --discoveryRefreshDelay
-  - [[ formatDuration .ProxyConfig.DiscoveryRefreshDelay ]]
   - --zipkinAddress
-  - [[ .ProxyConfig.ZipkinAddress ]]
+  - [[ .ProxyConfig.GetTracing.GetZipkin.GetAddress ]]
   - --connectTimeout
   - [[ formatDuration .ProxyConfig.ConnectTimeout ]]
   - --proxyAdminPort
@@ -116,6 +132,7 @@ containers:
   - --applicationPorts
   - [[ annotation .ObjectMeta ` + "`" + `readiness.status.sidecar.istio.io/applicationPorts` + "`" + ` (applicationPorts .Spec.Containers) ]]
 [[- end ]]
+  - --trust-domain=""
   env:
   - name: POD_NAME
     valueFrom:
@@ -133,18 +150,26 @@ containers:
     valueFrom:
       fieldRef:
         fieldPath: metadata.name
+  - name: ISTIO_META_CONFIG_NAMESPACE
+      valueFrom:
+        fieldRef:
+          fieldPath: metadata.namespace
   - name: ISTIO_META_INTERCEPTION_MODE
     value: [[ or (index .ObjectMeta.Annotations "sidecar.istio.io/interceptionMode") .ProxyConfig.InterceptionMode.String ]]
   [[ if .ObjectMeta.Annotations ]]
   - name: ISTIO_METAJSON_ANNOTATIONS
     value: |
-           [[ toJson .ObjectMeta.Annotations ]]
+           [[ toJSON .ObjectMeta.Annotations ]]
   [[ end ]]
   [[ if .ObjectMeta.Labels ]]
   - name: ISTIO_METAJSON_LABELS
     value: |
-           [[ toJson .ObjectMeta.Labels ]]
+           [[ toJSON .ObjectMeta.Labels ]]
   [[ end ]]
+  [[- if (isset .ObjectMeta.Annotations ` + "`" + `sidecar.istio.io/bootstrapOverride` + "`" + `) ]]
+  - name: ISTIO_BOOTSTRAP_OVERRIDE
+    value: "/etc/istio/custom-bootstrap/custom_bootstrap.json"
+  [[- end ]]
   imagePullPolicy: IfNotPresent
   [[ if (ne (annotation .ObjectMeta ` + "`" + `status.sidecar.istio.io/port` + "`" + ` "0" ) "0") ]]
   readinessProbe:
@@ -156,6 +181,7 @@ containers:
     failureThreshold: [[ annotation .ObjectMeta ` + "`" + `readiness.status.sidecar.istio.io/failureThreshold` + "`" + ` "30" ]]
   [[ end -]]
   securityContext:
+    privileged: ` + strconv.FormatBool(r.Config.Spec.Proxy.Privileged) + `
     readOnlyRootFilesystem: true
     [[ if eq (annotation .ObjectMeta ` + "`" + `sidecar.istio.io/interceptionMode` + "`" + ` .ProxyConfig.InterceptionMode) "TPROXY" -]]
     capabilities:
@@ -164,8 +190,7 @@ containers:
     runAsGroup: 1337
     [[ else -]]
     runAsUser: 1337
-    [[ end -]]
-  restartPolicy: Always
+    [[- end ]]
   resources:
     [[ if (isset .ObjectMeta.Annotations ` + "`" + `sidecar.istio.io/proxyCPU` + "`" + `) -]]
     requests:
@@ -176,12 +201,27 @@ containers:
       cpu: 10m
   [[ end -]]
   volumeMounts:
+  [[- if (isset .ObjectMeta.Annotations ` + "`" + `sidecar.istio.io/bootstrapOverride` + "`" + `) ]]
+  - mountPath: /etc/istio/custom-bootstrap
+    name: custom-bootstrap-volume
+  [[- end ]]
   - mountPath: /etc/istio/proxy
     name: istio-envoy
   - mountPath: /etc/certs/
     name: istio-certs
     readOnly: true
+    [[- if isset .ObjectMeta.Annotations ` + "`" + `sidecar.istio.io/userVolumeMount` + "`" + ` ]]
+    [[ range $index, $value := fromJSON (index .ObjectMeta.Annotations ` + "`" + `sidecar.istio.io/userVolumeMount` + "`" + `) ]]
+  - name: "[[ $index ]]"
+    [[ toYaml $value | indent 4 ]]
+    [[ end ]]
+    [[- end ]]
 volumes:
+[[- if (isset .ObjectMeta.Annotations ` + "`" + `sidecar.istio.io/bootstrapOverride` + "`" + `) ]]
+- name: custom-bootstrap-volume
+  configMap:
+    name: [[ annotation .ObjectMeta ` + "`" + `sidecar.istio.io/bootstrapOverride` + "` ``" + ` ]]
+[[- end ]]
 - emptyDir:
     medium: Memory
   name: istio-envoy
@@ -193,5 +233,11 @@ volumes:
     [[ else -]]
     secretName: [[ printf "istio.%s" .Spec.ServiceAccountName ]]
     [[ end -]]
+  [[- if isset .ObjectMeta.Annotations ` + "`" + `sidecar.istio.io/userVolume` + "`" + ` ]]
+  [[ range $index, $value := fromJSON (index .ObjectMeta.Annotations ` + "`" + `sidecar.istio.io/userVolume` + "`" + `) ]]
+- name: "[[ $index ]]"
+  [[ toYaml $value | indent 2 ]]
+  [[ end ]]
+  [[ end ]]
 `
 }
