@@ -25,7 +25,7 @@ import (
 func (r *Reconciler) horizontalPodAutoscaler(gw string) runtime.Object {
 	gwConfig := r.getGatewayConfig(gw)
 	return &autoscalev2beta1.HorizontalPodAutoscaler{
-		ObjectMeta: templates.ObjectMeta(hpaName(gw), nil, r.Config),
+		ObjectMeta: templates.ObjectMeta(hpaName(gw), labelSelector(gw), r.Config),
 		Spec: autoscalev2beta1.HorizontalPodAutoscalerSpec{
 			MaxReplicas: gwConfig.MaxReplicas,
 			MinReplicas: &gwConfig.MinReplicas,
