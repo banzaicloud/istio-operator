@@ -35,18 +35,23 @@ func (r *Reconciler) clusterRole() runtime.Object {
 		Rules: []rbacv1.PolicyRule{
 			{
 				APIGroups: []string{""},
+				Resources: []string{"configmaps"},
+				Verbs:     []string{"create", "get", "update"},
+			},
+			{
+				APIGroups: []string{""},
 				Resources: []string{"secrets"},
 				Verbs:     []string{"create", "get", "watch", "list", "update", "delete"},
 			},
 			{
 				APIGroups: []string{""},
-				Resources: []string{"serviceaccounts"},
+				Resources: []string{"serviceaccounts", "services"},
 				Verbs:     []string{"get", "watch", "list"},
 			},
 			{
-				APIGroups: []string{""},
-				Resources: []string{"services"},
-				Verbs:     []string{"get", "watch", "list"},
+				APIGroups: []string{"authentication.k8s.io"},
+				Resources: []string{"tokenreviews"},
+				Verbs:     []string{"create"},
 			},
 		},
 	}

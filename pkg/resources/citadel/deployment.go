@@ -19,12 +19,13 @@ package citadel
 import (
 	"fmt"
 
-	"github.com/banzaicloud/istio-operator/pkg/resources/templates"
-	"github.com/banzaicloud/istio-operator/pkg/util"
 	appsv1 "k8s.io/api/apps/v1"
 	apiv1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
+
+	"github.com/banzaicloud/istio-operator/pkg/resources/templates"
+	"github.com/banzaicloud/istio-operator/pkg/util"
 )
 
 func (r *Reconciler) deployment() runtime.Object {
@@ -33,7 +34,8 @@ func (r *Reconciler) deployment() runtime.Object {
 		"--grpc-port=8060",
 		"--grpc-hostname=citadel",
 		fmt.Sprintf("--citadel-storage-namespace=%s", r.Config.Namespace),
-		fmt.Sprintf("--custom-dns-names=istio-pilot-service-account.%[1]s:istio-pilot.%[1]s,istio-ingressgateway-service-account.%[1]s:istio-ingressgateway.%[1]s", r.Config.Namespace),
+		fmt.Sprintf("--custom-dns-names=istio-pilot-service-account.%[1]s:istio-pilot.%[1]s", r.Config.Namespace),
+		"--monitoring-port=15014",
 	}
 
 	if r.configuration.SelfSignedCA {
@@ -70,7 +72,6 @@ func (r *Reconciler) deployment() runtime.Object {
 
 	var podSpec = apiv1.PodSpec{
 		ServiceAccountName:            serviceAccountName,
-		DeprecatedServiceAccount:      serviceAccountName,
 		DNSPolicy:                     apiv1.DNSClusterFirst,
 		RestartPolicy:                 apiv1.RestartPolicyAlways,
 		TerminationGracePeriodSeconds: util.Int64Pointer(int64(30)),
@@ -102,12 +103,18 @@ func (r *Reconciler) deployment() runtime.Object {
 		ObjectMeta: templates.ObjectMeta(deploymentName, util.MergeLabels(citadelLabels, labelSelector), r.Config),
 		Spec: appsv1.DeploymentSpec{
 			Replicas: &r.Config.Spec.Citadel.ReplicaCount,
+			Strategy: appsv1.DeploymentStrategy{
+				RollingUpdate: &appsv1.RollingUpdateDeployment{
+					MaxSurge:       util.IntstrPointer(1),
+					MaxUnavailable: util.IntstrPointer(0),
+				},
+			},
 			Selector: &metav1.LabelSelector{
-				MatchLabels: labelSelector,
+				MatchLabels: util.MergeLabels(citadelLabels, labelSelector),
 			},
 			Template: apiv1.PodTemplateSpec{
 				ObjectMeta: metav1.ObjectMeta{
-					Labels:      labelSelector,
+					Labels:      util.MergeLabels(citadelLabels, labelSelector),
 					Annotations: templates.DefaultDeployAnnotations(),
 				},
 				Spec: podSpec,
