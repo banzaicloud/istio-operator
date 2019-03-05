@@ -125,6 +125,12 @@ type IstioSpec struct {
 
 	// Proxy Init configuration options
 	ProxyInit ProxyInitConfiguration `json:"proxyInit,omitempty"`
+
+	// Whether to restrict the applications namespace the controller manages
+	WatchOneNamespace bool `json:"watchOneNamespace"`
+
+	// Use the Mesh Control Protocol (MCP)
+	UseMCP bool `json:"useMCP"`
 }
 
 // IstioStatus defines the observed state of Istio
