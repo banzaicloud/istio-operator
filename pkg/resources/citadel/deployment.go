@@ -110,11 +110,11 @@ func (r *Reconciler) deployment() runtime.Object {
 				},
 			},
 			Selector: &metav1.LabelSelector{
-				MatchLabels: util.MergeLabels(labelSelector, citadelLabels),
+				MatchLabels: util.MergeLabels(citadelLabels, labelSelector),
 			},
 			Template: apiv1.PodTemplateSpec{
 				ObjectMeta: metav1.ObjectMeta{
-					Labels:      util.MergeLabels(labelSelector, citadelLabels),
+					Labels:      util.MergeLabels(citadelLabels, labelSelector),
 					Annotations: templates.DefaultDeployAnnotations(),
 				},
 				Spec: podSpec,
