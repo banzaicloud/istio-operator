@@ -33,21 +33,33 @@ func (r *Reconciler) configMap() runtime.Object {
 	return &apiv1.ConfigMap{
 		ObjectMeta: templates.ObjectMeta(IstioConfigMapName, cmLabels, r.Config),
 		Data: map[string]string{
-			"mesh": r.meshConfig(r.Config.Namespace),
+			"mesh":         r.meshConfig(),
+			"meshNetworks": r.meshNetworks(),
 		},
 	}
 }
 
-func (r *Reconciler) meshConfig(ns string) string {
+func (r *Reconciler) meshConfig() string {
 	meshConfig := map[string]interface{}{
 		"disablePolicyChecks": false,
 		"enableTracing":       true,
 		"accessLogFile":       "/dev/stdout",
-		"mixerCheckServer":    fmt.Sprintf("istio-policy.%s.svc.cluster.local:%s", ns, r.mixerPort()),
-		"mixerReportServer":   fmt.Sprintf("istio-telemetry.%s.svc.cluster.local:%s", ns, r.mixerPort()),
+		"accessLogFormat":     "",
+		"accessLogEncoding":   "TEXT",
+		"mixerCheckServer":    r.mixerServer("policy"),
+		"mixerReportServer":   r.mixerServer("telemetry"),
 		"policyCheckFailOpen": false,
+		"ingressService":      "istio-ingressgateway",
 		"sdsUdsPath":          "",
-		"sdsRefreshDelay":     "15s",
+		"enableSdsTokenMount": false,
+		"sdsUseK8sSaJwt":      false,
+		"trustDomain":         "",
+		"outboundTrafficPolicy": map[string]interface{}{
+			"mode": "ALLOW_ANY",
+		},
+		"configSources": []map[string]interface{}{
+			r.defaultConfigSource(),
+		},
 		"defaultConfig": map[string]interface{}{
 			"connectTimeout":         "10s",
 			"configPath":             "/etc/istio/proxy",
@@ -57,25 +69,52 @@ func (r *Reconciler) meshConfig(ns string) string {
 			"parentShutdownDuration": "1m0s",
 			"proxyAdminPort":         15000,
 			"concurrency":            0,
-			"zipkinAddress":          fmt.Sprintf("zipkin.%s:9411", ns),
+			"tracing": map[string]interface{}{
+				"zipkin": map[string]interface{}{
+					"address": fmt.Sprintf("zipkin.%s:9411", r.Config.Namespace),
+				},
+			},
 			"controlPlaneAuthPolicy": templates.ControlPlaneAuthPolicy(r.Config.Spec.ControlPlaneSecurityEnabled),
-			"discoveryAddress":       fmt.Sprintf("istio-pilot.%s:%s", ns, r.discoveryPort()),
+			"discoveryAddress":       fmt.Sprintf("istio-pilot.%s:%s", r.Config.Namespace, r.discoveryPort()),
 		},
 	}
 	marshaledConfig, _ := yaml.Marshal(meshConfig)
 	return string(marshaledConfig)
 }
 
-func (r *Reconciler) mixerPort() string {
-	if r.Config.Spec.ControlPlaneSecurityEnabled {
-		return "15004"
+func (r *Reconciler) meshNetworks() string {
+	meshNetworks := map[string]interface{}{
+		"networks": map[string]interface{}{},
 	}
-	return "9091"
+	marshaledConfig, _ := yaml.Marshal(meshNetworks)
+	return string(marshaledConfig)
+}
+
+func (r *Reconciler) mixerServer(mixerType string) string {
+	if r.remote {
+		return fmt.Sprintf("istio-%s.%s:%s", mixerType, r.Config.Namespace, "15004")
+	}
+	if r.Config.Spec.ControlPlaneSecurityEnabled {
+		return fmt.Sprintf("istio-%s.%s.svc.cluster.local:%s", mixerType, r.Config.Namespace, "15004")
+	}
+	return fmt.Sprintf("istio-%s.%s.svc.cluster.local:%s", mixerType, r.Config.Namespace, "9091")
+}
+
+func (r *Reconciler) defaultConfigSource() map[string]interface{} {
+	cs := map[string]interface{}{
+		"address": fmt.Sprintf("istio-galley.%s.svc:9901", r.Config.Namespace),
+	}
+	if r.Config.Spec.ControlPlaneSecurityEnabled {
+		cs["tlsSettings"] = map[string]interface{}{
+			"mode": "ISTIO_MUTUAL",
+		}
+	}
+	return cs
 }
 
 func (r *Reconciler) discoveryPort() string {
 	if r.Config.Spec.ControlPlaneSecurityEnabled {
-		return "15005"
+		return "15011"
 	}
-	return "15007"
+	return "15010"
 }
