@@ -156,7 +156,7 @@ func (r *Reconciler) ports(gw string) []apiv1.ContainerPort {
 			{ContainerPort: 443, Protocol: apiv1.ProtocolTCP, Name: "https"},
 			{ContainerPort: 31400, Protocol: apiv1.ProtocolTCP, Name: "tcp"},
 			{ContainerPort: 15029, Protocol: apiv1.ProtocolTCP, Name: "https-kiali"},
-			{ContainerPort: 15030, Protocol: apiv1.ProtocolTCP, Name: "https-prometheus"},
+			{ContainerPort: 15030, Protocol: apiv1.ProtocolTCP, Name: "https-prom"},
 			{ContainerPort: 15031, Protocol: apiv1.ProtocolTCP, Name: "https-grafana"},
 			{ContainerPort: 15032, Protocol: apiv1.ProtocolTCP, Name: "https-tracing"},
 			{ContainerPort: 15443, Protocol: apiv1.ProtocolTCP, Name: "tls"},
