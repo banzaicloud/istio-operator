@@ -212,8 +212,8 @@ func (r *ReconcileConfig) reconcile(logger logr.Logger, config *istiov1beta1.Ist
 			SelfSignedCA:     true,
 		}, r.Client, r.dynamic, config),
 		galley.New(r.Client, config),
-		pilot.New(r.Client, r.dynamic, config),
-		gateways.New(r.Client, config),
+		pilot.New(r.Client, config),
+		gateways.New(r.Client, r.dynamic, config),
 		mixer.New(r.Client, r.dynamic, config),
 		sidecarinjector.New(r.Client, config),
 	}

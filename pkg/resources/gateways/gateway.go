@@ -14,7 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package pilot
+package gateways
 
 import (
 	"github.com/banzaicloud/istio-operator/pkg/k8sutil"
@@ -34,7 +34,7 @@ func (r *Reconciler) gateway() *k8sutil.DynamicObject {
 			Resource: "gateways",
 		},
 		Kind:      "Gateway",
-		Name:      gatewayName,
+		Name:      defaultGatewayName,
 		Namespace: r.Config.Namespace,
 		Spec: map[string]interface{}{
 			"servers": []map[string]interface{}{
