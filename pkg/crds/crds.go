@@ -125,6 +125,10 @@ func InitCrds() []*extensionsobj.CustomResourceDefinition {
 		crd("instance", "instances", crdConfigs[Policy], "mixer", "instance", "mixer-instance", extensionsobj.NamespaceScoped),
 		crd("template", "templates", crdConfigs[Policy], "mixer", "template", "mixer-template", extensionsobj.NamespaceScoped),
 		crd("handler", "handlers", crdConfigs[Policy], "mixer", "handler", "mixer-handler", extensionsobj.NamespaceScoped),
+		crd("cloudwatch", "cloudwatches", crdConfigs[Policy], "mixer", "cloudwatch", "mixer-adapter", extensionsobj.NamespaceScoped),
+		crd("dogstatsd", "dogstatsds", crdConfigs[Policy], "mixer", "dogstatsd", "mixer-adapter", extensionsobj.NamespaceScoped),
+		crd("zipkin", "zipkins", crdConfigs[Policy], "mixer", "zipkin", "mixer-adapter", extensionsobj.NamespaceScoped),
+		crd("Sidecar", "Sidecars", crdConfigs[Networking], "istio-pilot", "", "", extensionsobj.NamespaceScoped),
 	}
 }
 
