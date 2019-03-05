@@ -206,7 +206,7 @@ func (r *ReconcileConfig) reconcile(logger logr.Logger, config *istiov1beta1.Ist
 	}
 
 	reconcilers := []resources.ComponentReconciler{
-		common.New(r.Client, config),
+		common.New(r.Client, config, false),
 		citadel.New(citadel.Configuration{
 			DeployMeshPolicy: true,
 			SelfSignedCA:     true,

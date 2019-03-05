@@ -26,7 +26,7 @@ import (
 func (c *Cluster) reconcileDeployment(remoteConfig *istiov1beta1.RemoteIstio) error {
 	c.log.Info("reconciling deployment")
 
-	commonReconciler := common.New(c.ctrlRuntimeClient, c.istioConfig)
+	commonReconciler := common.New(c.ctrlRuntimeClient, c.istioConfig, true)
 	err := commonReconciler.Reconcile(c.log)
 	if err != nil {
 		return err
