@@ -43,8 +43,9 @@ type GalleyConfiguration struct {
 
 // GatewaysConfiguration defines config options for Gateways
 type GatewaysConfiguration struct {
-	IngressConfig GatewayConfiguration `json:"ingress,omitempty"`
-	EgressConfig  GatewayConfiguration `json:"egress,omitempty"`
+	IngressConfig GatewayConfiguration    `json:"ingress,omitempty"`
+	EgressConfig  GatewayConfiguration    `json:"egress,omitempty"`
+	K8sIngress    K8sIngressConfiguration `json:"k8singress,omitempty"`
 }
 
 type GatewayConfiguration struct {
@@ -53,6 +54,10 @@ type GatewayConfiguration struct {
 	MaxReplicas        int32             `json:"maxReplicas,omitempty"`
 	ServiceAnnotations map[string]string `json:"serviceAnnotations,omitempty"`
 	ServiceLabels      map[string]string `json:"serviceLabels,omitempty"`
+}
+
+type K8sIngressConfiguration struct {
+	Enabled bool `json:"enabled,omitempty"`
 }
 
 // MixerConfiguration defines config options for Mixer

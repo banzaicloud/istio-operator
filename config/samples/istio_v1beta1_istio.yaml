@@ -36,6 +36,8 @@ spec:
       maxReplicas: 5
       serviceAnnotations: {}
       serviceLabels: {}
+    k8singress:
+      enabled: false
   mixer:
     image: "istio/mixer:1.0.5"
     replicaCount: 1
