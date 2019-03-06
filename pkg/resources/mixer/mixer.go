@@ -34,7 +34,6 @@ const (
 	serviceAccountName     = "istio-mixer-service-account"
 	clusterRoleName        = "istio-mixer-cluster-role"
 	clusterRoleBindingName = "istio-mixer-cluster-role-binding"
-	configMapName          = "istio-statsd-prom-bridge"
 )
 
 var mixerLabels = map[string]string{
@@ -69,12 +68,12 @@ func (r *Reconciler) Reconcile(log logr.Logger) error {
 		r.serviceAccount,
 		r.clusterRole,
 		r.clusterRoleBinding,
-		r.configMap,
 	}
 	rsv := []resources.ResourceVariation{
 		r.deployment,
 		r.service,
 		r.horizontalPodAutoscaler,
+		r.pdb,
 	}
 	rs = append(rs, resources.ResolveVariations("policy", rsv)...)
 	rs = append(rs, resources.ResolveVariations("telemetry", rsv)...)
@@ -100,8 +99,12 @@ func (r *Reconciler) Reconcile(log logr.Logger) error {
 		{DynamicResource: r.responseSizeMetric},
 		{DynamicResource: r.tcpByteReceivedMetric},
 		{DynamicResource: r.tcpByteSentMetric},
+		{DynamicResource: r.tcpConnectionsOpenedMetric},
+		{DynamicResource: r.tcpConnectionsClosedMetric},
 		{DynamicResource: r.promHttpRule},
 		{DynamicResource: r.promTcpRule},
+		{DynamicResource: r.promTcpConnectionOpenRule},
+		{DynamicResource: r.promTcpConnectionClosedRule},
 		{DynamicResource: r.kubernetesEnvHandler},
 		{DynamicResource: r.attributesKubernetes},
 		{DynamicResource: r.kubeAttrRule},

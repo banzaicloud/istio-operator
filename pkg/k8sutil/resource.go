@@ -27,6 +27,7 @@ import (
 	appsv1 "k8s.io/api/apps/v1"
 	autoscalingv2beta1 "k8s.io/api/autoscaling/v2beta1"
 	corev1 "k8s.io/api/core/v1"
+	policyv1beta1 "k8s.io/api/policy/v1beta1"
 	rbacv1 "k8s.io/api/rbac/v1"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/runtime"
@@ -103,6 +104,10 @@ func Reconcile(log logr.Logger, client runtimeClient.Client, desired runtime.Obj
 			mwc := desired.(*admissionregistrationv1beta1.MutatingWebhookConfiguration)
 			mwc.ResourceVersion = current.(*admissionregistrationv1beta1.MutatingWebhookConfiguration).ResourceVersion
 			desired = mwc
+		case *policyv1beta1.PodDisruptionBudget:
+			pdb := desired.(*policyv1beta1.PodDisruptionBudget)
+			pdb.ResourceVersion = current.(*policyv1beta1.PodDisruptionBudget).ResourceVersion
+			desired = pdb
 		}
 		if err := client.Update(context.TODO(), desired); err != nil {
 			return emperror.WrapWith(err, "updating resource failed", "kind", desiredType, "name", key.Name)

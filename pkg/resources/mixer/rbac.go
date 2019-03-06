@@ -17,10 +17,11 @@ limitations under the License.
 package mixer
 
 import (
-	"github.com/banzaicloud/istio-operator/pkg/resources/templates"
 	apiv1 "k8s.io/api/core/v1"
 	rbacv1 "k8s.io/api/rbac/v1"
 	"k8s.io/apimachinery/pkg/runtime"
+
+	"github.com/banzaicloud/istio-operator/pkg/resources/templates"
 )
 
 func (r *Reconciler) serviceAccount() runtime.Object {
@@ -39,11 +40,6 @@ func (r *Reconciler) clusterRole() runtime.Object {
 				Verbs:     []string{"create", "get", "list", "watch", "patch"},
 			},
 			{
-				APIGroups: []string{"rbac.istio.io"},
-				Resources: []string{"*"},
-				Verbs:     []string{"get", "watch", "list"},
-			},
-			{
 				APIGroups: []string{"apiextensions.k8s.io"},
 				Resources: []string{"customresourcedefinitions"},
 				Verbs:     []string{"get", "watch", "list"},
@@ -54,12 +50,7 @@ func (r *Reconciler) clusterRole() runtime.Object {
 				Verbs:     []string{"get", "watch", "list"},
 			},
 			{
-				APIGroups: []string{"extensions"},
-				Resources: []string{"replicasets"},
-				Verbs:     []string{"get", "watch", "list"},
-			},
-			{
-				APIGroups: []string{"apps"},
+				APIGroups: []string{"extensions", "apps"},
 				Resources: []string{"replicasets"},
 				Verbs:     []string{"get", "watch", "list"},
 			},
