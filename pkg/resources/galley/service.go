@@ -17,10 +17,11 @@ limitations under the License.
 package galley
 
 import (
-	"github.com/banzaicloud/istio-operator/pkg/resources/templates"
 	apiv1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/util/intstr"
+
+	"github.com/banzaicloud/istio-operator/pkg/resources/templates"
 )
 
 var serviceLabels = map[string]string{
@@ -39,9 +40,15 @@ func (r *Reconciler) service() runtime.Object {
 					Protocol:   apiv1.ProtocolTCP,
 				},
 				{
-					Name:       "https-monitoring",
-					Port:       9093,
-					TargetPort: intstr.FromInt(9093),
+					Name:       "http-monitoring",
+					Port:       15014,
+					TargetPort: intstr.FromInt(15014),
+					Protocol:   apiv1.ProtocolTCP,
+				},
+				{
+					Name:       "grpc-mcp",
+					Port:       9901,
+					TargetPort: intstr.FromInt(9901),
 					Protocol:   apiv1.ProtocolTCP,
 				},
 			},
