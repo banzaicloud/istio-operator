@@ -42,7 +42,7 @@ func (r *Reconciler) istioProxyAttributeManifest() *k8sutil.DynamicObject {
 				"request.host":                        map[string]interface{}{"valueType": "STRING"},
 				"request.method":                      map[string]interface{}{"valueType": "STRING"},
 				"request.path":                        map[string]interface{}{"valueType": "STRING"},
-				"request.url":                         map[string]interface{}{"valueType": "STRING"},
+				"request.url_path":                    map[string]interface{}{"valueType": "STRING"},
 				"request.query_params":                map[string]interface{}{"valueType": "STRING_MAP"},
 				"request.reason":                      map[string]interface{}{"valueType": "STRING"},
 				"request.referer":                     map[string]interface{}{"valueType": "STRING"},

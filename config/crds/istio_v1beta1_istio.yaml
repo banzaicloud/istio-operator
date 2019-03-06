@@ -49,6 +49,10 @@ spec:
               description: ControlPlaneSecurityEnabled control plane services are
                 communicating through mTLS
               type: boolean
+            defaultConfigVisibility:
+              description: Set the default set of namespaces to which services, service
+                entries, virtual services, destination rules should be exported to
+              type: string
             excludeIPRanges:
               description: ExcludeIPRanges the range where not to capture egress traffic
               type: string
@@ -159,8 +163,23 @@ spec:
                   format: int32
                   type: integer
               type: object
+            useMCP:
+              description: Use the Mesh Control Protocol (MCP)
+              type: boolean
+            watchAdapterCRDs:
+              description: Whether or not to establish watches for adapter-specific
+                CRDs
+              type: boolean
+            watchOneNamespace:
+              description: Whether to restrict the applications namespace the controller
+                manages
+              type: boolean
           required:
           - mtls
+          - watchOneNamespace
+          - useMCP
+          - defaultConfigVisibility
+          - watchAdapterCRDs
           type: object
         status:
           type: object
