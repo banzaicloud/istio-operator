@@ -54,13 +54,6 @@ func (r *Reconciler) deployment() runtime.Object {
 	if r.Config.Spec.WatchOneNamespace {
 		containerArgs = append(containerArgs, "-a", r.Config.Namespace)
 	}
-	if r.Config.Spec.UseMCP {
-		if r.Config.Spec.ControlPlaneSecurityEnabled {
-			containerArgs = append(containerArgs, "--mcpServerAddrs", "mcps://istio-galley."+r.Config.Namespace+".svc:9901")
-		} else {
-			containerArgs = append(containerArgs, "--mcpServerAddrs", "mcp://istio-galley."+r.Config.Namespace+".svc:9901")
-		}
-	}
 
 	return &appsv1.Deployment{
 		ObjectMeta: templates.ObjectMeta(deploymentName, util.MergeLabels(pilotLabels, labelSelector), r.Config),
