@@ -134,6 +134,9 @@ type IstioSpec struct {
 
 	// Set the default set of namespaces to which services, service entries, virtual services, destination rules should be exported to
 	DefaultConfigVisibility string `json:"defaultConfigVisibility"`
+
+	// Whether or not to establish watches for adapter-specific CRDs
+	WatchAdapterCRDs bool `json:"watchAdapterCRDs"`
 }
 
 func (s IstioSpec) GetDefaultConfigVisibility() string {

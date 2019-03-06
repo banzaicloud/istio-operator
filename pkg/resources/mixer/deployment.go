@@ -103,17 +103,23 @@ func (r *Reconciler) mixerContainer(t string, ns string) apiv1.Container {
 
 	if r.Config.Spec.UseMCP {
 		if r.Config.Spec.ControlPlaneSecurityEnabled {
-			containerArgs = append(containerArgs, "--mcpServerAddrs", "mcps://istio-galley."+r.Config.Namespace+".svc:9901")
+			containerArgs = append(containerArgs, "--configStoreURL", "mcps://istio-galley."+r.Config.Namespace+".svc:9901")
 			if t == "telemetry" {
 				containerArgs = append(containerArgs, "--certFile", "/etc/certs/cert-chain.pem")
 				containerArgs = append(containerArgs, "--keyFile", "/etc/certs/key.pem")
 				containerArgs = append(containerArgs, "--caCertFile", "/etc/certs/root-cert.pem")
 			}
 		} else {
-			containerArgs = append(containerArgs, "--mcpServerAddrs", "mcp://istio-galley."+r.Config.Namespace+".svc:9901")
+			containerArgs = append(containerArgs, "--configStoreURL", "mcp://istio-galley."+r.Config.Namespace+".svc:9901")
 		}
 	} else {
 		containerArgs = append(containerArgs, "--configStoreURL", "k8s://")
+	}
+
+	if r.Config.Spec.WatchAdapterCRDs {
+		containerArgs = append(containerArgs, "--useAdapterCRDs=true")
+	} else {
+		containerArgs = append(containerArgs, "--useAdapterCRDs=false")
 	}
 
 	if t == "telemetry" {
