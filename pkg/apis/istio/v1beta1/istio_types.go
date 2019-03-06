@@ -138,10 +138,10 @@ type IstioSpec struct {
 	UseMCP bool `json:"useMCP,omitempty"`
 
 	// Set the default set of namespaces to which services, service entries, virtual services, destination rules should be exported to
-	DefaultConfigVisibility string `json:"defaultConfigVisibility"`
+	DefaultConfigVisibility string `json:"defaultConfigVisibility,omitempty"`
 
 	// Whether or not to establish watches for adapter-specific CRDs
-	WatchAdapterCRDs bool `json:"watchAdapterCRDs"`
+	WatchAdapterCRDs bool `json:"watchAdapterCRDs,omitempty"`
 
 	// Enable pod disruption budget for the control plane, which is used to ensure Istio control plane components are gradually upgraded or recovered
 	DefaultPodDisruptionBudget PDBConfiguration `json:"defaultPodDisruptionBudget,omitempty"`
@@ -151,7 +151,6 @@ func (s IstioSpec) GetDefaultConfigVisibility() string {
 	if s.DefaultConfigVisibility == "" || s.DefaultConfigVisibility == "." {
 		return s.DefaultConfigVisibility
 	}
-
 	return "*"
 }
 
