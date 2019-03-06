@@ -27,6 +27,7 @@ import (
 	appsv1 "k8s.io/api/apps/v1"
 	autoscalev2beta1 "k8s.io/api/autoscaling/v2beta1"
 	corev1 "k8s.io/api/core/v1"
+	policyv1beta1 "k8s.io/api/policy/v1beta1"
 	rbacv1 "k8s.io/api/rbac/v1"
 	extensionsobj "k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1beta1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -137,6 +138,16 @@ func Match(old, new interface{}) (bool, error) {
 		newObject := new.(*admissionv1beta1.MutatingWebhookConfiguration)
 
 		m := MutatingWebhookConfigurationMatcher{}
+		ok, err := m.Match(oldObject, newObject)
+		if err != nil {
+			return false, errors.WithStack(err)
+		}
+		return ok, nil
+	case *policyv1beta1.PodDisruptionBudget:
+		oldObject := old.(*policyv1beta1.PodDisruptionBudget)
+		newObject := new.(*policyv1beta1.PodDisruptionBudget)
+
+		m := PodDisruptionBudgetMatcher{}
 		ok, err := m.Match(oldObject, newObject)
 		if err != nil {
 			return false, errors.WithStack(err)

@@ -196,7 +196,8 @@ func gwEnvVars() []apiv1.EnvVar {
 			Name: "ISTIO_META_CONFIG_NAMESPACE",
 			ValueFrom: &apiv1.EnvVarSource{
 				FieldRef: &apiv1.ObjectFieldSelector{
-					FieldPath: "metadata.namespace",
+					FieldPath:  "metadata.namespace",
+					APIVersion: "v1",
 				},
 			},
 		},
