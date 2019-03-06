@@ -17,9 +17,10 @@ limitations under the License.
 package mixer
 
 import (
+	"k8s.io/apimachinery/pkg/runtime/schema"
+
 	"github.com/banzaicloud/istio-operator/pkg/k8sutil"
 	"github.com/banzaicloud/istio-operator/pkg/util"
-	"k8s.io/apimachinery/pkg/runtime/schema"
 )
 
 func (r *Reconciler) prometheusHandler() *k8sutil.DynamicObject {
@@ -27,67 +28,82 @@ func (r *Reconciler) prometheusHandler() *k8sutil.DynamicObject {
 		Gvr: schema.GroupVersionResource{
 			Group:    "config.istio.io",
 			Version:  "v1alpha2",
-			Resource: "prometheuses",
+			Resource: "handlers",
 		},
-		Kind:      "prometheus",
-		Name:      "handler",
+		Kind:      "handler",
+		Name:      "prometheus",
 		Namespace: r.Config.Namespace,
 		Spec: map[string]interface{}{
-			"metrics": []map[string]interface{}{
-				{
-					"name":          "requests_total",
-					"instance_name": "requestcount.metric." + r.Config.Namespace,
-					"kind":          "COUNTER",
-					"label_names":   metricLabels(),
-				},
-				{
-					"name":          "request_duration_seconds",
-					"instance_name": "requestduration.metric." + r.Config.Namespace,
-					"kind":          "DISTRIBUTION",
-					"label_names":   metricLabels(),
-					"buckets": map[string]interface{}{
-						"explicit_buckets": map[string]interface{}{
-							"bounds": util.EmptyTypedFloatSlice(0.005, 0.01, 0.025, 0.05, 0.1, 0.25, 0.5, 1, 2.5, 5, 10),
+			"compiledAdapter": "prometheus",
+			"params": map[string]interface{}{
+				"metrics": []map[string]interface{}{
+					{
+						"name":          "requests_total",
+						"instance_name": "requestcount.metric." + r.Config.Namespace,
+						"kind":          "COUNTER",
+						"label_names":   metricLabels(),
+					},
+					{
+						"name":          "request_duration_seconds",
+						"instance_name": "requestduration.metric." + r.Config.Namespace,
+						"kind":          "DISTRIBUTION",
+						"label_names":   metricLabels(),
+						"buckets": map[string]interface{}{
+							"explicit_buckets": map[string]interface{}{
+								"bounds": util.EmptyTypedFloatSlice(0.005, 0.01, 0.025, 0.05, 0.1, 0.25, 0.5, 1, 2.5, 5, 10),
+							},
 						},
 					},
-				},
-				{
-					"name":          "request_bytes",
-					"instance_name": "requestsize.metric." + r.Config.Namespace,
-					"kind":          "DISTRIBUTION",
-					"label_names":   metricLabels(),
-					"buckets": map[string]interface{}{
-						"exponentialBuckets": map[string]interface{}{
-							"numFiniteBuckets": 8,
-							"scale":            1,
-							"growthFactor":     10,
+					{
+						"name":          "request_bytes",
+						"instance_name": "requestsize.metric." + r.Config.Namespace,
+						"kind":          "DISTRIBUTION",
+						"label_names":   metricLabels(),
+						"buckets": map[string]interface{}{
+							"exponentialBuckets": map[string]interface{}{
+								"numFiniteBuckets": 8,
+								"scale":            1,
+								"growthFactor":     10,
+							},
 						},
 					},
-				},
-				{
-					"name":          "response_bytes",
-					"instance_name": "responsesize.metric." + r.Config.Namespace,
-					"kind":          "DISTRIBUTION",
-					"label_names":   metricLabels(),
-					"buckets": map[string]interface{}{
-						"exponentialBuckets": map[string]interface{}{
-							"numFiniteBuckets": 8,
-							"scale":            1,
-							"growthFactor":     10,
+					{
+						"name":          "response_bytes",
+						"instance_name": "responsesize.metric." + r.Config.Namespace,
+						"kind":          "DISTRIBUTION",
+						"label_names":   metricLabels(),
+						"buckets": map[string]interface{}{
+							"exponentialBuckets": map[string]interface{}{
+								"numFiniteBuckets": 8,
+								"scale":            1,
+								"growthFactor":     10,
+							},
 						},
 					},
-				},
-				{
-					"name":          "tcp_sent_bytes_total",
-					"instance_name": "tcpbytesent.metric." + r.Config.Namespace,
-					"kind":          "COUNTER",
-					"label_names":   tcpMetricLabels(),
-				},
-				{
-					"name":          "tcp_received_bytes_total",
-					"instance_name": "tcpbytereceived.metric." + r.Config.Namespace,
-					"kind":          "COUNTER",
-					"label_names":   tcpMetricLabels(),
+					{
+						"name":          "tcp_sent_bytes_total",
+						"instance_name": "tcpbytesent.metric." + r.Config.Namespace,
+						"kind":          "COUNTER",
+						"label_names":   tcpMetricLabels(),
+					},
+					{
+						"name":          "tcp_received_bytes_total",
+						"instance_name": "tcpbytereceived.metric." + r.Config.Namespace,
+						"kind":          "COUNTER",
+						"label_names":   tcpMetricLabels(),
+					},
+					{
+						"name":          "tcp_connections_opened_total",
+						"instance_name": "tcpconnectionsopened.metric." + r.Config.Namespace,
+						"kind":          "COUNTER",
+						"label_names":   tcpMetricLabels(),
+					},
+					{
+						"name":          "tcp_connections_closed_total",
+						"instance_name": "tcpconnectionsclosed.metric." + r.Config.Namespace,
+						"kind":          "COUNTER",
+						"label_names":   tcpMetricLabels(),
+					},
 				},
 			},
 		},
@@ -209,6 +225,44 @@ func (r *Reconciler) tcpByteReceivedMetric() *k8sutil.DynamicObject {
 	}
 }
 
+func (r *Reconciler) tcpConnectionsOpenedMetric() *k8sutil.DynamicObject {
+	return &k8sutil.DynamicObject{
+		Gvr: schema.GroupVersionResource{
+			Group:    "config.istio.io",
+			Version:  "v1alpha2",
+			Resource: "metrics",
+		},
+		Kind:      "metric",
+		Name:      "tcpconnectionsopened",
+		Namespace: r.Config.Namespace,
+		Spec: map[string]interface{}{
+			"value":                   "1",
+			"dimensions":              tcpMetricDimensions(),
+			"monitored_resource_type": `"UNSPECIFIED"`,
+		},
+		Owner: r.Config,
+	}
+}
+
+func (r *Reconciler) tcpConnectionsClosedMetric() *k8sutil.DynamicObject {
+	return &k8sutil.DynamicObject{
+		Gvr: schema.GroupVersionResource{
+			Group:    "config.istio.io",
+			Version:  "v1alpha2",
+			Resource: "metrics",
+		},
+		Kind:      "metric",
+		Name:      "tcpconnectionsclosed",
+		Namespace: r.Config.Namespace,
+		Spec: map[string]interface{}{
+			"value":                   "1",
+			"dimensions":              tcpMetricDimensions(),
+			"monitored_resource_type": `"UNSPECIFIED"`,
+		},
+		Owner: r.Config,
+	}
+}
+
 func (r *Reconciler) promHttpRule() *k8sutil.DynamicObject {
 	return &k8sutil.DynamicObject{
 		Gvr: schema.GroupVersionResource{
@@ -222,11 +276,11 @@ func (r *Reconciler) promHttpRule() *k8sutil.DynamicObject {
 		Spec: map[string]interface{}{
 			"actions": []interface{}{
 				map[string]interface{}{
-					"handler":   "handler.prometheus",
+					"handler":   "prometheus",
 					"instances": util.EmptyTypedStrSlice("requestcount.metric", "requestduration.metric", "requestsize.metric", "responsesize.metric"),
 				},
 			},
-			"match": `context.protocol == "http" || context.protocol == "grpc"`,
+			"match": `(context.protocol == "http" || context.protocol == "grpc") && (match((request.useragent | "-"), "kube-probe*") == false)`,
 		},
 		Owner: r.Config,
 	}
@@ -245,11 +299,57 @@ func (r *Reconciler) promTcpRule() *k8sutil.DynamicObject {
 		Spec: map[string]interface{}{
 			"actions": []interface{}{
 				map[string]interface{}{
-					"handler":   "handler.prometheus",
+					"handler":   "prometheus",
 					"instances": util.EmptyTypedStrSlice("tcpbytesent.metric", "tcpbytereceived.metric"),
 				},
 			},
 			"match": `context.protocol == "tcp"`,
+		},
+		Owner: r.Config,
+	}
+}
+
+func (r *Reconciler) promTcpConnectionOpenRule() *k8sutil.DynamicObject {
+	return &k8sutil.DynamicObject{
+		Gvr: schema.GroupVersionResource{
+			Group:    "config.istio.io",
+			Version:  "v1alpha2",
+			Resource: "rules",
+		},
+		Kind:      "rule",
+		Name:      "promtcpconnectionopen",
+		Namespace: r.Config.Namespace,
+		Spec: map[string]interface{}{
+			"actions": []interface{}{
+				map[string]interface{}{
+					"handler":   "prometheus",
+					"instances": util.EmptyTypedStrSlice("tcpconnectionsopened.metric"),
+				},
+			},
+			"match": `context.protocol == "tcp" && ((connection.event | "na") == "open")`,
+		},
+		Owner: r.Config,
+	}
+}
+
+func (r *Reconciler) promTcpConnectionClosedRule() *k8sutil.DynamicObject {
+	return &k8sutil.DynamicObject{
+		Gvr: schema.GroupVersionResource{
+			Group:    "config.istio.io",
+			Version:  "v1alpha2",
+			Resource: "rules",
+		},
+		Kind:      "rule",
+		Name:      "promtcpconnectionclosed",
+		Namespace: r.Config.Namespace,
+		Spec: map[string]interface{}{
+			"actions": []interface{}{
+				map[string]interface{}{
+					"handler":   "prometheus",
+					"instances": util.EmptyTypedStrSlice("tcpconnectionsclosed.metric"),
+				},
+			},
+			"match": `context.protocol == "tcp" && ((connection.event | "na") == "close")`,
 		},
 		Owner: r.Config,
 	}
@@ -260,6 +360,9 @@ func metricDimensions() map[string]interface{} {
 	md["request_protocol"] = `api.protocol | context.protocol | "unknown"`
 	md["response_code"] = `response.code | 200`
 	md["destination_service"] = `destination.service.host | "unknown"`
+	md["response_flags"] = `context.proxy_error_code | "-"`
+	md["permissive_response_code"] = `rbac.permissive.response_code | "none"`
+	md["permissive_response_policyid"] = `rbac.permissive.effective_policy_id | "none"`
 	return md
 }
 
@@ -276,10 +379,11 @@ func tcpMetricDimensions() map[string]interface{} {
 		"destination_principal":          `destination.principal | "unknown"`,
 		"destination_app":                `destination.labels["app"] | "unknown"`,
 		"destination_version":            `destination.labels["version"] | "unknown"`,
-		"destination_service":            `destination.service.name | "unknown"`,
+		"destination_service":            `destination.service.host | "unknown"`,
 		"destination_service_name":       `destination.service.name | "unknown"`,
 		"destination_service_namespace":  `destination.service.namespace | "unknown"`,
 		"connection_security_policy":     `conditional((context.reporter.kind | "inbound") == "outbound", "unknown", conditional(connection.mtls | false, "mutual_tls", "none"))`,
+		"response_flags":                 `context.proxy_error_code | "-"`,
 	}
 }
 
@@ -287,6 +391,8 @@ func metricLabels() []interface{} {
 	ml := tcpMetricLabels()
 	ml = append(ml, "request_protocol")
 	ml = append(ml, "response_code")
+	ml = append(ml, "permissive_response_code")
+	ml = append(ml, "permissive_response_policyid")
 	return ml
 }
 
@@ -307,5 +413,6 @@ func tcpMetricLabels() []interface{} {
 		"destination_service_name",
 		"destination_service_namespace",
 		"connection_security_policy",
+		"response_flags",
 	)
 }

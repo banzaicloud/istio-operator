@@ -17,9 +17,10 @@ limitations under the License.
 package mixer
 
 import (
+	"k8s.io/apimachinery/pkg/runtime/schema"
+
 	"github.com/banzaicloud/istio-operator/pkg/k8sutil"
 	"github.com/banzaicloud/istio-operator/pkg/util"
-	"k8s.io/apimachinery/pkg/runtime/schema"
 )
 
 func (r *Reconciler) kubernetesEnvHandler() *k8sutil.DynamicObject {
@@ -27,13 +28,16 @@ func (r *Reconciler) kubernetesEnvHandler() *k8sutil.DynamicObject {
 		Gvr: schema.GroupVersionResource{
 			Group:    "config.istio.io",
 			Version:  "v1alpha2",
-			Resource: "kubernetesenvs",
+			Resource: "handlers",
 		},
-		Kind:      "kubernetesenv",
-		Name:      "handler",
+		Kind:      "handler",
+		Name:      "kubernetesenv",
 		Namespace: r.Config.Namespace,
-		Spec:      nil,
-		Owner:     r.Config,
+		Spec: map[string]interface{}{
+			"compiledAdapter": "kubernetesenv",
+			"params":          nil,
+		},
+		Owner: r.Config,
 	}
 }
 
@@ -93,7 +97,7 @@ func (r *Reconciler) kubeAttrRule() *k8sutil.DynamicObject {
 		Spec: map[string]interface{}{
 			"actions": []interface{}{
 				map[string]interface{}{
-					"handler":   "handler.kubernetesenv",
+					"handler":   "kubernetesenv",
 					"instances": util.EmptyTypedStrSlice("attributes.kubernetes"),
 				},
 			},
@@ -115,7 +119,7 @@ func (r *Reconciler) tcpKubeAttrRule() *k8sutil.DynamicObject {
 		Spec: map[string]interface{}{
 			"actions": []interface{}{
 				map[string]interface{}{
-					"handler":   "handler.kubernetesenv",
+					"handler":   "kubernetesenv",
 					"instances": util.EmptyTypedStrSlice("attributes.kubernetes"),
 				},
 			},

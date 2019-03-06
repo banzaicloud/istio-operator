@@ -19,12 +19,13 @@ package mixer
 import (
 	"fmt"
 
-	"github.com/banzaicloud/istio-operator/pkg/k8sutil"
 	"k8s.io/apimachinery/pkg/runtime/schema"
+
+	"github.com/banzaicloud/istio-operator/pkg/k8sutil"
 )
 
 func (r *Reconciler) policyDestinationRule() *k8sutil.DynamicObject {
-	return &k8sutil.DynamicObject{
+	dr := &k8sutil.DynamicObject{
 		Gvr: schema.GroupVersionResource{
 			Group:    "networking.istio.io",
 			Version:  "v1alpha3",
@@ -39,10 +40,17 @@ func (r *Reconciler) policyDestinationRule() *k8sutil.DynamicObject {
 		},
 		Owner: r.Config,
 	}
+
+	exportTo := r.Config.Spec.GetDefaultConfigVisibility()
+	if exportTo != "" {
+		dr.Spec["exportTo"] = exportTo
+	}
+
+	return dr
 }
 
 func (r *Reconciler) telemetryDestinationRule() *k8sutil.DynamicObject {
-	return &k8sutil.DynamicObject{
+	dr := &k8sutil.DynamicObject{
 		Gvr: schema.GroupVersionResource{
 			Group:    "networking.istio.io",
 			Version:  "v1alpha3",
@@ -57,6 +65,13 @@ func (r *Reconciler) telemetryDestinationRule() *k8sutil.DynamicObject {
 		},
 		Owner: r.Config,
 	}
+
+	exportTo := r.Config.Spec.GetDefaultConfigVisibility()
+	if exportTo != "" {
+		dr.Spec["exportTo"] = exportTo
+	}
+
+	return dr
 }
 
 func (r *Reconciler) connectionPool() map[string]interface{} {

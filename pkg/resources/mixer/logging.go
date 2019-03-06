@@ -17,9 +17,10 @@ limitations under the License.
 package mixer
 
 import (
+	"k8s.io/apimachinery/pkg/runtime/schema"
+
 	"github.com/banzaicloud/istio-operator/pkg/k8sutil"
 	"github.com/banzaicloud/istio-operator/pkg/util"
-	"k8s.io/apimachinery/pkg/runtime/schema"
 )
 
 func (r *Reconciler) stdioHandler() *k8sutil.DynamicObject {
@@ -27,13 +28,16 @@ func (r *Reconciler) stdioHandler() *k8sutil.DynamicObject {
 		Gvr: schema.GroupVersionResource{
 			Group:    "config.istio.io",
 			Version:  "v1alpha2",
-			Resource: "stdios",
+			Resource: "handlers",
 		},
-		Kind:      "stdio",
-		Name:      "handler",
+		Kind:      "handler",
+		Name:      "stdio",
 		Namespace: r.Config.Namespace,
 		Spec: map[string]interface{}{
-			"outputAsJson": true,
+			"params": map[string]interface{}{
+				"outputAsJson": true,
+			},
+			"compiledAdapter": "stdio",
 		},
 		Owner: r.Config,
 	}
@@ -74,7 +78,10 @@ func (r *Reconciler) accessLogLogentry() *k8sutil.DynamicObject {
 				"method":                     `request.method | ""`,
 				"url":                        `request.path | ""`,
 				"responseCode":               `response.code | 0`,
+				"responseFlags":              `context.proxy_error_code | ""`,
 				"responseSize":               `response.size | 0`,
+				"permissiveResponseCode":     `rbac.permissive.response_code | "none"`,
+				"permissiveResponsePolicyID": `rbac.permissive.effective_policy_id | "none"`,
 				"requestSize":                `request.size | 0`,
 				"requestId":                  `request.headers["x-request-id"] | ""`,
 				"clientTraceId":              `request.headers["x-client-trace-id"] | ""`,
@@ -89,6 +96,8 @@ func (r *Reconciler) accessLogLogentry() *k8sutil.DynamicObject {
 				"httpAuthority":              `request.headers[":authority"] | request.host | ""`,
 				"xForwardedFor":              `request.headers["x-forwarded-for"] | "0.0.0.0"`,
 				"reporter":                   `conditional((context.reporter.kind | "inbound") == "outbound", "source", "destination")`,
+				"grpcStatus":                 `response.grpc_status | ""`,
+				"grpcMessage":                `response.grpc_message | ""`,
 			},
 			"monitored_resource_type": `"global"`,
 		},
@@ -135,6 +144,7 @@ func (r *Reconciler) tcpAccessLogLogentry() *k8sutil.DynamicObject {
 				"totalReceivedBytes":         `connection.received.bytes_total | 0`,
 				"totalSentBytes":             `connection.sent.bytes_total | 0`,
 				"reporter":                   `conditional((context.reporter.kind | "inbound") == "outbound", "source", "destination")`,
+				"responseFlags":              `context.proxy_error_code | ""`,
 			},
 			"monitored_resource_type": `"global"`,
 		},
@@ -155,7 +165,7 @@ func (r *Reconciler) stdioRule() *k8sutil.DynamicObject {
 		Spec: map[string]interface{}{
 			"actions": []interface{}{
 				map[string]interface{}{
-					"handler":   "handler.stdio",
+					"handler":   "stdio",
 					"instances": util.EmptyTypedStrSlice("accesslog.logentry"),
 				},
 			},
@@ -178,7 +188,7 @@ func (r *Reconciler) stdioTcpRule() *k8sutil.DynamicObject {
 		Spec: map[string]interface{}{
 			"actions": []interface{}{
 				map[string]interface{}{
-					"handler":   "handler.stdio",
+					"handler":   "stdio",
 					"instances": util.EmptyTypedStrSlice("tcpaccesslog.logentry"),
 				},
 			},
