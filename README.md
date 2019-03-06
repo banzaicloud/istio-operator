@@ -1,4 +1,4 @@
-[![Docker Automated build](https://img.shields.io/docker/automated/banzaicloud/istio-operator.svg)](https://hub.docker.com/r/banzaicloud/istio-operator/)
+[![Docker Automated build](https://img.shields.io/docker/cloud/automated/banzaicloud/istio-operator.svg)](https://hub.docker.com/r/banzaicloud/istio-operator/)
 [![CircleCI](https://circleci.com/gh/banzaicloud/istio-operator/tree/master.svg?style=shield)](https://circleci.com/gh/banzaicloud/istio-operator/tree/master)
 [![Go Report Card](https://goreportcard.com/badge/github.com/banzaicloud/istio-operator)](https://goreportcard.com/report/github.com/banzaicloud/istio-operator)
 ![license](http://img.shields.io/badge/license-Apache%20v2-orange.svg)
