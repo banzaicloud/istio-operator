@@ -131,6 +131,17 @@ type IstioSpec struct {
 
 	// Use the Mesh Control Protocol (MCP)
 	UseMCP bool `json:"useMCP"`
+
+	// Set the default set of namespaces to which services, service entries, virtual services, destination rules should be exported to
+	DefaultConfigVisibility string `json:"defaultConfigVisibility"`
+}
+
+func (s IstioSpec) GetDefaultConfigVisibility() string {
+	if s.DefaultConfigVisibility == "" || s.DefaultConfigVisibility == "." {
+		return s.DefaultConfigVisibility
+	}
+
+	return "*"
 }
 
 // IstioStatus defines the observed state of Istio

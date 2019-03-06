@@ -69,9 +69,9 @@ func (r *Reconciler) commonPorts() []apiv1.ServicePort {
 		},
 		{
 			Name:       "http-monitoring",
-			Port:       9093,
+			Port:       15014,
 			Protocol:   apiv1.ProtocolTCP,
-			TargetPort: intstr.FromInt(9093),
+			TargetPort: intstr.FromInt(15014),
 		},
 	}
 }

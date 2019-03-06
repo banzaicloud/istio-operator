@@ -17,21 +17,22 @@ limitations under the License.
 package mixer
 
 import (
+	policyv1beta1 "k8s.io/api/policy/v1beta1"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/runtime"
+
 	"github.com/banzaicloud/istio-operator/pkg/resources/templates"
 	"github.com/banzaicloud/istio-operator/pkg/util"
-	apiv1 "k8s.io/api/core/v1"
-	"k8s.io/apimachinery/pkg/runtime"
 )
 
-var cmLabels = map[string]string{
-	"app": "istio-statsd-prom-bridge",
-}
-
-func (r *Reconciler) configMap() runtime.Object {
-	return &apiv1.ConfigMap{
-		ObjectMeta: templates.ObjectMeta(configMapName, util.MergeLabels(labelSelector, cmLabels), r.Config),
-		Data: map[string]string{
-			"mapping.conf": "",
+func (r *Reconciler) pdb(t string) runtime.Object {
+	return &policyv1beta1.PodDisruptionBudget{
+		ObjectMeta: templates.ObjectMeta(serviceName(t), labelSelector, r.Config),
+		Spec: policyv1beta1.PodDisruptionBudgetSpec{
+			MinAvailable: util.IntstrPointer(1),
+			Selector: &metav1.LabelSelector{
+				MatchLabels: util.MergeLabels(labelSelector, util.MergeLabels(appLabel(t), mixerTypeLabel(t))),
+			},
 		},
 	}
 }
