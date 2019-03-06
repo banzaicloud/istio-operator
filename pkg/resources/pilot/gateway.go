@@ -17,13 +17,14 @@ limitations under the License.
 package pilot
 
 import (
+	"k8s.io/apimachinery/pkg/runtime/schema"
+
 	"github.com/banzaicloud/istio-operator/pkg/k8sutil"
 	"github.com/banzaicloud/istio-operator/pkg/util"
-	"k8s.io/apimachinery/pkg/runtime/schema"
 )
 
 var gatewaySelector = map[string]interface{}{
-	"istio": "ingress",
+	"istio": "ingressgateway",
 }
 
 func (r *Reconciler) gateway() *k8sutil.DynamicObject {
