@@ -53,6 +53,14 @@ spec:
               description: Set the default set of namespaces to which services, service
                 entries, virtual services, destination rules should be exported to
               type: string
+            defaultPodDisruptionBudget:
+              description: Enable pod disruption budget for the control plane, which
+                is used to ensure Istio control plane components are gradually upgraded
+                or recovered
+              properties:
+                enabled:
+                  type: boolean
+              type: object
             excludeIPRanges:
               description: ExcludeIPRanges the range where not to capture egress traffic
               type: string
@@ -164,11 +172,16 @@ spec:
                   type: integer
               type: object
             useMCP:
+<<<<<<< HEAD
               description: Use the Mesh Control Protocol (MCP)
               type: boolean
             watchAdapterCRDs:
               description: Whether or not to establish watches for adapter-specific
                 CRDs
+=======
+              description: Use the Mesh Control Protocol (MCP) for configuring Mixer
+                and Pilot. Requires galley.
+>>>>>>> pod disruption budget for gateways & pilot
               type: boolean
             watchOneNamespace:
               description: Whether to restrict the applications namespace the controller

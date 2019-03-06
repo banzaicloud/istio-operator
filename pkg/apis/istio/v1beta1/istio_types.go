@@ -85,6 +85,11 @@ type ProxyInitConfiguration struct {
 	Image string `json:"image,omitempty"`
 }
 
+// PDBConfiguration holds Pod Disruption Budget related config options
+type PDBConfiguration struct {
+	Enabled bool `json:"enabled,omitempty"`
+}
+
 // IstioSpec defines the desired state of Istio
 type IstioSpec struct {
 	// MTLS enables or disables global mTLS
@@ -127,16 +132,19 @@ type IstioSpec struct {
 	ProxyInit ProxyInitConfiguration `json:"proxyInit,omitempty"`
 
 	// Whether to restrict the applications namespace the controller manages
-	WatchOneNamespace bool `json:"watchOneNamespace"`
+	WatchOneNamespace bool `json:"watchOneNamespace,omitempty"`
 
-	// Use the Mesh Control Protocol (MCP)
-	UseMCP bool `json:"useMCP"`
+	// Use the Mesh Control Protocol (MCP) for configuring Mixer and Pilot. Requires galley.
+	UseMCP bool `json:"useMCP,omitempty"`
 
 	// Set the default set of namespaces to which services, service entries, virtual services, destination rules should be exported to
 	DefaultConfigVisibility string `json:"defaultConfigVisibility"`
 
 	// Whether or not to establish watches for adapter-specific CRDs
 	WatchAdapterCRDs bool `json:"watchAdapterCRDs"`
+
+	// Enable pod disruption budget for the control plane, which is used to ensure Istio control plane components are gradually upgraded or recovered
+	DefaultPodDisruptionBudget PDBConfiguration `json:"defaultPodDisruptionBudget,omitempty"`
 }
 
 func (s IstioSpec) GetDefaultConfigVisibility() string {
