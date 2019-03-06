@@ -34,7 +34,6 @@ const (
 	serviceAccountName     = "istio-mixer-service-account"
 	clusterRoleName        = "istio-mixer-cluster-role"
 	clusterRoleBindingName = "istio-mixer-cluster-role-binding"
-	configMapName          = "istio-statsd-prom-bridge"
 )
 
 var mixerLabels = map[string]string{
