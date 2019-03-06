@@ -86,9 +86,10 @@ initContainers:
       - NET_ADMIN
     privileged: ` + strconv.FormatBool(r.Config.Spec.Proxy.Privileged) + `
   restartPolicy: Always
+[[ end -]]
 containers:
 - name: istio-proxy
-  image: "[[ annotation .ObjectMeta ` + "`" + `sidecar.istio.io/proxyImage` + "` " + r.Config.Spec.Proxy.Image + ` ]]"
+  image: "[[ annotation .ObjectMeta ` + "`" + `sidecar.istio.io/proxyImage` + "` \"" + r.Config.Spec.Proxy.Image + `" ]]"
   ports:
   - containerPort: 15090
     protocol: TCP
@@ -130,7 +131,7 @@ containers:
   - --statusPort
   - [[ annotation .ObjectMeta ` + "`" + `status.sidecar.istio.io/port` + "`" + ` "0" ]]
   - --applicationPorts
-  - [[ annotation .ObjectMeta ` + "`" + `readiness.status.sidecar.istio.io/applicationPorts` + "`" + ` (applicationPorts .Spec.Containers) ]]
+  - "[[ annotation .ObjectMeta ` + "`" + `readiness.status.sidecar.istio.io/applicationPorts` + "`" + ` (applicationPorts .Spec.Containers) ]]"
 [[- end ]]
   - --trust-domain=""
   env:
@@ -151,9 +152,9 @@ containers:
       fieldRef:
         fieldPath: metadata.name
   - name: ISTIO_META_CONFIG_NAMESPACE
-      valueFrom:
-        fieldRef:
-          fieldPath: metadata.namespace
+    valueFrom:
+      fieldRef:
+        fieldPath: metadata.namespace
   - name: ISTIO_META_INTERCEPTION_MODE
     value: [[ or (index .ObjectMeta.Annotations "sidecar.istio.io/interceptionMode") .ProxyConfig.InterceptionMode.String ]]
   [[ if .ObjectMeta.Annotations ]]
