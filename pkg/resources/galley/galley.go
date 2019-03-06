@@ -64,15 +64,18 @@ func (r *Reconciler) Reconcile(log logr.Logger) error {
 
 	log.Info("Reconciling")
 
-	for _, res := range []resources.Resource{
+	resources := []resources.Resource{
 		r.serviceAccount,
 		r.clusterRole,
 		r.clusterRoleBinding,
 		r.configMap,
 		r.deployment,
 		r.service,
-		r.pdb,
-	} {
+	}
+	if r.Config.Spec.DefaultPodDisruptionBudget.Enabled {
+		resources = append(resources, r.pdb)
+	}
+	for _, res := range resources {
 		o := res()
 		err := k8sutil.Reconcile(log, r.Client, o)
 		if err != nil {

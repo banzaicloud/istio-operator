@@ -73,7 +73,9 @@ func (r *Reconciler) Reconcile(log logr.Logger) error {
 		r.deployment,
 		r.service,
 		r.horizontalPodAutoscaler,
-		r.pdb,
+	}
+	if r.Config.Spec.DefaultPodDisruptionBudget.Enabled {
+		rsv = append(rsv, r.pdb)
 	}
 	rs = append(rs, resources.ResolveVariations("policy", rsv)...)
 	rs = append(rs, resources.ResolveVariations("telemetry", rsv)...)
