@@ -19,15 +19,39 @@ package galley
 import (
 	"fmt"
 
-	"github.com/banzaicloud/istio-operator/pkg/resources/templates"
-	"github.com/banzaicloud/istio-operator/pkg/util"
 	appsv1 "k8s.io/api/apps/v1"
 	apiv1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
+
+	"github.com/banzaicloud/istio-operator/pkg/resources/common"
+	"github.com/banzaicloud/istio-operator/pkg/resources/templates"
+	"github.com/banzaicloud/istio-operator/pkg/util"
 )
 
 func (r *Reconciler) deployment() runtime.Object {
+	containerArgs := []string{
+		"server",
+		"--meshConfigFile=/etc/mesh-config/mesh",
+		"--livenessProbeInterval=1s",
+		"--livenessProbePath=/healthliveness",
+		"--readinessProbePath=/healthready",
+		"--readinessProbeInterval=1s",
+		"--validation-webhook-config-file",
+		"/etc/config/validatingwebhookconfiguration.yaml",
+		"--monitoringPort=15014",
+	}
+
+	if r.Config.Spec.ControlPlaneSecurityEnabled {
+		containerArgs = append(containerArgs, "--insecure=false")
+	} else {
+		containerArgs = append(containerArgs, "--insecure=true")
+	}
+
+	if r.Config.Spec.UseMCP {
+		containerArgs = append(containerArgs, "--enable-server=false")
+	}
+
 	return &appsv1.Deployment{
 		ObjectMeta: templates.ObjectMeta(deploymentName, util.MergeLabels(galleyLabels, labelSelector), r.Config),
 		Spec: appsv1.DeploymentSpec{
@@ -50,7 +74,7 @@ func (r *Reconciler) deployment() runtime.Object {
 					ServiceAccountName: serviceAccountName,
 					Containers: []apiv1.Container{
 						{
-							Name:            "validator",
+							Name:            "galley",
 							Image:           r.Config.Spec.Galley.Image,
 							ImagePullPolicy: apiv1.PullIfNotPresent,
 							Ports: []apiv1.ContainerPort{
@@ -59,36 +83,35 @@ func (r *Reconciler) deployment() runtime.Object {
 									Protocol:      apiv1.ProtocolTCP,
 								},
 								{
-									ContainerPort: 9093,
+									ContainerPort: 15014,
+									Protocol:      apiv1.ProtocolTCP,
+								},
+								{
+									ContainerPort: 9901,
 									Protocol:      apiv1.ProtocolTCP,
 								},
 							},
-							Command: []string{
-								"/usr/local/bin/galley",
-								"validator",
-								fmt.Sprintf("--deployment-namespace=%s", r.Config.Namespace),
-								"--caCertFile=/etc/istio/certs/root-cert.pem",
-								"--tlsCertFile=/etc/istio/certs/cert-chain.pem",
-								"--tlsKeyFile=/etc/istio/certs/key.pem",
-								"--healthCheckInterval=1s",
-								"--healthCheckFile=/health",
-								"--webhook-config-file",
-								"/etc/istio/config/validatingwebhookconfiguration.yaml",
-							},
+							Command: []string{"/usr/local/bin/galley"},
+							Args:    containerArgs,
 							VolumeMounts: []apiv1.VolumeMount{
 								{
 									Name:      "certs",
-									MountPath: "/etc/istio/certs",
+									MountPath: "/etc/certs",
 									ReadOnly:  true,
 								},
 								{
 									Name:      "config",
-									MountPath: "/etc/istio/config",
+									MountPath: "/etc/config",
+									ReadOnly:  true,
+								},
+								{
+									Name:      "mesh-config",
+									MountPath: "/etc/mesh-config",
 									ReadOnly:  true,
 								},
 							},
-							LivenessProbe:            r.galleyProbe(),
-							ReadinessProbe:           r.galleyProbe(),
+							LivenessProbe:            r.galleyProbe("/healthliveness"),
+							ReadinessProbe:           r.galleyProbe("/healthready"),
 							Resources:                templates.DefaultResources(),
 							TerminationMessagePath:   apiv1.TerminationMessagePathDefault,
 							TerminationMessagePolicy: apiv1.TerminationMessageReadFile,
@@ -115,6 +138,17 @@ func (r *Reconciler) deployment() runtime.Object {
 								},
 							},
 						},
+						{
+							Name: "mesh-config",
+							VolumeSource: apiv1.VolumeSource{
+								ConfigMap: &apiv1.ConfigMapVolumeSource{
+									LocalObjectReference: apiv1.LocalObjectReference{
+										Name: common.IstioConfigMapName,
+									},
+									DefaultMode: util.IntPointer(420),
+								},
+							},
+						},
 					},
 					Affinity: &apiv1.Affinity{},
 				},
@@ -123,14 +157,14 @@ func (r *Reconciler) deployment() runtime.Object {
 	}
 }
 
-func (r *Reconciler) galleyProbe() *apiv1.Probe {
+func (r *Reconciler) galleyProbe(path string) *apiv1.Probe {
 	return &apiv1.Probe{
 		Handler: apiv1.Handler{
 			Exec: &apiv1.ExecAction{
 				Command: []string{
 					"/usr/local/bin/galley",
 					"probe",
-					"--probe-path=/health",
+					fmt.Sprintf("--probe-path=%s", path),
 					"--interval=10s",
 				},
 			},
