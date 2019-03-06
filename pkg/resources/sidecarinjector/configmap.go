@@ -67,7 +67,7 @@ initContainers:
   - "-b"
   - "[[ annotation .ObjectMeta ` + "`" + `traffic.sidecar.istio.io/includeInboundPorts` + "`" + ` (includeInboundPorts .Spec.Containers) ]]"
   - "-d"
-  - "[[ excludeInboundPort (annotation .ObjectMeta ` + "`" + `status.sidecar.istio.io/port` + "`" + ` "0" ) (annotation .ObjectMeta ` + "`" + `traffic.sidecar.istio.io/excludeInboundPorts` + "`" + ` "" ) ]]"
+  - "[[ excludeInboundPort (annotation .ObjectMeta ` + "`" + `status.sidecar.istio.io/port` + "`" + ` "15020" ) (annotation .ObjectMeta ` + "`" + `traffic.sidecar.istio.io/excludeInboundPorts` + "`" + ` "" ) ]]"
   [[ if (isset .ObjectMeta.Annotations ` + "`" + `traffic.sidecar.istio.io/kubevirtInterfaces` + "`" + `) -]]
   - "-k"
   - "[[ index .ObjectMeta.Annotations ` + "`" + `traffic.sidecar.istio.io/kubevirtInterfaces` + "`" + ` ]]"
@@ -86,9 +86,10 @@ initContainers:
       - NET_ADMIN
     privileged: ` + strconv.FormatBool(r.Config.Spec.Proxy.Privileged) + `
   restartPolicy: Always
+[[ end -]]
 containers:
 - name: istio-proxy
-  image: "[[ annotation .ObjectMeta ` + "`" + `sidecar.istio.io/proxyImage` + "` " + r.Config.Spec.Proxy.Image + ` ]]"
+  image: "[[ annotation .ObjectMeta ` + "`" + `sidecar.istio.io/proxyImage` + "` \"" + r.Config.Spec.Proxy.Image + `" ]]"
   ports:
   - containerPort: 15090
     protocol: TCP
@@ -126,13 +127,12 @@ containers:
   [[ end -]]
   - --controlPlaneAuthPolicy
   - [[ annotation .ObjectMeta ` + "`" + `sidecar.istio.io/controlPlaneAuthPolicy` + "`" + ` .ProxyConfig.ControlPlaneAuthPolicy ]]
-[[- if (ne (annotation .ObjectMeta ` + "`" + `status.sidecar.istio.io/port` + "`" + ` "0" ) "0") ]]
+[[- if (ne (annotation .ObjectMeta ` + "`" + `status.sidecar.istio.io/port` + "`" + ` 15020 ) "0") ]]
   - --statusPort
-  - [[ annotation .ObjectMeta ` + "`" + `status.sidecar.istio.io/port` + "`" + ` "0" ]]
+  - [[ annotation .ObjectMeta ` + "`" + `status.sidecar.istio.io/port` + "`" + ` 15020 ]]
   - --applicationPorts
-  - [[ annotation .ObjectMeta ` + "`" + `readiness.status.sidecar.istio.io/applicationPorts` + "`" + ` (applicationPorts .Spec.Containers) ]]
+  - "[[ annotation .ObjectMeta ` + "`" + `readiness.status.sidecar.istio.io/applicationPorts` + "`" + ` (applicationPorts .Spec.Containers) ]]"
 [[- end ]]
-  - --trust-domain=""
   env:
   - name: POD_NAME
     valueFrom:
@@ -151,9 +151,9 @@ containers:
       fieldRef:
         fieldPath: metadata.name
   - name: ISTIO_META_CONFIG_NAMESPACE
-      valueFrom:
-        fieldRef:
-          fieldPath: metadata.namespace
+    valueFrom:
+      fieldRef:
+        fieldPath: metadata.namespace
   - name: ISTIO_META_INTERCEPTION_MODE
     value: [[ or (index .ObjectMeta.Annotations "sidecar.istio.io/interceptionMode") .ProxyConfig.InterceptionMode.String ]]
   [[ if .ObjectMeta.Annotations ]]
@@ -171,11 +171,11 @@ containers:
     value: "/etc/istio/custom-bootstrap/custom_bootstrap.json"
   [[- end ]]
   imagePullPolicy: IfNotPresent
-  [[ if (ne (annotation .ObjectMeta ` + "`" + `status.sidecar.istio.io/port` + "`" + ` "0" ) "0") ]]
+  [[ if (ne (annotation .ObjectMeta ` + "`" + `status.sidecar.istio.io/port` + "`" + ` 15020 ) "0") ]]
   readinessProbe:
     httpGet:
       path: /healthz/ready
-      port: [[ annotation .ObjectMeta ` + "`" + `status.sidecar.istio.io/port` + "`" + ` "0" ]]
+      port: [[ annotation .ObjectMeta ` + "`" + `status.sidecar.istio.io/port` + "`" + ` 15020 ]]
     initialDelaySeconds: [[ annotation .ObjectMeta ` + "`" + `readiness.status.sidecar.istio.io/initialDelaySeconds` + "`" + ` "1" ]]
     periodSeconds: [[ annotation .ObjectMeta ` + "`" + `readiness.status.sidecar.istio.io/periodSeconds` + "`" + ` "2" ]]
     failureThreshold: [[ annotation .ObjectMeta ` + "`" + `readiness.status.sidecar.istio.io/failureThreshold` + "`" + ` "30" ]]
