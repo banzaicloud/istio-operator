@@ -65,6 +65,9 @@ func (r *Reconciler) Reconcile(log logr.Logger) error {
 		r.service,
 		r.horizontalPodAutoscaler,
 	}
+	if r.Config.Spec.DefaultPodDisruptionBudget.Enabled {
+		rsv = append(rsv, r.podDisruptionBudget)
+	}
 	for _, res := range append(resources.ResolveVariations(ingress, rsv), resources.ResolveVariations(egress, rsv)...) {
 		o := res()
 		err := k8sutil.Reconcile(log, r.Client, o)
@@ -117,6 +120,10 @@ func gatewayName(gw string) string {
 
 func hpaName(gw string) string {
 	return fmt.Sprintf("istio-%s-autoscaler", gw)
+}
+
+func pdbName(gw string) string {
+	return fmt.Sprintf("istio-%s", gw)
 }
 
 func gwLabels(gw string) map[string]string {

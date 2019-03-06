@@ -12,16 +12,16 @@ spec:
   - "default"
   controlPlaneSecurityEnabled: false
   pilot:
-    image: "istio/pilot:1.0.5"
+    image: "gcr.io/istio-release/pilot:release-1.1-latest-daily"
     replicaCount: 1
     minReplicas: 1
     maxReplicas: 5
     traceSampling: 1.0
   citadel:
-    image: "istio/citadel:1.0.5"
+    image: "gcr.io/istio-release/citadel:release-1.1-latest-daily"
     replicaCount: 1
   galley:
-    image: "istio/galley:1.0.5"
+    image: "gcr.io/istio-release/galley:release-1.1-latest-daily"
     replicaCount: 1
   gateways:
     ingress:
@@ -39,12 +39,17 @@ spec:
     k8singress:
       enabled: false
   mixer:
-    image: "istio/mixer:1.0.5"
+    image: "gcr.io/istio-release/mixer:release-1.1-latest-daily"
     replicaCount: 1
     minReplicas: 1
     maxReplicas: 5
   sidecarInjector:
-    image: "istio/sidecar_injector:1.0.5"
+    image: "gcr.io/istio-release/sidecar_injector:release-1.1-latest-daily"
     replicaCount: 1
   proxy:
-    image: "istio/proxyv2:1.0.5"
+    image: "gcr.io/istio-release/proxyv2:release-1.1-latest-daily"
+  proxyInit:
+    image: "gcr.io/istio-release/proxy_init:release-1.1-latest-daily"
+  defaultPodDisruptionBudget:
+    enabled: true
+

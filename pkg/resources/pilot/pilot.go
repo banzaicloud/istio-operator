@@ -34,6 +34,7 @@ const (
 	deploymentName         = "istio-pilot"
 	serviceName            = "istio-pilot"
 	hpaName                = "istio-pilot-autoscaler"
+	pdbName                = "istio-pilot"
 )
 
 var pilotLabels = map[string]string{
@@ -62,14 +63,18 @@ func (r *Reconciler) Reconcile(log logr.Logger) error {
 
 	log.Info("Reconciling")
 
-	for _, res := range []resources.Resource{
+	resources := []resources.Resource{
 		r.serviceAccount,
 		r.clusterRole,
 		r.clusterRoleBinding,
 		r.deployment,
 		r.service,
 		r.horizontalPodAutoscaler,
-	} {
+	}
+	if r.Config.Spec.DefaultPodDisruptionBudget.Enabled {
+		resources = append(resources, r.podDisruptionBudget)
+	}
+	for _, res := range resources {
 		o := res()
 		err := k8sutil.Reconcile(log, r.Client, o)
 		if err != nil {
