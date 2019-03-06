@@ -19,10 +19,11 @@ package common
 import (
 	"fmt"
 
-	"github.com/banzaicloud/istio-operator/pkg/resources/templates"
 	"github.com/ghodss/yaml"
 	apiv1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/runtime"
+
+	"github.com/banzaicloud/istio-operator/pkg/resources/templates"
 )
 
 var cmLabels = map[string]string{
@@ -57,9 +58,6 @@ func (r *Reconciler) meshConfig() string {
 		"outboundTrafficPolicy": map[string]interface{}{
 			"mode": "ALLOW_ANY",
 		},
-		"configSources": []map[string]interface{}{
-			r.defaultConfigSource(),
-		},
 		"defaultConfig": map[string]interface{}{
 			"connectTimeout":         "10s",
 			"configPath":             "/etc/istio/proxy",
@@ -78,6 +76,13 @@ func (r *Reconciler) meshConfig() string {
 			"discoveryAddress":       fmt.Sprintf("istio-pilot.%s:%s", r.Config.Namespace, r.discoveryPort()),
 		},
 	}
+
+	if r.Config.Spec.UseMCP {
+		meshConfig["configSources"] = []map[string]interface{}{
+			r.defaultConfigSource(),
+		}
+	}
+
 	marshaledConfig, _ := yaml.Marshal(meshConfig)
 	return string(marshaledConfig)
 }

@@ -17,10 +17,11 @@ limitations under the License.
 package pilot
 
 import (
-	"github.com/banzaicloud/istio-operator/pkg/resources/templates"
 	apiv1 "k8s.io/api/core/v1"
 	rbacv1 "k8s.io/api/rbac/v1"
 	"k8s.io/apimachinery/pkg/runtime"
+
+	"github.com/banzaicloud/istio-operator/pkg/resources/templates"
 )
 
 func (r *Reconciler) serviceAccount() runtime.Object {
@@ -60,7 +61,7 @@ func (r *Reconciler) clusterRole() runtime.Object {
 			},
 			{
 				APIGroups: []string{"extensions"},
-				Resources: []string{"thirdpartyresources", "thirdpartyresources.extensions", "ingresses", "ingresses/status"},
+				Resources: []string{"ingresses", "ingresses/status"},
 				Verbs:     []string{"*"},
 			},
 			{
@@ -70,12 +71,7 @@ func (r *Reconciler) clusterRole() runtime.Object {
 			},
 			{
 				APIGroups: []string{""},
-				Resources: []string{"endpoints", "pods", "services"},
-				Verbs:     []string{"get", "list", "watch"},
-			},
-			{
-				APIGroups: []string{""},
-				Resources: []string{"namespaces", "nodes", "secrets"},
+				Resources: []string{"endpoints", "pods", "services", "namespaces", "nodes", "secrets"},
 				Verbs:     []string{"get", "list", "watch"},
 			},
 		},
