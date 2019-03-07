@@ -20,7 +20,6 @@ import (
 	"os"
 
 	"github.com/go-logr/logr"
-	"k8s.io/apimachinery/pkg/types"
 	"sigs.k8s.io/controller-runtime/pkg/manager"
 	logf "sigs.k8s.io/controller-runtime/pkg/runtime/log"
 	"sigs.k8s.io/controller-runtime/pkg/webhook"
@@ -38,16 +37,11 @@ func add(mgr manager.Manager) error {
 
 	name := "istio-operator-webhook"
 	namespace := "istio-system"
-	secretName := "istio-operator-webhook-server-secret"
 
 	svr, err := webhook.NewServer(name, mgr, webhook.ServerOptions{
 		CertDir: "/tmp/cert",
 		BootstrapOptions: &webhook.BootstrapOptions{
 			ValidatingWebhookConfigName: name,
-			Secret: &types.NamespacedName{
-				Namespace: namespace,
-				Name:      secretName,
-			},
 			Service: &webhook.Service{
 				Namespace: namespace,
 				Name:      name,
