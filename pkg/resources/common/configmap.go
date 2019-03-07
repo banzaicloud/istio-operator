@@ -56,7 +56,7 @@ func (r *Reconciler) meshConfig() string {
 		"sdsUseK8sSaJwt":      false,
 		"trustDomain":         "",
 		"outboundTrafficPolicy": map[string]interface{}{
-			"mode": "ALLOW_ANY",
+			"mode": r.Config.Spec.OutboundTrafficPolicy.Mode,
 		},
 		"defaultConfig": map[string]interface{}{
 			"connectTimeout":         "10s",

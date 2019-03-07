@@ -130,6 +130,16 @@ spec:
             mtls:
               description: MTLS enables or disables global mTLS
               type: boolean
+            outboundTrafficPolicy:
+              description: Set the default behavior of the sidecar for handling outbound
+                traffic from the application (ALLOW_ANY or REGISTRY_ONLY)
+              properties:
+                mode:
+                  enum:
+                  - ALLOW_ANY
+                  - REGISTRY_ONLY
+                  type: string
+              type: object
             pilot:
               description: Pilot configuration options
               properties:

@@ -90,6 +90,11 @@ type PDBConfiguration struct {
 	Enabled bool `json:"enabled,omitempty"`
 }
 
+type OutboundTrafficPolicyConfiguration struct {
+	// +kubebuilder:validation:Enum=ALLOW_ANY,REGISTRY_ONLY
+	Mode string `json:"mode,omitempty"`
+}
+
 // IstioSpec defines the desired state of Istio
 type IstioSpec struct {
 	// MTLS enables or disables global mTLS
@@ -145,6 +150,9 @@ type IstioSpec struct {
 
 	// Enable pod disruption budget for the control plane, which is used to ensure Istio control plane components are gradually upgraded or recovered
 	DefaultPodDisruptionBudget PDBConfiguration `json:"defaultPodDisruptionBudget,omitempty"`
+
+	// Set the default behavior of the sidecar for handling outbound traffic from the application (ALLOW_ANY or REGISTRY_ONLY)
+	OutboundTrafficPolicy OutboundTrafficPolicyConfiguration `json:"outboundTrafficPolicy,omitempty"`
 }
 
 func (s IstioSpec) GetDefaultConfigVisibility() string {
