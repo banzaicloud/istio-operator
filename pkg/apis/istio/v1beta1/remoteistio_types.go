@@ -68,6 +68,9 @@ type RemoteIstioSpec struct {
 	// Proxy configuration options
 	Proxy ProxyConfiguration `json:"proxy,omitempty"`
 
+	// Proxy Init configuration options
+	ProxyInit ProxyInitConfiguration `json:"proxyInit,omitempty"`
+
 	signCert SignCert
 }
 
