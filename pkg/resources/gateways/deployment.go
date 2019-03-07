@@ -26,6 +26,7 @@ import (
 	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/apimachinery/pkg/util/intstr"
 
+	istiov1beta1 "github.com/banzaicloud/istio-operator/pkg/apis/istio/v1beta1"
 	"github.com/banzaicloud/istio-operator/pkg/k8sutil"
 	"github.com/banzaicloud/istio-operator/pkg/resources/templates"
 	"github.com/banzaicloud/istio-operator/pkg/util"
@@ -36,24 +37,9 @@ func (r *Reconciler) deployment(gw string) runtime.Object {
 
 	var initContainers []apiv1.Container
 	if r.Config.Spec.Proxy.EnableCoreDump {
-		initContainers = []apiv1.Container{
-			{
-				Name:            "enable-core-dump",
-				Image:           r.Config.Spec.ProxyInit.Image,
-				ImagePullPolicy: apiv1.PullIfNotPresent,
-				Command: []string{
-					"/bin/sh",
-				},
-				Args: []string{
-					"-c",
-					"sysctl -w kernel.core_pattern=/var/lib/istio/core.proxy && ulimit -c unlimited",
-				},
-				SecurityContext: &apiv1.SecurityContext{
-					Privileged: util.BoolPointer(true),
-				},
-			},
-		}
+		initContainers = []apiv1.Container{GetCoreDumpContainer(r.Config)}
 	}
+
 	return &appsv1.Deployment{
 		ObjectMeta: templates.ObjectMeta(gatewayName(gw), util.MergeLabels(labelSelector(gw), gwLabels(gw)), r.Config),
 		Spec: appsv1.DeploymentSpec{
@@ -226,5 +212,26 @@ func gwEnvVars() []apiv1.EnvVar {
 			Name:  "ISTIO_META_ROUTER_MODE",
 			Value: "sni-dnat",
 		},
+	}
+}
+
+// GetCoreDumpContainer get core dump init container for Envoy proxies
+func GetCoreDumpContainer(config *istiov1beta1.Istio) apiv1.Container {
+	return apiv1.Container{
+		Name:            "enable-core-dump",
+		Image:           config.Spec.ProxyInit.Image,
+		ImagePullPolicy: apiv1.PullIfNotPresent,
+		Command: []string{
+			"/bin/sh",
+		},
+		Args: []string{
+			"-c",
+			"sysctl -w kernel.core_pattern=/var/lib/istio/core.proxy && ulimit -c unlimited",
+		},
+		SecurityContext: &apiv1.SecurityContext{
+			Privileged: util.BoolPointer(true),
+		},
+		TerminationMessagePath:   apiv1.TerminationMessagePathDefault,
+		TerminationMessagePolicy: apiv1.TerminationMessageReadFile,
 	}
 }
