@@ -407,6 +407,7 @@ func (in *RemoteIstioSpec) DeepCopyInto(out *RemoteIstioSpec) {
 	out.Citadel = in.Citadel
 	out.SidecarInjector = in.SidecarInjector
 	out.Proxy = in.Proxy
+	out.ProxyInit = in.ProxyInit
 	in.signCert.DeepCopyInto(&out.signCert)
 	return
 }
