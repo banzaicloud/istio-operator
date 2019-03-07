@@ -81,6 +81,12 @@ spec:
                 privileged:
                   type: boolean
               type: object
+            proxyInit:
+              description: Proxy Init configuration options
+              properties:
+                image:
+                  type: string
+              type: object
             sidecarInjector:
               description: SidecarInjector configuration options
               properties:

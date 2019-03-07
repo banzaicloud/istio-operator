@@ -46,6 +46,7 @@ func (c *Cluster) reconcileConfig(remoteConfig *istiov1beta1.RemoteIstio) error 
 	istioConfig.Spec.SidecarInjector.ReplicaCount = remoteConfig.Spec.SidecarInjector.ReplicaCount
 	istioConfig.Spec.SidecarInjector.Image = remoteConfig.Spec.SidecarInjector.Image
 	istioConfig.Spec.Proxy.Image = remoteConfig.Spec.Proxy.Image
+	istioConfig.Spec.ProxyInit.Image = remoteConfig.Spec.ProxyInit.Image
 
 	if k8sapierrors.IsNotFound(err) {
 		istioConfig.Name = ConfigName
