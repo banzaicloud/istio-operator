@@ -17,20 +17,21 @@ limitations under the License.
 package v1beta1
 
 const (
-	defaultImageHub             = "gcr.io/istio-release"
-	defaultImageVersion         = "release-1.1-latest-daily"
-	defaultPilotImage           = defaultImageHub + "/" + "pilot" + ":" + defaultImageVersion
-	defaultCitadelImage         = defaultImageHub + "/" + "citadel" + ":" + defaultImageVersion
-	defaultGalleyImage          = defaultImageHub + "/" + "galley" + ":" + defaultImageVersion
-	defaultMixerImage           = defaultImageHub + "/" + "mixer" + ":" + defaultImageVersion
-	defaultSidecarInjectorImage = defaultImageHub + "/" + "sidecar_injector" + ":" + defaultImageVersion
-	defaultProxyImage           = defaultImageHub + "/" + "proxyv2" + ":" + defaultImageVersion
-	defaultProxyInitImage       = defaultImageHub + "/" + "proxy_init" + ":" + defaultImageVersion
-	defaultIncludeIPRanges      = "*"
-	defaultReplicaCount         = 1
-	defaultMinReplicas          = 1
-	defaultMaxReplicas          = 5
-	defaultTraceSampling        = 1.0
+	defaultImageHub               = "gcr.io/istio-release"
+	defaultImageVersion           = "release-1.1-latest-daily"
+	defaultPilotImage             = defaultImageHub + "/" + "pilot" + ":" + defaultImageVersion
+	defaultCitadelImage           = defaultImageHub + "/" + "citadel" + ":" + defaultImageVersion
+	defaultGalleyImage            = defaultImageHub + "/" + "galley" + ":" + defaultImageVersion
+	defaultMixerImage             = defaultImageHub + "/" + "mixer" + ":" + defaultImageVersion
+	defaultSidecarInjectorImage   = defaultImageHub + "/" + "sidecar_injector" + ":" + defaultImageVersion
+	defaultProxyImage             = defaultImageHub + "/" + "proxyv2" + ":" + defaultImageVersion
+	defaultProxyInitImage         = defaultImageHub + "/" + "proxy_init" + ":" + defaultImageVersion
+	defaultIncludeIPRanges        = "*"
+	defaultReplicaCount           = 1
+	defaultMinReplicas            = 1
+	defaultMaxReplicas            = 5
+	defaultTraceSampling          = 1.0
+	outboundTrafficPolicyAllowAny = "ALLOW_ANY"
 )
 
 func SetDefaults(config *Istio) {
@@ -113,6 +114,10 @@ func SetDefaults(config *Istio) {
 	// Proxy Init config
 	if config.Spec.ProxyInit.Image == "" {
 		config.Spec.ProxyInit.Image = defaultProxyInitImage
+	}
+	// Outbound traffic policy config
+	if config.Spec.OutboundTrafficPolicy.Mode == "" {
+		config.Spec.OutboundTrafficPolicy.Mode = outboundTrafficPolicyAllowAny
 	}
 }
 
