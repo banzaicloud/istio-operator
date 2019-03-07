@@ -85,7 +85,7 @@ initContainers:
       add:
       - NET_ADMIN
     privileged: ` + strconv.FormatBool(r.Config.Spec.Proxy.Privileged) + `
-  restartPolicy: Always
+  restartPolicy: Always` + r.coreDumpContainer() + `
 [[ end -]]
 containers:
 - name: istio-proxy
@@ -240,4 +240,22 @@ volumes:
   [[ end ]]
   [[ end ]]
 `
+}
+
+func (r *Reconciler) coreDumpContainer() string {
+	if !r.Config.Spec.Proxy.EnableCoreDump {
+		return ""
+	}
+	return `
+- name: enable-core-dump
+  args:
+  - -c
+  - sysctl -w kernel.core_pattern=/var/lib/istio/core.proxy && ulimit -c unlimited
+  command:
+    - /bin/sh
+  image: ` + r.Config.Spec.ProxyInit.Image + `
+  imagePullPolicy: IfNotPresent
+  resources: {}
+  securityContext:
+    privileged: true`
 }

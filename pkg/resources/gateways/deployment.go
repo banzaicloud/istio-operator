@@ -34,6 +34,26 @@ import (
 func (r *Reconciler) deployment(gw string) runtime.Object {
 	gwConfig := r.getGatewayConfig(gw)
 
+	var initContainers []apiv1.Container
+	if r.Config.Spec.Proxy.EnableCoreDump {
+		initContainers = []apiv1.Container{
+			{
+				Name:            "enable-core-dump",
+				Image:           r.Config.Spec.ProxyInit.Image,
+				ImagePullPolicy: apiv1.PullIfNotPresent,
+				Command: []string{
+					"/bin/sh",
+				},
+				Args: []string{
+					"-c",
+					"sysctl -w kernel.core_pattern=/var/lib/istio/core.proxy && ulimit -c unlimited",
+				},
+				SecurityContext: &apiv1.SecurityContext{
+					Privileged: util.BoolPointer(true),
+				},
+			},
+		}
+	}
 	return &appsv1.Deployment{
 		ObjectMeta: templates.ObjectMeta(gatewayName(gw), util.MergeLabels(labelSelector(gw), gwLabels(gw)), r.Config),
 		Spec: appsv1.DeploymentSpec{
@@ -51,6 +71,7 @@ func (r *Reconciler) deployment(gw string) runtime.Object {
 				},
 				Spec: apiv1.PodSpec{
 					ServiceAccountName: serviceAccountName(gw),
+					InitContainers:     initContainers,
 					Containers: []apiv1.Container{
 						{
 							Name:            "istio-proxy",
