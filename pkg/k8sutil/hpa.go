@@ -32,5 +32,9 @@ func GetHPAReplicaCountOrDefault(client client.Client, name types.NamespacedName
 		return defaultReplicaCount
 	}
 
+	if hpa.Spec.MinReplicas != nil && hpa.Status.DesiredReplicas < *hpa.Spec.MinReplicas {
+		return *hpa.Spec.MinReplicas
+	}
+
 	return hpa.Status.DesiredReplicas
 }
