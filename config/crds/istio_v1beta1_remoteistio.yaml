@@ -76,9 +76,15 @@ spec:
             proxy:
               description: Proxy configuration options
               properties:
+                enableCoreDump:
+                  description: If set, newly injected sidecars will have core dumps
+                    enabled.
+                  type: boolean
                 image:
                   type: string
                 privileged:
+                  description: If set to true, istio-proxy container will have privileged
+                    securityContext
                   type: boolean
               type: object
             proxyInit:

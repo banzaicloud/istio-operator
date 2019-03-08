@@ -76,8 +76,11 @@ type SidecarInjectorConfiguration struct {
 
 // ProxyConfiguration defines config options for Proxy
 type ProxyConfiguration struct {
-	Image      string `json:"image,omitempty"`
-	Privileged bool   `json:"privileged,omitempty"`
+	Image string `json:"image,omitempty"`
+	// If set to true, istio-proxy container will have privileged securityContext
+	Privileged bool `json:"privileged,omitempty"`
+	// If set, newly injected sidecars will have core dumps enabled.
+	EnableCoreDump bool `json:"enableCoreDump,omitempty"`
 }
 
 // ProxyInitConfiguration defines config options for Proxy Init containers

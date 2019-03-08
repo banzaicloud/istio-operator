@@ -48,6 +48,7 @@ spec:
     replicaCount: 1
   proxy:
     image: "gcr.io/istio-release/proxyv2:release-1.1-latest-daily"
+    enableCoreDump: false
   proxyInit:
     image: "gcr.io/istio-release/proxy_init:release-1.1-latest-daily"
   defaultPodDisruptionBudget:

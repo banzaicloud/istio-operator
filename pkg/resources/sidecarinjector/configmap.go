@@ -23,6 +23,7 @@ import (
 	apiv1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 
+	"github.com/banzaicloud/istio-operator/pkg/resources/gateways"
 	"github.com/banzaicloud/istio-operator/pkg/resources/templates"
 	"github.com/banzaicloud/istio-operator/pkg/util"
 )
@@ -86,6 +87,7 @@ initContainers:
       - NET_ADMIN
     privileged: ` + strconv.FormatBool(r.Config.Spec.Proxy.Privileged) + `
   restartPolicy: Always
+` + r.coreDumpContainer() + `
 [[ end -]]
 containers:
 - name: istio-proxy
@@ -182,7 +184,7 @@ containers:
   [[ end -]]
   securityContext:
     privileged: ` + strconv.FormatBool(r.Config.Spec.Proxy.Privileged) + `
-    readOnlyRootFilesystem: true
+    readOnlyRootFilesystem: ` + strconv.FormatBool(!r.Config.Spec.Proxy.EnableCoreDump) + `
     [[ if eq (annotation .ObjectMeta ` + "`" + `sidecar.istio.io/interceptionMode` + "`" + ` .ProxyConfig.InterceptionMode) "TPROXY" -]]
     capabilities:
       add:
@@ -240,4 +242,19 @@ volumes:
   [[ end ]]
   [[ end ]]
 `
+}
+
+func (r *Reconciler) coreDumpContainer() string {
+	if !r.Config.Spec.Proxy.EnableCoreDump {
+		return ""
+	}
+
+	coreDumpContainerYAML, err := yaml.Marshal([]apiv1.Container{
+		gateways.GetCoreDumpContainer(r.Config),
+	})
+	if err != nil {
+		return ""
+	}
+
+	return string(coreDumpContainerYAML)
 }
