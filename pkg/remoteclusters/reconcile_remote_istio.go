@@ -23,7 +23,7 @@ import (
 	"github.com/banzaicloud/istio-operator/pkg/resources/sidecarinjector"
 )
 
-func (c *Cluster) reconcileDeployment(remoteConfig *istiov1beta1.RemoteIstio) error {
+func (c *Cluster) reconcileDeployment(remoteConfig *istiov1beta1.RemoteIstio, istio *istiov1beta1.Istio) error {
 	c.log.Info("reconciling deployment")
 
 	commonReconciler := common.New(c.ctrlRuntimeClient, c.istioConfig, true)

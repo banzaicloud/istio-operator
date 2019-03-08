@@ -28,7 +28,7 @@ import (
 	"github.com/banzaicloud/istio-operator/pkg/util"
 )
 
-func (c *Cluster) reconcileSignCert(remoteConfig *istiov1beta1.RemoteIstio) error {
+func (c *Cluster) reconcileSignCert(remoteConfig *istiov1beta1.RemoteIstio, istio *istiov1beta1.Istio) error {
 	c.log.Info("reconciling sign cert")
 
 	var secret corev1.Secret
