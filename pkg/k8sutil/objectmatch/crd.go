@@ -23,24 +23,32 @@ import (
 	extensionsobj "k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1beta1"
 )
 
-type CRDMatcher struct{}
+type crdMatcher struct {
+	objectMatcher ObjectMatcher
+}
+
+func NewCRDMatcher(objectMatcher ObjectMatcher) *crdMatcher {
+	return &crdMatcher{
+		objectMatcher: objectMatcher,
+	}
+}
 
 // Match compares two extensionsobj.CustomResourceDefinition objects
-func (m CRDMatcher) Match(old, new *extensionsobj.CustomResourceDefinition) (bool, error) {
+func (m crdMatcher) Match(old, new *extensionsobj.CustomResourceDefinition) (bool, error) {
 	type CRD struct {
 		ObjectMeta
 		Spec extensionsobj.CustomResourceDefinitionSpec
 	}
 
 	oldData, err := json.Marshal(CRD{
-		ObjectMeta: getObjectMeta(old.ObjectMeta),
+		ObjectMeta: m.objectMatcher.GetObjectMeta(old.ObjectMeta),
 		Spec:       old.Spec,
 	})
 	if err != nil {
 		return false, emperror.WrapWith(err, "could not marshal old object", "name", old.Name)
 	}
 	newObject := CRD{
-		ObjectMeta: getObjectMeta(new.ObjectMeta),
+		ObjectMeta: m.objectMatcher.GetObjectMeta(new.ObjectMeta),
 		Spec:       new.Spec,
 	}
 	newData, err := json.Marshal(newObject)
@@ -48,7 +56,7 @@ func (m CRDMatcher) Match(old, new *extensionsobj.CustomResourceDefinition) (boo
 		return false, emperror.WrapWith(err, "could not marshal new object", "name", new.Name)
 	}
 
-	matched, err := match(oldData, newData, newObject)
+	matched, err := m.objectMatcher.MatchJSON(oldData, newData, newObject)
 	if err != nil {
 		return false, emperror.WrapWith(err, "could not match objects", "name", new.Name)
 	}

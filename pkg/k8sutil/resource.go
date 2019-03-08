@@ -56,7 +56,7 @@ func Reconcile(log logr.Logger, client runtimeClient.Client, desired runtime.Obj
 		log.Info("resource created")
 	}
 	if err == nil {
-		objectsEquals, err := objectmatch.Match(current, desired)
+		objectsEquals, err := objectmatch.New(log).Match(current, desired)
 		if err != nil {
 			log.Error(err, "could not match objects", "kind", desiredType, "name", key.Name)
 		} else if objectsEquals {

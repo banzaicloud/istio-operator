@@ -23,10 +23,18 @@ import (
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 )
 
-type UnstructuredMatcher struct{}
+type unstructuredMatcher struct {
+	objectMatcher ObjectMatcher
+}
+
+func NewUnstructuredMatcher(objectMatcher ObjectMatcher) *unstructuredMatcher {
+	return &unstructuredMatcher{
+		objectMatcher: objectMatcher,
+	}
+}
 
 // Match compares two unstructured.Unstructured objects
-func (m UnstructuredMatcher) Match(old, new *unstructured.Unstructured) (bool, error) {
+func (m unstructuredMatcher) Match(old, new *unstructured.Unstructured) (bool, error) {
 	oldData, err := json.Marshal(old)
 	if err != nil {
 		return false, emperror.WrapWith(err, "could not marshal old object", "name", old.GetName())
@@ -36,7 +44,7 @@ func (m UnstructuredMatcher) Match(old, new *unstructured.Unstructured) (bool, e
 		return false, emperror.WrapWith(err, "could not marshal new object", "name", new.GetName())
 	}
 
-	matched, err := match(oldData, newData, new)
+	matched, err := m.objectMatcher.MatchJSON(oldData, newData, new)
 	if err != nil {
 		return false, emperror.WrapWith(err, "could not match objects", "name", new.GetName())
 	}

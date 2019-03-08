@@ -23,10 +23,18 @@ import (
 	corev1 "k8s.io/api/core/v1"
 )
 
-type ConfigMapMatcher struct{}
+type configMapMatcher struct {
+	objectMatcher ObjectMatcher
+}
+
+func NewConfigMapMatcher(objectMatcher ObjectMatcher) *configMapMatcher {
+	return &configMapMatcher{
+		objectMatcher: objectMatcher,
+	}
+}
 
 // Match compares two corev1.ConfigMap objects
-func (m ConfigMapMatcher) Match(old, new *corev1.ConfigMap) (bool, error) {
+func (m configMapMatcher) Match(old, new *corev1.ConfigMap) (bool, error) {
 	type ConfigMap struct {
 		ObjectMeta
 		Data       map[string]string `json:"data"`
@@ -34,7 +42,7 @@ func (m ConfigMapMatcher) Match(old, new *corev1.ConfigMap) (bool, error) {
 	}
 
 	oldData, err := json.Marshal(ConfigMap{
-		ObjectMeta: getObjectMeta(old.ObjectMeta),
+		ObjectMeta: m.objectMatcher.GetObjectMeta(old.ObjectMeta),
 		Data:       old.Data,
 		BinaryData: old.BinaryData,
 	})
@@ -42,7 +50,7 @@ func (m ConfigMapMatcher) Match(old, new *corev1.ConfigMap) (bool, error) {
 		return false, emperror.WrapWith(err, "could not marshal old object", "name", old.Name)
 	}
 	newConfigMap := ConfigMap{
-		ObjectMeta: getObjectMeta(new.ObjectMeta),
+		ObjectMeta: m.objectMatcher.GetObjectMeta(new.ObjectMeta),
 		Data:       new.Data,
 		BinaryData: new.BinaryData,
 	}
@@ -51,7 +59,7 @@ func (m ConfigMapMatcher) Match(old, new *corev1.ConfigMap) (bool, error) {
 		return false, emperror.WrapWith(err, "could not marshal new object", "name", new.Name)
 	}
 
-	matched, err := match(oldData, newData, newConfigMap)
+	matched, err := m.objectMatcher.MatchJSON(oldData, newData, newConfigMap)
 	if err != nil {
 		return false, emperror.WrapWith(err, "could not match objects", "name", new.Name)
 	}
