@@ -130,6 +130,14 @@ spec:
             mtls:
               description: MTLS enables or disables global mTLS
               type: boolean
+            nodeAgent:
+              description: NodeAgent configuration options
+              properties:
+                enabled:
+                  type: boolean
+                image:
+                  type: string
+              type: object
             outboundTrafficPolicy:
               description: Set the default behavior of the sidecar for handling outbound
                 traffic from the application (ALLOW_ANY or REGISTRY_ONLY)

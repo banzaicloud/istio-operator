@@ -74,6 +74,12 @@ type SidecarInjectorConfiguration struct {
 	ReplicaCount int32  `json:"replicaCount,omitempty"`
 }
 
+// NodeAgentConfiguration defines config options for NodeAgent
+type NodeAgentConfiguration struct {
+	Enabled bool   `json:"enabled,omitempty"`
+	Image   string `json:"image,omitempty"`
+}
+
 // ProxyConfiguration defines config options for Proxy
 type ProxyConfiguration struct {
 	Image string `json:"image,omitempty"`
@@ -132,6 +138,9 @@ type IstioSpec struct {
 
 	// SidecarInjector configuration options
 	SidecarInjector SidecarInjectorConfiguration `json:"sidecarInjector,omitempty"`
+
+	// NodeAgent configuration options
+	NodeAgent NodeAgentConfiguration `json:"nodeAgent,omitempty"`
 
 	// Proxy configuration options
 	Proxy ProxyConfiguration `json:"proxy,omitempty"`
