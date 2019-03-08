@@ -23,24 +23,32 @@ import (
 	policyv1beta1 "k8s.io/api/policy/v1beta1"
 )
 
-type PodDisruptionBudgetMatcher struct{}
+type podDisruptionBudgetMatcher struct {
+	objectMatcher ObjectMatcher
+}
+
+func NewPodDisruptionBudgetMatcher(objectMatcher ObjectMatcher) *podDisruptionBudgetMatcher {
+	return &podDisruptionBudgetMatcher{
+		objectMatcher: objectMatcher,
+	}
+}
 
 // Match compares two autoscalev2beta1.HorizontalPodAutoscaler objects
-func (m PodDisruptionBudgetMatcher) Match(old, new *policyv1beta1.PodDisruptionBudget) (bool, error) {
+func (m podDisruptionBudgetMatcher) Match(old, new *policyv1beta1.PodDisruptionBudget) (bool, error) {
 	type PodDisruptionBudgetMatcher struct {
 		ObjectMeta
 		Spec policyv1beta1.PodDisruptionBudgetSpec
 	}
 
 	oldData, err := json.Marshal(PodDisruptionBudgetMatcher{
-		ObjectMeta: getObjectMeta(old.ObjectMeta),
+		ObjectMeta: m.objectMatcher.GetObjectMeta(old.ObjectMeta),
 		Spec:       old.Spec,
 	})
 	if err != nil {
 		return false, emperror.WrapWith(err, "could not marshal old object", "name", old.Name)
 	}
 	newObject := PodDisruptionBudgetMatcher{
-		ObjectMeta: getObjectMeta(new.ObjectMeta),
+		ObjectMeta: m.objectMatcher.GetObjectMeta(new.ObjectMeta),
 		Spec:       new.Spec,
 	}
 	newData, err := json.Marshal(newObject)
@@ -48,7 +56,7 @@ func (m PodDisruptionBudgetMatcher) Match(old, new *policyv1beta1.PodDisruptionB
 		return false, emperror.WrapWith(err, "could not marshal new object", "name", new.Name)
 	}
 
-	matched, err := match(oldData, newData, newObject)
+	matched, err := m.objectMatcher.MatchJSON(oldData, newData, newObject)
 	if err != nil {
 		return false, emperror.WrapWith(err, "could not match objects", "name", new.Name)
 	}

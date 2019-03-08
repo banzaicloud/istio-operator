@@ -23,26 +23,35 @@ import (
 	appsv1 "k8s.io/api/apps/v1"
 )
 
-type DeploymentMatcher struct{}
+type deploymentMatcher struct {
+	objectMatcher ObjectMatcher
+}
+
+func NewDeploymentMatcher(objectMatcher ObjectMatcher) *deploymentMatcher {
+	return &deploymentMatcher{
+		objectMatcher: objectMatcher,
+	}
+}
 
 // Match compares two appsv1.Deployment objects
-func (m DeploymentMatcher) Match(old, new *appsv1.Deployment) (bool, error) {
+func (m deploymentMatcher) Match(old, new *appsv1.Deployment) (bool, error) {
 	type Deployment struct {
 		ObjectMeta
 		Spec appsv1.DeploymentSpec
 	}
 
 	delete(old.ObjectMeta.Annotations, "deployment.kubernetes.io/revision")
+	delete(old.ObjectMeta.Annotations, "control-plane.alpha.kubernetes.io/leader")
 
 	oldData, err := json.Marshal(Deployment{
-		ObjectMeta: getObjectMeta(old.ObjectMeta),
+		ObjectMeta: m.objectMatcher.GetObjectMeta(old.ObjectMeta),
 		Spec:       old.Spec,
 	})
 	if err != nil {
 		return false, emperror.WrapWith(err, "could not marshal old object", "name", old.Name)
 	}
 	newObject := Deployment{
-		ObjectMeta: getObjectMeta(new.ObjectMeta),
+		ObjectMeta: m.objectMatcher.GetObjectMeta(new.ObjectMeta),
 		Spec:       new.Spec,
 	}
 	newData, err := json.Marshal(newObject)
@@ -50,7 +59,7 @@ func (m DeploymentMatcher) Match(old, new *appsv1.Deployment) (bool, error) {
 		return false, emperror.WrapWith(err, "could not marshal new object", "name", new.Name)
 	}
 
-	matched, err := match(oldData, newData, newObject)
+	matched, err := m.objectMatcher.MatchJSON(oldData, newData, newObject)
 	if err != nil {
 		return false, emperror.WrapWith(err, "could not match objects", "name", new.Name)
 	}

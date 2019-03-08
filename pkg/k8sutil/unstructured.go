@@ -68,7 +68,7 @@ func (d *DynamicObject) Reconcile(log logr.Logger, client dynamic.Interface, des
 	}
 	if err == nil {
 		if desiredState == DesiredStatePresent {
-			objectsEquals, err := objectmatch.Match(current, desired)
+			objectsEquals, err := objectmatch.New(log).Match(current, desired)
 			if err != nil {
 				log.Error(err, "could not match objects", "kind", desiredType)
 			} else if objectsEquals {

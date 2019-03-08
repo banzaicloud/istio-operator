@@ -23,29 +23,37 @@ import (
 	corev1 "k8s.io/api/core/v1"
 )
 
-type ServiceAccountMatcher struct{}
+type serviceAccountMatcher struct {
+	objectMatcher ObjectMatcher
+}
+
+func NewServiceAccountMatcher(objectMatcher ObjectMatcher) *serviceAccountMatcher {
+	return &serviceAccountMatcher{
+		objectMatcher: objectMatcher,
+	}
+}
 
 // Match compares two corev1.ServiceAccount objects
-func (m ServiceAccountMatcher) Match(old, new *corev1.ServiceAccount) (bool, error) {
+func (m serviceAccountMatcher) Match(old, new *corev1.ServiceAccount) (bool, error) {
 	type ServiceAccount struct {
 		ObjectMeta
 	}
 
 	oldData, err := json.Marshal(ServiceAccount{
-		ObjectMeta: getObjectMeta(old.ObjectMeta),
+		ObjectMeta: m.objectMatcher.GetObjectMeta(old.ObjectMeta),
 	})
 	if err != nil {
 		return false, emperror.WrapWith(err, "could not marshal old object", "name", old.Name)
 	}
 	newObject := ServiceAccount{
-		ObjectMeta: getObjectMeta(new.ObjectMeta),
+		ObjectMeta: m.objectMatcher.GetObjectMeta(new.ObjectMeta),
 	}
 	newData, err := json.Marshal(newObject)
 	if err != nil {
 		return false, emperror.WrapWith(err, "could not marshal new object", "name", new.Name)
 	}
 
-	matched, err := match(oldData, newData, newObject)
+	matched, err := m.objectMatcher.MatchJSON(oldData, newData, newObject)
 	if err != nil {
 		return false, emperror.WrapWith(err, "could not match objects", "name", new.Name)
 	}

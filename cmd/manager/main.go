@@ -20,22 +20,25 @@ import (
 	"flag"
 	"os"
 
-	"github.com/banzaicloud/istio-operator/pkg/apis"
-	"github.com/banzaicloud/istio-operator/pkg/controller"
-	"github.com/banzaicloud/istio-operator/pkg/remoteclusters"
-	"github.com/banzaicloud/istio-operator/pkg/webhook"
 	_ "k8s.io/client-go/plugin/pkg/client/auth/gcp"
 	"sigs.k8s.io/controller-runtime/pkg/client/config"
 	"sigs.k8s.io/controller-runtime/pkg/manager"
 	logf "sigs.k8s.io/controller-runtime/pkg/runtime/log"
 	"sigs.k8s.io/controller-runtime/pkg/runtime/signals"
+
+	"github.com/banzaicloud/istio-operator/pkg/apis"
+	"github.com/banzaicloud/istio-operator/pkg/controller"
+	"github.com/banzaicloud/istio-operator/pkg/remoteclusters"
+	"github.com/banzaicloud/istio-operator/pkg/webhook"
 )
 
 func main() {
 	var metricsAddr string
 	flag.StringVar(&metricsAddr, "metrics-addr", ":8080", "The address the metric endpoint binds to.")
+	var developmentMode bool
+	flag.BoolVar(&developmentMode, "devel-mode", false, "Set development mode (mainly for logging)")
 	flag.Parse()
-	logf.SetLogger(logf.ZapLogger(false))
+	logf.SetLogger(logf.ZapLogger(developmentMode))
 	log := logf.Log.WithName("entrypoint")
 
 	// Get a config to talk to the apiserver

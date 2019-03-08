@@ -23,10 +23,18 @@ import (
 	admissionv1beta1 "k8s.io/api/admissionregistration/v1beta1"
 )
 
-type MutatingWebhookConfigurationMatcher struct{}
+type mutatingWebhookConfigurationMatcher struct {
+	objectMatcher ObjectMatcher
+}
+
+func NewMutatingWebhookConfigurationMatcher(objectMatcher ObjectMatcher) *mutatingWebhookConfigurationMatcher {
+	return &mutatingWebhookConfigurationMatcher{
+		objectMatcher: objectMatcher,
+	}
+}
 
 // Match compares two admissionv1beta1.MutatingWebhookConfiguration objects
-func (m MutatingWebhookConfigurationMatcher) Match(old, new *admissionv1beta1.MutatingWebhookConfiguration) (bool, error) {
+func (m mutatingWebhookConfigurationMatcher) Match(old, new *admissionv1beta1.MutatingWebhookConfiguration) (bool, error) {
 	type MutatingWebhookConfiguration struct {
 		ObjectMeta
 		Webhooks []admissionv1beta1.Webhook `json:"webhooks,omitempty" patchStrategy:"merge" patchMergeKey:"name"`
@@ -35,7 +43,7 @@ func (m MutatingWebhookConfigurationMatcher) Match(old, new *admissionv1beta1.Mu
 	old.Webhooks = nullCABundleConditionally(old.Webhooks, new.Webhooks)
 
 	oldData, err := json.Marshal(MutatingWebhookConfiguration{
-		ObjectMeta: getObjectMeta(old.ObjectMeta),
+		ObjectMeta: m.objectMatcher.GetObjectMeta(old.ObjectMeta),
 		Webhooks:   old.Webhooks,
 	})
 	if err != nil {
@@ -43,7 +51,7 @@ func (m MutatingWebhookConfigurationMatcher) Match(old, new *admissionv1beta1.Mu
 	}
 
 	newObject := MutatingWebhookConfiguration{
-		ObjectMeta: getObjectMeta(new.ObjectMeta),
+		ObjectMeta: m.objectMatcher.GetObjectMeta(new.ObjectMeta),
 		Webhooks:   new.Webhooks,
 	}
 	newData, err := json.Marshal(newObject)
@@ -51,7 +59,7 @@ func (m MutatingWebhookConfigurationMatcher) Match(old, new *admissionv1beta1.Mu
 		return false, emperror.WrapWith(err, "could not marshal new object", "name", new.Name)
 	}
 
-	matched, err := match(oldData, newData, newObject)
+	matched, err := m.objectMatcher.MatchJSON(oldData, newData, newObject)
 	if err != nil {
 		return false, emperror.WrapWith(err, "could not match objects", "name", new.Name)
 	}
