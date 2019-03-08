@@ -55,6 +55,7 @@ import (
 	"github.com/banzaicloud/istio-operator/pkg/resources/galley"
 	"github.com/banzaicloud/istio-operator/pkg/resources/gateways"
 	"github.com/banzaicloud/istio-operator/pkg/resources/mixer"
+	"github.com/banzaicloud/istio-operator/pkg/resources/nodeagent"
 	"github.com/banzaicloud/istio-operator/pkg/resources/pilot"
 	"github.com/banzaicloud/istio-operator/pkg/resources/sidecarinjector"
 	"github.com/banzaicloud/istio-operator/pkg/util"
@@ -216,6 +217,10 @@ func (r *ReconcileConfig) reconcile(logger logr.Logger, config *istiov1beta1.Ist
 		gateways.New(r.Client, r.dynamic, config),
 		mixer.New(r.Client, r.dynamic, config),
 		sidecarinjector.New(r.Client, config),
+	}
+
+	if config.Spec.NodeAgent.Enabled {
+		reconcilers = append(reconcilers, nodeagent.New(r.Client, config))
 	}
 
 	for _, rec := range reconcilers {
