@@ -59,3 +59,34 @@ func (r *Reconciler) clusterRoleBinding(gw string) runtime.Object {
 		},
 	}
 }
+
+func (r *Reconciler) role(gw string) runtime.Object {
+	return &rbacv1.Role{
+		ObjectMeta: templates.ObjectMeta(roleName(gw), labelSelector(gw), r.Config),
+		Rules: []rbacv1.PolicyRule{
+			{
+				APIGroups: []string{""},
+				Resources: []string{"secrets"},
+				Verbs:     []string{"get", "watch", "list"},
+			},
+		},
+	}
+}
+
+func (r *Reconciler) roleBinding(gw string) runtime.Object {
+	return &rbacv1.RoleBinding{
+		ObjectMeta: templates.ObjectMeta(roleBindingName(gw), labelSelector(gw), r.Config),
+		RoleRef: rbacv1.RoleRef{
+			Kind:     "Role",
+			APIGroup: "rbac.authorization.k8s.io",
+			Name:     roleName(gw),
+		},
+		Subjects: []rbacv1.Subject{
+			{
+				Kind:      "ServiceAccount",
+				Name:      serviceAccountName(gw),
+				Namespace: r.Config.Namespace,
+			},
+		},
+	}
+}

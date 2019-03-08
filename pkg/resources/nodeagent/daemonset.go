@@ -57,19 +57,15 @@ func (r *Reconciler) daemonSet() runtime.Object {
 							Env: []apiv1.EnvVar{
 								{
 									Name:  "CA_PROVIDER",
-									Value: "",
+									Value: "Citadel",
 								},
 								{
 									Name:  "CA_ADDR",
-									Value: "",
+									Value: "istio-citadel:8060",
 								},
 								{
-									Name:  "Plugins",
-									Value: "",
-								},
-								{
-									Name:  "Trust_Domain",
-									Value: "",
+									Name:  "VALID_TOKEN",
+									Value: "true",
 								},
 							},
 						},

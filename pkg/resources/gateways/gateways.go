@@ -68,6 +68,10 @@ func (r *Reconciler) Reconcile(log logr.Logger) error {
 	if r.Config.Spec.DefaultPodDisruptionBudget.Enabled {
 		rsv = append(rsv, r.podDisruptionBudget)
 	}
+	if r.Config.Spec.SDS.Enabled {
+		rsv = append(rsv, r.role)
+		rsv = append(rsv, r.roleBinding)
+	}
 	for _, res := range append(resources.ResolveVariations(ingress, rsv), resources.ResolveVariations(egress, rsv)...) {
 		o := res()
 		err := k8sutil.Reconcile(log, r.Client, o)
@@ -112,6 +116,14 @@ func clusterRoleName(gw string) string {
 
 func clusterRoleBindingName(gw string) string {
 	return fmt.Sprintf("istio-%s-cluster-role-binding", gw)
+}
+
+func roleName(gw string) string {
+	return fmt.Sprintf("istio-%s-role-sds", gw)
+}
+
+func roleBindingName(gw string) string {
+	return fmt.Sprintf("istio-%s-role-binding-sds", gw)
 }
 
 func gatewayName(gw string) string {
