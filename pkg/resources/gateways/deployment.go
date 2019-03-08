@@ -40,6 +40,80 @@ func (r *Reconciler) deployment(gw string) runtime.Object {
 		initContainers = []apiv1.Container{GetCoreDumpContainer(r.Config)}
 	}
 
+	var containers = make([]apiv1.Container, 0)
+	if gwConfig.SDS.Enabled {
+		containers = append(containers, apiv1.Container{
+			Name:            "ingress-sds",
+			Image:           gwConfig.SDS.Image,
+			ImagePullPolicy: apiv1.PullIfNotPresent,
+			Env: []apiv1.EnvVar{
+				{
+					Name:  "ENABLE_WORKLOAD_SDS",
+					Value: "false",
+				},
+				{
+					Name:  "ENABLE_INGRESS_GATEWAY_SDS",
+					Value: "true",
+				},
+				{
+					Name: "INGRESS_GATEWAY_NAMESPACE",
+					ValueFrom: &apiv1.EnvVarSource{
+						FieldRef: &apiv1.ObjectFieldSelector{
+							APIVersion: "v1",
+							FieldPath:  "metadata.namespace",
+						},
+					},
+				},
+			},
+			VolumeMounts: []apiv1.VolumeMount{
+				{
+					Name:      "ingressgatewaysdsudspath",
+					MountPath: "/var/run/ingress_gateway",
+				},
+			},
+		})
+	}
+	containers = append(containers, apiv1.Container{
+		Name:            "istio-proxy",
+		Image:           r.Config.Spec.Proxy.Image,
+		ImagePullPolicy: apiv1.PullIfNotPresent,
+		Args: []string{
+			"proxy",
+			"router",
+			"--domain", "$(POD_NAMESPACE).svc.cluster.local",
+			"--log_output_level", "info",
+			"--drainDuration", "45s",
+			"--parentShutdownDuration", "1m0s",
+			"--connectTimeout", "10s",
+			"--serviceCluster", fmt.Sprintf("istio-%s", gw),
+			"--zipkinAddress", fmt.Sprintf("zipkin.%s:9411", r.Config.Namespace),
+			"--proxyAdminPort", "15000",
+			"--statusPort", "15020",
+			"--controlPlaneAuthPolicy", templates.ControlPlaneAuthPolicy(r.Config.Spec.ControlPlaneSecurityEnabled),
+			"--discoveryAddress", fmt.Sprintf("istio-pilot.%s:%s", r.Config.Namespace, r.discoveryPort()),
+		},
+		Ports: r.ports(gw),
+		ReadinessProbe: &apiv1.Probe{
+			Handler: apiv1.Handler{
+				HTTPGet: &apiv1.HTTPGetAction{
+					Path:   "/healthz/ready",
+					Port:   intstr.FromInt(15020),
+					Scheme: apiv1.URISchemeHTTP,
+				},
+			},
+			InitialDelaySeconds: 1,
+			PeriodSeconds:       2,
+			FailureThreshold:    30,
+			SuccessThreshold:    1,
+			TimeoutSeconds:      1,
+		},
+		Env:                      append(templates.IstioProxyEnv(), r.envVars(gwConfig)...),
+		Resources:                templates.DefaultResources(),
+		VolumeMounts:             r.volumeMounts(gw, gwConfig),
+		TerminationMessagePath:   apiv1.TerminationMessagePathDefault,
+		TerminationMessagePolicy: apiv1.TerminationMessageReadFile,
+	})
+
 	return &appsv1.Deployment{
 		ObjectMeta: templates.ObjectMeta(gatewayName(gw), util.MergeLabels(labelSelector(gw), gwLabels(gw)), r.Config),
 		Spec: appsv1.DeploymentSpec{
@@ -58,97 +132,9 @@ func (r *Reconciler) deployment(gw string) runtime.Object {
 				Spec: apiv1.PodSpec{
 					ServiceAccountName: serviceAccountName(gw),
 					InitContainers:     initContainers,
-					Containers: []apiv1.Container{
-						{
-							Name:            "istio-proxy",
-							Image:           r.Config.Spec.Proxy.Image,
-							ImagePullPolicy: apiv1.PullIfNotPresent,
-							Args: []string{
-								"proxy",
-								"router",
-								"--domain", "$(POD_NAMESPACE).svc.cluster.local",
-								"--log_output_level", "info",
-								"--drainDuration", "45s",
-								"--parentShutdownDuration", "1m0s",
-								"--connectTimeout", "10s",
-								"--serviceCluster", fmt.Sprintf("istio-%s", gw),
-								"--zipkinAddress", fmt.Sprintf("zipkin.%s:9411", r.Config.Namespace),
-								"--proxyAdminPort", "15000",
-								"--statusPort", "15020",
-								"--controlPlaneAuthPolicy", templates.ControlPlaneAuthPolicy(r.Config.Spec.ControlPlaneSecurityEnabled),
-								"--discoveryAddress", fmt.Sprintf("istio-pilot.%s:%s", r.Config.Namespace, r.discoveryPort()),
-							},
-							Ports: r.ports(gw),
-							ReadinessProbe: &apiv1.Probe{
-								Handler: apiv1.Handler{
-									HTTPGet: &apiv1.HTTPGetAction{
-										Path:   "/healthz/ready",
-										Port:   intstr.FromInt(15020),
-										Scheme: apiv1.URISchemeHTTP,
-									},
-								},
-								InitialDelaySeconds: 1,
-								PeriodSeconds:       2,
-								FailureThreshold:    30,
-								SuccessThreshold:    1,
-								TimeoutSeconds:      1,
-							},
-							Env:       append(templates.IstioProxyEnv(), gwEnvVars()...),
-							Resources: templates.DefaultResources(),
-							VolumeMounts: []apiv1.VolumeMount{
-								{
-									Name:      "istio-certs",
-									MountPath: "/etc/certs",
-									ReadOnly:  true,
-								},
-								{
-									Name:      fmt.Sprintf("%s-certs", gw),
-									MountPath: fmt.Sprintf("/etc/istio/%s-certs", gw),
-									ReadOnly:  true,
-								},
-								{
-									Name:      fmt.Sprintf("%s-ca-certs", gw),
-									MountPath: fmt.Sprintf("/etc/istio/%s-ca-certs", gw),
-									ReadOnly:  true,
-								},
-							},
-							TerminationMessagePath:   apiv1.TerminationMessagePathDefault,
-							TerminationMessagePolicy: apiv1.TerminationMessageReadFile,
-						},
-					},
-					Volumes: []apiv1.Volume{
-						{
-							Name: "istio-certs",
-							VolumeSource: apiv1.VolumeSource{
-								Secret: &apiv1.SecretVolumeSource{
-									SecretName:  fmt.Sprintf("istio.%s", serviceAccountName(gw)),
-									Optional:    util.BoolPointer(true),
-									DefaultMode: util.IntPointer(420),
-								},
-							},
-						},
-						{
-							Name: fmt.Sprintf("%s-certs", gw),
-							VolumeSource: apiv1.VolumeSource{
-								Secret: &apiv1.SecretVolumeSource{
-									SecretName:  fmt.Sprintf("istio-%s-certs", gw),
-									Optional:    util.BoolPointer(true),
-									DefaultMode: util.IntPointer(420),
-								},
-							},
-						},
-						{
-							Name: fmt.Sprintf("%s-ca-certs", gw),
-							VolumeSource: apiv1.VolumeSource{
-								Secret: &apiv1.SecretVolumeSource{
-									SecretName:  fmt.Sprintf("istio-%s-ca-certs", gw),
-									Optional:    util.BoolPointer(true),
-									DefaultMode: util.IntPointer(420),
-								},
-							},
-						},
-					},
-					Affinity: &apiv1.Affinity{},
+					Containers:         containers,
+					Volumes:            r.volumes(gw, gwConfig),
+					Affinity:           &apiv1.Affinity{},
 				},
 			},
 		},
@@ -188,8 +174,8 @@ func (r *Reconciler) discoveryPort() string {
 	return "15010"
 }
 
-func gwEnvVars() []apiv1.EnvVar {
-	return []apiv1.EnvVar{
+func (r *Reconciler) envVars(gwConfig *istiov1beta1.GatewayConfiguration) []apiv1.EnvVar {
+	envVars := []apiv1.EnvVar{
 		{
 			Name: "ISTIO_META_POD_NAME",
 			ValueFrom: &apiv1.EnvVarSource{
@@ -213,6 +199,124 @@ func gwEnvVars() []apiv1.EnvVar {
 			Value: "sni-dnat",
 		},
 	}
+	if gwConfig.SDS.Enabled {
+		envVars = append(envVars, apiv1.EnvVar{
+			Name:  "ISTIO_META_USER_SDS",
+			Value: "true",
+		})
+	}
+	return envVars
+}
+
+func (r *Reconciler) volumeMounts(gw string, gwConfig *istiov1beta1.GatewayConfiguration) []apiv1.VolumeMount {
+	vms := []apiv1.VolumeMount{
+		{
+			Name:      "istio-certs",
+			MountPath: "/etc/certs",
+			ReadOnly:  true,
+		},
+		{
+			Name:      fmt.Sprintf("%s-certs", gw),
+			MountPath: fmt.Sprintf("/etc/istio/%s-certs", gw),
+			ReadOnly:  true,
+		},
+		{
+			Name:      fmt.Sprintf("%s-ca-certs", gw),
+			MountPath: fmt.Sprintf("/etc/istio/%s-ca-certs", gw),
+			ReadOnly:  true,
+		},
+	}
+	if r.Config.Spec.SDS.Enabled {
+		vms = append(vms, apiv1.VolumeMount{
+			Name:      "sdsudspath",
+			MountPath: "/var/run/sds",
+		})
+		if r.Config.Spec.SDS.UseTrustworthyJwt {
+			vms = append(vms, apiv1.VolumeMount{
+				Name:      "istio-token",
+				MountPath: "/var/run/secrets/tokens",
+			})
+		}
+	}
+	if gwConfig.SDS.Enabled {
+		vms = append(vms, apiv1.VolumeMount{
+			Name:      "ingressgatewaysdsudspath",
+			MountPath: "/var/run/ingress_gateway",
+		})
+	}
+	return vms
+}
+
+func (r *Reconciler) volumes(gw string, gwConfig *istiov1beta1.GatewayConfiguration) []apiv1.Volume {
+	volumes := []apiv1.Volume{
+		{
+			Name: "istio-certs",
+			VolumeSource: apiv1.VolumeSource{
+				Secret: &apiv1.SecretVolumeSource{
+					SecretName:  fmt.Sprintf("istio.%s", serviceAccountName(gw)),
+					Optional:    util.BoolPointer(true),
+					DefaultMode: util.IntPointer(420),
+				},
+			},
+		},
+		{
+			Name: fmt.Sprintf("%s-certs", gw),
+			VolumeSource: apiv1.VolumeSource{
+				Secret: &apiv1.SecretVolumeSource{
+					SecretName:  fmt.Sprintf("istio-%s-certs", gw),
+					Optional:    util.BoolPointer(true),
+					DefaultMode: util.IntPointer(420),
+				},
+			},
+		},
+		{
+			Name: fmt.Sprintf("%s-ca-certs", gw),
+			VolumeSource: apiv1.VolumeSource{
+				Secret: &apiv1.SecretVolumeSource{
+					SecretName:  fmt.Sprintf("istio-%s-ca-certs", gw),
+					Optional:    util.BoolPointer(true),
+					DefaultMode: util.IntPointer(420),
+				},
+			},
+		},
+	}
+	if r.Config.Spec.SDS.Enabled {
+		volumes = append(volumes, apiv1.Volume{
+			Name: "sdsudspath",
+			VolumeSource: apiv1.VolumeSource{
+				HostPath: &apiv1.HostPathVolumeSource{
+					Path: "/var/run/sds",
+				},
+			},
+		})
+		if r.Config.Spec.SDS.UseTrustworthyJwt {
+			volumes = append(volumes, apiv1.Volume{
+				Name: "istio-token",
+				VolumeSource: apiv1.VolumeSource{
+					Projected: &apiv1.ProjectedVolumeSource{
+						Sources: []apiv1.VolumeProjection{
+							{
+								ServiceAccountToken: &apiv1.ServiceAccountTokenProjection{
+									Path:              "istio-token",
+									ExpirationSeconds: util.Int64Pointer(43200),
+									Audience:          "",
+								},
+							},
+						},
+					},
+				},
+			})
+		}
+	}
+	if gwConfig.SDS.Enabled {
+		volumes = append(volumes, apiv1.Volume{
+			Name: "ingressgatewaysdsudspath",
+			VolumeSource: apiv1.VolumeSource{
+				EmptyDir: &apiv1.EmptyDirVolumeSource{},
+			},
+		})
+	}
+	return volumes
 }
 
 // GetCoreDumpContainer get core dump init container for Envoy proxies

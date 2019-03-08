@@ -5,14 +5,17 @@ metadata:
     controller-tools.k8s.io: "1.0"
   name: istio-sample
 spec:
-  mtls: false
+  mtls: true
   includeIPRanges: "*"
   excludeIPRanges: ""
   autoInjectionNamespaces:
   - "default"
   controlPlaneSecurityEnabled: false
   sds:
-    enabled: false
+    enabled: true
+    udsPath: "unix:/var/run/sds/uds_path"
+    useTrustworthyJwt: true
+    useNormalJwt: true
   pilot:
     image: "gcr.io/istio-release/pilot:release-1.1-latest-daily"
     replicaCount: 1
@@ -52,7 +55,7 @@ spec:
     image: "gcr.io/istio-release/sidecar_injector:release-1.1-latest-daily"
     replicaCount: 1
   nodeAgent:
-    enabled: false
+    enabled: true
     image: "gcr.io/istio-release/node-agent-k8s:release-1.1-latest-daily"
   proxy:
     image: "gcr.io/istio-release/proxyv2:release-1.1-latest-daily"
