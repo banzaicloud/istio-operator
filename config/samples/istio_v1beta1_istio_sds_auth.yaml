@@ -36,7 +36,7 @@ spec:
       serviceAnnotations: {}
       serviceLabels: {}
       sds:
-        enabled: false
+        enabled: true
         image: "gcr.io/istio-release/node-agent-k8s:release-1.1-latest-daily"
     egress:
       replicaCount: 1
@@ -65,5 +65,5 @@ spec:
   defaultPodDisruptionBudget:
     enabled: true
   outboundTrafficPolicy:
-    mode: REGISTRY_ONLY
+    mode: ALLOW_ANY
 
