@@ -38,7 +38,6 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/source"
 
 	istiov1beta1 "github.com/banzaicloud/istio-operator/pkg/apis/istio/v1beta1"
-	operatorv1beta1 "github.com/banzaicloud/istio-operator/pkg/apis/istio/v1beta1"
 	"github.com/banzaicloud/istio-operator/pkg/remoteclusters"
 	"github.com/banzaicloud/istio-operator/pkg/util"
 )
@@ -71,7 +70,7 @@ func add(mgr manager.Manager, r reconcile.Reconciler) error {
 	}
 
 	// Watch for changes to RemoteConfig
-	err = c.Watch(&source.Kind{Type: &operatorv1beta1.RemoteIstio{TypeMeta: metav1.TypeMeta{Kind: "RemoteIstio", APIVersion: "istio.banzaicloud.io/v1beta1"}}}, &handler.EnqueueRequestForObject{}, getWatchPredicateForRemoteConfig())
+	err = c.Watch(&source.Kind{Type: &istiov1beta1.RemoteIstio{TypeMeta: metav1.TypeMeta{Kind: "RemoteIstio", APIVersion: "istio.banzaicloud.io/v1beta1"}}}, &handler.EnqueueRequestForObject{}, getWatchPredicateForRemoteConfig())
 	if err != nil {
 		return err
 	}
@@ -97,7 +96,7 @@ type ReconcileRemoteConfig struct {
 // +kubebuilder:rbac:groups=istio.banzaicloud.io,resources=remoteistios,verbs=get;list;watch;create;update;patch;delete
 // +kubebuilder:rbac:groups=istio.banzaicloud.io,resources=remoteistios/status,verbs=get;update;patch
 func (r *ReconcileRemoteConfig) Reconcile(request reconcile.Request) (reconcile.Result, error) {
-	remoteConfig := &operatorv1beta1.RemoteIstio{}
+	remoteConfig := &istiov1beta1.RemoteIstio{}
 	err := r.Get(context.TODO(), request.NamespacedName, remoteConfig)
 	if err != nil {
 		if !k8serrors.IsNotFound(err) {
@@ -110,9 +109,14 @@ func (r *ReconcileRemoteConfig) Reconcile(request reconcile.Request) (reconcile.
 		return reconcile.Result{}, nil
 	}
 
+	istio, err := r.getIstio()
+	if err != nil {
+		return reconcile.Result{}, err
+	}
+
 	// Set default values where not set
 	istiov1beta1.SetRemoteIstioDefaults(remoteConfig)
-	result, err := r.reconcile(remoteConfig)
+	result, err := r.reconcile(remoteConfig, istio)
 	if err != nil {
 		updateErr := r.updateRemoteConfigStatus(remoteConfig, istiov1beta1.ReconcileFailed, err.Error())
 		if updateErr != nil {
@@ -125,7 +129,7 @@ func (r *ReconcileRemoteConfig) Reconcile(request reconcile.Request) (reconcile.
 	return result, nil
 }
 
-func (r *ReconcileRemoteConfig) reconcile(remoteConfig *istiov1beta1.RemoteIstio) (reconcile.Result, error) {
+func (r *ReconcileRemoteConfig) reconcile(remoteConfig *istiov1beta1.RemoteIstio, istio *istiov1beta1.Istio) (reconcile.Result, error) {
 	var err error
 
 	log := log.WithValues("cluster", remoteConfig.Name)
@@ -200,7 +204,7 @@ func (r *ReconcileRemoteConfig) reconcile(remoteConfig *istiov1beta1.RemoteIstio
 		return reconcile.Result{}, emperror.Wrap(err, "could not get remote cluster")
 	}
 
-	err = cluster.Reconcile(remoteConfig)
+	err = cluster.Reconcile(remoteConfig, istio)
 	if err != nil {
 		return reconcile.Result{}, emperror.Wrap(err, "could not reconcile remote istio")
 	}
@@ -332,6 +336,20 @@ func (r *ReconcileRemoteConfig) getK8SConfigForCluster(namespace string, name st
 	}
 
 	return nil, errors.New("could not found k8s config")
+}
+
+func (r *ReconcileRemoteConfig) getIstio() (*istiov1beta1.Istio, error) {
+	var istios istiov1beta1.IstioList
+	err := r.List(context.TODO(), &client.ListOptions{}, &istios)
+	if err != nil {
+		return nil, err
+	}
+
+	if len(istios.Items) != 1 {
+		return nil, errors.New("istio resource not found")
+	}
+
+	return &istios.Items[0], nil
 }
 
 func getWatchPredicateForRemoteConfig() predicate.Funcs {

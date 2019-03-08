@@ -56,9 +56,6 @@ type RemoteIstioSpec struct {
 	// List of namespaces to label with sidecar auto injection enabled
 	AutoInjectionNamespaces []string `json:"autoInjectionNamespaces,omitempty"`
 
-	// ControlPlaneSecurityEnabled control plane services are communicating through mTLS
-	ControlPlaneSecurityEnabled bool `json:"controlPlaneSecurityEnabled,omitempty"`
-
 	// Citadel configuration options
 	Citadel CitadelConfiguration `json:"citadel,omitempty"`
 

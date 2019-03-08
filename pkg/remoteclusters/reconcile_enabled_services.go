@@ -19,11 +19,12 @@ package remoteclusters
 import (
 	"context"
 
-	istiov1beta1 "github.com/banzaicloud/istio-operator/pkg/apis/istio/v1beta1"
-	"github.com/banzaicloud/istio-operator/pkg/resources/templates"
 	apiv1 "k8s.io/api/core/v1"
 	k8sapierrors "k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/types"
+
+	istiov1beta1 "github.com/banzaicloud/istio-operator/pkg/apis/istio/v1beta1"
+	"github.com/banzaicloud/istio-operator/pkg/resources/templates"
 )
 
 func (c *Cluster) reconcileService(svc apiv1.Service) error {
@@ -51,7 +52,7 @@ func (c *Cluster) reconcileService(svc apiv1.Service) error {
 	return nil
 }
 
-func (c *Cluster) reconcileEnabledServices(remoteConfig *istiov1beta1.RemoteIstio) error {
+func (c *Cluster) reconcileEnabledServices(remoteConfig *istiov1beta1.RemoteIstio, istio *istiov1beta1.Istio) error {
 	for _, enabledSvc := range remoteConfig.Spec.EnabledServices {
 		svc := apiv1.Service{
 			ObjectMeta: templates.ObjectMeta(enabledSvc.Name, map[string]string{}, c.istioConfig),
