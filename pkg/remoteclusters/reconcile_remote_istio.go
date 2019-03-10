@@ -18,32 +18,33 @@ package remoteclusters
 
 import (
 	istiov1beta1 "github.com/banzaicloud/istio-operator/pkg/apis/istio/v1beta1"
+	"github.com/banzaicloud/istio-operator/pkg/resources"
 	"github.com/banzaicloud/istio-operator/pkg/resources/citadel"
 	"github.com/banzaicloud/istio-operator/pkg/resources/common"
+	"github.com/banzaicloud/istio-operator/pkg/resources/nodeagent"
 	"github.com/banzaicloud/istio-operator/pkg/resources/sidecarinjector"
 )
 
-func (c *Cluster) reconcileDeployment(remoteConfig *istiov1beta1.RemoteIstio, istio *istiov1beta1.Istio) error {
-	c.log.Info("reconciling deployment")
+func (c *Cluster) reconcileComponents(remoteConfig *istiov1beta1.RemoteIstio, istio *istiov1beta1.Istio) error {
+	c.log.Info("reconciling components")
 
-	commonReconciler := common.New(c.ctrlRuntimeClient, c.istioConfig, true)
-	err := commonReconciler.Reconcile(c.log)
-	if err != nil {
-		return err
+	reconcilers := []resources.ComponentReconciler{
+		common.New(c.ctrlRuntimeClient, c.istioConfig, true),
+		citadel.New(citadel.Configuration{
+			DeployMeshPolicy: false,
+		}, c.ctrlRuntimeClient, c.dynamicClient, c.istioConfig),
+		sidecarinjector.New(c.ctrlRuntimeClient, c.istioConfig),
 	}
 
-	citadelReconciler := citadel.New(citadel.Configuration{
-		DeployMeshPolicy: false,
-	}, c.ctrlRuntimeClient, c.dynamicClient, c.istioConfig)
-	err = citadelReconciler.Reconcile(c.log)
-	if err != nil {
-		return err
+	if c.istioConfig.Spec.NodeAgent.Enabled {
+		reconcilers = append(reconcilers, nodeagent.New(c.ctrlRuntimeClient, c.istioConfig))
 	}
 
-	sidecarinjectorReconciler := sidecarinjector.New(c.ctrlRuntimeClient, c.istioConfig)
-	err = sidecarinjectorReconciler.Reconcile(c.log)
-	if err != nil {
-		return err
+	for _, rec := range reconcilers {
+		err := rec.Reconcile(c.log)
+		if err != nil {
+			return err
+		}
 	}
 
 	return nil

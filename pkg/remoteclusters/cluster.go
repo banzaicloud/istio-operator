@@ -94,7 +94,7 @@ func (c *Cluster) Reconcile(remoteConfig *istiov1beta1.RemoteIstio, istio *istio
 		c.reconcileSignCert,
 		c.reconcileEnabledServices,
 		c.ReconcileEnabledServiceEndpoints,
-		c.reconcileDeployment,
+		c.reconcileComponents,
 	)
 
 	for _, f := range ReconcilerFuncs {
