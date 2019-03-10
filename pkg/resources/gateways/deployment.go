@@ -71,6 +71,8 @@ func (r *Reconciler) deployment(gw string) runtime.Object {
 					MountPath: "/var/run/ingress_gateway",
 				},
 			},
+			TerminationMessagePath:   apiv1.TerminationMessagePathDefault,
+			TerminationMessagePolicy: apiv1.TerminationMessageReadFile,
 		})
 	}
 	containers = append(containers, apiv1.Container{
@@ -281,11 +283,13 @@ func (r *Reconciler) volumes(gw string, gwConfig *istiov1beta1.GatewayConfigurat
 		},
 	}
 	if r.Config.Spec.SDS.Enabled {
+		hostPathType := apiv1.HostPathUnset
 		volumes = append(volumes, apiv1.Volume{
 			Name: "sdsudspath",
 			VolumeSource: apiv1.VolumeSource{
 				HostPath: &apiv1.HostPathVolumeSource{
 					Path: "/var/run/sds",
+					Type: &hostPathType,
 				},
 			},
 		})
@@ -303,6 +307,7 @@ func (r *Reconciler) volumes(gw string, gwConfig *istiov1beta1.GatewayConfigurat
 								},
 							},
 						},
+						DefaultMode: util.IntPointer(420),
 					},
 				},
 			})
