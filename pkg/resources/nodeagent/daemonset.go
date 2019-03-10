@@ -30,6 +30,7 @@ import (
 
 func (r *Reconciler) daemonSet() runtime.Object {
 	labels := util.MergeLabels(nodeAgentLabels, labelSelector)
+	hostPathType := apiv1.HostPathUnset
 	return &appsv1.DaemonSet{
 		ObjectMeta: templates.ObjectMeta(daemonSetName, labels, r.Config),
 		Spec: appsv1.DaemonSetSpec{
@@ -68,6 +69,8 @@ func (r *Reconciler) daemonSet() runtime.Object {
 									Value: "true",
 								},
 							},
+							TerminationMessagePath:   apiv1.TerminationMessagePathDefault,
+							TerminationMessagePolicy: apiv1.TerminationMessageReadFile,
 						},
 					},
 					Volumes: []apiv1.Volume{
@@ -76,6 +79,7 @@ func (r *Reconciler) daemonSet() runtime.Object {
 							VolumeSource: apiv1.VolumeSource{
 								HostPath: &apiv1.HostPathVolumeSource{
 									Path: "/var/run/sds",
+									Type: &hostPathType,
 								},
 							},
 						},
