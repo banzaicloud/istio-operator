@@ -45,10 +45,6 @@ spec:
                   format: int32
                   type: integer
               type: object
-            controlPlaneSecurityEnabled:
-              description: ControlPlaneSecurityEnabled control plane services are
-                communicating through mTLS
-              type: boolean
             enabledServices:
               description: EnabledServices the Istio component services replicated
                 to remote side
