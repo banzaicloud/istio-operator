@@ -206,12 +206,27 @@ spec:
                 using K8S secrets to mount the certificates
               properties:
                 enabled:
+                  description: If set to true, mTLS certificates for the sidecars
+                    will be distributed through the SecretDiscoveryService instead
+                    of using K8S secrets to mount the certificates.
                   type: boolean
                 udsPath:
+                  description: Unix Domain Socket through which envoy communicates
+                    with NodeAgent SDS to get key/cert for mTLS. Use secret-mount
+                    files instead of SDS if set to empty.
                   type: string
                 useNormalJwt:
+                  description: If set to true, envoy will fetch normal k8s service
+                    account JWT from '/var/run/secrets/kubernetes.io/serviceaccount/token'
+                    (https://kubernetes.io/docs/tasks/access-application-cluster/access-cluster/#accessing-the-api-from-a-pod)
+                    and pass to sds server, which will be used to request key/cert
+                    eventually this flag is ignored if UseTrustworthyJwt is set
                   type: boolean
                 useTrustworthyJwt:
+                  description: 'If set to true, Istio will inject volumes mount for
+                    k8s service account JWT, so that K8s API server mounts k8s service
+                    account JWT to envoy container, which will be used to generate
+                    key/cert eventually. (prerequisite: https://kubernetes.io/docs/concepts/storage/volumes/#projected)'
                   type: boolean
               type: object
             sidecarInjector:

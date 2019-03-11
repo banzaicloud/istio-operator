@@ -22,10 +22,22 @@ import (
 
 // SDSConfiguration defines Secret Discovery Service config options
 type SDSConfiguration struct {
-	Enabled           bool   `json:"enabled,omitempty"`
-	UdsPath           string `json:"udsPath,omitempty"`
-	UseTrustworthyJwt bool   `json:"useTrustworthyJwt,omitempty"`
-	UseNormalJwt      bool   `json:"useNormalJwt,omitempty"`
+	// If set to true, mTLS certificates for the sidecars will be
+	// distributed through the SecretDiscoveryService instead of using K8S secrets to mount the certificates.
+	Enabled bool `json:"enabled,omitempty"`
+	// Unix Domain Socket through which envoy communicates with NodeAgent SDS to get
+	// key/cert for mTLS. Use secret-mount files instead of SDS if set to empty.
+	UdsPath string `json:"udsPath,omitempty"`
+	// If set to true, Istio will inject volumes mount for k8s service account JWT,
+	// so that K8s API server mounts k8s service account JWT to envoy container, which
+	// will be used to generate key/cert eventually.
+	// (prerequisite: https://kubernetes.io/docs/concepts/storage/volumes/#projected)
+	UseTrustworthyJwt bool `json:"useTrustworthyJwt,omitempty"`
+	// If set to true, envoy will fetch normal k8s service account JWT from '/var/run/secrets/kubernetes.io/serviceaccount/token'
+	// (https://kubernetes.io/docs/tasks/access-application-cluster/access-cluster/#accessing-the-api-from-a-pod)
+	// and pass to sds server, which will be used to request key/cert eventually
+	// this flag is ignored if UseTrustworthyJwt is set
+	UseNormalJwt bool `json:"useNormalJwt,omitempty"`
 }
 
 // PilotConfiguration defines config options for Pilot
