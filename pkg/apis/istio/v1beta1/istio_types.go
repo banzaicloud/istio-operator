@@ -20,6 +20,14 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
+// SDSConfiguration defines Secret Discovery Service config options
+type SDSConfiguration struct {
+	Enabled           bool   `json:"enabled,omitempty"`
+	UdsPath           string `json:"udsPath,omitempty"`
+	UseTrustworthyJwt bool   `json:"useTrustworthyJwt,omitempty"`
+	UseNormalJwt      bool   `json:"useNormalJwt,omitempty"`
+}
+
 // PilotConfiguration defines config options for Pilot
 type PilotConfiguration struct {
 	Image         string  `json:"image,omitempty"`
@@ -48,12 +56,18 @@ type GatewaysConfiguration struct {
 	K8sIngress    K8sIngressConfiguration `json:"k8singress,omitempty"`
 }
 
+type GatewaySDSConfiguration struct {
+	Enabled bool   `json:"enabled,omitempty"`
+	Image   string `json:"image,omitempty"`
+}
+
 type GatewayConfiguration struct {
-	ReplicaCount       int32             `json:"replicaCount,omitempty"`
-	MinReplicas        int32             `json:"minReplicas,omitempty"`
-	MaxReplicas        int32             `json:"maxReplicas,omitempty"`
-	ServiceAnnotations map[string]string `json:"serviceAnnotations,omitempty"`
-	ServiceLabels      map[string]string `json:"serviceLabels,omitempty"`
+	ReplicaCount       int32                   `json:"replicaCount,omitempty"`
+	MinReplicas        int32                   `json:"minReplicas,omitempty"`
+	MaxReplicas        int32                   `json:"maxReplicas,omitempty"`
+	ServiceAnnotations map[string]string       `json:"serviceAnnotations,omitempty"`
+	ServiceLabels      map[string]string       `json:"serviceLabels,omitempty"`
+	SDS                GatewaySDSConfiguration `json:"sds,omitempty"`
 }
 
 type K8sIngressConfiguration struct {
@@ -72,6 +86,12 @@ type MixerConfiguration struct {
 type SidecarInjectorConfiguration struct {
 	Image        string `json:"image,omitempty"`
 	ReplicaCount int32  `json:"replicaCount,omitempty"`
+}
+
+// NodeAgentConfiguration defines config options for NodeAgent
+type NodeAgentConfiguration struct {
+	Enabled bool   `json:"enabled,omitempty"`
+	Image   string `json:"image,omitempty"`
 }
 
 // ProxyConfiguration defines config options for Proxy
@@ -115,6 +135,9 @@ type IstioSpec struct {
 	// ControlPlaneSecurityEnabled control plane services are communicating through mTLS
 	ControlPlaneSecurityEnabled bool `json:"controlPlaneSecurityEnabled,omitempty"`
 
+	// If SDS is configured, mTLS certificates for the sidecars will be distributed through the SecretDiscoveryService instead of using K8S secrets to mount the certificates
+	SDS SDSConfiguration `json:"sds,omitempty"`
+
 	// Pilot configuration options
 	Pilot PilotConfiguration `json:"pilot,omitempty"`
 
@@ -132,6 +155,9 @@ type IstioSpec struct {
 
 	// SidecarInjector configuration options
 	SidecarInjector SidecarInjectorConfiguration `json:"sidecarInjector,omitempty"`
+
+	// NodeAgent configuration options
+	NodeAgent NodeAgentConfiguration `json:"nodeAgent,omitempty"`
 
 	// Proxy configuration options
 	Proxy ProxyConfiguration `json:"proxy,omitempty"`

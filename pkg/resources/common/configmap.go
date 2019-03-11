@@ -51,9 +51,9 @@ func (r *Reconciler) meshConfig() string {
 		"mixerReportServer":   r.mixerServer("telemetry"),
 		"policyCheckFailOpen": false,
 		"ingressService":      "istio-ingressgateway",
-		"sdsUdsPath":          "",
-		"enableSdsTokenMount": false,
-		"sdsUseK8sSaJwt":      false,
+		"sdsUdsPath":          r.Config.Spec.SDS.UdsPath,
+		"enableSdsTokenMount": r.Config.Spec.SDS.UseTrustworthyJwt,
+		"sdsUseK8sSaJwt":      r.Config.Spec.SDS.UseNormalJwt,
 		"trustDomain":         "",
 		"outboundTrafficPolicy": map[string]interface{}{
 			"mode": r.Config.Spec.OutboundTrafficPolicy.Mode,

@@ -190,7 +190,8 @@ containers:
       add:
       - NET_ADMIN
     runAsGroup: 1337
-    [[ else -]]
+    [[ else -]] 
+    ` + r.runAsGroup() + `
     runAsUser: 1337
     [[- end ]]
   resources:
@@ -209,9 +210,7 @@ containers:
   [[- end ]]
   - mountPath: /etc/istio/proxy
     name: istio-envoy
-  - mountPath: /etc/certs/
-    name: istio-certs
-    readOnly: true
+  ` + r.volumeMounts() + `
     [[- if isset .ObjectMeta.Annotations ` + "`" + `sidecar.istio.io/userVolumeMount` + "`" + ` ]]
     [[ range $index, $value := fromJSON (index .ObjectMeta.Annotations ` + "`" + `sidecar.istio.io/userVolumeMount` + "`" + `) ]]
   - name: "[[ $index ]]"
@@ -227,21 +226,7 @@ volumes:
 - emptyDir:
     medium: Memory
   name: istio-envoy
-- name: istio-certs
-  secret:
-    optional: true
-    [[ if eq .Spec.ServiceAccountName "" -]]
-    secretName: istio.default
-    [[ else -]]
-    secretName: [[ printf "istio.%s" .Spec.ServiceAccountName ]]
-    [[ end -]]
-  [[- if isset .ObjectMeta.Annotations ` + "`" + `sidecar.istio.io/userVolume` + "`" + ` ]]
-  [[ range $index, $value := fromJSON (index .ObjectMeta.Annotations ` + "`" + `sidecar.istio.io/userVolume` + "`" + `) ]]
-- name: "[[ $index ]]"
-  [[ toYaml $value | indent 2 ]]
-  [[ end ]]
-  [[ end ]]
-`
+` + r.volumes()
 }
 
 func (r *Reconciler) coreDumpContainer() string {
@@ -257,4 +242,60 @@ func (r *Reconciler) coreDumpContainer() string {
 	}
 
 	return string(coreDumpContainerYAML)
+}
+
+func (r *Reconciler) runAsGroup() string {
+	if r.Config.Spec.SDS.Enabled && r.Config.Spec.SDS.UseTrustworthyJwt {
+		return "runAsGroup: 1337"
+	}
+	return ""
+}
+
+func (r *Reconciler) volumeMounts() string {
+	if !r.Config.Spec.SDS.Enabled {
+		return `- mountPath: /etc/certs/
+    name: istio-certs
+    readOnly: true`
+	}
+	vms := `- mountPath: /var/run/sds
+    name: sds-uds-path`
+	if r.Config.Spec.SDS.UseTrustworthyJwt {
+		vms = vms + `
+  - mountPath: /var/run/secrets/tokens
+    name: istio-token`
+	}
+	return vms
+}
+
+func (r *Reconciler) volumes() string {
+	if !r.Config.Spec.SDS.Enabled {
+		return `- name: istio-certs
+  secret:
+    optional: true
+    [[ if eq .Spec.ServiceAccountName "" -]]
+    secretName: istio.default
+    [[ else -]]
+    secretName: [[ printf "istio.%s" .Spec.ServiceAccountName ]]
+    [[ end -]]
+  [[- if isset .ObjectMeta.Annotations ` + "`" + `sidecar.istio.io/userVolume` + "`" + ` ]]
+  [[ range $index, $value := fromJSON (index .ObjectMeta.Annotations ` + "`" + `sidecar.istio.io/userVolume` + "`" + `) ]]
+- name: "[[ $index ]]"
+  [[ toYaml $value | indent 2 ]]
+  [[ end ]]
+  [[ end ]]`
+	}
+	volumes := `- name: sds-uds-path
+  hostPath:
+    path: /var/run/sds`
+	if r.Config.Spec.SDS.UseTrustworthyJwt {
+		volumes = volumes + `
+- name: istio-token
+  projected:
+    sources:
+    - serviceAccountToken:
+        path: istio-token
+        expirationSeconds: 43200
+        audience: ""`
+	}
+	return volumes
 }

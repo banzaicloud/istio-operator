@@ -108,6 +108,18 @@ func Reconcile(log logr.Logger, client runtimeClient.Client, desired runtime.Obj
 			pdb := desired.(*policyv1beta1.PodDisruptionBudget)
 			pdb.ResourceVersion = current.(*policyv1beta1.PodDisruptionBudget).ResourceVersion
 			desired = pdb
+		case *appsv1.DaemonSet:
+			ds := desired.(*appsv1.DaemonSet)
+			ds.ResourceVersion = current.(*appsv1.DaemonSet).ResourceVersion
+			desired = ds
+		case *rbacv1.Role:
+			ds := desired.(*rbacv1.Role)
+			ds.ResourceVersion = current.(*rbacv1.Role).ResourceVersion
+			desired = ds
+		case *rbacv1.RoleBinding:
+			ds := desired.(*rbacv1.RoleBinding)
+			ds.ResourceVersion = current.(*rbacv1.RoleBinding).ResourceVersion
+			desired = ds
 		}
 		if err := client.Update(context.TODO(), desired); err != nil {
 			return emperror.WrapWith(err, "updating resource failed", "kind", desiredType, "name", key.Name)

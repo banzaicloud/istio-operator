@@ -87,6 +87,13 @@ spec:
                     replicaCount:
                       format: int32
                       type: integer
+                    sds:
+                      properties:
+                        enabled:
+                          type: boolean
+                        image:
+                          type: string
+                      type: object
                     serviceAnnotations:
                       type: object
                     serviceLabels:
@@ -103,6 +110,13 @@ spec:
                     replicaCount:
                       format: int32
                       type: integer
+                    sds:
+                      properties:
+                        enabled:
+                          type: boolean
+                        image:
+                          type: string
+                      type: object
                     serviceAnnotations:
                       type: object
                     serviceLabels:
@@ -130,6 +144,14 @@ spec:
             mtls:
               description: MTLS enables or disables global mTLS
               type: boolean
+            nodeAgent:
+              description: NodeAgent configuration options
+              properties:
+                enabled:
+                  type: boolean
+                image:
+                  type: string
+              type: object
             outboundTrafficPolicy:
               description: Set the default behavior of the sidecar for handling outbound
                 traffic from the application (ALLOW_ANY or REGISTRY_ONLY)
@@ -177,6 +199,20 @@ spec:
               properties:
                 image:
                   type: string
+              type: object
+            sds:
+              description: If SDS is configured, mTLS certificates for the sidecars
+                will be distributed through the SecretDiscoveryService instead of
+                using K8S secrets to mount the certificates
+              properties:
+                enabled:
+                  type: boolean
+                udsPath:
+                  type: string
+                useNormalJwt:
+                  type: boolean
+                useTrustworthyJwt:
+                  type: boolean
               type: object
             sidecarInjector:
               description: SidecarInjector configuration options

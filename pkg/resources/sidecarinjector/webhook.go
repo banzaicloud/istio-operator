@@ -17,15 +17,17 @@ limitations under the License.
 package sidecarinjector
 
 import (
-	"github.com/banzaicloud/istio-operator/pkg/resources/templates"
-	"github.com/banzaicloud/istio-operator/pkg/util"
 	admissionv1beta1 "k8s.io/api/admissionregistration/v1beta1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
+
+	"github.com/banzaicloud/istio-operator/pkg/resources/templates"
+	"github.com/banzaicloud/istio-operator/pkg/util"
 )
 
 func (r *Reconciler) webhook() runtime.Object {
 	fail := admissionv1beta1.Fail
+	unknownSideEffects := admissionv1beta1.SideEffectClassUnknown
 	return &admissionv1beta1.MutatingWebhookConfiguration{
 		ObjectMeta: templates.ObjectMetaClusterScope(webhookName, sidecarInjectorLabels, r.Config),
 		Webhooks: []admissionv1beta1.Webhook{
@@ -57,6 +59,7 @@ func (r *Reconciler) webhook() runtime.Object {
 						"istio-injection": "enabled",
 					},
 				},
+				SideEffects: &unknownSideEffects,
 			},
 		},
 	}

@@ -153,6 +153,36 @@ func Match(old, new interface{}) (bool, error) {
 			return false, errors.WithStack(err)
 		}
 		return ok, nil
+	case *appsv1.DaemonSet:
+		oldObject := old.(*appsv1.DaemonSet)
+		newObject := new.(*appsv1.DaemonSet)
+
+		m := DaemonSetMatcher{}
+		ok, err := m.Match(oldObject, newObject)
+		if err != nil {
+			return false, errors.WithStack(err)
+		}
+		return ok, nil
+	case *rbacv1.Role:
+		oldObject := old.(*rbacv1.Role)
+		newObject := new.(*rbacv1.Role)
+
+		m := RoleMatcher{}
+		ok, err := m.Match(oldObject, newObject)
+		if err != nil {
+			return false, errors.WithStack(err)
+		}
+		return ok, nil
+	case *rbacv1.RoleBinding:
+		oldObject := old.(*rbacv1.RoleBinding)
+		newObject := new.(*rbacv1.RoleBinding)
+
+		m := RoleBindingMatcher{}
+		ok, err := m.Match(oldObject, newObject)
+		if err != nil {
+			return false, errors.WithStack(err)
+		}
+		return ok, nil
 	}
 }
 

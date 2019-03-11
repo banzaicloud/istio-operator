@@ -24,6 +24,8 @@ const (
 	defaultGalleyImage            = defaultImageHub + "/" + "galley" + ":" + defaultImageVersion
 	defaultMixerImage             = defaultImageHub + "/" + "mixer" + ":" + defaultImageVersion
 	defaultSidecarInjectorImage   = defaultImageHub + "/" + "sidecar_injector" + ":" + defaultImageVersion
+	defaultNodeAgentImage         = defaultImageHub + "/" + "node-agent-k8s" + ":" + defaultImageVersion
+	defaultSDSImage               = defaultImageHub + "/" + "node-agent-k8s" + ":" + defaultImageVersion
 	defaultProxyImage             = defaultImageHub + "/" + "proxyv2" + ":" + defaultImageVersion
 	defaultProxyInitImage         = defaultImageHub + "/" + "proxy_init" + ":" + defaultImageVersion
 	defaultIncludeIPRanges        = "*"
@@ -106,6 +108,16 @@ func SetDefaults(config *Istio) {
 	}
 	if config.Spec.SidecarInjector.ReplicaCount == 0 {
 		config.Spec.SidecarInjector.ReplicaCount = defaultReplicaCount
+	}
+	// NodeAgent config
+	if config.Spec.NodeAgent.Image == "" {
+		config.Spec.NodeAgent.Image = defaultNodeAgentImage
+	}
+	if config.Spec.Gateways.IngressConfig.SDS.Image == "" {
+		config.Spec.Gateways.IngressConfig.SDS.Image = defaultSDSImage
+	}
+	if config.Spec.Gateways.EgressConfig.SDS.Image == "" {
+		config.Spec.Gateways.EgressConfig.SDS.Image = defaultSDSImage
 	}
 	// Proxy config
 	if config.Spec.Proxy.Image == "" {
