@@ -174,7 +174,7 @@ func (om *objectMatcher) Match(old, new interface{}) (bool, error) {
 		oldObject := old.(*appsv1.DaemonSet)
 		newObject := new.(*appsv1.DaemonSet)
 
-		m := DaemonSetMatcher{}
+		m := NewDaemonSetMatcher(om)
 		ok, err := m.Match(oldObject, newObject)
 		if err != nil {
 			return false, errors.WithStack(err)
@@ -184,7 +184,7 @@ func (om *objectMatcher) Match(old, new interface{}) (bool, error) {
 		oldObject := old.(*rbacv1.Role)
 		newObject := new.(*rbacv1.Role)
 
-		m := RoleMatcher{}
+		m := NewRoleMatcher(om)
 		ok, err := m.Match(oldObject, newObject)
 		if err != nil {
 			return false, errors.WithStack(err)
@@ -194,7 +194,7 @@ func (om *objectMatcher) Match(old, new interface{}) (bool, error) {
 		oldObject := old.(*rbacv1.RoleBinding)
 		newObject := new.(*rbacv1.RoleBinding)
 
-		m := RoleBindingMatcher{}
+		m := NewRoleBindingMatcher(om)
 		ok, err := m.Match(oldObject, newObject)
 		if err != nil {
 			return false, errors.WithStack(err)
