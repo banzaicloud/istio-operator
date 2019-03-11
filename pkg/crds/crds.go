@@ -211,7 +211,7 @@ func (r *CrdOperator) Reconcile(config *istiov1beta1.Istio, log logr.Logger) err
 			log.Info("CRD created")
 		}
 		if err == nil {
-			objectsEquals, err := objectmatch.Match(current, crd)
+			objectsEquals, err := objectmatch.New(log).Match(current, crd)
 			if err != nil {
 				log.Error(err, "could not match objects", "kind", crd.Spec.Names.Kind)
 			} else if objectsEquals {

@@ -24,28 +24,36 @@ import (
 	corev1 "k8s.io/api/core/v1"
 )
 
-type ServiceMatcher struct{}
+type serviceMatcher struct {
+	objectMatcher ObjectMatcher
+}
+
+func NewServiceMatcher(objectMatcher ObjectMatcher) *serviceMatcher {
+	return &serviceMatcher{
+		objectMatcher: objectMatcher,
+	}
+}
 
 // Match compares two corev1.Service objects
-func (m ServiceMatcher) Match(old, new *corev1.Service) (bool, error) {
+func (m serviceMatcher) Match(old, new *corev1.Service) (bool, error) {
 	type Service struct {
 		ObjectMeta
 		Spec corev1.ServiceSpec
 	}
 
-	if !reflect.DeepEqual(getObjectMeta(old.ObjectMeta), getObjectMeta(new.ObjectMeta)) {
+	if !reflect.DeepEqual(m.objectMatcher.GetObjectMeta(old.ObjectMeta), m.objectMatcher.GetObjectMeta(new.ObjectMeta)) {
 		return false, nil
 	}
 
 	oldData, err := json.Marshal(Service{
-		ObjectMeta: getObjectMeta(old.ObjectMeta),
+		ObjectMeta: m.objectMatcher.GetObjectMeta(old.ObjectMeta),
 		Spec:       old.Spec,
 	})
 	if err != nil {
 		return false, emperror.WrapWith(err, "could not marshal old object", "name", old.Name)
 	}
 	newObject := Service{
-		ObjectMeta: getObjectMeta(new.ObjectMeta),
+		ObjectMeta: m.objectMatcher.GetObjectMeta(new.ObjectMeta),
 		Spec:       new.Spec,
 	}
 	newData, err := json.Marshal(newObject)
@@ -53,7 +61,7 @@ func (m ServiceMatcher) Match(old, new *corev1.Service) (bool, error) {
 		return false, emperror.WrapWith(err, "could not marshal new object", "name", new.Name)
 	}
 
-	matched, err := match(oldData, newData, newObject)
+	matched, err := m.objectMatcher.MatchJSON(oldData, newData, newObject)
 	if err != nil {
 		return false, emperror.WrapWith(err, "could not match objects", "name", new.Name)
 	}

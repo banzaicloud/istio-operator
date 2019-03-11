@@ -299,6 +299,9 @@ func initWatches(c controller.Controller, scheme *runtime.Scheme, watchCreatedRe
 		return nil
 	}
 
+	// Initialize object matcher
+	objectMatcher := objectmatch.New(logf.NewDelegatingLogger(logf.NullLogger{}))
+
 	// Initialize owner matcher
 	ownerMatcher := k8sutil.NewOwnerReferenceMatcher(&istiov1beta1.Istio{}, true, scheme)
 
@@ -334,7 +337,7 @@ func initWatches(c controller.Controller, scheme *runtime.Scheme, watchCreatedRe
 				return true
 			},
 			UpdateFunc: func(e event.UpdateEvent) bool {
-				objectsEquals, err := objectmatch.Match(e.ObjectOld, e.ObjectNew)
+				objectsEquals, err := objectMatcher.Match(e.ObjectOld, e.ObjectNew)
 				if err != nil {
 					log.Error(err, "could not match objects", "kind", e.ObjectOld.GetObjectKind())
 				} else if objectsEquals {
