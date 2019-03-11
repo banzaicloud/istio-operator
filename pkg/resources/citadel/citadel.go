@@ -62,6 +62,10 @@ func New(configuration Configuration, client client.Client, dc dynamic.Interface
 	}
 }
 
+func GetDeploymentName() string {
+	return deploymentName
+}
+
 func (r *Reconciler) Reconcile(log logr.Logger) error {
 	log = log.WithValues("component", componentName)
 
