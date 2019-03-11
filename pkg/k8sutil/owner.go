@@ -22,6 +22,8 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/runtime/schema"
+
+	"github.com/banzaicloud/istio-operator/pkg/util"
 )
 
 type OwnerReferenceMatcher struct {
@@ -86,4 +88,28 @@ func (e *OwnerReferenceMatcher) setOwnerTypeGroupKind() error {
 
 	e.ownerTypeGroupKind = schema.GroupKind{Group: kinds[0].Group, Kind: kinds[0].Kind}
 	return nil
+}
+
+func SetOwnerReferenceToObject(obj runtime.Object, owner runtime.Object) ([]metav1.OwnerReference, error) {
+	object, err := meta.Accessor(obj)
+	if err != nil {
+		return nil, emperror.WrapWith(err, "could not access object meta", "kind", obj.GetObjectKind())
+	}
+
+	own, err := meta.Accessor(owner)
+	if err != nil {
+		return nil, emperror.WrapWith(err, "could not access object meta", "kind", owner.GetObjectKind())
+	}
+
+	refs := object.GetOwnerReferences()
+	refs = append(refs, metav1.OwnerReference{
+		APIVersion:         owner.GetObjectKind().GroupVersionKind().Version,
+		Kind:               owner.GetObjectKind().GroupVersionKind().Kind,
+		Name:               own.GetName(),
+		UID:                own.GetUID(),
+		Controller:         util.BoolPointer(true),
+		BlockOwnerDeletion: util.BoolPointer(true),
+	})
+
+	return refs, nil
 }

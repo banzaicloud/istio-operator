@@ -20,6 +20,7 @@ import (
 	"context"
 	"flag"
 	"reflect"
+	"strings"
 
 	"github.com/go-logr/logr"
 	"github.com/goph/emperror"
@@ -62,6 +63,7 @@ import (
 )
 
 const finalizerID = "istio-operator.finializer.banzaicloud.io"
+const istioSecretTypePrefix = "istio.io"
 
 var log = logf.Log.WithName("controller")
 var watchCreatedResourcesEvents bool
@@ -179,6 +181,13 @@ func (r *ReconcileConfig) reconcile(logger logr.Logger, config *istiov1beta1.Ist
 				log.Info("cannot remove Istio while reconciling")
 				return reconcile.Result{}, nil
 			}
+			// Set citadel deployment as owner reference to istio secrets for garbage cleanup
+			r.setCitadelAsOwnerReferenceToIstioSecrets(config, appsv1.Deployment{
+				ObjectMeta: metav1.ObjectMeta{
+					Name:      citadel.GetDeploymentName(),
+					Namespace: config.Namespace,
+				},
+			})
 			config.ObjectMeta.Finalizers = util.RemoveString(config.ObjectMeta.Finalizers, finalizerID)
 			if err := r.Update(context.Background(), config); err != nil {
 				return reconcile.Result{}, emperror.Wrap(err, "could not remove finalizer from config")
@@ -236,6 +245,48 @@ func (r *ReconcileConfig) reconcile(logger logr.Logger, config *istiov1beta1.Ist
 	}
 	log.Info("reconcile finished")
 	return reconcile.Result{}, nil
+}
+
+func (r *ReconcileConfig) setCitadelAsOwnerReferenceToIstioSecrets(config *istiov1beta1.Istio, deployment appsv1.Deployment) error {
+	var secrets corev1.SecretList
+
+	err := r.Client.Get(context.TODO(), types.NamespacedName{
+		Name:      deployment.Name,
+		Namespace: deployment.Namespace,
+	}, &deployment)
+	if k8serrors.IsNotFound(err) {
+		return nil
+	} else if err != nil {
+		return err
+	}
+
+	err = r.Client.List(context.TODO(), &client.ListOptions{
+		Namespace: config.Namespace,
+	}, &secrets)
+	if err != nil {
+		return err
+	}
+
+	for _, secret := range secrets.Items {
+		if !strings.HasPrefix(string(secret.Type), istioSecretTypePrefix) {
+			continue
+		}
+
+		log.V(0).Info("setting owner reference to secret", "secret", secret.Name, "refs", secret.GetOwnerReferences())
+
+		refs, err := k8sutil.SetOwnerReferenceToObject(&secret, &deployment)
+		if err != nil {
+			return err
+		}
+
+		secret.SetOwnerReferences(refs)
+		err = r.Update(context.TODO(), &secret)
+		if err != nil {
+			return err
+		}
+	}
+
+	return nil
 }
 
 func (r *ReconcileConfig) updateStatus(config *istiov1beta1.Istio, status istiov1beta1.ConfigState, errorMessage string) error {
