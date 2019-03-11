@@ -23,24 +23,32 @@ import (
 	rbacv1 "k8s.io/api/rbac/v1"
 )
 
-type RoleMatcher struct{}
+type roleMatcher struct {
+	objectMatcher ObjectMatcher
+}
+
+func NewRoleMatcher(objectMatcher ObjectMatcher) *roleMatcher {
+	return &roleMatcher{
+		objectMatcher: objectMatcher,
+	}
+}
 
 // Match compares two rbacv1.ClusterRole objects
-func (m RoleMatcher) Match(old, new *rbacv1.Role) (bool, error) {
+func (m roleMatcher) Match(old, new *rbacv1.Role) (bool, error) {
 	type Role struct {
 		ObjectMeta
 		Rules []rbacv1.PolicyRule `json:"rules"`
 	}
 
 	oldData, err := json.Marshal(Role{
-		ObjectMeta: getObjectMeta(old.ObjectMeta),
+		ObjectMeta: m.objectMatcher.GetObjectMeta(old.ObjectMeta),
 		Rules:      old.Rules,
 	})
 	if err != nil {
 		return false, emperror.WrapWith(err, "could not marshal old object", "name", old.Name)
 	}
 	newObject := Role{
-		ObjectMeta: getObjectMeta(new.ObjectMeta),
+		ObjectMeta: m.objectMatcher.GetObjectMeta(new.ObjectMeta),
 		Rules:      new.Rules,
 	}
 	newData, err := json.Marshal(newObject)
@@ -48,7 +56,7 @@ func (m RoleMatcher) Match(old, new *rbacv1.Role) (bool, error) {
 		return false, emperror.WrapWith(err, "could not marshal new object", "name", new.Name)
 	}
 
-	matched, err := match(oldData, newData, newObject)
+	matched, err := m.objectMatcher.MatchJSON(oldData, newData, newObject)
 	if err != nil {
 		return false, emperror.WrapWith(err, "could not match objects", "name", new.Name)
 	}

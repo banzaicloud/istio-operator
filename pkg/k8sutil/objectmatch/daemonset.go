@@ -23,24 +23,32 @@ import (
 	appsv1 "k8s.io/api/apps/v1"
 )
 
-type DaemonSetMatcher struct{}
+type daemonSetMatcher struct {
+	objectMatcher ObjectMatcher
+}
+
+func NewDaemonSetMatcher(objectMatcher ObjectMatcher) *daemonSetMatcher {
+	return &daemonSetMatcher{
+		objectMatcher: objectMatcher,
+	}
+}
 
 // Match compares two appsv1.ClusterDaemonSet objects
-func (m DaemonSetMatcher) Match(old, new *appsv1.DaemonSet) (bool, error) {
+func (m daemonSetMatcher) Match(old, new *appsv1.DaemonSet) (bool, error) {
 	type DaemonSet struct {
 		ObjectMeta
 		Spec appsv1.DaemonSetSpec
 	}
 
 	oldData, err := json.Marshal(DaemonSet{
-		ObjectMeta: getObjectMeta(old.ObjectMeta),
+		ObjectMeta: m.objectMatcher.GetObjectMeta(old.ObjectMeta),
 		Spec:       old.Spec,
 	})
 	if err != nil {
 		return false, emperror.WrapWith(err, "could not marshal old object", "name", old.Name)
 	}
 	newObject := DaemonSet{
-		ObjectMeta: getObjectMeta(new.ObjectMeta),
+		ObjectMeta: m.objectMatcher.GetObjectMeta(new.ObjectMeta),
 		Spec:       new.Spec,
 	}
 	newData, err := json.Marshal(newObject)
@@ -48,7 +56,7 @@ func (m DaemonSetMatcher) Match(old, new *appsv1.DaemonSet) (bool, error) {
 		return false, emperror.WrapWith(err, "could not marshal new object", "name", new.Name)
 	}
 
-	matched, err := match(oldData, newData, newObject)
+	matched, err := m.objectMatcher.MatchJSON(oldData, newData, newObject)
 	if err != nil {
 		return false, emperror.WrapWith(err, "could not match objects", "name", new.Name)
 	}
