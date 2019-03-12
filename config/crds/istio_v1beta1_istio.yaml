@@ -151,6 +151,19 @@ spec:
                   format: int32
                   type: integer
               type: object
+            tracing:
+              description: Configuration for each of the supported tracers
+              properties:
+                zipkin:
+                  properties:
+                    address:
+                      description: Host:Port for reporting trace data in zipkin format.
+                        If not specified, will default to zipkin service (port 9411)
+                        in the same namespace as the other istio components.
+                      pattern: ^[^\:]+:[0-9]{1,5}$
+                      type: string
+                  type: object
+              type: object
           required:
           - mtls
           type: object

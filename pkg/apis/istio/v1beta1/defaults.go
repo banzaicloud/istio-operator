@@ -16,6 +16,8 @@ limitations under the License.
 
 package v1beta1
 
+import "fmt"
+
 const (
 	defaultImageVersion         = "1.0.5"
 	defaultPilotImage           = "istio/pilot" + ":" + defaultImageVersion
@@ -29,6 +31,7 @@ const (
 	defaultMinReplicas          = 1
 	defaultMaxReplicas          = 5
 	defaultTraceSampling        = 1.0
+	defaultZipkinAddress        = "zipkin.%s:9411"
 )
 
 func SetDefaults(config *Istio) {
@@ -107,6 +110,10 @@ func SetDefaults(config *Istio) {
 	// Proxy config
 	if config.Spec.Proxy.Image == "" {
 		config.Spec.Proxy.Image = defaultProxyImage
+	}
+	// Tracer config
+	if config.Spec.Tracing.Zipkin.Address == "" {
+		config.Spec.Tracing.Zipkin.Address = fmt.Sprintf(defaultZipkinAddress, config.Namespace)
 	}
 }
 

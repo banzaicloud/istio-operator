@@ -46,3 +46,6 @@ spec:
     replicaCount: 1
   proxy:
     image: "istio/proxyv2:1.0.5"
+  tracing:
+    zipkin:
+      address: zipkin.jaeger-system:9411

@@ -74,6 +74,17 @@ type ProxyConfiguration struct {
 	Image string `json:"image,omitempty"`
 }
 
+// Configuration for Envoy to send trace data to Zipkin/Jaeger.
+type ZipkinConfiguration struct {
+	// Host:Port for reporting trace data in zipkin format. If not specified, will default to zipkin service (port 9411) in the same namespace as the other istio components.
+	// +kubebuilder:validation:Pattern=^[^\:]+:[0-9]{1,5}$
+	Address string `json:"address,omitempty"`
+}
+
+type TracingConfiguration struct {
+	Zipkin ZipkinConfiguration `json:"zipkin,omitempty"`
+}
+
 // IstioSpec defines the desired state of Istio
 type IstioSpec struct {
 	// MTLS enables or disables global mTLS
@@ -111,6 +122,9 @@ type IstioSpec struct {
 
 	// Proxy configuration options
 	Proxy ProxyConfiguration `json:"proxy,omitempty"`
+
+	// Configuration for each of the supported tracers
+	Tracing TracingConfiguration `json:"tracing,omitempty"`
 }
 
 // IstioStatus defines the observed state of Istio

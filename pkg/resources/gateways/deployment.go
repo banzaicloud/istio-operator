@@ -64,7 +64,7 @@ func (r *Reconciler) deployment(gw string) runtime.Object {
 								"--parentShutdownDuration", "1m0s",
 								"--connectTimeout", "10s",
 								"--serviceCluster", fmt.Sprintf("istio-%s", gw),
-								"--zipkinAddress", fmt.Sprintf("zipkin.%s:9411", r.Config.Namespace),
+								"--zipkinAddress", r.Config.Spec.Tracing.Zipkin.Address,
 								"--proxyAdminPort", "15000",
 								"--controlPlaneAuthPolicy", templates.ControlPlaneAuthPolicy(r.Config.Spec.ControlPlaneSecurityEnabled),
 								"--discoveryAddress", fmt.Sprintf("istio-pilot.%s:8080", r.Config.Namespace),
