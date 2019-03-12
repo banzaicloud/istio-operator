@@ -96,7 +96,7 @@ func (r *Reconciler) mixerContainer(t string, ns string) apiv1.Container {
 		"--configDefaultNamespace",
 		ns,
 		"--trace_zipkin_url",
-		"http://zipkin." + r.Config.Namespace + ".svc:9411/api/v1/spans",
+		"http://" + r.Config.Spec.Tracing.Zipkin.Address + "/api/v1/spans",
 		"--monitoringPort",
 		"15014",
 	}

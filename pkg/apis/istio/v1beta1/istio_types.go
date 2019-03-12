@@ -130,6 +130,17 @@ type OutboundTrafficPolicyConfiguration struct {
 	Mode string `json:"mode,omitempty"`
 }
 
+// Configuration for Envoy to send trace data to Zipkin/Jaeger.
+type ZipkinConfiguration struct {
+	// Host:Port for reporting trace data in zipkin format. If not specified, will default to zipkin service (port 9411) in the same namespace as the other istio components.
+	// +kubebuilder:validation:Pattern=^[^\:]+:[0-9]{1,5}$
+	Address string `json:"address,omitempty"`
+}
+
+type TracingConfiguration struct {
+	Zipkin ZipkinConfiguration `json:"zipkin,omitempty"`
+}
+
 // IstioSpec defines the desired state of Istio
 type IstioSpec struct {
 	// MTLS enables or disables global mTLS
@@ -194,6 +205,9 @@ type IstioSpec struct {
 
 	// Set the default behavior of the sidecar for handling outbound traffic from the application (ALLOW_ANY or REGISTRY_ONLY)
 	OutboundTrafficPolicy OutboundTrafficPolicyConfiguration `json:"outboundTrafficPolicy,omitempty"`
+
+	// Configuration for each of the supported tracers
+	Tracing TracingConfiguration `json:"tracing,omitempty"`
 }
 
 func (s IstioSpec) GetDefaultConfigVisibility() string {

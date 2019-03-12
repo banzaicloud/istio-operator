@@ -16,6 +16,8 @@ limitations under the License.
 
 package v1beta1
 
+import "fmt"
+
 const (
 	defaultImageHub               = "gcr.io/istio-release"
 	defaultImageVersion           = "release-1.1-latest-daily"
@@ -34,6 +36,7 @@ const (
 	defaultMaxReplicas            = 5
 	defaultTraceSampling          = 1.0
 	outboundTrafficPolicyAllowAny = "ALLOW_ANY"
+	defaultZipkinAddress          = "zipkin.%s:9411"
 )
 
 func SetDefaults(config *Istio) {
@@ -130,6 +133,10 @@ func SetDefaults(config *Istio) {
 	// Outbound traffic policy config
 	if config.Spec.OutboundTrafficPolicy.Mode == "" {
 		config.Spec.OutboundTrafficPolicy.Mode = outboundTrafficPolicyAllowAny
+	}
+
+	if config.Spec.Tracing.Zipkin.Address == "" {
+		config.Spec.Tracing.Zipkin.Address = fmt.Sprintf(defaultZipkinAddress, config.Namespace)
 	}
 }
 
