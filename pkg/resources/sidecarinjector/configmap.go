@@ -49,7 +49,7 @@ func (r *Reconciler) siConfig() string {
 }
 
 func (r *Reconciler) templateConfig() string {
-	return `rewriteAppHTTPProbe: false
+	return `rewriteAppHTTPProbe: ` + strconv.FormatBool(r.Config.Spec.SidecarInjector.RewriteAppHTTPProbe) + `
 initContainers:
 [[ if ne (annotation .ObjectMeta ` + "`" + `sidecar.istio.io/interceptionMode` + "`" + ` .ProxyConfig.InterceptionMode) "NONE" ]]
 - name: istio-init
@@ -190,7 +190,7 @@ containers:
       add:
       - NET_ADMIN
     runAsGroup: 1337
-    [[ else -]] 
+    [[ else -]]
     ` + r.runAsGroup() + `
     runAsUser: 1337
     [[- end ]]
