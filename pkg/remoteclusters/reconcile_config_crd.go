@@ -24,7 +24,7 @@ import (
 	"github.com/banzaicloud/istio-operator/pkg/crds"
 )
 
-func (c *Cluster) reconcileConfigCrd(remoteConfig *istiov1beta1.RemoteIstio) error {
+func (c *Cluster) reconcileConfigCrd(remoteConfig *istiov1beta1.RemoteIstio, istio *istiov1beta1.Istio) error {
 	c.log.Info("reconciling config crd")
 
 	crdo, err := crds.New(c.restConfig, []*extensionsobj.CustomResourceDefinition{

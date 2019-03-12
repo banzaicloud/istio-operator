@@ -20,6 +20,7 @@ import (
 	"context"
 	"flag"
 	"reflect"
+	"strings"
 
 	"github.com/go-logr/logr"
 	"github.com/goph/emperror"
@@ -55,12 +56,14 @@ import (
 	"github.com/banzaicloud/istio-operator/pkg/resources/galley"
 	"github.com/banzaicloud/istio-operator/pkg/resources/gateways"
 	"github.com/banzaicloud/istio-operator/pkg/resources/mixer"
+	"github.com/banzaicloud/istio-operator/pkg/resources/nodeagent"
 	"github.com/banzaicloud/istio-operator/pkg/resources/pilot"
 	"github.com/banzaicloud/istio-operator/pkg/resources/sidecarinjector"
 	"github.com/banzaicloud/istio-operator/pkg/util"
 )
 
 const finalizerID = "istio-operator.finializer.banzaicloud.io"
+const istioSecretTypePrefix = "istio.io"
 
 var log = logf.Log.WithName("controller")
 var watchCreatedResourcesEvents bool
@@ -178,6 +181,13 @@ func (r *ReconcileConfig) reconcile(logger logr.Logger, config *istiov1beta1.Ist
 				log.Info("cannot remove Istio while reconciling")
 				return reconcile.Result{}, nil
 			}
+			// Set citadel deployment as owner reference to istio secrets for garbage cleanup
+			r.setCitadelAsOwnerReferenceToIstioSecrets(config, appsv1.Deployment{
+				ObjectMeta: metav1.ObjectMeta{
+					Name:      citadel.GetDeploymentName(),
+					Namespace: config.Namespace,
+				},
+			})
 			config.ObjectMeta.Finalizers = util.RemoveString(config.ObjectMeta.Finalizers, finalizerID)
 			if err := r.Update(context.Background(), config); err != nil {
 				return reconcile.Result{}, emperror.Wrap(err, "could not remove finalizer from config")
@@ -206,16 +216,20 @@ func (r *ReconcileConfig) reconcile(logger logr.Logger, config *istiov1beta1.Ist
 	}
 
 	reconcilers := []resources.ComponentReconciler{
-		common.New(r.Client, config),
+		common.New(r.Client, config, false),
 		citadel.New(citadel.Configuration{
 			DeployMeshPolicy: true,
 			SelfSignedCA:     true,
 		}, r.Client, r.dynamic, config),
 		galley.New(r.Client, config),
-		pilot.New(r.Client, r.dynamic, config),
-		gateways.New(r.Client, config),
+		pilot.New(r.Client, config),
+		gateways.New(r.Client, r.dynamic, config),
 		mixer.New(r.Client, r.dynamic, config),
 		sidecarinjector.New(r.Client, config),
+	}
+
+	if config.Spec.NodeAgent.Enabled {
+		reconcilers = append(reconcilers, nodeagent.New(r.Client, config))
 	}
 
 	for _, rec := range reconcilers {
@@ -231,6 +245,48 @@ func (r *ReconcileConfig) reconcile(logger logr.Logger, config *istiov1beta1.Ist
 	}
 	log.Info("reconcile finished")
 	return reconcile.Result{}, nil
+}
+
+func (r *ReconcileConfig) setCitadelAsOwnerReferenceToIstioSecrets(config *istiov1beta1.Istio, deployment appsv1.Deployment) error {
+	var secrets corev1.SecretList
+
+	err := r.Client.Get(context.TODO(), types.NamespacedName{
+		Name:      deployment.Name,
+		Namespace: deployment.Namespace,
+	}, &deployment)
+	if k8serrors.IsNotFound(err) {
+		return nil
+	} else if err != nil {
+		return err
+	}
+
+	err = r.Client.List(context.TODO(), &client.ListOptions{
+		Namespace: config.Namespace,
+	}, &secrets)
+	if err != nil {
+		return err
+	}
+
+	for _, secret := range secrets.Items {
+		if !strings.HasPrefix(string(secret.Type), istioSecretTypePrefix) {
+			continue
+		}
+
+		log.V(0).Info("setting owner reference to secret", "secret", secret.Name, "refs", secret.GetOwnerReferences())
+
+		refs, err := k8sutil.SetOwnerReferenceToObject(&secret, &deployment)
+		if err != nil {
+			return err
+		}
+
+		secret.SetOwnerReferences(refs)
+		err = r.Update(context.TODO(), &secret)
+		if err != nil {
+			return err
+		}
+	}
+
+	return nil
 }
 
 func (r *ReconcileConfig) updateStatus(config *istiov1beta1.Istio, status istiov1beta1.ConfigState, errorMessage string) error {
@@ -294,17 +350,23 @@ func initWatches(c controller.Controller, scheme *runtime.Scheme, watchCreatedRe
 		return nil
 	}
 
+	// Initialize object matcher
+	objectMatcher := objectmatch.New(logf.NewDelegatingLogger(logf.NullLogger{}))
+
 	// Initialize owner matcher
 	ownerMatcher := k8sutil.NewOwnerReferenceMatcher(&istiov1beta1.Istio{}, true, scheme)
 
 	// Watch for changes to resources managed by the operator
 	for _, t := range []runtime.Object{
 		&corev1.ServiceAccount{TypeMeta: metav1.TypeMeta{Kind: "ServiceAccount", APIVersion: "v1"}},
+		&rbacv1.Role{TypeMeta: metav1.TypeMeta{Kind: "ClusterRole", APIVersion: "v1"}},
+		&rbacv1.RoleBinding{TypeMeta: metav1.TypeMeta{Kind: "ClusterRoleBinding", APIVersion: "v1"}},
 		&rbacv1.ClusterRole{TypeMeta: metav1.TypeMeta{Kind: "ClusterRole", APIVersion: "v1"}},
 		&rbacv1.ClusterRoleBinding{TypeMeta: metav1.TypeMeta{Kind: "ClusterRoleBinding", APIVersion: "v1"}},
 		&corev1.ConfigMap{TypeMeta: metav1.TypeMeta{Kind: "ConfigMap", APIVersion: "v1"}},
 		&corev1.Service{TypeMeta: metav1.TypeMeta{Kind: "Service", APIVersion: "v1"}},
 		&appsv1.Deployment{TypeMeta: metav1.TypeMeta{Kind: "Deployment", APIVersion: "v1"}},
+		&appsv1.DaemonSet{TypeMeta: metav1.TypeMeta{Kind: "DaemonSet", APIVersion: "v1"}},
 		&autoscalingv2beta1.HorizontalPodAutoscaler{TypeMeta: metav1.TypeMeta{Kind: "HorizontalPodAutoscaler", APIVersion: "v2beta1"}},
 		&admissionregistrationv1beta1.MutatingWebhookConfiguration{TypeMeta: metav1.TypeMeta{Kind: "MutatingWebhookConfiguration", APIVersion: "v1beta1"}},
 	} {
@@ -326,7 +388,7 @@ func initWatches(c controller.Controller, scheme *runtime.Scheme, watchCreatedRe
 				return true
 			},
 			UpdateFunc: func(e event.UpdateEvent) bool {
-				objectsEquals, err := objectmatch.Match(e.ObjectOld, e.ObjectNew)
+				objectsEquals, err := objectMatcher.Match(e.ObjectOld, e.ObjectNew)
 				if err != nil {
 					log.Error(err, "could not match objects", "kind", e.ObjectOld.GetObjectKind())
 				} else if objectsEquals {

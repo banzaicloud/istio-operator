@@ -125,6 +125,10 @@ func InitCrds() []*extensionsobj.CustomResourceDefinition {
 		crd("instance", "instances", crdConfigs[Policy], "mixer", "instance", "mixer-instance", extensionsobj.NamespaceScoped),
 		crd("template", "templates", crdConfigs[Policy], "mixer", "template", "mixer-template", extensionsobj.NamespaceScoped),
 		crd("handler", "handlers", crdConfigs[Policy], "mixer", "handler", "mixer-handler", extensionsobj.NamespaceScoped),
+		crd("cloudwatch", "cloudwatches", crdConfigs[Policy], "mixer", "cloudwatch", "mixer-adapter", extensionsobj.NamespaceScoped),
+		crd("dogstatsd", "dogstatsds", crdConfigs[Policy], "mixer", "dogstatsd", "mixer-adapter", extensionsobj.NamespaceScoped),
+		crd("zipkin", "zipkins", crdConfigs[Policy], "mixer", "zipkin", "mixer-adapter", extensionsobj.NamespaceScoped),
+		crd("Sidecar", "Sidecars", crdConfigs[Networking], "istio-pilot", "", "", extensionsobj.NamespaceScoped),
 	}
 }
 
@@ -207,7 +211,7 @@ func (r *CrdOperator) Reconcile(config *istiov1beta1.Istio, log logr.Logger) err
 			log.Info("CRD created")
 		}
 		if err == nil {
-			objectsEquals, err := objectmatch.Match(current, crd)
+			objectsEquals, err := objectmatch.New(log).Match(current, crd)
 			if err != nil {
 				log.Error(err, "could not match objects", "kind", crd.Spec.Names.Kind)
 			} else if objectsEquals {

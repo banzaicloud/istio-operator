@@ -23,31 +23,31 @@ import (
 	rbacv1 "k8s.io/api/rbac/v1"
 )
 
-type clusterRoleMatcher struct {
+type roleMatcher struct {
 	objectMatcher ObjectMatcher
 }
 
-func NewClusterRoleMatcher(objectMatcher ObjectMatcher) *clusterRoleMatcher {
-	return &clusterRoleMatcher{
+func NewRoleMatcher(objectMatcher ObjectMatcher) *roleMatcher {
+	return &roleMatcher{
 		objectMatcher: objectMatcher,
 	}
 }
 
 // Match compares two rbacv1.ClusterRole objects
-func (m clusterRoleMatcher) Match(old, new *rbacv1.ClusterRole) (bool, error) {
-	type ClusterRole struct {
+func (m roleMatcher) Match(old, new *rbacv1.Role) (bool, error) {
+	type Role struct {
 		ObjectMeta
 		Rules []rbacv1.PolicyRule `json:"rules"`
 	}
 
-	oldData, err := json.Marshal(ClusterRole{
+	oldData, err := json.Marshal(Role{
 		ObjectMeta: m.objectMatcher.GetObjectMeta(old.ObjectMeta),
 		Rules:      old.Rules,
 	})
 	if err != nil {
 		return false, emperror.WrapWith(err, "could not marshal old object", "name", old.Name)
 	}
-	newObject := ClusterRole{
+	newObject := Role{
 		ObjectMeta: m.objectMatcher.GetObjectMeta(new.ObjectMeta),
 		Rules:      new.Rules,
 	}

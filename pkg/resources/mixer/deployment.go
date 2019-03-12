@@ -39,6 +39,7 @@ func (r *Reconciler) deployment(t string) runtime.Object {
 				Name:      hpaName(t),
 				Namespace: r.Config.Namespace,
 			}, r.Config.Spec.Mixer.ReplicaCount)),
+			Strategy: templates.DefaultRollingUpdateStrategy(),
 			Selector: &metav1.LabelSelector{
 				MatchLabels: util.MergeLabels(labelSelector, util.MergeLabels(appLabel(t), mixerTypeLabel(t))),
 			},
@@ -66,6 +67,16 @@ func (r *Reconciler) deployment(t string) runtime.Object {
 								EmptyDir: &apiv1.EmptyDirVolumeSource{},
 							},
 						},
+						{
+							Name: fmt.Sprintf("%s-adapter-secret", t),
+							VolumeSource: apiv1.VolumeSource{
+								Secret: &apiv1.SecretVolumeSource{
+									SecretName:  fmt.Sprintf("%s-adapter-secret", t),
+									Optional:    util.BoolPointer(true),
+									DefaultMode: util.IntPointer(420),
+								},
+							},
+						},
 					},
 					Affinity: &apiv1.Affinity{},
 					Containers: []apiv1.Container{
@@ -79,13 +90,69 @@ func (r *Reconciler) deployment(t string) runtime.Object {
 }
 
 func (r *Reconciler) mixerContainer(t string, ns string) apiv1.Container {
-	c := apiv1.Container{
-		Name:            "mixer",
+	containerArgs := []string{
+		"--address",
+		"unix:///sock/mixer.socket",
+		"--configDefaultNamespace",
+		ns,
+		"--trace_zipkin_url",
+		"http://" + r.Config.Spec.Tracing.Zipkin.Address + "/api/v1/spans",
+		"--monitoringPort",
+		"15014",
+	}
+
+	if r.Config.Spec.UseMCP {
+		if r.Config.Spec.ControlPlaneSecurityEnabled {
+			containerArgs = append(containerArgs, "--configStoreURL", "mcps://istio-galley."+r.Config.Namespace+".svc:9901")
+			if t == "telemetry" {
+				containerArgs = append(containerArgs, "--certFile", "/etc/certs/cert-chain.pem")
+				containerArgs = append(containerArgs, "--keyFile", "/etc/certs/key.pem")
+				containerArgs = append(containerArgs, "--caCertFile", "/etc/certs/root-cert.pem")
+			}
+		} else {
+			containerArgs = append(containerArgs, "--configStoreURL", "mcp://istio-galley."+r.Config.Namespace+".svc:9901")
+		}
+	} else {
+		containerArgs = append(containerArgs, "--configStoreURL", "k8s://")
+	}
+
+	if r.Config.Spec.WatchAdapterCRDs {
+		containerArgs = append(containerArgs, "--useAdapterCRDs=true")
+	} else {
+		containerArgs = append(containerArgs, "--useAdapterCRDs=false")
+	}
+
+	if t == "telemetry" {
+		containerArgs = append(containerArgs, "--averageLatencyThreshold", "100ms")
+		containerArgs = append(containerArgs, "--loadsheddingMode", "enforce")
+	}
+
+	volumeMounts := []apiv1.VolumeMount{
+		{
+			Name:      "uds-socket",
+			MountPath: "/sock",
+		},
+		{
+			Name:      fmt.Sprintf("%s-adapter-secret", t),
+			MountPath: fmt.Sprintf("/var/run/secrets/istio.io/%s/adapter", t),
+			ReadOnly:  true,
+		},
+	}
+	if r.Config.Spec.UseMCP {
+		volumeMounts = append(volumeMounts, apiv1.VolumeMount{
+			Name:      "istio-certs",
+			MountPath: "/etc/certs",
+			ReadOnly:  true,
+		})
+	}
+
+	return apiv1.Container{
+		Name:            t,
 		Image:           r.Config.Spec.Mixer.Image,
 		ImagePullPolicy: apiv1.PullIfNotPresent,
 		Ports: []apiv1.ContainerPort{
 			{
-				ContainerPort: 9093,
+				ContainerPort: 15014,
 				Protocol:      apiv1.ProtocolTCP,
 			},
 			{
@@ -93,31 +160,20 @@ func (r *Reconciler) mixerContainer(t string, ns string) apiv1.Container {
 				Protocol:      apiv1.ProtocolTCP,
 			},
 		},
-		Args: []string{
-			"--address",
-			"unix:///sock/mixer.socket",
-			"--configStoreURL=k8s://",
-			fmt.Sprintf("--configDefaultNamespace=%s", ns),
-			"--trace_zipkin_url=http://zipkin:9411/api/v1/spans",
-		},
+		Args: containerArgs,
 		Env: []apiv1.EnvVar{
 			{
 				Name:  "GODEBUG",
 				Value: "gctrace=2",
 			},
 		},
-		Resources: templates.DefaultResources(),
-		VolumeMounts: []apiv1.VolumeMount{
-			{
-				Name:      "uds-socket",
-				MountPath: "/sock",
-			},
-		},
+		Resources:    templates.DefaultResources(),
+		VolumeMounts: volumeMounts,
 		LivenessProbe: &apiv1.Probe{
 			Handler: apiv1.Handler{
 				HTTPGet: &apiv1.HTTPGetAction{
 					Path:   "/version",
-					Port:   intstr.FromInt(9093),
+					Port:   intstr.FromInt(15014),
 					Scheme: apiv1.URISchemeHTTP,
 				},
 			},
@@ -130,10 +186,6 @@ func (r *Reconciler) mixerContainer(t string, ns string) apiv1.Container {
 		TerminationMessagePath:   apiv1.TerminationMessagePathDefault,
 		TerminationMessagePolicy: apiv1.TerminationMessageReadFile,
 	}
-	if t == "policy" {
-		c.Args = append(c.Args, "--numCheckCacheEntries=0")
-	}
-	return c
 }
 
 func (r *Reconciler) istioProxyContainer(t string) apiv1.Container {
@@ -154,6 +206,8 @@ func (r *Reconciler) istioProxyContainer(t string) apiv1.Container {
 			fmt.Sprintf("/etc/istio/proxy/envoy_%s.yaml.tmpl", t),
 			"--controlPlaneAuthPolicy",
 			templates.ControlPlaneAuthPolicy(r.Config.Spec.ControlPlaneSecurityEnabled),
+			"--domain",
+			"$(POD_NAMESPACE).svc.cluster.local",
 		},
 		Env:       templates.IstioProxyEnv(),
 		Resources: templates.DefaultResources(),

@@ -18,6 +18,7 @@ package sidecarinjector
 
 import (
 	"github.com/banzaicloud/istio-operator/pkg/resources/templates"
+	"github.com/banzaicloud/istio-operator/pkg/util"
 	apiv1 "k8s.io/api/core/v1"
 	rbacv1 "k8s.io/api/rbac/v1"
 	"k8s.io/apimachinery/pkg/runtime"
@@ -25,17 +26,17 @@ import (
 
 func (r *Reconciler) serviceAccount() runtime.Object {
 	return &apiv1.ServiceAccount{
-		ObjectMeta: templates.ObjectMeta(serviceAccountName, sidecarInjectorLabels, r.Config),
+		ObjectMeta: templates.ObjectMeta(serviceAccountName, util.MergeLabels(sidecarInjectorLabels, labelSelector), r.Config),
 	}
 }
 
 func (r *Reconciler) clusterRole() runtime.Object {
 	return &rbacv1.ClusterRole{
-		ObjectMeta: templates.ObjectMetaClusterScope(clusterRoleName, sidecarInjectorLabels, r.Config),
+		ObjectMeta: templates.ObjectMetaClusterScope(clusterRoleName, util.MergeLabels(sidecarInjectorLabels, labelSelector), r.Config),
 		Rules: []rbacv1.PolicyRule{
 			{
-				APIGroups: []string{"configmaps"},
-				Resources: []string{"*"},
+				APIGroups: []string{""},
+				Resources: []string{"configmaps"},
 				Verbs:     []string{"get", "watch", "list"},
 			},
 			{
@@ -49,7 +50,7 @@ func (r *Reconciler) clusterRole() runtime.Object {
 
 func (r *Reconciler) clusterRoleBinding() runtime.Object {
 	return &rbacv1.ClusterRoleBinding{
-		ObjectMeta: templates.ObjectMetaClusterScope(clusterRoleBindingName, sidecarInjectorLabels, r.Config),
+		ObjectMeta: templates.ObjectMetaClusterScope(clusterRoleBindingName, util.MergeLabels(sidecarInjectorLabels, labelSelector), r.Config),
 		RoleRef: rbacv1.RoleRef{
 			Kind:     "ClusterRole",
 			APIGroup: "rbac.authorization.k8s.io",

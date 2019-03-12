@@ -19,8 +19,10 @@ package endpoints
 import (
 	"context"
 
+	"github.com/pkg/errors"
+
 	corev1 "k8s.io/api/core/v1"
-	"k8s.io/apimachinery/pkg/api/errors"
+	k8serrors "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/labels"
 	"k8s.io/apimachinery/pkg/runtime"
@@ -34,6 +36,7 @@ import (
 	logf "sigs.k8s.io/controller-runtime/pkg/runtime/log"
 	"sigs.k8s.io/controller-runtime/pkg/source"
 
+	istiov1beta1 "github.com/banzaicloud/istio-operator/pkg/apis/istio/v1beta1"
 	"github.com/banzaicloud/istio-operator/pkg/remoteclusters"
 )
 
@@ -90,7 +93,7 @@ func (r *ReconcileEndpoints) Reconcile(request reconcile.Request) (reconcile.Res
 	pod := &corev1.Pod{}
 	err := r.Get(context.TODO(), request.NamespacedName, pod)
 	if err != nil {
-		if errors.IsNotFound(err) {
+		if k8serrors.IsNotFound(err) {
 			return reconcile.Result{}, nil
 		}
 		return reconcile.Result{}, err
@@ -104,6 +107,11 @@ func (r *ReconcileEndpoints) Reconcile(request reconcile.Request) (reconcile.Res
 	}
 
 	if pod.Status.Phase != corev1.PodRunning || len(pod.Spec.Containers) != ready {
+		return reconcile.Result{}, nil
+	}
+
+	istio, err := r.getIstio()
+	if err != nil {
 		return reconcile.Result{}, nil
 	}
 
@@ -124,7 +132,7 @@ func (r *ReconcileEndpoints) Reconcile(request reconcile.Request) (reconcile.Res
 			}
 
 			log.Info("updating endpoints", "cluster", cluster.GetName())
-			err = cluster.ReconcileEnabledServiceEndpoints(remoteConfig)
+			err = cluster.ReconcileEnabledServiceEndpoints(remoteConfig, istio)
 			if err != nil {
 				return reconcile.Result{}, err
 			}
@@ -132,6 +140,20 @@ func (r *ReconcileEndpoints) Reconcile(request reconcile.Request) (reconcile.Res
 	}
 
 	return reconcile.Result{}, nil
+}
+
+func (r *ReconcileEndpoints) getIstio() (*istiov1beta1.Istio, error) {
+	var istios istiov1beta1.IstioList
+	err := r.List(context.TODO(), &client.ListOptions{}, &istios)
+	if err != nil {
+		return nil, err
+	}
+
+	if len(istios.Items) != 1 {
+		return nil, errors.New("istio resource not found")
+	}
+
+	return &istios.Items[0], nil
 }
 
 func getWatchPredicate() predicate.Funcs {

@@ -14,34 +14,44 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package common
+package nodeagent
 
 import (
-	istiov1beta1 "github.com/banzaicloud/istio-operator/pkg/apis/istio/v1beta1"
-	"github.com/banzaicloud/istio-operator/pkg/k8sutil"
-	"github.com/banzaicloud/istio-operator/pkg/resources"
 	"github.com/go-logr/logr"
 	"github.com/goph/emperror"
 	"sigs.k8s.io/controller-runtime/pkg/client"
+
+	istiov1beta1 "github.com/banzaicloud/istio-operator/pkg/apis/istio/v1beta1"
+	"github.com/banzaicloud/istio-operator/pkg/k8sutil"
+	"github.com/banzaicloud/istio-operator/pkg/resources"
 )
 
 const (
-	componentName      = "common"
-	IstioConfigMapName = "istio"
+	componentName          = "nodeagent"
+	serviceAccountName     = "istio-nodeagent-service-account"
+	clusterRoleName        = "istio-nodeagent-cluster-role"
+	clusterRoleBindingName = "istio-nodeagent-cluster-role-binding"
+	daemonSetName          = "istio-nodeagent"
 )
+
+var nodeAgentLabels = map[string]string{
+	"app": "istio-nodeagent",
+}
+
+var labelSelector = map[string]string{
+	"istio": "nodeagent",
+}
 
 type Reconciler struct {
 	resources.Reconciler
-	remote bool
 }
 
-func New(client client.Client, config *istiov1beta1.Istio, isRemote bool) *Reconciler {
+func New(client client.Client, config *istiov1beta1.Istio) *Reconciler {
 	return &Reconciler{
 		Reconciler: resources.Reconciler{
 			Client: client,
 			Config: config,
 		},
-		remote: isRemote,
 	}
 }
 
@@ -51,7 +61,10 @@ func (r *Reconciler) Reconcile(log logr.Logger) error {
 	log.Info("Reconciling")
 
 	for _, res := range []resources.Resource{
-		r.configMap,
+		r.serviceAccount,
+		r.clusterRole,
+		r.clusterRoleBinding,
+		r.daemonSet,
 	} {
 		o := res()
 		err := k8sutil.Reconcile(log, r.Client, o)

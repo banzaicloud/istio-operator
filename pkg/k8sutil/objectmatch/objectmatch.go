@@ -21,12 +21,14 @@ import (
 	"reflect"
 
 	jsonpatch "github.com/evanphx/json-patch"
+	"github.com/go-logr/logr"
 	"github.com/goph/emperror"
 	"github.com/pkg/errors"
 	admissionv1beta1 "k8s.io/api/admissionregistration/v1beta1"
 	appsv1 "k8s.io/api/apps/v1"
 	autoscalev2beta1 "k8s.io/api/autoscaling/v2beta1"
 	corev1 "k8s.io/api/core/v1"
+	policyv1beta1 "k8s.io/api/policy/v1beta1"
 	rbacv1 "k8s.io/api/rbac/v1"
 	extensionsobj "k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1beta1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -34,7 +36,23 @@ import (
 	"k8s.io/apimachinery/pkg/util/strategicpatch"
 )
 
-func Match(old, new interface{}) (bool, error) {
+type ObjectMatcher interface {
+	Match(old, new interface{}) (bool, error)
+	GetObjectMeta(objectMeta metav1.ObjectMeta) ObjectMeta
+	MatchJSON(old, new []byte, obj interface{}) (bool, error)
+}
+
+type objectMatcher struct {
+	logger logr.Logger
+}
+
+func New(logger logr.Logger) ObjectMatcher {
+	return &objectMatcher{
+		logger: logger,
+	}
+}
+
+func (om *objectMatcher) Match(old, new interface{}) (bool, error) {
 	if reflect.TypeOf(old) != reflect.TypeOf(new) {
 		return false, emperror.With(errors.New("old and new object types mismatch"), "oldType", reflect.TypeOf(old), "newType", reflect.TypeOf(new))
 	}
@@ -46,7 +64,7 @@ func Match(old, new interface{}) (bool, error) {
 		oldObject := old.(*unstructured.Unstructured)
 		newObject := new.(*unstructured.Unstructured)
 
-		m := UnstructuredMatcher{}
+		m := NewUnstructuredMatcher(om)
 		ok, err := m.Match(oldObject, newObject)
 		if err != nil {
 			return false, errors.WithStack(err)
@@ -56,7 +74,7 @@ func Match(old, new interface{}) (bool, error) {
 		oldObject := old.(*corev1.ServiceAccount)
 		newObject := new.(*corev1.ServiceAccount)
 
-		m := ServiceAccountMatcher{}
+		m := NewServiceAccountMatcher(om)
 		ok, err := m.Match(oldObject, newObject)
 		if err != nil {
 			return false, errors.WithStack(err)
@@ -66,7 +84,7 @@ func Match(old, new interface{}) (bool, error) {
 		oldObject := old.(*rbacv1.ClusterRole)
 		newObject := new.(*rbacv1.ClusterRole)
 
-		m := ClusterRoleMatcher{}
+		m := NewClusterRoleMatcher(om)
 		ok, err := m.Match(oldObject, newObject)
 		if err != nil {
 			return false, errors.WithStack(err)
@@ -76,7 +94,7 @@ func Match(old, new interface{}) (bool, error) {
 		oldObject := old.(*rbacv1.ClusterRoleBinding)
 		newObject := new.(*rbacv1.ClusterRoleBinding)
 
-		m := ClusterRoleBindingMatcher{}
+		m := NewClusterRoleBindingMatcher(om)
 		ok, err := m.Match(oldObject, newObject)
 		if err != nil {
 			return false, errors.WithStack(err)
@@ -86,7 +104,7 @@ func Match(old, new interface{}) (bool, error) {
 		oldObject := old.(*appsv1.Deployment)
 		newObject := new.(*appsv1.Deployment)
 
-		m := DeploymentMatcher{}
+		m := NewDeploymentMatcher(om)
 		ok, err := m.Match(oldObject, newObject)
 		if err != nil {
 			return false, errors.WithStack(err)
@@ -96,7 +114,7 @@ func Match(old, new interface{}) (bool, error) {
 		oldObject := old.(*corev1.Service)
 		newObject := new.(*corev1.Service)
 
-		m := ServiceMatcher{}
+		m := NewServiceMatcher(om)
 		ok, err := m.Match(oldObject, newObject)
 		if err != nil {
 			return false, errors.WithStack(err)
@@ -106,7 +124,7 @@ func Match(old, new interface{}) (bool, error) {
 		oldObject := old.(*corev1.ConfigMap)
 		newObject := new.(*corev1.ConfigMap)
 
-		m := ConfigMapMatcher{}
+		m := NewConfigMapMatcher(om)
 		ok, err := m.Match(oldObject, newObject)
 		if err != nil {
 			return false, errors.WithStack(err)
@@ -116,7 +134,7 @@ func Match(old, new interface{}) (bool, error) {
 		oldObject := old.(*extensionsobj.CustomResourceDefinition)
 		newObject := new.(*extensionsobj.CustomResourceDefinition)
 
-		m := CRDMatcher{}
+		m := NewCRDMatcher(om)
 		ok, err := m.Match(oldObject, newObject)
 		if err != nil {
 			return false, errors.WithStack(err)
@@ -126,7 +144,7 @@ func Match(old, new interface{}) (bool, error) {
 		oldObject := old.(*autoscalev2beta1.HorizontalPodAutoscaler)
 		newObject := new.(*autoscalev2beta1.HorizontalPodAutoscaler)
 
-		m := HorizontalPodAutoscalerMatcher{}
+		m := NewHorizontalPodAutoscalerMatcher(om)
 		ok, err := m.Match(oldObject, newObject)
 		if err != nil {
 			return false, errors.WithStack(err)
@@ -136,7 +154,47 @@ func Match(old, new interface{}) (bool, error) {
 		oldObject := old.(*admissionv1beta1.MutatingWebhookConfiguration)
 		newObject := new.(*admissionv1beta1.MutatingWebhookConfiguration)
 
-		m := MutatingWebhookConfigurationMatcher{}
+		m := NewMutatingWebhookConfigurationMatcher(om)
+		ok, err := m.Match(oldObject, newObject)
+		if err != nil {
+			return false, errors.WithStack(err)
+		}
+		return ok, nil
+	case *policyv1beta1.PodDisruptionBudget:
+		oldObject := old.(*policyv1beta1.PodDisruptionBudget)
+		newObject := new.(*policyv1beta1.PodDisruptionBudget)
+
+		m := NewPodDisruptionBudgetMatcher(om)
+		ok, err := m.Match(oldObject, newObject)
+		if err != nil {
+			return false, errors.WithStack(err)
+		}
+		return ok, nil
+	case *appsv1.DaemonSet:
+		oldObject := old.(*appsv1.DaemonSet)
+		newObject := new.(*appsv1.DaemonSet)
+
+		m := NewDaemonSetMatcher(om)
+		ok, err := m.Match(oldObject, newObject)
+		if err != nil {
+			return false, errors.WithStack(err)
+		}
+		return ok, nil
+	case *rbacv1.Role:
+		oldObject := old.(*rbacv1.Role)
+		newObject := new.(*rbacv1.Role)
+
+		m := NewRoleMatcher(om)
+		ok, err := m.Match(oldObject, newObject)
+		if err != nil {
+			return false, errors.WithStack(err)
+		}
+		return ok, nil
+	case *rbacv1.RoleBinding:
+		oldObject := old.(*rbacv1.RoleBinding)
+		newObject := new.(*rbacv1.RoleBinding)
+
+		m := NewRoleBindingMatcher(om)
 		ok, err := m.Match(oldObject, newObject)
 		if err != nil {
 			return false, errors.WithStack(err)
@@ -151,7 +209,7 @@ type ObjectMeta struct {
 	OwnerReferences []metav1.OwnerReference `json:"ownerReferences,omitempty"`
 }
 
-func getObjectMeta(objectMeta metav1.ObjectMeta) ObjectMeta {
+func (om *objectMatcher) GetObjectMeta(objectMeta metav1.ObjectMeta) ObjectMeta {
 	if len(objectMeta.Annotations) == 0 {
 		objectMeta.Annotations = make(map[string]string)
 	}
@@ -167,7 +225,7 @@ func getObjectMeta(objectMeta metav1.ObjectMeta) ObjectMeta {
 	}
 }
 
-func match(old, new []byte, obj interface{}) (bool, error) {
+func (om *objectMatcher) MatchJSON(old, new []byte, obj interface{}) (bool, error) {
 	var patch []byte
 	var err error
 
@@ -184,7 +242,7 @@ func match(old, new []byte, obj interface{}) (bool, error) {
 		}
 	}
 
-	patch, _, err = deleteNullInJsonPatch(patch)
+	patch, _, err = om.deleteNullInJsonPatch(patch)
 	if err != nil {
 		return false, emperror.Wrap(err, "could not remove nil values from json merge patch")
 	}
@@ -193,10 +251,12 @@ func match(old, new []byte, obj interface{}) (bool, error) {
 		return true, nil
 	}
 
+	om.logger.V(1).Info("objects differs", "diff", string(patch), "old", string(old), "new", string(new))
+
 	return false, nil
 }
 
-func deleteNullInJsonPatch(patch []byte) ([]byte, map[string]interface{}, error) {
+func (om *objectMatcher) deleteNullInJsonPatch(patch []byte) ([]byte, map[string]interface{}, error) {
 	var patchMap map[string]interface{}
 
 	err := json.Unmarshal(patch, &patchMap)
@@ -204,7 +264,7 @@ func deleteNullInJsonPatch(patch []byte) ([]byte, map[string]interface{}, error)
 		return nil, nil, emperror.Wrap(err, "could not unmarshal json patch")
 	}
 
-	filteredMap, err := deleteNullInObj(patchMap)
+	filteredMap, err := om.deleteNullInObj(patchMap)
 	if err != nil {
 		return nil, nil, emperror.Wrap(err, "could not delete null values from patch map")
 	}
@@ -217,7 +277,7 @@ func deleteNullInJsonPatch(patch []byte) ([]byte, map[string]interface{}, error)
 	return o, filteredMap, err
 }
 
-func deleteNullInObj(m map[string]interface{}) (map[string]interface{}, error) {
+func (om *objectMatcher) deleteNullInObj(m map[string]interface{}) (map[string]interface{}, error) {
 	var err error
 	filteredMap := make(map[string]interface{})
 
@@ -238,7 +298,7 @@ func deleteNullInObj(m map[string]interface{}) (map[string]interface{}, error) {
 			}
 
 			var filteredSubMap map[string]interface{}
-			filteredSubMap, err = deleteNullInObj(typedVal)
+			filteredSubMap, err = om.deleteNullInObj(typedVal)
 			if err != nil {
 				return nil, emperror.Wrap(err, "could not delete null values from filtered sub map")
 			}

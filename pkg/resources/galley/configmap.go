@@ -17,17 +17,18 @@ limitations under the License.
 package galley
 
 import (
-	"github.com/banzaicloud/istio-operator/pkg/resources/templates"
-	"github.com/banzaicloud/istio-operator/pkg/util"
 	"github.com/ghodss/yaml"
 	admissionv1beta1 "k8s.io/api/admissionregistration/v1beta1"
 	apiv1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
+
+	"github.com/banzaicloud/istio-operator/pkg/resources/templates"
+	"github.com/banzaicloud/istio-operator/pkg/util"
 )
 
 var cmLabels = map[string]string{
-	"istio": "mixer",
+	"istio": "galley",
 }
 
 func (r *Reconciler) configMap() runtime.Object {
@@ -138,9 +139,10 @@ func (r *Reconciler) validatingWebhookConfig(ns string) string {
 								"opas",
 								"prometheuses",
 								"rbacs",
-								"servicecontrols",
 								"solarwindses",
 								"stackdrivers",
+								"cloudwatches",
+								"dogstatsds",
 								"statsds",
 								"stdios",
 								"apikeys",
@@ -151,7 +153,6 @@ func (r *Reconciler) validatingWebhookConfig(ns string) string {
 								"metrics",
 								"quotas",
 								"reportnothings",
-								"servicecontrolreports",
 								"tracespans"},
 						},
 					},

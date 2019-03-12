@@ -49,6 +49,18 @@ spec:
               description: ControlPlaneSecurityEnabled control plane services are
                 communicating through mTLS
               type: boolean
+            defaultConfigVisibility:
+              description: Set the default set of namespaces to which services, service
+                entries, virtual services, destination rules should be exported to
+              type: string
+            defaultPodDisruptionBudget:
+              description: Enable pod disruption budget for the control plane, which
+                is used to ensure Istio control plane components are gradually upgraded
+                or recovered
+              properties:
+                enabled:
+                  type: boolean
+              type: object
             excludeIPRanges:
               description: ExcludeIPRanges the range where not to capture egress traffic
               type: string
@@ -75,6 +87,13 @@ spec:
                     replicaCount:
                       format: int32
                       type: integer
+                    sds:
+                      properties:
+                        enabled:
+                          type: boolean
+                        image:
+                          type: string
+                      type: object
                     serviceAnnotations:
                       type: object
                     serviceLabels:
@@ -91,6 +110,13 @@ spec:
                     replicaCount:
                       format: int32
                       type: integer
+                    sds:
+                      properties:
+                        enabled:
+                          type: boolean
+                        image:
+                          type: string
+                      type: object
                     serviceAnnotations:
                       type: object
                     serviceLabels:
@@ -118,6 +144,24 @@ spec:
             mtls:
               description: MTLS enables or disables global mTLS
               type: boolean
+            nodeAgent:
+              description: NodeAgent configuration options
+              properties:
+                enabled:
+                  type: boolean
+                image:
+                  type: string
+              type: object
+            outboundTrafficPolicy:
+              description: Set the default behavior of the sidecar for handling outbound
+                traffic from the application (ALLOW_ANY or REGISTRY_ONLY)
+              properties:
+                mode:
+                  enum:
+                  - ALLOW_ANY
+                  - REGISTRY_ONLY
+                  type: string
+              type: object
             pilot:
               description: Pilot configuration options
               properties:
@@ -139,8 +183,51 @@ spec:
             proxy:
               description: Proxy configuration options
               properties:
+                enableCoreDump:
+                  description: If set, newly injected sidecars will have core dumps
+                    enabled.
+                  type: boolean
                 image:
                   type: string
+                privileged:
+                  description: If set to true, istio-proxy container will have privileged
+                    securityContext
+                  type: boolean
+              type: object
+            proxyInit:
+              description: Proxy Init configuration options
+              properties:
+                image:
+                  type: string
+              type: object
+            sds:
+              description: If SDS is configured, mTLS certificates for the sidecars
+                will be distributed through the SecretDiscoveryService instead of
+                using K8S secrets to mount the certificates
+              properties:
+                enabled:
+                  description: If set to true, mTLS certificates for the sidecars
+                    will be distributed through the SecretDiscoveryService instead
+                    of using K8S secrets to mount the certificates.
+                  type: boolean
+                udsPath:
+                  description: Unix Domain Socket through which envoy communicates
+                    with NodeAgent SDS to get key/cert for mTLS. Use secret-mount
+                    files instead of SDS if set to empty.
+                  type: string
+                useNormalJwt:
+                  description: If set to true, envoy will fetch normal k8s service
+                    account JWT from '/var/run/secrets/kubernetes.io/serviceaccount/token'
+                    (https://kubernetes.io/docs/tasks/access-application-cluster/access-cluster/#accessing-the-api-from-a-pod)
+                    and pass to sds server, which will be used to request key/cert
+                    eventually this flag is ignored if UseTrustworthyJwt is set
+                  type: boolean
+                useTrustworthyJwt:
+                  description: 'If set to true, Istio will inject volumes mount for
+                    k8s service account JWT, so that K8s API server mounts k8s service
+                    account JWT to envoy container, which will be used to generate
+                    key/cert eventually. (prerequisite: https://kubernetes.io/docs/concepts/storage/volumes/#projected)'
+                  type: boolean
               type: object
             sidecarInjector:
               description: SidecarInjector configuration options
@@ -151,6 +238,31 @@ spec:
                   format: int32
                   type: integer
               type: object
+            tracing:
+              description: Configuration for each of the supported tracers
+              properties:
+                zipkin:
+                  properties:
+                    address:
+                      description: Host:Port for reporting trace data in zipkin format.
+                        If not specified, will default to zipkin service (port 9411)
+                        in the same namespace as the other istio components.
+                      pattern: ^[^\:]+:[0-9]{1,5}$
+                      type: string
+                  type: object
+              type: object
+            useMCP:
+              description: Use the Mesh Control Protocol (MCP) for configuring Mixer
+                and Pilot. Requires galley.
+              type: boolean
+            watchAdapterCRDs:
+              description: Whether or not to establish watches for adapter-specific
+                CRDs
+              type: boolean
+            watchOneNamespace:
+              description: Whether to restrict the applications namespace the controller
+                manages
+              type: boolean
           required:
           - mtls
           type: object

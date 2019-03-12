@@ -38,6 +38,23 @@ var appLabels = map[string]string{
 }
 
 func (r *Reconciler) deployment() runtime.Object {
+
+	containerArgs := []string{
+		"discovery",
+		"--monitoringAddr=:15014",
+		"--domain",
+		"cluster.local",
+		"--keepaliveMaxServerConnectionAge",
+		"30m",
+	}
+
+	if !r.Config.Spec.ControlPlaneSecurityEnabled {
+		containerArgs = append(containerArgs, "--secureGrpcAddr", "")
+	}
+	if r.Config.Spec.WatchOneNamespace {
+		containerArgs = append(containerArgs, "-a", r.Config.Namespace)
+	}
+
 	return &appsv1.Deployment{
 		ObjectMeta: templates.ObjectMeta(deploymentName, util.MergeLabels(pilotLabels, labelSelector), r.Config),
 		Spec: appsv1.DeploymentSpec{
@@ -45,6 +62,7 @@ func (r *Reconciler) deployment() runtime.Object {
 				Name:      hpaName,
 				Namespace: r.Config.Namespace,
 			}, r.Config.Spec.Pilot.ReplicaCount)),
+			Strategy: templates.DefaultRollingUpdateStrategy(),
 			Selector: &metav1.LabelSelector{
 				MatchLabels: util.MergeLabels(appLabels, labelSelector),
 			},
@@ -60,9 +78,7 @@ func (r *Reconciler) deployment() runtime.Object {
 							Name:            "discovery",
 							Image:           r.Config.Spec.Pilot.Image,
 							ImagePullPolicy: apiv1.PullIfNotPresent,
-							Args: []string{
-								"discovery",
-							},
+							Args:            containerArgs,
 							Ports: []apiv1.ContainerPort{
 								{ContainerPort: 8080, Protocol: apiv1.ProtocolTCP},
 								{ContainerPort: 15010, Protocol: apiv1.ProtocolTCP},
@@ -100,7 +116,6 @@ func (r *Reconciler) deployment() runtime.Object {
 										},
 									},
 								},
-								{Name: "PILOT_CACHE_SQUASH", Value: "5"},
 								{Name: "PILOT_PUSH_THROTTLE_COUNT", Value: "100"},
 								{Name: "GODEBUG", Value: "gctrace=2"},
 								{
@@ -146,6 +161,8 @@ func (r *Reconciler) deployment() runtime.Object {
 								"/etc/istio/proxy/envoy_pilot.yaml.tmpl",
 								"--controlPlaneAuthPolicy",
 								templates.ControlPlaneAuthPolicy(r.Config.Spec.ControlPlaneSecurityEnabled),
+								"--domain",
+								r.Config.Namespace + ".svc.cluster.local",
 							},
 							Env:       templates.IstioProxyEnv(),
 							Resources: templates.DefaultResources(),

@@ -31,11 +31,11 @@ func (r *Reconciler) serviceAccount(gw string) runtime.Object {
 
 func (r *Reconciler) clusterRole(gw string) runtime.Object {
 	return &rbacv1.ClusterRole{
-		ObjectMeta: templates.ObjectMetaClusterScope(clusterRoleName(gw), gwLabels(gw), r.Config),
+		ObjectMeta: templates.ObjectMetaClusterScope(clusterRoleName(gw), labelSelector(gw), r.Config),
 		Rules: []rbacv1.PolicyRule{
 			{
-				APIGroups: []string{"extensions"},
-				Resources: []string{"thirdpartyresources", "virtualservices", "destinationrules", "gateways"},
+				APIGroups: []string{"networking.istio.io"},
+				Resources: []string{"virtualservices", "destinationrules", "gateways"},
 				Verbs:     []string{"get", "watch", "list", "update"},
 			},
 		},
@@ -44,11 +44,42 @@ func (r *Reconciler) clusterRole(gw string) runtime.Object {
 
 func (r *Reconciler) clusterRoleBinding(gw string) runtime.Object {
 	return &rbacv1.ClusterRoleBinding{
-		ObjectMeta: templates.ObjectMetaClusterScope(clusterRoleBindingName(gw), gwLabels(gw), r.Config),
+		ObjectMeta: templates.ObjectMetaClusterScope(clusterRoleBindingName(gw), labelSelector(gw), r.Config),
 		RoleRef: rbacv1.RoleRef{
 			Kind:     "ClusterRole",
 			APIGroup: "rbac.authorization.k8s.io",
 			Name:     clusterRoleName(gw),
+		},
+		Subjects: []rbacv1.Subject{
+			{
+				Kind:      "ServiceAccount",
+				Name:      serviceAccountName(gw),
+				Namespace: r.Config.Namespace,
+			},
+		},
+	}
+}
+
+func (r *Reconciler) role(gw string) runtime.Object {
+	return &rbacv1.Role{
+		ObjectMeta: templates.ObjectMeta(roleName(gw), labelSelector(gw), r.Config),
+		Rules: []rbacv1.PolicyRule{
+			{
+				APIGroups: []string{""},
+				Resources: []string{"secrets"},
+				Verbs:     []string{"get", "watch", "list"},
+			},
+		},
+	}
+}
+
+func (r *Reconciler) roleBinding(gw string) runtime.Object {
+	return &rbacv1.RoleBinding{
+		ObjectMeta: templates.ObjectMeta(roleBindingName(gw), labelSelector(gw), r.Config),
+		RoleRef: rbacv1.RoleRef{
+			Kind:     "Role",
+			APIGroup: "rbac.authorization.k8s.io",
+			Name:     roleName(gw),
 		},
 		Subjects: []rbacv1.Subject{
 			{

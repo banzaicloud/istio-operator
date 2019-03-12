@@ -17,10 +17,11 @@ limitations under the License.
 package galley
 
 import (
-	"github.com/banzaicloud/istio-operator/pkg/resources/templates"
 	apiv1 "k8s.io/api/core/v1"
 	rbacv1 "k8s.io/api/rbac/v1"
 	"k8s.io/apimachinery/pkg/runtime"
+
+	"github.com/banzaicloud/istio-operator/pkg/resources/templates"
 )
 
 func (r *Reconciler) serviceAccount() runtime.Object {
@@ -44,16 +45,41 @@ func (r *Reconciler) clusterRole() runtime.Object {
 				Verbs:     []string{"get", "list", "watch"},
 			},
 			{
-				APIGroups:     []string{"*"},
+				APIGroups: []string{"networking.istio.io"},
+				Resources: []string{"*"},
+				Verbs:     []string{"get", "list", "watch"},
+			},
+			{
+				APIGroups: []string{"authentication.istio.io"},
+				Resources: []string{"*"},
+				Verbs:     []string{"get", "list", "watch"},
+			},
+			{
+				APIGroups: []string{"rbac.istio.io"},
+				Resources: []string{"*"},
+				Verbs:     []string{"get", "list", "watch"},
+			},
+			{
+				APIGroups:     []string{"extensions", "apps"},
 				Resources:     []string{"deployments"},
 				ResourceNames: []string{"istio-galley"},
 				Verbs:         []string{"get"},
 			},
 			{
-				APIGroups:     []string{"*"},
-				Resources:     []string{"endpoints"},
+				APIGroups: []string{""},
+				Resources: []string{"pods", "nodes", "services", "endpoints"},
+				Verbs:     []string{"get", "list", "watch"},
+			},
+			{
+				APIGroups: []string{"extensions"},
+				Resources: []string{"ingresses"},
+				Verbs:     []string{"get", "list", "watch"},
+			},
+			{
+				APIGroups:     []string{"extensions"},
+				Resources:     []string{"deployments/finalizers"},
 				ResourceNames: []string{"istio-galley"},
-				Verbs:         []string{"get"},
+				Verbs:         []string{"update"},
 			},
 		},
 	}

@@ -14,24 +14,26 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package mixer
+package gateways
 
 import (
-	"github.com/banzaicloud/istio-operator/pkg/resources/templates"
 	"github.com/banzaicloud/istio-operator/pkg/util"
-	apiv1 "k8s.io/api/core/v1"
+	policyv1beta1 "k8s.io/api/policy/v1beta1"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
+
+	"github.com/banzaicloud/istio-operator/pkg/resources/templates"
 )
 
-var cmLabels = map[string]string{
-	"app": "istio-statsd-prom-bridge",
-}
-
-func (r *Reconciler) configMap() runtime.Object {
-	return &apiv1.ConfigMap{
-		ObjectMeta: templates.ObjectMeta(configMapName, util.MergeLabels(labelSelector, cmLabels), r.Config),
-		Data: map[string]string{
-			"mapping.conf": "",
+func (r *Reconciler) podDisruptionBudget(gw string) runtime.Object {
+	labels := util.MergeLabels(labelSelector(gw), gwLabels(gw))
+	return &policyv1beta1.PodDisruptionBudget{
+		ObjectMeta: templates.ObjectMeta(pdbName(gw), labels, r.Config),
+		Spec: policyv1beta1.PodDisruptionBudgetSpec{
+			MinAvailable: util.IntstrPointer(1),
+			Selector: &metav1.LabelSelector{
+				MatchLabels: labels,
+			},
 		},
 	}
 }

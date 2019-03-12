@@ -20,12 +20,7 @@ spec:
     labelSelector: "istio-mixer-type=telemetry"
   - name: "zipkin"
     labelSelector: "app=jaeger"
-  controlPlaneSecurityEnabled: true
   citadel:
-      image: "istio/citadel:1.0.5"
       replicaCount: 1
   sidecarInjector:
-      image: "istio/sidecar_injector:1.0.5"
       replicaCount: 1
-  proxy:
-      image: "istio/proxyv2:1.0.5"

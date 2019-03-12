@@ -83,10 +83,10 @@ func (c *Cluster) initK8SClients() error {
 	return nil
 }
 
-func (c *Cluster) Reconcile(remoteConfig *istiov1beta1.RemoteIstio) error {
+func (c *Cluster) Reconcile(remoteConfig *istiov1beta1.RemoteIstio, istio *istiov1beta1.Istio) error {
 	c.log.Info("reconciling remote istio")
 
-	var ReconcilerFuncs []func(remoteConfig *istiov1beta1.RemoteIstio) error
+	var ReconcilerFuncs []func(remoteConfig *istiov1beta1.RemoteIstio, istio *istiov1beta1.Istio) error
 
 	ReconcilerFuncs = append(ReconcilerFuncs,
 		c.reconcileConfigCrd,
@@ -94,11 +94,11 @@ func (c *Cluster) Reconcile(remoteConfig *istiov1beta1.RemoteIstio) error {
 		c.reconcileSignCert,
 		c.reconcileEnabledServices,
 		c.ReconcileEnabledServiceEndpoints,
-		c.reconcileDeployment,
+		c.reconcileComponents,
 	)
 
 	for _, f := range ReconcilerFuncs {
-		if err := f(remoteConfig); err != nil {
+		if err := f(remoteConfig, istio); err != nil {
 			return emperror.Wrapf(err, "could not reconcile")
 		}
 	}

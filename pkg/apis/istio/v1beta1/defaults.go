@@ -16,19 +16,27 @@ limitations under the License.
 
 package v1beta1
 
+import "fmt"
+
 const (
-	defaultImageVersion         = "1.0.5"
-	defaultPilotImage           = "istio/pilot" + ":" + defaultImageVersion
-	defaultCitadelImage         = "istio/citadel" + ":" + defaultImageVersion
-	defaultGalleyImage          = "istio/galley" + ":" + defaultImageVersion
-	defaultMixerImage           = "istio/mixer" + ":" + defaultImageVersion
-	defaultSidecarInjectorImage = "istio/sidecar_injector" + ":" + defaultImageVersion
-	defaultProxyImage           = "istio/proxyv2" + ":" + defaultImageVersion
-	defaultIncludeIPRanges      = "*"
-	defaultReplicaCount         = 1
-	defaultMinReplicas          = 1
-	defaultMaxReplicas          = 5
-	defaultTraceSampling        = 1.0
+	defaultImageHub               = "gcr.io/istio-release"
+	defaultImageVersion           = "release-1.1-latest-daily"
+	defaultPilotImage             = defaultImageHub + "/" + "pilot" + ":" + defaultImageVersion
+	defaultCitadelImage           = defaultImageHub + "/" + "citadel" + ":" + defaultImageVersion
+	defaultGalleyImage            = defaultImageHub + "/" + "galley" + ":" + defaultImageVersion
+	defaultMixerImage             = defaultImageHub + "/" + "mixer" + ":" + defaultImageVersion
+	defaultSidecarInjectorImage   = defaultImageHub + "/" + "sidecar_injector" + ":" + defaultImageVersion
+	defaultNodeAgentImage         = defaultImageHub + "/" + "node-agent-k8s" + ":" + defaultImageVersion
+	defaultSDSImage               = defaultImageHub + "/" + "node-agent-k8s" + ":" + defaultImageVersion
+	defaultProxyImage             = defaultImageHub + "/" + "proxyv2" + ":" + defaultImageVersion
+	defaultProxyInitImage         = defaultImageHub + "/" + "proxy_init" + ":" + defaultImageVersion
+	defaultIncludeIPRanges        = "*"
+	defaultReplicaCount           = 1
+	defaultMinReplicas            = 1
+	defaultMaxReplicas            = 5
+	defaultTraceSampling          = 1.0
+	outboundTrafficPolicyAllowAny = "ALLOW_ANY"
+	defaultZipkinAddress          = "zipkin.%s:9411"
 )
 
 func SetDefaults(config *Istio) {
@@ -104,9 +112,31 @@ func SetDefaults(config *Istio) {
 	if config.Spec.SidecarInjector.ReplicaCount == 0 {
 		config.Spec.SidecarInjector.ReplicaCount = defaultReplicaCount
 	}
+	// NodeAgent config
+	if config.Spec.NodeAgent.Image == "" {
+		config.Spec.NodeAgent.Image = defaultNodeAgentImage
+	}
+	if config.Spec.Gateways.IngressConfig.SDS.Image == "" {
+		config.Spec.Gateways.IngressConfig.SDS.Image = defaultSDSImage
+	}
+	if config.Spec.Gateways.EgressConfig.SDS.Image == "" {
+		config.Spec.Gateways.EgressConfig.SDS.Image = defaultSDSImage
+	}
 	// Proxy config
 	if config.Spec.Proxy.Image == "" {
 		config.Spec.Proxy.Image = defaultProxyImage
+	}
+	// Proxy Init config
+	if config.Spec.ProxyInit.Image == "" {
+		config.Spec.ProxyInit.Image = defaultProxyInitImage
+	}
+	// Outbound traffic policy config
+	if config.Spec.OutboundTrafficPolicy.Mode == "" {
+		config.Spec.OutboundTrafficPolicy.Mode = outboundTrafficPolicyAllowAny
+	}
+
+	if config.Spec.Tracing.Zipkin.Address == "" {
+		config.Spec.Tracing.Zipkin.Address = fmt.Sprintf(defaultZipkinAddress, config.Namespace)
 	}
 }
 

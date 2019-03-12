@@ -20,36 +20,36 @@ import (
 	"encoding/json"
 
 	"github.com/goph/emperror"
-	rbacv1 "k8s.io/api/rbac/v1"
+	policyv1beta1 "k8s.io/api/policy/v1beta1"
 )
 
-type clusterRoleMatcher struct {
+type podDisruptionBudgetMatcher struct {
 	objectMatcher ObjectMatcher
 }
 
-func NewClusterRoleMatcher(objectMatcher ObjectMatcher) *clusterRoleMatcher {
-	return &clusterRoleMatcher{
+func NewPodDisruptionBudgetMatcher(objectMatcher ObjectMatcher) *podDisruptionBudgetMatcher {
+	return &podDisruptionBudgetMatcher{
 		objectMatcher: objectMatcher,
 	}
 }
 
-// Match compares two rbacv1.ClusterRole objects
-func (m clusterRoleMatcher) Match(old, new *rbacv1.ClusterRole) (bool, error) {
-	type ClusterRole struct {
+// Match compares two autoscalev2beta1.HorizontalPodAutoscaler objects
+func (m podDisruptionBudgetMatcher) Match(old, new *policyv1beta1.PodDisruptionBudget) (bool, error) {
+	type PodDisruptionBudgetMatcher struct {
 		ObjectMeta
-		Rules []rbacv1.PolicyRule `json:"rules"`
+		Spec policyv1beta1.PodDisruptionBudgetSpec
 	}
 
-	oldData, err := json.Marshal(ClusterRole{
+	oldData, err := json.Marshal(PodDisruptionBudgetMatcher{
 		ObjectMeta: m.objectMatcher.GetObjectMeta(old.ObjectMeta),
-		Rules:      old.Rules,
+		Spec:       old.Spec,
 	})
 	if err != nil {
 		return false, emperror.WrapWith(err, "could not marshal old object", "name", old.Name)
 	}
-	newObject := ClusterRole{
+	newObject := PodDisruptionBudgetMatcher{
 		ObjectMeta: m.objectMatcher.GetObjectMeta(new.ObjectMeta),
-		Rules:      new.Rules,
+		Spec:       new.Spec,
 	}
 	newData, err := json.Marshal(newObject)
 	if err != nil {

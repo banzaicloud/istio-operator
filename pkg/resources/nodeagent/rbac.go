@@ -14,7 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package pilot
+package nodeagent
 
 import (
 	apiv1 "k8s.io/api/core/v1"
@@ -26,53 +26,18 @@ import (
 
 func (r *Reconciler) serviceAccount() runtime.Object {
 	return &apiv1.ServiceAccount{
-		ObjectMeta: templates.ObjectMeta(serviceAccountName, pilotLabels, r.Config),
+		ObjectMeta: templates.ObjectMeta(serviceAccountName, nodeAgentLabels, r.Config),
 	}
 }
 
 func (r *Reconciler) clusterRole() runtime.Object {
 	return &rbacv1.ClusterRole{
-		ObjectMeta: templates.ObjectMetaClusterScope(clusterRoleName, pilotLabels, r.Config),
+		ObjectMeta: templates.ObjectMetaClusterScope(clusterRoleName, nodeAgentLabels, r.Config),
 		Rules: []rbacv1.PolicyRule{
-			{
-				APIGroups: []string{"config.istio.io"},
-				Resources: []string{"*"},
-				Verbs:     []string{"*"},
-			},
-			{
-				APIGroups: []string{"rbac.istio.io"},
-				Resources: []string{"*"},
-				Verbs:     []string{"get", "watch", "list"},
-			},
-			{
-				APIGroups: []string{"networking.istio.io"},
-				Resources: []string{"*"},
-				Verbs:     []string{"*"},
-			},
-			{
-				APIGroups: []string{"authentication.istio.io"},
-				Resources: []string{"*"},
-				Verbs:     []string{"*"},
-			},
-			{
-				APIGroups: []string{"apiextensions.k8s.io"},
-				Resources: []string{"customresourcedefinitions"},
-				Verbs:     []string{"*"},
-			},
-			{
-				APIGroups: []string{"extensions"},
-				Resources: []string{"ingresses", "ingresses/status"},
-				Verbs:     []string{"*"},
-			},
 			{
 				APIGroups: []string{""},
 				Resources: []string{"configmaps"},
-				Verbs:     []string{"create", "get", "list", "watch", "update"},
-			},
-			{
-				APIGroups: []string{""},
-				Resources: []string{"endpoints", "pods", "services", "namespaces", "nodes", "secrets"},
-				Verbs:     []string{"get", "list", "watch"},
+				Verbs:     []string{"get"},
 			},
 		},
 	}
@@ -80,7 +45,7 @@ func (r *Reconciler) clusterRole() runtime.Object {
 
 func (r *Reconciler) clusterRoleBinding() runtime.Object {
 	return &rbacv1.ClusterRoleBinding{
-		ObjectMeta: templates.ObjectMetaClusterScope(clusterRoleBindingName, pilotLabels, r.Config),
+		ObjectMeta: templates.ObjectMetaClusterScope(clusterRoleBindingName, nodeAgentLabels, r.Config),
 		RoleRef: rbacv1.RoleRef{
 			Kind:     "ClusterRole",
 			APIGroup: "rbac.authorization.k8s.io",

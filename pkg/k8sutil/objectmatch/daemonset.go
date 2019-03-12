@@ -20,36 +20,36 @@ import (
 	"encoding/json"
 
 	"github.com/goph/emperror"
-	rbacv1 "k8s.io/api/rbac/v1"
+	appsv1 "k8s.io/api/apps/v1"
 )
 
-type clusterRoleMatcher struct {
+type daemonSetMatcher struct {
 	objectMatcher ObjectMatcher
 }
 
-func NewClusterRoleMatcher(objectMatcher ObjectMatcher) *clusterRoleMatcher {
-	return &clusterRoleMatcher{
+func NewDaemonSetMatcher(objectMatcher ObjectMatcher) *daemonSetMatcher {
+	return &daemonSetMatcher{
 		objectMatcher: objectMatcher,
 	}
 }
 
-// Match compares two rbacv1.ClusterRole objects
-func (m clusterRoleMatcher) Match(old, new *rbacv1.ClusterRole) (bool, error) {
-	type ClusterRole struct {
+// Match compares two appsv1.ClusterDaemonSet objects
+func (m daemonSetMatcher) Match(old, new *appsv1.DaemonSet) (bool, error) {
+	type DaemonSet struct {
 		ObjectMeta
-		Rules []rbacv1.PolicyRule `json:"rules"`
+		Spec appsv1.DaemonSetSpec
 	}
 
-	oldData, err := json.Marshal(ClusterRole{
+	oldData, err := json.Marshal(DaemonSet{
 		ObjectMeta: m.objectMatcher.GetObjectMeta(old.ObjectMeta),
-		Rules:      old.Rules,
+		Spec:       old.Spec,
 	})
 	if err != nil {
 		return false, emperror.WrapWith(err, "could not marshal old object", "name", old.Name)
 	}
-	newObject := ClusterRole{
+	newObject := DaemonSet{
 		ObjectMeta: m.objectMatcher.GetObjectMeta(new.ObjectMeta),
-		Rules:      new.Rules,
+		Spec:       new.Spec,
 	}
 	newData, err := json.Marshal(newObject)
 	if err != nil {

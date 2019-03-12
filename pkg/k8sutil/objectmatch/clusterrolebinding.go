@@ -23,10 +23,18 @@ import (
 	rbacv1 "k8s.io/api/rbac/v1"
 )
 
-type ClusterRoleBindingMatcher struct{}
+type clusterRoleBindingMatcher struct {
+	objectMatcher ObjectMatcher
+}
+
+func NewClusterRoleBindingMatcher(objectMatcher ObjectMatcher) *clusterRoleBindingMatcher {
+	return &clusterRoleBindingMatcher{
+		objectMatcher: objectMatcher,
+	}
+}
 
 // Match compares two rbacv1.ClusterRoleBinding objects
-func (m ClusterRoleBindingMatcher) Match(old, new *rbacv1.ClusterRoleBinding) (bool, error) {
+func (m clusterRoleBindingMatcher) Match(old, new *rbacv1.ClusterRoleBinding) (bool, error) {
 	type ClusterRoleBinding struct {
 		ObjectMeta
 		Subjects []rbacv1.Subject `json:"subjects,omitempty"`
@@ -34,7 +42,7 @@ func (m ClusterRoleBindingMatcher) Match(old, new *rbacv1.ClusterRoleBinding) (b
 	}
 
 	oldData, err := json.Marshal(ClusterRoleBinding{
-		ObjectMeta: getObjectMeta(old.ObjectMeta),
+		ObjectMeta: m.objectMatcher.GetObjectMeta(old.ObjectMeta),
 		Subjects:   old.Subjects,
 		RoleRef:    old.RoleRef,
 	})
@@ -42,7 +50,7 @@ func (m ClusterRoleBindingMatcher) Match(old, new *rbacv1.ClusterRoleBinding) (b
 		return false, emperror.WrapWith(err, "could not marshal old object", "name", old.Name)
 	}
 	newObject := ClusterRoleBinding{
-		ObjectMeta: getObjectMeta(new.ObjectMeta),
+		ObjectMeta: m.objectMatcher.GetObjectMeta(new.ObjectMeta),
 		Subjects:   new.Subjects,
 		RoleRef:    new.RoleRef,
 	}
@@ -51,7 +59,7 @@ func (m ClusterRoleBindingMatcher) Match(old, new *rbacv1.ClusterRoleBinding) (b
 		return false, emperror.WrapWith(err, "could not marshal new object", "name", new.Name)
 	}
 
-	matched, err := match(oldData, newData, newObject)
+	matched, err := m.objectMatcher.MatchJSON(oldData, newData, newObject)
 	if err != nil {
 		return false, emperror.WrapWith(err, "could not match objects", "name", new.Name)
 	}

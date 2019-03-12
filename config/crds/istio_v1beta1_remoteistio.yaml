@@ -45,10 +45,6 @@ spec:
                   format: int32
                   type: integer
               type: object
-            controlPlaneSecurityEnabled:
-              description: ControlPlaneSecurityEnabled control plane services are
-                communicating through mTLS
-              type: boolean
             enabledServices:
               description: EnabledServices the Istio component services replicated
                 to remote side
@@ -75,6 +71,20 @@ spec:
               type: string
             proxy:
               description: Proxy configuration options
+              properties:
+                enableCoreDump:
+                  description: If set, newly injected sidecars will have core dumps
+                    enabled.
+                  type: boolean
+                image:
+                  type: string
+                privileged:
+                  description: If set to true, istio-proxy container will have privileged
+                    securityContext
+                  type: boolean
+              type: object
+            proxyInit:
+              description: Proxy Init configuration options
               properties:
                 image:
                   type: string

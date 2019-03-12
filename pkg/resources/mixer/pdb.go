@@ -14,28 +14,25 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package gateways
+package mixer
 
 import (
-	autoscalev2beta1 "k8s.io/api/autoscaling/v2beta1"
+	policyv1beta1 "k8s.io/api/policy/v1beta1"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 
 	"github.com/banzaicloud/istio-operator/pkg/resources/templates"
+	"github.com/banzaicloud/istio-operator/pkg/util"
 )
 
-func (r *Reconciler) horizontalPodAutoscaler(gw string) runtime.Object {
-	gwConfig := r.getGatewayConfig(gw)
-	return &autoscalev2beta1.HorizontalPodAutoscaler{
-		ObjectMeta: templates.ObjectMeta(hpaName(gw), labelSelector(gw), r.Config),
-		Spec: autoscalev2beta1.HorizontalPodAutoscalerSpec{
-			MaxReplicas: gwConfig.MaxReplicas,
-			MinReplicas: &gwConfig.MinReplicas,
-			ScaleTargetRef: autoscalev2beta1.CrossVersionObjectReference{
-				Name:       gatewayName(gw),
-				Kind:       "Deployment",
-				APIVersion: "apps/v1",
+func (r *Reconciler) pdb(t string) runtime.Object {
+	return &policyv1beta1.PodDisruptionBudget{
+		ObjectMeta: templates.ObjectMeta(serviceName(t), labelSelector, r.Config),
+		Spec: policyv1beta1.PodDisruptionBudgetSpec{
+			MinAvailable: util.IntstrPointer(1),
+			Selector: &metav1.LabelSelector{
+				MatchLabels: util.MergeLabels(labelSelector, util.MergeLabels(appLabel(t), mixerTypeLabel(t))),
 			},
-			Metrics: templates.TargetAvgCpuUtil80(),
 		},
 	}
 }
