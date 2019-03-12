@@ -69,7 +69,7 @@ func (r *Reconciler) meshConfig() string {
 			"concurrency":            0,
 			"tracing": map[string]interface{}{
 				"zipkin": map[string]interface{}{
-					"address": fmt.Sprintf("zipkin.%s:9411", r.Config.Namespace),
+					"address": r.Config.Spec.Tracing.Zipkin.Address,
 				},
 			},
 			"controlPlaneAuthPolicy": templates.ControlPlaneAuthPolicy(r.Config.Spec.ControlPlaneSecurityEnabled),

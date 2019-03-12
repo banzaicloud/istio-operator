@@ -60,4 +60,6 @@ spec:
     enabled: true
   outboundTrafficPolicy:
     mode: ALLOW_ANY
-
+  tracing:
+    zipkin:
+      address: zipkin.istio-system:9411
