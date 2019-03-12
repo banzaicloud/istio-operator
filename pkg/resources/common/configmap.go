@@ -57,7 +57,7 @@ func (r *Reconciler) meshConfig(ns string) string {
 			"parentShutdownDuration": "1m0s",
 			"proxyAdminPort":         15000,
 			"concurrency":            0,
-			"zipkinAddress":          fmt.Sprintf("zipkin.%s:9411", ns),
+			"zipkinAddress":          r.Config.Spec.Tracing.Zipkin.Address,
 			"controlPlaneAuthPolicy": templates.ControlPlaneAuthPolicy(r.Config.Spec.ControlPlaneSecurityEnabled),
 			"discoveryAddress":       fmt.Sprintf("istio-pilot.%s:%s", ns, r.discoveryPort()),
 		},

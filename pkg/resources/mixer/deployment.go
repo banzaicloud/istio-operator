@@ -98,7 +98,7 @@ func (r *Reconciler) mixerContainer(t string, ns string) apiv1.Container {
 			"unix:///sock/mixer.socket",
 			"--configStoreURL=k8s://",
 			fmt.Sprintf("--configDefaultNamespace=%s", ns),
-			"--trace_zipkin_url=http://zipkin:9411/api/v1/spans",
+			"--trace_zipkin_url=http://" + r.Config.Spec.Tracing.Zipkin.Address + "/api/v1/spans",
 		},
 		Env: []apiv1.EnvVar{
 			{
