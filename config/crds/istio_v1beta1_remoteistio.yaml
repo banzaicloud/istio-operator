@@ -97,6 +97,11 @@ spec:
                 replicaCount:
                   format: int32
                   type: integer
+                rewriteAppHTTPProbe:
+                  description: If true, sidecar injector will rewrite PodSpec for
+                    liveness health check to redirect request to sidecar. This makes
+                    liveness check work even when mTLS is enabled.
+                  type: boolean
               type: object
           required:
           - enabledServices

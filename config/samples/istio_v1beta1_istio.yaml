@@ -48,6 +48,7 @@ spec:
   sidecarInjector:
     image: "gcr.io/istio-release/sidecar_injector:release-1.1-latest-daily"
     replicaCount: 1
+    rewriteAppHTTPProbe: true
   nodeAgent:
     enabled: false
     image: "gcr.io/istio-release/node-agent-k8s:release-1.1-latest-daily"

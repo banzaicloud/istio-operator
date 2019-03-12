@@ -98,6 +98,10 @@ type MixerConfiguration struct {
 type SidecarInjectorConfiguration struct {
 	Image        string `json:"image,omitempty"`
 	ReplicaCount int32  `json:"replicaCount,omitempty"`
+	// If true, sidecar injector will rewrite PodSpec for liveness
+	// health check to redirect request to sidecar. This makes liveness check work
+	// even when mTLS is enabled.
+	RewriteAppHTTPProbe bool `json:"rewriteAppHTTPProbe,omitempty"`
 }
 
 // NodeAgentConfiguration defines config options for NodeAgent
