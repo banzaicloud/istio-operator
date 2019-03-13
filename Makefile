@@ -116,7 +116,10 @@ docker-build:
 docker-push:
 	docker push ${IMG}
 
-release:
+check_release:
+	@echo "A new tag will be pushed to Github, and a new Docker image will be released. Are you sure? [y/N] " && read ans && [ $${ans:-N} == y ]
+
+release: check_release
 	REL_TAG=$$(./scripts/increment_version.sh -${RELEASE_TYPE} ${TAG}); \
 	git tag -a $${REL_TAG} -m ${RELEASE_MSG}; \
 	git push origin $${REL_TAG}
