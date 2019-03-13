@@ -5,6 +5,8 @@ IMG ?= banzaicloud/istio-operator:$(TAG)
 RELEASE_TYPE ?= p
 RELEASE_MSG ?= "operator release"
 
+REL_TAG = $(shell ./scripts/increment_version.sh -${RELEASE_TYPE} ${TAG})
+
 DEP_VERSION = 0.5.0
 GOLANGCI_VERSION = 1.10.2
 LICENSEI_VERSION = 0.0.7
@@ -117,9 +119,8 @@ docker-push:
 	docker push ${IMG}
 
 check_release:
-	@echo "A new tag will be pushed to Github, and a new Docker image will be released. Are you sure? [y/N] " && read ans && [ $${ans:-N} == y ]
+	@echo "A new tag (${REL_TAG}) will be pushed to Github, and a new Docker image will be released. Are you sure? [y/N] " && read ans && [ $${ans:-N} == y ]
 
 release: check_release
-	REL_TAG=$$(./scripts/increment_version.sh -${RELEASE_TYPE} ${TAG}); \
-	git tag -a $${REL_TAG} -m ${RELEASE_MSG}; \
-	git push origin $${REL_TAG}
+	git tag -a ${REL_TAG} -m ${RELEASE_MSG}
+	git push origin ${REL_TAG}
