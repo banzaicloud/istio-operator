@@ -1,6 +1,9 @@
-
 # Image URL to use all building/pushing image targets
-IMG ?= banzaicloud/istio-operator:latest
+TAG ?= $(shell git describe --tags --abbrev=0 2>/dev/null )
+IMG ?= banzaicloud/istio-operator:$(TAG)
+
+RELEASE_TYPE ?= p
+RELEASE_MSG ?= "operator release"
 
 DEP_VERSION = 0.5.0
 GOLANGCI_VERSION = 1.10.2
@@ -112,3 +115,8 @@ docker-build:
 # Push the docker image
 docker-push:
 	docker push ${IMG}
+
+release:
+	REL_TAG=$$(./scripts/increment_version.sh -${RELEASE_TYPE} ${TAG}); \
+	git tag -a $${REL_TAG} -m ${RELEASE_MSG}; \
+	git push origin $${REL_TAG}
