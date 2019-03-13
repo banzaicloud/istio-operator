@@ -39,7 +39,7 @@ func add(mgr manager.Manager) error {
 	namespace := "istio-system"
 
 	svr, err := webhook.NewServer(name, mgr, webhook.ServerOptions{
-		CertDir: "/tmp/cert",
+		CertDir: "/tmp/webhookcert",
 		BootstrapOptions: &webhook.BootstrapOptions{
 			ValidatingWebhookConfigName: name,
 			Service: &webhook.Service{
