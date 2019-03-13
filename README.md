@@ -35,16 +35,15 @@ If you are willing to kickstart your Istio experience using Pipeline, check out 
   </a>
 </p>
 
-
 ## Installation
 
-The operator (`master` branch) installs the 1.0.5 version of Istio, and can run on Minikube v0.33.1+ and Kubernetes 1.10.0+.
+The operator (`release-1.1` branch) installs the 1.1.0-rc.4 version of Istio, and can run on Minikube v0.33.1+ and Kubernetes 1.10.0+.
 
 As a pre-requisite it needs a Kubernetes cluster (you can create one using [Pipeline](https://github.com/banzaicloud/pipeline)).
 
 1. Set `KUBECONFIG` pointing towards your cluster
-3. Run `make deploy` (deploys the operator in the `istio-system` namespace to the cluster)
-4. Set your Istio configurations in a  Kubernetes custom resource (sample: `config/samples/istio_v1beta1_istio.yaml`) and run this command to deploy the Istio components:
+2. Run `make deploy` (deploys the operator in the `istio-system` namespace to the cluster)
+3. Set your Istio configurations in a  Kubernetes custom resource (sample: `config/samples/istio_v1beta1_istio.yaml`) and run this command to deploy the Istio components:
 
 ```
 kubectl create -n istio-system -f config/samples/istio_v1beta1_istio.yaml
