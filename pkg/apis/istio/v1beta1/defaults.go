@@ -19,8 +19,8 @@ package v1beta1
 import "fmt"
 
 const (
-	defaultImageHub               = "gcr.io/istio-release"
-	defaultImageVersion           = "release-1.1-latest-daily"
+	defaultImageHub               = "docker.io"
+	defaultImageVersion           = "1.1.0"
 	defaultPilotImage             = defaultImageHub + "/" + "pilot" + ":" + defaultImageVersion
 	defaultCitadelImage           = defaultImageHub + "/" + "citadel" + ":" + defaultImageVersion
 	defaultGalleyImage            = defaultImageHub + "/" + "galley" + ":" + defaultImageVersion
