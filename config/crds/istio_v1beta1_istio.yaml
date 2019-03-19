@@ -234,6 +234,32 @@ spec:
               properties:
                 image:
                   type: string
+                initCNIConfiguration:
+                  properties:
+                    binDir:
+                      description: Must be the same as the environment’s --cni-bin-dir
+                        setting (kubelet parameter)
+                      type: string
+                    confDir:
+                      description: Must be the same as the environment’s --cni-conf-dir
+                        setting (kubelet parameter)
+                      type: string
+                    enabled:
+                      description: If true, the privileged initContainer istio-init
+                        is not needed to perform the traffic redirect settings for
+                        the istio-proxy
+                      type: boolean
+                    excludeNamespaces:
+                      description: List of namespaces to exclude from Istio pod check
+                      items:
+                        type: string
+                      type: array
+                    image:
+                      type: string
+                    logLevel:
+                      description: Logging level for CNI binary
+                      type: string
+                  type: object
                 replicaCount:
                   format: int32
                   type: integer

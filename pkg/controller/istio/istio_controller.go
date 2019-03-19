@@ -52,6 +52,7 @@ import (
 	"github.com/banzaicloud/istio-operator/pkg/k8sutil/objectmatch"
 	"github.com/banzaicloud/istio-operator/pkg/resources"
 	"github.com/banzaicloud/istio-operator/pkg/resources/citadel"
+	"github.com/banzaicloud/istio-operator/pkg/resources/cni"
 	"github.com/banzaicloud/istio-operator/pkg/resources/common"
 	"github.com/banzaicloud/istio-operator/pkg/resources/galley"
 	"github.com/banzaicloud/istio-operator/pkg/resources/gateways"
@@ -225,6 +226,7 @@ func (r *ReconcileConfig) reconcile(logger logr.Logger, config *istiov1beta1.Ist
 		pilot.New(r.Client, config),
 		gateways.New(r.Client, r.dynamic, config),
 		mixer.New(r.Client, r.dynamic, config),
+		cni.New(r.Client, config),
 		sidecarinjector.New(r.Client, config),
 	}
 

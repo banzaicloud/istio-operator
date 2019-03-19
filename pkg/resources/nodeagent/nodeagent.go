@@ -67,7 +67,7 @@ func (r *Reconciler) Reconcile(log logr.Logger) error {
 		r.daemonSet,
 	} {
 		o := res()
-		err := k8sutil.Reconcile(log, r.Client, o)
+		err := k8sutil.Reconcile(log, r.Client, o, k8sutil.DesiredStatePresent)
 		if err != nil {
 			return emperror.WrapWith(err, "failed to reconcile resource", "resource", o.GetObjectKind().GroupVersionKind())
 		}

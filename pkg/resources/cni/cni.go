@@ -14,7 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package galley
+package cni
 
 import (
 	"github.com/go-logr/logr"
@@ -27,23 +27,20 @@ import (
 )
 
 const (
-	componentName          = "galley"
-	serviceAccountName     = "istio-galley-service-account"
-	clusterRoleName        = "istio-galley-cluster-role"
-	clusterRoleBindingName = "istio-galley-admin-role-binding"
-	configMapName          = "istio-galley-configuration"
-	webhookName            = "istio-galley"
-	deploymentName         = "istio-galley"
-	serviceName            = "istio-galley"
-	pdbName                = "istio-galley"
+	componentName          = "cni"
+	serviceAccountName     = "istio-cni"
+	clusterRoleName        = "istio-cni"
+	clusterRoleBindingName = "istio-cni"
+	daemonSetName          = "istio-cni-node"
+	configMapName          = "istio-cni-config"
 )
 
-var galleyLabels = map[string]string{
-	"app": "istio-galley",
+var cniLabels = map[string]string{
+	"k8s-app": "istio-cni-node",
 }
 
 var labelSelector = map[string]string{
-	"istio": "galley",
+	"k8s-app": "istio-cni-node",
 }
 
 type Reconciler struct {
@@ -62,27 +59,26 @@ func New(client client.Client, config *istiov1beta1.Istio) *Reconciler {
 func (r *Reconciler) Reconcile(log logr.Logger) error {
 	log = log.WithValues("component", componentName)
 
+	desiredState := k8sutil.DesiredStatePresent
+	if !r.Config.Spec.SidecarInjector.InitCNIConfiguration.Enabled {
+		desiredState = k8sutil.DesiredStateAbsent
+	}
+
 	log.Info("Reconciling")
 
-	resources := []resources.Resource{
-		r.serviceAccount,
-		r.clusterRole,
-		r.clusterRoleBinding,
-		r.configMap,
-		r.deployment,
-		r.service,
-	}
-	if r.Config.Spec.DefaultPodDisruptionBudget.Enabled {
-		resources = append(resources, r.pdb)
-	}
-	for _, res := range resources {
-		o := res()
-		err := k8sutil.Reconcile(log, r.Client, o, k8sutil.DesiredStatePresent)
+	for _, res := range []resources.ResourceWithDesiredState{
+		{Resource: r.serviceAccount, DesiredState: desiredState},
+		{Resource: r.clusterRole, DesiredState: desiredState},
+		{Resource: r.clusterRoleBinding, DesiredState: desiredState},
+		{Resource: r.configMap, DesiredState: desiredState},
+		{Resource: r.daemonSet, DesiredState: desiredState},
+	} {
+		o := res.Resource()
+		err := k8sutil.Reconcile(log, r.Client, o, res.DesiredState)
 		if err != nil {
 			return emperror.WrapWith(err, "failed to reconcile resource", "resource", o.GetObjectKind().GroupVersionKind())
 		}
 	}
-	// TODO: wait for deployment to be available?
 
 	log.Info("Reconciled")
 

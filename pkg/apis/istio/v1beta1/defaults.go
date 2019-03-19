@@ -30,6 +30,7 @@ const (
 	defaultSDSImage               = defaultImageHub + "/" + "node-agent-k8s" + ":" + defaultImageVersion
 	defaultProxyImage             = defaultImageHub + "/" + "proxyv2" + ":" + defaultImageVersion
 	defaultProxyInitImage         = defaultImageHub + "/" + "proxy_init" + ":" + defaultImageVersion
+	defaultInitCNIImage           = defaultImageHub + "/install-cni:master-latest-daily"
 	defaultIncludeIPRanges        = "*"
 	defaultReplicaCount           = 1
 	defaultMinReplicas            = 1
@@ -37,6 +38,9 @@ const (
 	defaultTraceSampling          = 1.0
 	outboundTrafficPolicyAllowAny = "ALLOW_ANY"
 	defaultZipkinAddress          = "zipkin.%s:9411"
+	defaultInitCNIBinDir          = "/opt/cni/bin"
+	defaultInitCNIConfDir         = "/etc/cni/net.d"
+	defaultInitCNILogLevel        = "info"
 )
 
 func SetDefaults(config *Istio) {
@@ -111,6 +115,21 @@ func SetDefaults(config *Istio) {
 	}
 	if config.Spec.SidecarInjector.ReplicaCount == 0 {
 		config.Spec.SidecarInjector.ReplicaCount = defaultReplicaCount
+	}
+	if config.Spec.SidecarInjector.InitCNIConfiguration.Image == "" {
+		config.Spec.SidecarInjector.InitCNIConfiguration.Image = defaultInitCNIImage
+	}
+	if config.Spec.SidecarInjector.InitCNIConfiguration.BinDir == "" {
+		config.Spec.SidecarInjector.InitCNIConfiguration.BinDir = defaultInitCNIBinDir
+	}
+	if config.Spec.SidecarInjector.InitCNIConfiguration.ConfDir == "" {
+		config.Spec.SidecarInjector.InitCNIConfiguration.ConfDir = defaultInitCNIConfDir
+	}
+	if config.Spec.SidecarInjector.InitCNIConfiguration.ExcludeNamespaces == nil {
+		config.Spec.SidecarInjector.InitCNIConfiguration.ExcludeNamespaces = []string{config.Namespace}
+	}
+	if config.Spec.SidecarInjector.InitCNIConfiguration.LogLevel == "" {
+		config.Spec.SidecarInjector.InitCNIConfiguration.LogLevel = defaultInitCNILogLevel
 	}
 	// NodeAgent config
 	if config.Spec.NodeAgent.Image == "" {
