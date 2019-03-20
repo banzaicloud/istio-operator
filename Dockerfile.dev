@@ -22,4 +22,5 @@ FROM alpine:3.7
 RUN apk add --no-cache ca-certificates
 WORKDIR /
 COPY --from=builder /go/src/github.com/banzaicloud/istio-operator/manager .
+COPY charts/   charts/
 ENTRYPOINT ["/manager"]

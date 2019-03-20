@@ -67,9 +67,11 @@ const istioSecretTypePrefix = "istio.io"
 
 var log = logf.Log.WithName("controller")
 var watchCreatedResourcesEvents bool
+var chartPath string
 
 func init() {
 	flag.BoolVar(&watchCreatedResourcesEvents, "watch-created-resources-events", true, "Whether to watch created resources events")
+	flag.StringVar(&chartPath, "chartPath", "/charts", "The location of the Helm charts.")
 }
 
 // Add creates a new Config Controller and adds it to the Manager with default RBAC. The Manager will set fields on the Controller
@@ -79,7 +81,11 @@ func Add(mgr manager.Manager) error {
 	if err != nil {
 		return emperror.Wrap(err, "failed to create dynamic client")
 	}
-	crd, err := crds.New(mgr.GetConfig(), crds.InitCrds())
+	customResourceDefs, err := crds.DecodeCRDs(chartPath)
+	if err != nil {
+		return emperror.Wrap(err, "unable to decode CRDs from YAMLs")
+	}
+	crd, err := crds.New(mgr.GetConfig(), customResourceDefs)
 	if err != nil {
 		return emperror.Wrap(err, "unable to set up crd operator")
 	}
