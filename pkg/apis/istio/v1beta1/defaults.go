@@ -19,7 +19,7 @@ package v1beta1
 import "fmt"
 
 const (
-	defaultImageHub               = "docker.io"
+	defaultImageHub               = "docker.io/istio"
 	defaultImageVersion           = "1.1.0"
 	defaultPilotImage             = defaultImageHub + "/" + "pilot" + ":" + defaultImageVersion
 	defaultCitadelImage           = defaultImageHub + "/" + "citadel" + ":" + defaultImageVersion
