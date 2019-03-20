@@ -116,12 +116,13 @@ func (r *Reconciler) deployment() runtime.Object {
 										},
 									},
 								},
-								{Name: "PILOT_PUSH_THROTTLE_COUNT", Value: "100"},
+								{Name: "PILOT_PUSH_THROTTLE", Value: "100"},
 								{Name: "GODEBUG", Value: "gctrace=2"},
 								{
 									Name:  "PILOT_TRACE_SAMPLING",
 									Value: fmt.Sprintf("%.2f", r.Config.Spec.Pilot.TraceSampling),
 								},
+								{Name: "PILOT_DISABLE_XDS_MARSHALING_TO_ANY", Value: "1"},
 							},
 							Resources: apiv1.ResourceRequirements{
 								Requests: apiv1.ResourceList{

@@ -101,7 +101,7 @@ func (r *Reconciler) validatingWebhookConfig(ns string) string {
 						Rule: admissionv1beta1.Rule{
 							APIGroups:   []string{"networking.istio.io"},
 							APIVersions: []string{"*"},
-							Resources:   []string{"destinationrules", "envoyfilters", "gateways", "serviceentries", "virtualservices"},
+							Resources:   []string{"destinationrules", "envoyfilters", "gateways", "serviceentries", "sidecars", "virtualservices"},
 						},
 					},
 				},
