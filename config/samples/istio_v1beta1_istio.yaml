@@ -30,12 +30,14 @@ spec:
       replicaCount: 1
       minReplicas: 1
       maxReplicas: 5
+      serviceType: "LoadBalancer"
       serviceAnnotations: {}
       serviceLabels: {}
     egress:
       replicaCount: 1
       minReplicas: 1
       maxReplicas: 5
+      serviceType: "ClusterIP"
       serviceAnnotations: {}
       serviceLabels: {}
     k8singress:

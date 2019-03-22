@@ -18,12 +18,12 @@ bin
 !vendor/**/zz_generated.*
 
 # editor and IDE paraphernalia
-.idea
 *.swp
 *.swo
 *~
 
 .idea/*
+!/.idea/go.imports.xml
 vendor/*
 /.licensei.cache
 bin/*
