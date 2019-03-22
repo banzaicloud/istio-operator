@@ -1,0 +1,14 @@
+apiVersion: istio.banzaicloud.io/v1beta1
+kind: Istio
+metadata:
+  labels:
+    controller-tools.k8s.io: "1.0"
+  name: istio-sample
+spec:
+  mtls: false
+  autoInjectionNamespaces:
+  - "default"
+  sidecarInjector:
+    initCNIConfiguration:
+      enabled: true
+      binDir: /home/kubernetes/bin

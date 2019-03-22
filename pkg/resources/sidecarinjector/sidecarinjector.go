@@ -17,12 +17,13 @@ limitations under the License.
 package sidecarinjector
 
 import (
-	istiov1beta1 "github.com/banzaicloud/istio-operator/pkg/apis/istio/v1beta1"
-	"github.com/banzaicloud/istio-operator/pkg/k8sutil"
-	"github.com/banzaicloud/istio-operator/pkg/resources"
 	"github.com/go-logr/logr"
 	"github.com/goph/emperror"
 	"sigs.k8s.io/controller-runtime/pkg/client"
+
+	istiov1beta1 "github.com/banzaicloud/istio-operator/pkg/apis/istio/v1beta1"
+	"github.com/banzaicloud/istio-operator/pkg/k8sutil"
+	"github.com/banzaicloud/istio-operator/pkg/resources"
 )
 
 const (
@@ -76,7 +77,7 @@ func (r *Reconciler) Reconcile(log logr.Logger) error {
 		r.webhook,
 	} {
 		o := res()
-		err := k8sutil.Reconcile(log, r.Client, o)
+		err := k8sutil.Reconcile(log, r.Client, o, k8sutil.DesiredStatePresent)
 		if err != nil {
 			return emperror.WrapWith(err, "failed to reconcile resource", "resource", o.GetObjectKind().GroupVersionKind())
 		}

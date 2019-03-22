@@ -94,10 +94,27 @@ type MixerConfiguration struct {
 	MaxReplicas  int32  `json:"maxReplicas,omitempty"`
 }
 
+// InitCNIConfiguration defines config for the sidecar proxy init CNI plugin
+type InitCNIConfiguration struct {
+	// If true, the privileged initContainer istio-init is not needed to perform the traffic redirect
+	// settings for the istio-proxy
+	Enabled bool   `json:"enabled,omitempty"`
+	Image   string `json:"image,omitempty"`
+	// Must be the same as the environment’s --cni-bin-dir setting (kubelet parameter)
+	BinDir string `json:"binDir,omitempty"`
+	// Must be the same as the environment’s --cni-conf-dir setting (kubelet parameter)
+	ConfDir string `json:"confDir,omitempty"`
+	// List of namespaces to exclude from Istio pod check
+	ExcludeNamespaces []string `json:"excludeNamespaces,omitempty"`
+	// Logging level for CNI binary
+	LogLevel string `json:"logLevel,omitempty"`
+}
+
 // SidecarInjectorConfiguration defines config options for SidecarInjector
 type SidecarInjectorConfiguration struct {
-	Image        string `json:"image,omitempty"`
-	ReplicaCount int32  `json:"replicaCount,omitempty"`
+	Image                string               `json:"image,omitempty"`
+	ReplicaCount         int32                `json:"replicaCount,omitempty"`
+	InitCNIConfiguration InitCNIConfiguration `json:"initCNIConfiguration,omitempty"`
 	// If true, sidecar injector will rewrite PodSpec for liveness
 	// health check to redirect request to sidecar. This makes liveness check work
 	// even when mTLS is enabled.

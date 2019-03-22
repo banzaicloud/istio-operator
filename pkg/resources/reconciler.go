@@ -17,11 +17,12 @@ limitations under the License.
 package resources
 
 import (
-	istiov1beta1 "github.com/banzaicloud/istio-operator/pkg/apis/istio/v1beta1"
-	"github.com/banzaicloud/istio-operator/pkg/k8sutil"
 	"github.com/go-logr/logr"
 	"k8s.io/apimachinery/pkg/runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
+
+	istiov1beta1 "github.com/banzaicloud/istio-operator/pkg/apis/istio/v1beta1"
+	"github.com/banzaicloud/istio-operator/pkg/k8sutil"
 )
 
 type Reconciler struct {
@@ -53,4 +54,9 @@ type DynamicResource func() *k8sutil.DynamicObject
 type DynamicResourceWithDesiredState struct {
 	DynamicResource DynamicResource
 	DesiredState    k8sutil.DesiredState
+}
+
+type ResourceWithDesiredState struct {
+	Resource     Resource
+	DesiredState k8sutil.DesiredState
 }

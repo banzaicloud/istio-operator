@@ -48,10 +48,12 @@ func (r *Reconciler) siConfig() string {
 
 }
 
-func (r *Reconciler) templateConfig() string {
-	return `rewriteAppHTTPProbe: ` + strconv.FormatBool(r.Config.Spec.SidecarInjector.RewriteAppHTTPProbe) + `
-initContainers:
-[[ if ne (annotation .ObjectMeta ` + "`" + `sidecar.istio.io/interceptionMode` + "`" + ` .ProxyConfig.InterceptionMode) "NONE" ]]
+func (r *Reconciler) proxyInitContainer() string {
+	if r.Config.Spec.SidecarInjector.InitCNIConfiguration.Enabled {
+		return ""
+	}
+
+	return `
 - name: istio-init
   image: ` + r.Config.Spec.ProxyInit.Image + `
   args:
@@ -87,6 +89,14 @@ initContainers:
       - NET_ADMIN
     privileged: ` + strconv.FormatBool(r.Config.Spec.Proxy.Privileged) + `
   restartPolicy: Always
+  `
+}
+
+func (r *Reconciler) templateConfig() string {
+	return `rewriteAppHTTPProbe: ` + strconv.FormatBool(r.Config.Spec.SidecarInjector.RewriteAppHTTPProbe) + `
+initContainers:
+[[ if ne (annotation .ObjectMeta ` + "`" + `sidecar.istio.io/interceptionMode` + "`" + ` .ProxyConfig.InterceptionMode) "NONE" ]]
+` + r.proxyInitContainer() + `
 ` + r.coreDumpContainer() + `
 [[ end -]]
 containers:
