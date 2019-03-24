@@ -17,9 +17,16 @@ limitations under the License.
 package v1beta1
 
 import (
+	"regexp"
+
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
+
+const supportedIstioMinorVersionRegex = "^1.1"
+
+// IstioVersion stores the intended Istio version
+type IstioVersion string
 
 // SDSConfiguration defines Secret Discovery Service config options
 type SDSConfiguration struct {
@@ -175,6 +182,10 @@ type TracingConfiguration struct {
 
 // IstioSpec defines the desired state of Istio
 type IstioSpec struct {
+	// Contains the intended Istio version
+	// +kubebuilder:validation:Pattern=^1.1
+	Version IstioVersion `json:"version"`
+
 	// MTLS enables or disables global mTLS
 	MTLS bool `json:"mtls"`
 
@@ -251,6 +262,12 @@ func (s IstioSpec) GetDefaultConfigVisibility() string {
 		return s.DefaultConfigVisibility
 	}
 	return "*"
+}
+
+func (v IstioVersion) IsSupported() bool {
+	re, _ := regexp.Compile(supportedIstioMinorVersionRegex)
+
+	return re.Match([]byte(v))
 }
 
 // IstioStatus defines the observed state of Istio

@@ -143,6 +143,15 @@ func (r *ReconcileConfig) Reconcile(request reconcile.Request) (reconcile.Result
 		// Error reading the object - requeue the request.
 		return reconcile.Result{}, err
 	}
+
+	if !config.Spec.Version.IsSupported() {
+		err = errors.New("intended Istio version is unsupported by this version of the operator")
+		logger.Error(err, "", "version", config.Spec.Version)
+		return reconcile.Result{
+			Requeue: false,
+		}, nil
+	}
+
 	// Set default values where not set
 	istiov1beta1.SetDefaults(config)
 	result, err := r.reconcile(logger, config)

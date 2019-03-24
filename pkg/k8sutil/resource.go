@@ -43,6 +43,7 @@ func Reconcile(log logr.Logger, client runtimeClient.Client, desired runtime.Obj
 
 	desiredType := reflect.TypeOf(desired)
 	var current = desired.DeepCopyObject()
+	var desiredCopy = desired.DeepCopyObject()
 	key, err := runtimeClient.ObjectKeyFromObject(current)
 	if err != nil {
 		return emperror.With(err, "kind", desiredType)
@@ -127,6 +128,19 @@ func Reconcile(log logr.Logger, client runtimeClient.Client, desired runtime.Obj
 				desired = ds
 			}
 			if err := client.Update(context.TODO(), desired); err != nil {
+				if apierrors.IsConflict(err) || apierrors.IsInvalid(err) {
+					err := client.Delete(context.TODO(), current)
+					if err != nil {
+						return emperror.WrapWith(err, "could not delete resource", "kind", desiredType, "name", key.Name)
+					}
+					if err := client.Create(context.TODO(), desiredCopy); err != nil {
+						log.Info("resource needs to be re-created")
+						return emperror.WrapWith(err, "creating resource failed", "kind", desiredType, "name", key.Name)
+					}
+					log.Info("resource created")
+					return nil
+				}
+
 				return emperror.WrapWith(err, "updating resource failed", "kind", desiredType, "name", key.Name)
 			}
 			log.Info("resource updated")
