@@ -27,19 +27,23 @@ import (
 )
 
 type OwnerReferenceMatcher struct {
-	ownerType          runtime.Object
+	owner              runtime.Object
+	ownerMeta          metav1.Object
 	ownerTypeGroupKind schema.GroupKind
 	isController       bool
 	scheme             *runtime.Scheme
 }
 
 // NewOwnerReferenceMatcher initializes a new owner reference matcher
-func NewOwnerReferenceMatcher(ownerType runtime.Object, ctrl bool, scheme *runtime.Scheme) *OwnerReferenceMatcher {
+func NewOwnerReferenceMatcher(owner runtime.Object, ctrl bool, scheme *runtime.Scheme) *OwnerReferenceMatcher {
 	m := &OwnerReferenceMatcher{
-		ownerType:    ownerType,
+		owner:        owner,
 		isController: ctrl,
 		scheme:       scheme,
 	}
+
+	meta, _ := meta.Accessor(owner)
+	m.ownerMeta = meta
 
 	m.setOwnerTypeGroupKind()
 
@@ -59,7 +63,7 @@ func (e *OwnerReferenceMatcher) Match(object runtime.Object) (bool, metav1.Objec
 			return false, o, emperror.WrapWith(err, "could not parse api version", "apiVersion", owner.APIVersion)
 		}
 
-		if owner.Kind == e.ownerTypeGroupKind.Kind && groupVersion.Group == e.ownerTypeGroupKind.Group {
+		if owner.UID == e.ownerMeta.GetUID() && owner.Kind == e.ownerTypeGroupKind.Kind && groupVersion.Group == e.ownerTypeGroupKind.Group {
 			return true, o, nil
 		}
 	}
@@ -81,9 +85,9 @@ func (e *OwnerReferenceMatcher) getOwnersReferences(object metav1.Object) []meta
 }
 
 func (e *OwnerReferenceMatcher) setOwnerTypeGroupKind() error {
-	kinds, _, err := e.scheme.ObjectKinds(e.ownerType)
+	kinds, _, err := e.scheme.ObjectKinds(e.owner)
 	if err != nil || len(kinds) < 1 {
-		return emperror.WrapWith(err, "could not get object kinds", "ownerType", e.ownerType)
+		return emperror.WrapWith(err, "could not get object kinds", "owner", e.owner)
 	}
 
 	e.ownerTypeGroupKind = schema.GroupKind{Group: kinds[0].Group, Kind: kinds[0].Kind}
@@ -102,14 +106,25 @@ func SetOwnerReferenceToObject(obj runtime.Object, owner runtime.Object) ([]meta
 	}
 
 	refs := object.GetOwnerReferences()
-	refs = append(refs, metav1.OwnerReference{
-		APIVersion:         owner.GetObjectKind().GroupVersionKind().Version,
-		Kind:               owner.GetObjectKind().GroupVersionKind().Kind,
-		Name:               own.GetName(),
-		UID:                own.GetUID(),
-		Controller:         util.BoolPointer(true),
-		BlockOwnerDeletion: util.BoolPointer(true),
-	})
+	found := false
+	for _, ref := range refs {
+		if ref.Kind == owner.GetObjectKind().GroupVersionKind().Kind && ref.APIVersion == owner.GetObjectKind().GroupVersionKind().GroupVersion().String() && ref.UID == own.GetUID() {
+			found = true
+			break
+		}
+	}
+
+	if !found {
+		gvk := owner.GetObjectKind().GroupVersionKind()
+		refs = append(refs, metav1.OwnerReference{
+			APIVersion:         gvk.GroupVersion().String(),
+			Kind:               gvk.Kind,
+			Name:               own.GetName(),
+			UID:                own.GetUID(),
+			Controller:         util.BoolPointer(true),
+			BlockOwnerDeletion: util.BoolPointer(true),
+		})
+	}
 
 	return refs, nil
 }

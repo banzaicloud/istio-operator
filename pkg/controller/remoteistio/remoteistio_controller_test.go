@@ -22,7 +22,6 @@ import (
 
 	"github.com/banzaicloud/istio-operator/pkg/remoteclusters"
 
-	operatorv1beta1 "github.com/banzaicloud/istio-operator/pkg/apis/istio/v1beta1"
 	"github.com/onsi/gomega"
 	"golang.org/x/net/context"
 	appsv1 "k8s.io/api/apps/v1"
@@ -32,6 +31,8 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/manager"
 	"sigs.k8s.io/controller-runtime/pkg/reconcile"
+
+	operatorv1beta1 "github.com/banzaicloud/istio-operator/pkg/apis/istio/v1beta1"
 )
 
 var c client.Client
