@@ -57,32 +57,67 @@ func (r *Reconciler) Reconcile(log logr.Logger) error {
 
 	log.Info("Reconciling")
 
-	var rsv = []resources.ResourceVariation{
-		r.serviceAccount,
-		r.clusterRole,
-		r.clusterRoleBinding,
-		r.deployment,
-		r.service,
-		r.horizontalPodAutoscaler,
+	var ingressGatewayDesiredState k8sutil.DesiredState
+	var egressGatewayDesiredState k8sutil.DesiredState
+	var pdbDesiredState k8sutil.DesiredState
+	var sdsDesiredState k8sutil.DesiredState
+	if *r.Config.Spec.Gateways.Enabled {
+		if *r.Config.Spec.Gateways.IngressConfig.Enabled {
+			ingressGatewayDesiredState = k8sutil.DesiredStatePresent
+		} else {
+			ingressGatewayDesiredState = k8sutil.DesiredStateAbsent
+		}
+		if *r.Config.Spec.Gateways.EgressConfig.Enabled {
+			egressGatewayDesiredState = k8sutil.DesiredStatePresent
+		} else {
+			egressGatewayDesiredState = k8sutil.DesiredStateAbsent
+		}
+		if *r.Config.Spec.DefaultPodDisruptionBudget.Enabled {
+			pdbDesiredState = k8sutil.DesiredStatePresent
+		} else {
+			pdbDesiredState = k8sutil.DesiredStateAbsent
+		}
+		if *r.Config.Spec.SDS.Enabled {
+			sdsDesiredState = k8sutil.DesiredStatePresent
+		} else {
+			sdsDesiredState = k8sutil.DesiredStateAbsent
+		}
+	} else {
+		ingressGatewayDesiredState = k8sutil.DesiredStateAbsent
+		egressGatewayDesiredState = k8sutil.DesiredStateAbsent
+		pdbDesiredState = k8sutil.DesiredStateAbsent
+		sdsDesiredState = k8sutil.DesiredStateAbsent
 	}
-	if r.Config.Spec.DefaultPodDisruptionBudget.Enabled {
-		rsv = append(rsv, r.podDisruptionBudget)
+
+	var rsv = []resources.ResourceVariationWithDesiredState{
+		{ResourceVariation: r.serviceAccount},
+		{ResourceVariation: r.clusterRole},
+		{ResourceVariation: r.clusterRoleBinding},
+		{ResourceVariation: r.deployment},
+		{ResourceVariation: r.service},
+		{ResourceVariation: r.horizontalPodAutoscaler},
+		{ResourceVariation: r.podDisruptionBudget, DesiredState: pdbDesiredState},
+		{ResourceVariation: r.role, DesiredState: sdsDesiredState},
+		{ResourceVariation: r.roleBinding, DesiredState: sdsDesiredState},
 	}
-	if r.Config.Spec.SDS.Enabled {
-		rsv = append(rsv, r.role)
-		rsv = append(rsv, r.roleBinding)
-	}
-	for _, res := range append(resources.ResolveVariations(ingress, rsv), resources.ResolveVariations(egress, rsv)...) {
-		o := res()
-		err := k8sutil.Reconcile(log, r.Client, o, k8sutil.DesiredStatePresent)
+
+	for _, res := range append(resources.ResolveVariations(ingress, rsv, ingressGatewayDesiredState), resources.ResolveVariations(egress, rsv, egressGatewayDesiredState)...) {
+		o := res.Resource()
+		err := k8sutil.Reconcile(log, r.Client, o, res.DesiredState)
 		if err != nil {
 			return emperror.WrapWith(err, "failed to reconcile resource", "resource", o.GetObjectKind().GroupVersionKind())
 		}
 	}
 
-	drs := make([]resources.DynamicResourceWithDesiredState, 0)
-	if r.Config.Spec.Gateways.K8sIngress.Enabled {
-		drs = append(drs, resources.DynamicResourceWithDesiredState{DynamicResource: r.gateway})
+	var k8sIngressDesiredState k8sutil.DesiredState
+	if *r.Config.Spec.Gateways.Enabled && *r.Config.Spec.Gateways.IngressConfig.Enabled && *r.Config.Spec.Gateways.K8sIngress.Enabled {
+		k8sIngressDesiredState = k8sutil.DesiredStatePresent
+	} else {
+		k8sIngressDesiredState = k8sutil.DesiredStateAbsent
+	}
+
+	var drs = []resources.DynamicResourceWithDesiredState{
+		{DynamicResource: r.gateway, DesiredState: k8sIngressDesiredState},
 	}
 	for _, dr := range drs {
 		o := dr.DynamicResource()

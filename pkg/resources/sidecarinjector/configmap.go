@@ -49,7 +49,7 @@ func (r *Reconciler) siConfig() string {
 }
 
 func (r *Reconciler) proxyInitContainer() string {
-	if r.Config.Spec.SidecarInjector.InitCNIConfiguration.Enabled {
+	if *r.Config.Spec.SidecarInjector.InitCNIConfiguration.Enabled {
 		return ""
 	}
 
@@ -255,14 +255,14 @@ func (r *Reconciler) coreDumpContainer() string {
 }
 
 func (r *Reconciler) runAsGroup() string {
-	if r.Config.Spec.SDS.Enabled && r.Config.Spec.SDS.UseTrustworthyJwt {
+	if *r.Config.Spec.SDS.Enabled && r.Config.Spec.SDS.UseTrustworthyJwt {
 		return "runAsGroup: 1337"
 	}
 	return ""
 }
 
 func (r *Reconciler) volumeMounts() string {
-	if !r.Config.Spec.SDS.Enabled {
+	if !*r.Config.Spec.SDS.Enabled {
 		return `- mountPath: /etc/certs/
     name: istio-certs
     readOnly: true`
@@ -278,7 +278,7 @@ func (r *Reconciler) volumeMounts() string {
 }
 
 func (r *Reconciler) volumes() string {
-	if !r.Config.Spec.SDS.Enabled {
+	if !*r.Config.Spec.SDS.Enabled {
 		return `- name: istio-certs
   secret:
     optional: true

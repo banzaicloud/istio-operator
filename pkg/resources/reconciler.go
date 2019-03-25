@@ -38,14 +38,26 @@ type Resource func() runtime.Object
 
 type ResourceVariation func(t string) runtime.Object
 
-func ResolveVariations(t string, v []ResourceVariation) []Resource {
-	resources := make([]Resource, 0)
+func ResolveVariations(t string, v []ResourceVariationWithDesiredState, desiredState k8sutil.DesiredState) []ResourceWithDesiredState {
+	resources := make([]ResourceWithDesiredState, 0)
 	for i := range v {
 		i := i
-		resources = append(resources, func() runtime.Object {
-			return v[i](t)
-		})
+
+		if v[i].DesiredState == k8sutil.DesiredStateAbsent || desiredState == k8sutil.DesiredStateAbsent {
+			desiredState = k8sutil.DesiredStateAbsent
+		} else {
+			desiredState = k8sutil.DesiredStatePresent
+		}
+
+		resource := ResourceWithDesiredState{
+			func() runtime.Object {
+				return v[i].ResourceVariation(t)
+			},
+			desiredState,
+		}
+		resources = append(resources, resource)
 	}
+
 	return resources
 }
 
@@ -59,4 +71,9 @@ type DynamicResourceWithDesiredState struct {
 type ResourceWithDesiredState struct {
 	Resource     Resource
 	DesiredState k8sutil.DesiredState
+}
+
+type ResourceVariationWithDesiredState struct {
+	ResourceVariation ResourceVariation
+	DesiredState      k8sutil.DesiredState
 }

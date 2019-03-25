@@ -41,6 +41,27 @@ func (r *Reconciler) configMap() runtime.Object {
 }
 
 func (r *Reconciler) meshConfig() string {
+	defaultConfig := map[string]interface{}{
+		"connectTimeout":         "10s",
+		"configPath":             "/etc/istio/proxy",
+		"binaryPath":             "/usr/local/bin/envoy",
+		"serviceCluster":         "istio-proxy",
+		"drainDuration":          "45s",
+		"parentShutdownDuration": "1m0s",
+		"proxyAdminPort":         15000,
+		"concurrency":            0,
+		"controlPlaneAuthPolicy": templates.ControlPlaneAuthPolicy(r.Config.Spec.ControlPlaneSecurityEnabled),
+		"discoveryAddress":       fmt.Sprintf("istio-pilot.%s:%s", r.Config.Namespace, r.discoveryPort()),
+	}
+
+	if *r.Config.Spec.Tracing.Enabled {
+		defaultConfig["tracing"] = map[string]interface{}{
+			"zipkin": map[string]interface{}{
+				"address": r.Config.Spec.Tracing.Zipkin.Address,
+			},
+		}
+	}
+
 	meshConfig := map[string]interface{}{
 		"disablePolicyChecks": false,
 		"enableTracing":       true,
@@ -58,23 +79,7 @@ func (r *Reconciler) meshConfig() string {
 		"outboundTrafficPolicy": map[string]interface{}{
 			"mode": r.Config.Spec.OutboundTrafficPolicy.Mode,
 		},
-		"defaultConfig": map[string]interface{}{
-			"connectTimeout":         "10s",
-			"configPath":             "/etc/istio/proxy",
-			"binaryPath":             "/usr/local/bin/envoy",
-			"serviceCluster":         "istio-proxy",
-			"drainDuration":          "45s",
-			"parentShutdownDuration": "1m0s",
-			"proxyAdminPort":         15000,
-			"concurrency":            0,
-			"tracing": map[string]interface{}{
-				"zipkin": map[string]interface{}{
-					"address": r.Config.Spec.Tracing.Zipkin.Address,
-				},
-			},
-			"controlPlaneAuthPolicy": templates.ControlPlaneAuthPolicy(r.Config.Spec.ControlPlaneSecurityEnabled),
-			"discoveryAddress":       fmt.Sprintf("istio-pilot.%s:%s", r.Config.Namespace, r.discoveryPort()),
-		},
+		"defaultConfig": defaultConfig,
 	}
 
 	if r.Config.Spec.UseMCP {

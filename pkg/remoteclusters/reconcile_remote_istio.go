@@ -34,10 +34,7 @@ func (c *Cluster) reconcileComponents(remoteConfig *istiov1beta1.RemoteIstio, is
 			DeployMeshPolicy: false,
 		}, c.ctrlRuntimeClient, c.dynamicClient, c.istioConfig),
 		sidecarinjector.New(c.ctrlRuntimeClient, c.istioConfig),
-	}
-
-	if c.istioConfig.Spec.NodeAgent.Enabled {
-		reconcilers = append(reconcilers, nodeagent.New(c.ctrlRuntimeClient, c.istioConfig))
+		nodeagent.New(c.ctrlRuntimeClient, c.istioConfig),
 	}
 
 	for _, rec := range reconcilers {

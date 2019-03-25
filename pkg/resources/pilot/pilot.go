@@ -63,20 +63,33 @@ func (r *Reconciler) Reconcile(log logr.Logger) error {
 
 	log.Info("Reconciling")
 
-	resources := []resources.Resource{
-		r.serviceAccount,
-		r.clusterRole,
-		r.clusterRoleBinding,
-		r.deployment,
-		r.service,
-		r.horizontalPodAutoscaler,
+	var pilotDesiredState k8sutil.DesiredState
+	var pdbDesiredState k8sutil.DesiredState
+	if *r.Config.Spec.Pilot.Enabled {
+		pilotDesiredState = k8sutil.DesiredStatePresent
+		if *r.Config.Spec.DefaultPodDisruptionBudget.Enabled {
+			pdbDesiredState = k8sutil.DesiredStatePresent
+		} else {
+			pdbDesiredState = k8sutil.DesiredStateAbsent
+		}
+	} else {
+		pilotDesiredState = k8sutil.DesiredStateAbsent
+		pdbDesiredState = k8sutil.DesiredStateAbsent
 	}
-	if r.Config.Spec.DefaultPodDisruptionBudget.Enabled {
-		resources = append(resources, r.podDisruptionBudget)
+
+	resources := []resources.ResourceWithDesiredState{
+		{Resource: r.serviceAccount, DesiredState: pilotDesiredState},
+		{Resource: r.clusterRole, DesiredState: pilotDesiredState},
+		{Resource: r.clusterRoleBinding, DesiredState: pilotDesiredState},
+		{Resource: r.deployment, DesiredState: pilotDesiredState},
+		{Resource: r.service, DesiredState: pilotDesiredState},
+		{Resource: r.horizontalPodAutoscaler, DesiredState: pilotDesiredState},
+		{Resource: r.podDisruptionBudget, DesiredState: pdbDesiredState},
 	}
+
 	for _, res := range resources {
-		o := res()
-		err := k8sutil.Reconcile(log, r.Client, o, k8sutil.DesiredStatePresent)
+		o := res.Resource()
+		err := k8sutil.Reconcile(log, r.Client, o, res.DesiredState)
 		if err != nil {
 			return emperror.WrapWith(err, "failed to reconcile resource", "resource", o.GetObjectKind().GroupVersionKind())
 		}

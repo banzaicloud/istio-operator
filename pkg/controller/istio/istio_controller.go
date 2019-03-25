@@ -228,10 +228,7 @@ func (r *ReconcileConfig) reconcile(logger logr.Logger, config *istiov1beta1.Ist
 		mixer.New(r.Client, r.dynamic, config),
 		cni.New(r.Client, config),
 		sidecarinjector.New(r.Client, config),
-	}
-
-	if config.Spec.NodeAgent.Enabled {
-		reconcilers = append(reconcilers, nodeagent.New(r.Client, config))
+		nodeagent.New(r.Client, config),
 	}
 
 	for _, rec := range reconcilers {

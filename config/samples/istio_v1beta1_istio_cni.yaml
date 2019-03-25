@@ -9,5 +9,6 @@ spec:
   autoInjectionNamespaces:
   - "default"
   sidecarInjector:
+    enabled: true
     initCNIConfiguration:
       enabled: true

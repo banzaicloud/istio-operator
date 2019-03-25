@@ -1,0 +1,36 @@
+# Minimal Istio configuration: https://istio.io/docs/setup/kubernetes/additional-setup/config-profiles/
+
+apiVersion: istio.banzaicloud.io/v1beta1
+kind: Istio
+metadata:
+  labels:
+    controller-tools.k8s.io: "1.0"
+  name: istio-sample
+spec:
+  mtls: false
+  autoInjectionNamespaces:
+  - "default"
+  sds:
+    enabled: false
+  pilot:
+    enabled: true
+  citadel:
+    enabled: false
+  galley:
+    enabled: false
+  gateways:
+    enabled: false
+    ingress:
+      enabled: false
+    egress:
+      enabled: false
+    k8singress:
+      enabled: false
+  mixer:
+    enabled: false
+  sidecarInjector:
+    enabled: false
+  nodeAgent:
+    enabled: false
+  tracing:
+    enabled: false

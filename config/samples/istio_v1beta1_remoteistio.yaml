@@ -21,6 +21,8 @@ spec:
   - name: "zipkin"
     labelSelector: "app=jaeger"
   citadel:
+      enabled: true
       replicaCount: 1
   sidecarInjector:
+      enabled: true
       replicaCount: 1

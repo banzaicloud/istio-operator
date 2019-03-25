@@ -25,7 +25,7 @@ import (
 type SDSConfiguration struct {
 	// If set to true, mTLS certificates for the sidecars will be
 	// distributed through the SecretDiscoveryService instead of using K8S secrets to mount the certificates.
-	Enabled bool `json:"enabled,omitempty"`
+	Enabled *bool `json:"enabled,omitempty"`
 	// Unix Domain Socket through which envoy communicates with NodeAgent SDS to get
 	// key/cert for mTLS. Use secret-mount files instead of SDS if set to empty.
 	UdsPath string `json:"udsPath,omitempty"`
@@ -43,6 +43,7 @@ type SDSConfiguration struct {
 
 // PilotConfiguration defines config options for Pilot
 type PilotConfiguration struct {
+	Enabled       *bool   `json:"enabled,omitempty"`
 	Image         string  `json:"image,omitempty"`
 	ReplicaCount  int32   `json:"replicaCount,omitempty"`
 	MinReplicas   int32   `json:"minReplicas,omitempty"`
@@ -52,29 +53,33 @@ type PilotConfiguration struct {
 
 // CitadelConfiguration defines config options for Citadel
 type CitadelConfiguration struct {
+	Enabled      *bool  `json:"enabled,omitempty"`
 	Image        string `json:"image,omitempty"`
 	ReplicaCount int32  `json:"replicaCount,omitempty"`
 }
 
 // GalleyConfiguration defines config options for Galley
 type GalleyConfiguration struct {
+	Enabled      *bool  `json:"enabled,omitempty"`
 	Image        string `json:"image,omitempty"`
 	ReplicaCount int32  `json:"replicaCount,omitempty"`
 }
 
 // GatewaysConfiguration defines config options for Gateways
 type GatewaysConfiguration struct {
+	Enabled       *bool                   `json:"enabled,omitempty"`
 	IngressConfig GatewayConfiguration    `json:"ingress,omitempty"`
 	EgressConfig  GatewayConfiguration    `json:"egress,omitempty"`
 	K8sIngress    K8sIngressConfiguration `json:"k8singress,omitempty"`
 }
 
 type GatewaySDSConfiguration struct {
-	Enabled bool   `json:"enabled,omitempty"`
+	Enabled *bool  `json:"enabled,omitempty"`
 	Image   string `json:"image,omitempty"`
 }
 
 type GatewayConfiguration struct {
+	Enabled      *bool `json:"enabled,omitempty"`
 	ReplicaCount int32 `json:"replicaCount,omitempty"`
 	MinReplicas  int32 `json:"minReplicas,omitempty"`
 	MaxReplicas  int32 `json:"maxReplicas,omitempty"`
@@ -86,11 +91,12 @@ type GatewayConfiguration struct {
 }
 
 type K8sIngressConfiguration struct {
-	Enabled bool `json:"enabled,omitempty"`
+	Enabled *bool `json:"enabled,omitempty"`
 }
 
 // MixerConfiguration defines config options for Mixer
 type MixerConfiguration struct {
+	Enabled      *bool  `json:"enabled,omitempty"`
 	Image        string `json:"image,omitempty"`
 	ReplicaCount int32  `json:"replicaCount,omitempty"`
 	MinReplicas  int32  `json:"minReplicas,omitempty"`
@@ -101,7 +107,7 @@ type MixerConfiguration struct {
 type InitCNIConfiguration struct {
 	// If true, the privileged initContainer istio-init is not needed to perform the traffic redirect
 	// settings for the istio-proxy
-	Enabled bool   `json:"enabled,omitempty"`
+	Enabled *bool  `json:"enabled,omitempty"`
 	Image   string `json:"image,omitempty"`
 	// Must be the same as the environment’s --cni-bin-dir setting (kubelet parameter)
 	BinDir string `json:"binDir,omitempty"`
@@ -115,6 +121,7 @@ type InitCNIConfiguration struct {
 
 // SidecarInjectorConfiguration defines config options for SidecarInjector
 type SidecarInjectorConfiguration struct {
+	Enabled              *bool                `json:"enabled,omitempty"`
 	Image                string               `json:"image,omitempty"`
 	ReplicaCount         int32                `json:"replicaCount,omitempty"`
 	InitCNIConfiguration InitCNIConfiguration `json:"initCNIConfiguration,omitempty"`
@@ -126,7 +133,7 @@ type SidecarInjectorConfiguration struct {
 
 // NodeAgentConfiguration defines config options for NodeAgent
 type NodeAgentConfiguration struct {
-	Enabled bool   `json:"enabled,omitempty"`
+	Enabled *bool  `json:"enabled,omitempty"`
 	Image   string `json:"image,omitempty"`
 }
 
@@ -146,7 +153,7 @@ type ProxyInitConfiguration struct {
 
 // PDBConfiguration holds Pod Disruption Budget related config options
 type PDBConfiguration struct {
-	Enabled bool `json:"enabled,omitempty"`
+	Enabled *bool `json:"enabled,omitempty"`
 }
 
 type OutboundTrafficPolicyConfiguration struct {
@@ -162,7 +169,8 @@ type ZipkinConfiguration struct {
 }
 
 type TracingConfiguration struct {
-	Zipkin ZipkinConfiguration `json:"zipkin,omitempty"`
+	Enabled *bool               `json:"enabled,omitempty"`
+	Zipkin  ZipkinConfiguration `json:"zipkin,omitempty"`
 }
 
 // IstioSpec defines the desired state of Istio

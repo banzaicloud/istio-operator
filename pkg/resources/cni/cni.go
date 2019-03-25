@@ -60,7 +60,7 @@ func (r *Reconciler) Reconcile(log logr.Logger) error {
 	log = log.WithValues("component", componentName)
 
 	desiredState := k8sutil.DesiredStatePresent
-	if !r.Config.Spec.SidecarInjector.InitCNIConfiguration.Enabled {
+	if !*r.Config.Spec.SidecarInjector.InitCNIConfiguration.Enabled {
 		desiredState = k8sutil.DesiredStateAbsent
 	}
 

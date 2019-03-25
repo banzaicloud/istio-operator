@@ -37,6 +37,10 @@ import (
 )
 
 func Reconcile(log logr.Logger, client runtimeClient.Client, desired runtime.Object, desiredState DesiredState) error {
+	if desiredState == "" {
+		desiredState = DesiredStatePresent
+	}
+
 	desiredType := reflect.TypeOf(desired)
 	var current = desired.DeepCopyObject()
 	key, err := runtimeClient.ObjectKeyFromObject(current)

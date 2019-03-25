@@ -60,6 +60,13 @@ func (r *Reconciler) Reconcile(log logr.Logger) error {
 
 	log.Info("Reconciling")
 
+	var nodeAgentDesiredState k8sutil.DesiredState
+	if *r.Config.Spec.NodeAgent.Enabled {
+		nodeAgentDesiredState = k8sutil.DesiredStatePresent
+	} else {
+		nodeAgentDesiredState = k8sutil.DesiredStateAbsent
+	}
+
 	for _, res := range []resources.Resource{
 		r.serviceAccount,
 		r.clusterRole,
@@ -67,7 +74,7 @@ func (r *Reconciler) Reconcile(log logr.Logger) error {
 		r.daemonSet,
 	} {
 		o := res()
-		err := k8sutil.Reconcile(log, r.Client, o, k8sutil.DesiredStatePresent)
+		err := k8sutil.Reconcile(log, r.Client, o, nodeAgentDesiredState)
 		if err != nil {
 			return emperror.WrapWith(err, "failed to reconcile resource", "resource", o.GetObjectKind().GroupVersionKind())
 		}

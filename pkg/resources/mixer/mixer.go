@@ -64,24 +64,36 @@ func (r *Reconciler) Reconcile(log logr.Logger) error {
 
 	log.Info("Reconciling")
 
-	rs := []resources.Resource{
-		r.serviceAccount,
-		r.clusterRole,
-		r.clusterRoleBinding,
+	var mixerDesiredState k8sutil.DesiredState
+	var pdbDesiredState k8sutil.DesiredState
+	if *r.Config.Spec.Mixer.Enabled {
+		mixerDesiredState = k8sutil.DesiredStatePresent
+		if *r.Config.Spec.DefaultPodDisruptionBudget.Enabled {
+			pdbDesiredState = k8sutil.DesiredStatePresent
+		} else {
+			pdbDesiredState = k8sutil.DesiredStateAbsent
+		}
+	} else {
+		mixerDesiredState = k8sutil.DesiredStateAbsent
 	}
-	rsv := []resources.ResourceVariation{
-		r.deployment,
-		r.service,
-		r.horizontalPodAutoscaler,
+
+	rs := []resources.ResourceWithDesiredState{
+		{Resource: r.serviceAccount},
+		{Resource: r.clusterRole},
+		{Resource: r.clusterRoleBinding},
 	}
-	if r.Config.Spec.DefaultPodDisruptionBudget.Enabled {
-		rsv = append(rsv, r.pdb)
+	rsv := []resources.ResourceVariationWithDesiredState{
+		{ResourceVariation: r.deployment},
+		{ResourceVariation: r.service},
+		{ResourceVariation: r.horizontalPodAutoscaler},
+		{ResourceVariation: r.podDisruptionBudget, DesiredState: pdbDesiredState},
 	}
-	rs = append(rs, resources.ResolveVariations("policy", rsv)...)
-	rs = append(rs, resources.ResolveVariations("telemetry", rsv)...)
+
+	rs = append(rs, resources.ResolveVariations("policy", rsv, mixerDesiredState)...)
+	rs = append(rs, resources.ResolveVariations("telemetry", rsv, mixerDesiredState)...)
 	for _, res := range rs {
-		o := res()
-		err := k8sutil.Reconcile(log, r.Client, o, k8sutil.DesiredStatePresent)
+		o := res.Resource()
+		err := k8sutil.Reconcile(log, r.Client, o, res.DesiredState)
 		if err != nil {
 			return emperror.WrapWith(err, "failed to reconcile resource", "resource", o.GetObjectKind().GroupVersionKind())
 		}
@@ -116,7 +128,7 @@ func (r *Reconciler) Reconcile(log logr.Logger) error {
 	}
 	for _, dr := range drs {
 		o := dr.DynamicResource()
-		err := o.Reconcile(log, r.dynamic, dr.DesiredState)
+		err := o.Reconcile(log, r.dynamic, mixerDesiredState)
 		if err != nil {
 			return emperror.WrapWith(err, "failed to reconcile dynamic resource", "resource", o.Gvr)
 		}
