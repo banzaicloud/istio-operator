@@ -17,7 +17,7 @@ limitations under the License.
 package v1beta1
 
 import (
-	apiv1 "k8s.io/api/core/v1"
+	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
@@ -79,7 +79,7 @@ type GatewayConfiguration struct {
 	MinReplicas  int32 `json:"minReplicas,omitempty"`
 	MaxReplicas  int32 `json:"maxReplicas,omitempty"`
 	// +kubebuilder:validation:Enum=ClusterIP,NodePort,LoadBalancer
-	ServiceType        apiv1.ServiceType       `json:"serviceType,omitempty"`
+	ServiceType        corev1.ServiceType      `json:"serviceType,omitempty"`
 	ServiceAnnotations map[string]string       `json:"serviceAnnotations,omitempty"`
 	ServiceLabels      map[string]string       `json:"serviceLabels,omitempty"`
 	SDS                GatewaySDSConfiguration `json:"sds,omitempty"`
@@ -232,6 +232,10 @@ type IstioSpec struct {
 
 	// Configuration for each of the supported tracers
 	Tracing TracingConfiguration `json:"tracing,omitempty"`
+
+	// ImagePullPolicy describes a policy for if/when to pull a container image
+	// +kubebuilder:validation:Enum=Always,Never,IfNotPresent
+	ImagePullPolicy corev1.PullPolicy `json:"imagePullPolicy,omitempty"`
 }
 
 func (s IstioSpec) GetDefaultConfigVisibility() string {

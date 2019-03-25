@@ -70,7 +70,7 @@ func (r *Reconciler) daemonSet() runtime.Object {
 						{
 							Name:            "install-cni",
 							Image:           r.Config.Spec.SidecarInjector.InitCNIConfiguration.Image,
-							ImagePullPolicy: apiv1.PullIfNotPresent,
+							ImagePullPolicy: r.Config.Spec.ImagePullPolicy,
 							VolumeMounts: []apiv1.VolumeMount{
 								{
 									Name:      "cni-bin-dir",

@@ -48,7 +48,7 @@ func (r *Reconciler) daemonSet() runtime.Object {
 						{
 							Name:            "nodeagent",
 							Image:           r.Config.Spec.NodeAgent.Image,
-							ImagePullPolicy: apiv1.PullIfNotPresent,
+							ImagePullPolicy: r.Config.Spec.ImagePullPolicy,
 							VolumeMounts: []apiv1.VolumeMount{
 								{
 									Name:      "sdsudspath",

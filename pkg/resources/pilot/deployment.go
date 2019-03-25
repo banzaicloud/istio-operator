@@ -77,7 +77,7 @@ func (r *Reconciler) deployment() runtime.Object {
 						{
 							Name:            "discovery",
 							Image:           r.Config.Spec.Pilot.Image,
-							ImagePullPolicy: apiv1.PullIfNotPresent,
+							ImagePullPolicy: r.Config.Spec.ImagePullPolicy,
 							Args:            containerArgs,
 							Ports: []apiv1.ContainerPort{
 								{ContainerPort: 8080, Protocol: apiv1.ProtocolTCP},
@@ -147,7 +147,7 @@ func (r *Reconciler) deployment() runtime.Object {
 						{
 							Name:            "istio-proxy",
 							Image:           r.Config.Spec.Proxy.Image,
-							ImagePullPolicy: apiv1.PullIfNotPresent,
+							ImagePullPolicy: r.Config.Spec.ImagePullPolicy,
 							Ports: []apiv1.ContainerPort{
 								{ContainerPort: 15003, Protocol: apiv1.ProtocolTCP},
 								{ContainerPort: 15005, Protocol: apiv1.ProtocolTCP},

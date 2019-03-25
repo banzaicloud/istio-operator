@@ -47,6 +47,7 @@ const (
 	defaultInitCNIBinDir             = "/opt/cni/bin"
 	defaultInitCNIConfDir            = "/etc/cni/net.d"
 	defaultInitCNILogLevel           = "info"
+	defaultImagePullPolicy           = "IfNotPresent"
 )
 
 func SetDefaults(config *Istio) {
@@ -165,9 +166,11 @@ func SetDefaults(config *Istio) {
 	if config.Spec.OutboundTrafficPolicy.Mode == "" {
 		config.Spec.OutboundTrafficPolicy.Mode = outboundTrafficPolicyAllowAny
 	}
-
 	if config.Spec.Tracing.Zipkin.Address == "" {
 		config.Spec.Tracing.Zipkin.Address = fmt.Sprintf(defaultZipkinAddress, config.Namespace)
+	}
+	if config.Spec.ImagePullPolicy == "" {
+		config.Spec.ImagePullPolicy = defaultImagePullPolicy
 	}
 }
 

@@ -149,7 +149,7 @@ func (r *Reconciler) mixerContainer(t string, ns string) apiv1.Container {
 	return apiv1.Container{
 		Name:            t,
 		Image:           r.Config.Spec.Mixer.Image,
-		ImagePullPolicy: apiv1.PullIfNotPresent,
+		ImagePullPolicy: r.Config.Spec.ImagePullPolicy,
 		Ports: []apiv1.ContainerPort{
 			{
 				ContainerPort: 15014,
@@ -192,7 +192,7 @@ func (r *Reconciler) istioProxyContainer(t string) apiv1.Container {
 	return apiv1.Container{
 		Name:            "istio-proxy",
 		Image:           r.Config.Spec.Proxy.Image,
-		ImagePullPolicy: apiv1.PullIfNotPresent,
+		ImagePullPolicy: r.Config.Spec.ImagePullPolicy,
 		Ports: []apiv1.ContainerPort{
 			{ContainerPort: 9091, Protocol: apiv1.ProtocolTCP},
 			{ContainerPort: 15004, Protocol: apiv1.ProtocolTCP},

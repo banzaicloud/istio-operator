@@ -76,7 +76,7 @@ func (r *Reconciler) deployment() runtime.Object {
 						{
 							Name:            "galley",
 							Image:           r.Config.Spec.Galley.Image,
-							ImagePullPolicy: apiv1.PullIfNotPresent,
+							ImagePullPolicy: r.Config.Spec.ImagePullPolicy,
 							Ports: []apiv1.ContainerPort{
 								{
 									ContainerPort: 443,
