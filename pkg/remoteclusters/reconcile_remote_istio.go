@@ -23,17 +23,18 @@ import (
 	"github.com/banzaicloud/istio-operator/pkg/resources/common"
 	"github.com/banzaicloud/istio-operator/pkg/resources/nodeagent"
 	"github.com/banzaicloud/istio-operator/pkg/resources/sidecarinjector"
+	"k8s.io/helm/pkg/manifest"
 )
 
 func (c *Cluster) reconcileComponents(remoteConfig *istiov1beta1.RemoteIstio, istio *istiov1beta1.Istio) error {
 	c.log.Info("reconciling components")
 
 	reconcilers := []resources.ComponentReconciler{
-		common.New(c.ctrlRuntimeClient, c.istioConfig, true),
+		common.New(c.ctrlRuntimeClient, c.istioConfig, true, []manifest.Manifest{}, nil),
 		citadel.New(citadel.Configuration{
 			DeployMeshPolicy: false,
-		}, c.ctrlRuntimeClient, c.dynamicClient, c.istioConfig),
-		sidecarinjector.New(c.ctrlRuntimeClient, c.istioConfig),
+		}, c.ctrlRuntimeClient, c.dynamicClient, c.istioConfig, []manifest.Manifest{}, nil),
+		sidecarinjector.New(c.ctrlRuntimeClient, c.istioConfig, []manifest.Manifest{}, nil),
 	}
 
 	if c.istioConfig.Spec.NodeAgent.Enabled {

@@ -17,23 +17,23 @@ limitations under the License.
 package citadel
 
 import (
-	"github.com/go-logr/logr"
-	"github.com/goph/emperror"
-	"k8s.io/client-go/dynamic"
-	"sigs.k8s.io/controller-runtime/pkg/client"
-
+	"fmt"
 	istiov1beta1 "github.com/banzaicloud/istio-operator/pkg/apis/istio/v1beta1"
+	"github.com/banzaicloud/istio-operator/pkg/helm"
 	"github.com/banzaicloud/istio-operator/pkg/k8sutil"
 	"github.com/banzaicloud/istio-operator/pkg/resources"
+	"github.com/go-logr/logr"
+	"github.com/goph/emperror"
+	"k8s.io/apimachinery/pkg/runtime"
+	"k8s.io/client-go/dynamic"
+	"k8s.io/helm/pkg/manifest"
+	"sigs.k8s.io/controller-runtime/pkg/client"
+	"sigs.k8s.io/controller-runtime/pkg/controller/controllerutil"
 )
 
 const (
-	componentName          = "citadel"
-	serviceAccountName     = "istio-citadel-service-account"
-	clusterRoleName        = "istio-citadel-cluster-role"
-	clusterRoleBindingName = "istio-citadel-cluster-role-binding"
-	deploymentName         = "istio-citadel"
-	serviceName            = "istio-citadel"
+	componentName  = "citadel"
+	deploymentName = "istio-citadel"
 )
 
 var citadelLabels = map[string]string{
@@ -51,11 +51,13 @@ type Reconciler struct {
 	configuration Configuration
 }
 
-func New(configuration Configuration, client client.Client, dc dynamic.Interface, config *istiov1beta1.Istio) *Reconciler {
+func New(configuration Configuration, client client.Client, dc dynamic.Interface, config *istiov1beta1.Istio, manifests []manifest.Manifest, scheme *runtime.Scheme) *Reconciler {
 	return &Reconciler{
 		Reconciler: resources.Reconciler{
-			Client: client,
-			Config: config,
+			Client:    client,
+			Config:    config,
+			Manifests: manifests,
+			Scheme:    scheme,
 		},
 		dynamic:       dc,
 		configuration: configuration,
@@ -71,44 +73,49 @@ func (r *Reconciler) Reconcile(log logr.Logger) error {
 
 	log.Info("Reconciling")
 
-	for _, res := range []resources.Resource{
-		r.serviceAccount,
-		r.clusterRole,
-		r.clusterRoleBinding,
-		r.deployment,
-		r.service,
-	} {
-		o := res()
-		err := k8sutil.Reconcile(log, r.Client, o)
+	objects, err := helm.DecodeObjects(log, r.Manifests)
+	if err != nil {
+		return emperror.Wrap(err, "failed to decode objects from chart")
+	}
+
+	for _, o := range objects {
+		fmt.Printf("***type: %T\n", o)
+
+		ro := o.(runtime.Object)
+		err := controllerutil.SetControllerReference(r.Config, o, r.Scheme)
 		if err != nil {
-			return emperror.WrapWith(err, "failed to reconcile resource", "resource", o.GetObjectKind().GroupVersionKind())
+			return emperror.WrapWith(err, "failed to set controller reference", "resource", ro.GetObjectKind().GroupVersionKind())
+		}
+		err = k8sutil.Reconcile(log, r.Client, ro)
+		if err != nil {
+			return emperror.WrapWith(err, "failed to reconcile resource", "resource", ro.GetObjectKind().GroupVersionKind())
 		}
 	}
 
-	if !r.configuration.DeployMeshPolicy {
-		return nil
-	}
-
-	var mTLSDesiredState k8sutil.DesiredState
-	if r.Config.Spec.MTLS {
-		mTLSDesiredState = k8sutil.DesiredStatePresent
-	} else {
-		mTLSDesiredState = k8sutil.DesiredStateAbsent
-	}
-	drs := []resources.DynamicResourceWithDesiredState{
-		{DynamicResource: r.meshPolicy, DesiredState: k8sutil.DesiredStatePresent},
-		{DynamicResource: r.destinationRuleDefaultMtls, DesiredState: mTLSDesiredState},
-		{DynamicResource: r.destinationRuleApiServerMtls, DesiredState: mTLSDesiredState},
-	}
-
-	for _, dr := range drs {
-		o := dr.DynamicResource()
-		err := o.Reconcile(log, r.dynamic, dr.DesiredState)
-		if err != nil {
-			return emperror.WrapWith(err, "failed to reconcile dynamic resource", "resource", o.Gvr)
-		}
-	}
-
+	//if !*r.configuration.CreateMeshPolicy {
+	//	return nil
+	//}
+	//
+	//var mTLSDesiredState k8sutil.DesiredState
+	//if r.Config.Spec.MTLS {
+	//	mTLSDesiredState = k8sutil.DesiredStatePresent
+	//} else {
+	//	mTLSDesiredState = k8sutil.DesiredStateAbsent
+	//}
+	//drs := []resources.DynamicResourceWithDesiredState{
+	//	{DynamicResource: r.meshPolicy, DesiredState: k8sutil.DesiredStatePresent},
+	//	{DynamicResource: r.destinationRuleDefaultMtls, DesiredState: mTLSDesiredState},
+	//	{DynamicResource: r.destinationRuleApiServerMtls, DesiredState: mTLSDesiredState},
+	//}
+	//
+	//for _, dr := range drs {
+	//	o := dr.DynamicResource()
+	//	err := o.Reconcile(log, r.dynamic, dr.DesiredState)
+	//	if err != nil {
+	//		return emperror.WrapWith(err, "failed to reconcile dynamic resource", "resource", o.Gvr)
+	//	}
+	//}
+	//
 	log.Info("Reconciled")
 
 	return nil

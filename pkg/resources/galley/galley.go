@@ -17,9 +17,14 @@ limitations under the License.
 package galley
 
 import (
+	"fmt"
+	"github.com/banzaicloud/istio-operator/pkg/helm"
 	"github.com/go-logr/logr"
 	"github.com/goph/emperror"
+	"k8s.io/apimachinery/pkg/runtime"
+	"k8s.io/helm/pkg/manifest"
 	"sigs.k8s.io/controller-runtime/pkg/client"
+	"sigs.k8s.io/controller-runtime/pkg/controller/controllerutil"
 
 	istiov1beta1 "github.com/banzaicloud/istio-operator/pkg/apis/istio/v1beta1"
 	"github.com/banzaicloud/istio-operator/pkg/k8sutil"
@@ -27,34 +32,20 @@ import (
 )
 
 const (
-	componentName          = "galley"
-	serviceAccountName     = "istio-galley-service-account"
-	clusterRoleName        = "istio-galley-cluster-role"
-	clusterRoleBindingName = "istio-galley-admin-role-binding"
-	configMapName          = "istio-galley-configuration"
-	webhookName            = "istio-galley"
-	deploymentName         = "istio-galley"
-	serviceName            = "istio-galley"
-	pdbName                = "istio-galley"
+	componentName = "galley"
 )
-
-var galleyLabels = map[string]string{
-	"app": "istio-galley",
-}
-
-var labelSelector = map[string]string{
-	"istio": "galley",
-}
 
 type Reconciler struct {
 	resources.Reconciler
 }
 
-func New(client client.Client, config *istiov1beta1.Istio) *Reconciler {
+func New(client client.Client, config *istiov1beta1.Istio, manifests []manifest.Manifest, scheme *runtime.Scheme) *Reconciler {
 	return &Reconciler{
 		Reconciler: resources.Reconciler{
-			Client: client,
-			Config: config,
+			Client:    client,
+			Config:    config,
+			Manifests: manifests,
+			Scheme:    scheme,
 		},
 	}
 }
@@ -64,22 +55,21 @@ func (r *Reconciler) Reconcile(log logr.Logger) error {
 
 	log.Info("Reconciling")
 
-	resources := []resources.Resource{
-		r.serviceAccount,
-		r.clusterRole,
-		r.clusterRoleBinding,
-		r.configMap,
-		r.deployment,
-		r.service,
+	objects, err := helm.DecodeObjects(log, r.Manifests)
+	if err != nil {
+		return emperror.Wrap(err, "failed to decode objects from chart")
 	}
-	if r.Config.Spec.DefaultPodDisruptionBudget.Enabled {
-		resources = append(resources, r.pdb)
-	}
-	for _, res := range resources {
-		o := res()
-		err := k8sutil.Reconcile(log, r.Client, o)
+
+	for _, o := range objects {
+		fmt.Printf("***type: %T\n", o)
+		ro := o.(runtime.Object)
+		err := controllerutil.SetControllerReference(r.Config, o, r.Scheme)
 		if err != nil {
-			return emperror.WrapWith(err, "failed to reconcile resource", "resource", o.GetObjectKind().GroupVersionKind())
+			return emperror.WrapWith(err, "failed to set controller reference", "resource", ro.GetObjectKind().GroupVersionKind())
+		}
+		err = k8sutil.Reconcile(log, r.Client, ro)
+		if err != nil {
+			return emperror.WrapWith(err, "failed to reconcile resource", "resource", ro.GetObjectKind().GroupVersionKind())
 		}
 	}
 	// TODO: wait for deployment to be available?

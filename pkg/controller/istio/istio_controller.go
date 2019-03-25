@@ -19,6 +19,9 @@ package istio
 import (
 	"context"
 	"flag"
+	"github.com/banzaicloud/istio-operator/pkg/helm"
+	"k8s.io/client-go/restmapper"
+	"path"
 	"reflect"
 	"strings"
 
@@ -76,7 +79,7 @@ func init() {
 
 // Add creates a new Config Controller and adds it to the Manager with default RBAC. The Manager will set fields on the Controller
 // and Start it when the Manager is Started.
-func Add(mgr manager.Manager) error {
+func Add(mgr manager.Manager, rm *restmapper.DeferredDiscoveryRESTMapper) error {
 	dynamic, err := dynamic.NewForConfig(mgr.GetConfig())
 	if err != nil {
 		return emperror.Wrap(err, "failed to create dynamic client")
@@ -89,15 +92,17 @@ func Add(mgr manager.Manager) error {
 	if err != nil {
 		return emperror.Wrap(err, "unable to set up crd operator")
 	}
-	return add(mgr, newReconciler(mgr, dynamic, crd))
+	return add(mgr, newReconciler(mgr, dynamic, crd, rm))
 }
 
 // newReconciler returns a new reconcile.Reconciler
-func newReconciler(mgr manager.Manager, d dynamic.Interface, crd *crds.CrdOperator) reconcile.Reconciler {
+func newReconciler(mgr manager.Manager, d dynamic.Interface, crd *crds.CrdOperator, rm *restmapper.DeferredDiscoveryRESTMapper) reconcile.Reconciler {
 	return &ReconcileConfig{
 		Client:      mgr.GetClient(),
 		dynamic:     d,
 		crdOperator: crd,
+		scheme:      mgr.GetScheme(),
+		rm:          rm,
 	}
 }
 
@@ -122,6 +127,8 @@ type ReconcileConfig struct {
 	client.Client
 	dynamic     dynamic.Interface
 	crdOperator *crds.CrdOperator
+	scheme      *runtime.Scheme
+	rm          *restmapper.DeferredDiscoveryRESTMapper
 }
 
 type ReconcileComponent func(log logr.Logger, istio *istiov1beta1.Istio) error
@@ -221,17 +228,25 @@ func (r *ReconcileConfig) reconcile(logger logr.Logger, config *istiov1beta1.Ist
 		return reconcile.Result{}, err
 	}
 
+	r.rm.Reset()
+
+	log.V(1).Info("rendering Istio charts")
+	istioRenderings, _, err := helm.RenderHelmChart(path.Join(chartPath, "istio"), config.GetNamespace(), helm.Convert(config))
+	if err != nil {
+		return reconcile.Result{}, emperror.Wrap(err, "failed to render objects from chart")
+	}
+
 	reconcilers := []resources.ComponentReconciler{
-		common.New(r.Client, config, false),
+		common.New(r.Client, config, false, istioRenderings["istio"], r.scheme),
 		citadel.New(citadel.Configuration{
 			DeployMeshPolicy: true,
 			SelfSignedCA:     true,
-		}, r.Client, r.dynamic, config),
-		galley.New(r.Client, config),
-		pilot.New(r.Client, config),
-		gateways.New(r.Client, r.dynamic, config),
-		mixer.New(r.Client, r.dynamic, config),
-		sidecarinjector.New(r.Client, config),
+		}, r.Client, r.dynamic, config, istioRenderings["istio/charts/security"], r.scheme),
+		galley.New(r.Client, config, istioRenderings["istio/charts/galley"], r.scheme),
+		pilot.New(r.Client, config, istioRenderings["istio/charts/pilot"], r.scheme),
+		gateways.New(r.Client, r.dynamic, config, istioRenderings["istio/charts/gateways"], r.scheme),
+		mixer.New(r.Client, r.dynamic, config, istioRenderings["istio/charts/mixer"], r.scheme),
+		sidecarinjector.New(r.Client, config, istioRenderings["istio/charts/sidecarInjectorWebhook"], r.scheme),
 	}
 
 	if config.Spec.NodeAgent.Enabled {

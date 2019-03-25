@@ -18,6 +18,11 @@ package main
 
 import (
 	"flag"
+	"k8s.io/apimachinery/pkg/api/meta"
+	"k8s.io/client-go/discovery"
+	"k8s.io/client-go/discovery/cached"
+	"k8s.io/client-go/rest"
+	"k8s.io/client-go/restmapper"
 	"os"
 
 	_ "k8s.io/client-go/plugin/pkg/client/auth/gcp"
@@ -31,6 +36,13 @@ import (
 	"github.com/banzaicloud/istio-operator/pkg/remoteclusters"
 	"github.com/banzaicloud/istio-operator/pkg/webhook"
 )
+
+func mapperProvider(c *rest.Config) *restmapper.DeferredDiscoveryRESTMapper {
+	dc := discovery.NewDiscoveryClientForConfigOrDie(c)
+	mc := cached.NewMemCacheClient(dc)
+	mc.Invalidate()
+	return restmapper.NewDeferredDiscoveryRESTMapper(mc)
+}
 
 func main() {
 	var metricsAddr string
@@ -50,8 +62,14 @@ func main() {
 	}
 
 	// Create a new Cmd to provide shared dependencies and start components
+	rm := mapperProvider(cfg)
 	log.Info("setting up manager")
-	mgr, err := manager.New(cfg, manager.Options{MetricsBindAddress: metricsAddr})
+	mgr, err := manager.New(cfg, manager.Options{
+		MetricsBindAddress: metricsAddr,
+		MapperProvider: func(c *rest.Config) (meta.RESTMapper, error) {
+			return rm, nil
+		},
+	})
 	if err != nil {
 		log.Error(err, "unable to set up overall controller manager")
 		os.Exit(1)
@@ -68,7 +86,7 @@ func main() {
 
 	// Setup all Controllers
 	log.Info("Setting up controller")
-	if err := controller.AddToManager(mgr, remoteclusters.NewManager()); err != nil {
+	if err := controller.AddToManager(mgr, remoteclusters.NewManager(), rm); err != nil {
 		log.Error(err, "unable to register controllers to the manager")
 		os.Exit(1)
 	}

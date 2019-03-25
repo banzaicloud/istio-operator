@@ -17,21 +17,22 @@ limitations under the License.
 package controller
 
 import (
+	"k8s.io/client-go/restmapper"
 	"sigs.k8s.io/controller-runtime/pkg/manager"
 
 	"github.com/banzaicloud/istio-operator/pkg/remoteclusters"
 )
 
 // AddToManagerFuncs is a list of functions to add all Controllers to the Manager
-var AddToManagerFuncs []func(manager.Manager) error
+var AddToManagerFuncs []func(manager.Manager, *restmapper.DeferredDiscoveryRESTMapper) error
 
 // AddToManagerWithCMFuncs is a list of functions to add all Controllers with remote clusters manager to the Manager
 var AddToManagerWithCMFuncs []func(manager.Manager, *remoteclusters.Manager) error
 
 // AddToManager adds all Controllers to the Manager
-func AddToManager(m manager.Manager, cm *remoteclusters.Manager) error {
+func AddToManager(m manager.Manager, cm *remoteclusters.Manager, rm *restmapper.DeferredDiscoveryRESTMapper) error {
 	for _, f := range AddToManagerFuncs {
-		if err := f(m); err != nil {
+		if err := f(m, rm); err != nil {
 			return err
 		}
 	}

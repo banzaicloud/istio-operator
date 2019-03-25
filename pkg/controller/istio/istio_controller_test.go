@@ -17,6 +17,8 @@ limitations under the License.
 package istio
 
 import (
+	"os"
+	"path/filepath"
 	"testing"
 	"time"
 
@@ -54,10 +56,14 @@ func TestReconcile(t *testing.T) {
 	dynamic, err := dynamic.NewForConfig(mgr.GetConfig())
 	g.Expect(err).NotTo(gomega.HaveOccurred())
 
-	crd, err := crds.New(mgr.GetConfig(), crds.InitCrds())
+	wd, _ := os.Getwd()
+	customResourceDefs, err := crds.DecodeCRDs(filepath.Join(wd, "../../../charts"))
 	g.Expect(err).NotTo(gomega.HaveOccurred())
 
-	recFn, requests := SetupTestReconcile(newReconciler(mgr, dynamic, crd))
+	crd, err := crds.New(mgr.GetConfig(), customResourceDefs)
+	g.Expect(err).NotTo(gomega.HaveOccurred())
+
+	recFn, requests := SetupTestReconcile(newReconciler(mgr, dynamic, crd, nil))
 	g.Expect(add(mgr, recFn)).NotTo(gomega.HaveOccurred())
 
 	stopMgr, mgrStopped := StartTestManager(mgr, g)

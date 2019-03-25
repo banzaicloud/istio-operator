@@ -27,6 +27,7 @@ import (
 	appsv1 "k8s.io/api/apps/v1"
 	autoscalingv2beta1 "k8s.io/api/autoscaling/v2beta1"
 	corev1 "k8s.io/api/core/v1"
+	extensionsv1beta1 "k8s.io/api/extensions/v1beta1"
 	policyv1beta1 "k8s.io/api/policy/v1beta1"
 	rbacv1 "k8s.io/api/rbac/v1"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
@@ -95,6 +96,10 @@ func Reconcile(log logr.Logger, client runtimeClient.Client, desired runtime.Obj
 		case *appsv1.Deployment:
 			deploy := desired.(*appsv1.Deployment)
 			deploy.ResourceVersion = current.(*appsv1.Deployment).ResourceVersion
+			desired = deploy
+		case *extensionsv1beta1.Deployment:
+			deploy := desired.(*extensionsv1beta1.Deployment)
+			deploy.ResourceVersion = current.(*extensionsv1beta1.Deployment).ResourceVersion
 			desired = deploy
 		case *autoscalingv2beta1.HorizontalPodAutoscaler:
 			hpa := desired.(*autoscalingv2beta1.HorizontalPodAutoscaler)

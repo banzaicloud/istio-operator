@@ -12,28 +12,28 @@
 # for detailed configuration
 #
 gateways:
-  enabled: false
+  enabled: true
 
 #
 # sidecar-injector webhook configuration, refer to the
 # charts/sidecarInjectorWebhook/values.yaml for detailed configuration
 #
 sidecarInjectorWebhook:
-  enabled: false
+  enabled: true
 
 #
 # galley configuration, refer to charts/galley/values.yaml
 # for detailed configuration
 #
 galley:
-  enabled: false
+  enabled: true
 
 #
 # mixer configuration
 #
 # @see charts/mixer/values.yaml, it takes precedence
 mixer:
-  enabled: false
+  enabled: true
   policy:
     # if policy is enabled the global.disablePolicyChecks has affect.
     enabled: true
@@ -45,13 +45,13 @@ mixer:
 #
 # @see charts/pilot/values.yaml
 pilot:
-  enabled: false
+  enabled: true
 
 #
 # security configuration
 #
 security:
-  enabled: false
+  enabled: true
 
 #
 # nodeagent configuration
@@ -81,7 +81,7 @@ servicegraph:
 # addon jaeger tracing configuration
 #
 tracing:
-  enabled: true
+  enabled: false
 
 #
 # addon kiali tracing configuration
@@ -357,7 +357,7 @@ global:
   # enable pod distruption budget for the control plane, which is used to
   # ensure Istio control plane components are gradually upgraded or recovered.
   defaultPodDisruptionBudget:
-    enabled: false
+    enabled: true
     # The values aren't mutable due to a current PodDisruptionBudget limitation
     # minAvailable: 1
 

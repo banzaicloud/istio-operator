@@ -18,6 +18,10 @@ package mixer
 
 import (
 	"fmt"
+	"github.com/banzaicloud/istio-operator/pkg/helm"
+	"k8s.io/apimachinery/pkg/runtime"
+	"k8s.io/helm/pkg/manifest"
+	"sigs.k8s.io/controller-runtime/pkg/controller/controllerutil"
 
 	"github.com/go-logr/logr"
 	"github.com/goph/emperror"
@@ -30,30 +34,21 @@ import (
 )
 
 const (
-	componentName          = "mixer"
-	serviceAccountName     = "istio-mixer-service-account"
-	clusterRoleName        = "istio-mixer-cluster-role"
-	clusterRoleBindingName = "istio-mixer-cluster-role-binding"
+	componentName = "mixer"
 )
-
-var mixerLabels = map[string]string{
-	"app": "mixer",
-}
-
-var labelSelector = map[string]string{
-	"istio": "mixer",
-}
 
 type Reconciler struct {
 	resources.Reconciler
 	dynamic dynamic.Interface
 }
 
-func New(client client.Client, dc dynamic.Interface, config *istiov1beta1.Istio) *Reconciler {
+func New(client client.Client, dc dynamic.Interface, config *istiov1beta1.Istio, manifests []manifest.Manifest, scheme *runtime.Scheme) *Reconciler {
 	return &Reconciler{
 		Reconciler: resources.Reconciler{
-			Client: client,
-			Config: config,
+			Client:    client,
+			Config:    config,
+			Manifests: manifests,
+			Scheme:    scheme,
 		},
 		dynamic: dc,
 	}
@@ -64,63 +59,58 @@ func (r *Reconciler) Reconcile(log logr.Logger) error {
 
 	log.Info("Reconciling")
 
-	rs := []resources.Resource{
-		r.serviceAccount,
-		r.clusterRole,
-		r.clusterRoleBinding,
+	objects, err := helm.DecodeObjects(log, r.Manifests)
+	if err != nil {
+		return emperror.Wrap(err, "failed to decode objects from chart")
 	}
-	rsv := []resources.ResourceVariation{
-		r.deployment,
-		r.service,
-		r.horizontalPodAutoscaler,
-	}
-	if r.Config.Spec.DefaultPodDisruptionBudget.Enabled {
-		rsv = append(rsv, r.pdb)
-	}
-	rs = append(rs, resources.ResolveVariations("policy", rsv)...)
-	rs = append(rs, resources.ResolveVariations("telemetry", rsv)...)
-	for _, res := range rs {
-		o := res()
-		err := k8sutil.Reconcile(log, r.Client, o)
+
+	for _, o := range objects {
+		fmt.Printf("***type: %T\n", o)
+		ro := o.(runtime.Object)
+		err := controllerutil.SetControllerReference(r.Config, o, r.Scheme)
 		if err != nil {
-			return emperror.WrapWith(err, "failed to reconcile resource", "resource", o.GetObjectKind().GroupVersionKind())
+			return emperror.WrapWith(err, "failed to set controller reference", "resource", ro.GetObjectKind().GroupVersionKind())
+		}
+		err = k8sutil.Reconcile(log, r.Client, ro)
+		if err != nil {
+			return emperror.WrapWith(err, "failed to reconcile resource", "resource", ro.GetObjectKind().GroupVersionKind())
 		}
 	}
-	drs := []resources.DynamicResourceWithDesiredState{
-		{DynamicResource: r.istioProxyAttributeManifest},
-		{DynamicResource: r.kubernetesAttributeManifest},
-		{DynamicResource: r.stdioHandler},
-		{DynamicResource: r.accessLogLogentry},
-		{DynamicResource: r.tcpAccessLogLogentry},
-		{DynamicResource: r.stdioRule},
-		{DynamicResource: r.stdioTcpRule},
-		{DynamicResource: r.prometheusHandler},
-		{DynamicResource: r.requestCountMetric},
-		{DynamicResource: r.requestDurationMetric},
-		{DynamicResource: r.requestSizeMetric},
-		{DynamicResource: r.responseSizeMetric},
-		{DynamicResource: r.tcpByteReceivedMetric},
-		{DynamicResource: r.tcpByteSentMetric},
-		{DynamicResource: r.tcpConnectionsOpenedMetric},
-		{DynamicResource: r.tcpConnectionsClosedMetric},
-		{DynamicResource: r.promHttpRule},
-		{DynamicResource: r.promTcpRule},
-		{DynamicResource: r.promTcpConnectionOpenRule},
-		{DynamicResource: r.promTcpConnectionClosedRule},
-		{DynamicResource: r.kubernetesEnvHandler},
-		{DynamicResource: r.attributesKubernetes},
-		{DynamicResource: r.kubeAttrRule},
-		{DynamicResource: r.tcpKubeAttrRule},
-		{DynamicResource: r.policyDestinationRule},
-		{DynamicResource: r.telemetryDestinationRule},
-	}
-	for _, dr := range drs {
-		o := dr.DynamicResource()
-		err := o.Reconcile(log, r.dynamic, dr.DesiredState)
-		if err != nil {
-			return emperror.WrapWith(err, "failed to reconcile dynamic resource", "resource", o.Gvr)
-		}
-	}
+	//drs := []resources.DynamicResourceWithDesiredState{
+	//	{DynamicResource: r.istioProxyAttributeManifest},
+	//	{DynamicResource: r.kubernetesAttributeManifest},
+	//	{DynamicResource: r.stdioHandler},
+	//	{DynamicResource: r.accessLogLogentry},
+	//	{DynamicResource: r.tcpAccessLogLogentry},
+	//	{DynamicResource: r.stdioRule},
+	//	{DynamicResource: r.stdioTcpRule},
+	//	{DynamicResource: r.prometheusHandler},
+	//	{DynamicResource: r.requestCountMetric},
+	//	{DynamicResource: r.requestDurationMetric},
+	//	{DynamicResource: r.requestSizeMetric},
+	//	{DynamicResource: r.responseSizeMetric},
+	//	{DynamicResource: r.tcpByteReceivedMetric},
+	//	{DynamicResource: r.tcpByteSentMetric},
+	//	{DynamicResource: r.tcpConnectionsOpenedMetric},
+	//	{DynamicResource: r.tcpConnectionsClosedMetric},
+	//	{DynamicResource: r.promHttpRule},
+	//	{DynamicResource: r.promTcpRule},
+	//	{DynamicResource: r.promTcpConnectionOpenRule},
+	//	{DynamicResource: r.promTcpConnectionClosedRule},
+	//	{DynamicResource: r.kubernetesEnvHandler},
+	//	{DynamicResource: r.attributesKubernetes},
+	//	{DynamicResource: r.kubeAttrRule},
+	//	{DynamicResource: r.tcpKubeAttrRule},
+	//	{DynamicResource: r.policyDestinationRule},
+	//	{DynamicResource: r.telemetryDestinationRule},
+	//}
+	//for _, dr := range drs {
+	//	o := dr.DynamicResource()
+	//	err := o.Reconcile(log, r.dynamic, dr.DesiredState)
+	//	if err != nil {
+	//		return emperror.WrapWith(err, "failed to reconcile dynamic resource", "resource", o.Gvr)
+	//	}
+	//}
 
 	log.Info("Reconciled")
 

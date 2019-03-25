@@ -21,12 +21,15 @@ import (
 	"github.com/banzaicloud/istio-operator/pkg/k8sutil"
 	"github.com/go-logr/logr"
 	"k8s.io/apimachinery/pkg/runtime"
+	"k8s.io/helm/pkg/manifest"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
 type Reconciler struct {
 	client.Client
-	Config *istiov1beta1.Istio
+	Config    *istiov1beta1.Istio
+	Manifests []manifest.Manifest
+	Scheme    *runtime.Scheme
 }
 
 type ComponentReconciler interface {
@@ -34,19 +37,6 @@ type ComponentReconciler interface {
 }
 
 type Resource func() runtime.Object
-
-type ResourceVariation func(t string) runtime.Object
-
-func ResolveVariations(t string, v []ResourceVariation) []Resource {
-	resources := make([]Resource, 0)
-	for i := range v {
-		i := i
-		resources = append(resources, func() runtime.Object {
-			return v[i](t)
-		})
-	}
-	return resources
-}
 
 type DynamicResource func() *k8sutil.DynamicObject
 

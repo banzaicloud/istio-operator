@@ -18,6 +18,7 @@ package crds
 
 import (
 	"bytes"
+	"fmt"
 	"os"
 	"path"
 	"path/filepath"
@@ -61,7 +62,12 @@ func New(cfg *rest.Config, crds []*extensionsobj.CustomResourceDefinition) (*Crd
 func DecodeCRDs(chartPath string) ([]*extensionsobj.CustomResourceDefinition, error) {
 	log.Info("ensuring CRDs have been installed")
 	crdPath := path.Join(chartPath, "istio-init/files")
+
+	fmt.Println(crdPath)
 	crdDir, err := os.Stat(crdPath)
+	if err != nil {
+		return nil, err
+	}
 	if !crdDir.IsDir() {
 		return nil, errors.Errorf("Cannot locate any CRD files in %s", crdPath)
 	}
