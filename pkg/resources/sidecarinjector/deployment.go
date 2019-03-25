@@ -49,7 +49,7 @@ func (r *Reconciler) deployment() runtime.Object {
 						{
 							Name:            "sidecar-injector-webhook",
 							Image:           r.Config.Spec.SidecarInjector.Image,
-							ImagePullPolicy: apiv1.PullIfNotPresent,
+							ImagePullPolicy: r.Config.Spec.ImagePullPolicy,
 							Args: []string{
 								"--caCertFile=/etc/istio/certs/root-cert.pem",
 								"--tlsCertFile=/etc/istio/certs/cert-chain.pem",

@@ -45,7 +45,7 @@ func (r *Reconciler) deployment(gw string) runtime.Object {
 		containers = append(containers, apiv1.Container{
 			Name:            "ingress-sds",
 			Image:           gwConfig.SDS.Image,
-			ImagePullPolicy: apiv1.PullIfNotPresent,
+			ImagePullPolicy: r.Config.Spec.ImagePullPolicy,
 			Env: []apiv1.EnvVar{
 				{
 					Name:  "ENABLE_WORKLOAD_SDS",
@@ -78,7 +78,7 @@ func (r *Reconciler) deployment(gw string) runtime.Object {
 	containers = append(containers, apiv1.Container{
 		Name:            "istio-proxy",
 		Image:           r.Config.Spec.Proxy.Image,
-		ImagePullPolicy: apiv1.PullIfNotPresent,
+		ImagePullPolicy: r.Config.Spec.ImagePullPolicy,
 		Args: []string{
 			"proxy",
 			"router",
@@ -329,7 +329,7 @@ func GetCoreDumpContainer(config *istiov1beta1.Istio) apiv1.Container {
 	return apiv1.Container{
 		Name:            "enable-core-dump",
 		Image:           config.Spec.ProxyInit.Image,
-		ImagePullPolicy: apiv1.PullIfNotPresent,
+		ImagePullPolicy: config.Spec.ImagePullPolicy,
 		Command: []string{
 			"/bin/sh",
 		},

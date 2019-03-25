@@ -53,7 +53,7 @@ func (r *Reconciler) deployment() runtime.Object {
 	var citadelContainer = apiv1.Container{
 		Name:                     "citadel",
 		Image:                    r.Config.Spec.Citadel.Image,
-		ImagePullPolicy:          apiv1.PullIfNotPresent,
+		ImagePullPolicy:          r.Config.Spec.ImagePullPolicy,
 		Args:                     args,
 		Resources:                templates.DefaultResources(),
 		TerminationMessagePath:   apiv1.TerminationMessagePathDefault,

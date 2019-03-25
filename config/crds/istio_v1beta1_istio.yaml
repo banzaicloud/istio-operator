@@ -135,6 +135,14 @@ spec:
                       type: string
                   type: object
               type: object
+            imagePullPolicy:
+              description: ImagePullPolicy describes a policy for if/when to pull
+                a container image
+              enum:
+              - Always
+              - Never
+              - IfNotPresent
+              type: string
             includeIPRanges:
               description: IncludeIPRanges the range where to capture egress traffic
               type: string

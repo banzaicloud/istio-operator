@@ -75,7 +75,7 @@ func (r *Reconciler) proxyInitContainer() string {
   - "-k"
   - "[[ index .ObjectMeta.Annotations ` + "`" + `traffic.sidecar.istio.io/kubevirtInterfaces` + "`" + ` ]]"
   [[ end -]]
-  imagePullPolicy: IfNotPresent
+  imagePullPolicy: ` + string(r.Config.Spec.ImagePullPolicy) + `
   resources:
     requests:
       cpu: 10m
@@ -182,7 +182,7 @@ containers:
   - name: ISTIO_BOOTSTRAP_OVERRIDE
     value: "/etc/istio/custom-bootstrap/custom_bootstrap.json"
   [[- end ]]
-  imagePullPolicy: IfNotPresent
+  imagePullPolicy: ` + string(r.Config.Spec.ImagePullPolicy) + `
   [[ if (ne (annotation .ObjectMeta ` + "`" + `status.sidecar.istio.io/port` + "`" + ` 15020 ) "0") ]]
   readinessProbe:
     httpGet:
