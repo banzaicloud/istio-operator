@@ -34,7 +34,7 @@ const (
 	defaultSDSImage                  = defaultImageHub + "/" + "node-agent-k8s" + ":" + defaultImageVersion
 	defaultProxyImage                = defaultImageHub + "/" + "proxyv2" + ":" + defaultImageVersion
 	defaultProxyInitImage            = defaultImageHub + "/" + "proxy_init" + ":" + defaultImageVersion
-	defaultInitCNIImage              = defaultImageHub + "/install-cni:master-latest-daily"
+	defaultInitCNIImage           = "gcr.io/istio-release/install-cni:master-latest-daily"
 	defaultIncludeIPRanges           = "*"
 	defaultReplicaCount              = 1
 	defaultMinReplicas               = 1
