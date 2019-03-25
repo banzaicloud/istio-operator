@@ -16,31 +16,37 @@ limitations under the License.
 
 package v1beta1
 
-import "fmt"
+import (
+	"fmt"
+
+	apiv1 "k8s.io/api/core/v1"
+)
 
 const (
-	defaultImageHub               = "docker.io/istio"
-	defaultImageVersion           = "1.1.0"
-	defaultPilotImage             = defaultImageHub + "/" + "pilot" + ":" + defaultImageVersion
-	defaultCitadelImage           = defaultImageHub + "/" + "citadel" + ":" + defaultImageVersion
-	defaultGalleyImage            = defaultImageHub + "/" + "galley" + ":" + defaultImageVersion
-	defaultMixerImage             = defaultImageHub + "/" + "mixer" + ":" + defaultImageVersion
-	defaultSidecarInjectorImage   = defaultImageHub + "/" + "sidecar_injector" + ":" + defaultImageVersion
-	defaultNodeAgentImage         = defaultImageHub + "/" + "node-agent-k8s" + ":" + defaultImageVersion
-	defaultSDSImage               = defaultImageHub + "/" + "node-agent-k8s" + ":" + defaultImageVersion
-	defaultProxyImage             = defaultImageHub + "/" + "proxyv2" + ":" + defaultImageVersion
-	defaultProxyInitImage         = defaultImageHub + "/" + "proxy_init" + ":" + defaultImageVersion
-	defaultInitCNIImage           = "gcr.io/istio-release/install-cni:master-latest-daily"
-	defaultIncludeIPRanges        = "*"
-	defaultReplicaCount           = 1
-	defaultMinReplicas            = 1
-	defaultMaxReplicas            = 5
-	defaultTraceSampling          = 1.0
-	outboundTrafficPolicyAllowAny = "ALLOW_ANY"
-	defaultZipkinAddress          = "zipkin.%s:9411"
-	defaultInitCNIBinDir          = "/opt/cni/bin"
-	defaultInitCNIConfDir         = "/etc/cni/net.d"
-	defaultInitCNILogLevel        = "info"
+	defaultImageHub                  = "docker.io/istio"
+	defaultImageVersion              = "1.1.0"
+	defaultPilotImage                = defaultImageHub + "/" + "pilot" + ":" + defaultImageVersion
+	defaultCitadelImage              = defaultImageHub + "/" + "citadel" + ":" + defaultImageVersion
+	defaultGalleyImage               = defaultImageHub + "/" + "galley" + ":" + defaultImageVersion
+	defaultMixerImage                = defaultImageHub + "/" + "mixer" + ":" + defaultImageVersion
+	defaultSidecarInjectorImage      = defaultImageHub + "/" + "sidecar_injector" + ":" + defaultImageVersion
+	defaultNodeAgentImage            = defaultImageHub + "/" + "node-agent-k8s" + ":" + defaultImageVersion
+	defaultSDSImage                  = defaultImageHub + "/" + "node-agent-k8s" + ":" + defaultImageVersion
+	defaultProxyImage                = defaultImageHub + "/" + "proxyv2" + ":" + defaultImageVersion
+	defaultProxyInitImage            = defaultImageHub + "/" + "proxy_init" + ":" + defaultImageVersion
+	defaultInitCNIImage              = "gcr.io/istio-release/install-cni:master-latest-daily"
+	defaultIncludeIPRanges           = "*"
+	defaultReplicaCount              = 1
+	defaultMinReplicas               = 1
+	defaultMaxReplicas               = 5
+	defaultTraceSampling             = 1.0
+	defaultIngressGatewayServiceType = apiv1.ServiceTypeLoadBalancer
+	defaultEgressGatewayServiceType  = apiv1.ServiceTypeClusterIP
+	outboundTrafficPolicyAllowAny    = "ALLOW_ANY"
+	defaultZipkinAddress             = "zipkin.%s:9411"
+	defaultInitCNIBinDir             = "/opt/cni/bin"
+	defaultInitCNIConfDir            = "/etc/cni/net.d"
+	defaultInitCNILogLevel           = "info"
 )
 
 func SetDefaults(config *Istio) {
@@ -95,6 +101,12 @@ func SetDefaults(config *Istio) {
 	}
 	if config.Spec.Gateways.EgressConfig.MaxReplicas == 0 {
 		config.Spec.Gateways.EgressConfig.MaxReplicas = defaultMaxReplicas
+	}
+	if config.Spec.Gateways.IngressConfig.ServiceType == "" {
+		config.Spec.Gateways.IngressConfig.ServiceType = defaultIngressGatewayServiceType
+	}
+	if config.Spec.Gateways.EgressConfig.ServiceType == "" {
+		config.Spec.Gateways.EgressConfig.ServiceType = defaultEgressGatewayServiceType
 	}
 	// Mixer config
 	if config.Spec.Mixer.Image == "" {

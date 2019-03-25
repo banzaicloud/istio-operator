@@ -17,6 +17,7 @@ limitations under the License.
 package v1beta1
 
 import (
+	apiv1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
@@ -74,9 +75,11 @@ type GatewaySDSConfiguration struct {
 }
 
 type GatewayConfiguration struct {
-	ReplicaCount       int32                   `json:"replicaCount,omitempty"`
-	MinReplicas        int32                   `json:"minReplicas,omitempty"`
-	MaxReplicas        int32                   `json:"maxReplicas,omitempty"`
+	ReplicaCount int32 `json:"replicaCount,omitempty"`
+	MinReplicas  int32 `json:"minReplicas,omitempty"`
+	MaxReplicas  int32 `json:"maxReplicas,omitempty"`
+	// +kubebuilder:validation:Enum=ClusterIP,NodePort,LoadBalancer
+	ServiceType        apiv1.ServiceType       `json:"serviceType,omitempty"`
 	ServiceAnnotations map[string]string       `json:"serviceAnnotations,omitempty"`
 	ServiceLabels      map[string]string       `json:"serviceLabels,omitempty"`
 	SDS                GatewaySDSConfiguration `json:"sds,omitempty"`

@@ -30,7 +30,7 @@ func (r *Reconciler) service(gw string) runtime.Object {
 	return &apiv1.Service{
 		ObjectMeta: templates.ObjectMetaWithAnnotations(gatewayName(gw), util.MergeLabels(gwConfig.ServiceLabels, labelSelector(gw)), gwConfig.ServiceAnnotations, r.Config),
 		Spec: apiv1.ServiceSpec{
-			Type:     serviceType(gw),
+			Type:     serviceType(gw, r.Config.Spec.Gateways.IngressConfig.ServiceType, r.Config.Spec.Gateways.EgressConfig.ServiceType),
 			Ports:    servicePorts(gw),
 			Selector: labelSelector(gw),
 		},
@@ -61,12 +61,12 @@ func servicePorts(gw string) []apiv1.ServicePort {
 	return []apiv1.ServicePort{}
 }
 
-func serviceType(gw string) apiv1.ServiceType {
+func serviceType(gw string, ingressGatewayServiceType apiv1.ServiceType, eggressGatewayServiceType apiv1.ServiceType) apiv1.ServiceType {
 	switch gw {
 	case ingress:
-		return apiv1.ServiceTypeLoadBalancer
+		return ingressGatewayServiceType
 	case egress:
-		return apiv1.ServiceTypeClusterIP
+		return eggressGatewayServiceType
 	}
 	return ""
 }
