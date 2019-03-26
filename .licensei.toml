@@ -13,4 +13,12 @@ ignored = [
   "github.com/inconshreveable/mousetrap",
 
   "github.com/davecgh/go-spew", # ISC license
+
+  "github.com/Masterminds/semver", # MIT https://github.com/Masterminds/semver/blob/master/LICENSE.txt
+  "github.com/Masterminds/sprig", # MIT https://github.com/Masterminds/sprig/blob/master/LICENSE.txt
+  "github.com/docker/spdystream", # Apache 2.0 - https://github.com/docker/spdystream/blob/master/LICENSE
+  "github.com/go-openapi/spec", # Apache 2.0 - https://github.com/go-openapi/spec/blob/master/LICENSE
+  "github.com/opencontainers/go-digest", # Apache 2.0 - https://github.com/opencontainers/go-digest/blob/master/LICENSE
+  "github.com/russross/blackfriday", # Simplified BSD License - https://github.com/russross/blackfriday/blob/master/LICENSE.txt
+  "github.com/technosophos/moniker" # MIT https://github.com/technosophos/moniker/blob/master/LICENSE.txt
 ]
