@@ -112,6 +112,9 @@ func DecodeObjects(log logr.Logger, manifests []manifest.Manifest) ([]metav1.Obj
 			case *policyv1beta1.PodDisruptionBudget:
 				pdb := obj.(*policyv1beta1.PodDisruptionBudget)
 				resources = append(resources, pdb)
+			case *extensionsv1beta1.DaemonSet:
+				ds := obj.(*extensionsv1beta1.DaemonSet)
+				resources = append(resources, ds)
 			case *appsv1.DaemonSet:
 				ds := obj.(*appsv1.DaemonSet)
 				resources = append(resources, ds)

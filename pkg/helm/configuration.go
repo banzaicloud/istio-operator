@@ -39,6 +39,8 @@ type IstioHelmValues struct {
 	Security        *SecurityConfig        `json:"security,omitempty"`
 	SidecarInjector *SidecarInjectorConfig `json:"sidecarInjectorWebhook,omitempty"`
 	Kiali           *KialiConfig           `json:"kiali,omitempty"`
+	NodeAgent       *NodeAgentConfig       `json:"nodeagent,omitempty"`
+	Prometheus      *PrometheusConfig      `json:"prometheus,omitempty"`
 }
 
 // Globals
@@ -630,6 +632,11 @@ type SidecarInjectorConfig struct {
 	// istio-injection=enabled for automatic injection of sidecars.
 	// Defaults to false.
 	EnableNamespacesByDefault *bool `json:"enableNamespacesByDefault,omitempty"`
+
+	// If true, webhook or istioctl injector will rewrite PodSpec for liveness
+	// health check to redirect request to sidecar. This makes liveness check work
+	// even when mTLS is enabled.
+	RewriteAppHTTPProbe *bool `json:"rewriteAppHTTPProbe,omitempty"`
 }
 
 // Kiali component
@@ -664,6 +671,25 @@ type KialiDashboardConfig struct {
 	PassphraseKey string `json:"passphraseKey,omitempty"`
 	User          string `json:"user,omitempty"`
 	Passphrase    string `json:"passphrase,omitempty"`
+}
+
+// NodeAgent component
+
+// NodeAgentConfig is the configuration for the NodeAgent component
+type NodeAgentConfig struct {
+	// Enabled specifies whether or not the node agent templates should be processed
+	// Defaults to false.
+	CommonComponentConfig `json:",inline"`
+	// Defaults: Image: node-agent-k8s, Env: { GODEBUG: gctrace=2 }
+	// Autoscaler and ReplicaCount fields are unused
+	DeploymentFields `json:",inline"`
+}
+
+// PrometheusConfig is the configuration for the Prometheus component
+type PrometheusConfig struct {
+	// Enabled specifies whether or not the prometheus templates should be processed
+	// Defaults to true.
+	CommonComponentConfig `json:",inline"`
 }
 
 // Shared structs used by multiple components

@@ -117,6 +117,10 @@ func Reconcile(log logr.Logger, client runtimeClient.Client, desired runtime.Obj
 			ds := desired.(*appsv1.DaemonSet)
 			ds.ResourceVersion = current.(*appsv1.DaemonSet).ResourceVersion
 			desired = ds
+		case *extensionsv1beta1.DaemonSet:
+			ds := desired.(*extensionsv1beta1.DaemonSet)
+			ds.ResourceVersion = current.(*extensionsv1beta1.DaemonSet).ResourceVersion
+			desired = ds
 		case *rbacv1.Role:
 			ds := desired.(*rbacv1.Role)
 			ds.ResourceVersion = current.(*rbacv1.Role).ResourceVersion

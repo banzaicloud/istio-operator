@@ -46,7 +46,7 @@ type PilotConfiguration struct {
 	ReplicaCount  int32   `json:"replicaCount,omitempty"`
 	MinReplicas   int32   `json:"minReplicas,omitempty"`
 	MaxReplicas   int32   `json:"maxReplicas,omitempty"`
-	TraceSampling float32 `json:"traceSampling,omitempty"`
+	TraceSampling float64 `json:"traceSampling,omitempty"`
 }
 
 // CitadelConfiguration defines config options for Citadel
@@ -147,6 +147,14 @@ type TracingConfiguration struct {
 
 // IstioSpec defines the desired state of Istio
 type IstioSpec struct {
+	// ImageHub is the hub to be applied for all images, if otherwise
+	// unspecified.  Example: docker.io
+	ImageHub string `json:"imageHub,omitempty"`
+
+	// ImageTag is the tag to be applied for all images, if otherwise
+	// unspecified.  Example: 1.1.0
+	ImageTag string `json:"imageTag,omitempty"`
+
 	// MTLS enables or disables global mTLS
 	MTLS bool `json:"mtls"`
 

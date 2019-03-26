@@ -5,6 +5,8 @@ metadata:
     controller-tools.k8s.io: "1.0"
   name: istio-sample
 spec:
+  imageHub: "docker.io/istio"
+  imageTag: "1.1.0"
   mtls: true
   includeIPRanges: "*"
   excludeIPRanges: ""
@@ -17,16 +19,16 @@ spec:
     useTrustworthyJwt: true
     useNormalJwt: true
   pilot:
-    image: "gcr.io/istio-release/pilot:release-1.1-latest-daily"
+    image: "pilot"
     replicaCount: 1
     minReplicas: 1
     maxReplicas: 5
     traceSampling: 1.0
   citadel:
-    image: "gcr.io/istio-release/citadel:release-1.1-latest-daily"
+    image: "citadel"
     replicaCount: 1
   galley:
-    image: "gcr.io/istio-release/galley:release-1.1-latest-daily"
+    image: "galley"
     replicaCount: 1
   gateways:
     ingress:
@@ -37,7 +39,7 @@ spec:
       serviceLabels: {}
       sds:
         enabled: true
-        image: "gcr.io/istio-release/node-agent-k8s:release-1.1-latest-daily"
+        image: "node-agent-k8s"
     egress:
       replicaCount: 1
       minReplicas: 1
@@ -47,21 +49,21 @@ spec:
     k8singress:
       enabled: false
   mixer:
-    image: "gcr.io/istio-release/mixer:release-1.1-latest-daily"
+    image: "mixer"
     replicaCount: 1
     minReplicas: 1
     maxReplicas: 5
   sidecarInjector:
-    image: "gcr.io/istio-release/sidecar_injector:release-1.1-latest-daily"
+    image: "sidecar_injector"
     replicaCount: 1
   nodeAgent:
     enabled: true
-    image: "gcr.io/istio-release/node-agent-k8s:release-1.1-latest-daily"
+    image: "node-agent-k8s"
   proxy:
-    image: "gcr.io/istio-release/proxyv2:release-1.1-latest-daily"
+    image: "proxyv2"
     enableCoreDump: false
   proxyInit:
-    image: "gcr.io/istio-release/proxy_init:release-1.1-latest-daily"
+    image: "proxy_init"
   defaultPodDisruptionBudget:
     enabled: true
   outboundTrafficPolicy:

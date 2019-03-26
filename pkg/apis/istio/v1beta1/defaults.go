@@ -19,17 +19,17 @@ package v1beta1
 import "fmt"
 
 const (
-	defaultImageHub               = "gcr.io/istio-release"
-	defaultImageVersion           = "release-1.1-latest-daily"
-	defaultPilotImage             = defaultImageHub + "/" + "pilot" + ":" + defaultImageVersion
-	defaultCitadelImage           = defaultImageHub + "/" + "citadel" + ":" + defaultImageVersion
-	defaultGalleyImage            = defaultImageHub + "/" + "galley" + ":" + defaultImageVersion
-	defaultMixerImage             = defaultImageHub + "/" + "mixer" + ":" + defaultImageVersion
-	defaultSidecarInjectorImage   = defaultImageHub + "/" + "sidecar_injector" + ":" + defaultImageVersion
-	defaultNodeAgentImage         = defaultImageHub + "/" + "node-agent-k8s" + ":" + defaultImageVersion
-	defaultSDSImage               = defaultImageHub + "/" + "node-agent-k8s" + ":" + defaultImageVersion
-	defaultProxyImage             = defaultImageHub + "/" + "proxyv2" + ":" + defaultImageVersion
-	defaultProxyInitImage         = defaultImageHub + "/" + "proxy_init" + ":" + defaultImageVersion
+	defaultImageHub               = "docker.io/istio"
+	defaultImageTag               = "1.1.0"
+	defaultPilotImage             = "pilot"
+	defaultCitadelImage           = "citadel"
+	defaultGalleyImage            = "galley"
+	defaultMixerImage             = "mixer"
+	defaultSidecarInjectorImage   = "sidecar_injector"
+	defaultNodeAgentImage         = "node-agent-k8s"
+	defaultSDSImage               = "node-agent-k8s"
+	defaultProxyImage             = "proxyv2"
+	defaultProxyInitImage         = "proxy_init"
 	defaultIncludeIPRanges        = "*"
 	defaultReplicaCount           = 1
 	defaultMinReplicas            = 1
@@ -40,6 +40,12 @@ const (
 )
 
 func SetDefaults(config *Istio) {
+	if config.Spec.ImageHub == "" {
+		config.Spec.ImageHub = defaultImageHub
+	}
+	if config.Spec.ImageTag == "" {
+		config.Spec.ImageTag = defaultImageTag
+	}
 	if config.Spec.IncludeIPRanges == "" {
 		config.Spec.IncludeIPRanges = defaultIncludeIPRanges
 	}

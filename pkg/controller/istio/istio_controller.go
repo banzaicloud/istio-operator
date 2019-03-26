@@ -232,7 +232,7 @@ func (r *ReconcileConfig) reconcile(logger logr.Logger, config *istiov1beta1.Ist
 	r.rm.Reset()
 
 	log.V(1).Info("rendering Istio charts")
-	istioRenderings, _, err := helm.RenderHelmChart(path.Join(chartPath, "istio"), config.GetNamespace(), helm.Convert(config))
+	istioRenderings, _, err := helm.RenderHelmChart(path.Join(chartPath, "istio"), config.GetNamespace(), helm.Convert(&config.Spec))
 	if err != nil {
 		return reconcile.Result{}, emperror.Wrap(err, "failed to render objects from chart")
 	}

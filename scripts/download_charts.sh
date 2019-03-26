@@ -67,6 +67,9 @@ function patchTemplates() {
   # now make sure they're available
   sed -i -e 's/define "security-default\.yaml\.tpl"/if and .Values.createMeshPolicy .Values.global.mtls.enabled/' ${HELM_DIR}/istio/charts/security/templates/enable-mesh-mtls.yaml
   sed -i -e 's/define "security-permissive\.yaml\.tpl"/if and .Values.createMeshPolicy (not .Values.global.mtls.enabled)/' ${HELM_DIR}/istio/charts/security/templates/enable-mesh-permissive.yaml
+
+  # remove namespace from the mutatingwebhook configuration because it's cluster scoped and setting the namespace provides reconciliation errors
+  sed -i -e '0,/namespace/{//d}' ${HELM_DIR}/istio/charts/sidecarInjectorWebhook/templates/mutatingwebhook.yaml
 }
 
 retrieveIstioRelease
