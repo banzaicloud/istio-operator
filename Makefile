@@ -40,8 +40,11 @@ license-check: bin/licensei ## Run license check
 license-cache: bin/licensei ## Generate license cache
 	bin/licensei cache
 
+download-charts:
+	./scripts/download_charts.sh
+
 # Run tests
-test: install-kubebuilder generate fmt vet manifests
+test: install-kubebuilder generate fmt vet manifests download-charts
 	KUBEBUILDER_ASSETS="$${PWD}/bin/kubebuilder/bin" go test ./pkg/... ./cmd/... -coverprofile cover.out
 
 # Build manager binary
