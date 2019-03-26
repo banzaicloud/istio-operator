@@ -15,8 +15,8 @@ COPY cmd/    cmd/
 COPY Makefile Gopkg.* /go/src/${PACKAGE}/
 COPY scripts/ scripts/
 
-RUN chmod +x scripts/download_charts.sh
-RUN scripts/download_charts.sh
+RUN chmod +x /go/src/${PACKAGE}/scripts/download_charts.sh
+RUN /go/src/${PACKAGE}/scripts/download_charts.sh
 
 RUN make vendor
 

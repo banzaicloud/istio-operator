@@ -15,8 +15,8 @@ COPY cmd/    cmd/
 COPY vendor/ vendor/
 COPY scripts/ scripts/
 
-RUN chmod +x scripts/download_charts.sh
-RUN scripts/download_charts.sh
+RUN chmod +x /go/src/${PACKAGE}/scripts/download_charts.sh
+RUN /go/src/${PACKAGE}/scripts/download_charts.sh
 
 # Build
 RUN CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -a -o manager github.com/banzaicloud/istio-operator/cmd/manager

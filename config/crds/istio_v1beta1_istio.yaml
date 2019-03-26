@@ -123,6 +123,14 @@ spec:
                       type: object
                   type: object
               type: object
+            imageHub:
+              description: 'ImageHub is the hub to be applied for all images, if otherwise
+                unspecified.  Example: docker.io'
+              type: string
+            imageTag:
+              description: 'ImageTag is the tag to be applied for all images, if otherwise
+                unspecified.  Example: 1.1.0'
+              type: string
             includeIPRanges:
               description: IncludeIPRanges the range where to capture egress traffic
               type: string
@@ -177,7 +185,7 @@ spec:
                   format: int32
                   type: integer
                 traceSampling:
-                  format: float
+                  format: double
                   type: number
               type: object
             proxy:

@@ -41,7 +41,7 @@ license-cache: bin/licensei ## Generate license cache
 	bin/licensei cache
 
 download-charts:
-	./scripts/download_charts.sh
+	bash ./scripts/download_charts.sh
 
 # Run tests
 test: install-kubebuilder generate fmt vet manifests download-charts
