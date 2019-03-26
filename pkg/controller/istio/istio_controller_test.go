@@ -59,7 +59,7 @@ func TestReconcile(t *testing.T) {
 	crd, err := crds.New(mgr.GetClient(), mgr.GetScheme(), customResourceDefs)
 	g.Expect(err).NotTo(gomega.HaveOccurred())
 
-	recFn, requests := SetupTestReconcile(newReconciler(mgr, crd, nil))
+	recFn, requests := SetupTestReconcile(newReconciler(mgr, crd))
 	g.Expect(add(mgr, recFn)).NotTo(gomega.HaveOccurred())
 
 	stopMgr, mgrStopped := StartTestManager(mgr, g)

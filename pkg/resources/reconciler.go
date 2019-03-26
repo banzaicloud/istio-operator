@@ -17,11 +17,16 @@ limitations under the License.
 package resources
 
 import (
-	istiov1beta1 "github.com/banzaicloud/istio-operator/pkg/apis/istio/v1beta1"
 	"github.com/go-logr/logr"
+	"github.com/goph/emperror"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/helm/pkg/manifest"
 	"sigs.k8s.io/controller-runtime/pkg/client"
+	"sigs.k8s.io/controller-runtime/pkg/controller/controllerutil"
+
+	istiov1beta1 "github.com/banzaicloud/istio-operator/pkg/apis/istio/v1beta1"
+	"github.com/banzaicloud/istio-operator/pkg/helm"
+	"github.com/banzaicloud/istio-operator/pkg/k8sutil"
 )
 
 type Reconciler struct {
@@ -31,8 +36,35 @@ type Reconciler struct {
 	Scheme    *runtime.Scheme
 }
 
-type ComponentReconciler interface {
-	Reconcile(log logr.Logger) error
+func New(client client.Client, config *istiov1beta1.Istio, manifests []manifest.Manifest, scheme *runtime.Scheme) *Reconciler {
+	return &Reconciler{
+		Client:    client,
+		Config:    config,
+		Manifests: manifests,
+		Scheme:    scheme,
+	}
 }
 
-type Resource func() runtime.Object
+func (r *Reconciler) Reconcile(log logr.Logger) error {
+	log.Info("Reconciling")
+
+	objects, err := helm.DecodeObjects(log, r.Manifests)
+	if err != nil {
+		return emperror.Wrap(err, "failed to decode objects from chart")
+	}
+
+	for _, o := range objects {
+		ro := o.(runtime.Object)
+		err := controllerutil.SetControllerReference(r.Config, o, r.Scheme)
+		if err != nil {
+			return emperror.WrapWith(err, "failed to set controller reference", "resource", ro.GetObjectKind().GroupVersionKind())
+		}
+		err = k8sutil.Reconcile(log, r.Client, ro)
+		if err != nil {
+			return emperror.WrapWith(err, "failed to reconcile resource", "resource", ro.GetObjectKind().GroupVersionKind())
+		}
+	}
+	log.Info("Reconciled")
+
+	return nil
+}

@@ -19,8 +19,6 @@ package istio
 import (
 	"context"
 	"flag"
-	"github.com/banzaicloud/istio-operator/pkg/helm"
-	"k8s.io/client-go/restmapper"
 	"path"
 	"reflect"
 	"strings"
@@ -38,6 +36,7 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/types"
+	"k8s.io/client-go/restmapper"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/controller"
 	"sigs.k8s.io/controller-runtime/pkg/event"
@@ -50,22 +49,20 @@ import (
 
 	istiov1beta1 "github.com/banzaicloud/istio-operator/pkg/apis/istio/v1beta1"
 	"github.com/banzaicloud/istio-operator/pkg/crds"
+	"github.com/banzaicloud/istio-operator/pkg/helm"
 	"github.com/banzaicloud/istio-operator/pkg/k8sutil"
 	"github.com/banzaicloud/istio-operator/pkg/k8sutil/objectmatch"
 	"github.com/banzaicloud/istio-operator/pkg/resources"
-	"github.com/banzaicloud/istio-operator/pkg/resources/citadel"
-	"github.com/banzaicloud/istio-operator/pkg/resources/common"
-	"github.com/banzaicloud/istio-operator/pkg/resources/galley"
-	"github.com/banzaicloud/istio-operator/pkg/resources/gateways"
-	"github.com/banzaicloud/istio-operator/pkg/resources/mixer"
-	"github.com/banzaicloud/istio-operator/pkg/resources/nodeagent"
-	"github.com/banzaicloud/istio-operator/pkg/resources/pilot"
-	"github.com/banzaicloud/istio-operator/pkg/resources/sidecarinjector"
 	"github.com/banzaicloud/istio-operator/pkg/util"
 )
 
-const finalizerID = "istio-operator.finializer.banzaicloud.io"
-const istioSecretTypePrefix = "istio.io"
+const (
+	finalizerID                  = "istio-operator.finializer.banzaicloud.io"
+	istioSecretTypePrefix        = "istio.io"
+	citadelDeploymentName        = "istio-citadel"
+	managedAutoInjectionLabelKey = "istio-operator-managed-injection"
+	autoInjectionLabelKey        = "istio-injection"
+)
 
 var log = logf.Log.WithName("controller")
 var watchCreatedResourcesEvents bool
@@ -78,7 +75,7 @@ func init() {
 
 // Add creates a new Config Controller and adds it to the Manager with default RBAC. The Manager will set fields on the Controller
 // and Start it when the Manager is Started.
-func Add(mgr manager.Manager, rm *restmapper.DeferredDiscoveryRESTMapper) error {
+func Add(mgr manager.Manager) error {
 	customResourceDefs, err := crds.DecodeCRDs(chartPath)
 	if err != nil {
 		return emperror.Wrap(err, "unable to decode CRDs from YAMLs")
@@ -87,16 +84,16 @@ func Add(mgr manager.Manager, rm *restmapper.DeferredDiscoveryRESTMapper) error 
 	if err != nil {
 		return emperror.Wrap(err, "unable to set up crd operator")
 	}
-	return add(mgr, newReconciler(mgr, crd, rm))
+	return add(mgr, newReconciler(mgr, crd))
 }
 
 // newReconciler returns a new reconcile.Reconciler
-func newReconciler(mgr manager.Manager, crd *crds.CrdReconciler, rm *restmapper.DeferredDiscoveryRESTMapper) reconcile.Reconciler {
+func newReconciler(mgr manager.Manager, crd *crds.CrdReconciler) reconcile.Reconciler {
 	return &ReconcileConfig{
 		Client:      mgr.GetClient(),
 		crdOperator: crd,
 		scheme:      mgr.GetScheme(),
-		rm:          rm,
+		rm:          mgr.GetRESTMapper().(*restmapper.DeferredDiscoveryRESTMapper),
 	}
 }
 
@@ -190,7 +187,7 @@ func (r *ReconcileConfig) reconcile(logger logr.Logger, config *istiov1beta1.Ist
 			// Set citadel deployment as owner reference to istio secrets for garbage cleanup
 			r.setCitadelAsOwnerReferenceToIstioSecrets(config, appsv1.Deployment{
 				ObjectMeta: metav1.ObjectMeta{
-					Name:      citadel.GetDeploymentName(),
+					Name:      citadelDeploymentName,
 					Namespace: config.Namespace,
 				},
 			})
@@ -229,21 +226,9 @@ func (r *ReconcileConfig) reconcile(logger logr.Logger, config *istiov1beta1.Ist
 		return reconcile.Result{}, emperror.Wrap(err, "failed to render objects from chart")
 	}
 
-	reconcilers := []resources.ComponentReconciler{
-		common.New(r.Client, config, false, istioRenderings["istio"], r.scheme),
-		citadel.New(citadel.Configuration{
-			DeployMeshPolicy: true,
-			SelfSignedCA:     true,
-		}, r.Client, config, istioRenderings["istio/charts/security"], r.scheme),
-		galley.New(r.Client, config, istioRenderings["istio/charts/galley"], r.scheme),
-		pilot.New(r.Client, config, istioRenderings["istio/charts/pilot"], r.scheme),
-		gateways.New(r.Client, config, istioRenderings["istio/charts/gateways"], r.scheme),
-		mixer.New(r.Client, config, istioRenderings["istio/charts/mixer"], r.scheme),
-		sidecarinjector.New(r.Client, config, istioRenderings["istio/charts/sidecarInjectorWebhook"], r.scheme),
-	}
-
-	if config.Spec.NodeAgent.Enabled {
-		reconcilers = append(reconcilers, nodeagent.New(r.Client, config))
+	var reconcilers []*resources.Reconciler
+	for _, manifests := range istioRenderings {
+		reconcilers = append(reconcilers, resources.New(r.Client, config, manifests, r.scheme))
 	}
 
 	for _, rec := range reconcilers {
@@ -253,12 +238,60 @@ func (r *ReconcileConfig) reconcile(logger logr.Logger, config *istiov1beta1.Ist
 		}
 	}
 
+	err = r.ReconcileAutoInjectionLabels(log, config)
+	if err != nil {
+		return reconcile.Result{}, emperror.WrapWith(err, "failed to label namespaces")
+	}
+
 	err = r.updateStatus(config, istiov1beta1.Available, "")
 	if err != nil {
 		return reconcile.Result{}, errors.WithStack(err)
 	}
 	log.Info("reconcile finished")
 	return reconcile.Result{}, nil
+}
+
+func (r *ReconcileConfig) ReconcileAutoInjectionLabels(log logr.Logger, config *istiov1beta1.Istio) error {
+	var autoInjectLabels = map[string]string{
+		autoInjectionLabelKey:        "enabled",
+		managedAutoInjectionLabelKey: "enabled",
+	}
+
+	managedNamespaces := make(map[string]bool)
+	for _, ns := range config.Spec.AutoInjectionNamespaces {
+		managedNamespaces[ns] = true
+		err := k8sutil.ReconcileNamespaceLabelsIgnoreNotFound(log, r.Client, ns, autoInjectLabels, nil)
+		if err != nil {
+			log.Error(err, "failed to label namespace", "namespace", ns)
+		}
+	}
+
+	var namespaces corev1.NamespaceList
+	o := &client.ListOptions{}
+	selector := managedAutoInjectionLabelKey + "=" + autoInjectLabels[managedAutoInjectionLabelKey]
+	err := o.SetLabelSelector(selector)
+	if err != nil {
+		return emperror.WrapWith(err, "could set label selector to list options", "selector", selector)
+	}
+
+	err = r.Client.List(context.Background(), o, &namespaces)
+	if err != nil {
+		return emperror.Wrap(err, "could not list namespaces")
+	}
+
+	for _, ns := range namespaces.Items {
+		if !managedNamespaces[ns.Name] {
+			err := k8sutil.ReconcileNamespaceLabelsIgnoreNotFound(log, r.Client, ns.Name, nil, []string{
+				autoInjectionLabelKey,
+				managedAutoInjectionLabelKey,
+			})
+			if err != nil {
+				log.Error(emperror.Wrap(err, "failed to label namespace"), "namespace", ns.Name)
+			}
+		}
+	}
+
+	return nil
 }
 
 func (r *ReconcileConfig) setCitadelAsOwnerReferenceToIstioSecrets(config *istiov1beta1.Istio, deployment appsv1.Deployment) error {

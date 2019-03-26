@@ -39,20 +39,3 @@ func ObjectMeta(name string, labels map[string]string, config *istiov1beta1.Isti
 		},
 	}
 }
-
-func ObjectMetaClusterScope(name string, labels map[string]string, config *istiov1beta1.Istio) metav1.ObjectMeta {
-	return metav1.ObjectMeta{
-		Name:   name,
-		Labels: labels,
-		OwnerReferences: []metav1.OwnerReference{
-			{
-				APIVersion:         config.APIVersion,
-				Kind:               config.Kind,
-				Name:               config.Name,
-				UID:                config.UID,
-				Controller:         util.BoolPointer(true),
-				BlockOwnerDeletion: util.BoolPointer(true),
-			},
-		},
-	}
-}

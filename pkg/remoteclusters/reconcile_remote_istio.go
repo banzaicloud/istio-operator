@@ -19,26 +19,17 @@ package remoteclusters
 import (
 	istiov1beta1 "github.com/banzaicloud/istio-operator/pkg/apis/istio/v1beta1"
 	"github.com/banzaicloud/istio-operator/pkg/resources"
-	"github.com/banzaicloud/istio-operator/pkg/resources/citadel"
-	"github.com/banzaicloud/istio-operator/pkg/resources/common"
-	"github.com/banzaicloud/istio-operator/pkg/resources/nodeagent"
-	"github.com/banzaicloud/istio-operator/pkg/resources/sidecarinjector"
 	"k8s.io/helm/pkg/manifest"
 )
 
 func (c *Cluster) reconcileComponents(remoteConfig *istiov1beta1.RemoteIstio, istio *istiov1beta1.Istio) error {
 	c.log.Info("reconciling components")
 
-	reconcilers := []resources.ComponentReconciler{
-		common.New(c.ctrlRuntimeClient, c.istioConfig, true, []manifest.Manifest{}, nil),
-		citadel.New(citadel.Configuration{
-			DeployMeshPolicy: false,
-		}, c.ctrlRuntimeClient, c.istioConfig, []manifest.Manifest{}, nil),
-		sidecarinjector.New(c.ctrlRuntimeClient, c.istioConfig, []manifest.Manifest{}, nil),
-	}
-
-	if c.istioConfig.Spec.NodeAgent.Enabled {
-		reconcilers = append(reconcilers, nodeagent.New(c.ctrlRuntimeClient, c.istioConfig))
+	reconcilers := []*resources.Reconciler{
+		resources.New(c.ctrlRuntimeClient, c.istioConfig, []manifest.Manifest{}, nil),
+		resources.New(c.ctrlRuntimeClient, c.istioConfig, []manifest.Manifest{}, nil),
+		resources.New(c.ctrlRuntimeClient, c.istioConfig, []manifest.Manifest{}, nil),
+		//TODO
 	}
 
 	for _, rec := range reconcilers {

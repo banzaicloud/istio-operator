@@ -55,12 +55,14 @@ func main() {
 	}
 
 	// Create a new Cmd to provide shared dependencies and start components
-	rm := mapperProvider(cfg)
 	log.Info("setting up manager")
 	mgr, err := manager.New(cfg, manager.Options{
 		MetricsBindAddress: metricsAddr,
 		MapperProvider: func(c *rest.Config) (meta.RESTMapper, error) {
-			return rm, nil
+			dc := discovery.NewDiscoveryClientForConfigOrDie(c)
+			mc := cached.NewMemCacheClient(dc)
+			mc.Invalidate()
+			return restmapper.NewDeferredDiscoveryRESTMapper(mc), nil
 		},
 	})
 	if err != nil {
@@ -79,7 +81,7 @@ func main() {
 
 	// Setup all Controllers
 	log.Info("Setting up controller")
-	if err := controller.AddToManager(mgr, remoteclusters.NewManager(), rm); err != nil {
+	if err := controller.AddToManager(mgr, remoteclusters.NewManager()); err != nil {
 		log.Error(err, "unable to register controllers to the manager")
 		os.Exit(1)
 	}
@@ -96,11 +98,4 @@ func main() {
 		log.Error(err, "unable to run the manager")
 		os.Exit(1)
 	}
-}
-
-func mapperProvider(c *rest.Config) *restmapper.DeferredDiscoveryRESTMapper {
-	dc := discovery.NewDiscoveryClientForConfigOrDie(c)
-	mc := cached.NewMemCacheClient(dc)
-	mc.Invalidate()
-	return restmapper.NewDeferredDiscoveryRESTMapper(mc)
 }
