@@ -50,7 +50,7 @@ manager: generate fmt vet
 
 # Run against the configured Kubernetes cluster in ~/.kube/config
 run: generate fmt vet
-	go run ./cmd/manager/main.go -chartPath "$${PWD}/charts"
+	go run ./cmd/manager/main.go -chartPath "$${PWD}/tmp/_output/helm/istio-releases/istio-1.1.0"
 
 # Install kustomize
 install-kustomize:

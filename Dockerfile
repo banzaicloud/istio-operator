@@ -13,6 +13,11 @@ WORKDIR /go/src/${PACKAGE}
 COPY pkg/    pkg/
 COPY cmd/    cmd/
 COPY Makefile Gopkg.* /go/src/${PACKAGE}/
+COPY scripts/ scripts/
+
+RUN chmod +x scripts/download_charts.sh
+RUN scripts/download_charts.sh
+
 RUN make vendor
 
 # Build
@@ -23,5 +28,5 @@ FROM alpine:3.7
 RUN apk add --no-cache ca-certificates
 WORKDIR /
 COPY --from=builder /go/src/github.com/banzaicloud/istio-operator/manager .
-COPY charts/   charts/
+COPY --from=builder /go/src/github.com/banzaicloud/istio-operator/tmp/_output/helm/istio-releases/istio-1.1.0 charts/
 ENTRYPOINT ["/manager"]

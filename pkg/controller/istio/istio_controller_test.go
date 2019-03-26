@@ -53,7 +53,7 @@ func TestReconcile(t *testing.T) {
 	c = mgr.GetClient()
 
 	wd, _ := os.Getwd()
-	customResourceDefs, err := crds.DecodeCRDs(filepath.Join(wd, "../../../charts"))
+	customResourceDefs, err := crds.DecodeCRDs(filepath.Join(wd, "../../../tmp/_output/helm/istio-releases/istio-1.1.0"))
 	g.Expect(err).NotTo(gomega.HaveOccurred())
 
 	crd, err := crds.New(mgr.GetClient(), mgr.GetScheme(), customResourceDefs)
