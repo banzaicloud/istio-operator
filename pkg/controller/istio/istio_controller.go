@@ -19,6 +19,10 @@ package istio
 import (
 	"context"
 	"flag"
+	"k8s.io/apimachinery/pkg/api/meta"
+	"k8s.io/client-go/discovery"
+	"k8s.io/client-go/discovery/cached"
+	"k8s.io/client-go/rest"
 	"path"
 	"reflect"
 	"strings"
@@ -109,6 +113,13 @@ func add(mgr manager.Manager, r reconcile.Reconciler) error {
 		return err
 	}
 	return nil
+}
+
+func MapperProvider(c *rest.Config) (meta.RESTMapper, error) {
+	dc := discovery.NewDiscoveryClientForConfigOrDie(c)
+	mc := cached.NewMemCacheClient(dc)
+	mc.Invalidate()
+	return restmapper.NewDeferredDiscoveryRESTMapper(mc), nil
 }
 
 var _ reconcile.Reconciler = &ReconcileConfig{}

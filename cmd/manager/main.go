@@ -20,12 +20,7 @@ import (
 	"flag"
 	"os"
 
-	"k8s.io/apimachinery/pkg/api/meta"
-	"k8s.io/client-go/discovery"
-	"k8s.io/client-go/discovery/cached"
 	_ "k8s.io/client-go/plugin/pkg/client/auth/gcp"
-	"k8s.io/client-go/rest"
-	"k8s.io/client-go/restmapper"
 	"sigs.k8s.io/controller-runtime/pkg/client/config"
 	"sigs.k8s.io/controller-runtime/pkg/manager"
 	logf "sigs.k8s.io/controller-runtime/pkg/runtime/log"
@@ -33,6 +28,7 @@ import (
 
 	"github.com/banzaicloud/istio-operator/pkg/apis"
 	"github.com/banzaicloud/istio-operator/pkg/controller"
+	"github.com/banzaicloud/istio-operator/pkg/controller/istio"
 	"github.com/banzaicloud/istio-operator/pkg/remoteclusters"
 	"github.com/banzaicloud/istio-operator/pkg/webhook"
 )
@@ -58,12 +54,7 @@ func main() {
 	log.Info("setting up manager")
 	mgr, err := manager.New(cfg, manager.Options{
 		MetricsBindAddress: metricsAddr,
-		MapperProvider: func(c *rest.Config) (meta.RESTMapper, error) {
-			dc := discovery.NewDiscoveryClientForConfigOrDie(c)
-			mc := cached.NewMemCacheClient(dc)
-			mc.Invalidate()
-			return restmapper.NewDeferredDiscoveryRESTMapper(mc), nil
-		},
+		MapperProvider:     istio.MapperProvider,
 	})
 	if err != nil {
 		log.Error(err, "unable to set up overall controller manager")
