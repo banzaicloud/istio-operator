@@ -18,14 +18,14 @@ package main
 
 import (
 	"flag"
+	"os"
+
 	"k8s.io/apimachinery/pkg/api/meta"
 	"k8s.io/client-go/discovery"
 	"k8s.io/client-go/discovery/cached"
+	_ "k8s.io/client-go/plugin/pkg/client/auth/gcp"
 	"k8s.io/client-go/rest"
 	"k8s.io/client-go/restmapper"
-	"os"
-
-	_ "k8s.io/client-go/plugin/pkg/client/auth/gcp"
 	"sigs.k8s.io/controller-runtime/pkg/client/config"
 	"sigs.k8s.io/controller-runtime/pkg/manager"
 	logf "sigs.k8s.io/controller-runtime/pkg/runtime/log"
@@ -36,13 +36,6 @@ import (
 	"github.com/banzaicloud/istio-operator/pkg/remoteclusters"
 	"github.com/banzaicloud/istio-operator/pkg/webhook"
 )
-
-func mapperProvider(c *rest.Config) *restmapper.DeferredDiscoveryRESTMapper {
-	dc := discovery.NewDiscoveryClientForConfigOrDie(c)
-	mc := cached.NewMemCacheClient(dc)
-	mc.Invalidate()
-	return restmapper.NewDeferredDiscoveryRESTMapper(mc)
-}
 
 func main() {
 	var metricsAddr string
@@ -103,4 +96,11 @@ func main() {
 		log.Error(err, "unable to run the manager")
 		os.Exit(1)
 	}
+}
+
+func mapperProvider(c *rest.Config) *restmapper.DeferredDiscoveryRESTMapper {
+	dc := discovery.NewDiscoveryClientForConfigOrDie(c)
+	mc := cached.NewMemCacheClient(dc)
+	mc.Invalidate()
+	return restmapper.NewDeferredDiscoveryRESTMapper(mc)
 }

@@ -29,7 +29,6 @@ import (
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/types"
-	"k8s.io/client-go/dynamic"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/manager"
 	"sigs.k8s.io/controller-runtime/pkg/reconcile"
@@ -53,17 +52,14 @@ func TestReconcile(t *testing.T) {
 	g.Expect(err).NotTo(gomega.HaveOccurred())
 	c = mgr.GetClient()
 
-	dynamic, err := dynamic.NewForConfig(mgr.GetConfig())
-	g.Expect(err).NotTo(gomega.HaveOccurred())
-
 	wd, _ := os.Getwd()
 	customResourceDefs, err := crds.DecodeCRDs(filepath.Join(wd, "../../../charts"))
 	g.Expect(err).NotTo(gomega.HaveOccurred())
 
-	crd, err := crds.New(mgr.GetConfig(), customResourceDefs)
+	crd, err := crds.New(mgr.GetClient(), mgr.GetScheme(), customResourceDefs)
 	g.Expect(err).NotTo(gomega.HaveOccurred())
 
-	recFn, requests := SetupTestReconcile(newReconciler(mgr, dynamic, crd, nil))
+	recFn, requests := SetupTestReconcile(newReconciler(mgr, crd, nil))
 	g.Expect(add(mgr, recFn)).NotTo(gomega.HaveOccurred())
 
 	stopMgr, mgrStopped := StartTestManager(mgr, g)

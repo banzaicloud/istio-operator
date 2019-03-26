@@ -1,9 +1,6 @@
 package helm
 
 import (
-	"fmt"
-	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
-	"k8s.io/apimachinery/pkg/runtime"
 	"reflect"
 	"regexp"
 	"strings"
@@ -18,6 +15,8 @@ import (
 	policyv1beta1 "k8s.io/api/policy/v1beta1"
 	rbacv1 "k8s.io/api/rbac/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
+	"k8s.io/apimachinery/pkg/runtime"
 	utilerrors "k8s.io/apimachinery/pkg/util/errors"
 	"k8s.io/client-go/kubernetes/scheme"
 	"k8s.io/helm/pkg/manifest"
@@ -27,7 +26,7 @@ import (
 var regexpIstioCR = regexp.MustCompile("apiVersion: \"?([a-z]+)\\.istio\\.io/([a-z0-9]+)\"?")
 
 func DecodeObjects(log logr.Logger, manifests []manifest.Manifest) ([]metav1.Object, error) {
-	allErrors := []error{}
+	var allErrors []error
 	origLogger := log
 	defer func() { log = origLogger }()
 	var resources []metav1.Object
@@ -41,30 +40,27 @@ func DecodeObjects(log logr.Logger, manifests []manifest.Manifest) ([]metav1.Obj
 		// split the manifest into individual objects
 		objects := releaseutil.SplitManifests(manifest.Content)
 		for _, raw := range objects {
-
 			var obj runtime.Object
 			var err error
 
 			decode := scheme.Codecs.UniversalDeserializer().Decode
 
+			// handle Istio CRs differently by decoding them to unstructured objects
 			if regexpIstioCR.MatchString(raw) {
-				fmt.Println("***!")
 				obj, _, err = decode([]byte(raw), nil, &unstructured.Unstructured{})
 				if err != nil {
-					fmt.Println("***! error", err.Error())
 					allErrors = append(allErrors, err)
 					continue
 				}
 			} else {
 				obj, _, err = decode([]byte(raw), nil, nil)
 				if err != nil {
-					fmt.Println("***! error", err.Error())
 					allErrors = append(allErrors, err)
 					continue
 				}
 			}
 
-			fmt.Println("***typeof", reflect.TypeOf(obj))
+			log.Info("decoded object", "type", reflect.TypeOf(obj))
 
 			switch obj.(type) {
 			case *corev1.Namespace:
@@ -110,7 +106,6 @@ func DecodeObjects(log logr.Logger, manifests []manifest.Manifest) ([]metav1.Obj
 				rb := obj.(*rbacv1.RoleBinding)
 				resources = append(resources, rb)
 			case *unstructured.Unstructured:
-				fmt.Println("!***2")
 				us := obj.(*unstructured.Unstructured)
 				resources = append(resources, us)
 			}

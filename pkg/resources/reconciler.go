@@ -18,7 +18,6 @@ package resources
 
 import (
 	istiov1beta1 "github.com/banzaicloud/istio-operator/pkg/apis/istio/v1beta1"
-	"github.com/banzaicloud/istio-operator/pkg/k8sutil"
 	"github.com/go-logr/logr"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/helm/pkg/manifest"
@@ -37,10 +36,3 @@ type ComponentReconciler interface {
 }
 
 type Resource func() runtime.Object
-
-type DynamicResource func() *k8sutil.DynamicObject
-
-type DynamicResourceWithDesiredState struct {
-	DynamicResource DynamicResource
-	DesiredState    k8sutil.DesiredState
-}

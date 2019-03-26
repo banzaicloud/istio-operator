@@ -17,7 +17,6 @@ limitations under the License.
 package sidecarinjector
 
 import (
-	"fmt"
 	istiov1beta1 "github.com/banzaicloud/istio-operator/pkg/apis/istio/v1beta1"
 	"github.com/banzaicloud/istio-operator/pkg/helm"
 	"github.com/banzaicloud/istio-operator/pkg/k8sutil"
@@ -64,7 +63,6 @@ func (r *Reconciler) Reconcile(log logr.Logger) error {
 	}
 
 	for _, o := range objects {
-		fmt.Printf("***type: %T\n", o)
 		ro := o.(runtime.Object)
 		err := controllerutil.SetControllerReference(r.Config, o, r.Scheme)
 		if err != nil {

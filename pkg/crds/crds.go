@@ -18,27 +18,26 @@ package crds
 
 import (
 	"bytes"
-	"fmt"
+	"context"
+	"k8s.io/apimachinery/pkg/runtime"
 	"os"
 	"path"
 	"path/filepath"
+	"sigs.k8s.io/controller-runtime/pkg/client"
+	"sigs.k8s.io/controller-runtime/pkg/controller/controllerutil"
 
 	"github.com/go-logr/logr"
 	"github.com/goph/emperror"
 	"github.com/pkg/errors"
 	extensionsobj "k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1beta1"
-	apiextensionsclient "k8s.io/apiextensions-apiserver/pkg/client/clientset/clientset"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	utilerrors "k8s.io/apimachinery/pkg/util/errors"
 	"k8s.io/client-go/kubernetes/scheme"
-	"k8s.io/client-go/rest"
 	"k8s.io/helm/pkg/releaseutil"
 	logf "sigs.k8s.io/controller-runtime/pkg/runtime/log"
 
 	istiov1beta1 "github.com/banzaicloud/istio-operator/pkg/apis/istio/v1beta1"
 	"github.com/banzaicloud/istio-operator/pkg/k8sutil/objectmatch"
-	"github.com/banzaicloud/istio-operator/pkg/util"
 )
 
 var log = logf.Log.WithName("crds")
@@ -47,15 +46,17 @@ const (
 	componentName = "crds"
 )
 
-type CrdOperator struct {
+type CrdReconciler struct {
+	client.Client
+	scheme *runtime.Scheme
 	crds   []*extensionsobj.CustomResourceDefinition
-	config *rest.Config
 }
 
-func New(cfg *rest.Config, crds []*extensionsobj.CustomResourceDefinition) (*CrdOperator, error) {
-	return &CrdOperator{
+func New(c client.Client, scheme *runtime.Scheme, crds []*extensionsobj.CustomResourceDefinition) (*CrdReconciler, error) {
+	return &CrdReconciler{
+		Client: c,
+		scheme: scheme,
 		crds:   crds,
-		config: cfg,
 	}, nil
 }
 
@@ -63,7 +64,7 @@ func DecodeCRDs(chartPath string) ([]*extensionsobj.CustomResourceDefinition, er
 	log.Info("ensuring CRDs have been installed")
 	crdPath := path.Join(chartPath, "istio-init/files")
 
-	fmt.Println(crdPath)
+	log.Info("decoding YAMLs", "path", crdPath)
 	crdDir, err := os.Stat(crdPath)
 	if err != nil {
 		return nil, err
@@ -76,7 +77,7 @@ func DecodeCRDs(chartPath string) ([]*extensionsobj.CustomResourceDefinition, er
 		if err != nil || info.IsDir() {
 			return err
 		}
-		c, err := processCRDFile(path)
+		c, err := decodeCRDFile(path)
 		if err != nil {
 			return err
 		}
@@ -90,8 +91,8 @@ func DecodeCRDs(chartPath string) ([]*extensionsobj.CustomResourceDefinition, er
 	return crds, nil
 }
 
-func processCRDFile(fileName string) ([]*extensionsobj.CustomResourceDefinition, error) {
-	allErrors := []error{}
+func decodeCRDFile(fileName string) ([]*extensionsobj.CustomResourceDefinition, error) {
+	var allErrors []error
 	buf := &bytes.Buffer{}
 	file, err := os.Open(fileName)
 	defer file.Close()
@@ -127,33 +128,28 @@ func processCRDFile(fileName string) ([]*extensionsobj.CustomResourceDefinition,
 	return crds, nil
 }
 
-func (r *CrdOperator) Reconcile(config *istiov1beta1.Istio, log logr.Logger) error {
+func (r *CrdReconciler) Reconcile(config *istiov1beta1.Istio, log logr.Logger) error {
 	log = log.WithValues("component", componentName)
-	apiExtensions, err := apiextensionsclient.NewForConfig(r.config)
-	if err != nil {
-		return emperror.Wrap(err, "instantiating apiextensions client failed")
-	}
-	crdClient := apiExtensions.ApiextensionsV1beta1().CustomResourceDefinitions()
 	for _, crd := range r.crds {
 		log := log.WithValues("kind", crd.Spec.Names.Kind)
-		current, err := crdClient.Get(crd.Name, metav1.GetOptions{})
+		key, err := client.ObjectKeyFromObject(crd)
+		if err != nil {
+			return emperror.With(err, "kind", crd.Spec.Names.Kind)
+		}
+
+		current := &extensionsobj.CustomResourceDefinition{}
+		err = r.Client.Get(context.TODO(), key, current)
 		if err != nil && !apierrors.IsNotFound(err) {
 			return emperror.WrapWith(err, "getting CRD failed", "kind", crd.Spec.Names.Kind)
 		}
 		if apierrors.IsNotFound(err) {
 			if config.Name != "" {
-				crd.ObjectMeta.OwnerReferences = []metav1.OwnerReference{
-					{
-						Kind:               config.Kind,
-						APIVersion:         config.APIVersion,
-						Name:               config.Name,
-						UID:                config.GetUID(),
-						Controller:         util.BoolPointer(true),
-						BlockOwnerDeletion: util.BoolPointer(true),
-					},
+				err := controllerutil.SetControllerReference(config, crd, r.scheme)
+				if err != nil {
+					return emperror.WrapWith(err, "failed to set controller reference", "kind", crd.Spec.Names.Kind)
 				}
 			}
-			if _, err := crdClient.Create(crd); err != nil {
+			if err := r.Client.Create(context.TODO(), crd); err != nil {
 				return emperror.WrapWith(err, "creating CRD failed", "kind", crd.Spec.Names.Kind)
 			}
 			log.Info("CRD created")
@@ -167,7 +163,7 @@ func (r *CrdOperator) Reconcile(config *istiov1beta1.Istio, log logr.Logger) err
 				continue
 			}
 			crd.ResourceVersion = current.ResourceVersion
-			if _, err := crdClient.Update(crd); err != nil {
+			if err := r.Client.Update(context.TODO(), crd); err != nil {
 				return emperror.WrapWith(err, "updating CRD failed", "kind", crd.Spec.Names.Kind)
 			}
 			log.Info("CRD updated")

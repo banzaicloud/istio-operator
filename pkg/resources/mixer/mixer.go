@@ -17,7 +17,6 @@ limitations under the License.
 package mixer
 
 import (
-	"fmt"
 	"github.com/banzaicloud/istio-operator/pkg/helm"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/helm/pkg/manifest"
@@ -25,7 +24,6 @@ import (
 
 	"github.com/go-logr/logr"
 	"github.com/goph/emperror"
-	"k8s.io/client-go/dynamic"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
 	istiov1beta1 "github.com/banzaicloud/istio-operator/pkg/apis/istio/v1beta1"
@@ -39,10 +37,9 @@ const (
 
 type Reconciler struct {
 	resources.Reconciler
-	dynamic dynamic.Interface
 }
 
-func New(client client.Client, dc dynamic.Interface, config *istiov1beta1.Istio, manifests []manifest.Manifest, scheme *runtime.Scheme) *Reconciler {
+func New(client client.Client, config *istiov1beta1.Istio, manifests []manifest.Manifest, scheme *runtime.Scheme) *Reconciler {
 	return &Reconciler{
 		Reconciler: resources.Reconciler{
 			Client:    client,
@@ -50,7 +47,6 @@ func New(client client.Client, dc dynamic.Interface, config *istiov1beta1.Istio,
 			Manifests: manifests,
 			Scheme:    scheme,
 		},
-		dynamic: dc,
 	}
 }
 
@@ -65,7 +61,6 @@ func (r *Reconciler) Reconcile(log logr.Logger) error {
 	}
 
 	for _, o := range objects {
-		fmt.Printf("***type: %T\n", o)
 		ro := o.(runtime.Object)
 		err := controllerutil.SetControllerReference(r.Config, o, r.Scheme)
 		if err != nil {
@@ -76,67 +71,7 @@ func (r *Reconciler) Reconcile(log logr.Logger) error {
 			return emperror.WrapWith(err, "failed to reconcile resource", "resource", ro.GetObjectKind().GroupVersionKind())
 		}
 	}
-	//drs := []resources.DynamicResourceWithDesiredState{
-	//	{DynamicResource: r.istioProxyAttributeManifest},
-	//	{DynamicResource: r.kubernetesAttributeManifest},
-	//	{DynamicResource: r.stdioHandler},
-	//	{DynamicResource: r.accessLogLogentry},
-	//	{DynamicResource: r.tcpAccessLogLogentry},
-	//	{DynamicResource: r.stdioRule},
-	//	{DynamicResource: r.stdioTcpRule},
-	//	{DynamicResource: r.prometheusHandler},
-	//	{DynamicResource: r.requestCountMetric},
-	//	{DynamicResource: r.requestDurationMetric},
-	//	{DynamicResource: r.requestSizeMetric},
-	//	{DynamicResource: r.responseSizeMetric},
-	//	{DynamicResource: r.tcpByteReceivedMetric},
-	//	{DynamicResource: r.tcpByteSentMetric},
-	//	{DynamicResource: r.tcpConnectionsOpenedMetric},
-	//	{DynamicResource: r.tcpConnectionsClosedMetric},
-	//	{DynamicResource: r.promHttpRule},
-	//	{DynamicResource: r.promTcpRule},
-	//	{DynamicResource: r.promTcpConnectionOpenRule},
-	//	{DynamicResource: r.promTcpConnectionClosedRule},
-	//	{DynamicResource: r.kubernetesEnvHandler},
-	//	{DynamicResource: r.attributesKubernetes},
-	//	{DynamicResource: r.kubeAttrRule},
-	//	{DynamicResource: r.tcpKubeAttrRule},
-	//	{DynamicResource: r.policyDestinationRule},
-	//	{DynamicResource: r.telemetryDestinationRule},
-	//}
-	//for _, dr := range drs {
-	//	o := dr.DynamicResource()
-	//	err := o.Reconcile(log, r.dynamic, dr.DesiredState)
-	//	if err != nil {
-	//		return emperror.WrapWith(err, "failed to reconcile dynamic resource", "resource", o.Gvr)
-	//	}
-	//}
-
 	log.Info("Reconciled")
 
 	return nil
-}
-
-func deploymentName(t string) string {
-	return fmt.Sprintf("istio-%s", t)
-}
-
-func serviceName(t string) string {
-	return fmt.Sprintf("istio-%s", t)
-}
-
-func hpaName(t string) string {
-	return fmt.Sprintf("istio-%s-autoscaler", t)
-}
-
-func appLabel(t string) map[string]string {
-	return map[string]string{
-		"app": t,
-	}
-}
-
-func mixerTypeLabel(t string) map[string]string {
-	return map[string]string{
-		"istio-mixer-type": t,
-	}
 }

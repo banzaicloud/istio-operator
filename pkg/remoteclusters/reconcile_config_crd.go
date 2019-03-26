@@ -27,7 +27,7 @@ import (
 func (c *Cluster) reconcileConfigCrd(remoteConfig *istiov1beta1.RemoteIstio, istio *istiov1beta1.Istio) error {
 	c.log.Info("reconciling config crd")
 
-	crdo, err := crds.New(c.restConfig, []*extensionsobj.CustomResourceDefinition{
+	crdo, err := crds.New(c.ctrlRuntimeClient, nil, []*extensionsobj.CustomResourceDefinition{
 		c.configcrd(),
 	})
 	if err != nil {

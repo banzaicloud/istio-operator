@@ -17,7 +17,6 @@ limitations under the License.
 package citadel
 
 import (
-	"fmt"
 	istiov1beta1 "github.com/banzaicloud/istio-operator/pkg/apis/istio/v1beta1"
 	"github.com/banzaicloud/istio-operator/pkg/helm"
 	"github.com/banzaicloud/istio-operator/pkg/k8sutil"
@@ -25,7 +24,6 @@ import (
 	"github.com/go-logr/logr"
 	"github.com/goph/emperror"
 	"k8s.io/apimachinery/pkg/runtime"
-	"k8s.io/client-go/dynamic"
 	"k8s.io/helm/pkg/manifest"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/controller/controllerutil"
@@ -36,22 +34,12 @@ const (
 	deploymentName = "istio-citadel"
 )
 
-var citadelLabels = map[string]string{
-	"app": "security",
-}
-
-var labelSelector = map[string]string{
-	"istio": "citadel",
-}
-
 type Reconciler struct {
 	resources.Reconciler
-	dynamic dynamic.Interface
-
 	configuration Configuration
 }
 
-func New(configuration Configuration, client client.Client, dc dynamic.Interface, config *istiov1beta1.Istio, manifests []manifest.Manifest, scheme *runtime.Scheme) *Reconciler {
+func New(configuration Configuration, client client.Client, config *istiov1beta1.Istio, manifests []manifest.Manifest, scheme *runtime.Scheme) *Reconciler {
 	return &Reconciler{
 		Reconciler: resources.Reconciler{
 			Client:    client,
@@ -59,7 +47,6 @@ func New(configuration Configuration, client client.Client, dc dynamic.Interface
 			Manifests: manifests,
 			Scheme:    scheme,
 		},
-		dynamic:       dc,
 		configuration: configuration,
 	}
 }
@@ -79,8 +66,6 @@ func (r *Reconciler) Reconcile(log logr.Logger) error {
 	}
 
 	for _, o := range objects {
-		fmt.Printf("***type: %T\n", o)
-
 		ro := o.(runtime.Object)
 		err := controllerutil.SetControllerReference(r.Config, o, r.Scheme)
 		if err != nil {
@@ -91,31 +76,6 @@ func (r *Reconciler) Reconcile(log logr.Logger) error {
 			return emperror.WrapWith(err, "failed to reconcile resource", "resource", ro.GetObjectKind().GroupVersionKind())
 		}
 	}
-
-	//if !*r.configuration.CreateMeshPolicy {
-	//	return nil
-	//}
-	//
-	//var mTLSDesiredState k8sutil.DesiredState
-	//if r.Config.Spec.MTLS {
-	//	mTLSDesiredState = k8sutil.DesiredStatePresent
-	//} else {
-	//	mTLSDesiredState = k8sutil.DesiredStateAbsent
-	//}
-	//drs := []resources.DynamicResourceWithDesiredState{
-	//	{DynamicResource: r.meshPolicy, DesiredState: k8sutil.DesiredStatePresent},
-	//	{DynamicResource: r.destinationRuleDefaultMtls, DesiredState: mTLSDesiredState},
-	//	{DynamicResource: r.destinationRuleApiServerMtls, DesiredState: mTLSDesiredState},
-	//}
-	//
-	//for _, dr := range drs {
-	//	o := dr.DynamicResource()
-	//	err := o.Reconcile(log, r.dynamic, dr.DesiredState)
-	//	if err != nil {
-	//		return emperror.WrapWith(err, "failed to reconcile dynamic resource", "resource", o.Gvr)
-	//	}
-	//}
-	//
 	log.Info("Reconciled")
 
 	return nil

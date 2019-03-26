@@ -33,7 +33,7 @@ func (c *Cluster) reconcileComponents(remoteConfig *istiov1beta1.RemoteIstio, is
 		common.New(c.ctrlRuntimeClient, c.istioConfig, true, []manifest.Manifest{}, nil),
 		citadel.New(citadel.Configuration{
 			DeployMeshPolicy: false,
-		}, c.ctrlRuntimeClient, c.dynamicClient, c.istioConfig, []manifest.Manifest{}, nil),
+		}, c.ctrlRuntimeClient, c.istioConfig, []manifest.Manifest{}, nil),
 		sidecarinjector.New(c.ctrlRuntimeClient, c.istioConfig, []manifest.Manifest{}, nil),
 	}
 

@@ -17,7 +17,6 @@ limitations under the License.
 package galley
 
 import (
-	"fmt"
 	"github.com/banzaicloud/istio-operator/pkg/helm"
 	"github.com/go-logr/logr"
 	"github.com/goph/emperror"
@@ -61,7 +60,6 @@ func (r *Reconciler) Reconcile(log logr.Logger) error {
 	}
 
 	for _, o := range objects {
-		fmt.Printf("***type: %T\n", o)
 		ro := o.(runtime.Object)
 		err := controllerutil.SetControllerReference(r.Config, o, r.Scheme)
 		if err != nil {

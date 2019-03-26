@@ -38,7 +38,6 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/types"
-	"k8s.io/client-go/dynamic"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/controller"
 	"sigs.k8s.io/controller-runtime/pkg/event"
@@ -80,26 +79,21 @@ func init() {
 // Add creates a new Config Controller and adds it to the Manager with default RBAC. The Manager will set fields on the Controller
 // and Start it when the Manager is Started.
 func Add(mgr manager.Manager, rm *restmapper.DeferredDiscoveryRESTMapper) error {
-	dynamic, err := dynamic.NewForConfig(mgr.GetConfig())
-	if err != nil {
-		return emperror.Wrap(err, "failed to create dynamic client")
-	}
 	customResourceDefs, err := crds.DecodeCRDs(chartPath)
 	if err != nil {
 		return emperror.Wrap(err, "unable to decode CRDs from YAMLs")
 	}
-	crd, err := crds.New(mgr.GetConfig(), customResourceDefs)
+	crd, err := crds.New(mgr.GetClient(), mgr.GetScheme(), customResourceDefs)
 	if err != nil {
 		return emperror.Wrap(err, "unable to set up crd operator")
 	}
-	return add(mgr, newReconciler(mgr, dynamic, crd, rm))
+	return add(mgr, newReconciler(mgr, crd, rm))
 }
 
 // newReconciler returns a new reconcile.Reconciler
-func newReconciler(mgr manager.Manager, d dynamic.Interface, crd *crds.CrdOperator, rm *restmapper.DeferredDiscoveryRESTMapper) reconcile.Reconciler {
+func newReconciler(mgr manager.Manager, crd *crds.CrdReconciler, rm *restmapper.DeferredDiscoveryRESTMapper) reconcile.Reconciler {
 	return &ReconcileConfig{
 		Client:      mgr.GetClient(),
-		dynamic:     d,
 		crdOperator: crd,
 		scheme:      mgr.GetScheme(),
 		rm:          rm,
@@ -125,8 +119,7 @@ var _ reconcile.Reconciler = &ReconcileConfig{}
 // ReconcileConfig reconciles a Config object
 type ReconcileConfig struct {
 	client.Client
-	dynamic     dynamic.Interface
-	crdOperator *crds.CrdOperator
+	crdOperator *crds.CrdReconciler
 	scheme      *runtime.Scheme
 	rm          *restmapper.DeferredDiscoveryRESTMapper
 }
@@ -241,11 +234,11 @@ func (r *ReconcileConfig) reconcile(logger logr.Logger, config *istiov1beta1.Ist
 		citadel.New(citadel.Configuration{
 			DeployMeshPolicy: true,
 			SelfSignedCA:     true,
-		}, r.Client, r.dynamic, config, istioRenderings["istio/charts/security"], r.scheme),
+		}, r.Client, config, istioRenderings["istio/charts/security"], r.scheme),
 		galley.New(r.Client, config, istioRenderings["istio/charts/galley"], r.scheme),
 		pilot.New(r.Client, config, istioRenderings["istio/charts/pilot"], r.scheme),
-		gateways.New(r.Client, r.dynamic, config, istioRenderings["istio/charts/gateways"], r.scheme),
-		mixer.New(r.Client, r.dynamic, config, istioRenderings["istio/charts/mixer"], r.scheme),
+		gateways.New(r.Client, config, istioRenderings["istio/charts/gateways"], r.scheme),
+		mixer.New(r.Client, config, istioRenderings["istio/charts/mixer"], r.scheme),
 		sidecarinjector.New(r.Client, config, istioRenderings["istio/charts/sidecarInjectorWebhook"], r.scheme),
 	}
 

@@ -22,7 +22,6 @@ import (
 	"github.com/go-logr/logr"
 	"github.com/goph/emperror"
 	k8serrors "k8s.io/apimachinery/pkg/api/errors"
-	"k8s.io/client-go/dynamic"
 	"k8s.io/client-go/rest"
 	"k8s.io/client-go/tools/clientcmd"
 	"sigs.k8s.io/controller-runtime/pkg/client"
@@ -37,7 +36,6 @@ type Cluster struct {
 
 	restConfig        *rest.Config
 	ctrlRuntimeClient client.Client
-	dynamicClient     dynamic.Interface
 	istioConfig       *istiov1beta1.Istio
 	remoteConfig      *istiov1beta1.RemoteIstio
 }
@@ -73,12 +71,6 @@ func (c *Cluster) initK8SClients() error {
 		return emperror.Wrap(err, "could not get control-runtime client")
 	}
 	c.ctrlRuntimeClient = ctrlRuntimeClient
-
-	dynamicClient, err := dynamic.NewForConfig(restConfig)
-	if err != nil {
-		return emperror.Wrap(err, "could not get dynamic client")
-	}
-	c.dynamicClient = dynamicClient
 
 	return nil
 }
