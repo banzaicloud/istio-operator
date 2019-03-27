@@ -280,6 +280,13 @@ spec:
           - mtls
           type: object
         status:
+          properties:
+            errorMessage:
+              type: string
+            resources:
+              type: object
+            status:
+              type: string
           type: object
   version: v1beta1
 status:

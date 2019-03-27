@@ -18,22 +18,20 @@ package remoteclusters
 
 import (
 	istiov1beta1 "github.com/banzaicloud/istio-operator/pkg/apis/istio/v1beta1"
-	"github.com/banzaicloud/istio-operator/pkg/resources"
+	"github.com/banzaicloud/istio-operator/pkg/reconcile"
 	"k8s.io/helm/pkg/manifest"
 )
 
 func (c *Cluster) reconcileComponents(remoteConfig *istiov1beta1.RemoteIstio, istio *istiov1beta1.Istio) error {
 	c.log.Info("reconciling components")
 
-	reconcilers := []*resources.Reconciler{
-		resources.New(c.ctrlRuntimeClient, c.istioConfig, []manifest.Manifest{}, nil),
-		resources.New(c.ctrlRuntimeClient, c.istioConfig, []manifest.Manifest{}, nil),
-		resources.New(c.ctrlRuntimeClient, c.istioConfig, []manifest.Manifest{}, nil),
+	reconcilers := []*reconcile.Reconciler{
+		reconcile.New(c.ctrlRuntimeClient, "", c.istioConfig, []manifest.Manifest{}, nil),
 		//TODO
 	}
 
 	for _, rec := range reconcilers {
-		err := rec.Reconcile(c.log)
+		_, err := rec.Reconcile(c.log, nil)
 		if err != nil {
 			return err
 		}

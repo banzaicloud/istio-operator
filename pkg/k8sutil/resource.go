@@ -19,6 +19,7 @@ package k8sutil
 import (
 	"context"
 	"errors"
+	"fmt"
 	"reflect"
 
 	"github.com/go-logr/logr"
@@ -31,15 +32,26 @@ import (
 	policyv1beta1 "k8s.io/api/policy/v1beta1"
 	rbacv1 "k8s.io/api/rbac/v1"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
+	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/apimachinery/pkg/runtime"
 	runtimeClient "sigs.k8s.io/controller-runtime/pkg/client"
 
 	"github.com/banzaicloud/istio-operator/pkg/k8sutil/objectmatch"
 )
 
-func Reconcile(log logr.Logger, client runtimeClient.Client, desired runtime.Object) error {
-	desiredType := reflect.TypeOf(desired)
-	var current = desired.DeepCopyObject()
+type DesiredState string
+
+const (
+	DesiredStatePresent DesiredState = "available"
+	DesiredStateAbsent  DesiredState = "absent"
+)
+
+func Reconcile(log logr.Logger, client runtimeClient.Client, object runtime.Object, desiredState DesiredState) error {
+	if desiredState == "" {
+		desiredState = DesiredStatePresent
+	}
+	desiredType := reflect.TypeOf(object)
+	var current = object.DeepCopyObject()
 	key, err := runtimeClient.ObjectKeyFromObject(current)
 	if err != nil {
 		return emperror.With(err, "kind", desiredType)
@@ -50,90 +62,102 @@ func Reconcile(log logr.Logger, client runtimeClient.Client, desired runtime.Obj
 	if err != nil && !apierrors.IsNotFound(err) {
 		return emperror.WrapWith(err, "getting resource failed", "kind", desiredType, "name", key.Name)
 	}
-	if apierrors.IsNotFound(err) {
-		if err := client.Create(context.TODO(), desired); err != nil {
+	if apierrors.IsNotFound(err) && desiredState == DesiredStatePresent {
+		if err := client.Create(context.TODO(), object); err != nil {
 			return emperror.WrapWith(err, "creating resource failed", "kind", desiredType, "name", key.Name)
 		}
 		log.Info("resource created")
 	}
 	if err == nil {
-		objectsEquals, err := objectmatch.New(log).Match(current, desired)
-		if err != nil {
-			log.Error(err, "could not match objects", "kind", desiredType, "name", key.Name)
-		} else if objectsEquals {
-			log.V(1).Info("resource is in sync")
-			return nil
-		}
+		if desiredState == DesiredStatePresent {
+			objectsEquals, err := objectmatch.New(log).Match(current, object)
+			if err != nil {
+				log.Error(err, "could not match objects", "kind", desiredType, "name", key.Name)
+			} else if objectsEquals {
+				log.V(1).Info("resource is in sync")
+				return nil
+			}
 
-		switch desired.(type) {
-		default:
-			return emperror.With(errors.New("unexpected resource type"), "kind", desiredType, "name", key.Name)
-		case *corev1.Namespace:
-			ns := desired.(*corev1.Namespace)
-			ns.ResourceVersion = current.(*corev1.Namespace).ResourceVersion
-			desired = ns
-		case *corev1.ServiceAccount:
-			sa := desired.(*corev1.ServiceAccount)
-			sa.ResourceVersion = current.(*corev1.ServiceAccount).ResourceVersion
-			desired = sa
-		case *rbacv1.ClusterRole:
-			cr := desired.(*rbacv1.ClusterRole)
-			cr.ResourceVersion = current.(*rbacv1.ClusterRole).ResourceVersion
-			desired = cr
-		case *rbacv1.ClusterRoleBinding:
-			crb := desired.(*rbacv1.ClusterRoleBinding)
-			crb.ResourceVersion = current.(*rbacv1.ClusterRoleBinding).ResourceVersion
-			desired = crb
-		case *corev1.ConfigMap:
-			cm := desired.(*corev1.ConfigMap)
-			cm.ResourceVersion = current.(*corev1.ConfigMap).ResourceVersion
-			desired = cm
-		case *corev1.Service:
-			svc := desired.(*corev1.Service)
-			svc.ResourceVersion = current.(*corev1.Service).ResourceVersion
-			svc.Spec.ClusterIP = current.(*corev1.Service).Spec.ClusterIP
-			desired = svc
-		case *appsv1.Deployment:
-			deploy := desired.(*appsv1.Deployment)
-			deploy.ResourceVersion = current.(*appsv1.Deployment).ResourceVersion
-			desired = deploy
-		case *extensionsv1beta1.Deployment:
-			deploy := desired.(*extensionsv1beta1.Deployment)
-			deploy.ResourceVersion = current.(*extensionsv1beta1.Deployment).ResourceVersion
-			desired = deploy
-		case *autoscalingv2beta1.HorizontalPodAutoscaler:
-			hpa := desired.(*autoscalingv2beta1.HorizontalPodAutoscaler)
-			hpa.ResourceVersion = current.(*autoscalingv2beta1.HorizontalPodAutoscaler).ResourceVersion
-			desired = hpa
-		case *admissionregistrationv1beta1.MutatingWebhookConfiguration:
-			mwc := desired.(*admissionregistrationv1beta1.MutatingWebhookConfiguration)
-			mwc.ResourceVersion = current.(*admissionregistrationv1beta1.MutatingWebhookConfiguration).ResourceVersion
-			desired = mwc
-		case *policyv1beta1.PodDisruptionBudget:
-			pdb := desired.(*policyv1beta1.PodDisruptionBudget)
-			pdb.ResourceVersion = current.(*policyv1beta1.PodDisruptionBudget).ResourceVersion
-			desired = pdb
-		case *appsv1.DaemonSet:
-			ds := desired.(*appsv1.DaemonSet)
-			ds.ResourceVersion = current.(*appsv1.DaemonSet).ResourceVersion
-			desired = ds
-		case *extensionsv1beta1.DaemonSet:
-			ds := desired.(*extensionsv1beta1.DaemonSet)
-			ds.ResourceVersion = current.(*extensionsv1beta1.DaemonSet).ResourceVersion
-			desired = ds
-		case *rbacv1.Role:
-			ds := desired.(*rbacv1.Role)
-			ds.ResourceVersion = current.(*rbacv1.Role).ResourceVersion
-			desired = ds
-		case *rbacv1.RoleBinding:
-			ds := desired.(*rbacv1.RoleBinding)
-			ds.ResourceVersion = current.(*rbacv1.RoleBinding).ResourceVersion
-			desired = ds
+			switch object.(type) {
+			default:
+				fmt.Println("***", desiredType, key.Name)
+				return emperror.With(errors.New("unexpected resource type"), "kind", desiredType, "name", key.Name)
+			case *corev1.Namespace:
+				ns := object.(*corev1.Namespace)
+				ns.ResourceVersion = current.(*corev1.Namespace).ResourceVersion
+				object = ns
+			case *corev1.ServiceAccount:
+				sa := object.(*corev1.ServiceAccount)
+				sa.ResourceVersion = current.(*corev1.ServiceAccount).ResourceVersion
+				object = sa
+			case *rbacv1.ClusterRole:
+				cr := object.(*rbacv1.ClusterRole)
+				cr.ResourceVersion = current.(*rbacv1.ClusterRole).ResourceVersion
+				object = cr
+			case *rbacv1.ClusterRoleBinding:
+				crb := object.(*rbacv1.ClusterRoleBinding)
+				crb.ResourceVersion = current.(*rbacv1.ClusterRoleBinding).ResourceVersion
+				object = crb
+			case *corev1.ConfigMap:
+				cm := object.(*corev1.ConfigMap)
+				cm.ResourceVersion = current.(*corev1.ConfigMap).ResourceVersion
+				object = cm
+			case *corev1.Service:
+				svc := object.(*corev1.Service)
+				svc.ResourceVersion = current.(*corev1.Service).ResourceVersion
+				svc.Spec.ClusterIP = current.(*corev1.Service).Spec.ClusterIP
+				object = svc
+			case *appsv1.Deployment:
+				deploy := object.(*appsv1.Deployment)
+				deploy.ResourceVersion = current.(*appsv1.Deployment).ResourceVersion
+				object = deploy
+			case *extensionsv1beta1.Deployment:
+				deploy := object.(*extensionsv1beta1.Deployment)
+				deploy.ResourceVersion = current.(*extensionsv1beta1.Deployment).ResourceVersion
+				object = deploy
+			case *autoscalingv2beta1.HorizontalPodAutoscaler:
+				hpa := object.(*autoscalingv2beta1.HorizontalPodAutoscaler)
+				hpa.ResourceVersion = current.(*autoscalingv2beta1.HorizontalPodAutoscaler).ResourceVersion
+				object = hpa
+			case *admissionregistrationv1beta1.MutatingWebhookConfiguration:
+				mwc := object.(*admissionregistrationv1beta1.MutatingWebhookConfiguration)
+				mwc.ResourceVersion = current.(*admissionregistrationv1beta1.MutatingWebhookConfiguration).ResourceVersion
+				object = mwc
+			case *policyv1beta1.PodDisruptionBudget:
+				pdb := object.(*policyv1beta1.PodDisruptionBudget)
+				pdb.ResourceVersion = current.(*policyv1beta1.PodDisruptionBudget).ResourceVersion
+				object = pdb
+			case *appsv1.DaemonSet:
+				ds := object.(*appsv1.DaemonSet)
+				ds.ResourceVersion = current.(*appsv1.DaemonSet).ResourceVersion
+				object = ds
+			case *extensionsv1beta1.DaemonSet:
+				ds := object.(*extensionsv1beta1.DaemonSet)
+				ds.ResourceVersion = current.(*extensionsv1beta1.DaemonSet).ResourceVersion
+				object = ds
+			case *rbacv1.Role:
+				ds := object.(*rbacv1.Role)
+				ds.ResourceVersion = current.(*rbacv1.Role).ResourceVersion
+				object = ds
+			case *rbacv1.RoleBinding:
+				ds := object.(*rbacv1.RoleBinding)
+				ds.ResourceVersion = current.(*rbacv1.RoleBinding).ResourceVersion
+				object = ds
+			case *unstructured.Unstructured:
+				us := object.(*unstructured.Unstructured)
+				us.SetResourceVersion(current.(*unstructured.Unstructured).GetResourceVersion())
+				object = us
+			}
+			if err := client.Update(context.TODO(), object); err != nil {
+				return emperror.WrapWith(err, "updating resource failed", "kind", desiredType, "name", key.Name)
+			}
+			log.Info("resource updated")
+		} else if desiredState == DesiredStateAbsent {
+			if err := client.Delete(context.TODO(), object); err != nil {
+				return emperror.WrapWith(err, "deleting resource failed", "kind", desiredType, "name", key.Name)
+			}
+			log.Info("resource deleted")
 		}
-		if err := client.Update(context.TODO(), desired); err != nil {
-			return emperror.WrapWith(err, "updating resource failed", "kind", desiredType, "name", key.Name)
-		}
-		log.Info("resource updated")
 	}
 	return nil
 }

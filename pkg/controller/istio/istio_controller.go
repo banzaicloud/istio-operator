@@ -35,6 +35,7 @@ import (
 	k8serrors "k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/api/meta"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/client-go/discovery"
@@ -56,7 +57,7 @@ import (
 	"github.com/banzaicloud/istio-operator/pkg/helm"
 	"github.com/banzaicloud/istio-operator/pkg/k8sutil"
 	"github.com/banzaicloud/istio-operator/pkg/k8sutil/objectmatch"
-	"github.com/banzaicloud/istio-operator/pkg/resources"
+	opreconcile "github.com/banzaicloud/istio-operator/pkg/reconcile"
 	"github.com/banzaicloud/istio-operator/pkg/util"
 )
 
@@ -73,7 +74,7 @@ var watchCreatedResourcesEvents bool
 var chartPath string
 
 func init() {
-	flag.BoolVar(&watchCreatedResourcesEvents, "watch-created-resources-events", true, "Whether to watch created resources events")
+	flag.BoolVar(&watchCreatedResourcesEvents, "watch-created-resources-events", false, "Whether to watch created resources events")
 	flag.StringVar(&chartPath, "chartPath", "/charts", "The location of the Helm charts.")
 }
 
@@ -157,10 +158,10 @@ func (r *ReconcileConfig) Reconcile(request reconcile.Request) (reconcile.Result
 		return reconcile.Result{}, err
 	}
 	// Set default values where not set
-	istiov1beta1.SetDefaults(config)
+	//istiov1beta1.SetDefaults(config)
 	result, err := r.reconcile(logger, config)
 	if err != nil {
-		updateErr := r.updateStatus(config, istiov1beta1.ReconcileFailed, err.Error())
+		updateErr := r.updateReconcileStatus(config, istiov1beta1.ReconcileFailed, err.Error())
 		if updateErr != nil {
 			log.Error(updateErr, "failed to update state")
 			return result, errors.WithStack(err)
@@ -173,7 +174,7 @@ func (r *ReconcileConfig) Reconcile(request reconcile.Request) (reconcile.Result
 func (r *ReconcileConfig) reconcile(logger logr.Logger, config *istiov1beta1.Istio) (reconcile.Result, error) {
 
 	if config.Status.Status == "" {
-		err := r.updateStatus(config, istiov1beta1.Created, "")
+		err := r.updateReconcileStatus(config, istiov1beta1.Created, "")
 		if err != nil {
 			return reconcile.Result{}, errors.WithStack(err)
 		}
@@ -217,7 +218,7 @@ func (r *ReconcileConfig) reconcile(logger logr.Logger, config *istiov1beta1.Ist
 		return reconcile.Result{}, errors.New("cannot trigger reconcile while already reconciling")
 	}
 
-	err := r.updateStatus(config, istiov1beta1.Reconciling, "")
+	err := r.updateReconcileStatus(config, istiov1beta1.Reconciling, "")
 	if err != nil {
 		return reconcile.Result{}, errors.WithStack(err)
 	}
@@ -237,13 +238,22 @@ func (r *ReconcileConfig) reconcile(logger logr.Logger, config *istiov1beta1.Ist
 		return reconcile.Result{}, emperror.Wrap(err, "failed to render objects from chart")
 	}
 
-	var reconcilers []*resources.Reconciler
-	for _, manifests := range istioRenderings {
-		reconcilers = append(reconcilers, resources.New(r.Client, config, manifests, r.scheme))
+	var reconcilers []*opreconcile.Reconciler
+	for key, manifests := range istioRenderings {
+		compParts := strings.Split(key, "/")
+		reconcilers = append(reconcilers, opreconcile.New(r.Client, compParts[len(compParts)-1], config, manifests, r.scheme))
 	}
 
 	for _, rec := range reconcilers {
-		err = rec.Reconcile(log)
+		mr, err := rec.Reconcile(log, config.Status.Resources[rec.Component])
+		if err != nil {
+			return reconcile.Result{}, err
+		}
+		err = r.updateReconcileStatus(config, istiov1beta1.Available, "")
+		if err != nil {
+			return reconcile.Result{}, err
+		}
+		err = r.updateResources(config, rec.Component, mr)
 		if err != nil {
 			return reconcile.Result{}, err
 		}
@@ -254,7 +264,7 @@ func (r *ReconcileConfig) reconcile(logger logr.Logger, config *istiov1beta1.Ist
 		return reconcile.Result{}, emperror.WrapWith(err, "failed to label namespaces")
 	}
 
-	err = r.updateStatus(config, istiov1beta1.Available, "")
+	err = r.updateReconcileStatus(config, istiov1beta1.Available, "")
 	if err != nil {
 		return reconcile.Result{}, errors.WithStack(err)
 	}
@@ -347,14 +357,26 @@ func (r *ReconcileConfig) setCitadelAsOwnerReferenceToIstioSecrets(config *istio
 	return nil
 }
 
-func (r *ReconcileConfig) updateStatus(config *istiov1beta1.Istio, status istiov1beta1.ConfigState, errorMessage string) error {
-	typeMeta := config.TypeMeta
+func (r *ReconcileConfig) updateResources(config *istiov1beta1.Istio, component string, resources []*unstructured.Unstructured) error {
+	if config.Status.Resources == nil {
+		config.Status.Resources = make(map[string][]*unstructured.Unstructured)
+	}
+	config.Status.Resources[component] = resources
+	return r.updateStatus(config)
+}
+
+func (r *ReconcileConfig) updateReconcileStatus(config *istiov1beta1.Istio, status istiov1beta1.ConfigState, errorMessage string) error {
 	config.Status.Status = status
 	config.Status.ErrorMessage = errorMessage
+	return r.updateStatus(config)
+}
+
+func (r *ReconcileConfig) updateStatus(config *istiov1beta1.Istio) error {
+	typeMeta := config.TypeMeta
 	err := r.Status().Update(context.Background(), config)
 	if err != nil {
 		if !k8serrors.IsConflict(err) {
-			return emperror.Wrapf(err, "could not update Istio state to '%s'", status)
+			return emperror.Wrapf(err, "could not update Istio status")
 		}
 		err := r.Get(context.TODO(), types.NamespacedName{
 			Namespace: config.Namespace,
@@ -363,16 +385,14 @@ func (r *ReconcileConfig) updateStatus(config *istiov1beta1.Istio, status istiov
 		if err != nil {
 			return emperror.Wrap(err, "could not get config for updating status")
 		}
-		config.Status.Status = status
-		config.Status.ErrorMessage = errorMessage
 		err = r.Status().Update(context.Background(), config)
 		if err != nil {
-			return emperror.Wrapf(err, "could not update Istio state to '%s'", status)
+			return emperror.Wrapf(err, "could not update Istio status")
 		}
 	}
 	// update loses the typeMeta of the config that's used later when setting ownerrefs
 	config.TypeMeta = typeMeta
-	log.Info("Istio state updated", "status", status)
+	log.Info("Istio status updated")
 	return nil
 }
 

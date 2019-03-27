@@ -18,6 +18,7 @@ package v1beta1
 
 import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 )
 
 // SDSConfiguration defines Secret Discovery Service config options
@@ -229,10 +230,17 @@ func (s IstioSpec) GetDefaultConfigVisibility() string {
 	return "*"
 }
 
+//type ApiResource struct {
+//	ApiVersion string `json:"apiVersion"`
+//	Kind       string `json:"kind"`
+//	Name       string `json:"name"`
+//}
+//
 // IstioStatus defines the observed state of Istio
 type IstioStatus struct {
-	Status       ConfigState
-	ErrorMessage string
+	Status       ConfigState                             `json:"status,omitempty"`
+	ErrorMessage string                                  `json:"errorMessage,omitempty"`
+	Resources    map[string][]*unstructured.Unstructured `json:"resources,omitempty"`
 }
 
 // +genclient
