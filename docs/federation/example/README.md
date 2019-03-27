@@ -9,8 +9,8 @@
 ### Create two GKE clusters with IP Alias feature to support flat networking
 
 ```bash
-gcloud container clusters create k8s-central --enable-ip-alias --zone europe-west1-b --machine-type n1-standard-2 --num-nodes=1 --preemptible --async
-gcloud container clusters create k8s-remote-1 --enable-ip-alias --zone us-central1-a --machine-type n1-standard-2 --num-nodes=1 --preemptible --async
+gcloud container clusters create k8s-central --enable-ip-alias --zone europe-west1-b --machine-type n1-standard-2 --num-nodes=1 --preemptible --async --enable-network-policy
+gcloud container clusters create k8s-remote-1 --enable-ip-alias --zone us-central1-a --machine-type n1-standard-2 --num-nodes=1 --preemptible --async --enable-network-policy
 ```
 
 Wait for the clusters getting into `RUNNING` state and get the credentials for them
