@@ -17,16 +17,16 @@ spec:
     useTrustworthyJwt: false
     useNormalJwt: true
   pilot:
-    image: "docker.io/istio/pilot:1.1.0"
+    image: "docker.io/istio/pilot:1.1.1"
     replicaCount: 1
     minReplicas: 1
     maxReplicas: 5
     traceSampling: 1.0
   citadel:
-    image: "docker.io/istio/citadel:1.1.0"
+    image: "docker.io/istio/citadel:1.1.1"
     replicaCount: 1
   galley:
-    image: "docker.io/istio/galley:1.1.0"
+    image: "docker.io/istio/galley:1.1.1"
     replicaCount: 1
   gateways:
     ingress:
@@ -37,7 +37,7 @@ spec:
       serviceLabels: {}
       sds:
         enabled: true
-        image: "docker.io/istio/node-agent-k8s:1.1.0"
+        image: "docker.io/istio/node-agent-k8s:1.1.1"
     egress:
       replicaCount: 1
       minReplicas: 1
@@ -47,21 +47,21 @@ spec:
     k8singress:
       enabled: false
   mixer:
-    image: "docker.io/istio/mixer:1.1.0"
+    image: "docker.io/istio/mixer:1.1.1"
     replicaCount: 1
     minReplicas: 1
     maxReplicas: 5
   sidecarInjector:
-    image: "docker.io/istio/sidecar_injector:1.1.0"
+    image: "docker.io/istio/sidecar_injector:1.1.1"
     replicaCount: 1
   nodeAgent:
     enabled: true
-    image: "docker.io/istio/node-agent-k8s:1.1.0"
+    image: "docker.io/istio/node-agent-k8s:1.1.1"
   proxy:
-    image: "docker.io/istio/proxyv2:1.1.0"
+    image: "docker.io/istio/proxyv2:1.1.1"
     enableCoreDump: false
   proxyInit:
-    image: "docker.io/istio/proxy_init:1.1.0"
+    image: "docker.io/istio/proxy_init:1.1.1"
   defaultPodDisruptionBudget:
     enabled: true
   outboundTrafficPolicy:
