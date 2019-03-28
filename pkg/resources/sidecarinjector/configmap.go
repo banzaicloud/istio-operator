@@ -269,7 +269,7 @@ func (r *Reconciler) volumeMounts() string {
 	}
 	vms := `- mountPath: /var/run/sds/uds_path
     name: sds-uds-path
-	readOnly: true`
+    readOnly: true`
 	if r.Config.Spec.SDS.UseTrustworthyJwt {
 		vms = vms + `
   - mountPath: /var/run/secrets/tokens
@@ -298,7 +298,7 @@ func (r *Reconciler) volumes() string {
 	volumes := `- name: sds-uds-path
   hostPath:
     path: /var/run/sds/uds_path
-	type: Socket`
+    type: Socket`
 	if r.Config.Spec.SDS.UseTrustworthyJwt {
 		volumes = volumes + `
 - name: istio-token
