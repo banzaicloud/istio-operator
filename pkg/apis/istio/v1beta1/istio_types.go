@@ -230,12 +230,6 @@ func (s IstioSpec) GetDefaultConfigVisibility() string {
 	return "*"
 }
 
-//type ApiResource struct {
-//	ApiVersion string `json:"apiVersion"`
-//	Kind       string `json:"kind"`
-//	Name       string `json:"name"`
-//}
-//
 // IstioStatus defines the observed state of Istio
 type IstioStatus struct {
 	Status       ConfigState                             `json:"status,omitempty"`

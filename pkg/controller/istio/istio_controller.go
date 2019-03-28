@@ -249,10 +249,6 @@ func (r *ReconcileConfig) reconcile(logger logr.Logger, config *istiov1beta1.Ist
 		if err != nil {
 			return reconcile.Result{}, err
 		}
-		err = r.updateReconcileStatus(config, istiov1beta1.Available, "")
-		if err != nil {
-			return reconcile.Result{}, err
-		}
 		err = r.updateResources(config, rec.Component, mr)
 		if err != nil {
 			return reconcile.Result{}, err

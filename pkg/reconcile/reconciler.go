@@ -52,6 +52,7 @@ func New(client client.Client, component string, config *istiov1beta1.Istio, man
 }
 
 func (r *Reconciler) Reconcile(log logr.Logger, currentResources []*unstructured.Unstructured) ([]*unstructured.Unstructured, error) {
+	log = log.WithValues("component", r.Component)
 	log.Info("Reconciling")
 
 	objects, err := helm.DecodeObjects(log, r.Manifests)
@@ -59,13 +60,7 @@ func (r *Reconciler) Reconcile(log logr.Logger, currentResources []*unstructured
 		return nil, emperror.Wrap(err, "failed to decode objects from chart")
 	}
 
-	// input status -> managed resources
-	// decoded resources ->
-
-	// decoded resources -> set desired state to available
-	// go through managed resources -> if decoded resources doesn't contain it -> set it's desired state to absent
-
-	var resources []*unstructured.Unstructured
+	var reconciledResources []*unstructured.Unstructured
 
 	for _, o := range objects {
 		ro := o.(runtime.Object)
@@ -81,20 +76,16 @@ func (r *Reconciler) Reconcile(log logr.Logger, currentResources []*unstructured
 		if err != nil {
 			return nil, emperror.WrapWith(err, "failed to reconcile resource", "resource", gvk)
 		}
-		u := &unstructured.Unstructured{}
-		err = r.Scheme.Convert(ro, u, nil)
+		u, err := r.unstructuredMeta(ro)
 		if err != nil {
-			return nil, err
+			return nil, emperror.WrapWith(err, "failed to convert resource metadata", "resource", gvk)
 		}
-		uMeta := &unstructured.Unstructured{}
-		uMeta.SetGroupVersionKind(u.GroupVersionKind())
-		uMeta.SetName(u.GetName())
-		uMeta.SetNamespace(u.GetNamespace())
-		resources = append(resources, uMeta)
+		reconciledResources = append(reconciledResources, u)
 	}
+	// delete currently managed resources that are no longer needed
 	for _, cr := range currentResources {
 		var found bool
-		for _, mr := range resources {
+		for _, mr := range reconciledResources {
 			if reflect.DeepEqual(mr, cr) {
 				found = true
 				break
@@ -113,5 +104,19 @@ func (r *Reconciler) Reconcile(log logr.Logger, currentResources []*unstructured
 	}
 	log.Info("Reconciled")
 
-	return resources, nil
+	return reconciledResources, nil
+}
+
+// unstructuredMeta returns an unstructured object containing gvk and name/namespace for an object to store in status
+func (r *Reconciler) unstructuredMeta(ro runtime.Object) (*unstructured.Unstructured, error) {
+	u := &unstructured.Unstructured{}
+	err := r.Scheme.Convert(ro, u, nil)
+	if err != nil {
+		return nil, err
+	}
+	um := &unstructured.Unstructured{}
+	um.SetGroupVersionKind(u.GroupVersionKind())
+	um.SetName(u.GetName())
+	um.SetNamespace(u.GetNamespace())
+	return um, nil
 }

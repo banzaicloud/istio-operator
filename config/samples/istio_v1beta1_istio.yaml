@@ -12,7 +12,6 @@ spec:
   excludeIPRanges: ""
   autoInjectionNamespaces:
   - "default"
-  - "my0-namespace"
   controlPlaneSecurityEnabled: false
   sds:
     enabled: false
