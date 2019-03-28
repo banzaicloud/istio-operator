@@ -19,7 +19,7 @@ spec:
       enabled: true
       sds:
         enabled: true
-        image: "docker.io/istio/node-agent-k8s:1.1.0"
+        image: "docker.io/istio/node-agent-k8s:1.1.1"
   nodeAgent:
     enabled: true
-    image: "docker.io/istio/node-agent-k8s:1.1.0"
+    image: "docker.io/istio/node-agent-k8s:1.1.1"

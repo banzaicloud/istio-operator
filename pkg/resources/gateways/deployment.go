@@ -236,7 +236,8 @@ func (r *Reconciler) volumeMounts(gw string, gwConfig *istiov1beta1.GatewayConfi
 	if *r.Config.Spec.SDS.Enabled {
 		vms = append(vms, apiv1.VolumeMount{
 			Name:      "sdsudspath",
-			MountPath: "/var/run/sds",
+			MountPath: "/var/run/sds/uds_path",
+			ReadOnly:  true,
 		})
 		if r.Config.Spec.SDS.UseTrustworthyJwt {
 			vms = append(vms, apiv1.VolumeMount{
@@ -288,12 +289,12 @@ func (r *Reconciler) volumes(gw string, gwConfig *istiov1beta1.GatewayConfigurat
 		},
 	}
 	if *r.Config.Spec.SDS.Enabled {
-		hostPathType := apiv1.HostPathUnset
+		hostPathType := apiv1.HostPathSocket
 		volumes = append(volumes, apiv1.Volume{
 			Name: "sdsudspath",
 			VolumeSource: apiv1.VolumeSource{
 				HostPath: &apiv1.HostPathVolumeSource{
-					Path: "/var/run/sds",
+					Path: "/var/run/sds/uds_path",
 					Type: &hostPathType,
 				},
 			},
