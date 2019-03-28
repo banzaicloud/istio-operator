@@ -208,6 +208,7 @@ type IstioSpec struct {
 	UseMCP bool `json:"useMCP,omitempty"`
 
 	// Set the default set of namespaces to which services, service entries, virtual services, destination rules should be exported to
+	// +kubebuilder:validation:Enum=*,.
 	DefaultConfigVisibility string `json:"defaultConfigVisibility,omitempty"`
 
 	// Whether or not to establish watches for adapter-specific CRDs
@@ -221,13 +222,6 @@ type IstioSpec struct {
 
 	// Configuration for each of the supported tracers
 	Tracing TracingConfiguration `json:"tracing,omitempty"`
-}
-
-func (s IstioSpec) GetDefaultConfigVisibility() string {
-	if s.DefaultConfigVisibility == "" || s.DefaultConfigVisibility == "." {
-		return s.DefaultConfigVisibility
-	}
-	return "*"
 }
 
 // IstioStatus defines the observed state of Istio

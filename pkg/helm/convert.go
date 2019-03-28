@@ -62,10 +62,8 @@ func Convert(c *istiov1beta1.IstioSpec) *IstioHelmValues {
 		OutboundTrafficPolicy: &OutboundTrafficPolicyConfig{
 			Mode: OutboundTrafficPolicyMode(c.OutboundTrafficPolicy.Mode),
 		},
-		UseMCP: &c.UseMCP,
-		DefaultConfigVisibilitySettings: []string{
-			c.DefaultConfigVisibility,
-		},
+		UseMCP:                          &c.UseMCP,
+		DefaultConfigVisibilitySettings: defaultConfigVisibilitySettings(c.DefaultConfigVisibility),
 		Tracer: &ProxyTracerConfig{
 			Zipkin: &ProxyTracerZipkinConfig{
 				Address: c.Tracing.Zipkin.Address,
@@ -217,4 +215,11 @@ func Convert(c *istiov1beta1.IstioSpec) *IstioHelmValues {
 			},
 		},
 	}
+}
+
+func defaultConfigVisibilitySettings(s string) []string {
+	if s != "" {
+		return []string{s}
+	}
+	return nil
 }

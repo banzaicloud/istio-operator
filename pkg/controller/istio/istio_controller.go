@@ -158,7 +158,7 @@ func (r *ReconcileConfig) Reconcile(request reconcile.Request) (reconcile.Result
 		return reconcile.Result{}, err
 	}
 	// Set default values where not set
-	//istiov1beta1.SetDefaults(config)
+	istiov1beta1.SetDefaults(config)
 	result, err := r.reconcile(logger, config)
 	if err != nil {
 		updateErr := r.updateReconcileStatus(config, istiov1beta1.ReconcileFailed, err.Error())

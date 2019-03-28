@@ -52,6 +52,9 @@ spec:
             defaultConfigVisibility:
               description: Set the default set of namespaces to which services, service
                 entries, virtual services, destination rules should be exported to
+              enum:
+              - '*'
+              - .
               type: string
             defaultPodDisruptionBudget:
               description: Enable pod disruption budget for the control plane, which
