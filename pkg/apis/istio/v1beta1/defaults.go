@@ -232,16 +232,10 @@ func SetRemoteIstioDefaults(remoteconfig *RemoteIstio) {
 		remoteconfig.Spec.IncludeIPRanges = defaultIncludeIPRanges
 	}
 	// Citadel config
-	if remoteconfig.Spec.Citadel.Image == "" {
-		remoteconfig.Spec.Citadel.Image = defaultCitadelImage
-	}
 	if remoteconfig.Spec.Citadel.ReplicaCount == 0 {
 		remoteconfig.Spec.Citadel.ReplicaCount = defaultReplicaCount
 	}
 	// SidecarInjector config
-	if remoteconfig.Spec.SidecarInjector.Image == "" {
-		remoteconfig.Spec.SidecarInjector.Image = defaultSidecarInjectorImage
-	}
 	if remoteconfig.Spec.SidecarInjector.ReplicaCount == 0 {
 		remoteconfig.Spec.SidecarInjector.ReplicaCount = defaultReplicaCount
 	}
