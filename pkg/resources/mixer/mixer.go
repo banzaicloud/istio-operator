@@ -19,6 +19,7 @@ package mixer
 import (
 	"fmt"
 
+	"github.com/banzaicloud/istio-operator/pkg/util"
 	"github.com/go-logr/logr"
 	"github.com/goph/emperror"
 	"k8s.io/client-go/dynamic"
@@ -66,9 +67,9 @@ func (r *Reconciler) Reconcile(log logr.Logger) error {
 
 	var mixerDesiredState k8sutil.DesiredState
 	var pdbDesiredState k8sutil.DesiredState
-	if *r.Config.Spec.Mixer.Enabled {
+	if util.PointerToBool(r.Config.Spec.Mixer.Enabled) {
 		mixerDesiredState = k8sutil.DesiredStatePresent
-		if *r.Config.Spec.DefaultPodDisruptionBudget.Enabled {
+		if util.PointerToBool(r.Config.Spec.DefaultPodDisruptionBudget.Enabled) {
 			pdbDesiredState = k8sutil.DesiredStatePresent
 		} else {
 			pdbDesiredState = k8sutil.DesiredStateAbsent

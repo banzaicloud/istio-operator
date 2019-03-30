@@ -61,23 +61,23 @@ func (r *Reconciler) Reconcile(log logr.Logger) error {
 	var egressGatewayDesiredState k8sutil.DesiredState
 	var pdbDesiredState k8sutil.DesiredState
 	var sdsDesiredState k8sutil.DesiredState
-	if *r.Config.Spec.Gateways.Enabled {
-		if *r.Config.Spec.Gateways.IngressConfig.Enabled {
+	if util.PointerToBool(r.Config.Spec.Gateways.Enabled) {
+		if util.PointerToBool(r.Config.Spec.Gateways.IngressConfig.Enabled) {
 			ingressGatewayDesiredState = k8sutil.DesiredStatePresent
 		} else {
 			ingressGatewayDesiredState = k8sutil.DesiredStateAbsent
 		}
-		if *r.Config.Spec.Gateways.EgressConfig.Enabled {
+		if util.PointerToBool(r.Config.Spec.Gateways.EgressConfig.Enabled) {
 			egressGatewayDesiredState = k8sutil.DesiredStatePresent
 		} else {
 			egressGatewayDesiredState = k8sutil.DesiredStateAbsent
 		}
-		if *r.Config.Spec.DefaultPodDisruptionBudget.Enabled {
+		if util.PointerToBool(r.Config.Spec.DefaultPodDisruptionBudget.Enabled) {
 			pdbDesiredState = k8sutil.DesiredStatePresent
 		} else {
 			pdbDesiredState = k8sutil.DesiredStateAbsent
 		}
-		if *r.Config.Spec.SDS.Enabled {
+		if util.PointerToBool(r.Config.Spec.SDS.Enabled) {
 			sdsDesiredState = k8sutil.DesiredStatePresent
 		} else {
 			sdsDesiredState = k8sutil.DesiredStateAbsent
@@ -110,7 +110,9 @@ func (r *Reconciler) Reconcile(log logr.Logger) error {
 	}
 
 	var k8sIngressDesiredState k8sutil.DesiredState
-	if *r.Config.Spec.Gateways.Enabled && *r.Config.Spec.Gateways.IngressConfig.Enabled && *r.Config.Spec.Gateways.K8sIngress.Enabled {
+	if util.PointerToBool(r.Config.Spec.Gateways.Enabled) &&
+		util.PointerToBool(r.Config.Spec.Gateways.IngressConfig.Enabled) &&
+		util.PointerToBool(r.Config.Spec.Gateways.K8sIngress.Enabled) {
 		k8sIngressDesiredState = k8sutil.DesiredStatePresent
 	} else {
 		k8sIngressDesiredState = k8sutil.DesiredStateAbsent

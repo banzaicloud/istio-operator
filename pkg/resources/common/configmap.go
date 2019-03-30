@@ -19,6 +19,7 @@ package common
 import (
 	"fmt"
 
+	"github.com/banzaicloud/istio-operator/pkg/util"
 	"github.com/ghodss/yaml"
 	apiv1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/runtime"
@@ -54,7 +55,7 @@ func (r *Reconciler) meshConfig() string {
 		"discoveryAddress":       fmt.Sprintf("istio-pilot.%s:%s", r.Config.Namespace, r.discoveryPort()),
 	}
 
-	if *r.Config.Spec.Tracing.Enabled {
+	if util.PointerToBool(r.Config.Spec.Tracing.Enabled) {
 		defaultConfig["tracing"] = map[string]interface{}{
 			"zipkin": map[string]interface{}{
 				"address": r.Config.Spec.Tracing.Zipkin.Address,

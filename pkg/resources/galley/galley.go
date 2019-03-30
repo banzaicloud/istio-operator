@@ -17,6 +17,7 @@ limitations under the License.
 package galley
 
 import (
+	"github.com/banzaicloud/istio-operator/pkg/util"
 	"github.com/go-logr/logr"
 	"github.com/goph/emperror"
 	"sigs.k8s.io/controller-runtime/pkg/client"
@@ -66,9 +67,9 @@ func (r *Reconciler) Reconcile(log logr.Logger) error {
 
 	var galleyDesiredState k8sutil.DesiredState
 	var pdbDesiredState k8sutil.DesiredState
-	if *r.Config.Spec.Galley.Enabled {
+	if util.PointerToBool(r.Config.Spec.Galley.Enabled) {
 		galleyDesiredState = k8sutil.DesiredStatePresent
-		if *r.Config.Spec.DefaultPodDisruptionBudget.Enabled {
+		if util.PointerToBool(r.Config.Spec.DefaultPodDisruptionBudget.Enabled) {
 			pdbDesiredState = k8sutil.DesiredStatePresent
 		} else {
 			pdbDesiredState = k8sutil.DesiredStateAbsent

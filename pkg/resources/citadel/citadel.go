@@ -17,6 +17,7 @@ limitations under the License.
 package citadel
 
 import (
+	"github.com/banzaicloud/istio-operator/pkg/util"
 	"github.com/go-logr/logr"
 	"github.com/goph/emperror"
 	"k8s.io/client-go/dynamic"
@@ -72,7 +73,7 @@ func (r *Reconciler) Reconcile(log logr.Logger) error {
 	log.Info("Reconciling")
 
 	var citadelDesiredState k8sutil.DesiredState
-	if *r.Config.Spec.Citadel.Enabled {
+	if util.PointerToBool(r.Config.Spec.Citadel.Enabled) {
 		citadelDesiredState = k8sutil.DesiredStatePresent
 	} else {
 		citadelDesiredState = k8sutil.DesiredStateAbsent
@@ -98,7 +99,7 @@ func (r *Reconciler) Reconcile(log logr.Logger) error {
 
 	var meshPolicyDesiredState k8sutil.DesiredState
 	var mTLSDesiredState k8sutil.DesiredState
-	if *r.Config.Spec.Citadel.Enabled {
+	if util.PointerToBool(r.Config.Spec.Citadel.Enabled) {
 		if r.Config.Spec.MTLS {
 			meshPolicyDesiredState = k8sutil.DesiredStatePresent
 			mTLSDesiredState = k8sutil.DesiredStatePresent

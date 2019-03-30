@@ -99,7 +99,7 @@ func (r *Reconciler) mixerContainer(t string, ns string) apiv1.Container {
 		"15014",
 	}
 
-	if *r.Config.Spec.Tracing.Enabled {
+	if util.PointerToBool(r.Config.Spec.Tracing.Enabled) {
 		containerArgs = append(containerArgs, "--trace_zipkin_url",
 			"http://"+r.Config.Spec.Tracing.Zipkin.Address+"/api/v1/spans")
 	}

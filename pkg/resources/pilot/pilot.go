@@ -17,6 +17,7 @@ limitations under the License.
 package pilot
 
 import (
+	"github.com/banzaicloud/istio-operator/pkg/util"
 	"github.com/go-logr/logr"
 	"github.com/goph/emperror"
 	"sigs.k8s.io/controller-runtime/pkg/client"
@@ -65,9 +66,9 @@ func (r *Reconciler) Reconcile(log logr.Logger) error {
 
 	var pilotDesiredState k8sutil.DesiredState
 	var pdbDesiredState k8sutil.DesiredState
-	if *r.Config.Spec.Pilot.Enabled {
+	if util.PointerToBool(r.Config.Spec.Pilot.Enabled) {
 		pilotDesiredState = k8sutil.DesiredStatePresent
-		if *r.Config.Spec.DefaultPodDisruptionBudget.Enabled {
+		if util.PointerToBool(r.Config.Spec.DefaultPodDisruptionBudget.Enabled) {
 			pdbDesiredState = k8sutil.DesiredStatePresent
 		} else {
 			pdbDesiredState = k8sutil.DesiredStateAbsent

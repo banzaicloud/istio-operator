@@ -17,6 +17,7 @@ limitations under the License.
 package cni
 
 import (
+	"github.com/banzaicloud/istio-operator/pkg/util"
 	"github.com/go-logr/logr"
 	"github.com/goph/emperror"
 	"sigs.k8s.io/controller-runtime/pkg/client"
@@ -60,7 +61,7 @@ func (r *Reconciler) Reconcile(log logr.Logger) error {
 	log = log.WithValues("component", componentName)
 
 	desiredState := k8sutil.DesiredStatePresent
-	if !*r.Config.Spec.SidecarInjector.InitCNIConfiguration.Enabled {
+	if !util.PointerToBool(r.Config.Spec.SidecarInjector.InitCNIConfiguration.Enabled) {
 		desiredState = k8sutil.DesiredStateAbsent
 	}
 
