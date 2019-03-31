@@ -5,6 +5,7 @@ metadata:
     controller-tools.k8s.io: "1.0"
   name: istio-sample
 spec:
+  version: "1.1.1"
   mtls: false
   includeIPRanges: "*"
   excludeIPRanges: ""
@@ -14,19 +15,24 @@ spec:
   sds:
     enabled: false
   pilot:
+    enabled: true
     image: "docker.io/istio/pilot:1.1.1"
     replicaCount: 1
     minReplicas: 1
     maxReplicas: 5
     traceSampling: 1.0
   citadel:
+    enabled: true
     image: "docker.io/istio/citadel:1.1.1"
     replicaCount: 1
   galley:
+    enabled: true
     image: "docker.io/istio/galley:1.1.1"
     replicaCount: 1
   gateways:
+    enabled: true
     ingress:
+      enabled: true
       replicaCount: 1
       minReplicas: 1
       maxReplicas: 5
@@ -34,6 +40,7 @@ spec:
       serviceAnnotations: {}
       serviceLabels: {}
     egress:
+      enabled: true
       replicaCount: 1
       minReplicas: 1
       maxReplicas: 5
@@ -43,11 +50,13 @@ spec:
     k8singress:
       enabled: false
   mixer:
+    enabled: true
     image: "docker.io/istio/mixer:1.1.1"
     replicaCount: 1
     minReplicas: 1
     maxReplicas: 5
   sidecarInjector:
+    enabled: true
     image: "docker.io/istio/sidecar_injector:1.1.1"
     replicaCount: 1
     rewriteAppHTTPProbe: true
@@ -64,5 +73,6 @@ spec:
   outboundTrafficPolicy:
     mode: ALLOW_ANY
   tracing:
+    enabled: true
     zipkin:
       address: zipkin.istio-system:9411

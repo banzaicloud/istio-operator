@@ -39,6 +39,8 @@ spec:
             citadel:
               description: Citadel configuration options
               properties:
+                enabled:
+                  type: boolean
                 image:
                   type: string
                 replicaCount:
@@ -92,6 +94,8 @@ spec:
             sidecarInjector:
               description: SidecarInjector configuration options
               properties:
+                enabled:
+                  type: boolean
                 image:
                   type: string
                 initCNIConfiguration:

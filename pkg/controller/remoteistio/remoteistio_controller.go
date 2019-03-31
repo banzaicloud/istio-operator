@@ -38,6 +38,8 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/source"
 
 	istiov1beta1 "github.com/banzaicloud/istio-operator/pkg/apis/istio/v1beta1"
+	istioCtrl "github.com/banzaicloud/istio-operator/pkg/controller/istio"
+	"github.com/banzaicloud/istio-operator/pkg/k8sutil"
 	"github.com/banzaicloud/istio-operator/pkg/remoteclusters"
 	"github.com/banzaicloud/istio-operator/pkg/util"
 )
@@ -71,6 +73,16 @@ func add(mgr manager.Manager, r reconcile.Reconciler) error {
 
 	// Watch for changes to RemoteConfig
 	err = c.Watch(&source.Kind{Type: &istiov1beta1.RemoteIstio{TypeMeta: metav1.TypeMeta{Kind: "RemoteIstio", APIVersion: "istio.banzaicloud.io/v1beta1"}}}, &handler.EnqueueRequestForObject{}, getWatchPredicateForRemoteConfig())
+	if err != nil {
+		return err
+	}
+
+	// Watch for Istio changes to trigger reconciliation for RemoteIstios
+	err = c.Watch(&source.Kind{Type: &istiov1beta1.Istio{TypeMeta: metav1.TypeMeta{Kind: "Istio", APIVersion: "istio.banzaicloud.io/v1beta1"}}}, &handler.EnqueueRequestsFromMapFunc{
+		ToRequests: handler.ToRequestsFunc(func(object handler.MapObject) []reconcile.Request {
+			return triggerRemoteIstios(mgr, object)
+		}),
+	}, istioCtrl.WatchPredicateForConfig())
 	if err != nil {
 		return err
 	}
@@ -109,38 +121,6 @@ func (r *ReconcileRemoteConfig) Reconcile(request reconcile.Request) (reconcile.
 		return reconcile.Result{}, nil
 	}
 
-	istio, err := r.getIstio()
-	if err != nil {
-		return reconcile.Result{}, err
-	}
-
-	// Set default values where not set
-	istiov1beta1.SetRemoteIstioDefaults(remoteConfig)
-	result, err := r.reconcile(remoteConfig, istio)
-	if err != nil {
-		updateErr := r.updateRemoteConfigStatus(remoteConfig, istiov1beta1.ReconcileFailed, err.Error())
-		if updateErr != nil {
-			return result, errors.WithStack(err)
-		}
-
-		return result, emperror.Wrap(err, "could not reconcile remote istio")
-	}
-
-	return result, nil
-}
-
-func (r *ReconcileRemoteConfig) reconcile(remoteConfig *istiov1beta1.RemoteIstio, istio *istiov1beta1.Istio) (reconcile.Result, error) {
-	var err error
-
-	log := log.WithValues("cluster", remoteConfig.Name)
-
-	if remoteConfig.Status.Status == "" {
-		err = r.updateRemoteConfigStatus(remoteConfig, istiov1beta1.Created, "")
-		if err != nil {
-			return reconcile.Result{}, errors.WithStack(err)
-		}
-	}
-
 	if remoteConfig.ObjectMeta.DeletionTimestamp.IsZero() {
 		if !util.ContainsString(remoteConfig.ObjectMeta.Finalizers, finalizerID) {
 			remoteConfig.ObjectMeta.Finalizers = append(remoteConfig.ObjectMeta.Finalizers, finalizerID)
@@ -173,6 +153,56 @@ func (r *ReconcileRemoteConfig) reconcile(remoteConfig *istiov1beta1.RemoteIstio
 		log.Info("remote istio removed")
 
 		return reconcile.Result{}, nil
+	}
+
+	istio, err := r.getIstio()
+	if err != nil {
+		return reconcile.Result{}, err
+	}
+
+	if !istio.Spec.Version.IsSupported() {
+		err = errors.New("intended Istio version is unsupported by this version of the operator")
+		log.Error(err, "", "version", istio.Spec.Version)
+		return reconcile.Result{
+			Requeue: false,
+		}, nil
+	}
+
+	refs, err := k8sutil.SetOwnerReferenceToObject(remoteConfig, istio)
+	if err != nil {
+		return reconcile.Result{}, err
+	}
+	remoteConfig.SetOwnerReferences(refs)
+	err = r.Update(context.TODO(), remoteConfig)
+	if err != nil {
+		return reconcile.Result{}, err
+	}
+
+	// Set default values where not set
+	istiov1beta1.SetRemoteIstioDefaults(remoteConfig)
+	result, err := r.reconcile(remoteConfig, istio)
+	if err != nil {
+		updateErr := r.updateRemoteConfigStatus(remoteConfig, istiov1beta1.ReconcileFailed, err.Error())
+		if updateErr != nil {
+			return result, errors.WithStack(err)
+		}
+
+		return result, emperror.Wrap(err, "could not reconcile remote istio")
+	}
+
+	return result, nil
+}
+
+func (r *ReconcileRemoteConfig) reconcile(remoteConfig *istiov1beta1.RemoteIstio, istio *istiov1beta1.Istio) (reconcile.Result, error) {
+	var err error
+
+	log := log.WithValues("cluster", remoteConfig.Name)
+
+	if remoteConfig.Status.Status == "" {
+		err = r.updateRemoteConfigStatus(remoteConfig, istiov1beta1.Created, "")
+		if err != nil {
+			return reconcile.Result{}, errors.WithStack(err)
+		}
 	}
 
 	if remoteConfig.Status.Status == istiov1beta1.Reconciling {
@@ -349,7 +379,16 @@ func (r *ReconcileRemoteConfig) getIstio() (*istiov1beta1.Istio, error) {
 		return nil, errors.New("istio resource not found")
 	}
 
-	return &istios.Items[0], nil
+	config := istios.Items[0]
+	gvk := config.GroupVersionKind()
+	gvk.Version = istiov1beta1.SchemeGroupVersion.Version
+	gvk.Group = istiov1beta1.SchemeGroupVersion.Group
+	gvk.Kind = "Istio"
+	config.SetGroupVersionKind(gvk)
+
+	istiov1beta1.SetDefaults(&config)
+
+	return &config, nil
 }
 
 func getWatchPredicateForRemoteConfig() predicate.Funcs {
@@ -371,4 +410,36 @@ func getWatchPredicateForRemoteConfig() predicate.Funcs {
 			return false
 		},
 	}
+}
+
+func triggerRemoteIstios(mgr manager.Manager, object handler.MapObject) []reconcile.Request {
+	requests := make([]reconcile.Request, 0)
+	remoteIstios := istioCtrl.GetRemoteIstiosByOwnerReference(mgr, object.Object)
+
+	for _, remoteIstio := range remoteIstios {
+		requests = append(requests, reconcile.Request{
+			NamespacedName: types.NamespacedName{
+				Namespace: remoteIstio.Namespace,
+				Name:      remoteIstio.Name,
+			},
+		})
+	}
+
+	var remoteIstiosWithoutOR istiov1beta1.RemoteIstioList
+	err := mgr.GetClient().List(context.Background(), &client.ListOptions{}, &remoteIstiosWithoutOR)
+	if err != nil {
+		log.Error(err, "could not list remote istio resources")
+	}
+	for _, remoteIstio := range remoteIstiosWithoutOR.Items {
+		if len(remoteIstio.GetOwnerReferences()) == 0 {
+			requests = append(requests, reconcile.Request{
+				NamespacedName: types.NamespacedName{
+					Namespace: remoteIstio.Namespace,
+					Name:      remoteIstio.Name,
+				},
+			})
+		}
+	}
+
+	return requests
 }

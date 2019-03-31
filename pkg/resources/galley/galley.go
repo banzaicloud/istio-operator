@@ -17,6 +17,7 @@ limitations under the License.
 package galley
 
 import (
+	"github.com/banzaicloud/istio-operator/pkg/util"
 	"github.com/go-logr/logr"
 	"github.com/goph/emperror"
 	"sigs.k8s.io/controller-runtime/pkg/client"
@@ -64,20 +65,33 @@ func (r *Reconciler) Reconcile(log logr.Logger) error {
 
 	log.Info("Reconciling")
 
-	resources := []resources.Resource{
-		r.serviceAccount,
-		r.clusterRole,
-		r.clusterRoleBinding,
-		r.configMap,
-		r.deployment,
-		r.service,
+	var galleyDesiredState k8sutil.DesiredState
+	var pdbDesiredState k8sutil.DesiredState
+	if util.PointerToBool(r.Config.Spec.Galley.Enabled) {
+		galleyDesiredState = k8sutil.DesiredStatePresent
+		if util.PointerToBool(r.Config.Spec.DefaultPodDisruptionBudget.Enabled) {
+			pdbDesiredState = k8sutil.DesiredStatePresent
+		} else {
+			pdbDesiredState = k8sutil.DesiredStateAbsent
+		}
+	} else {
+		galleyDesiredState = k8sutil.DesiredStateAbsent
+		pdbDesiredState = k8sutil.DesiredStateAbsent
 	}
-	if r.Config.Spec.DefaultPodDisruptionBudget.Enabled {
-		resources = append(resources, r.pdb)
+
+	resources := []resources.ResourceWithDesiredState{
+		{Resource: r.serviceAccount, DesiredState: galleyDesiredState},
+		{Resource: r.clusterRole, DesiredState: galleyDesiredState},
+		{Resource: r.clusterRoleBinding, DesiredState: galleyDesiredState},
+		{Resource: r.configMap, DesiredState: galleyDesiredState},
+		{Resource: r.deployment, DesiredState: galleyDesiredState},
+		{Resource: r.service, DesiredState: galleyDesiredState},
+		{Resource: r.podDisruptionBudget, DesiredState: pdbDesiredState},
 	}
+
 	for _, res := range resources {
-		o := res()
-		err := k8sutil.Reconcile(log, r.Client, o, k8sutil.DesiredStatePresent)
+		o := res.Resource()
+		err := k8sutil.Reconcile(log, r.Client, o, res.DesiredState)
 		if err != nil {
 			return emperror.WrapWith(err, "failed to reconcile resource", "resource", o.GetObjectKind().GroupVersionKind())
 		}

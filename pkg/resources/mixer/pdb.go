@@ -25,7 +25,7 @@ import (
 	"github.com/banzaicloud/istio-operator/pkg/util"
 )
 
-func (r *Reconciler) pdb(t string) runtime.Object {
+func (r *Reconciler) podDisruptionBudget(t string) runtime.Object {
 	return &policyv1beta1.PodDisruptionBudget{
 		ObjectMeta: templates.ObjectMeta(serviceName(t), labelSelector, r.Config),
 		Spec: policyv1beta1.PodDisruptionBudgetSpec{

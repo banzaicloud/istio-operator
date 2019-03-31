@@ -34,7 +34,11 @@ func TestStorageIstio(t *testing.T) {
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      "foo",
 			Namespace: "default",
-		}}
+		},
+		Spec: IstioSpec{
+			Version: "1.1.0",
+		},
+	}
 	g := gomega.NewGomegaWithT(t)
 
 	// Test Create

@@ -5,64 +5,22 @@ metadata:
     controller-tools.k8s.io: "1.0"
   name: istio-sample
 spec:
+  version: "1.1.1"
   mtls: true
-  includeIPRanges: "*"
-  excludeIPRanges: ""
   autoInjectionNamespaces:
   - "default"
-  controlPlaneSecurityEnabled: false
   sds:
     enabled: true
     udsPath: "unix:/var/run/sds/uds_path"
     useTrustworthyJwt: false
     useNormalJwt: true
-  pilot:
-    image: "docker.io/istio/pilot:1.1.1"
-    replicaCount: 1
-    minReplicas: 1
-    maxReplicas: 5
-    traceSampling: 1.0
-  citadel:
-    image: "docker.io/istio/citadel:1.1.1"
-    replicaCount: 1
-  galley:
-    image: "docker.io/istio/galley:1.1.1"
-    replicaCount: 1
   gateways:
+    enabled: true
     ingress:
-      replicaCount: 1
-      minReplicas: 1
-      maxReplicas: 5
-      serviceAnnotations: {}
-      serviceLabels: {}
+      enabled: true
       sds:
         enabled: true
         image: "docker.io/istio/node-agent-k8s:1.1.1"
-    egress:
-      replicaCount: 1
-      minReplicas: 1
-      maxReplicas: 5
-      serviceAnnotations: {}
-      serviceLabels: {}
-    k8singress:
-      enabled: false
-  mixer:
-    image: "docker.io/istio/mixer:1.1.1"
-    replicaCount: 1
-    minReplicas: 1
-    maxReplicas: 5
-  sidecarInjector:
-    image: "docker.io/istio/sidecar_injector:1.1.1"
-    replicaCount: 1
   nodeAgent:
     enabled: true
     image: "docker.io/istio/node-agent-k8s:1.1.1"
-  proxy:
-    image: "docker.io/istio/proxyv2:1.1.1"
-    enableCoreDump: false
-  proxyInit:
-    image: "docker.io/istio/proxy_init:1.1.1"
-  defaultPodDisruptionBudget:
-    enabled: true
-  outboundTrafficPolicy:
-    mode: ALLOW_ANY

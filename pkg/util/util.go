@@ -34,6 +34,14 @@ func BoolPointer(b bool) *bool {
 	return &b
 }
 
+func PointerToBool(flag *bool) bool {
+	if flag == nil {
+		return false
+	}
+
+	return *flag
+}
+
 func IntstrPointer(i int) *intstr.IntOrString {
 	is := intstr.FromInt(i)
 	return &is

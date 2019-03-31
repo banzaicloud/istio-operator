@@ -17,6 +17,7 @@ limitations under the License.
 package citadel
 
 import (
+	"github.com/banzaicloud/istio-operator/pkg/util"
 	"github.com/go-logr/logr"
 	"github.com/goph/emperror"
 	"k8s.io/client-go/dynamic"
@@ -71,6 +72,13 @@ func (r *Reconciler) Reconcile(log logr.Logger) error {
 
 	log.Info("Reconciling")
 
+	var citadelDesiredState k8sutil.DesiredState
+	if util.PointerToBool(r.Config.Spec.Citadel.Enabled) {
+		citadelDesiredState = k8sutil.DesiredStatePresent
+	} else {
+		citadelDesiredState = k8sutil.DesiredStateAbsent
+	}
+
 	for _, res := range []resources.Resource{
 		r.serviceAccount,
 		r.clusterRole,
@@ -79,7 +87,7 @@ func (r *Reconciler) Reconcile(log logr.Logger) error {
 		r.service,
 	} {
 		o := res()
-		err := k8sutil.Reconcile(log, r.Client, o, k8sutil.DesiredStatePresent)
+		err := k8sutil.Reconcile(log, r.Client, o, citadelDesiredState)
 		if err != nil {
 			return emperror.WrapWith(err, "failed to reconcile resource", "resource", o.GetObjectKind().GroupVersionKind())
 		}
@@ -89,14 +97,22 @@ func (r *Reconciler) Reconcile(log logr.Logger) error {
 		return nil
 	}
 
+	var meshPolicyDesiredState k8sutil.DesiredState
 	var mTLSDesiredState k8sutil.DesiredState
-	if r.Config.Spec.MTLS {
-		mTLSDesiredState = k8sutil.DesiredStatePresent
+	if util.PointerToBool(r.Config.Spec.Citadel.Enabled) {
+		if r.Config.Spec.MTLS {
+			meshPolicyDesiredState = k8sutil.DesiredStatePresent
+			mTLSDesiredState = k8sutil.DesiredStatePresent
+		} else {
+			meshPolicyDesiredState = k8sutil.DesiredStatePresent
+			mTLSDesiredState = k8sutil.DesiredStateAbsent
+		}
 	} else {
+		meshPolicyDesiredState = k8sutil.DesiredStateAbsent
 		mTLSDesiredState = k8sutil.DesiredStateAbsent
 	}
 	drs := []resources.DynamicResourceWithDesiredState{
-		{DynamicResource: r.meshPolicy, DesiredState: k8sutil.DesiredStatePresent},
+		{DynamicResource: r.meshPolicy, DesiredState: meshPolicyDesiredState},
 		{DynamicResource: r.destinationRuleDefaultMtls, DesiredState: mTLSDesiredState},
 		{DynamicResource: r.destinationRuleApiServerMtls, DesiredState: mTLSDesiredState},
 	}

@@ -39,6 +39,8 @@ spec:
             citadel:
               description: Citadel configuration options
               properties:
+                enabled:
+                  type: boolean
                 image:
                   type: string
                 replicaCount:
@@ -67,6 +69,8 @@ spec:
             galley:
               description: Galley configuration options
               properties:
+                enabled:
+                  type: boolean
                 image:
                   type: string
                 replicaCount:
@@ -78,6 +82,8 @@ spec:
               properties:
                 egress:
                   properties:
+                    enabled:
+                      type: boolean
                     maxReplicas:
                       format: int32
                       type: integer
@@ -105,8 +111,12 @@ spec:
                       - LoadBalancer
                       type: string
                   type: object
+                enabled:
+                  type: boolean
                 ingress:
                   properties:
+                    enabled:
+                      type: boolean
                     maxReplicas:
                       format: int32
                       type: integer
@@ -149,6 +159,8 @@ spec:
             mixer:
               description: Mixer configuration options
               properties:
+                enabled:
+                  type: boolean
                 image:
                   type: string
                 maxReplicas:
@@ -185,6 +197,8 @@ spec:
             pilot:
               description: Pilot configuration options
               properties:
+                enabled:
+                  type: boolean
                 image:
                   type: string
                 maxReplicas:
@@ -252,6 +266,8 @@ spec:
             sidecarInjector:
               description: SidecarInjector configuration options
               properties:
+                enabled:
+                  type: boolean
                 image:
                   type: string
                 initCNIConfiguration:
@@ -292,6 +308,8 @@ spec:
             tracing:
               description: Configuration for each of the supported tracers
               properties:
+                enabled:
+                  type: boolean
                 zipkin:
                   properties:
                     address:
@@ -306,6 +324,10 @@ spec:
               description: Use the Mesh Control Protocol (MCP) for configuring Mixer
                 and Pilot. Requires galley.
               type: boolean
+            version:
+              description: Contains the intended Istio version
+              pattern: ^1.1
+              type: string
             watchAdapterCRDs:
               description: Whether or not to establish watches for adapter-specific
                 CRDs
@@ -315,6 +337,7 @@ spec:
                 manages
               type: boolean
           required:
+          - version
           - mtls
           type: object
         status:

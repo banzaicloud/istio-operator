@@ -17,6 +17,7 @@ limitations under the License.
 package sidecarinjector
 
 import (
+	"github.com/banzaicloud/istio-operator/pkg/util"
 	"github.com/go-logr/logr"
 	"github.com/goph/emperror"
 	"sigs.k8s.io/controller-runtime/pkg/client"
@@ -67,6 +68,13 @@ func (r *Reconciler) Reconcile(log logr.Logger) error {
 
 	log.Info("Reconciling")
 
+	var sidecarInjectorDesiredState k8sutil.DesiredState
+	if util.PointerToBool(r.Config.Spec.SidecarInjector.Enabled) {
+		sidecarInjectorDesiredState = k8sutil.DesiredStatePresent
+	} else {
+		sidecarInjectorDesiredState = k8sutil.DesiredStateAbsent
+	}
+
 	for _, res := range []resources.Resource{
 		r.serviceAccount,
 		r.clusterRole,
@@ -77,15 +85,17 @@ func (r *Reconciler) Reconcile(log logr.Logger) error {
 		r.webhook,
 	} {
 		o := res()
-		err := k8sutil.Reconcile(log, r.Client, o, k8sutil.DesiredStatePresent)
+		err := k8sutil.Reconcile(log, r.Client, o, sidecarInjectorDesiredState)
 		if err != nil {
 			return emperror.WrapWith(err, "failed to reconcile resource", "resource", o.GetObjectKind().GroupVersionKind())
 		}
 	}
 
-	err := r.reconcileAutoInjectionLabels(log)
-	if err != nil {
-		return emperror.WrapWith(err, "failed to label namespaces")
+	if util.PointerToBool(r.Config.Spec.SidecarInjector.Enabled) {
+		err := r.reconcileAutoInjectionLabels(log)
+		if err != nil {
+			return emperror.WrapWith(err, "failed to label namespaces")
+		}
 	}
 
 	log.Info("Reconciled")

@@ -41,7 +41,7 @@ func (r *Reconciler) deployment(gw string) runtime.Object {
 	}
 
 	var containers = make([]apiv1.Container, 0)
-	if gwConfig.SDS.Enabled {
+	if util.PointerToBool(gwConfig.SDS.Enabled) {
 		containers = append(containers, apiv1.Container{
 			Name:            "ingress-sds",
 			Image:           gwConfig.SDS.Image,
@@ -75,26 +75,31 @@ func (r *Reconciler) deployment(gw string) runtime.Object {
 			TerminationMessagePolicy: apiv1.TerminationMessageReadFile,
 		})
 	}
+	args := []string{
+		"proxy",
+		"router",
+		"--domain", "$(POD_NAMESPACE).svc.cluster.local",
+		"--log_output_level", "info",
+		"--drainDuration", "45s",
+		"--parentShutdownDuration", "1m0s",
+		"--connectTimeout", "10s",
+		"--serviceCluster", fmt.Sprintf("istio-%s", gw),
+		"--proxyAdminPort", "15000",
+		"--statusPort", "15020",
+		"--controlPlaneAuthPolicy", templates.ControlPlaneAuthPolicy(r.Config.Spec.ControlPlaneSecurityEnabled),
+		"--discoveryAddress", fmt.Sprintf("istio-pilot.%s:%s", r.Config.Namespace, r.discoveryPort()),
+	}
+
+	if util.PointerToBool(r.Config.Spec.Tracing.Enabled) {
+		args = append(args, "--zipkinAddress", r.Config.Spec.Tracing.Zipkin.Address)
+	}
+
 	containers = append(containers, apiv1.Container{
 		Name:            "istio-proxy",
 		Image:           r.Config.Spec.Proxy.Image,
 		ImagePullPolicy: r.Config.Spec.ImagePullPolicy,
-		Args: []string{
-			"proxy",
-			"router",
-			"--domain", "$(POD_NAMESPACE).svc.cluster.local",
-			"--log_output_level", "info",
-			"--drainDuration", "45s",
-			"--parentShutdownDuration", "1m0s",
-			"--connectTimeout", "10s",
-			"--serviceCluster", fmt.Sprintf("istio-%s", gw),
-			"--zipkinAddress", r.Config.Spec.Tracing.Zipkin.Address,
-			"--proxyAdminPort", "15000",
-			"--statusPort", "15020",
-			"--controlPlaneAuthPolicy", templates.ControlPlaneAuthPolicy(r.Config.Spec.ControlPlaneSecurityEnabled),
-			"--discoveryAddress", fmt.Sprintf("istio-pilot.%s:%s", r.Config.Namespace, r.discoveryPort()),
-		},
-		Ports: r.ports(gw),
+		Args:            args,
+		Ports:           r.ports(gw),
 		ReadinessProbe: &apiv1.Probe{
 			Handler: apiv1.Handler{
 				HTTPGet: &apiv1.HTTPGetAction{
@@ -201,7 +206,7 @@ func (r *Reconciler) envVars(gwConfig *istiov1beta1.GatewayConfiguration) []apiv
 			Value: "sni-dnat",
 		},
 	}
-	if gwConfig.SDS.Enabled {
+	if util.PointerToBool(gwConfig.SDS.Enabled) {
 		envVars = append(envVars, apiv1.EnvVar{
 			Name:  "ISTIO_META_USER_SDS",
 			Value: "true",
@@ -228,7 +233,7 @@ func (r *Reconciler) volumeMounts(gw string, gwConfig *istiov1beta1.GatewayConfi
 			ReadOnly:  true,
 		},
 	}
-	if r.Config.Spec.SDS.Enabled {
+	if util.PointerToBool(r.Config.Spec.SDS.Enabled) {
 		vms = append(vms, apiv1.VolumeMount{
 			Name:      "sdsudspath",
 			MountPath: "/var/run/sds/uds_path",
@@ -241,7 +246,7 @@ func (r *Reconciler) volumeMounts(gw string, gwConfig *istiov1beta1.GatewayConfi
 			})
 		}
 	}
-	if gwConfig.SDS.Enabled {
+	if util.PointerToBool(gwConfig.SDS.Enabled) {
 		vms = append(vms, apiv1.VolumeMount{
 			Name:      "ingressgatewaysdsudspath",
 			MountPath: "/var/run/ingress_gateway",
@@ -283,7 +288,7 @@ func (r *Reconciler) volumes(gw string, gwConfig *istiov1beta1.GatewayConfigurat
 			},
 		},
 	}
-	if r.Config.Spec.SDS.Enabled {
+	if util.PointerToBool(r.Config.Spec.SDS.Enabled) {
 		hostPathType := apiv1.HostPathSocket
 		volumes = append(volumes, apiv1.Volume{
 			Name: "sdsudspath",
@@ -314,7 +319,7 @@ func (r *Reconciler) volumes(gw string, gwConfig *istiov1beta1.GatewayConfigurat
 			})
 		}
 	}
-	if gwConfig.SDS.Enabled {
+	if util.PointerToBool(gwConfig.SDS.Enabled) {
 		volumes = append(volumes, apiv1.Volume{
 			Name: "ingressgatewaysdsudspath",
 			VolumeSource: apiv1.VolumeSource{
