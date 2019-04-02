@@ -123,8 +123,9 @@ type ReconcileConfig struct {
 
 type ReconcileComponent func(log logr.Logger, istio *istiov1beta1.Istio) error
 
-// +kubebuilder:rbac:groups="",resources=nodes;services;endpoints;pods;replicationcontrollers;namespaces;services;endpoints;pods,verbs=get;list;watch
+// +kubebuilder:rbac:groups="",resources=nodes;services;endpoints;pods;replicationcontrollers;services;endpoints;pods,verbs=get;list;watch
 // +kubebuilder:rbac:groups="",resources=serviceaccounts;configmaps,verbs=get;list;watch;create;update;patch;delete
+// +kubebuilder:rbac:groups="",resources=namespaces,verbs=get;list;watch;update;patch
 // +kubebuilder:rbac:groups="apps",resources=replicasets,verbs=get;list;watch
 // +kubebuilder:rbac:groups="apps",resources=deployments;daemonsets,verbs=get;list;watch;create;update;patch;delete
 // +kubebuilder:rbac:groups="apps",resources=deployments/status,verbs=get;update;patch
