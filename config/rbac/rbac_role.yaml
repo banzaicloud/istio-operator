@@ -26,7 +26,6 @@ rules:
   - endpoints
   - pods
   - replicationcontrollers
-  - namespaces
   - services
   - endpoints
   - pods
@@ -34,6 +33,16 @@ rules:
   - get
   - list
   - watch
+- apiGroups:
+  - ""
+  resources:
+  - namespaces
+  verbs:
+  - get
+  - list
+  - watch
+  - update
+  - patch
 - apiGroups:
   - ""
   resources:
