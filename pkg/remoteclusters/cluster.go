@@ -46,7 +46,7 @@ func NewCluster(name string, config []byte, log logr.Logger) (*Cluster, error) {
 	cluster := &Cluster{
 		name:   name,
 		config: config,
-		log:    log.WithValues("clusterName", name),
+		log:    log.WithValues("cluster", name),
 	}
 
 	err := cluster.initK8SClients()

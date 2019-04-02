@@ -23,6 +23,7 @@ import (
 	"strings"
 
 	"github.com/go-logr/logr"
+	"github.com/gofrs/uuid"
 	"github.com/goph/emperror"
 	"github.com/pkg/errors"
 	admissionregistrationv1beta1 "k8s.io/api/admissionregistration/v1beta1"
@@ -104,7 +105,7 @@ func add(mgr manager.Manager, r reconcile.Reconciler) error {
 	if err != nil {
 		return err
 	}
-	err = initWatches(c, mgr.GetScheme(), watchCreatedResourcesEvents)
+	err = initWatches(c, mgr.GetScheme(), watchCreatedResourcesEvents, log)
 	if err != nil {
 		return err
 	}
@@ -146,8 +147,7 @@ type ReconcileComponent func(log logr.Logger, istio *istiov1beta1.Istio) error
 // and what is in the Config.Spec
 // Automatically generate RBAC rules to allow the Controller to read and write Deployments
 func (r *ReconcileConfig) Reconcile(request reconcile.Request) (reconcile.Result, error) {
-	logger := log.WithValues("trigger", request.Namespace+"/"+request.Name)
-	logger.Info("Reconciling Istio")
+	logger := log.WithValues("trigger", request.Namespace+"/"+request.Name, "correlationID", uuid.Must(uuid.NewV4()).String())
 	// Fetch the Config instance
 	config := &istiov1beta1.Istio{}
 	err := r.Get(context.TODO(), request.NamespacedName, config)
@@ -161,6 +161,8 @@ func (r *ReconcileConfig) Reconcile(request reconcile.Request) (reconcile.Result
 		return reconcile.Result{}, err
 	}
 
+	logger.Info("Reconciling Istio")
+
 	if !config.Spec.Version.IsSupported() {
 		err = errors.New("intended Istio version is unsupported by this version of the operator")
 		logger.Error(err, "", "version", config.Spec.Version)
@@ -173,9 +175,9 @@ func (r *ReconcileConfig) Reconcile(request reconcile.Request) (reconcile.Result
 	istiov1beta1.SetDefaults(config)
 	result, err := r.reconcile(logger, config)
 	if err != nil {
-		updateErr := r.updateStatus(config, istiov1beta1.ReconcileFailed, err.Error())
+		updateErr := r.updateStatus(config, istiov1beta1.ReconcileFailed, err.Error(), logger)
 		if updateErr != nil {
-			log.Error(updateErr, "failed to update state")
+			logger.Error(updateErr, "failed to update state")
 			return result, errors.WithStack(err)
 		}
 		return reconcile.Result{}, emperror.Wrap(err, "could not reconcile istio")
@@ -186,7 +188,7 @@ func (r *ReconcileConfig) Reconcile(request reconcile.Request) (reconcile.Result
 func (r *ReconcileConfig) reconcile(logger logr.Logger, config *istiov1beta1.Istio) (reconcile.Result, error) {
 
 	if config.Status.Status == "" {
-		err := r.updateStatus(config, istiov1beta1.Created, "")
+		err := r.updateStatus(config, istiov1beta1.Created, "", logger)
 		if err != nil {
 			return reconcile.Result{}, errors.WithStack(err)
 		}
@@ -205,25 +207,25 @@ func (r *ReconcileConfig) reconcile(logger logr.Logger, config *istiov1beta1.Ist
 		// Deletion timestamp set, config is marked for deletion
 		if util.ContainsString(config.ObjectMeta.Finalizers, finalizerID) {
 			if config.Status.Status == istiov1beta1.Reconciling && config.Status.ErrorMessage == "" {
-				log.Info("cannot remove Istio while reconciling")
+				logger.Info("cannot remove Istio while reconciling")
 				return reconcile.Result{}, nil
 			}
 			// Remove remote istio resources
-			r.deleteRemoteIstios(config)
+			r.deleteRemoteIstios(config, logger)
 			// Set citadel deployment as owner reference to istio secrets for garbage cleanup
 			r.setCitadelAsOwnerReferenceToIstioSecrets(config, appsv1.Deployment{
 				ObjectMeta: metav1.ObjectMeta{
 					Name:      citadel.GetDeploymentName(),
 					Namespace: config.Namespace,
 				},
-			})
+			}, logger)
 			config.ObjectMeta.Finalizers = util.RemoveString(config.ObjectMeta.Finalizers, finalizerID)
 			if err := r.Update(context.Background(), config); err != nil {
 				return reconcile.Result{}, emperror.Wrap(err, "could not remove finalizer from config")
 			}
 		}
 
-		log.Info("Istio removed")
+		logger.Info("Istio removed")
 
 		return reconcile.Result{}, nil
 	}
@@ -232,15 +234,15 @@ func (r *ReconcileConfig) reconcile(logger logr.Logger, config *istiov1beta1.Ist
 		return reconcile.Result{}, errors.New("cannot trigger reconcile while already reconciling")
 	}
 
-	err := r.updateStatus(config, istiov1beta1.Reconciling, "")
+	err := r.updateStatus(config, istiov1beta1.Reconciling, "", logger)
 	if err != nil {
 		return reconcile.Result{}, errors.WithStack(err)
 	}
 
-	log.Info("reconciling CRDs")
+	logger.Info("reconciling CRDs")
 	err = r.crdOperator.Reconcile(config, logger)
 	if err != nil {
-		log.Error(err, "unable to reconcile CRDs")
+		logger.Error(err, "unable to reconcile CRDs")
 		return reconcile.Result{}, err
 	}
 
@@ -260,21 +262,21 @@ func (r *ReconcileConfig) reconcile(logger logr.Logger, config *istiov1beta1.Ist
 	}
 
 	for _, rec := range reconcilers {
-		err = rec.Reconcile(log)
+		err = rec.Reconcile(logger)
 		if err != nil {
 			return reconcile.Result{}, err
 		}
 	}
 
-	err = r.updateStatus(config, istiov1beta1.Available, "")
+	err = r.updateStatus(config, istiov1beta1.Available, "", logger)
 	if err != nil {
 		return reconcile.Result{}, errors.WithStack(err)
 	}
-	log.Info("reconcile finished")
+	logger.Info("reconcile finished")
 	return reconcile.Result{}, nil
 }
 
-func (r *ReconcileConfig) setCitadelAsOwnerReferenceToIstioSecrets(config *istiov1beta1.Istio, deployment appsv1.Deployment) error {
+func (r *ReconcileConfig) setCitadelAsOwnerReferenceToIstioSecrets(config *istiov1beta1.Istio, deployment appsv1.Deployment, logger logr.Logger) error {
 	var secrets corev1.SecretList
 
 	err := r.Client.Get(context.TODO(), types.NamespacedName{
@@ -299,7 +301,7 @@ func (r *ReconcileConfig) setCitadelAsOwnerReferenceToIstioSecrets(config *istio
 			continue
 		}
 
-		log.V(0).Info("setting owner reference to secret", "secret", secret.Name, "refs", secret.GetOwnerReferences())
+		logger.V(0).Info("setting owner reference to secret", "secret", secret.Name, "refs", secret.GetOwnerReferences())
 
 		refs, err := k8sutil.SetOwnerReferenceToObject(&secret, &deployment)
 		if err != nil {
@@ -316,17 +318,17 @@ func (r *ReconcileConfig) setCitadelAsOwnerReferenceToIstioSecrets(config *istio
 	return nil
 }
 
-func (r *ReconcileConfig) deleteRemoteIstios(config *istiov1beta1.Istio) {
-	remoteIstios := GetRemoteIstiosByOwnerReference(r.mgr, config)
+func (r *ReconcileConfig) deleteRemoteIstios(config *istiov1beta1.Istio, logger logr.Logger) {
+	remoteIstios := GetRemoteIstiosByOwnerReference(r.mgr, config, logger)
 	for _, remoteIstio := range remoteIstios {
 		err := r.Client.Delete(context.Background(), &remoteIstio)
 		if err != nil {
-			log.Error(err, "could not delete remote istio resource", "name", remoteIstio.Name)
+			logger.Error(err, "could not delete remote istio resource", "name", remoteIstio.Name)
 		}
 	}
 }
 
-func (r *ReconcileConfig) updateStatus(config *istiov1beta1.Istio, status istiov1beta1.ConfigState, errorMessage string) error {
+func (r *ReconcileConfig) updateStatus(config *istiov1beta1.Istio, status istiov1beta1.ConfigState, errorMessage string, logger logr.Logger) error {
 	typeMeta := config.TypeMeta
 	config.Status.Status = status
 	config.Status.ErrorMessage = errorMessage
@@ -351,7 +353,7 @@ func (r *ReconcileConfig) updateStatus(config *istiov1beta1.Istio, status istiov
 	}
 	// update loses the typeMeta of the config that's used later when setting ownerrefs
 	config.TypeMeta = typeMeta
-	log.Info("Istio state updated", "status", status)
+	logger.Info("Istio state updated", "status", status)
 	return nil
 }
 
@@ -376,7 +378,7 @@ func WatchPredicateForConfig() predicate.Funcs {
 	}
 }
 
-func initWatches(c controller.Controller, scheme *runtime.Scheme, watchCreatedResourcesEvents bool) error {
+func initWatches(c controller.Controller, scheme *runtime.Scheme, watchCreatedResourcesEvents bool, logger logr.Logger) error {
 	// Watch for changes to Config
 	err := c.Watch(&source.Kind{Type: &istiov1beta1.Istio{TypeMeta: metav1.TypeMeta{Kind: "Istio", APIVersion: "istio.banzaicloud.io/v1beta1"}}}, &handler.EnqueueRequestForObject{}, WatchPredicateForConfig())
 	if err != nil {
@@ -417,26 +419,26 @@ func initWatches(c controller.Controller, scheme *runtime.Scheme, watchCreatedRe
 			DeleteFunc: func(e event.DeleteEvent) bool {
 				related, object, err := ownerMatcher.Match(e.Object)
 				if err != nil {
-					log.Error(err, "could not determine relation", "kind", e.Object.GetObjectKind())
+					logger.Error(err, "could not determine relation", "kind", e.Object.GetObjectKind())
 				}
 				if related {
-					log.Info("related object deleted", "trigger", object.GetName())
+					logger.Info("related object deleted", "trigger", object.GetName())
 				}
 				return true
 			},
 			UpdateFunc: func(e event.UpdateEvent) bool {
 				objectsEquals, err := objectMatcher.Match(e.ObjectOld, e.ObjectNew)
 				if err != nil {
-					log.Error(err, "could not match objects", "kind", e.ObjectOld.GetObjectKind())
+					logger.Error(err, "could not match objects", "kind", e.ObjectOld.GetObjectKind())
 				} else if objectsEquals {
 					return false
 				}
 				related, object, err := ownerMatcher.Match(e.ObjectNew)
 				if err != nil {
-					log.Error(err, "could not determine relation", "kind", e.ObjectNew.GetObjectKind())
+					logger.Error(err, "could not determine relation", "kind", e.ObjectNew.GetObjectKind())
 				}
 				if related {
-					log.Info("related object changed", "trigger", object.GetName())
+					logger.Info("related object changed", "trigger", object.GetName())
 				}
 				return true
 			},
@@ -449,20 +451,20 @@ func initWatches(c controller.Controller, scheme *runtime.Scheme, watchCreatedRe
 }
 
 // GetRemoteIstiosByOwnerReference gets RemoteIstio resources by owner reference for the given object
-func GetRemoteIstiosByOwnerReference(mgr manager.Manager, object runtime.Object) []istiov1beta1.RemoteIstio {
+func GetRemoteIstiosByOwnerReference(mgr manager.Manager, object runtime.Object, logger logr.Logger) []istiov1beta1.RemoteIstio {
 	var remoteIstios istiov1beta1.RemoteIstioList
 	remotes := make([]istiov1beta1.RemoteIstio, 0)
 	ownerMatcher := k8sutil.NewOwnerReferenceMatcher(object, true, mgr.GetScheme())
 
 	err := mgr.GetClient().List(context.Background(), &client.ListOptions{}, &remoteIstios)
 	if err != nil {
-		log.Error(err, "could not list remote istio resources")
+		logger.Error(err, "could not list remote istio resources")
 	}
 
 	for _, remoteIstio := range remoteIstios.Items {
 		related, _, err := ownerMatcher.Match(&remoteIstio)
 		if err != nil {
-			log.Error(err, "could not match owner reference for remote istio", "name", remoteIstio.Name)
+			logger.Error(err, "could not match owner reference for remote istio", "name", remoteIstio.Name)
 			continue
 		}
 		if !related {
