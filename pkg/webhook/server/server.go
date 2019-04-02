@@ -20,11 +20,14 @@ import (
 	"os"
 
 	"github.com/go-logr/logr"
+	"github.com/pkg/errors"
 	"sigs.k8s.io/controller-runtime/pkg/manager"
 	logf "sigs.k8s.io/controller-runtime/pkg/runtime/log"
 	"sigs.k8s.io/controller-runtime/pkg/webhook"
 	"sigs.k8s.io/controller-runtime/pkg/webhook/admission"
 )
+
+const podNamespaceEnvVar = "POD_NAMESPACE"
 
 var webhooks []func(manager.Manager, logr.Logger) (*admission.Webhook, error)
 
@@ -36,7 +39,10 @@ func add(mgr manager.Manager) error {
 	log := logf.ZapLogger(false).WithName("webhook-server")
 
 	name := "istio-operator-webhook"
-	namespace := "istio-system"
+	namespace, found := os.LookupEnv(podNamespaceEnvVar)
+	if !found {
+		return errors.Errorf("%s env variable must be specified and cannot be empty", podNamespaceEnvVar)
+	}
 
 	svr, err := webhook.NewServer(name, mgr, webhook.ServerOptions{
 		CertDir: "/tmp/cert",

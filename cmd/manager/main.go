@@ -20,6 +20,7 @@ import (
 	"flag"
 	"os"
 
+	"github.com/pkg/errors"
 	_ "k8s.io/client-go/plugin/pkg/client/auth/gcp"
 	"sigs.k8s.io/controller-runtime/pkg/client/config"
 	"sigs.k8s.io/controller-runtime/pkg/manager"
@@ -31,6 +32,9 @@ import (
 	"github.com/banzaicloud/istio-operator/pkg/remoteclusters"
 	"github.com/banzaicloud/istio-operator/pkg/webhook"
 )
+
+const watchNamespaceEnvVar = "WATCH_NAMESPACE"
+const podNamespaceEnvVar = "POD_NAMESPACE"
 
 func main() {
 	var metricsAddr string
@@ -49,9 +53,20 @@ func main() {
 		os.Exit(1)
 	}
 
+	namespace, err := getWatchNamespace()
+	if err != nil {
+		log.Error(err, "")
+		os.Exit(1)
+	}
+	if namespace != "" {
+		log.Info("watch namespace", "namespace", namespace)
+	} else {
+		log.Info("watch all namespaces")
+	}
+
 	// Create a new Cmd to provide shared dependencies and start components
 	log.Info("setting up manager")
-	mgr, err := manager.New(cfg, manager.Options{MetricsBindAddress: metricsAddr})
+	mgr, err := manager.New(cfg, manager.Options{MetricsBindAddress: metricsAddr, Namespace: namespace})
 	if err != nil {
 		log.Error(err, "unable to set up overall controller manager")
 		os.Exit(1)
@@ -85,4 +100,20 @@ func main() {
 		log.Error(err, "unable to run the manager")
 		os.Exit(1)
 	}
+}
+
+func getWatchNamespace() (string, error) {
+	podNamespace, found := os.LookupEnv(podNamespaceEnvVar)
+	if !found {
+		return "", errors.Errorf("%s env variable must be specified and cannot be empty", podNamespaceEnvVar)
+	}
+
+	watchNamespace, found := os.LookupEnv(watchNamespaceEnvVar)
+	if found {
+		if watchNamespace != "" && watchNamespace != podNamespace {
+			return "", errors.New("watch namespace must be either empty or equal to pod namespace")
+		}
+
+	}
+	return watchNamespace, nil
 }
