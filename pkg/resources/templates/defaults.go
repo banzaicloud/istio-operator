@@ -32,7 +32,11 @@ func DefaultDeployAnnotations() map[string]string {
 	}
 }
 
-func DefaultResources() apiv1.ResourceRequirements {
+func GetResourcesRequirementsOrDefault(requirements *apiv1.ResourceRequirements) apiv1.ResourceRequirements {
+	if requirements != nil {
+		return *requirements
+	}
+
 	return apiv1.ResourceRequirements{
 		Requests: apiv1.ResourceList{
 			apiv1.ResourceCPU: resource.MustParse("10m"),

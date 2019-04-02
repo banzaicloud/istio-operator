@@ -166,7 +166,7 @@ func (r *Reconciler) deployment() runtime.Object {
 								r.Config.Namespace + ".svc.cluster.local",
 							},
 							Env:       templates.IstioProxyEnv(),
-							Resources: templates.DefaultResources(),
+							Resources: templates.GetResourcesRequirementsOrDefault(r.Config.Spec.Pilot.Resources),
 							VolumeMounts: []apiv1.VolumeMount{
 								{
 									Name:      "istio-certs",

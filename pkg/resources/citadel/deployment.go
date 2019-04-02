@@ -55,7 +55,7 @@ func (r *Reconciler) deployment() runtime.Object {
 		Image:                    r.Config.Spec.Citadel.Image,
 		ImagePullPolicy:          r.Config.Spec.ImagePullPolicy,
 		Args:                     args,
-		Resources:                templates.DefaultResources(),
+		Resources:                templates.GetResourcesRequirementsOrDefault(r.Config.Spec.Citadel.Resources),
 		TerminationMessagePath:   apiv1.TerminationMessagePathDefault,
 		TerminationMessagePolicy: apiv1.TerminationMessageReadFile,
 	}

@@ -50,26 +50,29 @@ type SDSConfiguration struct {
 
 // PilotConfiguration defines config options for Pilot
 type PilotConfiguration struct {
-	Enabled       *bool   `json:"enabled,omitempty"`
-	Image         string  `json:"image,omitempty"`
-	ReplicaCount  int32   `json:"replicaCount,omitempty"`
-	MinReplicas   int32   `json:"minReplicas,omitempty"`
-	MaxReplicas   int32   `json:"maxReplicas,omitempty"`
-	TraceSampling float32 `json:"traceSampling,omitempty"`
+	Enabled       *bool                        `json:"enabled,omitempty"`
+	Image         string                       `json:"image,omitempty"`
+	ReplicaCount  int32                        `json:"replicaCount,omitempty"`
+	MinReplicas   int32                        `json:"minReplicas,omitempty"`
+	MaxReplicas   int32                        `json:"maxReplicas,omitempty"`
+	TraceSampling float32                      `json:"traceSampling,omitempty"`
+	Resources     *corev1.ResourceRequirements `json:"resources,omitempty"`
 }
 
 // CitadelConfiguration defines config options for Citadel
 type CitadelConfiguration struct {
-	Enabled      *bool  `json:"enabled,omitempty"`
-	Image        string `json:"image,omitempty"`
-	ReplicaCount int32  `json:"replicaCount,omitempty"`
+	Enabled      *bool                        `json:"enabled,omitempty"`
+	Image        string                       `json:"image,omitempty"`
+	ReplicaCount int32                        `json:"replicaCount,omitempty"`
+	Resources    *corev1.ResourceRequirements `json:"resources,omitempty"`
 }
 
 // GalleyConfiguration defines config options for Galley
 type GalleyConfiguration struct {
-	Enabled      *bool  `json:"enabled,omitempty"`
-	Image        string `json:"image,omitempty"`
-	ReplicaCount int32  `json:"replicaCount,omitempty"`
+	Enabled      *bool                        `json:"enabled,omitempty"`
+	Image        string                       `json:"image,omitempty"`
+	ReplicaCount int32                        `json:"replicaCount,omitempty"`
+	Resources    *corev1.ResourceRequirements `json:"resources,omitempty"`
 }
 
 // GatewaysConfiguration defines config options for Gateways
@@ -91,10 +94,11 @@ type GatewayConfiguration struct {
 	MinReplicas  int32 `json:"minReplicas,omitempty"`
 	MaxReplicas  int32 `json:"maxReplicas,omitempty"`
 	// +kubebuilder:validation:Enum=ClusterIP,NodePort,LoadBalancer
-	ServiceType        corev1.ServiceType      `json:"serviceType,omitempty"`
-	ServiceAnnotations map[string]string       `json:"serviceAnnotations,omitempty"`
-	ServiceLabels      map[string]string       `json:"serviceLabels,omitempty"`
-	SDS                GatewaySDSConfiguration `json:"sds,omitempty"`
+	ServiceType        corev1.ServiceType           `json:"serviceType,omitempty"`
+	ServiceAnnotations map[string]string            `json:"serviceAnnotations,omitempty"`
+	ServiceLabels      map[string]string            `json:"serviceLabels,omitempty"`
+	SDS                GatewaySDSConfiguration      `json:"sds,omitempty"`
+	Resources          *corev1.ResourceRequirements `json:"resources,omitempty"`
 }
 
 type K8sIngressConfiguration struct {
@@ -103,11 +107,12 @@ type K8sIngressConfiguration struct {
 
 // MixerConfiguration defines config options for Mixer
 type MixerConfiguration struct {
-	Enabled      *bool  `json:"enabled,omitempty"`
-	Image        string `json:"image,omitempty"`
-	ReplicaCount int32  `json:"replicaCount,omitempty"`
-	MinReplicas  int32  `json:"minReplicas,omitempty"`
-	MaxReplicas  int32  `json:"maxReplicas,omitempty"`
+	Enabled      *bool                        `json:"enabled,omitempty"`
+	Image        string                       `json:"image,omitempty"`
+	ReplicaCount int32                        `json:"replicaCount,omitempty"`
+	MinReplicas  int32                        `json:"minReplicas,omitempty"`
+	MaxReplicas  int32                        `json:"maxReplicas,omitempty"`
+	Resources    *corev1.ResourceRequirements `json:"resources,omitempty"`
 }
 
 // InitCNIConfiguration defines config for the sidecar proxy init CNI plugin
@@ -128,10 +133,11 @@ type InitCNIConfiguration struct {
 
 // SidecarInjectorConfiguration defines config options for SidecarInjector
 type SidecarInjectorConfiguration struct {
-	Enabled              *bool                `json:"enabled,omitempty"`
-	Image                string               `json:"image,omitempty"`
-	ReplicaCount         int32                `json:"replicaCount,omitempty"`
-	InitCNIConfiguration InitCNIConfiguration `json:"initCNIConfiguration,omitempty"`
+	Enabled              *bool                        `json:"enabled,omitempty"`
+	Image                string                       `json:"image,omitempty"`
+	ReplicaCount         int32                        `json:"replicaCount,omitempty"`
+	Resources            *corev1.ResourceRequirements `json:"resources,omitempty"`
+	InitCNIConfiguration InitCNIConfiguration         `json:"initCNIConfiguration,omitempty"`
 	// If true, sidecar injector will rewrite PodSpec for liveness
 	// health check to redirect request to sidecar. This makes liveness check work
 	// even when mTLS is enabled.
@@ -140,8 +146,9 @@ type SidecarInjectorConfiguration struct {
 
 // NodeAgentConfiguration defines config options for NodeAgent
 type NodeAgentConfiguration struct {
-	Enabled *bool  `json:"enabled,omitempty"`
-	Image   string `json:"image,omitempty"`
+	Enabled   *bool                        `json:"enabled,omitempty"`
+	Image     string                       `json:"image,omitempty"`
+	Resources *corev1.ResourceRequirements `json:"resources,omitempty"`
 }
 
 // ProxyConfiguration defines config options for Proxy

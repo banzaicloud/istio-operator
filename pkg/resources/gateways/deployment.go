@@ -115,7 +115,7 @@ func (r *Reconciler) deployment(gw string) runtime.Object {
 			TimeoutSeconds:      1,
 		},
 		Env:                      append(templates.IstioProxyEnv(), r.envVars(gwConfig)...),
-		Resources:                templates.DefaultResources(),
+		Resources:                templates.GetResourcesRequirementsOrDefault(gwConfig.Resources),
 		VolumeMounts:             r.volumeMounts(gw, gwConfig),
 		TerminationMessagePath:   apiv1.TerminationMessagePathDefault,
 		TerminationMessagePolicy: apiv1.TerminationMessageReadFile,

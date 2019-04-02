@@ -46,6 +46,8 @@ spec:
                 replicaCount:
                   format: int32
                   type: integer
+                resources:
+                  type: object
               type: object
             controlPlaneSecurityEnabled:
               description: ControlPlaneSecurityEnabled control plane services are
@@ -76,6 +78,8 @@ spec:
                 replicaCount:
                   format: int32
                   type: integer
+                resources:
+                  type: object
               type: object
             gateways:
               description: Gateways configuration options
@@ -93,6 +97,8 @@ spec:
                     replicaCount:
                       format: int32
                       type: integer
+                    resources:
+                      type: object
                     sds:
                       properties:
                         enabled:
@@ -126,6 +132,8 @@ spec:
                     replicaCount:
                       format: int32
                       type: integer
+                    resources:
+                      type: object
                     sds:
                       properties:
                         enabled:
@@ -172,6 +180,8 @@ spec:
                 replicaCount:
                   format: int32
                   type: integer
+                resources:
+                  type: object
               type: object
             mtls:
               description: MTLS enables or disables global mTLS
@@ -183,6 +193,8 @@ spec:
                   type: boolean
                 image:
                   type: string
+                resources:
+                  type: object
               type: object
             outboundTrafficPolicy:
               description: Set the default behavior of the sidecar for handling outbound
@@ -210,6 +222,8 @@ spec:
                 replicaCount:
                   format: int32
                   type: integer
+                resources:
+                  type: object
                 traceSampling:
                   format: float
                   type: number
@@ -299,6 +313,8 @@ spec:
                 replicaCount:
                   format: int32
                   type: integer
+                resources:
+                  type: object
                 rewriteAppHTTPProbe:
                   description: If true, sidecar injector will rewrite PodSpec for
                     liveness health check to redirect request to sidecar. This makes

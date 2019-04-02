@@ -69,6 +69,7 @@ func (r *Reconciler) daemonSet() runtime.Object {
 									Value: "true",
 								},
 							},
+							Resources:                templates.GetResourcesRequirementsOrDefault(r.Config.Spec.NodeAgent.Resources),
 							TerminationMessagePath:   apiv1.TerminationMessagePathDefault,
 							TerminationMessagePolicy: apiv1.TerminationMessageReadFile,
 						},

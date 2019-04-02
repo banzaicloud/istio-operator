@@ -46,6 +46,8 @@ spec:
                 replicaCount:
                   format: int32
                   type: integer
+                resources:
+                  type: object
               type: object
             enabledServices:
               description: EnabledServices the Istio component services replicated
@@ -127,6 +129,8 @@ spec:
                 replicaCount:
                   format: int32
                   type: integer
+                resources:
+                  type: object
                 rewriteAppHTTPProbe:
                   description: If true, sidecar injector will rewrite PodSpec for
                     liveness health check to redirect request to sidecar. This makes
