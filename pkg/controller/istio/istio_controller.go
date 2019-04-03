@@ -238,6 +238,9 @@ func (r *ReconcileConfig) updateStatus(config *istiov1beta1.Istio, status istiov
 	config.Status.Status = status
 	config.Status.ErrorMessage = errorMessage
 	err := r.Status().Update(context.Background(), config)
+	if k8serrors.IsNotFound(err) {
+		err = r.Update(context.Background(), config)
+	}
 	if err != nil {
 		if !k8serrors.IsConflict(err) {
 			return emperror.Wrapf(err, "could not update Istio state to '%s'", status)
@@ -252,6 +255,9 @@ func (r *ReconcileConfig) updateStatus(config *istiov1beta1.Istio, status istiov
 		config.Status.Status = status
 		config.Status.ErrorMessage = errorMessage
 		err = r.Status().Update(context.Background(), config)
+		if k8serrors.IsNotFound(err) {
+			err = r.Update(context.Background(), config)
+		}
 		if err != nil {
 			return emperror.Wrapf(err, "could not update Istio state to '%s'", status)
 		}
