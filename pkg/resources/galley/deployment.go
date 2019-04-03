@@ -112,7 +112,7 @@ func (r *Reconciler) deployment() runtime.Object {
 							},
 							LivenessProbe:            r.galleyProbe("/healthliveness"),
 							ReadinessProbe:           r.galleyProbe("/healthready"),
-							Resources:                templates.DefaultResources(),
+							Resources:                templates.GetResourcesRequirementsOrDefault(r.Config.Spec.Galley.Resources),
 							TerminationMessagePath:   apiv1.TerminationMessagePathDefault,
 							TerminationMessagePolicy: apiv1.TerminationMessageReadFile,
 						},

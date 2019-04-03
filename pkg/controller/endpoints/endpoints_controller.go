@@ -86,8 +86,8 @@ type ReconcileEndpoints struct {
 
 // Reconcile reads that state of the cluster for a Pod object and makes changes based on the state read
 // and what is in the Pod.Spec
-// +kubebuilder:rbac:groups=apps,resources=pods,verbs=get;list;watch;create;update;patch;delete
-// +kubebuilder:rbac:groups=apps,resources=pods/status,verbs=get;update;patch
+// +kubebuilder:rbac:groups=apps,resources=pods,verbs=get;list;watch
+// +kubebuilder:rbac:groups=apps,resources=pods/status,verbs=get
 func (r *ReconcileEndpoints) Reconcile(request reconcile.Request) (reconcile.Result, error) {
 	// Fetch the Pod instance
 	pod := &corev1.Pod{}

@@ -78,7 +78,7 @@ func (r *Reconciler) deployment() runtime.Object {
 							},
 							ReadinessProbe:           siProbe(),
 							LivenessProbe:            siProbe(),
-							Resources:                templates.DefaultResources(),
+							Resources:                templates.GetResourcesRequirementsOrDefault(r.Config.Spec.SidecarInjector.Resources),
 							TerminationMessagePath:   apiv1.TerminationMessagePathDefault,
 							TerminationMessagePolicy: apiv1.TerminationMessageReadFile,
 						},
