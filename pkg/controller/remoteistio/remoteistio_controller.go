@@ -220,7 +220,9 @@ func (r *ReconcileRemoteConfig) updateRemoteConfigStatus(remoteConfig *istiov1be
 	remoteConfig.Status.Status = status
 	remoteConfig.Status.ErrorMessage = errorMessage
 	err := r.Status().Update(context.Background(), remoteConfig)
-
+	if k8serrors.IsNotFound(err) {
+		err = r.Update(context.Background(), remoteConfig)
+	}
 	if err != nil {
 		if !k8serrors.IsConflict(err) {
 			return emperror.Wrapf(err, "could not update remote Istio state to '%s'", status)
@@ -236,6 +238,9 @@ func (r *ReconcileRemoteConfig) updateRemoteConfigStatus(remoteConfig *istiov1be
 		remoteConfig.Status.ErrorMessage = errorMessage
 
 		err = r.Status().Update(context.Background(), remoteConfig)
+		if k8serrors.IsNotFound(err) {
+			err = r.Update(context.Background(), remoteConfig)
+		}
 		if err != nil {
 			return emperror.Wrapf(err, "could not update remoteconfig status to '%s'", status)
 		}
