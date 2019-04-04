@@ -134,7 +134,7 @@ func setupSignalHandler(mgr manager.Manager, log logr.Logger, shutdownWaitDurati
 		<-c
 		log.Info("termination signal arrived, shutdown gracefully")
 		// wait a bit for deletion requests to arrive
-		log.Info("wat a bit for CR deletion events to arrive", "waitSeconds", shutdownWaitDuration)
+		log.Info("wait a bit for CR deletion events to arrive", "waitSeconds", shutdownWaitDuration)
 		time.Sleep(shutdownWaitDuration)
 		log.Info("removing finalizer from Istio resources")
 		err := istio.RemoveFinalizersFromIstios(mgr.GetClient())
