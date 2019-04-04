@@ -19,16 +19,21 @@ package main
 import (
 	"flag"
 	"os"
+	"os/signal"
+	"syscall"
+	"time"
 
+	"github.com/go-logr/logr"
 	"github.com/pkg/errors"
 	_ "k8s.io/client-go/plugin/pkg/client/auth/gcp"
 	"sigs.k8s.io/controller-runtime/pkg/client/config"
 	"sigs.k8s.io/controller-runtime/pkg/manager"
 	logf "sigs.k8s.io/controller-runtime/pkg/runtime/log"
-	"sigs.k8s.io/controller-runtime/pkg/runtime/signals"
 
 	"github.com/banzaicloud/istio-operator/pkg/apis"
 	"github.com/banzaicloud/istio-operator/pkg/controller"
+	"github.com/banzaicloud/istio-operator/pkg/controller/istio"
+	"github.com/banzaicloud/istio-operator/pkg/controller/remoteistio"
 	"github.com/banzaicloud/istio-operator/pkg/remoteclusters"
 	"github.com/banzaicloud/istio-operator/pkg/webhook"
 )
@@ -41,6 +46,8 @@ func main() {
 	flag.StringVar(&metricsAddr, "metrics-addr", ":8080", "The address the metric endpoint binds to.")
 	var developmentMode bool
 	flag.BoolVar(&developmentMode, "devel-mode", false, "Set development mode (mainly for logging)")
+	var shutdownWaitDuration time.Duration
+	flag.DurationVar(&shutdownWaitDuration, "shutdown-wait-duration", time.Duration(30)*time.Second, "Wait duration before shutting down")
 	flag.Parse()
 	logf.SetLogger(logf.ZapLogger(developmentMode))
 	log := logf.Log.WithName("entrypoint")
@@ -96,7 +103,7 @@ func main() {
 
 	// Start the Cmd
 	log.Info("Starting the Cmd.")
-	if err := mgr.Start(signals.SetupSignalHandler()); err != nil {
+	if err := mgr.Start(setupSignalHandler(mgr, log, shutdownWaitDuration)); err != nil {
 		log.Error(err, "unable to run the manager")
 		os.Exit(1)
 	}
@@ -116,4 +123,33 @@ func getWatchNamespace() (string, error) {
 
 	}
 	return watchNamespace, nil
+}
+
+func setupSignalHandler(mgr manager.Manager, log logr.Logger, shutdownWaitDuration time.Duration) (stopCh <-chan struct{}) {
+	stop := make(chan struct{})
+	c := make(chan os.Signal, 2)
+
+	signal.Notify(c, os.Interrupt, syscall.SIGTERM)
+	go func() {
+		<-c
+		log.Info("termination signal arrived, shutdown gracefully")
+		// wait a bit for deletion requests to arrive
+		log.Info("wait a bit for CR deletion events to arrive", "waitSeconds", shutdownWaitDuration)
+		time.Sleep(shutdownWaitDuration)
+		log.Info("removing finalizer from Istio resources")
+		err := istio.RemoveFinalizersFromIstios(mgr.GetClient())
+		if err != nil {
+			log.Error(err, "could not remove finalizers from Istio resources")
+		}
+		log.Info("removing finalizer from RemoteIstio resources")
+		err = remoteistio.RemoveFinalizersFromIstios(mgr.GetClient())
+		if err != nil {
+			log.Error(err, "could not remove finalizers from RemoteIstio resources")
+		}
+		close(stop)
+		<-c
+		os.Exit(1) // second signal. Exit directly.
+	}()
+
+	return stop
 }

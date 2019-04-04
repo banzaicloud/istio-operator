@@ -450,3 +450,20 @@ func triggerRemoteIstios(mgr manager.Manager, object handler.MapObject, logger l
 
 	return requests
 }
+
+func RemoveFinalizersFromIstios(c client.Client) error {
+	var remoteistios istiov1beta1.RemoteIstioList
+
+	err := c.List(context.TODO(), &client.ListOptions{}, &remoteistios)
+	if err != nil {
+		return emperror.Wrap(err, "could not list Istio resources")
+	}
+	for _, remoteistio := range remoteistios.Items {
+		remoteistio.ObjectMeta.Finalizers = util.RemoveString(remoteistio.ObjectMeta.Finalizers, finalizerID)
+		if err := c.Update(context.Background(), &remoteistio); err != nil {
+			return emperror.WrapWith(err, "could not remove finalizer from RemoteIstio resource", "name", remoteistio.GetName())
+		}
+	}
+
+	return nil
+}

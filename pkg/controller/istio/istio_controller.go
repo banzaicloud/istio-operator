@@ -482,3 +482,20 @@ func GetRemoteIstiosByOwnerReference(mgr manager.Manager, object runtime.Object,
 
 	return remotes
 }
+
+func RemoveFinalizersFromIstios(c client.Client) error {
+	var istios istiov1beta1.IstioList
+
+	err := c.List(context.TODO(), &client.ListOptions{}, &istios)
+	if err != nil {
+		return emperror.Wrap(err, "could not list Istio resources")
+	}
+	for _, istio := range istios.Items {
+		istio.ObjectMeta.Finalizers = util.RemoveString(istio.ObjectMeta.Finalizers, finalizerID)
+		if err := c.Update(context.Background(), &istio); err != nil {
+			return emperror.WrapWith(err, "could not remove finalizer from Istio resource", "name", istio.GetName())
+		}
+	}
+
+	return nil
+}

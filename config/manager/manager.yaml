@@ -55,4 +55,4 @@ spec:
         - containerPort: 9876
           name: webhook-server
           protocol: TCP
-      terminationGracePeriodSeconds: 10
+      terminationGracePeriodSeconds: 60
