@@ -49,6 +49,10 @@ As a pre-requisite it needs a Kubernetes cluster (you can create one using [Pipe
 kubectl create -n istio-system -f config/samples/istio_v1beta1_istio.yaml
 ```
 
+## Istio upgrade
+
+Check out the [upgrade docs](docs/upgrade.md) to see how to upgrade between minor or major Istio versions.
+
 ## Multi-cluster federation
 
 Check out the [multi-cluster federation docs](docs/federation/README.md).
