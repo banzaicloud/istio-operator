@@ -15,7 +15,7 @@ spec:
       labels:
         k8s-app: echo
     spec:
-      terminationGracePeriodSeconds: 60
+      terminationGracePeriodSeconds: 2
       containers:
       - name: echo-service
         image: k8s.gcr.io/echoserver:1.10
