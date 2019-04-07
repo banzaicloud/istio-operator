@@ -19,13 +19,14 @@ package v1beta1
 import (
 	"fmt"
 
-	"github.com/banzaicloud/istio-operator/pkg/util"
 	apiv1 "k8s.io/api/core/v1"
+
+	"github.com/banzaicloud/istio-operator/pkg/util"
 )
 
 const (
 	defaultImageHub                  = "docker.io/istio"
-	defaultImageVersion              = "1.1.1"
+	defaultImageVersion              = "1.1.2"
 	defaultPilotImage                = defaultImageHub + "/" + "pilot" + ":" + defaultImageVersion
 	defaultCitadelImage              = defaultImageHub + "/" + "citadel" + ":" + defaultImageVersion
 	defaultGalleyImage               = defaultImageHub + "/" + "galley" + ":" + defaultImageVersion
