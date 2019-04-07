@@ -3,7 +3,7 @@ Released:
 - [x] - Install Istio
 - [x] - Enable global mTLS
 - [x] - Federation, flat
-- [x] - Istio 1.1.1 support
+- [x] - Istio 1.1.x support
 
 Under development (next release)
 
