@@ -17,11 +17,12 @@ limitations under the License.
 package sidecarinjector
 
 import (
-	"github.com/banzaicloud/istio-operator/pkg/resources/templates"
-	"github.com/banzaicloud/istio-operator/pkg/util"
 	"github.com/ghodss/yaml"
 	apiv1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/runtime"
+
+	"github.com/banzaicloud/istio-operator/pkg/resources/templates"
+	"github.com/banzaicloud/istio-operator/pkg/util"
 )
 
 func (r *Reconciler) configMap() runtime.Object {
@@ -47,7 +48,7 @@ func (r *Reconciler) siConfig() string {
 func (r *Reconciler) templateConfig() string {
 	return `initContainers:
 - name: istio-init
-  image: docker.io/istio/proxy_init:1.0.5
+  image: docker.io/istio/proxy_init:1.0.7
   args:
   - "-p"
   - [[ .MeshConfig.ProxyListenPort ]]
@@ -72,7 +73,7 @@ func (r *Reconciler) templateConfig() string {
   restartPolicy: Always
 containers:
 - name: istio-proxy
-  image: "[[ annotation .ObjectMeta ` + "`" + `sidecar.istio.io/proxyImage` + "`" + ` "docker.io/istio/proxyv2:1.0.5" ]]"
+  image: "[[ annotation .ObjectMeta ` + "`" + `sidecar.istio.io/proxyImage` + "`" + ` "docker.io/istio/proxyv2:1.0.7" ]]"
   ports:
   - containerPort: 15090
     protocol: TCP
