@@ -77,7 +77,7 @@ func (r *Reconciler) Reconcile(log logr.Logger) error {
 		} else {
 			pdbDesiredState = k8sutil.DesiredStateAbsent
 		}
-		if util.PointerToBool(r.Config.Spec.SDS.Enabled) {
+		if util.PointerToBool(r.Config.Spec.Gateways.IngressConfig.SDS.Enabled) || util.PointerToBool(r.Config.Spec.Gateways.EgressConfig.SDS.Enabled) {
 			sdsDesiredState = k8sutil.DesiredStatePresent
 		} else {
 			sdsDesiredState = k8sutil.DesiredStateAbsent
@@ -118,8 +118,22 @@ func (r *Reconciler) Reconcile(log logr.Logger) error {
 		k8sIngressDesiredState = k8sutil.DesiredStateAbsent
 	}
 
+	var meshExpansionDesiredState k8sutil.DesiredState
+	if util.PointerToBool(r.Config.Spec.MeshExpansion) {
+		meshExpansionDesiredState = k8sutil.DesiredStatePresent
+	} else {
+		meshExpansionDesiredState = k8sutil.DesiredStateAbsent
+	}
+
+	if r.Config.Name == "istio-config" {
+		log.Info("Reconciled")
+		return nil
+	}
+
 	var drs = []resources.DynamicResourceWithDesiredState{
 		{DynamicResource: r.gateway, DesiredState: k8sIngressDesiredState},
+		{DynamicResource: r.meshExpansionGateway, DesiredState: meshExpansionDesiredState},
+		{DynamicResource: r.clusterAwareGateway, DesiredState: meshExpansionDesiredState},
 	}
 	for _, dr := range drs {
 		o := dr.DynamicResource()

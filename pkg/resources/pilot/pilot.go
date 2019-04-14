@@ -17,14 +17,15 @@ limitations under the License.
 package pilot
 
 import (
-	"github.com/banzaicloud/istio-operator/pkg/util"
 	"github.com/go-logr/logr"
 	"github.com/goph/emperror"
+	"k8s.io/client-go/dynamic"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
 	istiov1beta1 "github.com/banzaicloud/istio-operator/pkg/apis/istio/v1beta1"
 	"github.com/banzaicloud/istio-operator/pkg/k8sutil"
 	"github.com/banzaicloud/istio-operator/pkg/resources"
+	"github.com/banzaicloud/istio-operator/pkg/util"
 )
 
 const (
@@ -48,14 +49,16 @@ var labelSelector = map[string]string{
 
 type Reconciler struct {
 	resources.Reconciler
+	dynamic dynamic.Interface
 }
 
-func New(client client.Client, config *istiov1beta1.Istio) *Reconciler {
+func New(client client.Client, dc dynamic.Interface, config *istiov1beta1.Istio) *Reconciler {
 	return &Reconciler{
 		Reconciler: resources.Reconciler{
 			Client: client,
 			Config: config,
 		},
+		dynamic: dc,
 	}
 }
 
@@ -78,7 +81,7 @@ func (r *Reconciler) Reconcile(log logr.Logger) error {
 		pdbDesiredState = k8sutil.DesiredStateAbsent
 	}
 
-	resources := []resources.ResourceWithDesiredState{
+	for _, res := range []resources.ResourceWithDesiredState{
 		{Resource: r.serviceAccount, DesiredState: pilotDesiredState},
 		{Resource: r.clusterRole, DesiredState: pilotDesiredState},
 		{Resource: r.clusterRoleBinding, DesiredState: pilotDesiredState},
@@ -86,13 +89,36 @@ func (r *Reconciler) Reconcile(log logr.Logger) error {
 		{Resource: r.service, DesiredState: pilotDesiredState},
 		{Resource: r.horizontalPodAutoscaler, DesiredState: pilotDesiredState},
 		{Resource: r.podDisruptionBudget, DesiredState: pdbDesiredState},
-	}
-
-	for _, res := range resources {
+	} {
 		o := res.Resource()
 		err := k8sutil.Reconcile(log, r.Client, o, res.DesiredState)
 		if err != nil {
 			return emperror.WrapWith(err, "failed to reconcile resource", "resource", o.GetObjectKind().GroupVersionKind())
+		}
+	}
+
+	var meshExpansionDesiredState k8sutil.DesiredState
+	if util.PointerToBool(r.Config.Spec.MeshExpansion) {
+		meshExpansionDesiredState = k8sutil.DesiredStatePresent
+	} else {
+		meshExpansionDesiredState = k8sutil.DesiredStateAbsent
+	}
+
+	var controlPlaneSecurityDesiredState k8sutil.DesiredState
+	if r.Config.Spec.ControlPlaneSecurityEnabled {
+		controlPlaneSecurityDesiredState = k8sutil.DesiredStatePresent
+	} else {
+		controlPlaneSecurityDesiredState = k8sutil.DesiredStateAbsent
+	}
+
+	for _, dr := range []resources.DynamicResourceWithDesiredState{
+		{DynamicResource: r.meshExpansionDestinationRule, DesiredState: controlPlaneSecurityDesiredState},
+		{DynamicResource: r.meshExpansionVirtualService, DesiredState: meshExpansionDesiredState},
+	} {
+		o := dr.DynamicResource()
+		err := o.Reconcile(log, r.dynamic, dr.DesiredState)
+		if err != nil {
+			return emperror.WrapWith(err, "failed to reconcile dynamic resource", "resource", o.Gvr)
 		}
 	}
 

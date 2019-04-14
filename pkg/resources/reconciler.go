@@ -39,21 +39,22 @@ type Resource func() runtime.Object
 type ResourceVariation func(t string) runtime.Object
 
 func ResolveVariations(t string, v []ResourceVariationWithDesiredState, desiredState k8sutil.DesiredState) []ResourceWithDesiredState {
+	var state k8sutil.DesiredState
 	resources := make([]ResourceWithDesiredState, 0)
 	for i := range v {
 		i := i
 
 		if v[i].DesiredState == k8sutil.DesiredStateAbsent || desiredState == k8sutil.DesiredStateAbsent {
-			desiredState = k8sutil.DesiredStateAbsent
+			state = k8sutil.DesiredStateAbsent
 		} else {
-			desiredState = k8sutil.DesiredStatePresent
+			state = k8sutil.DesiredStatePresent
 		}
 
 		resource := ResourceWithDesiredState{
 			func() runtime.Object {
 				return v[i].ResourceVariation(t)
 			},
-			desiredState,
+			state,
 		}
 		resources = append(resources, resource)
 	}

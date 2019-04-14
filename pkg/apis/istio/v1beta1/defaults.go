@@ -50,6 +50,7 @@ const (
 	defaultInitCNIConfDir            = "/etc/cni/net.d"
 	defaultInitCNILogLevel           = "info"
 	defaultImagePullPolicy           = "IfNotPresent"
+	defaultMeshExpansion             = false
 )
 
 func SetDefaults(config *Istio) {
@@ -225,6 +226,10 @@ func SetDefaults(config *Istio) {
 
 	if config.Spec.ImagePullPolicy == "" {
 		config.Spec.ImagePullPolicy = defaultImagePullPolicy
+	}
+
+	if config.Spec.MeshExpansion == nil {
+		config.Spec.MeshExpansion = util.BoolPointer(defaultMeshExpansion)
 	}
 }
 

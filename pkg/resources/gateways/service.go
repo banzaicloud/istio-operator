@@ -30,17 +30,17 @@ func (r *Reconciler) service(gw string) runtime.Object {
 	return &apiv1.Service{
 		ObjectMeta: templates.ObjectMetaWithAnnotations(gatewayName(gw), util.MergeLabels(gwConfig.ServiceLabels, labelSelector(gw)), gwConfig.ServiceAnnotations, r.Config),
 		Spec: apiv1.ServiceSpec{
-			Type:     serviceType(gw, r.Config.Spec.Gateways.IngressConfig.ServiceType, r.Config.Spec.Gateways.EgressConfig.ServiceType),
-			Ports:    servicePorts(gw),
+			Type:     r.serviceType(gw),
+			Ports:    r.servicePorts(gw),
 			Selector: labelSelector(gw),
 		},
 	}
 }
 
-func servicePorts(gw string) []apiv1.ServicePort {
+func (r *Reconciler) servicePorts(gw string) []apiv1.ServicePort {
 	switch gw {
 	case ingress:
-		return []apiv1.ServicePort{
+		ports := []apiv1.ServicePort{
 			{Port: 80, Protocol: apiv1.ProtocolTCP, TargetPort: intstr.FromInt(80), Name: "http2", NodePort: 31380},
 			{Port: 443, Protocol: apiv1.ProtocolTCP, TargetPort: intstr.FromInt(443), Name: "https", NodePort: 31390},
 			{Port: 31400, Protocol: apiv1.ProtocolTCP, TargetPort: intstr.FromInt(31400), Name: "tcp", NodePort: 31400},
@@ -51,6 +51,15 @@ func servicePorts(gw string) []apiv1.ServicePort {
 			{Port: 15443, Protocol: apiv1.ProtocolTCP, TargetPort: intstr.FromInt(15443), Name: "tls", NodePort: 31450},
 			{Port: 15020, Protocol: apiv1.ProtocolTCP, TargetPort: intstr.FromInt(15020), Name: "status-port", NodePort: 31460},
 		}
+		if util.PointerToBool(r.Config.Spec.MeshExpansion) {
+			ports = append(ports, []apiv1.ServicePort{
+				{Port: 15011, Protocol: apiv1.ProtocolTCP, TargetPort: intstr.FromInt(15011), Name: "tcp-pilot-grpc-tls", NodePort: 31470},
+				{Port: 15004, Protocol: apiv1.ProtocolTCP, TargetPort: intstr.FromInt(15004), Name: "tcp-mixer-grpc-tls", NodePort: 31480},
+				{Port: 8060, Protocol: apiv1.ProtocolTCP, TargetPort: intstr.FromInt(8060), Name: "tcp-citadel-grpc-tls", NodePort: 31490},
+				{Port: 853, Protocol: apiv1.ProtocolTCP, TargetPort: intstr.FromInt(853), Name: "tcp-dns-tls", NodePort: 31500},
+			}...)
+		}
+		return ports
 	case egress:
 		return []apiv1.ServicePort{
 			{Port: 80, Name: "http2", Protocol: apiv1.ProtocolTCP, TargetPort: intstr.FromInt(80)},
@@ -61,12 +70,12 @@ func servicePorts(gw string) []apiv1.ServicePort {
 	return []apiv1.ServicePort{}
 }
 
-func serviceType(gw string, ingressGatewayServiceType apiv1.ServiceType, eggressGatewayServiceType apiv1.ServiceType) apiv1.ServiceType {
+func (r *Reconciler) serviceType(gw string) apiv1.ServiceType {
 	switch gw {
 	case ingress:
-		return ingressGatewayServiceType
+		return r.Config.Spec.Gateways.IngressConfig.ServiceType
 	case egress:
-		return eggressGatewayServiceType
+		return r.Config.Spec.Gateways.EgressConfig.ServiceType
 	}
 	return ""
 }

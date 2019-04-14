@@ -23,11 +23,7 @@ import (
 	"github.com/banzaicloud/istio-operator/pkg/util"
 )
 
-var gatewaySelector = map[string]interface{}{
-	"istio": "ingressgateway",
-}
-
-func (r *Reconciler) gateway() *k8sutil.DynamicObject {
+func (r *Reconciler) meshExpansionGateway() *k8sutil.DynamicObject {
 	return &k8sutil.DynamicObject{
 		Gvr: schema.GroupVersionResource{
 			Group:    "networking.istio.io",
@@ -35,58 +31,41 @@ func (r *Reconciler) gateway() *k8sutil.DynamicObject {
 			Resource: "gateways",
 		},
 		Kind:      "Gateway",
-		Name:      defaultGatewayName,
+		Name:      "meshexpansion-gateway",
 		Namespace: r.Config.Namespace,
 		Spec: map[string]interface{}{
 			"servers": []map[string]interface{}{
 				{
 					"port": map[string]interface{}{
-						"name":     "http",
-						"protocol": "HTTP2",
-						"number":   80,
+						"name":     "tcp-pilot",
+						"protocol": "TCP",
+						"number":   15011,
 					},
 					"hosts": util.EmptyTypedStrSlice("*"),
 				},
-			},
-			"selector": gatewaySelector,
-		},
-		Owner: r.Config,
-	}
-}
-
-func (r *Reconciler) clusterAwareGateway() *k8sutil.DynamicObject {
-	return &k8sutil.DynamicObject{
-		Gvr: schema.GroupVersionResource{
-			Group:    "networking.istio.io",
-			Version:  "v1alpha3",
-			Resource: "gateways",
-		},
-		Kind:      "Gateway",
-		Name:      "cluster-aware-gateway",
-		Namespace: r.Config.Namespace,
-		Spec: map[string]interface{}{
-			"servers": []map[string]interface{}{
 				{
 					"port": map[string]interface{}{
-						"name":     "http",
-						"protocol": "HTTP",
-						"number":   80,
+						"name":     "tcp-citadel",
+						"protocol": "TCP",
+						"number":   8060,
 					},
-					"hosts": util.EmptyTypedStrSlice("cluster-aware.global"),
+					"hosts": util.EmptyTypedStrSlice("*"),
 				},
 				{
 					"port": map[string]interface{}{
-						"name":     "tls",
+						"name":     "tls-mixer",
 						"protocol": "TLS",
-						"number":   443,
+						"number":   15004,
 					},
 					"tls": map[string]interface{}{
 						"mode": "AUTO_PASSTHROUGH",
 					},
-					"hosts": util.EmptyTypedStrSlice("*.local"),
+					"hosts": util.EmptyTypedStrSlice("*"),
 				},
 			},
-			"selector": gatewaySelector,
+			"selector": map[string]interface{}{
+				"istio": "ingressgateway",
+			},
 		},
 		Owner: r.Config,
 	}

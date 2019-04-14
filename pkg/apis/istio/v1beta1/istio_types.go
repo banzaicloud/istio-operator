@@ -262,6 +262,10 @@ type IstioSpec struct {
 	// ImagePullPolicy describes a policy for if/when to pull a container image
 	// +kubebuilder:validation:Enum=Always,Never,IfNotPresent
 	ImagePullPolicy corev1.PullPolicy `json:"imagePullPolicy,omitempty"`
+
+	// If set to true, the pilot and citadel mtls will be exposed on the
+	// ingress gateway also the remote istios will be connected through gateways
+	MeshExpansion *bool `json:"meshExpansion,omitempty"`
 }
 
 func (s IstioSpec) GetDefaultConfigVisibility() string {
