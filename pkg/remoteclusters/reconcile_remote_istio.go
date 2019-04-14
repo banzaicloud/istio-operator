@@ -22,6 +22,7 @@ import (
 	"github.com/banzaicloud/istio-operator/pkg/resources/citadel"
 	"github.com/banzaicloud/istio-operator/pkg/resources/cni"
 	"github.com/banzaicloud/istio-operator/pkg/resources/common"
+	"github.com/banzaicloud/istio-operator/pkg/resources/gateways"
 	"github.com/banzaicloud/istio-operator/pkg/resources/nodeagent"
 	"github.com/banzaicloud/istio-operator/pkg/resources/sidecarinjector"
 )
@@ -37,6 +38,7 @@ func (c *Cluster) reconcileComponents(remoteConfig *istiov1beta1.RemoteIstio, is
 		nodeagent.New(c.ctrlRuntimeClient, c.istioConfig),
 		cni.New(c.ctrlRuntimeClient, c.istioConfig),
 		sidecarinjector.New(c.ctrlRuntimeClient, c.istioConfig),
+		gateways.New(c.ctrlRuntimeClient, c.dynamicClient, c.istioConfig),
 	}
 
 	for _, rec := range reconcilers {

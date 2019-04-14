@@ -69,16 +69,21 @@ func (c *Cluster) ReconcileEnabledServiceEndpoints(remoteConfig *istiov1beta1.Re
 			continue
 		}
 
+		ports := make([]apiv1.EndpointPort, 0)
+		for _, port := range enabledSvc.Ports {
+			ports = append(ports, apiv1.EndpointPort{
+				Name:     port.Name,
+				Protocol: port.Protocol,
+				Port:     port.Port,
+			})
+		}
+
 		endp := apiv1.Endpoints{
 			ObjectMeta: templates.ObjectMeta(enabledSvc.Name, map[string]string{}, c.istioConfig),
 			Subsets: []apiv1.EndpointSubset{
 				{
 					Addresses: addresses,
-					Ports: []apiv1.EndpointPort{
-						{
-							Port: 65000,
-						},
-					},
+					Ports:     ports,
 				},
 			},
 		}

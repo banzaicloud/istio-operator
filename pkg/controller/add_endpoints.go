@@ -17,10 +17,10 @@ limitations under the License.
 package controller
 
 import (
-	"github.com/banzaicloud/istio-operator/pkg/controller/endpoints"
+	_ "github.com/banzaicloud/istio-operator/pkg/controller/endpoints"
 )
 
 func init() {
 	// AddToManagerWithCMFuncs is a list of functions to create controllers and add them to a manager.
-	AddToManagerWithCMFuncs = append(AddToManagerWithCMFuncs, endpoints.Add)
+	// AddToManagerWithCMFuncs = append(AddToManagerWithCMFuncs, endpoints.Add)
 }

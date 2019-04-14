@@ -137,12 +137,12 @@ func setupSignalHandler(mgr manager.Manager, log logr.Logger, shutdownWaitDurati
 		log.Info("wait a bit for CR deletion events to arrive", "waitSeconds", shutdownWaitDuration)
 		time.Sleep(shutdownWaitDuration)
 		log.Info("removing finalizer from Istio resources")
-		err := istio.RemoveFinalizersFromIstios(mgr.GetClient())
+		err := istio.RemoveFinalizers(mgr.GetClient())
 		if err != nil {
 			log.Error(err, "could not remove finalizers from Istio resources")
 		}
 		log.Info("removing finalizer from RemoteIstio resources")
-		err = remoteistio.RemoveFinalizersFromIstios(mgr.GetClient())
+		err = remoteistio.RemoveFinalizers(mgr.GetClient())
 		if err != nil {
 			log.Error(err, "could not remove finalizers from RemoteIstio resources")
 		}

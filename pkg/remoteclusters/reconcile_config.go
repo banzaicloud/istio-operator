@@ -23,6 +23,7 @@ import (
 	"k8s.io/apimachinery/pkg/types"
 
 	istiov1beta1 "github.com/banzaicloud/istio-operator/pkg/apis/istio/v1beta1"
+	"github.com/banzaicloud/istio-operator/pkg/util"
 )
 
 const ConfigName = "istio-config"
@@ -44,6 +45,11 @@ func (c *Cluster) reconcileConfig(remoteConfig *istiov1beta1.RemoteIstio, istio 
 	istioConfig.Spec.Citadel.ReplicaCount = remoteConfig.Spec.Citadel.ReplicaCount
 	istioConfig.Spec.SidecarInjector.ReplicaCount = remoteConfig.Spec.SidecarInjector.ReplicaCount
 	istioConfig.Spec.Proxy.Privileged = remoteConfig.Spec.Proxy.Privileged
+
+	if util.PointerToBool(istioConfig.Spec.MeshExpansion) {
+		istioConfig.Spec.Gateways.IngressConfig.Enabled = util.BoolPointer(true)
+		istioConfig.Spec.SetNetworkName(remoteConfig.Name)
+	}
 
 	if k8sapierrors.IsNotFound(err) {
 		istioConfig.Name = ConfigName

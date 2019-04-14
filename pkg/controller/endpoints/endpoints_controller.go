@@ -38,6 +38,7 @@ import (
 
 	istiov1beta1 "github.com/banzaicloud/istio-operator/pkg/apis/istio/v1beta1"
 	"github.com/banzaicloud/istio-operator/pkg/remoteclusters"
+	"github.com/banzaicloud/istio-operator/pkg/util"
 )
 
 var log = logf.Log.WithName("endpoints")
@@ -71,6 +72,12 @@ func add(mgr manager.Manager, r reconcile.Reconciler) error {
 		return err
 	}
 
+	// Watch for changes to Ingress
+	err = c.Watch(&source.Kind{Type: &corev1.Service{TypeMeta: metav1.TypeMeta{Kind: "service", APIVersion: "v1"}}}, &handler.EnqueueRequestForObject{}, getWatchPredicate())
+	if err != nil {
+		return err
+	}
+
 	return nil
 }
 
@@ -92,12 +99,62 @@ func (r *ReconcileEndpoints) Reconcile(request reconcile.Request) (reconcile.Res
 	// Fetch the Pod instance
 	pod := &corev1.Pod{}
 	err := r.Get(context.TODO(), request.NamespacedName, pod)
-	if err != nil {
-		if k8serrors.IsNotFound(err) {
-			return reconcile.Result{}, nil
-		}
+	if err != nil && !k8serrors.IsNotFound(err) {
 		return reconcile.Result{}, err
 	}
+
+	if !k8serrors.IsNotFound(err) {
+		return r.ReconcilePod(pod)
+	}
+
+	// Fetch the Service instance
+	service := &corev1.Service{}
+	err = r.Get(context.TODO(), request.NamespacedName, service)
+	if err != nil && !k8serrors.IsNotFound(err) {
+		return reconcile.Result{}, err
+	}
+
+	if !k8serrors.IsNotFound(err) {
+		return r.ReconcileService(service)
+	}
+
+	return reconcile.Result{}, nil
+}
+
+func (r *ReconcileEndpoints) ReconcileService(service *corev1.Service) (reconcile.Result, error) {
+	istio, err := r.getIstio()
+	if err != nil {
+		return reconcile.Result{}, nil
+	}
+
+	log.Info("service event detected", "serviceName", service.Name)
+
+	for _, cluster := range r.remoteClustersMgr.GetAll() {
+		remoteConfig := cluster.GetRemoteConfig()
+		if remoteConfig != nil && util.PointerToBool(istio.Spec.MeshExpansion) {
+			for i, svc := range remoteConfig.Spec.EnabledServices {
+				ls, err := labels.Parse("istio=ingressgateway")
+				if err != nil {
+					return reconcile.Result{}, err
+				}
+				if ls.Matches(labels.Set(service.Labels)) {
+					svc.IPs = []string{service.Status.LoadBalancer.Ingress[0].IP}
+					remoteConfig.Spec.EnabledServices[i] = svc
+				}
+			}
+
+			log.Info("updating endpoints", "cluster", cluster.GetName())
+			err = cluster.ReconcileEnabledServiceEndpoints(remoteConfig, istio)
+			if err != nil {
+				return reconcile.Result{}, err
+			}
+		}
+	}
+
+	return reconcile.Result{}, nil
+}
+
+func (r *ReconcileEndpoints) ReconcilePod(pod *corev1.Pod) (reconcile.Result, error) {
 
 	ready := 0
 	for _, status := range pod.Status.ContainerStatuses {
@@ -119,7 +176,7 @@ func (r *ReconcileEndpoints) Reconcile(request reconcile.Request) (reconcile.Res
 
 	for _, cluster := range r.remoteClustersMgr.GetAll() {
 		remoteConfig := cluster.GetRemoteConfig()
-		if remoteConfig != nil {
+		if remoteConfig != nil && !util.PointerToBool(istio.Spec.MeshExpansion) {
 			for i, svc := range remoteConfig.Spec.EnabledServices {
 				ls, err := labels.Parse(svc.LabelSelector)
 				if err != nil {
