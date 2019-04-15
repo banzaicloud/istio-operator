@@ -49,6 +49,15 @@ As a pre-requisite it needs a Kubernetes cluster (you can create one using [Pipe
 kubectl create -n istio-system -f config/samples/istio_v1beta1_istio.yaml
 ```
 
+### Installation with Helm
+
+Alternatively, if you just can’t let go of Helm completely, you can deploy the operator using a Helm chart, which is available in the Banzai Cloud stable [Helm repo](https://github.com/banzaicloud/banzai-charts/tree/master/istio-operator):
+
+```bash
+helm repo add banzaicloud-stable https://kubernetes-charts.banzaicloud.com/
+helm install --name=istio-operator --namespace=istio-system banzaicloud-stable/istio-operator
+```
+
 ## Istio upgrade
 
 Check out the [upgrade docs](docs/upgrade.md) to see how to upgrade between minor or major Istio versions.
