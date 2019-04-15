@@ -1,7 +1,4 @@
-# Golang CircleCI 2.0 configuration file
-#
-# Check https://circleci.com/docs/2.0/language-go/ for more details
-version: 2
+version: 2.1
 jobs:
   build:
     docker:
@@ -60,6 +57,10 @@ jobs:
           command: make license-check
 
       - run:
+            name: Verify code generation
+            command: make verify-codegen
+
+      - run:
           name: Build
           command:
             make generate
@@ -83,3 +84,9 @@ jobs:
           path: build/
       - store_artifacts:
           path: build/
+
+workflows:
+    version: 2
+    ci:
+        jobs:
+            - build
