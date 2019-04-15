@@ -54,7 +54,7 @@ kubectl create -n istio-system -f config/samples/istio_v1beta1_istio.yaml
 Alternatively, if you just can’t let go of Helm completely, you can deploy the operator using a Helm chart, which is available in the Banzai Cloud stable [Helm repo](https://github.com/banzaicloud/banzai-charts/tree/master/istio-operator):
 
 ```bash
-helm repo add banzaicloud-stable http://kubernetes-charts.banzaicloud.com/branch/master
+helm repo add banzaicloud-stable http://kubernetes-charts.banzaicloud.com/
 helm install --name=istio-operator --namespace=istio-system banzaicloud-stable/istio-operator
 ```
 
