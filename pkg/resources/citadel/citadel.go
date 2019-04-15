@@ -17,11 +17,12 @@ limitations under the License.
 package citadel
 
 import (
-	"github.com/banzaicloud/istio-operator/pkg/util"
 	"github.com/go-logr/logr"
 	"github.com/goph/emperror"
 	"k8s.io/client-go/dynamic"
 	"sigs.k8s.io/controller-runtime/pkg/client"
+
+	"github.com/banzaicloud/istio-operator/pkg/util"
 
 	istiov1beta1 "github.com/banzaicloud/istio-operator/pkg/apis/istio/v1beta1"
 	"github.com/banzaicloud/istio-operator/pkg/k8sutil"
@@ -97,6 +98,13 @@ func (r *Reconciler) Reconcile(log logr.Logger) error {
 		return nil
 	}
 
+	var meshExpansionDesiredState k8sutil.DesiredState
+	if util.PointerToBool(r.Config.Spec.MeshExpansion) {
+		meshExpansionDesiredState = k8sutil.DesiredStatePresent
+	} else {
+		meshExpansionDesiredState = k8sutil.DesiredStateAbsent
+	}
+
 	var meshPolicyDesiredState k8sutil.DesiredState
 	var mTLSDesiredState k8sutil.DesiredState
 	if util.PointerToBool(r.Config.Spec.Citadel.Enabled) {
@@ -115,6 +123,7 @@ func (r *Reconciler) Reconcile(log logr.Logger) error {
 		{DynamicResource: r.meshPolicy, DesiredState: meshPolicyDesiredState},
 		{DynamicResource: r.destinationRuleDefaultMtls, DesiredState: mTLSDesiredState},
 		{DynamicResource: r.destinationRuleApiServerMtls, DesiredState: mTLSDesiredState},
+		{DynamicResource: r.meshExpansion, DesiredState: meshExpansionDesiredState},
 	}
 
 	for _, dr := range drs {

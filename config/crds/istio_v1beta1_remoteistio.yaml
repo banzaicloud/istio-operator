@@ -6,6 +6,22 @@ metadata:
     controller-tools.k8s.io: "1.0"
   name: remoteistios.istio.banzaicloud.io
 spec:
+  additionalPrinterColumns:
+  - JSONPath: .status.Status
+    description: Status of the resource
+    name: Status
+    type: string
+  - JSONPath: .status.ErrorMessage
+    description: Error message
+    name: Error
+    type: string
+  - JSONPath: .status.GatewayAddress
+    description: Ingress gateways of the resource
+    name: Gateways
+    type: string
+  - JSONPath: .metadata.creationTimestamp
+    name: Age
+    type: date
   group: istio.banzaicloud.io
   names:
     kind: RemoteIstio
@@ -62,9 +78,12 @@ spec:
                     items:
                       type: string
                     type: array
+                  ports:
+                    items:
+                      type: object
+                    type: array
                 required:
                 - name
-                - labelSelector
                 type: object
               type: array
             excludeIPRanges:

@@ -166,6 +166,7 @@ containers:
     valueFrom:
       fieldRef:
         fieldPath: metadata.namespace
+` + r.networkName() + `
   - name: ISTIO_META_INTERCEPTION_MODE
     value: [[ or (index .ObjectMeta.Annotations "sidecar.istio.io/interceptionMode") .ProxyConfig.InterceptionMode.String ]]
   [[ if .ObjectMeta.Annotations ]]
@@ -258,6 +259,17 @@ func (r *Reconciler) runAsGroup() string {
 	if util.PointerToBool(r.Config.Spec.SDS.Enabled) && r.Config.Spec.SDS.UseTrustworthyJwt {
 		return "runAsGroup: 1337"
 	}
+	return ""
+}
+
+func (r *Reconciler) networkName() string {
+	networkName := r.Config.Spec.GetNetworkName()
+	if util.PointerToBool(r.Config.Spec.MeshExpansion) && networkName != "" {
+		return `  - name: ISTIO_META_NETWORK
+    value: "` + networkName + `"
+`
+	}
+
 	return ""
 }
 

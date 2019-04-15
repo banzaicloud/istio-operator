@@ -1,0 +1,29 @@
+{
+  "name": "istio-eks",
+  "location": "eu-west-2",
+  "cloud": "amazon",
+  "secretId": "{{secretID}}",
+  "properties": {
+    "eks": {
+      "version": "1.11",
+      "nodePools": {
+        "pool1": {
+          "spotPrice": "0",
+          "count": 1,
+          "minCount": 1,
+          "maxCount": 3,
+          "autoscaling": true,
+          "instanceType": "t2.medium"
+        },
+        "system": {
+          "spotPrice": "0",
+          "count": 1,
+          "minCount": 1,
+          "maxCount": 1,
+          "autoscaling": false,
+          "instanceType": "t2.medium"
+        }
+      }
+    }
+  }
+}

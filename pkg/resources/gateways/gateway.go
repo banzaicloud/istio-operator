@@ -17,13 +17,14 @@ limitations under the License.
 package gateways
 
 import (
+	"k8s.io/apimachinery/pkg/runtime/schema"
+
 	"github.com/banzaicloud/istio-operator/pkg/k8sutil"
 	"github.com/banzaicloud/istio-operator/pkg/util"
-	"k8s.io/apimachinery/pkg/runtime/schema"
 )
 
 var gatewaySelector = map[string]interface{}{
-	"istio": "ingress",
+	"istio": "ingressgateway",
 }
 
 func (r *Reconciler) gateway() *k8sutil.DynamicObject {
@@ -45,6 +46,44 @@ func (r *Reconciler) gateway() *k8sutil.DynamicObject {
 						"number":   80,
 					},
 					"hosts": util.EmptyTypedStrSlice("*"),
+				},
+			},
+			"selector": gatewaySelector,
+		},
+		Owner: r.Config,
+	}
+}
+
+func (r *Reconciler) clusterAwareGateway() *k8sutil.DynamicObject {
+	return &k8sutil.DynamicObject{
+		Gvr: schema.GroupVersionResource{
+			Group:    "networking.istio.io",
+			Version:  "v1alpha3",
+			Resource: "gateways",
+		},
+		Kind:      "Gateway",
+		Name:      "cluster-aware-gateway",
+		Namespace: r.Config.Namespace,
+		Spec: map[string]interface{}{
+			"servers": []map[string]interface{}{
+				{
+					"port": map[string]interface{}{
+						"name":     "http",
+						"protocol": "HTTP",
+						"number":   80,
+					},
+					"hosts": util.EmptyTypedStrSlice("cluster-aware.global"),
+				},
+				{
+					"port": map[string]interface{}{
+						"name":     "tls",
+						"protocol": "TLS",
+						"number":   443,
+					},
+					"tls": map[string]interface{}{
+						"mode": "AUTO_PASSTHROUGH",
+					},
+					"hosts": util.EmptyTypedStrSlice("*.local"),
 				},
 			},
 			"selector": gatewaySelector,

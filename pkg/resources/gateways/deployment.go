@@ -212,6 +212,12 @@ func (r *Reconciler) envVars(gwConfig *istiov1beta1.GatewayConfiguration) []apiv
 			Value: "true",
 		})
 	}
+	if util.PointerToBool(r.Config.Spec.MeshExpansion) && r.Config.Spec.GetNetworkName() != "" {
+		envVars = append(envVars, apiv1.EnvVar{
+			Name:  "ISTIO_META_NETWORK",
+			Value: r.Config.Spec.GetNetworkName(),
+		})
+	}
 	return envVars
 }
 

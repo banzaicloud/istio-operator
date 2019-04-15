@@ -1,0 +1,17 @@
+apiVersion: istio.banzaicloud.io/v1beta1
+kind: RemoteIstio
+metadata:
+  name: istio-eks
+spec:
+  autoInjectionNamespaces:
+  - "default"
+  enabledServices:
+  - name: "istio-pilot"
+  - name: "istio-policy"
+  - name: "istio-telemetry"
+  citadel:
+      enabled: true
+      replicaCount: 1
+  sidecarInjector:
+      enabled: true
+      replicaCount: 1

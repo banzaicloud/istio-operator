@@ -19,10 +19,11 @@ package common
 import (
 	"fmt"
 
-	"github.com/banzaicloud/istio-operator/pkg/util"
 	"github.com/ghodss/yaml"
 	apiv1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/runtime"
+
+	"github.com/banzaicloud/istio-operator/pkg/util"
 
 	"github.com/banzaicloud/istio-operator/pkg/resources/templates"
 )
@@ -81,6 +82,7 @@ func (r *Reconciler) meshConfig() string {
 			"mode": r.Config.Spec.OutboundTrafficPolicy.Mode,
 		},
 		"defaultConfig": defaultConfig,
+		"rootNamespace": "istio-system",
 	}
 
 	if r.Config.Spec.UseMCP {
@@ -94,10 +96,7 @@ func (r *Reconciler) meshConfig() string {
 }
 
 func (r *Reconciler) meshNetworks() string {
-	meshNetworks := map[string]interface{}{
-		"networks": map[string]interface{}{},
-	}
-	marshaledConfig, _ := yaml.Marshal(meshNetworks)
+	marshaledConfig, _ := yaml.Marshal(r.Config.Spec.GetMeshNetworks())
 	return string(marshaledConfig)
 }
 

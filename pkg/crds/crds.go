@@ -78,6 +78,7 @@ func InitCrds() []*extensionsobj.CustomResourceDefinition {
 		crdL("VirtualService", "VirtualServices", crdConfigs[Networking], "istio-pilot", "", "", extensionsobj.NamespaceScoped, true),
 		crdL("DestinationRule", "DestinationRules", crdConfigs[Networking], "istio-pilot", "", "", extensionsobj.NamespaceScoped, true),
 		crdL("ServiceEntry", "ServiceEntries", crdConfigs[Networking], "istio-pilot", "", "", extensionsobj.NamespaceScoped, true),
+		crdL("ClusterRbacConfig", "ClusterRbacConfigs", crdConfigs[Rbac], "istio-pilot", "rbac-istio-pilot", "rbac", extensionsobj.NamespaceScoped, true),
 		crd("Gateway", "Gateways", crdConfigs[Networking], "istio-pilot", "", "", extensionsobj.NamespaceScoped),
 		crd("EnvoyFilter", "EnvoyFilters", crdConfigs[Networking], "istio-pilot", "", "", extensionsobj.NamespaceScoped),
 		crd("Policy", "Policies", crdConfigs[Authentication], "", "", "", extensionsobj.NamespaceScoped),

@@ -95,6 +95,7 @@ func (c *Cluster) Reconcile(remoteConfig *istiov1beta1.RemoteIstio, istio *istio
 		c.reconcileEnabledServices,
 		c.ReconcileEnabledServiceEndpoints,
 		c.reconcileComponents,
+		c.getIngressGatewayAddress,
 	)
 
 	for _, f := range ReconcilerFuncs {

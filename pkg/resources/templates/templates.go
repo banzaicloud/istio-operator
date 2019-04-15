@@ -17,9 +17,10 @@ limitations under the License.
 package templates
 
 import (
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+
 	istiov1beta1 "github.com/banzaicloud/istio-operator/pkg/apis/istio/v1beta1"
 	"github.com/banzaicloud/istio-operator/pkg/util"
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
 func ObjectMeta(name string, labels map[string]string, config *istiov1beta1.Istio) metav1.ObjectMeta {

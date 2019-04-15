@@ -123,6 +123,7 @@ func (r *Reconciler) deployment() runtime.Object {
 									Value: fmt.Sprintf("%.2f", r.Config.Spec.Pilot.TraceSampling),
 								},
 								{Name: "PILOT_DISABLE_XDS_MARSHALING_TO_ANY", Value: "1"},
+								{Name: "MESHNETWORKS_HASH", Value: r.Config.Spec.GetMeshNetworksHash()},
 							},
 							Resources: apiv1.ResourceRequirements{
 								Requests: apiv1.ResourceList{

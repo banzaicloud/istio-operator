@@ -17,6 +17,9 @@ limitations under the License.
 package v1beta1
 
 import (
+	"crypto/md5"
+	"encoding/json"
+	"fmt"
 	"regexp"
 
 	corev1 "k8s.io/api/core/v1"
@@ -262,6 +265,61 @@ type IstioSpec struct {
 	// ImagePullPolicy describes a policy for if/when to pull a container image
 	// +kubebuilder:validation:Enum=Always,Never,IfNotPresent
 	ImagePullPolicy corev1.PullPolicy `json:"imagePullPolicy,omitempty"`
+
+	// If set to true, the pilot and citadel mtls will be exposed on the
+	// ingress gateway also the remote istios will be connected through gateways
+	MeshExpansion *bool `json:"meshExpansion,omitempty"`
+
+	networkName  string
+	meshNetworks *MeshNetworks
+}
+
+type MeshNetworkEndpoint struct {
+	FromRegistry string `json:"fromRegistry,omitempty"`
+}
+
+type MeshNetworkGateway struct {
+	Address string `json:"address"`
+	Port    uint   `json:"port"`
+}
+
+type MeshNetwork struct {
+	Endpoints []MeshNetworkEndpoint `json:"endpoints,omitempty"`
+	Gateways  []MeshNetworkGateway  `json:"gateways,omitempty"`
+}
+
+type MeshNetworks struct {
+	Networks map[string]MeshNetwork `json:"networks"`
+}
+
+func (s *IstioSpec) SetMeshNetworks(networks *MeshNetworks) *IstioSpec {
+	s.meshNetworks = networks
+	return s
+}
+
+func (s *IstioSpec) GetMeshNetworks() *MeshNetworks {
+	return s.meshNetworks
+}
+
+func (s *IstioSpec) GetMeshNetworksHash() string {
+	hash := ""
+	j, err := json.Marshal(s.meshNetworks)
+	if err != nil {
+		return hash
+	}
+
+	hash = fmt.Sprintf("%x", md5.Sum(j))
+
+	return hash
+}
+
+func (s *IstioSpec) SetNetworkName(networkName string) *IstioSpec {
+	s.networkName = networkName
+	return s
+}
+
+func (s *IstioSpec) GetNetworkName() string {
+	return s.networkName
 }
 
 func (s IstioSpec) GetDefaultConfigVisibility() string {
@@ -289,6 +347,9 @@ type IstioStatus struct {
 // Istio is the Schema for the istios API
 // +k8s:openapi-gen=true
 // +kubebuilder:subresource:status
+// +kubebuilder:printcolumn:name="Status",type="string",JSONPath=".status.Status",description="Status of the resource"
+// +kubebuilder:printcolumn:name="Error",type="string",JSONPath=".status.ErrorMessage",description="Error message"
+// +kubebuilder:printcolumn:name="Age",type="date",JSONPath=".metadata.creationTimestamp"
 type Istio struct {
 	metav1.TypeMeta   `json:",inline"`
 	metav1.ObjectMeta `json:"metadata,omitempty"`

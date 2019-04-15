@@ -1,0 +1,23 @@
+apiVersion: istio.banzaicloud.io/v1beta1
+kind: Istio
+metadata:
+  name: gateway-multicluster
+spec:
+  version: "1.1.2"
+  autoInjectionNamespaces:
+  - "default"
+  mtls: true
+  useMCP: true
+  meshExpansion: true
+  controlPlaneSecurityEnabled: true
+  imagePullPolicy: Always
+  pilot:
+    maxReplicas: 1
+  gateways:
+    ingress:
+      maxReplicas: 1
+    egress:
+      maxReplicas: 1
+      enabled: false
+  mixer:
+    maxReplicas: 1

@@ -6,6 +6,18 @@ metadata:
     controller-tools.k8s.io: "1.0"
   name: istios.istio.banzaicloud.io
 spec:
+  additionalPrinterColumns:
+  - JSONPath: .status.Status
+    description: Status of the resource
+    name: Status
+    type: string
+  - JSONPath: .status.ErrorMessage
+    description: Error message
+    name: Error
+    type: string
+  - JSONPath: .metadata.creationTimestamp
+    name: Age
+    type: date
   group: istio.banzaicloud.io
   names:
     kind: Istio
@@ -164,6 +176,11 @@ spec:
             includeIPRanges:
               description: IncludeIPRanges the range where to capture egress traffic
               type: string
+            meshExpansion:
+              description: If set to true, the pilot and citadel mtls will be exposed
+                on the ingress gateway also the remote istios will be connected through
+                gateways
+              type: boolean
             mixer:
               description: Mixer configuration options
               properties:

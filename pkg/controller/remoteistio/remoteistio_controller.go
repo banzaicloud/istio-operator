@@ -18,7 +18,7 @@ package remoteistio
 
 import (
 	"context"
-	"reflect"
+	"net"
 
 	"github.com/go-logr/logr"
 	"github.com/gofrs/uuid"
@@ -27,26 +27,24 @@ import (
 	corev1 "k8s.io/api/core/v1"
 	k8serrors "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/labels"
 	"k8s.io/apimachinery/pkg/runtime"
-	"k8s.io/apimachinery/pkg/types"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/controller"
-	"sigs.k8s.io/controller-runtime/pkg/event"
 	"sigs.k8s.io/controller-runtime/pkg/handler"
 	"sigs.k8s.io/controller-runtime/pkg/manager"
-	"sigs.k8s.io/controller-runtime/pkg/predicate"
 	"sigs.k8s.io/controller-runtime/pkg/reconcile"
 	logf "sigs.k8s.io/controller-runtime/pkg/runtime/log"
 	"sigs.k8s.io/controller-runtime/pkg/source"
 
 	istiov1beta1 "github.com/banzaicloud/istio-operator/pkg/apis/istio/v1beta1"
-	istioCtrl "github.com/banzaicloud/istio-operator/pkg/controller/istio"
 	"github.com/banzaicloud/istio-operator/pkg/k8sutil"
 	"github.com/banzaicloud/istio-operator/pkg/remoteclusters"
 	"github.com/banzaicloud/istio-operator/pkg/util"
 )
 
 const finalizerID = "remote-istio-operator.finializer.banzaicloud.io"
+const istioSecretLabel = "istio/multiCluster"
 
 var log = logf.Log.WithName("remote-istio-controller")
 
@@ -74,7 +72,7 @@ func add(mgr manager.Manager, r reconcile.Reconciler) error {
 	}
 
 	// Watch for changes to RemoteConfig
-	err = c.Watch(&source.Kind{Type: &istiov1beta1.RemoteIstio{TypeMeta: metav1.TypeMeta{Kind: "RemoteIstio", APIVersion: "istio.banzaicloud.io/v1beta1"}}}, &handler.EnqueueRequestForObject{}, getWatchPredicateForRemoteConfig())
+	err = c.Watch(&source.Kind{Type: &istiov1beta1.RemoteIstio{TypeMeta: metav1.TypeMeta{Kind: "RemoteIstio", APIVersion: "istio.banzaicloud.io/v1beta1"}}}, &handler.EnqueueRequestForObject{}, k8sutil.GetWatchPredicateForRemoteIstio())
 	if err != nil {
 		return err
 	}
@@ -82,9 +80,29 @@ func add(mgr manager.Manager, r reconcile.Reconciler) error {
 	// Watch for Istio changes to trigger reconciliation for RemoteIstios
 	err = c.Watch(&source.Kind{Type: &istiov1beta1.Istio{TypeMeta: metav1.TypeMeta{Kind: "Istio", APIVersion: "istio.banzaicloud.io/v1beta1"}}}, &handler.EnqueueRequestsFromMapFunc{
 		ToRequests: handler.ToRequestsFunc(func(object handler.MapObject) []reconcile.Request {
-			return triggerRemoteIstios(mgr, object, log)
+			return triggerRemoteIstios(mgr, object.Object, log)
 		}),
-	}, istioCtrl.WatchPredicateForConfig())
+	}, k8sutil.GetWatchPredicateForIstio())
+	if err != nil {
+		return err
+	}
+
+	// Watch for changes to Istio service pods
+	err = c.Watch(&source.Kind{Type: &corev1.Pod{TypeMeta: metav1.TypeMeta{Kind: "Pod", APIVersion: "v1"}}}, &handler.EnqueueRequestsFromMapFunc{
+		ToRequests: handler.ToRequestsFunc(func(object handler.MapObject) []reconcile.Request {
+			return triggerRemoteIstios(mgr, nil, log)
+		}),
+	}, k8sutil.GetWatchPredicateForIstioServicePods())
+	if err != nil {
+		return err
+	}
+
+	// Watch for changes to Ingress
+	err = c.Watch(&source.Kind{Type: &corev1.Service{TypeMeta: metav1.TypeMeta{Kind: "service", APIVersion: "v1"}}}, &handler.EnqueueRequestsFromMapFunc{
+		ToRequests: handler.ToRequestsFunc(func(object handler.MapObject) []reconcile.Request {
+			return triggerRemoteIstios(mgr, nil, log)
+		}),
+	}, k8sutil.GetWatchPredicateForIstioIngressGateway())
 	if err != nil {
 		return err
 	}
@@ -131,7 +149,9 @@ func (r *ReconcileRemoteConfig) Reconcile(request reconcile.Request) (reconcile.
 				return reconcile.Result{}, emperror.Wrap(err, "could not add finalizer to remoteconfig")
 			}
 			// we return here and do the reconciling when this update arrives
-			return reconcile.Result{}, nil
+			return reconcile.Result{
+				Requeue: true,
+			}, nil
 		}
 	} else {
 		if util.ContainsString(remoteConfig.ObjectMeta.Finalizers, finalizerID) {
@@ -147,6 +167,15 @@ func (r *ReconcileRemoteConfig) Reconcile(request reconcile.Request) (reconcile.
 					return reconcile.Result{}, emperror.Wrap(err, "could not remove remote config to remote istio")
 				}
 			}
+
+			err = r.labelSecret(client.ObjectKey{
+				Name:      remoteConfig.GetName(),
+				Namespace: remoteConfig.GetNamespace(),
+			}, istioSecretLabel, "")
+			if err != nil {
+				return reconcile.Result{}, emperror.Wrap(err, "could not remove remote config to remote istio")
+			}
+
 			remoteConfig.ObjectMeta.Finalizers = util.RemoveString(remoteConfig.ObjectMeta.Finalizers, finalizerID)
 			if err := r.Update(context.Background(), remoteConfig); err != nil {
 				return reconcile.Result{}, emperror.Wrap(err, "could not remove finalizer from remoteconfig")
@@ -219,14 +248,14 @@ func (r *ReconcileRemoteConfig) reconcile(remoteConfig *istiov1beta1.RemoteIstio
 
 	logger.Info("begin reconciling remote istio")
 
-	remoteConfig, err = r.populateEnabledServicePodIPs(remoteConfig)
+	remoteConfig, err = r.populateEnabledServiceEndpoints(remoteConfig, istio, logger)
 	if err != nil {
-		return reconcile.Result{}, emperror.Wrap(err, "could not populate pod ips to remoteconfig")
+		return reconcile.Result{}, emperror.Wrap(err, "could not populate service endpoints")
 	}
 
 	remoteConfig, err = r.populateSignCerts(remoteConfig)
 	if err != nil {
-		return reconcile.Result{}, emperror.Wrap(err, "could not populate sign certs to remoteconfig")
+		return reconcile.Result{}, emperror.Wrap(err, "could not populate sign certs")
 	}
 
 	cluster, _ := r.remoteClustersMgr.Get(remoteConfig.Name)
@@ -238,6 +267,14 @@ func (r *ReconcileRemoteConfig) reconcile(remoteConfig *istiov1beta1.RemoteIstio
 	}
 
 	err = cluster.Reconcile(remoteConfig, istio)
+	if err != nil {
+		return reconcile.Result{}, emperror.Wrap(err, "could not reconcile remote istio")
+	}
+
+	err = r.labelSecret(client.ObjectKey{
+		Name:      remoteConfig.GetName(),
+		Namespace: remoteConfig.GetNamespace(),
+	}, istioSecretLabel, "true")
 	if err != nil {
 		return reconcile.Result{}, emperror.Wrap(err, "could not reconcile remote istio")
 	}
@@ -264,7 +301,7 @@ func (r *ReconcileRemoteConfig) updateRemoteConfigStatus(remoteConfig *istiov1be
 		if !k8serrors.IsConflict(err) {
 			return emperror.Wrapf(err, "could not update remote Istio state to '%s'", status)
 		}
-		err := r.Get(context.TODO(), types.NamespacedName{
+		err := r.Get(context.TODO(), client.ObjectKey{
 			Namespace: remoteConfig.Namespace,
 			Name:      remoteConfig.Name,
 		}, remoteConfig)
@@ -308,18 +345,40 @@ func (r *ReconcileRemoteConfig) populateSignCerts(remoteConfig *istiov1beta1.Rem
 	return remoteConfig, nil
 }
 
-func (r *ReconcileRemoteConfig) populateEnabledServicePodIPs(remoteConfig *istiov1beta1.RemoteIstio) (*istiov1beta1.RemoteIstio, error) {
-	var pods corev1.PodList
+func (r *ReconcileRemoteConfig) populateEnabledServiceEndpoints(remoteIstio *istiov1beta1.RemoteIstio, istio *istiov1beta1.Istio, logger logr.Logger) (*istiov1beta1.RemoteIstio, error) {
+	if util.PointerToBool(istio.Spec.MeshExpansion) {
+		return r.populateEnabledServiceEndpointsGateway(remoteIstio, istio, logger)
+	}
 
-	for i, svc := range remoteConfig.Spec.EnabledServices {
+	return r.populateEnabledServiceEndpointsFlat(remoteIstio, istio, logger)
+}
+
+func (r *ReconcileRemoteConfig) populateEnabledServiceEndpointsFlat(remoteIstio *istiov1beta1.RemoteIstio, istio *istiov1beta1.Istio, logger logr.Logger) (*istiov1beta1.RemoteIstio, error) {
+	var pods corev1.PodList
+	var service corev1.Service
+
+	for i, svc := range remoteIstio.Spec.EnabledServices {
+		err := r.Get(context.TODO(), client.ObjectKey{
+			Name:      svc.Name,
+			Namespace: remoteIstio.Namespace,
+		}, &service)
+		if err != nil && !k8serrors.IsNotFound(err) {
+			return remoteIstio, err
+		}
+		svc.Ports = service.Spec.Ports
+
+		if svc.LabelSelector == "" {
+			svc.LabelSelector = labels.Set(service.Spec.Selector).String()
+		}
+
 		o := &client.ListOptions{}
-		err := o.SetLabelSelector(svc.LabelSelector)
+		err = o.SetLabelSelector(svc.LabelSelector)
 		if err != nil {
-			return remoteConfig, err
+			return remoteIstio, err
 		}
 		err = r.List(context.TODO(), o, &pods)
 		if err != nil {
-			return remoteConfig, err
+			return remoteIstio, err
 		}
 		for _, pod := range pods.Items {
 			ready := 0
@@ -330,12 +389,65 @@ func (r *ReconcileRemoteConfig) populateEnabledServicePodIPs(remoteConfig *istio
 			}
 			if len(pod.Spec.Containers) == ready {
 				svc.IPs = append(svc.IPs, pod.Status.PodIP)
-				remoteConfig.Spec.EnabledServices[i] = svc
+			}
+		}
+
+		remoteIstio.Spec.EnabledServices[i] = svc
+	}
+
+	return remoteIstio, nil
+}
+
+func (r *ReconcileRemoteConfig) populateEnabledServiceEndpointsGateway(remoteIstio *istiov1beta1.RemoteIstio, istio *istiov1beta1.Istio, logger logr.Logger) (*istiov1beta1.RemoteIstio, error) {
+	var service corev1.Service
+	ips := make([]string, 0)
+
+	err := r.Get(context.TODO(), client.ObjectKey{
+		Name:      "istio-ingressgateway",
+		Namespace: remoteIstio.Namespace,
+	}, &service)
+	if err != nil && !k8serrors.IsNotFound(err) {
+		return remoteIstio, err
+	}
+
+	if len(service.Status.LoadBalancer.Ingress) < 1 {
+		return remoteIstio, errors.New("invalid ingress status")
+	}
+
+	if service.Status.LoadBalancer.Ingress[0].IP != "" {
+		ips = []string{
+			service.Status.LoadBalancer.Ingress[0].IP,
+		}
+	} else if service.Status.LoadBalancer.Ingress[0].Hostname != "" {
+		hostIPs, err := net.LookupIP(service.Status.LoadBalancer.Ingress[0].Hostname)
+		if err != nil {
+			return remoteIstio, err
+		}
+		for _, ip := range hostIPs {
+			if ip.To4() != nil {
+				ips = append(ips, ip.String())
 			}
 		}
 	}
 
-	return remoteConfig, nil
+	for i, svc := range remoteIstio.Spec.EnabledServices {
+		err := r.Get(context.TODO(), client.ObjectKey{
+			Name:      svc.Name,
+			Namespace: remoteIstio.Namespace,
+		}, &service)
+		if k8serrors.IsNotFound(err) {
+			continue
+		}
+		if err != nil {
+			return remoteIstio, err
+		}
+		svc.Ports = service.Spec.Ports
+		svc.IPs = ips
+
+		remoteIstio.Spec.EnabledServices[i] = svc
+	}
+
+	return remoteIstio, nil
 }
 
 func (r *ReconcileRemoteConfig) getRemoteCluster(remoteConfig *istiov1beta1.RemoteIstio, logger logr.Logger) (*remoteclusters.Cluster, error) {
@@ -375,6 +487,32 @@ func (r *ReconcileRemoteConfig) getK8SConfigForCluster(namespace string, name st
 	return nil, errors.New("could not found k8s config")
 }
 
+func (r *ReconcileRemoteConfig) labelSecret(secretName client.ObjectKey, label, value string) error {
+	var secret corev1.Secret
+	err := r.Get(context.TODO(), secretName, &secret)
+	if err != nil {
+		return err
+	}
+
+	labels := secret.GetLabels()
+	if labels == nil {
+		labels = make(map[string]string)
+	}
+	if value != "" {
+		labels[label] = value
+	} else {
+		delete(labels, label)
+	}
+	secret.SetLabels(labels)
+
+	err = r.Update(context.TODO(), &secret)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
 func (r *ReconcileRemoteConfig) getIstio() (*istiov1beta1.Istio, error) {
 	var istios istiov1beta1.IstioList
 	err := r.List(context.TODO(), &client.ListOptions{}, &istios)
@@ -398,34 +536,13 @@ func (r *ReconcileRemoteConfig) getIstio() (*istiov1beta1.Istio, error) {
 	return &config, nil
 }
 
-func getWatchPredicateForRemoteConfig() predicate.Funcs {
-	return predicate.Funcs{
-		CreateFunc: func(e event.CreateEvent) bool {
-			return true
-		},
-		DeleteFunc: func(e event.DeleteEvent) bool {
-			return true
-		},
-		UpdateFunc: func(e event.UpdateEvent) bool {
-			old := e.ObjectOld.(*istiov1beta1.RemoteIstio)
-			new := e.ObjectNew.(*istiov1beta1.RemoteIstio)
-			if !reflect.DeepEqual(old.Spec, new.Spec) ||
-				old.GetDeletionTimestamp() != new.GetDeletionTimestamp() ||
-				old.GetGeneration() != new.GetGeneration() {
-				return true
-			}
-			return false
-		},
-	}
-}
-
-func triggerRemoteIstios(mgr manager.Manager, object handler.MapObject, logger logr.Logger) []reconcile.Request {
+func triggerRemoteIstios(mgr manager.Manager, object runtime.Object, logger logr.Logger) []reconcile.Request {
 	requests := make([]reconcile.Request, 0)
-	remoteIstios := istioCtrl.GetRemoteIstiosByOwnerReference(mgr, object.Object, logger)
+	remoteIstios := GetRemoteIstiosByOwnerReference(mgr, object, logger)
 
 	for _, remoteIstio := range remoteIstios {
 		requests = append(requests, reconcile.Request{
-			NamespacedName: types.NamespacedName{
+			NamespacedName: client.ObjectKey{
 				Namespace: remoteIstio.Namespace,
 				Name:      remoteIstio.Name,
 			},
@@ -440,7 +557,7 @@ func triggerRemoteIstios(mgr manager.Manager, object handler.MapObject, logger l
 	for _, remoteIstio := range remoteIstiosWithoutOR.Items {
 		if len(remoteIstio.GetOwnerReferences()) == 0 {
 			requests = append(requests, reconcile.Request{
-				NamespacedName: types.NamespacedName{
+				NamespacedName: client.ObjectKey{
 					Namespace: remoteIstio.Namespace,
 					Name:      remoteIstio.Name,
 				},
@@ -451,7 +568,7 @@ func triggerRemoteIstios(mgr manager.Manager, object handler.MapObject, logger l
 	return requests
 }
 
-func RemoveFinalizersFromIstios(c client.Client) error {
+func RemoveFinalizers(c client.Client) error {
 	var remoteistios istiov1beta1.RemoteIstioList
 
 	err := c.List(context.TODO(), &client.ListOptions{}, &remoteistios)
@@ -466,4 +583,36 @@ func RemoveFinalizersFromIstios(c client.Client) error {
 	}
 
 	return nil
+}
+
+// GetRemoteIstiosByOwnerReference gets RemoteIstio resources by owner reference for the given object
+func GetRemoteIstiosByOwnerReference(mgr manager.Manager, object runtime.Object, logger logr.Logger) []istiov1beta1.RemoteIstio {
+	var remoteIstios istiov1beta1.RemoteIstioList
+	remotes := make([]istiov1beta1.RemoteIstio, 0)
+
+	var ownerMatcher *k8sutil.OwnerReferenceMatcher
+	if object != nil {
+		ownerMatcher = k8sutil.NewOwnerReferenceMatcher(object, true, mgr.GetScheme())
+	}
+
+	err := mgr.GetClient().List(context.Background(), &client.ListOptions{}, &remoteIstios)
+	if err != nil {
+		logger.Error(err, "could not list remote istio resources")
+	}
+
+	for _, remoteIstio := range remoteIstios.Items {
+		if ownerMatcher != nil {
+			related, _, err := ownerMatcher.Match(&remoteIstio)
+			if err != nil {
+				logger.Error(err, "could not match owner reference for remote istio", "name", remoteIstio.Name)
+				continue
+			}
+			if !related {
+				continue
+			}
+		}
+		remotes = append(remotes, remoteIstio)
+	}
+
+	return remotes
 }

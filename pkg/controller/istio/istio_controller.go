@@ -19,7 +19,6 @@ package istio
 import (
 	"context"
 	"flag"
-	"reflect"
 	"strings"
 
 	"github.com/go-logr/logr"
@@ -48,6 +47,7 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/source"
 
 	istiov1beta1 "github.com/banzaicloud/istio-operator/pkg/apis/istio/v1beta1"
+	remoteistioCtrl "github.com/banzaicloud/istio-operator/pkg/controller/remoteistio"
 	"github.com/banzaicloud/istio-operator/pkg/crds"
 	"github.com/banzaicloud/istio-operator/pkg/k8sutil"
 	"github.com/banzaicloud/istio-operator/pkg/k8sutil/objectmatch"
@@ -180,9 +180,9 @@ func (r *ReconcileConfig) Reconcile(request reconcile.Request) (reconcile.Result
 			logger.Error(updateErr, "failed to update state")
 			return result, errors.WithStack(err)
 		}
-		return reconcile.Result{}, emperror.Wrap(err, "could not reconcile istio")
+		return result, emperror.Wrap(err, "could not reconcile istio")
 	}
-	return reconcile.Result{}, nil
+	return result, nil
 }
 
 func (r *ReconcileConfig) reconcile(logger logr.Logger, config *istiov1beta1.Istio) (reconcile.Result, error) {
@@ -201,7 +201,9 @@ func (r *ReconcileConfig) reconcile(logger logr.Logger, config *istiov1beta1.Ist
 			if err := r.Update(context.Background(), config); err != nil {
 				return reconcile.Result{}, emperror.Wrap(err, "could not add finalizer to config")
 			}
-			return reconcile.Result{}, nil
+			return reconcile.Result{
+				Requeue: true,
+			}, nil
 		}
 	} else {
 		// Deletion timestamp set, config is marked for deletion
@@ -246,6 +248,14 @@ func (r *ReconcileConfig) reconcile(logger logr.Logger, config *istiov1beta1.Ist
 		return reconcile.Result{}, err
 	}
 
+	if util.PointerToBool(config.Spec.MeshExpansion) {
+		meshNetworks, err := r.getMeshNetworks(config, logger)
+		if err != nil {
+			return reconcile.Result{}, err
+		}
+		config.Spec.SetMeshNetworks(meshNetworks)
+	}
+
 	reconcilers := []resources.ComponentReconciler{
 		common.New(r.Client, config, false),
 		citadel.New(citadel.Configuration{
@@ -253,7 +263,7 @@ func (r *ReconcileConfig) reconcile(logger logr.Logger, config *istiov1beta1.Ist
 			SelfSignedCA:     true,
 		}, r.Client, r.dynamic, config),
 		galley.New(r.Client, config),
-		pilot.New(r.Client, config),
+		pilot.New(r.Client, r.dynamic, config),
 		gateways.New(r.Client, r.dynamic, config),
 		mixer.New(r.Client, r.dynamic, config),
 		cni.New(r.Client, config),
@@ -274,6 +284,37 @@ func (r *ReconcileConfig) reconcile(logger logr.Logger, config *istiov1beta1.Ist
 	}
 	logger.Info("reconcile finished")
 	return reconcile.Result{}, nil
+}
+
+func (r *ReconcileConfig) getMeshNetworks(config *istiov1beta1.Istio, logger logr.Logger) (*istiov1beta1.MeshNetworks, error) {
+	meshNetworks := make(map[string]istiov1beta1.MeshNetwork)
+
+	remoteIstios := remoteistioCtrl.GetRemoteIstiosByOwnerReference(r.mgr, config, logger)
+	for _, remoteIstio := range remoteIstios {
+		gateways := make([]istiov1beta1.MeshNetworkGateway, 0)
+		if len(remoteIstio.Status.GatewayAddress) > 0 {
+			for _, address := range remoteIstio.Status.GatewayAddress {
+				gateways = append(gateways, istiov1beta1.MeshNetworkGateway{
+					Address: address, Port: 443,
+				})
+			}
+		} else {
+			continue
+		}
+
+		meshNetworks[remoteIstio.Name] = istiov1beta1.MeshNetwork{
+			Endpoints: []istiov1beta1.MeshNetworkEndpoint{
+				{
+					FromRegistry: remoteIstio.Name,
+				},
+			},
+			Gateways: gateways,
+		}
+	}
+
+	return &istiov1beta1.MeshNetworks{
+		Networks: meshNetworks,
+	}, nil
 }
 
 func (r *ReconcileConfig) setCitadelAsOwnerReferenceToIstioSecrets(config *istiov1beta1.Istio, deployment appsv1.Deployment, logger logr.Logger) error {
@@ -319,7 +360,7 @@ func (r *ReconcileConfig) setCitadelAsOwnerReferenceToIstioSecrets(config *istio
 }
 
 func (r *ReconcileConfig) deleteRemoteIstios(config *istiov1beta1.Istio, logger logr.Logger) {
-	remoteIstios := GetRemoteIstiosByOwnerReference(r.mgr, config, logger)
+	remoteIstios := remoteistioCtrl.GetRemoteIstiosByOwnerReference(r.mgr, config, logger)
 	for _, remoteIstio := range remoteIstios {
 		err := r.Client.Delete(context.Background(), &remoteIstio)
 		if err != nil {
@@ -363,30 +404,30 @@ func (r *ReconcileConfig) updateStatus(config *istiov1beta1.Istio, status istiov
 	return nil
 }
 
-func WatchPredicateForConfig() predicate.Funcs {
-	return predicate.Funcs{
-		CreateFunc: func(e event.CreateEvent) bool {
-			return true
-		},
-		DeleteFunc: func(e event.DeleteEvent) bool {
-			return true
-		},
-		UpdateFunc: func(e event.UpdateEvent) bool {
-			old := e.ObjectOld.(*istiov1beta1.Istio)
-			new := e.ObjectNew.(*istiov1beta1.Istio)
-			if !reflect.DeepEqual(old.Spec, new.Spec) ||
-				old.GetDeletionTimestamp() != new.GetDeletionTimestamp() ||
-				old.GetGeneration() != new.GetGeneration() {
-				return true
-			}
-			return false
-		},
-	}
-}
-
 func initWatches(c controller.Controller, scheme *runtime.Scheme, watchCreatedResourcesEvents bool, logger logr.Logger) error {
 	// Watch for changes to Config
-	err := c.Watch(&source.Kind{Type: &istiov1beta1.Istio{TypeMeta: metav1.TypeMeta{Kind: "Istio", APIVersion: "istio.banzaicloud.io/v1beta1"}}}, &handler.EnqueueRequestForObject{}, WatchPredicateForConfig())
+	err := c.Watch(&source.Kind{Type: &istiov1beta1.Istio{TypeMeta: metav1.TypeMeta{Kind: "Istio", APIVersion: "istio.banzaicloud.io/v1beta1"}}}, &handler.EnqueueRequestForObject{}, k8sutil.GetWatchPredicateForIstio())
+	if err != nil {
+		return err
+	}
+
+	// Watch for RemoteIstio changes to trigger reconciliation
+	err = c.Watch(&source.Kind{Type: &istiov1beta1.RemoteIstio{TypeMeta: metav1.TypeMeta{Kind: "RemoteIstio", APIVersion: "istio.banzaicloud.io/v1beta1"}}}, &handler.EnqueueRequestsFromMapFunc{
+		ToRequests: handler.ToRequestsFunc(func(object handler.MapObject) []reconcile.Request {
+			own := object.Meta.GetOwnerReferences()
+			if len(own) < 1 {
+				return nil
+			}
+			return []reconcile.Request{
+				{
+					NamespacedName: types.NamespacedName{
+						Name:      own[0].Name,
+						Namespace: object.Meta.GetNamespace(),
+					},
+				},
+			}
+		}),
+	})
 	if err != nil {
 		return err
 	}
@@ -456,34 +497,7 @@ func initWatches(c controller.Controller, scheme *runtime.Scheme, watchCreatedRe
 	return nil
 }
 
-// GetRemoteIstiosByOwnerReference gets RemoteIstio resources by owner reference for the given object
-func GetRemoteIstiosByOwnerReference(mgr manager.Manager, object runtime.Object, logger logr.Logger) []istiov1beta1.RemoteIstio {
-	var remoteIstios istiov1beta1.RemoteIstioList
-	remotes := make([]istiov1beta1.RemoteIstio, 0)
-	ownerMatcher := k8sutil.NewOwnerReferenceMatcher(object, true, mgr.GetScheme())
-
-	err := mgr.GetClient().List(context.Background(), &client.ListOptions{}, &remoteIstios)
-	if err != nil {
-		logger.Error(err, "could not list remote istio resources")
-	}
-
-	for _, remoteIstio := range remoteIstios.Items {
-		related, _, err := ownerMatcher.Match(&remoteIstio)
-		if err != nil {
-			logger.Error(err, "could not match owner reference for remote istio", "name", remoteIstio.Name)
-			continue
-		}
-		if !related {
-			continue
-		}
-
-		remotes = append(remotes, remoteIstio)
-	}
-
-	return remotes
-}
-
-func RemoveFinalizersFromIstios(c client.Client) error {
+func RemoveFinalizers(c client.Client) error {
 	var istios istiov1beta1.IstioList
 
 	err := c.List(context.TODO(), &client.ListOptions{}, &istios)

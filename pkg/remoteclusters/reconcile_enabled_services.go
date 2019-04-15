@@ -43,6 +43,7 @@ func (c *Cluster) reconcileService(svc apiv1.Service) error {
 			return err
 		}
 	} else {
+		service.Spec.Ports = svc.Spec.Ports
 		err = c.ctrlRuntimeClient.Update(context.TODO(), &service)
 		if err != nil {
 			return err
@@ -58,6 +59,7 @@ func (c *Cluster) reconcileEnabledServices(remoteConfig *istiov1beta1.RemoteIsti
 			ObjectMeta: templates.ObjectMeta(enabledSvc.Name, map[string]string{}, c.istioConfig),
 			Spec: apiv1.ServiceSpec{
 				ClusterIP: "None",
+				Ports:     enabledSvc.Ports,
 			},
 		}
 		err := c.reconcileService(svc)

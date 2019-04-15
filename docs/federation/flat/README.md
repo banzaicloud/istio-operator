@@ -62,8 +62,8 @@ kubectl create namespace istio-system
 ### Create a service account and generate kubeconfig for the operator to be able to deploy resources to the remote cluster
 
 ```bash
-kubectl create -f docs/federation/example/rbac.yml
-REMOTE_KUBECONFIG_FILE=$(docs/federation/example/generate-kubeconfig.sh)
+kubectl create -f docs/federation/flat/rbac.yml
+REMOTE_KUBECONFIG_FILE=$(docs/federation/flat/generate-kubeconfig.sh)
 ```
 
 ### The kubeconfig for the remote cluster must be added to the central cluster as a secret
@@ -90,14 +90,14 @@ kubectl create -n istio-system -f config/samples/istio_v1beta1_remoteistio.yaml
 
 ```bash
 kubectl config use-context ${CONTEXT_CENTRAL}
-kubectl apply -f docs/federation/example/echo-service.yml
+kubectl apply -f docs/federation/flat/echo-service.yml
 
 kubectl get pods
 NAME                    READY   STATUS    RESTARTS   AGE
 echo-59d4b7c4cb-v29zb   2/2     Running   0          1m
 
 kubectl config use-context ${CONTEXT_REMOTE}
-kubectl apply -f docs/federation/example/echo-service.yml
+kubectl apply -f docs/federation/flat/echo-service.yml
 
 kubectl get pods
 NAME                    READY   STATUS    RESTARTS   AGE

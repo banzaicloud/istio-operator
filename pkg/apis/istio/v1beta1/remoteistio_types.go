@@ -17,6 +17,7 @@ limitations under the License.
 package v1beta1
 
 import (
+	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
@@ -28,9 +29,10 @@ type SignCert struct {
 }
 
 type IstioService struct {
-	Name          string   `json:"name"`
-	LabelSelector string   `json:"labelSelector"`
-	IPs           []string `json:"podIPs,omitempty"`
+	Name          string               `json:"name"`
+	LabelSelector string               `json:"labelSelector,omitempty"`
+	IPs           []string             `json:"podIPs,omitempty"`
+	Ports         []corev1.ServicePort `json:"ports,omitempty"`
 }
 
 func (spec RemoteIstioSpec) SetSignCert(signCert SignCert) RemoteIstioSpec {
@@ -73,8 +75,9 @@ type RemoteIstioSpec struct {
 
 // RemoteIstioStatus defines the observed state of RemoteIstio
 type RemoteIstioStatus struct {
-	Status       ConfigState
-	ErrorMessage string
+	Status         ConfigState
+	GatewayAddress []string
+	ErrorMessage   string
 }
 
 // +genclient
@@ -83,6 +86,10 @@ type RemoteIstioStatus struct {
 // RemoteIstio is the Schema for the remoteistios API
 // +k8s:openapi-gen=true
 // +kubebuilder:subresource:status
+// +kubebuilder:printcolumn:name="Status",type="string",JSONPath=".status.Status",description="Status of the resource"
+// +kubebuilder:printcolumn:name="Error",type="string",JSONPath=".status.ErrorMessage",description="Error message"
+// +kubebuilder:printcolumn:name="Gateways",type="string",JSONPath=".status.GatewayAddress",description="Ingress gateways of the resource"
+// +kubebuilder:printcolumn:name="Age",type="date",JSONPath=".metadata.creationTimestamp"
 type RemoteIstio struct {
 	metav1.TypeMeta   `json:",inline"`
 	metav1.ObjectMeta `json:"metadata,omitempty"`
