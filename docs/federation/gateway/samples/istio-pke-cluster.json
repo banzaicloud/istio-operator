@@ -1,0 +1,45 @@
+{
+  "name": "istio-pke",
+  "location": "eu-west-3",
+  "cloud": "amazon",
+  "secretId": "{{secretID}}",
+  "properties": {
+    "pke": {
+      "nodepools": [
+        {
+          "name": "master",
+          "roles": [
+            "master"
+          ],
+          "provider": "amazon",
+          "autoscaling": false,
+          "providerConfig": {
+            "autoScalingGroup": {
+              "name": "master",
+              "zones": [
+                "eu-west-3a"
+              ],
+              "instanceType": "c5.xlarge",
+              "launchConfigurationName": "master",
+              "spotPrice": "",
+              "size": {
+                "desired": 1,
+                "min": 1,
+                "max": 1
+              }
+            }
+          }
+        }
+      ],
+      "kubernetes": {
+        "version": "1.12.2",
+        "rbac": {
+          "enabled": true
+        }
+      },
+      "cri": {
+        "runtime": "containerd"
+      }
+    }
+  }
+}
