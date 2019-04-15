@@ -80,9 +80,29 @@ func add(mgr manager.Manager, r reconcile.Reconciler) error {
 	// Watch for Istio changes to trigger reconciliation for RemoteIstios
 	err = c.Watch(&source.Kind{Type: &istiov1beta1.Istio{TypeMeta: metav1.TypeMeta{Kind: "Istio", APIVersion: "istio.banzaicloud.io/v1beta1"}}}, &handler.EnqueueRequestsFromMapFunc{
 		ToRequests: handler.ToRequestsFunc(func(object handler.MapObject) []reconcile.Request {
-			return triggerRemoteIstios(mgr, object, log)
+			return triggerRemoteIstios(mgr, object.Object, log)
 		}),
 	}, k8sutil.GetWatchPredicateForIstio())
+	if err != nil {
+		return err
+	}
+
+	// Watch for changes to Istio service pods
+	err = c.Watch(&source.Kind{Type: &corev1.Pod{TypeMeta: metav1.TypeMeta{Kind: "Pod", APIVersion: "v1"}}}, &handler.EnqueueRequestsFromMapFunc{
+		ToRequests: handler.ToRequestsFunc(func(object handler.MapObject) []reconcile.Request {
+			return triggerRemoteIstios(mgr, nil, log)
+		}),
+	}, k8sutil.GetWatchPredicateForIstioServicePods())
+	if err != nil {
+		return err
+	}
+
+	// Watch for changes to Ingress
+	err = c.Watch(&source.Kind{Type: &corev1.Service{TypeMeta: metav1.TypeMeta{Kind: "service", APIVersion: "v1"}}}, &handler.EnqueueRequestsFromMapFunc{
+		ToRequests: handler.ToRequestsFunc(func(object handler.MapObject) []reconcile.Request {
+			return triggerRemoteIstios(mgr, nil, log)
+		}),
+	}, k8sutil.GetWatchPredicateForIstioIngressGateway())
 	if err != nil {
 		return err
 	}
@@ -516,9 +536,9 @@ func (r *ReconcileRemoteConfig) getIstio() (*istiov1beta1.Istio, error) {
 	return &config, nil
 }
 
-func triggerRemoteIstios(mgr manager.Manager, object handler.MapObject, logger logr.Logger) []reconcile.Request {
+func triggerRemoteIstios(mgr manager.Manager, object runtime.Object, logger logr.Logger) []reconcile.Request {
 	requests := make([]reconcile.Request, 0)
-	remoteIstios := GetRemoteIstiosByOwnerReference(mgr, object.Object, logger)
+	remoteIstios := GetRemoteIstiosByOwnerReference(mgr, object, logger)
 
 	for _, remoteIstio := range remoteIstios {
 		requests = append(requests, reconcile.Request{
@@ -569,7 +589,11 @@ func RemoveFinalizers(c client.Client) error {
 func GetRemoteIstiosByOwnerReference(mgr manager.Manager, object runtime.Object, logger logr.Logger) []istiov1beta1.RemoteIstio {
 	var remoteIstios istiov1beta1.RemoteIstioList
 	remotes := make([]istiov1beta1.RemoteIstio, 0)
-	ownerMatcher := k8sutil.NewOwnerReferenceMatcher(object, true, mgr.GetScheme())
+
+	var ownerMatcher *k8sutil.OwnerReferenceMatcher
+	if object != nil {
+		ownerMatcher = k8sutil.NewOwnerReferenceMatcher(object, true, mgr.GetScheme())
+	}
 
 	err := mgr.GetClient().List(context.Background(), &client.ListOptions{}, &remoteIstios)
 	if err != nil {
@@ -577,15 +601,16 @@ func GetRemoteIstiosByOwnerReference(mgr manager.Manager, object runtime.Object,
 	}
 
 	for _, remoteIstio := range remoteIstios.Items {
-		related, _, err := ownerMatcher.Match(&remoteIstio)
-		if err != nil {
-			logger.Error(err, "could not match owner reference for remote istio", "name", remoteIstio.Name)
-			continue
+		if ownerMatcher != nil {
+			related, _, err := ownerMatcher.Match(&remoteIstio)
+			if err != nil {
+				logger.Error(err, "could not match owner reference for remote istio", "name", remoteIstio.Name)
+				continue
+			}
+			if !related {
+				continue
+			}
 		}
-		if !related {
-			continue
-		}
-
 		remotes = append(remotes, remoteIstio)
 	}
 
