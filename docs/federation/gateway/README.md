@@ -1,3 +1,13 @@
+## Istio Split Horizon EDS Multi Cluster Federation Example
+
+Two new features which were introduced in Istio v1.1 come in handy to get rid of the necessity of a flat network or VPN between the clusters, Split Horizon EDS and SNI based routing.
+
+> - EDS is short for Endpoint Discovery Service (EDS), a part of Envoy’s API which is used to fetch cluster members called “endpoint” in Envoy terminology
+> - SNI based routing leverages the “Server Name Indication” TLS extension to make routing decisions
+> - Split-horizon EDS enables Istio to route requests to different endpoints, depending on the location of the request source. Istio Gateways intercept and parse the TLS handshake and use the SNI data to decide on the destination service endpoints.
+
+A single mesh multi-cluster is formed by enabling any number of Kubernetes control planes running a remote Istio configuration to connect to a single Istio control plane. Once one or more Kubernetes clusters is connected to the Istio control plane in that way, Envoy communicates with the Istio control plane in order to form a mesh network across those clusters.
+
 For demo purposes, create 3 clusters, a single node [Banzai Cloud PKE](https://banzaicloud.com/blog/pke-cncf-certified-k8s/) cluster on EC2, a GKE cluster with 2 nodes and an EKS cluster also with 2 nodes.
 
 ### Get the latest version of the [Istio operator](https://github.com/banzaicloud/istio-operator)
@@ -8,11 +18,12 @@ For demo purposes, create 3 clusters, a single node [Banzai Cloud PKE](https://b
 ❯ cd istio-operator
 ```
 
-[Pipeline platform](https://beta.banzaicloud.io/) is the easiest way to setup that environment using our [CLI tool](https://banzaicloud.com/blog/cli-ux/) for [Pipeline](https:/github.com/banzaicloud/pipeline), simply called `banzai`.
+[Pipeline platform](https://beta.banzaicloud.io/) is the easiest way to setup that environment using our [CLI tool](https://banzaicloud.com/blog/cli-ux/) ([install](https://github.com/banzaicloud/banzai-cli#installation)) for [Pipeline](https:/github.com/banzaicloud/pipeline), simply called `banzai`.
 
 ```bash
 AWS_SECRET_ID="[[secretID from Pipeline]]"
 GKE_SECRET_ID="[[secretID from Pipeline]]"
+GKE_PROJECT_ID="[[GKE Project ID]]"
 
 ❯ cat docs/federation/gateway/samples/istio-pke-cluster.json | sed "s/{{secretID}}/${AWS_SECRET_ID}/" | banzai cluster create
 INFO[0004] cluster is being created
@@ -20,7 +31,7 @@ INFO[0004] you can check its status with the command `banzai cluster get "istio-
 Id   Name
 541  istio-pke
 
-❯ cat docs/federation/gateway/samples/istio-gke-cluster.json | sed "s/{{secretID}}/${GKE_SECRET_ID}/" | banzai cluster create
+❯ cat docs/federation/gateway/samples/istio-gke-cluster.json | sed -e "s/{{secretID}}/${GKE_SECRET_ID}/" -e | "s/{{projectID}}/${GKE_PROJECT_ID}/" banzai cluster create
 INFO[0004] cluster is being created
 INFO[0004] you can check its status with the command `banzai cluster get "istio-gke"`
 Id   Name
