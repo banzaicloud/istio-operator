@@ -5,20 +5,6 @@ metadata:
   name: manager-role
 rules:
 - apiGroups:
-  - apps
-  resources:
-  - pods
-  verbs:
-  - get
-  - list
-  - watch
-- apiGroups:
-  - apps
-  resources:
-  - pods/status
-  verbs:
-  - get
-- apiGroups:
   - ""
   resources:
   - nodes

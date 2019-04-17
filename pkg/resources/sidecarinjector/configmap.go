@@ -23,6 +23,7 @@ import (
 	apiv1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 
+	istiov1beta1 "github.com/banzaicloud/istio-operator/pkg/apis/istio/v1beta1"
 	"github.com/banzaicloud/istio-operator/pkg/resources/gateways"
 	"github.com/banzaicloud/istio-operator/pkg/resources/templates"
 	"github.com/banzaicloud/istio-operator/pkg/util"
@@ -127,8 +128,7 @@ containers:
   - [[ formatDuration .ProxyConfig.ParentShutdownDuration ]]
   - --discoveryAddress
   - [[ annotation .ObjectMeta ` + "`" + `sidecar.istio.io/discoveryAddress` + "`" + ` .ProxyConfig.DiscoveryAddress ]]
-  - --zipkinAddress
-  - [[ .ProxyConfig.GetTracing.GetZipkin.GetAddress ]]
+` + r.tracingProxyArgs() + `
   - --connectTimeout
   - [[ formatDuration .ProxyConfig.ConnectTimeout ]]
   - --proxyAdminPort
@@ -158,6 +158,7 @@ containers:
     valueFrom:
       fieldRef:
         fieldPath: status.podIP
+` + r.hostIPEnv() + `
   - name: ISTIO_META_POD_NAME
     valueFrom:
       fieldRef:
@@ -238,6 +239,47 @@ volumes:
     medium: Memory
   name: istio-envoy
 ` + r.volumes()
+}
+
+func (r *Reconciler) tracingProxyArgs() string {
+	if !util.PointerToBool(r.Config.Spec.Tracing.Enabled) {
+		return ""
+	}
+
+	switch r.Config.Spec.Tracing.Tracer {
+	case istiov1beta1.TracerTypeZipkin:
+		return `  - --zipkinAddress
+  - [[ .ProxyConfig.GetTracing.GetZipkin.GetAddress ]]
+`
+	case istiov1beta1.TracerTypeLightstep:
+		return `  - --lightstepAddress
+  - [[ .ProxyConfig.GetTracing.GetLightstep.GetAddress ]]
+  - --lightstepAccessToken
+  - [[ .ProxyConfig.GetTracing.GetLightstep.GetAccessToken ]]
+  - --lightstepSecure
+  - [[ .ProxyConfig.GetTracing.GetLightstep.GetSecure ]]
+  - --lightstepCacertPath
+  - [[ .ProxyConfig.GetTracing.GetLightstep.GetCacertPath ]]
+`
+	case istiov1beta1.TracerTypeDatadog:
+		return `  - --datadogAgentAddress
+  - [[ .ProxyConfig.GetTracing.GetDatadog.GetAddress ]]
+`
+	}
+
+	return ""
+}
+
+func (r *Reconciler) hostIPEnv() string {
+	if !util.PointerToBool(r.Config.Spec.Tracing.Enabled) || r.Config.Spec.Tracing.Tracer != istiov1beta1.TracerTypeDatadog {
+		return ""
+	}
+
+	return `  - name: HOST_IP
+    valueFrom:
+      fieldRef:
+		fieldPath: status.hostIP
+`
 }
 
 func (r *Reconciler) coreDumpContainer() string {
