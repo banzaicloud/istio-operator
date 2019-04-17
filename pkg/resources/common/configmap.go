@@ -102,7 +102,7 @@ func (r *Reconciler) meshConfig() string {
 		"defaultConfig":     defaultConfig,
 		"rootNamespace":     "istio-system",
 		"connectTimeout":    "10s",
-		"localityLbSetting": "{}",
+		"localityLbSetting": nil,
 	}
 
 	if r.Config.Spec.UseMCP {
