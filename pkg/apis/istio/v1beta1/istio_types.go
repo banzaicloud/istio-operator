@@ -145,6 +145,8 @@ type SidecarInjectorConfiguration struct {
 	// health check to redirect request to sidecar. This makes liveness check work
 	// even when mTLS is enabled.
 	RewriteAppHTTPProbe bool `json:"rewriteAppHTTPProbe,omitempty"`
+	// This controls the 'policy' in the sidecar injector
+	DefaultAutoInjection *bool `json:"defaultAutoInjection,omitempty"`
 }
 
 // NodeAgentConfiguration defines config options for NodeAgent
@@ -182,29 +184,29 @@ type OutboundTrafficPolicyConfiguration struct {
 type ZipkinConfiguration struct {
 	// Host:Port for reporting trace data in zipkin format. If not specified, will default to zipkin service (port 9411) in the same namespace as the other istio components.
 	// +kubebuilder:validation:Pattern=^[^\:]+:[0-9]{1,5}$
-	Address string `json:"address"`
+	Address string `json:"address,omitempty"`
 }
 
 // Configuration for Envoy to send trace data to Lightstep
 type LightstepConfiguration struct {
 	// the <host>:<port> of the satellite pool
 	// +kubebuilder:validation:Pattern=^[^\:]+:[0-9]{1,5}$
-	Address string `json:"address"`
+	Address string `json:"address,omitempty"`
 	// required for sending data to the pool
-	AccessToken string `json:"accessToken"`
+	AccessToken string `json:"accessToken,omitempty"`
 	// specifies whether data should be sent with TLS
-	Secure bool `json:"secure"`
+	Secure bool `json:"secure,omitempty"`
 	// the path to the file containing the cacert to use when verifying TLS. If secure is true, this is
 	// required. If a value is specified then a secret called "lightstep.cacert" must be created in the destination
 	// namespace with the key matching the base of the provided cacertPath and the value being the cacert itself.
-	CacertPath string `json:"cacertPath"`
+	CacertPath string `json:"cacertPath,omitempty"`
 }
 
 // Configuration for Envoy to send trace data to Datadog
 type DatadogConfiugration struct {
 	// Host:Port for submitting traces to the Datadog agent.
 	// +kubebuilder:validation:Pattern=^[^\:]+:[0-9]{1,5}$
-	Address string `json:"address"`
+	Address string `json:"address,omitempty"`
 }
 
 type TracerType string

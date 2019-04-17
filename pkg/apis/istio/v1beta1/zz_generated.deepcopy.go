@@ -766,6 +766,11 @@ func (in *SidecarInjectorConfiguration) DeepCopyInto(out *SidecarInjectorConfigu
 		(*in).DeepCopyInto(*out)
 	}
 	in.InitCNIConfiguration.DeepCopyInto(&out.InitCNIConfiguration)
+	if in.DefaultAutoInjection != nil {
+		in, out := &in.DefaultAutoInjection, &out.DefaultAutoInjection
+		*out = new(bool)
+		**out = **in
+	}
 	return
 }
 
