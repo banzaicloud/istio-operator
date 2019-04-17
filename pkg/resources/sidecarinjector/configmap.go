@@ -39,8 +39,12 @@ func (r *Reconciler) configMap() runtime.Object {
 }
 
 func (r *Reconciler) siConfig() string {
+	autoInjection := "disabled"
+	if util.PointerToBool(r.Config.Spec.SidecarInjector.DefaultAutoInjection) {
+		autoInjection = "enabled"
+	}
 	siConfig := map[string]string{
-		"policy":   "enabled",
+		"policy":   autoInjection,
 		"template": r.templateConfig(),
 	}
 	marshaledConfig, _ := yaml.Marshal(siConfig)

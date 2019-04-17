@@ -159,6 +159,9 @@ func SetDefaults(config *Istio) {
 	if config.Spec.SidecarInjector.Enabled == nil {
 		config.Spec.SidecarInjector.Enabled = util.BoolPointer(true)
 	}
+	if config.Spec.SidecarInjector.DefaultAutoInjection == nil {
+		config.Spec.SidecarInjector.DefaultAutoInjection = util.BoolPointer(true)
+	}
 	if config.Spec.SidecarInjector.Image == "" {
 		config.Spec.SidecarInjector.Image = defaultSidecarInjectorImage
 	}
