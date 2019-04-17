@@ -152,6 +152,7 @@ func (r *Reconciler) ports(gw string) []apiv1.ContainerPort {
 	switch gw {
 	case ingress:
 		return []apiv1.ContainerPort{
+			{ContainerPort: 15020, Protocol: apiv1.ProtocolTCP, Name: "status-port"},
 			{ContainerPort: 80, Protocol: apiv1.ProtocolTCP, Name: "http2"},
 			{ContainerPort: 443, Protocol: apiv1.ProtocolTCP, Name: "https"},
 			{ContainerPort: 31400, Protocol: apiv1.ProtocolTCP, Name: "tcp"},
@@ -160,7 +161,6 @@ func (r *Reconciler) ports(gw string) []apiv1.ContainerPort {
 			{ContainerPort: 15031, Protocol: apiv1.ProtocolTCP, Name: "https-grafana"},
 			{ContainerPort: 15032, Protocol: apiv1.ProtocolTCP, Name: "https-tracing"},
 			{ContainerPort: 15443, Protocol: apiv1.ProtocolTCP, Name: "tls"},
-			{ContainerPort: 15020, Protocol: apiv1.ProtocolTCP, Name: "status-port"},
 			{ContainerPort: 15090, Protocol: apiv1.ProtocolTCP, Name: "http-envoy-prom"},
 		}
 	case egress:
