@@ -184,6 +184,15 @@ func (r *Reconciler) discoveryPort() string {
 func (r *Reconciler) envVars(gwConfig *istiov1beta1.GatewayConfiguration) []apiv1.EnvVar {
 	envVars := []apiv1.EnvVar{
 		{
+			Name: "HOST_IP",
+			ValueFrom: &apiv1.EnvVarSource{
+				FieldRef: &apiv1.ObjectFieldSelector{
+					APIVersion: "v1",
+					FieldPath:  "status.hostIP",
+				},
+			},
+		},
+		{
 			Name: "ISTIO_META_POD_NAME",
 			ValueFrom: &apiv1.EnvVarSource{
 				FieldRef: &apiv1.ObjectFieldSelector{

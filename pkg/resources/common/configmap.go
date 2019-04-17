@@ -23,9 +23,9 @@ import (
 	apiv1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 
-	"github.com/banzaicloud/istio-operator/pkg/util"
-
+	istiov1beta1 "github.com/banzaicloud/istio-operator/pkg/apis/istio/v1beta1"
 	"github.com/banzaicloud/istio-operator/pkg/resources/templates"
+	"github.com/banzaicloud/istio-operator/pkg/util"
 )
 
 var cmLabels = map[string]string{
@@ -57,10 +57,28 @@ func (r *Reconciler) meshConfig() string {
 	}
 
 	if util.PointerToBool(r.Config.Spec.Tracing.Enabled) {
-		defaultConfig["tracing"] = map[string]interface{}{
-			"zipkin": map[string]interface{}{
-				"address": r.Config.Spec.Tracing.Zipkin.Address,
-			},
+		switch r.Config.Spec.Tracing.Tracer {
+		case istiov1beta1.TracerTypeZipkin:
+			defaultConfig["tracing"] = map[string]interface{}{
+				"zipkin": map[string]interface{}{
+					"address": r.Config.Spec.Tracing.Zipkin.Address,
+				},
+			}
+		case istiov1beta1.TracerTypeLightstep:
+			defaultConfig["tracing"] = map[string]interface{}{
+				"lightstep": map[string]interface{}{
+					"address":     r.Config.Spec.Tracing.Lightstep.Address,
+					"accessToken": r.Config.Spec.Tracing.Lightstep.AccessToken,
+					"secure":      r.Config.Spec.Tracing.Lightstep.Secure,
+					"cacertPath":  r.Config.Spec.Tracing.Lightstep.CacertPath,
+				},
+			}
+		case istiov1beta1.TracerTypeDatadog:
+			defaultConfig["tracing"] = map[string]interface{}{
+				"datadog": map[string]interface{}{
+					"address": r.Config.Spec.Tracing.Datadog.Address,
+				},
+			}
 		}
 	}
 
@@ -81,8 +99,10 @@ func (r *Reconciler) meshConfig() string {
 		"outboundTrafficPolicy": map[string]interface{}{
 			"mode": r.Config.Spec.OutboundTrafficPolicy.Mode,
 		},
-		"defaultConfig": defaultConfig,
-		"rootNamespace": "istio-system",
+		"defaultConfig":     defaultConfig,
+		"rootNamespace":     "istio-system",
+		"connectTimeout":    "10s",
+		"localityLbSetting": "{}",
 	}
 
 	if r.Config.Spec.UseMCP {

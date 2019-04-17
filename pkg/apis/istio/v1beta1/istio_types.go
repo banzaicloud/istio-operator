@@ -182,12 +182,46 @@ type OutboundTrafficPolicyConfiguration struct {
 type ZipkinConfiguration struct {
 	// Host:Port for reporting trace data in zipkin format. If not specified, will default to zipkin service (port 9411) in the same namespace as the other istio components.
 	// +kubebuilder:validation:Pattern=^[^\:]+:[0-9]{1,5}$
-	Address string `json:"address,omitempty"`
+	Address string `json:"address"`
 }
 
+// Configuration for Envoy to send trace data to Lightstep
+type LightstepConfiguration struct {
+	// the <host>:<port> of the satellite pool
+	// +kubebuilder:validation:Pattern=^[^\:]+:[0-9]{1,5}$
+	Address string `json:"address"`
+	// required for sending data to the pool
+	AccessToken string `json:"accessToken"`
+	// specifies whether data should be sent with TLS
+	Secure bool `json:"secure"`
+	// the path to the file containing the cacert to use when verifying TLS. If secure is true, this is
+	// required. If a value is specified then a secret called "lightstep.cacert" must be created in the destination
+	// namespace with the key matching the base of the provided cacertPath and the value being the cacert itself.
+	CacertPath string `json:"cacertPath"`
+}
+
+// Configuration for Envoy to send trace data to Datadog
+type DatadogConfiugration struct {
+	// Host:Port for submitting traces to the Datadog agent.
+	// +kubebuilder:validation:Pattern=^[^\:]+:[0-9]{1,5}$
+	Address string `json:"address"`
+}
+
+type TracerType string
+
+const (
+	TracerTypeZipkin    TracerType = "zipkin"
+	TracerTypeLightstep TracerType = "lightstep"
+	TracerTypeDatadog   TracerType = "datadog"
+)
+
 type TracingConfiguration struct {
-	Enabled *bool               `json:"enabled,omitempty"`
-	Zipkin  ZipkinConfiguration `json:"zipkin,omitempty"`
+	Enabled *bool `json:"enabled,omitempty"`
+	// +kubebuilder:validation:Enum=zipkin,lightstep,datadog
+	Tracer    TracerType             `json:"tracer,omitempty"`
+	Zipkin    ZipkinConfiguration    `json:"zipkin,omitempty"`
+	Lightstep LightstepConfiguration `json:"lightstep,omitempty"`
+	Datadog   DatadogConfiugration   `json:"datadog,omitempty"`
 }
 
 // IstioSpec defines the desired state of Istio

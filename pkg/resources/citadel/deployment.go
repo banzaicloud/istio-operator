@@ -23,6 +23,7 @@ import (
 	apiv1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
+	"k8s.io/apimachinery/pkg/util/intstr"
 
 	"github.com/banzaicloud/istio-operator/pkg/resources/templates"
 	"github.com/banzaicloud/istio-operator/pkg/util"
@@ -51,11 +52,25 @@ func (r *Reconciler) deployment() runtime.Object {
 	}
 
 	var citadelContainer = apiv1.Container{
-		Name:                     "citadel",
-		Image:                    r.Config.Spec.Citadel.Image,
-		ImagePullPolicy:          r.Config.Spec.ImagePullPolicy,
-		Args:                     args,
-		Resources:                templates.GetResourcesRequirementsOrDefault(r.Config.Spec.Citadel.Resources),
+		Name:            "citadel",
+		Image:           r.Config.Spec.Citadel.Image,
+		ImagePullPolicy: r.Config.Spec.ImagePullPolicy,
+		Args:            args,
+		Resources:       templates.GetResourcesRequirementsOrDefault(r.Config.Spec.Citadel.Resources),
+		LivenessProbe: &apiv1.Probe{
+			Handler: apiv1.Handler{
+				HTTPGet: &apiv1.HTTPGetAction{
+					Path:   "/version",
+					Port:   intstr.FromInt(15014),
+					Scheme: apiv1.URISchemeHTTP,
+				},
+			},
+			InitialDelaySeconds: 5,
+			PeriodSeconds:       5,
+			FailureThreshold:    30,
+			SuccessThreshold:    1,
+			TimeoutSeconds:      1,
+		},
 		TerminationMessagePath:   apiv1.TerminationMessagePathDefault,
 		TerminationMessagePolicy: apiv1.TerminationMessageReadFile,
 	}
