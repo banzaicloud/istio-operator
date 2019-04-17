@@ -68,14 +68,6 @@ func (r *Reconciler) clusterAwareGateway() *k8sutil.DynamicObject {
 			"servers": []map[string]interface{}{
 				{
 					"port": map[string]interface{}{
-						"name":     "http",
-						"protocol": "HTTP",
-						"number":   80,
-					},
-					"hosts": util.EmptyTypedStrSlice("cluster-aware.global"),
-				},
-				{
-					"port": map[string]interface{}{
 						"name":     "tls",
 						"protocol": "TLS",
 						"number":   443,
