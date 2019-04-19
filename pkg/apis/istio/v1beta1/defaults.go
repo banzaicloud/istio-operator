@@ -223,6 +223,12 @@ func SetDefaults(config *Istio) {
 	if config.Spec.Tracing.Enabled == nil {
 		config.Spec.Tracing.Enabled = util.BoolPointer(true)
 	}
+	if config.Spec.Tracing.Tracer == "" {
+		config.Spec.Tracing.Tracer = TracerTypeZipkin
+	}
+	if config.Spec.Tracing.Datadog.Address == "" {
+		config.Spec.Tracing.Datadog.Address = "$(HOST_IP):8126"
+	}
 	if config.Spec.Tracing.Zipkin.Address == "" {
 		config.Spec.Tracing.Zipkin.Address = fmt.Sprintf(defaultZipkinAddress, config.Namespace)
 	}

@@ -282,7 +282,7 @@ func (r *Reconciler) hostIPEnv() string {
 	return `  - name: HOST_IP
     valueFrom:
       fieldRef:
-		fieldPath: status.hostIP
+        fieldPath: status.hostIP
 `
 }
 

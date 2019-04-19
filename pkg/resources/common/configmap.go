@@ -84,7 +84,7 @@ func (r *Reconciler) meshConfig() string {
 
 	meshConfig := map[string]interface{}{
 		"disablePolicyChecks": false,
-		"enableTracing":       true,
+		"enableTracing":       r.Config.Spec.Tracing.Enabled,
 		"accessLogFile":       "/dev/stdout",
 		"accessLogFormat":     "",
 		"accessLogEncoding":   "TEXT",
