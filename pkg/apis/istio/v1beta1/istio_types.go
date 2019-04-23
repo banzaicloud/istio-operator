@@ -146,7 +146,7 @@ type SidecarInjectorConfiguration struct {
 	// even when mTLS is enabled.
 	RewriteAppHTTPProbe bool `json:"rewriteAppHTTPProbe,omitempty"`
 	// This controls the 'policy' in the sidecar injector
-	DefaultAutoInjection *bool `json:"defaultAutoInjection,omitempty"`
+	AutoInjectionPolicyEnabled *bool `json:"autoInjectionPolicyEnabled,omitempty"`
 }
 
 // NodeAgentConfiguration defines config options for NodeAgent
