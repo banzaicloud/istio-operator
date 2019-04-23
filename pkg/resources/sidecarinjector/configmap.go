@@ -40,7 +40,7 @@ func (r *Reconciler) configMap() runtime.Object {
 
 func (r *Reconciler) siConfig() string {
 	autoInjection := "disabled"
-	if util.PointerToBool(r.Config.Spec.SidecarInjector.DefaultAutoInjection) {
+	if util.PointerToBool(r.Config.Spec.SidecarInjector.AutoInjectionPolicyEnabled) {
 		autoInjection = "enabled"
 	}
 	siConfig := map[string]string{

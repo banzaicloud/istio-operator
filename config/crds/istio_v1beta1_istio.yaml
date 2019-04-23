@@ -297,7 +297,7 @@ spec:
             sidecarInjector:
               description: SidecarInjector configuration options
               properties:
-                defaultAutoInjection:
+                autoInjectionPolicyEnabled:
                   description: This controls the 'policy' in the sidecar injector
                   type: boolean
                 enabled:
