@@ -21,7 +21,6 @@ import (
 
 	appsv1 "k8s.io/api/apps/v1"
 	apiv1 "k8s.io/api/core/v1"
-	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/types"
@@ -125,12 +124,7 @@ func (r *Reconciler) deployment() runtime.Object {
 								{Name: "PILOT_DISABLE_XDS_MARSHALING_TO_ANY", Value: "1"},
 								{Name: "MESHNETWORKS_HASH", Value: r.Config.Spec.GetMeshNetworksHash()},
 							},
-							Resources: apiv1.ResourceRequirements{
-								Requests: apiv1.ResourceList{
-									apiv1.ResourceCPU:    resource.MustParse("500m"),
-									apiv1.ResourceMemory: resource.MustParse("2048Mi"),
-								},
-							},
+							Resources: templates.GetResourcesRequirementsOrPilotDefault(r.Config.Spec.Pilot.Resources),
 							VolumeMounts: []apiv1.VolumeMount{
 								{
 									Name:      "config-volume",
@@ -167,7 +161,7 @@ func (r *Reconciler) deployment() runtime.Object {
 								r.Config.Namespace + ".svc.cluster.local",
 							},
 							Env:       templates.IstioProxyEnv(),
-							Resources: templates.GetResourcesRequirementsOrDefault(r.Config.Spec.Pilot.Resources),
+							Resources: templates.GetResourcesRequirementsOrDefault(nil),
 							VolumeMounts: []apiv1.VolumeMount{
 								{
 									Name:      "istio-certs",
