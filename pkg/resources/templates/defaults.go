@@ -44,6 +44,19 @@ func GetResourcesRequirementsOrDefault(requirements *apiv1.ResourceRequirements)
 	}
 }
 
+func GetResourcesRequirementsOrPilotDefault(requirements *apiv1.ResourceRequirements) apiv1.ResourceRequirements {
+	if requirements != nil {
+		return *requirements
+	}
+
+	return apiv1.ResourceRequirements{
+		Requests: apiv1.ResourceList{
+			apiv1.ResourceCPU:    resource.MustParse("500m"),
+			apiv1.ResourceMemory: resource.MustParse("2048Mi"),
+		},
+	}
+}
+
 func DefaultRollingUpdateStrategy() appsv1.DeploymentStrategy {
 	return appsv1.DeploymentStrategy{
 		RollingUpdate: &appsv1.RollingUpdateDeployment{
