@@ -19,6 +19,7 @@ package remoteistio
 import (
 	"context"
 	"net"
+	"time"
 
 	"github.com/go-logr/logr"
 	"github.com/gofrs/uuid"
@@ -214,7 +215,7 @@ func (r *ReconcileRemoteConfig) Reconcile(request reconcile.Request) (reconcile.
 	istiov1beta1.SetRemoteIstioDefaults(remoteConfig)
 	result, err := r.reconcile(remoteConfig, istio, logger)
 	if err != nil {
-		updateErr := r.updateRemoteConfigStatus(remoteConfig, istiov1beta1.ReconcileFailed, err.Error(), logger)
+		updateErr := updateRemoteConfigStatus(r.Client, remoteConfig, istiov1beta1.ReconcileFailed, err.Error(), logger)
 		if updateErr != nil {
 			return result, errors.WithStack(err)
 		}
@@ -231,17 +232,21 @@ func (r *ReconcileRemoteConfig) reconcile(remoteConfig *istiov1beta1.RemoteIstio
 	logger = logger.WithValues("cluster", remoteConfig.Name)
 
 	if remoteConfig.Status.Status == "" {
-		err = r.updateRemoteConfigStatus(remoteConfig, istiov1beta1.Created, "", logger)
+		err = updateRemoteConfigStatus(r.Client, remoteConfig, istiov1beta1.Created, "", logger)
 		if err != nil {
 			return reconcile.Result{}, errors.WithStack(err)
 		}
 	}
 
 	if remoteConfig.Status.Status == istiov1beta1.Reconciling {
-		return reconcile.Result{}, errors.New("cannot trigger reconcile while already reconciling")
+		logger.Info("cannot trigger reconcile while already reconciling")
+		return reconcile.Result{
+			Requeue:      true,
+			RequeueAfter: time.Duration(30) * time.Second,
+		}, nil
 	}
 
-	err = r.updateRemoteConfigStatus(remoteConfig, istiov1beta1.Reconciling, "", logger)
+	err = updateRemoteConfigStatus(r.Client, remoteConfig, istiov1beta1.Reconciling, "", logger)
 	if err != nil {
 		return reconcile.Result{}, errors.WithStack(err)
 	}
@@ -250,7 +255,12 @@ func (r *ReconcileRemoteConfig) reconcile(remoteConfig *istiov1beta1.RemoteIstio
 
 	remoteConfig, err = r.populateEnabledServiceEndpoints(remoteConfig, istio, logger)
 	if err != nil {
-		return reconcile.Result{}, emperror.Wrap(err, "could not populate service endpoints")
+		err = emperror.Wrap(err, "could not populate service endpoints")
+		updateRemoteConfigStatus(r.Client, remoteConfig, istiov1beta1.ReconcileFailed, err.Error(), logger)
+		return reconcile.Result{
+			Requeue:      true,
+			RequeueAfter: time.Duration(30) * time.Second,
+		}, nil
 	}
 
 	remoteConfig, err = r.populateSignCerts(remoteConfig)
@@ -268,7 +278,15 @@ func (r *ReconcileRemoteConfig) reconcile(remoteConfig *istiov1beta1.RemoteIstio
 
 	err = cluster.Reconcile(remoteConfig, istio)
 	if err != nil {
-		return reconcile.Result{}, emperror.Wrap(err, "could not reconcile remote istio")
+		err = emperror.Wrap(err, "could not reconcile remote istio")
+		if _, ok := errors.Cause(err).(remoteclusters.IngressSetupPendingError); ok {
+			updateRemoteConfigStatus(r.Client, remoteConfig, istiov1beta1.ReconcileFailed, errors.Cause(err).Error(), logger)
+			return reconcile.Result{
+				Requeue:      true,
+				RequeueAfter: time.Duration(30) * time.Second,
+			}, nil
+		}
+		return reconcile.Result{}, err
 	}
 
 	err = r.labelSecret(client.ObjectKey{
@@ -279,7 +297,7 @@ func (r *ReconcileRemoteConfig) reconcile(remoteConfig *istiov1beta1.RemoteIstio
 		return reconcile.Result{}, emperror.Wrap(err, "could not reconcile remote istio")
 	}
 
-	err = r.updateRemoteConfigStatus(remoteConfig, istiov1beta1.Available, "", logger)
+	err = updateRemoteConfigStatus(r.Client, remoteConfig, istiov1beta1.Available, "", logger)
 	if err != nil {
 		return reconcile.Result{}, errors.WithStack(err)
 	}
@@ -289,19 +307,19 @@ func (r *ReconcileRemoteConfig) reconcile(remoteConfig *istiov1beta1.RemoteIstio
 	return reconcile.Result{}, nil
 }
 
-func (r *ReconcileRemoteConfig) updateRemoteConfigStatus(remoteConfig *istiov1beta1.RemoteIstio, status istiov1beta1.ConfigState, errorMessage string, logger logr.Logger) error {
+func updateRemoteConfigStatus(c client.Client, remoteConfig *istiov1beta1.RemoteIstio, status istiov1beta1.ConfigState, errorMessage string, logger logr.Logger) error {
 	typeMeta := remoteConfig.TypeMeta
 	remoteConfig.Status.Status = status
 	remoteConfig.Status.ErrorMessage = errorMessage
-	err := r.Status().Update(context.Background(), remoteConfig)
+	err := c.Status().Update(context.Background(), remoteConfig)
 	if k8serrors.IsNotFound(err) {
-		err = r.Update(context.Background(), remoteConfig)
+		err = c.Update(context.Background(), remoteConfig)
 	}
 	if err != nil {
 		if !k8serrors.IsConflict(err) {
 			return emperror.Wrapf(err, "could not update remote Istio state to '%s'", status)
 		}
-		err := r.Get(context.TODO(), client.ObjectKey{
+		err := c.Get(context.TODO(), client.ObjectKey{
 			Namespace: remoteConfig.Namespace,
 			Name:      remoteConfig.Name,
 		}, remoteConfig)
@@ -310,9 +328,9 @@ func (r *ReconcileRemoteConfig) updateRemoteConfigStatus(remoteConfig *istiov1be
 		}
 		remoteConfig.Status.Status = status
 		remoteConfig.Status.ErrorMessage = errorMessage
-		err = r.Status().Update(context.Background(), remoteConfig)
+		err = c.Status().Update(context.Background(), remoteConfig)
 		if k8serrors.IsNotFound(err) {
-			err = r.Update(context.Background(), remoteConfig)
+			err = c.Update(context.Background(), remoteConfig)
 		}
 		if err != nil {
 			return emperror.Wrapf(err, "could not update remoteconfig status to '%s'", status)
@@ -577,6 +595,9 @@ func RemoveFinalizers(c client.Client) error {
 	}
 	for _, remoteistio := range remoteistios.Items {
 		remoteistio.ObjectMeta.Finalizers = util.RemoveString(remoteistio.ObjectMeta.Finalizers, finalizerID)
+		if err := updateRemoteConfigStatus(c, &remoteistio, istiov1beta1.Unmanaged, "", log); err != nil {
+			return emperror.Wrap(err, "could not update status of Istio resource")
+		}
 		if err := c.Update(context.Background(), &remoteistio); err != nil {
 			return emperror.WrapWith(err, "could not remove finalizer from RemoteIstio resource", "name", remoteistio.GetName())
 		}

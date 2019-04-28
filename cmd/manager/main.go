@@ -107,6 +107,18 @@ func main() {
 		log.Error(err, "unable to run the manager")
 		os.Exit(1)
 	}
+
+	// Cleanup
+	log.Info("removing finalizer from Istio resources")
+	err = istio.RemoveFinalizers(mgr.GetClient())
+	if err != nil {
+		log.Error(err, "could not remove finalizers from Istio resources")
+	}
+	log.Info("removing finalizer from RemoteIstio resources")
+	err = remoteistio.RemoveFinalizers(mgr.GetClient())
+	if err != nil {
+		log.Error(err, "could not remove finalizers from RemoteIstio resources")
+	}
 }
 
 func getWatchNamespace() (string, error) {
@@ -136,16 +148,6 @@ func setupSignalHandler(mgr manager.Manager, log logr.Logger, shutdownWaitDurati
 		// wait a bit for deletion requests to arrive
 		log.Info("wait a bit for CR deletion events to arrive", "waitSeconds", shutdownWaitDuration)
 		time.Sleep(shutdownWaitDuration)
-		log.Info("removing finalizer from Istio resources")
-		err := istio.RemoveFinalizers(mgr.GetClient())
-		if err != nil {
-			log.Error(err, "could not remove finalizers from Istio resources")
-		}
-		log.Info("removing finalizer from RemoteIstio resources")
-		err = remoteistio.RemoveFinalizers(mgr.GetClient())
-		if err != nil {
-			log.Error(err, "could not remove finalizers from RemoteIstio resources")
-		}
 		close(stop)
 		<-c
 		os.Exit(1) // second signal. Exit directly.
