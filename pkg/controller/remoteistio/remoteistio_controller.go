@@ -383,7 +383,9 @@ func (r *ReconcileRemoteConfig) populateEnabledServiceEndpointsFlat(remoteIstio 
 		if err != nil && !k8serrors.IsNotFound(err) {
 			return remoteIstio, err
 		}
-		svc.Ports = service.Spec.Ports
+		if len(svc.Ports) == 0 {
+			svc.Ports = service.Spec.Ports
+		}
 
 		if svc.LabelSelector == "" {
 			svc.LabelSelector = labels.Set(service.Spec.Selector).String()
@@ -459,7 +461,9 @@ func (r *ReconcileRemoteConfig) populateEnabledServiceEndpointsGateway(remoteIst
 		if err != nil {
 			return remoteIstio, err
 		}
-		svc.Ports = service.Spec.Ports
+		if len(svc.Ports) == 0 {
+			svc.Ports = service.Spec.Ports
+		}
 		svc.IPs = ips
 
 		remoteIstio.Spec.EnabledServices[i] = svc
