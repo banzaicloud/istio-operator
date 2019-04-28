@@ -14,14 +14,8 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package v1beta1
+package remoteclusters
 
-type ConfigState string
+type IngressSetupPendingError struct{}
 
-const (
-	Created         ConfigState = "Created"
-	ReconcileFailed ConfigState = "ReconcileFailed"
-	Reconciling     ConfigState = "Reconciling"
-	Available       ConfigState = "Available"
-	Unmanaged       ConfigState = "Unmanaged"
-)
+func (e IngressSetupPendingError) Error() string { return "ingress is pending" }

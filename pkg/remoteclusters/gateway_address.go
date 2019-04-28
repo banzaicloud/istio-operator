@@ -18,7 +18,6 @@ package remoteclusters
 
 import (
 	"context"
-	"errors"
 	"net"
 
 	corev1 "k8s.io/api/core/v1"
@@ -47,7 +46,7 @@ func (c *Cluster) getIngressGatewayAddress(remoteIstio *istiov1beta1.RemoteIstio
 	}
 
 	if len(service.Status.LoadBalancer.Ingress) < 1 {
-		return errors.New("ingress setup is pending")
+		return IngressSetupPendingError{}
 	}
 
 	if service.Status.LoadBalancer.Ingress[0].IP != "" {

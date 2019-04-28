@@ -20,6 +20,7 @@ import (
 	"context"
 	"flag"
 	"strings"
+	"time"
 
 	"github.com/go-logr/logr"
 	"github.com/gofrs/uuid"
@@ -175,7 +176,7 @@ func (r *ReconcileConfig) Reconcile(request reconcile.Request) (reconcile.Result
 	istiov1beta1.SetDefaults(config)
 	result, err := r.reconcile(logger, config)
 	if err != nil {
-		updateErr := r.updateStatus(config, istiov1beta1.ReconcileFailed, err.Error(), logger)
+		updateErr := updateStatus(r.Client, config, istiov1beta1.ReconcileFailed, err.Error(), logger)
 		if updateErr != nil {
 			logger.Error(updateErr, "failed to update state")
 			return result, errors.WithStack(err)
@@ -188,7 +189,7 @@ func (r *ReconcileConfig) Reconcile(request reconcile.Request) (reconcile.Result
 func (r *ReconcileConfig) reconcile(logger logr.Logger, config *istiov1beta1.Istio) (reconcile.Result, error) {
 
 	if config.Status.Status == "" {
-		err := r.updateStatus(config, istiov1beta1.Created, "", logger)
+		err := updateStatus(r.Client, config, istiov1beta1.Created, "", logger)
 		if err != nil {
 			return reconcile.Result{}, errors.WithStack(err)
 		}
@@ -233,10 +234,14 @@ func (r *ReconcileConfig) reconcile(logger logr.Logger, config *istiov1beta1.Ist
 	}
 
 	if config.Status.Status == istiov1beta1.Reconciling {
-		return reconcile.Result{}, errors.New("cannot trigger reconcile while already reconciling")
+		logger.Info("cannot trigger reconcile while already reconciling")
+		return reconcile.Result{
+			Requeue:      true,
+			RequeueAfter: time.Duration(30) * time.Second,
+		}, nil
 	}
 
-	err := r.updateStatus(config, istiov1beta1.Reconciling, "", logger)
+	err := updateStatus(r.Client, config, istiov1beta1.Reconciling, "", logger)
 	if err != nil {
 		return reconcile.Result{}, errors.WithStack(err)
 	}
@@ -278,7 +283,7 @@ func (r *ReconcileConfig) reconcile(logger logr.Logger, config *istiov1beta1.Ist
 		}
 	}
 
-	err = r.updateStatus(config, istiov1beta1.Available, "", logger)
+	err = updateStatus(r.Client, config, istiov1beta1.Available, "", logger)
 	if err != nil {
 		return reconcile.Result{}, errors.WithStack(err)
 	}
@@ -369,19 +374,19 @@ func (r *ReconcileConfig) deleteRemoteIstios(config *istiov1beta1.Istio, logger 
 	}
 }
 
-func (r *ReconcileConfig) updateStatus(config *istiov1beta1.Istio, status istiov1beta1.ConfigState, errorMessage string, logger logr.Logger) error {
+func updateStatus(c client.Client, config *istiov1beta1.Istio, status istiov1beta1.ConfigState, errorMessage string, logger logr.Logger) error {
 	typeMeta := config.TypeMeta
 	config.Status.Status = status
 	config.Status.ErrorMessage = errorMessage
-	err := r.Status().Update(context.Background(), config)
+	err := c.Status().Update(context.Background(), config)
 	if k8serrors.IsNotFound(err) {
-		err = r.Update(context.Background(), config)
+		err = c.Update(context.Background(), config)
 	}
 	if err != nil {
 		if !k8serrors.IsConflict(err) {
 			return emperror.Wrapf(err, "could not update Istio state to '%s'", status)
 		}
-		err := r.Get(context.TODO(), types.NamespacedName{
+		err := c.Get(context.TODO(), types.NamespacedName{
 			Namespace: config.Namespace,
 			Name:      config.Name,
 		}, config)
@@ -390,9 +395,9 @@ func (r *ReconcileConfig) updateStatus(config *istiov1beta1.Istio, status istiov
 		}
 		config.Status.Status = status
 		config.Status.ErrorMessage = errorMessage
-		err = r.Status().Update(context.Background(), config)
+		err = c.Status().Update(context.Background(), config)
 		if k8serrors.IsNotFound(err) {
-			err = r.Update(context.Background(), config)
+			err = c.Update(context.Background(), config)
 		}
 		if err != nil {
 			return emperror.Wrapf(err, "could not update Istio state to '%s'", status)
@@ -506,6 +511,9 @@ func RemoveFinalizers(c client.Client) error {
 	}
 	for _, istio := range istios.Items {
 		istio.ObjectMeta.Finalizers = util.RemoveString(istio.ObjectMeta.Finalizers, finalizerID)
+		if err := updateStatus(c, &istio, istiov1beta1.Unmanaged, "", log); err != nil {
+			return emperror.Wrap(err, "could not update status of Istio resource")
+		}
 		if err := c.Update(context.Background(), &istio); err != nil {
 			return emperror.WrapWith(err, "could not remove finalizer from Istio resource", "name", istio.GetName())
 		}
