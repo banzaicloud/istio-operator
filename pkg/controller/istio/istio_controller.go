@@ -19,6 +19,7 @@ package istio
 import (
 	"context"
 	"flag"
+	"net"
 	"strings"
 	"time"
 
@@ -67,6 +68,7 @@ import (
 
 const finalizerID = "istio-operator.finializer.banzaicloud.io"
 const istioSecretTypePrefix = "istio.io"
+const localNetworkName = "local-network"
 
 var log = logf.Log.WithName("controller")
 var watchCreatedResourcesEvents bool
@@ -283,6 +285,17 @@ func (r *ReconcileConfig) reconcile(logger logr.Logger, config *istiov1beta1.Ist
 		}
 	}
 
+	ingressGatewayAddress, err := r.getIngressGatewayAddress(config, logger)
+	if err != nil {
+		log.Info(err.Error())
+		return reconcile.Result{
+			Requeue:      true,
+			RequeueAfter: time.Duration(30) * time.Second,
+		}, nil
+	}
+
+	config.Status.GatewayAddress = ingressGatewayAddress
+
 	err = updateStatus(r.Client, config, istiov1beta1.Available, "", logger)
 	if err != nil {
 		return reconcile.Result{}, errors.WithStack(err)
@@ -291,8 +304,61 @@ func (r *ReconcileConfig) reconcile(logger logr.Logger, config *istiov1beta1.Ist
 	return reconcile.Result{}, nil
 }
 
+func (r *ReconcileConfig) getIngressGatewayAddress(istio *istiov1beta1.Istio, logger logr.Logger) ([]string, error) {
+	var service corev1.Service
+
+	ips := make([]string, 0)
+
+	err := r.Get(context.TODO(), client.ObjectKey{
+		Name:      "istio-ingressgateway",
+		Namespace: istio.Namespace,
+	}, &service)
+	if err != nil && !k8serrors.IsNotFound(err) {
+		return ips, err
+	}
+
+	if len(service.Status.LoadBalancer.Ingress) < 1 {
+		return ips, errors.New("invalid ingress status")
+	}
+
+	if service.Status.LoadBalancer.Ingress[0].IP != "" {
+		ips = []string{
+			service.Status.LoadBalancer.Ingress[0].IP,
+		}
+	} else if service.Status.LoadBalancer.Ingress[0].Hostname != "" {
+		hostIPs, err := net.LookupIP(service.Status.LoadBalancer.Ingress[0].Hostname)
+		if err != nil {
+			return ips, err
+		}
+		for _, ip := range hostIPs {
+			if ip.To4() != nil {
+				ips = append(ips, ip.String())
+			}
+		}
+	}
+
+	return ips, nil
+}
+
 func (r *ReconcileConfig) getMeshNetworks(config *istiov1beta1.Istio, logger logr.Logger) (*istiov1beta1.MeshNetworks, error) {
 	meshNetworks := make(map[string]istiov1beta1.MeshNetwork)
+
+	if len(config.Status.GatewayAddress) > 0 {
+		gateways := make([]istiov1beta1.MeshNetworkGateway, 0)
+		for _, address := range config.Status.GatewayAddress {
+			gateways = append(gateways, istiov1beta1.MeshNetworkGateway{
+				Address: address, Port: 443,
+			})
+		}
+		meshNetworks[localNetworkName] = istiov1beta1.MeshNetwork{
+			Endpoints: []istiov1beta1.MeshNetworkEndpoint{
+				{
+					FromCIDR: "127.0.0.1/8",
+				},
+			},
+			Gateways: gateways,
+		}
+	}
 
 	remoteIstios := remoteistioCtrl.GetRemoteIstiosByOwnerReference(r.mgr, config, logger)
 	for _, remoteIstio := range remoteIstios {

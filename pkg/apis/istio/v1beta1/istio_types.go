@@ -311,6 +311,7 @@ type IstioSpec struct {
 }
 
 type MeshNetworkEndpoint struct {
+	FromCIDR     string `json:"fromCidr,omitempty"`
 	FromRegistry string `json:"fromRegistry,omitempty"`
 }
 
@@ -373,8 +374,9 @@ func (v IstioVersion) IsSupported() bool {
 
 // IstioStatus defines the observed state of Istio
 type IstioStatus struct {
-	Status       ConfigState
-	ErrorMessage string
+	Status         ConfigState
+	GatewayAddress []string
+	ErrorMessage   string
 }
 
 // +genclient
@@ -385,6 +387,7 @@ type IstioStatus struct {
 // +kubebuilder:subresource:status
 // +kubebuilder:printcolumn:name="Status",type="string",JSONPath=".status.Status",description="Status of the resource"
 // +kubebuilder:printcolumn:name="Error",type="string",JSONPath=".status.ErrorMessage",description="Error message"
+// +kubebuilder:printcolumn:name="Gateways",type="string",JSONPath=".status.GatewayAddress",description="Ingress gateways of the resource"
 // +kubebuilder:printcolumn:name="Age",type="date",JSONPath=".metadata.creationTimestamp"
 type Istio struct {
 	metav1.TypeMeta   `json:",inline"`
