@@ -31,7 +31,7 @@ INFO[0004] you can check its status with the command `banzai cluster get "istio-
 Id   Name
 541  istio-pke
 
-❯ cat docs/federation/gateway/samples/istio-gke-cluster.json | sed -e "s/{{secretID}}/${GKE_SECRET_ID}/" -e | "s/{{projectID}}/${GKE_PROJECT_ID}/" banzai cluster create
+❯ cat docs/federation/gateway/samples/istio-gke-cluster.json | sed -e "s/{{secretID}}/${GKE_SECRET_ID}/" -e "s/{{projectID}}/${GKE_PROJECT_ID}/" | banzai cluster create
 INFO[0004] cluster is being created
 INFO[0004] you can check its status with the command `banzai cluster get "istio-gke"`
 Id   Name
@@ -105,7 +105,7 @@ Add GKE cluster to the service mesh
 ```bash
 ❯ kubectl --context=${CTX_GKE} apply -f docs/federation/gateway/cluster-add
 ❯ GKE_KUBECONFIG_FILE=$(docs/federation/gateway/cluster-add/generate-kubeconfig.sh ${CTX_GKE})
-❯ kubectl --context $CTX_PKE -n istio-system create secret generic ${CTX_GKE} --from-file=${CTX_GKE}=${GKE_KUBECONFIG_FILE}
+❯ kubectl --context $CTX_PKE -n istio-system create secret generic istio-gke --from-file=istio-gke=${GKE_KUBECONFIG_FILE}
 ❯ rm -f ${GKE_KUBECONFIG_FILE}
 ❯ kubectl --context=${CTX_PKE} create -n istio-system -f docs/federation/gateway/samples/remoteistio-gke-cr.yaml
 ```
@@ -115,7 +115,7 @@ Add EKS cluster to the service mesh
 ```bash
 ❯ kubectl --context=${CTX_EKS} apply -f docs/federation/gateway/cluster-add
 ❯ EKS_KUBECONFIG_FILE=$(docs/federation/gateway/cluster-add/generate-kubeconfig.sh ${CTX_EKS})
-❯ kubectl --context $CTX_PKE -n istio-system create secret generic ${CTX_EKS} --from-file=${CTX_EKS}=${EKS_KUBECONFIG_FILE}
+❯ kubectl --context $CTX_PKE -n istio-system create secret generic istio-eks --from-file=istio-eks=${EKS_KUBECONFIG_FILE}
 ❯ rm -f ${EKS_KUBECONFIG_FILE}
 ❯ kubectl --context=${CTX_PKE} create -n istio-system -f docs/federation/gateway/samples/remoteistio-eks-cr.yaml
 ```
