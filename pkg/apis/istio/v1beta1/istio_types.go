@@ -64,10 +64,9 @@ type PilotConfiguration struct {
 
 // CitadelConfiguration defines config options for Citadel
 type CitadelConfiguration struct {
-	Enabled      *bool                        `json:"enabled,omitempty"`
-	Image        string                       `json:"image,omitempty"`
-	ReplicaCount int32                        `json:"replicaCount,omitempty"`
-	Resources    *corev1.ResourceRequirements `json:"resources,omitempty"`
+	Enabled   *bool                        `json:"enabled,omitempty"`
+	Image     string                       `json:"image,omitempty"`
+	Resources *corev1.ResourceRequirements `json:"resources,omitempty"`
 }
 
 // GalleyConfiguration defines config options for Galley

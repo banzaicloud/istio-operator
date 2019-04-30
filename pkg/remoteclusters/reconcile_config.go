@@ -42,7 +42,6 @@ func (c *Cluster) reconcileConfig(remoteConfig *istiov1beta1.RemoteIstio, istio 
 
 	istioConfig.Spec = istio.Spec
 	istioConfig.Spec.AutoInjectionNamespaces = remoteConfig.Spec.AutoInjectionNamespaces
-	istioConfig.Spec.Citadel.ReplicaCount = remoteConfig.Spec.Citadel.ReplicaCount
 	istioConfig.Spec.SidecarInjector.ReplicaCount = remoteConfig.Spec.SidecarInjector.ReplicaCount
 	istioConfig.Spec.Proxy.Privileged = remoteConfig.Spec.Proxy.Privileged
 
