@@ -288,6 +288,7 @@ func (r *ReconcileConfig) reconcile(logger logr.Logger, config *istiov1beta1.Ist
 	ingressGatewayAddress, err := r.getIngressGatewayAddress(config, logger)
 	if err != nil {
 		log.Info(err.Error())
+		updateStatus(r.Client, config, istiov1beta1.ReconcileFailed, err.Error(), logger)
 		return reconcile.Result{
 			Requeue:      true,
 			RequeueAfter: time.Duration(30) * time.Second,
