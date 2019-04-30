@@ -374,6 +374,7 @@ func tcpMetricDimensions() map[string]interface{} {
 		"source_principal":               `source.principal | "unknown"`,
 		"source_app":                     `source.labels["app"] | "unknown"`,
 		"source_version":                 `source.labels["version"] | "unknown"`,
+		"source_cluster_id":              `source.cluster.id | "unknown"`,
 		"destination_workload":           `destination.workload.name | "unknown"`,
 		"destination_workload_namespace": `destination.workload.namespace | "unknown"`,
 		"destination_principal":          `destination.principal | "unknown"`,
@@ -382,6 +383,7 @@ func tcpMetricDimensions() map[string]interface{} {
 		"destination_service":            `destination.service.host | "unknown"`,
 		"destination_service_name":       `destination.service.name | "unknown"`,
 		"destination_service_namespace":  `destination.service.namespace | "unknown"`,
+		"destination_cluster_id":         `destination.cluster.id | "unknown"`,
 		"connection_security_policy":     `conditional((context.reporter.kind | "inbound") == "outbound", "unknown", conditional(connection.mtls | false, "mutual_tls", "none"))`,
 		"response_flags":                 `context.proxy_error_code | "-"`,
 	}
@@ -404,6 +406,7 @@ func tcpMetricLabels() []interface{} {
 		"source_workload",
 		"source_workload_namespace",
 		"source_version",
+		"source_cluster_id",
 		"destination_app",
 		"destination_principal",
 		"destination_workload",
@@ -412,6 +415,7 @@ func tcpMetricLabels() []interface{} {
 		"destination_service",
 		"destination_service_name",
 		"destination_service_namespace",
+		"destination_cluster_id",
 		"connection_security_policy",
 		"response_flags",
 	)
