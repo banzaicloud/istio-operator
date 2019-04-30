@@ -83,9 +83,6 @@ func SetDefaults(config *Istio) {
 	if config.Spec.Citadel.Image == "" {
 		config.Spec.Citadel.Image = defaultCitadelImage
 	}
-	if config.Spec.Citadel.ReplicaCount == 0 {
-		config.Spec.Citadel.ReplicaCount = defaultReplicaCount
-	}
 	// Galley config
 	if config.Spec.Galley.Enabled == nil {
 		config.Spec.Galley.Enabled = util.BoolPointer(true)
@@ -245,10 +242,6 @@ func SetDefaults(config *Istio) {
 func SetRemoteIstioDefaults(remoteconfig *RemoteIstio) {
 	if remoteconfig.Spec.IncludeIPRanges == "" {
 		remoteconfig.Spec.IncludeIPRanges = defaultIncludeIPRanges
-	}
-	// Citadel config
-	if remoteconfig.Spec.Citadel.ReplicaCount == 0 {
-		remoteconfig.Spec.Citadel.ReplicaCount = defaultReplicaCount
 	}
 	// SidecarInjector config
 	if remoteconfig.Spec.SidecarInjector.ReplicaCount == 0 {

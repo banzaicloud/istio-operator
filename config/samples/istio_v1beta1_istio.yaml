@@ -24,7 +24,6 @@ spec:
   citadel:
     enabled: true
     image: "docker.io/istio/citadel:1.1.4"
-    replicaCount: 1
   galley:
     enabled: true
     image: "docker.io/istio/galley:1.1.4"

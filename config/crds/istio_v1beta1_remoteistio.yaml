@@ -59,9 +59,6 @@ spec:
                   type: boolean
                 image:
                   type: string
-                replicaCount:
-                  format: int32
-                  type: integer
                 resources:
                   type: object
               type: object
