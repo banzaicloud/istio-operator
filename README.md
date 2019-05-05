@@ -1,7 +1,26 @@
-[![Docker Automated build](https://img.shields.io/docker/cloud/automated/banzaicloud/istio-operator.svg)](https://hub.docker.com/r/banzaicloud/istio-operator/)
-[![CircleCI](https://circleci.com/gh/banzaicloud/istio-operator/tree/master.svg?style=shield)](https://circleci.com/gh/banzaicloud/istio-operator/tree/master)
-[![Go Report Card](https://goreportcard.com/badge/github.com/banzaicloud/istio-operator)](https://goreportcard.com/report/github.com/banzaicloud/istio-operator)
-![license](http://img.shields.io/badge/license-Apache%20v2-orange.svg)
+
+<p align="center"><img src="docs/img/istio_operator_logo.png" width="260"></p>
+
+<p align="center">
+
+  <a href="https://hub.docker.com/r/banzaicloud/istio-operator/">
+    <img src="https://img.shields.io/docker/cloud/automated/banzaicloud/istio-operator.svg" alt="Docker Automated build">
+  </a>
+
+  <a href="https://circleci.com/gh/banzaicloud/istio-operator/tree/master">
+    <img src="https://circleci.com/gh/banzaicloud/istio-operator/tree/master.svg?style=shield" alt="CircleCI">
+  </a>
+
+
+  <a href="https://goreportcard.com/report/github.com/banzaicloud/istio-operator">
+    <img src="https://goreportcard.com/badge/github.com/banzaicloud/istio-operator" alt="Go Report Card">
+  </a>
+
+  <a href="https://github.com/banzaicloud/istio-operator/">
+    <img src="https://img.shields.io/badge/license-Apache%20v2-orange.svg" alt="license">
+  </a>
+
+</p>
 
 # Istio-operator
 
