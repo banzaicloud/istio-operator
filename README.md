@@ -36,7 +36,7 @@ The goal of the **Istio-operator** is to automate and simplify these and enable 
 
 ### Motivation
 
-At [Banzai Cloud](https://banzaicloud.com) we are building a Kubernetes distribution and platform, [Pipeline](https://github.com/banzaicloud/pipeline) and operate Istio clusters for our customers. While we were comfortably operating Istio using the standard Helm deployments on 6 cloud providers and on-premise with [Pipeline](https://github.com/banzaicloud/pipeline), recently our customers were asking for multi-cloud service mesh deployments. This required lots of configurations, manual interventions during scaling or removing clusters from the mesh and become an operational burden. [Pipeline](https://github.com/banzaicloud/pipeline) automates the whole Kubernetes experience (from creating clusters, centralized logging, federated monitoring, multi-dimensional autoscaling, disaster recovery, security scans, etc) and we needed a way to `automagically` operate Istio.
+At [Banzai Cloud](https://banzaicloud.com) we are building a Kubernetes distribution, [PKE](https://github.com/banzaicloud/pke) and platform, [Pipeline](https://github.com/banzaicloud/pipeline) and operate managed Istio clusters for our customers. While we were comfortably operating Istio using the standard Helm deployments on 6 cloud providers and on-premise with [Pipeline](https://github.com/banzaicloud/pipeline), recently our customers were asking for multi-cloud and hybrid-cloud service mesh deployments. This required lots of configurations, manual interventions during scaling or removing clusters from the mesh and become an operational burden. [Pipeline](https://github.com/banzaicloud/pipeline) automates the whole Kubernetes experience (from creating clusters, centralized logging, federated monitoring, multi-dimensional autoscaling, disaster recovery, security scans, etc) and we needed a way to `automagically` operate Istio across multiple clouds and on-premise hybrid-cloud environments.
 
 At the same time there is a huge interest in the Istio community for an [operator](https://github.com/istio/istio/issues/9333), but due to resource constraints and the need of supporting Helm, building one it was discarded. There were several initiatives to simplify Istio:
 
@@ -91,7 +91,7 @@ Check out the [developer docs](docs/developer.md).
 
 ## Issues, feature requests and roadmap
 
-Please note that the Istio operator is under heavy development and new releases might introduce breaking changes. We are striving to keep backward compatibility as much as possible while adding new features at a fast pace. Issues, new features or bugs are tracked on the projects [GitHub page]() - please feel free to add yours!
+Please note that the Istio operator is constantly under development and new releases might introduce breaking changes. We are striving to keep backward compatibility as much as possible while adding new features at a fast pace. Issues, new features or bugs are tracked on the projects [GitHub page](https://github.com/banzaicloud/istio-operator/issues) - please feel free to add yours!
 
 To track some of the significant features and future items from the roadmap please visit the [roadmap doc](docs/roadmap.md).
 
