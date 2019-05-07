@@ -78,7 +78,7 @@ func InitCrds() []*extensionsobj.CustomResourceDefinition {
 		crdL("VirtualService", "VirtualServices", crdConfigs[Networking], "istio-pilot", "", "", extensionsobj.NamespaceScoped, true),
 		crdL("DestinationRule", "DestinationRules", crdConfigs[Networking], "istio-pilot", "", "", extensionsobj.NamespaceScoped, true),
 		crdL("ServiceEntry", "ServiceEntries", crdConfigs[Networking], "istio-pilot", "", "", extensionsobj.NamespaceScoped, true),
-		crdL("ClusterRbacConfig", "ClusterRbacConfigs", crdConfigs[Rbac], "istio-pilot", "rbac-istio-pilot", "rbac", extensionsobj.NamespaceScoped, true),
+		crdL("ClusterRbacConfig", "ClusterRbacConfigs", crdConfigs[Rbac], "istio-pilot", "rbac-istio-pilot", "rbac", extensionsobj.ClusterScoped, true),
 		crd("Gateway", "Gateways", crdConfigs[Networking], "istio-pilot", "", "", extensionsobj.NamespaceScoped),
 		crd("EnvoyFilter", "EnvoyFilters", crdConfigs[Networking], "istio-pilot", "", "", extensionsobj.NamespaceScoped),
 		crd("Policy", "Policies", crdConfigs[Authentication], "", "", "", extensionsobj.NamespaceScoped),
@@ -221,6 +221,19 @@ func (r *CrdOperator) Reconcile(config *istiov1beta1.Istio, log logr.Logger) err
 			}
 			crd.ResourceVersion = current.ResourceVersion
 			if _, err := crdClient.Update(crd); err != nil {
+				if apierrors.IsConflict(err) || apierrors.IsInvalid(err) {
+					err := crdClient.Delete(crd.Name, &metav1.DeleteOptions{})
+					if err != nil {
+						return emperror.WrapWith(err, "could not delete CRD", "kind", crd.Spec.Names.Kind)
+					}
+					crd.ResourceVersion = ""
+					if _, err := crdClient.Create(crd); err != nil {
+						log.Info("resource needs to be re-created")
+						return emperror.WrapWith(err, "creating CRD failed", "kind", crd.Spec.Names.Kind)
+					}
+					log.Info("CRD created")
+				}
+
 				return emperror.WrapWith(err, "updating CRD failed", "kind", crd.Spec.Names.Kind)
 			}
 			log.Info("CRD updated")
