@@ -49,6 +49,15 @@ func (m *Manager) Add(cluster *Cluster) error {
 	return nil
 }
 
+func (m *Manager) Delete(cluster *Cluster) error {
+	m.mu.Lock()
+	defer m.mu.Unlock()
+
+	delete(m.clusters, cluster.GetName())
+
+	return nil
+}
+
 func (m *Manager) Get(name string) (*Cluster, error) {
 	m.mu.RLock()
 	defer m.mu.RUnlock()
