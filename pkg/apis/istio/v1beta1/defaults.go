@@ -20,6 +20,7 @@ import (
 	"fmt"
 
 	apiv1 "k8s.io/api/core/v1"
+	"k8s.io/apimachinery/pkg/util/intstr"
 
 	"github.com/banzaicloud/istio-operator/pkg/util"
 )
@@ -52,6 +53,19 @@ const (
 	defaultImagePullPolicy           = "IfNotPresent"
 	defaultMeshExpansion             = false
 )
+
+var defaultIngressGatewayPorts = []apiv1.ServicePort{
+	{Port: 15020, Protocol: apiv1.ProtocolTCP, TargetPort: intstr.FromInt(15020), Name: "status-port", NodePort: 31460},
+	{Port: 80, Protocol: apiv1.ProtocolTCP, TargetPort: intstr.FromInt(80), Name: "http2", NodePort: 31380},
+	{Port: 443, Protocol: apiv1.ProtocolTCP, TargetPort: intstr.FromInt(443), Name: "https", NodePort: 31390},
+	{Port: 15443, Protocol: apiv1.ProtocolTCP, TargetPort: intstr.FromInt(15443), Name: "tls", NodePort: 31450},
+}
+
+var defaultEgressGatewayPorts = []apiv1.ServicePort{
+	{Port: 80, Name: "http2", Protocol: apiv1.ProtocolTCP, TargetPort: intstr.FromInt(80)},
+	{Port: 443, Name: "https", Protocol: apiv1.ProtocolTCP, TargetPort: intstr.FromInt(443)},
+	{Port: 15443, Protocol: apiv1.ProtocolTCP, TargetPort: intstr.FromInt(15443), Name: "tls"},
+}
 
 func SetDefaults(config *Istio) {
 	if config.Spec.IncludeIPRanges == "" {
@@ -112,6 +126,9 @@ func SetDefaults(config *Istio) {
 	if config.Spec.Gateways.IngressConfig.SDS.Enabled == nil {
 		config.Spec.Gateways.IngressConfig.SDS.Enabled = util.BoolPointer(false)
 	}
+	if len(config.Spec.Gateways.IngressConfig.Ports) == 0 {
+		config.Spec.Gateways.IngressConfig.Ports = defaultIngressGatewayPorts
+	}
 	if config.Spec.Gateways.EgressConfig.Enabled == nil {
 		config.Spec.Gateways.EgressConfig.Enabled = util.BoolPointer(true)
 	}
@@ -132,6 +149,9 @@ func SetDefaults(config *Istio) {
 	}
 	if config.Spec.Gateways.EgressConfig.SDS.Enabled == nil {
 		config.Spec.Gateways.EgressConfig.SDS.Enabled = util.BoolPointer(false)
+	}
+	if len(config.Spec.Gateways.EgressConfig.Ports) == 0 {
+		config.Spec.Gateways.EgressConfig.Ports = defaultEgressGatewayPorts
 	}
 	if config.Spec.Gateways.K8sIngress.Enabled == nil {
 		config.Spec.Gateways.K8sIngress.Enabled = util.BoolPointer(false)

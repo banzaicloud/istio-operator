@@ -107,6 +107,10 @@ spec:
                     minReplicas:
                       format: int32
                       type: integer
+                    ports:
+                      items:
+                        type: object
+                      type: array
                     replicaCount:
                       format: int32
                       type: integer
@@ -142,6 +146,10 @@ spec:
                     minReplicas:
                       format: int32
                       type: integer
+                    ports:
+                      items:
+                        type: object
+                      type: array
                     replicaCount:
                       format: int32
                       type: integer

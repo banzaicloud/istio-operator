@@ -38,6 +38,20 @@ spec:
       serviceType: "LoadBalancer"
       serviceAnnotations: {}
       serviceLabels: {}
+      ports:
+        - port: 15020
+          targetPort: 15020
+          name: status-port
+        - port: 80
+          targetPort: 80
+          name: http2
+          nodePort: 31380
+        - port: 443
+          name: https
+          nodePort: 31390
+        - port: 15443
+          targetPort: 15443
+          name: tls
     egress:
       enabled: true
       replicaCount: 1
@@ -46,6 +60,14 @@ spec:
       serviceType: "ClusterIP"
       serviceAnnotations: {}
       serviceLabels: {}
+      ports:
+        - port: 80
+          name: http2
+        - port: 443
+          name: https
+        - port: 15443
+          targetPort: 15443
+          name: tls
     k8singress:
       enabled: false
   mixer:

@@ -40,17 +40,7 @@ func (r *Reconciler) service(gw string) runtime.Object {
 func (r *Reconciler) servicePorts(gw string) []apiv1.ServicePort {
 	switch gw {
 	case ingress:
-		ports := []apiv1.ServicePort{
-			{Port: 15020, Protocol: apiv1.ProtocolTCP, TargetPort: intstr.FromInt(15020), Name: "status-port", NodePort: 31460},
-			{Port: 80, Protocol: apiv1.ProtocolTCP, TargetPort: intstr.FromInt(80), Name: "http2", NodePort: 31380},
-			{Port: 443, Protocol: apiv1.ProtocolTCP, TargetPort: intstr.FromInt(443), Name: "https", NodePort: 31390},
-			{Port: 31400, Protocol: apiv1.ProtocolTCP, TargetPort: intstr.FromInt(31400), Name: "tcp", NodePort: 31400},
-			{Port: 15029, Protocol: apiv1.ProtocolTCP, TargetPort: intstr.FromInt(15029), Name: "https-kiali", NodePort: 31410},
-			{Port: 15030, Protocol: apiv1.ProtocolTCP, TargetPort: intstr.FromInt(15030), Name: "https-prom", NodePort: 31420},
-			{Port: 15031, Protocol: apiv1.ProtocolTCP, TargetPort: intstr.FromInt(15031), Name: "https-grafana", NodePort: 31430},
-			{Port: 15032, Protocol: apiv1.ProtocolTCP, TargetPort: intstr.FromInt(15032), Name: "https-tracing", NodePort: 31440},
-			{Port: 15443, Protocol: apiv1.ProtocolTCP, TargetPort: intstr.FromInt(15443), Name: "tls", NodePort: 31450},
-		}
+		ports := r.Config.Spec.Gateways.IngressConfig.Ports
 		if util.PointerToBool(r.Config.Spec.MeshExpansion) {
 			ports = append(ports, []apiv1.ServicePort{
 				{Port: 15011, Protocol: apiv1.ProtocolTCP, TargetPort: intstr.FromInt(15011), Name: "tcp-pilot-grpc-tls", NodePort: 31470},
@@ -61,11 +51,7 @@ func (r *Reconciler) servicePorts(gw string) []apiv1.ServicePort {
 		}
 		return ports
 	case egress:
-		return []apiv1.ServicePort{
-			{Port: 80, Name: "http2", Protocol: apiv1.ProtocolTCP, TargetPort: intstr.FromInt(80)},
-			{Port: 443, Name: "https", Protocol: apiv1.ProtocolTCP, TargetPort: intstr.FromInt(443)},
-			{Port: 15443, Protocol: apiv1.ProtocolTCP, TargetPort: intstr.FromInt(15443), Name: "tls"},
-		}
+		return r.Config.Spec.Gateways.EgressConfig.Ports
 	}
 	return []apiv1.ServicePort{}
 }

@@ -120,6 +120,11 @@ func (in *GatewayConfiguration) DeepCopyInto(out *GatewayConfiguration) {
 		*out = new(v1.ResourceRequirements)
 		(*in).DeepCopyInto(*out)
 	}
+	if in.Ports != nil {
+		in, out := &in.Ports, &out.Ports
+		*out = make([]v1.ServicePort, len(*in))
+		copy(*out, *in)
+	}
 	return
 }
 
