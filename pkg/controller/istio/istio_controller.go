@@ -512,7 +512,7 @@ func initWatches(c controller.Controller, scheme *runtime.Scheme, watchCreatedRe
 	objectMatcher := objectmatch.New(logf.NewDelegatingLogger(logf.NullLogger{}))
 
 	// Initialize owner matcher
-	ownerMatcher := k8sutil.NewOwnerReferenceMatcher(&istiov1beta1.Istio{}, true, scheme)
+	ownerMatcher := k8sutil.NewOwnerReferenceMatcher(&istiov1beta1.Istio{TypeMeta: metav1.TypeMeta{Kind: "Istio", APIVersion: "istio.banzaicloud.io/v1beta1"}}, true, scheme)
 
 	// Watch for changes to resources managed by the operator
 	for _, t := range []runtime.Object{
