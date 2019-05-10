@@ -168,6 +168,11 @@ func (r *ReconcileRemoteConfig) Reconcile(request reconcile.Request) (reconcile.
 				}
 			}
 
+			err = r.remoteClustersMgr.Delete(cluster)
+			if err != nil {
+				return reconcile.Result{}, emperror.Wrap(err, "could not remove cluster from manager")
+			}
+
 			err = r.labelSecret(client.ObjectKey{
 				Name:      remoteConfig.GetName(),
 				Namespace: remoteConfig.GetNamespace(),
