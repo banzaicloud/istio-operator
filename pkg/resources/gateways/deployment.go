@@ -151,25 +151,27 @@ func (r *Reconciler) deployment(gw string) runtime.Object {
 func (r *Reconciler) ports(gw string) []apiv1.ContainerPort {
 	switch gw {
 	case ingress:
-		return []apiv1.ContainerPort{
-			{ContainerPort: 15020, Protocol: apiv1.ProtocolTCP, Name: "status-port"},
-			{ContainerPort: 80, Protocol: apiv1.ProtocolTCP, Name: "http2"},
-			{ContainerPort: 443, Protocol: apiv1.ProtocolTCP, Name: "https"},
-			{ContainerPort: 31400, Protocol: apiv1.ProtocolTCP, Name: "tcp"},
-			{ContainerPort: 15029, Protocol: apiv1.ProtocolTCP, Name: "https-kiali"},
-			{ContainerPort: 15030, Protocol: apiv1.ProtocolTCP, Name: "https-prom"},
-			{ContainerPort: 15031, Protocol: apiv1.ProtocolTCP, Name: "https-grafana"},
-			{ContainerPort: 15032, Protocol: apiv1.ProtocolTCP, Name: "https-tracing"},
-			{ContainerPort: 15443, Protocol: apiv1.ProtocolTCP, Name: "tls"},
-			{ContainerPort: 15090, Protocol: apiv1.ProtocolTCP, Name: "http-envoy-prom"},
+		var ports []apiv1.ContainerPort
+		for _, port := range r.Config.Spec.Gateways.IngressConfig.Ports {
+			ports = append(ports, apiv1.ContainerPort{
+				ContainerPort: port.Port, Protocol: port.Protocol, Name: port.Name,
+			})
 		}
+		ports = append(ports, apiv1.ContainerPort{
+			ContainerPort: 15090, Protocol: apiv1.ProtocolTCP, Name: "http-envoy-prom",
+		})
+		return ports
 	case egress:
-		return []apiv1.ContainerPort{
-			{ContainerPort: 80, Protocol: apiv1.ProtocolTCP, Name: "http2"},
-			{ContainerPort: 443, Protocol: apiv1.ProtocolTCP, Name: "https"},
-			{ContainerPort: 15443, Protocol: apiv1.ProtocolTCP, Name: "tls"},
-			{ContainerPort: 15090, Protocol: apiv1.ProtocolTCP, Name: "http-envoy-prom"},
+		var ports []apiv1.ContainerPort
+		for _, port := range r.Config.Spec.Gateways.EgressConfig.Ports {
+			ports = append(ports, apiv1.ContainerPort{
+				ContainerPort: port.Port, Protocol: port.Protocol, Name: port.Name,
+			})
 		}
+		ports = append(ports, apiv1.ContainerPort{
+			ContainerPort: 15090, Protocol: apiv1.ProtocolTCP, Name: "http-envoy-prom",
+		})
+		return ports
 	}
 	return nil
 }

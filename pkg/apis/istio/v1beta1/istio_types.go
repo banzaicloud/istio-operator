@@ -101,6 +101,7 @@ type GatewayConfiguration struct {
 	ServiceLabels      map[string]string            `json:"serviceLabels,omitempty"`
 	SDS                GatewaySDSConfiguration      `json:"sds,omitempty"`
 	Resources          *corev1.ResourceRequirements `json:"resources,omitempty"`
+	Ports              []corev1.ServicePort         `json:"ports,omitempty"`
 }
 
 type K8sIngressConfiguration struct {
