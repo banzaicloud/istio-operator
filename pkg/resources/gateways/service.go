@@ -30,9 +30,10 @@ func (r *Reconciler) service(gw string) runtime.Object {
 	return &apiv1.Service{
 		ObjectMeta: templates.ObjectMetaWithAnnotations(gatewayName(gw), util.MergeLabels(gwConfig.ServiceLabels, labelSelector(gw)), gwConfig.ServiceAnnotations, r.Config),
 		Spec: apiv1.ServiceSpec{
-			Type:     r.serviceType(gw),
-			Ports:    r.servicePorts(gw),
-			Selector: labelSelector(gw),
+			LoadBalancerIP: r.loadBalancerIP(gw),
+			Type:           r.serviceType(gw),
+			Ports:          r.servicePorts(gw),
+			Selector:       labelSelector(gw),
 		},
 	}
 }
@@ -62,6 +63,16 @@ func (r *Reconciler) serviceType(gw string) apiv1.ServiceType {
 		return r.Config.Spec.Gateways.IngressConfig.ServiceType
 	case egress:
 		return r.Config.Spec.Gateways.EgressConfig.ServiceType
+	}
+	return ""
+}
+
+func (r *Reconciler) loadBalancerIP(gw string) string {
+	switch gw {
+	case ingress:
+		return r.Config.Spec.Gateways.IngressConfig.LoadBalancerIP
+	case egress:
+		return r.Config.Spec.Gateways.EgressConfig.LoadBalancerIP
 	}
 	return ""
 }

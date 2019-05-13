@@ -101,6 +101,8 @@ spec:
                   properties:
                     enabled:
                       type: boolean
+                    loadBalancerIP:
+                      type: string
                     maxReplicas:
                       format: int32
                       type: integer
@@ -140,6 +142,8 @@ spec:
                   properties:
                     enabled:
                       type: boolean
+                    loadBalancerIP:
+                      type: string
                     maxReplicas:
                       format: int32
                       type: integer
