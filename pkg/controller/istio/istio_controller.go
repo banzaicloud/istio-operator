@@ -23,6 +23,7 @@ import (
 	"strings"
 	"time"
 
+	objectmatch "github.com/banzaicloud/k8s-objectmatcher"
 	"github.com/go-logr/logr"
 	"github.com/gofrs/uuid"
 	"github.com/goph/emperror"
@@ -52,7 +53,6 @@ import (
 	remoteistioCtrl "github.com/banzaicloud/istio-operator/pkg/controller/remoteistio"
 	"github.com/banzaicloud/istio-operator/pkg/crds"
 	"github.com/banzaicloud/istio-operator/pkg/k8sutil"
-	"github.com/banzaicloud/istio-operator/pkg/k8sutil/objectmatch"
 	"github.com/banzaicloud/istio-operator/pkg/resources"
 	"github.com/banzaicloud/istio-operator/pkg/resources/citadel"
 	"github.com/banzaicloud/istio-operator/pkg/resources/cni"

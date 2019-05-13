@@ -11,6 +11,14 @@
 
 [[projects]]
   branch = "master"
+  digest = "1:f5cb7e742fcf167ff7d2ac8ca6ebc7f797a04c98f2daac3de7d4323dbf3dccd7"
+  name = "github.com/banzaicloud/k8s-objectmatcher"
+  packages = ["."]
+  pruneopts = "T"
+  revision = "5288f80397dd1d5c16ee4fcc7062b99322a17ca0"
+
+[[projects]]
+  branch = "master"
   digest = "1:ad4589ec239820ee99eb01c1ad47ebc5f8e02c4f5103a9b210adff9696d89f36"
   name = "github.com/beorn7/perks"
   packages = ["quantile"]
@@ -749,6 +757,7 @@
   name = "k8s.io/client-go"
   packages = [
     "discovery",
+    "discovery/fake",
     "dynamic",
     "kubernetes",
     "kubernetes/scheme",
@@ -792,6 +801,7 @@
     "rest",
     "rest/watch",
     "restmapper",
+    "testing",
     "third_party/forked/golang/template",
     "tools/auth",
     "tools/cache",
@@ -950,6 +960,7 @@
   analyzer-name = "dep"
   analyzer-version = 1
   input-imports = [
+    "github.com/banzaicloud/k8s-objectmatcher",
     "github.com/emicklei/go-restful",
     "github.com/evanphx/json-patch",
     "github.com/ghodss/yaml",
@@ -976,14 +987,22 @@
     "k8s.io/apimachinery/pkg/labels",
     "k8s.io/apimachinery/pkg/runtime",
     "k8s.io/apimachinery/pkg/runtime/schema",
+    "k8s.io/apimachinery/pkg/runtime/serializer",
     "k8s.io/apimachinery/pkg/types",
     "k8s.io/apimachinery/pkg/util/intstr",
+    "k8s.io/apimachinery/pkg/util/runtime",
     "k8s.io/apimachinery/pkg/util/strategicpatch",
+    "k8s.io/apimachinery/pkg/watch",
+    "k8s.io/client-go/discovery",
+    "k8s.io/client-go/discovery/fake",
     "k8s.io/client-go/dynamic",
     "k8s.io/client-go/kubernetes/scheme",
     "k8s.io/client-go/plugin/pkg/client/auth/gcp",
     "k8s.io/client-go/rest",
+    "k8s.io/client-go/testing",
+    "k8s.io/client-go/tools/cache",
     "k8s.io/client-go/tools/clientcmd",
+    "k8s.io/client-go/util/flowcontrol",
     "k8s.io/code-generator/cmd/client-gen",
     "k8s.io/code-generator/cmd/deepcopy-gen",
     "sigs.k8s.io/controller-runtime/pkg/client",

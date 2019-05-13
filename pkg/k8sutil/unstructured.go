@@ -19,6 +19,7 @@ package k8sutil
 import (
 	"reflect"
 
+	objectmatch "github.com/banzaicloud/k8s-objectmatcher"
 	"github.com/go-logr/logr"
 	"github.com/goph/emperror"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
@@ -28,7 +29,6 @@ import (
 	"k8s.io/client-go/dynamic"
 
 	istiov1beta1 "github.com/banzaicloud/istio-operator/pkg/apis/istio/v1beta1"
-	"github.com/banzaicloud/istio-operator/pkg/k8sutil/objectmatch"
 	"github.com/banzaicloud/istio-operator/pkg/util"
 )
 

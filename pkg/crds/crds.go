@@ -20,6 +20,7 @@ import (
 	"fmt"
 	"strings"
 
+	objectmatch "github.com/banzaicloud/k8s-objectmatcher"
 	"github.com/go-logr/logr"
 	"github.com/goph/emperror"
 	extensionsobj "k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1beta1"
@@ -29,7 +30,6 @@ import (
 	"k8s.io/client-go/rest"
 
 	istiov1beta1 "github.com/banzaicloud/istio-operator/pkg/apis/istio/v1beta1"
-	"github.com/banzaicloud/istio-operator/pkg/k8sutil/objectmatch"
 	"github.com/banzaicloud/istio-operator/pkg/util"
 )
 
