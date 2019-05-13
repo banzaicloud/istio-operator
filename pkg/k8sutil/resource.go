@@ -21,6 +21,7 @@ import (
 	"errors"
 	"reflect"
 
+	objectmatch "github.com/banzaicloud/k8s-objectmatcher"
 	"github.com/go-logr/logr"
 	"github.com/goph/emperror"
 	admissionregistrationv1beta1 "k8s.io/api/admissionregistration/v1beta1"
@@ -32,8 +33,6 @@ import (
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/runtime"
 	runtimeClient "sigs.k8s.io/controller-runtime/pkg/client"
-
-	"github.com/banzaicloud/istio-operator/pkg/k8sutil/objectmatch"
 )
 
 func Reconcile(log logr.Logger, client runtimeClient.Client, desired runtime.Object, desiredState DesiredState) error {
