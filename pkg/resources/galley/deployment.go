@@ -37,6 +37,7 @@ func (r *Reconciler) deployment() runtime.Object {
 		"--livenessProbePath=/healthliveness",
 		"--readinessProbePath=/healthready",
 		"--readinessProbeInterval=1s",
+		fmt.Sprintf("--deployment-namespace=%s", r.Config.Namespace),
 		"--validation-webhook-config-file",
 		"/etc/config/validatingwebhookconfiguration.yaml",
 		"--monitoringPort=15014",
