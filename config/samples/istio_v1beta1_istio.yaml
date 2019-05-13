@@ -36,6 +36,7 @@ spec:
       minReplicas: 1
       maxReplicas: 5
       serviceType: "LoadBalancer"
+      loadBalancerIP: ""
       serviceAnnotations: {}
       serviceLabels: {}
       ports:

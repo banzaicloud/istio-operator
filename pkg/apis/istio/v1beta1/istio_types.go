@@ -97,6 +97,7 @@ type GatewayConfiguration struct {
 	MaxReplicas  int32 `json:"maxReplicas,omitempty"`
 	// +kubebuilder:validation:Enum=ClusterIP,NodePort,LoadBalancer
 	ServiceType        corev1.ServiceType           `json:"serviceType,omitempty"`
+	LoadBalancerIP     string                       `json:"loadBalancerIP,omitempty"`
 	ServiceAnnotations map[string]string            `json:"serviceAnnotations,omitempty"`
 	ServiceLabels      map[string]string            `json:"serviceLabels,omitempty"`
 	SDS                GatewaySDSConfiguration      `json:"sds,omitempty"`
