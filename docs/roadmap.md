@@ -9,4 +9,5 @@ Released:
 
 Short term roadmap
 
+- [ ] - Federation, multi-mesh
 - [ ] - Kiali / Certmanager
