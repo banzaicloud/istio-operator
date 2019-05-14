@@ -49,6 +49,13 @@ func (in *CitadelConfiguration) DeepCopyInto(out *CitadelConfiguration) {
 		*out = new(v1.Affinity)
 		(*in).DeepCopyInto(*out)
 	}
+	if in.Tolerations != nil {
+		in, out := &in.Tolerations, &out.Tolerations
+		*out = make([]v1.Toleration, len(*in))
+		for i := range *in {
+			(*in)[i].DeepCopyInto(&(*out)[i])
+		}
+	}
 	return
 }
 
@@ -102,6 +109,13 @@ func (in *GalleyConfiguration) DeepCopyInto(out *GalleyConfiguration) {
 		in, out := &in.Affinity, &out.Affinity
 		*out = new(v1.Affinity)
 		(*in).DeepCopyInto(*out)
+	}
+	if in.Tolerations != nil {
+		in, out := &in.Tolerations, &out.Tolerations
+		*out = make([]v1.Toleration, len(*in))
+		for i := range *in {
+			(*in)[i].DeepCopyInto(&(*out)[i])
+		}
 	}
 	return
 }
@@ -160,6 +174,13 @@ func (in *GatewayConfiguration) DeepCopyInto(out *GatewayConfiguration) {
 		in, out := &in.Affinity, &out.Affinity
 		*out = new(v1.Affinity)
 		(*in).DeepCopyInto(*out)
+	}
+	if in.Tolerations != nil {
+		in, out := &in.Tolerations, &out.Tolerations
+		*out = make([]v1.Toleration, len(*in))
+		for i := range *in {
+			(*in)[i].DeepCopyInto(&(*out)[i])
+		}
 	}
 	return
 }
@@ -545,6 +566,13 @@ func (in *MixerConfiguration) DeepCopyInto(out *MixerConfiguration) {
 		*out = new(v1.Affinity)
 		(*in).DeepCopyInto(*out)
 	}
+	if in.Tolerations != nil {
+		in, out := &in.Tolerations, &out.Tolerations
+		*out = make([]v1.Toleration, len(*in))
+		for i := range *in {
+			(*in)[i].DeepCopyInto(&(*out)[i])
+		}
+	}
 	return
 }
 
@@ -582,6 +610,13 @@ func (in *NodeAgentConfiguration) DeepCopyInto(out *NodeAgentConfiguration) {
 		in, out := &in.Affinity, &out.Affinity
 		*out = new(v1.Affinity)
 		(*in).DeepCopyInto(*out)
+	}
+	if in.Tolerations != nil {
+		in, out := &in.Tolerations, &out.Tolerations
+		*out = make([]v1.Toleration, len(*in))
+		for i := range *in {
+			(*in)[i].DeepCopyInto(&(*out)[i])
+		}
 	}
 	return
 }
@@ -657,6 +692,13 @@ func (in *PilotConfiguration) DeepCopyInto(out *PilotConfiguration) {
 		in, out := &in.Affinity, &out.Affinity
 		*out = new(v1.Affinity)
 		(*in).DeepCopyInto(*out)
+	}
+	if in.Tolerations != nil {
+		in, out := &in.Tolerations, &out.Tolerations
+		*out = make([]v1.Toleration, len(*in))
+		for i := range *in {
+			(*in)[i].DeepCopyInto(&(*out)[i])
+		}
 	}
 	return
 }
@@ -869,6 +911,13 @@ func (in *SidecarInjectorConfiguration) DeepCopyInto(out *SidecarInjectorConfigu
 		in, out := &in.Affinity, &out.Affinity
 		*out = new(v1.Affinity)
 		(*in).DeepCopyInto(*out)
+	}
+	if in.Tolerations != nil {
+		in, out := &in.Tolerations, &out.Tolerations
+		*out = make([]v1.Toleration, len(*in))
+		for i := range *in {
+			(*in)[i].DeepCopyInto(&(*out)[i])
+		}
 	}
 	return
 }

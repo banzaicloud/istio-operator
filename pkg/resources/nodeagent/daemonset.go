@@ -87,6 +87,7 @@ func (r *Reconciler) daemonSet() runtime.Object {
 					},
 					Affinity:     r.Config.Spec.NodeAgent.Affinity,
 					NodeSelector: r.Config.Spec.NodeAgent.NodeSelector,
+					Tolerations:  r.Config.Spec.NodeAgent.Tolerations,
 				},
 			},
 		},

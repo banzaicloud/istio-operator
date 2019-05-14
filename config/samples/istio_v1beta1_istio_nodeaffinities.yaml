@@ -23,6 +23,11 @@ spec:
     traceSampling: 1.0
     nodeSelector:
       node.banzaicloud.io/example: "test"
+    tolerations:
+    - key: "node.kubernetes.io/unreachable"
+      operator: "Exists"
+      effect: "NoExecute"
+      tolerationSeconds: 6000
   citadel:
     enabled: true
     image: "docker.io/istio/citadel:1.1.6"

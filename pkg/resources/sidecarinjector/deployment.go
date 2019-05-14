@@ -124,6 +124,7 @@ func (r *Reconciler) deployment() runtime.Object {
 					},
 					Affinity:     r.Config.Spec.SidecarInjector.Affinity,
 					NodeSelector: r.Config.Spec.SidecarInjector.NodeSelector,
+					Tolerations:  r.Config.Spec.SidecarInjector.Tolerations,
 				},
 			},
 		},

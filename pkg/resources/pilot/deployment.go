@@ -198,6 +198,7 @@ func (r *Reconciler) deployment() runtime.Object {
 					},
 					Affinity:     r.Config.Spec.Pilot.Affinity,
 					NodeSelector: r.Config.Spec.Pilot.NodeSelector,
+					Tolerations:  r.Config.Spec.Pilot.Tolerations,
 				},
 			},
 		},

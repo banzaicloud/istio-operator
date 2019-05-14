@@ -143,6 +143,7 @@ func (r *Reconciler) deployment(gw string) runtime.Object {
 					Volumes:            r.volumes(gw, gwConfig),
 					Affinity:           gwConfig.Affinity,
 					NodeSelector:       gwConfig.NodeSelector,
+					Tolerations:        gwConfig.Tolerations,
 				},
 			},
 		},
