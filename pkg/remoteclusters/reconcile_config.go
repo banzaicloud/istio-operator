@@ -44,6 +44,13 @@ func (c *Cluster) reconcileConfig(remoteConfig *istiov1beta1.RemoteIstio, istio 
 	istioConfig.Spec.AutoInjectionNamespaces = remoteConfig.Spec.AutoInjectionNamespaces
 	istioConfig.Spec.SidecarInjector.ReplicaCount = remoteConfig.Spec.SidecarInjector.ReplicaCount
 	istioConfig.Spec.Proxy.Privileged = remoteConfig.Spec.Proxy.Privileged
+	istioConfig.Spec.Citadel.NodeSelector = remoteConfig.Spec.Citadel.NodeSelector
+	istioConfig.Spec.Citadel.Affinity = remoteConfig.Spec.Citadel.Affinity
+	istioConfig.Spec.Citadel.Tolerations = remoteConfig.Spec.Citadel.Tolerations
+	istioConfig.Spec.SidecarInjector.NodeSelector = remoteConfig.Spec.SidecarInjector.NodeSelector
+	istioConfig.Spec.SidecarInjector.Affinity = remoteConfig.Spec.SidecarInjector.Affinity
+	istioConfig.Spec.SidecarInjector.Tolerations = remoteConfig.Spec.SidecarInjector.Tolerations
+	istioConfig.Spec.SidecarInjector.InitCNIConfiguration.Affinity = remoteConfig.Spec.SidecarInjector.InitCNIConfiguration.Affinity
 
 	if util.PointerToBool(istioConfig.Spec.MeshExpansion) {
 		istioConfig.Spec.Gateways.IngressConfig.Enabled = util.BoolPointer(true)
