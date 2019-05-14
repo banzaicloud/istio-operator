@@ -1,0 +1,120 @@
+apiVersion: istio.banzaicloud.io/v1beta1
+kind: Istio
+metadata:
+  labels:
+    controller-tools.k8s.io: "1.0"
+  name: istio-sample
+spec:
+  version: "1.1.6"
+  mtls: false
+  includeIPRanges: "*"
+  excludeIPRanges: ""
+  autoInjectionNamespaces:
+  - "default"
+  controlPlaneSecurityEnabled: false
+  sds:
+    enabled: false
+  pilot:
+    enabled: true
+    image: "docker.io/istio/pilot:1.1.6"
+    replicaCount: 1
+    minReplicas: 1
+    maxReplicas: 5
+    traceSampling: 1.0
+    nodeSelector:
+      node.banzaicloud.io/example: "test"
+  citadel:
+    enabled: true
+    image: "docker.io/istio/citadel:1.1.6"
+  galley:
+    enabled: true
+    image: "docker.io/istio/galley:1.1.6"
+    replicaCount: 1
+  gateways:
+    enabled: true
+    ingress:
+      enabled: true
+      replicaCount: 1
+      minReplicas: 1
+      maxReplicas: 5
+      serviceType: "LoadBalancer"
+      loadBalancerIP: ""
+      serviceAnnotations: {}
+      serviceLabels: {}
+      ports:
+        - port: 15020
+          targetPort: 15020
+          name: status-port
+        - port: 80
+          targetPort: 80
+          name: http2
+          nodePort: 31380
+        - port: 443
+          name: https
+          nodePort: 31390
+        - port: 15443
+          targetPort: 15443
+          name: tls
+      affinity:
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+            - matchExpressions:
+              - key: node.banzaicloud.io/example
+                operator: In
+                values:
+                - "test"
+    egress:
+      enabled: true
+      replicaCount: 1
+      minReplicas: 1
+      maxReplicas: 5
+      serviceType: "ClusterIP"
+      serviceAnnotations: {}
+      serviceLabels: {}
+      ports:
+        - port: 80
+          name: http2
+        - port: 443
+          name: https
+        - port: 15443
+          targetPort: 15443
+          name: tls
+    k8singress:
+      enabled: false
+  mixer:
+    enabled: true
+    image: "docker.io/istio/mixer:1.1.6"
+    replicaCount: 1
+    minReplicas: 1
+    maxReplicas: 5
+  sidecarInjector:
+    enabled: true
+    image: "docker.io/istio/sidecar_injector:1.1.6"
+    replicaCount: 1
+    rewriteAppHTTPProbe: true
+    autoInjectionPolicyEnabled: true
+  nodeAgent:
+    enabled: false
+    image: "docker.io/istio/node-agent-k8s:1.1.6"
+  proxy:
+    image: "docker.io/istio/proxyv2:1.1.6"
+    enableCoreDump: false
+  proxyInit:
+    image: "docker.io/istio/proxy_init:1.1.6"
+  defaultPodDisruptionBudget:
+    enabled: true
+  outboundTrafficPolicy:
+    mode: ALLOW_ANY
+  tracing:
+    enabled: true
+    tracer: zipkin
+    zipkin:
+      address: zipkin.istio-system:9411
+    datadog:
+        address: $(HOST_IP):8126
+    lightstep:
+        address: lightstep-satellite.lightstep:9292
+        accessToken: <access-token>
+        secure: true
+        cacertPath: /etc/lightstep/cacert.pem

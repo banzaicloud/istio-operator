@@ -119,7 +119,7 @@ func (r *Reconciler) daemonSet() runtime.Object {
 							},
 						},
 					},
-					Affinity: &apiv1.Affinity{},
+					Affinity: r.Config.Spec.SidecarInjector.InitCNIConfiguration.Affinity,
 				},
 			},
 		},
