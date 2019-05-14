@@ -60,13 +60,19 @@ type PilotConfiguration struct {
 	MaxReplicas   int32                        `json:"maxReplicas,omitempty"`
 	TraceSampling float32                      `json:"traceSampling,omitempty"`
 	Resources     *corev1.ResourceRequirements `json:"resources,omitempty"`
+	NodeSelector  map[string]string            `json:"nodeSelector,omitempty"`
+	Affinity      *corev1.Affinity             `json:"affinity,omitempty"`
+	Tolerations   []corev1.Toleration          `json:"tolerations,omitempty"`
 }
 
 // CitadelConfiguration defines config options for Citadel
 type CitadelConfiguration struct {
-	Enabled   *bool                        `json:"enabled,omitempty"`
-	Image     string                       `json:"image,omitempty"`
-	Resources *corev1.ResourceRequirements `json:"resources,omitempty"`
+	Enabled      *bool                        `json:"enabled,omitempty"`
+	Image        string                       `json:"image,omitempty"`
+	Resources    *corev1.ResourceRequirements `json:"resources,omitempty"`
+	NodeSelector map[string]string            `json:"nodeSelector,omitempty"`
+	Affinity     *corev1.Affinity             `json:"affinity,omitempty"`
+	Tolerations  []corev1.Toleration          `json:"tolerations,omitempty"`
 }
 
 // GalleyConfiguration defines config options for Galley
@@ -75,6 +81,9 @@ type GalleyConfiguration struct {
 	Image        string                       `json:"image,omitempty"`
 	ReplicaCount int32                        `json:"replicaCount,omitempty"`
 	Resources    *corev1.ResourceRequirements `json:"resources,omitempty"`
+	NodeSelector map[string]string            `json:"nodeSelector,omitempty"`
+	Affinity     *corev1.Affinity             `json:"affinity,omitempty"`
+	Tolerations  []corev1.Toleration          `json:"tolerations,omitempty"`
 }
 
 // GatewaysConfiguration defines config options for Gateways
@@ -103,6 +112,9 @@ type GatewayConfiguration struct {
 	SDS                GatewaySDSConfiguration      `json:"sds,omitempty"`
 	Resources          *corev1.ResourceRequirements `json:"resources,omitempty"`
 	Ports              []corev1.ServicePort         `json:"ports,omitempty"`
+	NodeSelector       map[string]string            `json:"nodeSelector,omitempty"`
+	Affinity           *corev1.Affinity             `json:"affinity,omitempty"`
+	Tolerations        []corev1.Toleration          `json:"tolerations,omitempty"`
 }
 
 type K8sIngressConfiguration struct {
@@ -117,6 +129,9 @@ type MixerConfiguration struct {
 	MinReplicas  int32                        `json:"minReplicas,omitempty"`
 	MaxReplicas  int32                        `json:"maxReplicas,omitempty"`
 	Resources    *corev1.ResourceRequirements `json:"resources,omitempty"`
+	NodeSelector map[string]string            `json:"nodeSelector,omitempty"`
+	Affinity     *corev1.Affinity             `json:"affinity,omitempty"`
+	Tolerations  []corev1.Toleration          `json:"tolerations,omitempty"`
 }
 
 // InitCNIConfiguration defines config for the sidecar proxy init CNI plugin
@@ -132,7 +147,8 @@ type InitCNIConfiguration struct {
 	// List of namespaces to exclude from Istio pod check
 	ExcludeNamespaces []string `json:"excludeNamespaces,omitempty"`
 	// Logging level for CNI binary
-	LogLevel string `json:"logLevel,omitempty"`
+	LogLevel string           `json:"logLevel,omitempty"`
+	Affinity *corev1.Affinity `json:"affinity,omitempty"`
 }
 
 // SidecarInjectorConfiguration defines config options for SidecarInjector
@@ -147,14 +163,20 @@ type SidecarInjectorConfiguration struct {
 	// even when mTLS is enabled.
 	RewriteAppHTTPProbe bool `json:"rewriteAppHTTPProbe,omitempty"`
 	// This controls the 'policy' in the sidecar injector
-	AutoInjectionPolicyEnabled *bool `json:"autoInjectionPolicyEnabled,omitempty"`
+	AutoInjectionPolicyEnabled *bool               `json:"autoInjectionPolicyEnabled,omitempty"`
+	NodeSelector               map[string]string   `json:"nodeSelector,omitempty"`
+	Affinity                   *corev1.Affinity    `json:"affinity,omitempty"`
+	Tolerations                []corev1.Toleration `json:"tolerations,omitempty"`
 }
 
 // NodeAgentConfiguration defines config options for NodeAgent
 type NodeAgentConfiguration struct {
-	Enabled   *bool                        `json:"enabled,omitempty"`
-	Image     string                       `json:"image,omitempty"`
-	Resources *corev1.ResourceRequirements `json:"resources,omitempty"`
+	Enabled      *bool                        `json:"enabled,omitempty"`
+	Image        string                       `json:"image,omitempty"`
+	Resources    *corev1.ResourceRequirements `json:"resources,omitempty"`
+	NodeSelector map[string]string            `json:"nodeSelector,omitempty"`
+	Affinity     *corev1.Affinity             `json:"affinity,omitempty"`
+	Tolerations  []corev1.Toleration          `json:"tolerations,omitempty"`
 }
 
 // ProxyConfiguration defines config options for Proxy

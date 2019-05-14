@@ -95,7 +95,9 @@ func (r *Reconciler) deployment() runtime.Object {
 		Containers: []apiv1.Container{
 			citadelContainer,
 		},
-		Affinity: &apiv1.Affinity{},
+		Affinity:     r.Config.Spec.Citadel.Affinity,
+		NodeSelector: r.Config.Spec.Citadel.NodeSelector,
+		Tolerations:  r.Config.Spec.Citadel.Tolerations,
 	}
 
 	var optional = true

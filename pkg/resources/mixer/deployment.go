@@ -78,7 +78,9 @@ func (r *Reconciler) deployment(t string) runtime.Object {
 							},
 						},
 					},
-					Affinity: &apiv1.Affinity{},
+					Affinity:     r.Config.Spec.Mixer.Affinity,
+					NodeSelector: r.Config.Spec.Mixer.NodeSelector,
+					Tolerations:  r.Config.Spec.Mixer.Tolerations,
 					Containers: []apiv1.Container{
 						r.mixerContainer(t, r.Config.Namespace),
 						r.istioProxyContainer(t),
