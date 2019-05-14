@@ -4,13 +4,9 @@ Released:
 - [x] - Enable global mTLS
 - [x] - Federation, flat
 - [x] - Istio 1.1.x support
-
-Under development (next release)
-
 - [x] - Federation, gateway
-- [x] - Configurable node affinity
+- [x] - Configurable affinities
 
 Short term roadmap
 
-- [ ] - Canary releases
-- [ ] - Servicegraph / Kiali / Certmanager
+- [ ] - Kiali / Certmanager
