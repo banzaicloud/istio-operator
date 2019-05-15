@@ -69,6 +69,7 @@ type PilotConfiguration struct {
 type CitadelConfiguration struct {
 	Enabled      *bool                        `json:"enabled,omitempty"`
 	Image        string                       `json:"image,omitempty"`
+	CASecretName string                       `json:"caSecretName,omitempty"`
 	Resources    *corev1.ResourceRequirements `json:"resources,omitempty"`
 	NodeSelector map[string]string            `json:"nodeSelector,omitempty"`
 	Affinity     *corev1.Affinity             `json:"affinity,omitempty"`

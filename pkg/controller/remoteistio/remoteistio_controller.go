@@ -40,6 +40,7 @@ import (
 	istiov1beta1 "github.com/banzaicloud/istio-operator/pkg/apis/istio/v1beta1"
 	"github.com/banzaicloud/istio-operator/pkg/k8sutil"
 	"github.com/banzaicloud/istio-operator/pkg/remoteclusters"
+	"github.com/banzaicloud/istio-operator/pkg/resources/citadel"
 	"github.com/banzaicloud/istio-operator/pkg/util"
 )
 
@@ -267,7 +268,12 @@ func (r *ReconcileRemoteConfig) reconcile(remoteConfig *istiov1beta1.RemoteIstio
 		}, nil
 	}
 
-	remoteConfig, err = r.populateSignCerts(remoteConfig)
+	caSecretName := citadel.SelfSignedCASecretName
+	if istio.Spec.Citadel.CASecretName != "" {
+		caSecretName = istio.Spec.Citadel.CASecretName
+	}
+
+	remoteConfig, err = r.populateSignCerts(caSecretName, remoteConfig)
 	if err != nil {
 		return reconcile.Result{}, emperror.Wrap(err, "could not populate sign certs")
 	}
@@ -347,11 +353,11 @@ func updateRemoteConfigStatus(c client.Client, remoteConfig *istiov1beta1.Remote
 	return nil
 }
 
-func (r *ReconcileRemoteConfig) populateSignCerts(remoteConfig *istiov1beta1.RemoteIstio) (*istiov1beta1.RemoteIstio, error) {
+func (r *ReconcileRemoteConfig) populateSignCerts(caSecretName string, remoteConfig *istiov1beta1.RemoteIstio) (*istiov1beta1.RemoteIstio, error) {
 	var secret corev1.Secret
 	err := r.Get(context.TODO(), client.ObjectKey{
 		Namespace: remoteConfig.Namespace,
-		Name:      "istio-ca-secret",
+		Name:      caSecretName,
 	}, &secret)
 	if err != nil {
 		return nil, err

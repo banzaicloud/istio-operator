@@ -36,6 +36,8 @@ const (
 	clusterRoleBindingName = "istio-citadel-cluster-role-binding"
 	deploymentName         = "istio-citadel"
 	serviceName            = "istio-citadel"
+
+	SelfSignedCASecretName = "istio-ca-secret"
 )
 
 var citadelLabels = map[string]string{

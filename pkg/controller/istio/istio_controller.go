@@ -23,7 +23,6 @@ import (
 	"strings"
 	"time"
 
-	objectmatch "github.com/banzaicloud/k8s-objectmatcher"
 	"github.com/go-logr/logr"
 	"github.com/gofrs/uuid"
 	"github.com/goph/emperror"
@@ -64,6 +63,7 @@ import (
 	"github.com/banzaicloud/istio-operator/pkg/resources/pilot"
 	"github.com/banzaicloud/istio-operator/pkg/resources/sidecarinjector"
 	"github.com/banzaicloud/istio-operator/pkg/util"
+	objectmatch "github.com/banzaicloud/k8s-objectmatcher"
 )
 
 const finalizerID = "istio-operator.finializer.banzaicloud.io"
@@ -267,7 +267,6 @@ func (r *ReconcileConfig) reconcile(logger logr.Logger, config *istiov1beta1.Ist
 		common.New(r.Client, config, false),
 		citadel.New(citadel.Configuration{
 			DeployMeshPolicy: true,
-			SelfSignedCA:     true,
 		}, r.Client, r.dynamic, config),
 		galley.New(r.Client, config),
 		pilot.New(r.Client, r.dynamic, config),
