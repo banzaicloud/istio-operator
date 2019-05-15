@@ -18,5 +18,4 @@ package citadel
 
 type Configuration struct {
 	DeployMeshPolicy bool `json:"deployMeshPolicy"`
-	SelfSignedCA     bool `json:"selfSignedCA"`
 }

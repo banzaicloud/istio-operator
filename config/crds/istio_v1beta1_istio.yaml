@@ -57,6 +57,8 @@ spec:
               properties:
                 affinity:
                   type: object
+                caSecretName:
+                  type: string
                 enabled:
                   type: boolean
                 image:

@@ -28,13 +28,19 @@ import (
 	"github.com/banzaicloud/istio-operator/pkg/util"
 )
 
+const CASecretName = "cacerts"
+
 func (c *Cluster) reconcileSignCert(remoteConfig *istiov1beta1.RemoteIstio, istio *istiov1beta1.Istio) error {
 	c.log.Info("reconciling sign cert")
+
+	if remoteConfig.Spec.Citadel.CASecretName != "" {
+		return nil
+	}
 
 	var secret corev1.Secret
 	err := c.ctrlRuntimeClient.Get(context.TODO(), client.ObjectKey{
 		Namespace: remoteConfig.Namespace,
-		Name:      "cacerts",
+		Name:      CASecretName,
 	}, &secret)
 	if err != nil && !k8sapierrors.IsNotFound(err) {
 		return err
@@ -51,7 +57,7 @@ func (c *Cluster) reconcileSignCert(remoteConfig *istiov1beta1.RemoteIstio, isti
 	if k8sapierrors.IsNotFound(err) {
 		secret = corev1.Secret{
 			ObjectMeta: metav1.ObjectMeta{
-				Name:      "cacerts",
+				Name:      CASecretName,
 				Namespace: remoteConfig.Namespace,
 			},
 			Type: corev1.SecretTypeOpaque,

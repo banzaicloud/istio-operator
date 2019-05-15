@@ -39,7 +39,7 @@ func (r *Reconciler) deployment() runtime.Object {
 		"--monitoring-port=15014",
 	}
 
-	if r.configuration.SelfSignedCA {
+	if r.Config.Spec.Citadel.CASecretName == "" {
 		args = append(args, "--self-signed-ca=true")
 	} else {
 		args = append(args,
@@ -75,7 +75,7 @@ func (r *Reconciler) deployment() runtime.Object {
 		TerminationMessagePolicy: apiv1.TerminationMessageReadFile,
 	}
 
-	if !r.configuration.SelfSignedCA {
+	if r.Config.Spec.Citadel.CASecretName != "" {
 		citadelContainer.VolumeMounts = []apiv1.VolumeMount{
 			{
 				Name:      "cacerts",
@@ -100,14 +100,14 @@ func (r *Reconciler) deployment() runtime.Object {
 		Tolerations:  r.Config.Spec.Citadel.Tolerations,
 	}
 
-	var optional = true
-	if !r.configuration.SelfSignedCA {
+	var optional = false
+	if r.Config.Spec.Citadel.CASecretName != "" {
 		podSpec.Volumes = []apiv1.Volume{
 			{
 				Name: "cacerts",
 				VolumeSource: apiv1.VolumeSource{
 					Secret: &apiv1.SecretVolumeSource{
-						SecretName:  "cacerts",
+						SecretName:  r.Config.Spec.Citadel.CASecretName,
 						Optional:    &optional,
 						DefaultMode: util.IntPointer(420),
 					},
