@@ -62,7 +62,7 @@ As a pre-requisite it needs a Kubernetes cluster (you can create one using [Pipe
 
 1. Set `KUBECONFIG` pointing towards your cluster
 2. Run `make deploy` (deploys the operator in the `istio-system` namespace to the cluster)
-3. Set your Istio configurations in a  Kubernetes custom resource (sample: `config/samples/istio_v1beta1_istio.yaml`) and run this command to deploy the Istio components:
+3. Set your Istio configurations in a Kubernetes custom resource (sample: `config/samples/istio_v1beta1_istio.yaml`) and run this command to deploy the Istio components:
 
 ```bash
 kubectl create -n istio-system -f config/samples/istio_v1beta1_istio.yaml
@@ -88,6 +88,18 @@ Check out the [multi-cluster federation docs](docs/federation/README.md).
 ## Development
 
 Check out the [developer docs](docs/developer.md).
+
+## Uninstall
+
+To remove Istio and Istio operator completely from your cluster execute the following steps:
+
+1. Delete the Istio configuration custom resource you have created earlier (Istio operator will take care of deleting all Istio resources from your cluster after the custom resource is deleted)
+2. Delete the `istio-system` namespace to delete Istio operator itself
+
+```bash
+kubectl delete -n istio-system -f config/samples/istio_v1beta1_istio.yaml
+kubectl delete namespace istio-system
+```
 
 ## Issues, feature requests and roadmap
 
