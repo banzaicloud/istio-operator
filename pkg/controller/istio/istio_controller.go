@@ -577,11 +577,11 @@ func RemoveFinalizers(c client.Client) error {
 	}
 	for _, istio := range istios.Items {
 		istio.ObjectMeta.Finalizers = util.RemoveString(istio.ObjectMeta.Finalizers, finalizerID)
-		if err := updateStatus(c, &istio, istiov1beta1.Unmanaged, "", log); err != nil {
-			return emperror.Wrap(err, "could not update status of Istio resource")
-		}
 		if err := c.Update(context.Background(), &istio); err != nil {
 			return emperror.WrapWith(err, "could not remove finalizer from Istio resource", "name", istio.GetName())
+		}
+		if err := updateStatus(c, &istio, istiov1beta1.Unmanaged, "", log); err != nil {
+			return emperror.Wrap(err, "could not update status of Istio resource")
 		}
 	}
 
