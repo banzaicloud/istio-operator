@@ -48,6 +48,8 @@ func main() {
 	flag.BoolVar(&developmentMode, "devel-mode", false, "Set development mode (mainly for logging)")
 	var shutdownWaitDuration time.Duration
 	flag.DurationVar(&shutdownWaitDuration, "shutdown-wait-duration", time.Duration(30)*time.Second, "Wait duration before shutting down")
+	var waitBeforeExitDuration time.Duration
+	flag.DurationVar(&waitBeforeExitDuration, "wait-before-exit-duration", time.Duration(3)*time.Second, "Wait for workers to finish before exiting and removing finalizers")
 	flag.Parse()
 	logf.SetLogger(logf.ZapLogger(developmentMode))
 	log := logf.Log.WithName("entrypoint")
@@ -107,6 +109,9 @@ func main() {
 		log.Error(err, "unable to run the manager")
 		os.Exit(1)
 	}
+
+	// Wait a bit for the workers to stop
+	time.Sleep(waitBeforeExitDuration)
 
 	// Cleanup
 	log.Info("removing finalizer from Istio resources")

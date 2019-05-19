@@ -167,11 +167,11 @@ func (r *ReconcileRemoteConfig) Reconcile(request reconcile.Request) (reconcile.
 				if err != nil {
 					return reconcile.Result{}, emperror.Wrap(err, "could not remove remote config to remote istio")
 				}
-			}
 
-			err = r.remoteClustersMgr.Delete(cluster)
-			if err != nil {
-				return reconcile.Result{}, emperror.Wrap(err, "could not remove cluster from manager")
+				err = r.remoteClustersMgr.Delete(cluster)
+				if err != nil {
+					return reconcile.Result{}, emperror.Wrap(err, "could not remove cluster from manager")
+				}
 			}
 
 			err = r.labelSecret(client.ObjectKey{
@@ -584,11 +584,11 @@ func RemoveFinalizers(c client.Client) error {
 	}
 	for _, remoteistio := range remoteistios.Items {
 		remoteistio.ObjectMeta.Finalizers = util.RemoveString(remoteistio.ObjectMeta.Finalizers, finalizerID)
-		if err := updateRemoteConfigStatus(c, &remoteistio, istiov1beta1.Unmanaged, "", log); err != nil {
-			return emperror.Wrap(err, "could not update status of Istio resource")
-		}
 		if err := c.Update(context.Background(), &remoteistio); err != nil {
 			return emperror.WrapWith(err, "could not remove finalizer from RemoteIstio resource", "name", remoteistio.GetName())
+		}
+		if err := updateRemoteConfigStatus(c, &remoteistio, istiov1beta1.Unmanaged, "", log); err != nil {
+			return emperror.Wrap(err, "could not update status of Istio resource")
 		}
 	}
 

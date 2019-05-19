@@ -50,6 +50,14 @@ func (m *Manager) Add(cluster *Cluster) error {
 }
 
 func (m *Manager) Delete(cluster *Cluster) error {
+	if cluster == nil {
+		return nil
+	}
+
+	if m.clusters[cluster.GetName()] == nil {
+		return nil
+	}
+
 	m.mu.Lock()
 	defer m.mu.Unlock()
 
