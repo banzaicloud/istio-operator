@@ -119,6 +119,8 @@ spec:
                   properties:
                     affinity:
                       type: object
+                    applicationPorts:
+                      type: string
                     enabled:
                       type: boolean
                     loadBalancerIP:
@@ -146,6 +148,8 @@ spec:
                           type: boolean
                         image:
                           type: string
+                        resources:
+                          type: object
                       type: object
                     serviceAnnotations:
                       type: object
@@ -168,6 +172,8 @@ spec:
                   properties:
                     affinity:
                       type: object
+                    applicationPorts:
+                      type: string
                     enabled:
                       type: boolean
                     loadBalancerIP:
@@ -195,6 +201,8 @@ spec:
                           type: boolean
                         image:
                           type: string
+                        resources:
+                          type: object
                       type: object
                     serviceAnnotations:
                       type: object

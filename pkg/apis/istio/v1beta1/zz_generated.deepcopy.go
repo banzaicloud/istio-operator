@@ -203,6 +203,11 @@ func (in *GatewaySDSConfiguration) DeepCopyInto(out *GatewaySDSConfiguration) {
 		*out = new(bool)
 		**out = **in
 	}
+	if in.Resources != nil {
+		in, out := &in.Resources, &out.Resources
+		*out = new(v1.ResourceRequirements)
+		(*in).DeepCopyInto(*out)
+	}
 	return
 }
 

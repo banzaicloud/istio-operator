@@ -46,6 +46,7 @@ func (r *Reconciler) deployment(gw string) runtime.Object {
 			Name:            "ingress-sds",
 			Image:           gwConfig.SDS.Image,
 			ImagePullPolicy: r.Config.Spec.ImagePullPolicy,
+			Resources:       templates.GetResourcesRequirementsOrDefault(gwConfig.Resources),
 			Env: []apiv1.EnvVar{
 				{
 					Name:  "ENABLE_WORKLOAD_SDS",
@@ -92,6 +93,10 @@ func (r *Reconciler) deployment(gw string) runtime.Object {
 
 	if util.PointerToBool(r.Config.Spec.Tracing.Enabled) {
 		args = append(args, "--zipkinAddress", r.Config.Spec.Tracing.Zipkin.Address)
+	}
+
+	if gwConfig.ApplicationPorts != "" {
+		args = append(args, "--applicationPorts", gwConfig.ApplicationPorts)
 	}
 
 	containers = append(containers, apiv1.Container{

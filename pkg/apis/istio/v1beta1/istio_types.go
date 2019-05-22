@@ -96,8 +96,9 @@ type GatewaysConfiguration struct {
 }
 
 type GatewaySDSConfiguration struct {
-	Enabled *bool  `json:"enabled,omitempty"`
-	Image   string `json:"image,omitempty"`
+	Enabled   *bool                        `json:"enabled,omitempty"`
+	Image     string                       `json:"image,omitempty"`
+	Resources *corev1.ResourceRequirements `json:"resources,omitempty"`
 }
 
 type GatewayConfiguration struct {
@@ -113,6 +114,7 @@ type GatewayConfiguration struct {
 	SDS                GatewaySDSConfiguration      `json:"sds,omitempty"`
 	Resources          *corev1.ResourceRequirements `json:"resources,omitempty"`
 	Ports              []corev1.ServicePort         `json:"ports,omitempty"`
+	ApplicationPorts   string                       `json:"applicationPorts,omitempty"`
 	NodeSelector       map[string]string            `json:"nodeSelector,omitempty"`
 	Affinity           *corev1.Affinity             `json:"affinity,omitempty"`
 	Tolerations        []corev1.Toleration          `json:"tolerations,omitempty"`
