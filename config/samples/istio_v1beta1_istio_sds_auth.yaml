@@ -21,6 +21,13 @@ spec:
       sds:
         enabled: true
         image: "docker.io/istio/node-agent-k8s:1.1.7"
+        resources:
+          requests:
+            cpu: 100m
+            memory: 128Mi
+          limits:
+            cpu: 2000m
+            memory: 1024Mi
   nodeAgent:
     enabled: true
     image: "docker.io/istio/node-agent-k8s:1.1.7"

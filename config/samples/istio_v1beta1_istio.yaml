@@ -12,6 +12,9 @@ spec:
   autoInjectionNamespaces:
   - "default"
   controlPlaneSecurityEnabled: false
+  defaultResources:
+    requests:
+      cpu: 10m
   sds:
     enabled: false
   pilot:
@@ -21,6 +24,10 @@ spec:
     minReplicas: 1
     maxReplicas: 5
     traceSampling: 1.0
+    resources:
+      requests:
+        cpu: 500m
+        memory: 2048Mi
   citadel:
     enabled: true
     image: "docker.io/istio/citadel:1.1.7"
@@ -54,6 +61,13 @@ spec:
           targetPort: 15443
           name: tls
       applicationPorts: ""
+      resources:
+        requests:
+          cpu: 100m
+          memory: 128Mi
+        limits:
+          cpu: 2000m
+          memory: 1024Mi
     egress:
       enabled: true
       replicaCount: 1
@@ -70,6 +84,14 @@ spec:
         - port: 15443
           targetPort: 15443
           name: tls
+      applicationPorts: ""
+      resources:
+        requests:
+          cpu: 100m
+          memory: 128Mi
+        limits:
+          cpu: 2000m
+          memory: 256Mi
     k8singress:
       enabled: false
   mixer:
@@ -90,6 +112,13 @@ spec:
   proxy:
     image: "docker.io/istio/proxyv2:1.1.7"
     enableCoreDump: false
+    resources:
+      requests:
+        cpu: 100m
+        memory: 128Mi
+      limits:
+        cpu: 2000m
+        memory: 1024Mi
   proxyInit:
     image: "docker.io/istio/proxy_init:1.1.7"
   defaultPodDisruptionBudget:

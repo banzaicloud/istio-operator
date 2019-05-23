@@ -20,6 +20,9 @@ spec:
     labelSelector: "istio-mixer-type=telemetry"
   - name: "zipkin"
     labelSelector: "app=jaeger"
+  defaultResources:
+    requests:
+      cpu: 10m
   citadel:
       enabled: true
   sidecarInjector:

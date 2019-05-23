@@ -58,6 +58,14 @@ func (c *Cluster) reconcileConfig(remoteConfig *istiov1beta1.RemoteIstio, istio 
 	istioConfig.Spec.SidecarInjector.Tolerations = remoteConfig.Spec.SidecarInjector.Tolerations
 	istioConfig.Spec.SidecarInjector.InitCNIConfiguration.Affinity = remoteConfig.Spec.SidecarInjector.InitCNIConfiguration.Affinity
 
+	if remoteConfig.Spec.DefaultResources != nil {
+		istioConfig.Spec.DefaultResources = remoteConfig.Spec.DefaultResources
+	}
+
+	if remoteConfig.Spec.Proxy.Resources != nil {
+		istioConfig.Spec.Proxy.Resources = remoteConfig.Spec.Proxy.Resources
+	}
+
 	if util.PointerToBool(istioConfig.Spec.MeshExpansion) {
 		istioConfig.Spec.Gateways.IngressConfig.Enabled = util.BoolPointer(true)
 		istioConfig.Spec.SetNetworkName(remoteConfig.Name)

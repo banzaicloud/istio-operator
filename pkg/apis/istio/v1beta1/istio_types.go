@@ -188,7 +188,8 @@ type ProxyConfiguration struct {
 	// If set to true, istio-proxy container will have privileged securityContext
 	Privileged bool `json:"privileged,omitempty"`
 	// If set, newly injected sidecars will have core dumps enabled.
-	EnableCoreDump bool `json:"enableCoreDump,omitempty"`
+	EnableCoreDump bool                         `json:"enableCoreDump,omitempty"`
+	Resources      *corev1.ResourceRequirements `json:"resources,omitempty"`
 }
 
 // ProxyInitConfiguration defines config options for Proxy Init containers
@@ -272,6 +273,9 @@ type IstioSpec struct {
 
 	// ControlPlaneSecurityEnabled control plane services are communicating through mTLS
 	ControlPlaneSecurityEnabled bool `json:"controlPlaneSecurityEnabled,omitempty"`
+
+	// DefaultResources are applied for all Istio components by default, can be overridden for each component
+	DefaultResources *corev1.ResourceRequirements `json:"defaultResources,omitempty"`
 
 	// If SDS is configured, mTLS certificates for the sidecars will be distributed through the SecretDiscoveryService instead of using K8S secrets to mount the certificates
 	SDS SDSConfiguration `json:"sds,omitempty"`

@@ -41,12 +41,15 @@ func (r *Reconciler) deployment(gw string) runtime.Object {
 	}
 
 	var containers = make([]apiv1.Container, 0)
-	if util.PointerToBool(gwConfig.SDS.Enabled) {
+	if gw == ingress && util.PointerToBool(gwConfig.SDS.Enabled) {
 		containers = append(containers, apiv1.Container{
 			Name:            "ingress-sds",
 			Image:           gwConfig.SDS.Image,
 			ImagePullPolicy: r.Config.Spec.ImagePullPolicy,
-			Resources:       templates.GetResourcesRequirementsOrDefault(gwConfig.Resources),
+			Resources: templates.GetResourcesRequirementsOrDefault(
+				gwConfig.SDS.Resources,
+				r.Config.Spec.DefaultResources,
+			),
 			Env: []apiv1.EnvVar{
 				{
 					Name:  "ENABLE_WORKLOAD_SDS",
@@ -119,8 +122,11 @@ func (r *Reconciler) deployment(gw string) runtime.Object {
 			SuccessThreshold:    1,
 			TimeoutSeconds:      1,
 		},
-		Env:                      append(templates.IstioProxyEnv(), r.envVars(gwConfig)...),
-		Resources:                templates.GetResourcesRequirementsOrDefault(gwConfig.Resources),
+		Env: append(templates.IstioProxyEnv(), r.envVars(gwConfig)...),
+		Resources: templates.GetResourcesRequirementsOrDefault(
+			r.Config.Spec.Proxy.Resources,
+			r.Config.Spec.DefaultResources,
+		),
 		VolumeMounts:             r.volumeMounts(gw, gwConfig),
 		TerminationMessagePath:   apiv1.TerminationMessagePathDefault,
 		TerminationMessagePolicy: apiv1.TerminationMessageReadFile,
