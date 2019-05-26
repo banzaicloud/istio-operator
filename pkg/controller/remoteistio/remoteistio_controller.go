@@ -246,7 +246,7 @@ func (r *ReconcileRemoteConfig) reconcile(remoteConfig *istiov1beta1.RemoteIstio
 	if remoteConfig.Status.Status == istiov1beta1.Reconciling {
 		logger.Info("cannot trigger reconcile while already reconciling")
 		return reconcile.Result{
-			Requeue:      true,
+			Requeue:      false,
 			RequeueAfter: time.Duration(30) * time.Second,
 		}, nil
 	}
@@ -263,7 +263,7 @@ func (r *ReconcileRemoteConfig) reconcile(remoteConfig *istiov1beta1.RemoteIstio
 		err = emperror.Wrap(err, "could not populate service endpoints")
 		updateRemoteConfigStatus(r.Client, remoteConfig, istiov1beta1.ReconcileFailed, err.Error(), logger)
 		return reconcile.Result{
-			Requeue:      true,
+			Requeue:      false,
 			RequeueAfter: time.Duration(30) * time.Second,
 		}, nil
 	}
@@ -292,7 +292,7 @@ func (r *ReconcileRemoteConfig) reconcile(remoteConfig *istiov1beta1.RemoteIstio
 		if _, ok := errors.Cause(err).(remoteclusters.IngressSetupPendingError); ok {
 			updateRemoteConfigStatus(r.Client, remoteConfig, istiov1beta1.ReconcileFailed, errors.Cause(err).Error(), logger)
 			return reconcile.Result{
-				Requeue:      true,
+				Requeue:      false,
 				RequeueAfter: time.Duration(30) * time.Second,
 			}, nil
 		}

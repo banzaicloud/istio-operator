@@ -238,7 +238,7 @@ func (r *ReconcileConfig) reconcile(logger logr.Logger, config *istiov1beta1.Ist
 	if config.Status.Status == istiov1beta1.Reconciling {
 		logger.Info("cannot trigger reconcile while already reconciling")
 		return reconcile.Result{
-			Requeue:      true,
+			Requeue:      false,
 			RequeueAfter: time.Duration(30) * time.Second,
 		}, nil
 	}
@@ -289,7 +289,7 @@ func (r *ReconcileConfig) reconcile(logger logr.Logger, config *istiov1beta1.Ist
 		log.Info(err.Error())
 		updateStatus(r.Client, config, istiov1beta1.ReconcileFailed, err.Error(), logger)
 		return reconcile.Result{
-			Requeue:      true,
+			Requeue:      false,
 			RequeueAfter: time.Duration(30) * time.Second,
 		}, nil
 	}
