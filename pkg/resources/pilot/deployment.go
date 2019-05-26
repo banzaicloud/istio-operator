@@ -124,7 +124,10 @@ func (r *Reconciler) deployment() runtime.Object {
 								{Name: "PILOT_DISABLE_XDS_MARSHALING_TO_ANY", Value: "1"},
 								{Name: "MESHNETWORKS_HASH", Value: r.Config.Spec.GetMeshNetworksHash()},
 							},
-							Resources: templates.GetResourcesRequirementsOrPilotDefault(r.Config.Spec.Pilot.Resources),
+							Resources: templates.GetResourcesRequirementsOrDefault(
+								r.Config.Spec.Pilot.Resources,
+								r.Config.Spec.DefaultResources,
+							),
 							VolumeMounts: []apiv1.VolumeMount{
 								{
 									Name:      "config-volume",
@@ -160,8 +163,11 @@ func (r *Reconciler) deployment() runtime.Object {
 								"--domain",
 								r.Config.Namespace + ".svc.cluster.local",
 							},
-							Env:       templates.IstioProxyEnv(),
-							Resources: templates.GetResourcesRequirementsOrDefault(nil),
+							Env: templates.IstioProxyEnv(),
+							Resources: templates.GetResourcesRequirementsOrDefault(
+								r.Config.Spec.Proxy.Resources,
+								r.Config.Spec.DefaultResources,
+							),
 							VolumeMounts: []apiv1.VolumeMount{
 								{
 									Name:      "istio-certs",

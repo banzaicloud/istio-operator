@@ -5,28 +5,35 @@ metadata:
     controller-tools.k8s.io: "1.0"
   name: istio-sample
 spec:
-  version: "1.1.6"
+  version: "1.1.7"
   mtls: false
   includeIPRanges: "*"
   excludeIPRanges: ""
   autoInjectionNamespaces:
   - "default"
   controlPlaneSecurityEnabled: false
+  defaultResources:
+    requests:
+      cpu: 10m
   sds:
     enabled: false
   pilot:
     enabled: true
-    image: "docker.io/istio/pilot:1.1.6"
+    image: "docker.io/istio/pilot:1.1.7"
     replicaCount: 1
     minReplicas: 1
     maxReplicas: 5
     traceSampling: 1.0
+    resources:
+      requests:
+        cpu: 500m
+        memory: 2048Mi
   citadel:
     enabled: true
-    image: "docker.io/istio/citadel:1.1.6"
+    image: "docker.io/istio/citadel:1.1.7"
   galley:
     enabled: true
-    image: "docker.io/istio/galley:1.1.6"
+    image: "docker.io/istio/galley:1.1.7"
     replicaCount: 1
   gateways:
     enabled: true
@@ -53,6 +60,14 @@ spec:
         - port: 15443
           targetPort: 15443
           name: tls
+      applicationPorts: ""
+      resources:
+        requests:
+          cpu: 100m
+          memory: 128Mi
+        limits:
+          cpu: 2000m
+          memory: 1024Mi
     egress:
       enabled: true
       replicaCount: 1
@@ -69,28 +84,43 @@ spec:
         - port: 15443
           targetPort: 15443
           name: tls
+      applicationPorts: ""
+      resources:
+        requests:
+          cpu: 100m
+          memory: 128Mi
+        limits:
+          cpu: 2000m
+          memory: 256Mi
     k8singress:
       enabled: false
   mixer:
     enabled: true
-    image: "docker.io/istio/mixer:1.1.6"
+    image: "docker.io/istio/mixer:1.1.7"
     replicaCount: 1
     minReplicas: 1
     maxReplicas: 5
   sidecarInjector:
     enabled: true
-    image: "docker.io/istio/sidecar_injector:1.1.6"
+    image: "docker.io/istio/sidecar_injector:1.1.7"
     replicaCount: 1
     rewriteAppHTTPProbe: true
     autoInjectionPolicyEnabled: true
   nodeAgent:
     enabled: false
-    image: "docker.io/istio/node-agent-k8s:1.1.6"
+    image: "docker.io/istio/node-agent-k8s:1.1.7"
   proxy:
-    image: "docker.io/istio/proxyv2:1.1.6"
+    image: "docker.io/istio/proxyv2:1.1.7"
     enableCoreDump: false
+    resources:
+      requests:
+        cpu: 100m
+        memory: 128Mi
+      limits:
+        cpu: 2000m
+        memory: 1024Mi
   proxyInit:
-    image: "docker.io/istio/proxy_init:1.1.6"
+    image: "docker.io/istio/proxy_init:1.1.7"
   defaultPodDisruptionBudget:
     enabled: true
   outboundTrafficPolicy:

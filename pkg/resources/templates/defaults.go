@@ -20,7 +20,6 @@ import (
 	appsv1 "k8s.io/api/apps/v1"
 	autoscalev2beta1 "k8s.io/api/autoscaling/v2beta1"
 	apiv1 "k8s.io/api/core/v1"
-	"k8s.io/apimachinery/pkg/api/resource"
 
 	"github.com/banzaicloud/istio-operator/pkg/util"
 )
@@ -32,29 +31,12 @@ func DefaultDeployAnnotations() map[string]string {
 	}
 }
 
-func GetResourcesRequirementsOrDefault(requirements *apiv1.ResourceRequirements) apiv1.ResourceRequirements {
+func GetResourcesRequirementsOrDefault(requirements *apiv1.ResourceRequirements, defaults *apiv1.ResourceRequirements) apiv1.ResourceRequirements {
 	if requirements != nil {
 		return *requirements
 	}
 
-	return apiv1.ResourceRequirements{
-		Requests: apiv1.ResourceList{
-			apiv1.ResourceCPU: resource.MustParse("10m"),
-		},
-	}
-}
-
-func GetResourcesRequirementsOrPilotDefault(requirements *apiv1.ResourceRequirements) apiv1.ResourceRequirements {
-	if requirements != nil {
-		return *requirements
-	}
-
-	return apiv1.ResourceRequirements{
-		Requests: apiv1.ResourceList{
-			apiv1.ResourceCPU:    resource.MustParse("500m"),
-			apiv1.ResourceMemory: resource.MustParse("2048Mi"),
-		},
-	}
+	return *defaults
 }
 
 func DefaultRollingUpdateStrategy() appsv1.DeploymentStrategy {

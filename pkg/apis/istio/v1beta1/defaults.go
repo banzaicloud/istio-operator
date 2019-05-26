@@ -20,6 +20,7 @@ import (
 	"fmt"
 
 	apiv1 "k8s.io/api/core/v1"
+	"k8s.io/apimachinery/pkg/api/resource"
 	"k8s.io/apimachinery/pkg/util/intstr"
 
 	"github.com/banzaicloud/istio-operator/pkg/util"
@@ -27,7 +28,7 @@ import (
 
 const (
 	defaultImageHub                  = "docker.io/istio"
-	defaultImageVersion              = "1.1.6"
+	defaultImageVersion              = "1.1.7"
 	defaultPilotImage                = defaultImageHub + "/" + "pilot" + ":" + defaultImageVersion
 	defaultCitadelImage              = defaultImageHub + "/" + "citadel" + ":" + defaultImageVersion
 	defaultGalleyImage               = defaultImageHub + "/" + "galley" + ":" + defaultImageVersion
@@ -54,6 +55,23 @@ const (
 	defaultMeshExpansion             = false
 )
 
+var defaultResources = &apiv1.ResourceRequirements{
+	Requests: apiv1.ResourceList{
+		apiv1.ResourceCPU: resource.MustParse("10m"),
+	},
+}
+
+var defaultProxyResources = &apiv1.ResourceRequirements{
+	Requests: apiv1.ResourceList{
+		apiv1.ResourceCPU:    resource.MustParse("100m"),
+		apiv1.ResourceMemory: resource.MustParse("128Mi"),
+	},
+	Limits: apiv1.ResourceList{
+		apiv1.ResourceCPU:    resource.MustParse("2000m"),
+		apiv1.ResourceMemory: resource.MustParse("1024Mi"),
+	},
+}
+
 var defaultIngressGatewayPorts = []apiv1.ServicePort{
 	{Port: 15020, Protocol: apiv1.ProtocolTCP, TargetPort: intstr.FromInt(15020), Name: "status-port", NodePort: 31460},
 	{Port: 80, Protocol: apiv1.ProtocolTCP, TargetPort: intstr.FromInt(80), Name: "http2", NodePort: 31380},
@@ -70,6 +88,16 @@ var defaultEgressGatewayPorts = []apiv1.ServicePort{
 func SetDefaults(config *Istio) {
 	if config.Spec.IncludeIPRanges == "" {
 		config.Spec.IncludeIPRanges = defaultIncludeIPRanges
+	}
+	if config.Spec.Proxy.Resources == nil {
+		if config.Spec.DefaultResources == nil {
+			config.Spec.Proxy.Resources = defaultProxyResources
+		} else {
+			config.Spec.Proxy.Resources = defaultResources
+		}
+	}
+	if config.Spec.DefaultResources == nil {
+		config.Spec.DefaultResources = defaultResources
 	}
 	// Pilot config
 	if config.Spec.Pilot.Enabled == nil {

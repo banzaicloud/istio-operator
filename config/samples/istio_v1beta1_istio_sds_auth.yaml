@@ -5,7 +5,7 @@ metadata:
     controller-tools.k8s.io: "1.0"
   name: istio-sample
 spec:
-  version: "1.1.6"
+  version: "1.1.7"
   mtls: true
   autoInjectionNamespaces:
   - "default"
@@ -20,7 +20,14 @@ spec:
       enabled: true
       sds:
         enabled: true
-        image: "docker.io/istio/node-agent-k8s:1.1.6"
+        image: "docker.io/istio/node-agent-k8s:1.1.7"
+        resources:
+          requests:
+            cpu: 100m
+            memory: 128Mi
+          limits:
+            cpu: 2000m
+            memory: 1024Mi
   nodeAgent:
     enabled: true
-    image: "docker.io/istio/node-agent-k8s:1.1.6"
+    image: "docker.io/istio/node-agent-k8s:1.1.7"

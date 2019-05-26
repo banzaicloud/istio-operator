@@ -58,6 +58,9 @@ type RemoteIstioSpec struct {
 	// List of namespaces to label with sidecar auto injection enabled
 	AutoInjectionNamespaces []string `json:"autoInjectionNamespaces,omitempty"`
 
+	// DefaultResources are applied for all Istio components by default, can be overridden for each component
+	DefaultResources *corev1.ResourceRequirements `json:"defaultResources,omitempty"`
+
 	// Citadel configuration options
 	Citadel CitadelConfiguration `json:"citadel,omitempty"`
 

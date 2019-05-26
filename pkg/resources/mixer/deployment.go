@@ -172,7 +172,10 @@ func (r *Reconciler) mixerContainer(t string, ns string) apiv1.Container {
 				Value: "gctrace=2",
 			},
 		},
-		Resources:    templates.GetResourcesRequirementsOrDefault(r.Config.Spec.Mixer.Resources),
+		Resources: templates.GetResourcesRequirementsOrDefault(
+			r.Config.Spec.Mixer.Resources,
+			r.Config.Spec.DefaultResources,
+		),
 		VolumeMounts: volumeMounts,
 		LivenessProbe: &apiv1.Probe{
 			Handler: apiv1.Handler{
@@ -214,8 +217,11 @@ func (r *Reconciler) istioProxyContainer(t string) apiv1.Container {
 			"--domain",
 			"$(POD_NAMESPACE).svc.cluster.local",
 		},
-		Env:       templates.IstioProxyEnv(),
-		Resources: templates.GetResourcesRequirementsOrDefault(nil),
+		Env: templates.IstioProxyEnv(),
+		Resources: templates.GetResourcesRequirementsOrDefault(
+			r.Config.Spec.Proxy.Resources,
+			r.Config.Spec.DefaultResources,
+		),
 		VolumeMounts: []apiv1.VolumeMount{
 			{
 				Name:      "istio-certs",

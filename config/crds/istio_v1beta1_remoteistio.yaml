@@ -72,6 +72,10 @@ spec:
                     type: object
                   type: array
               type: object
+            defaultResources:
+              description: DefaultResources are applied for all Istio components by
+                default, can be overridden for each component
+              type: object
             enabledServices:
               description: EnabledServices the Istio component services replicated
                 to remote side
@@ -112,6 +116,8 @@ spec:
                   description: If set to true, istio-proxy container will have privileged
                     securityContext
                   type: boolean
+                resources:
+                  type: object
               type: object
             proxyInit:
               description: Proxy Init configuration options
