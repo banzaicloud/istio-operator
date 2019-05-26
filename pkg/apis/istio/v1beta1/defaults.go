@@ -39,6 +39,8 @@ const (
 	defaultProxyImage                = defaultImageHub + "/" + "proxyv2" + ":" + defaultImageVersion
 	defaultProxyInitImage            = defaultImageHub + "/" + "proxy_init" + ":" + defaultImageVersion
 	defaultInitCNIImage              = "gcr.io/istio-release/install-cni:master-latest-daily"
+	defaultCoreDNSImage              = "coredns/coredns:1.1.2"
+	defaultCoreDNSPluginImage        = defaultImageHub + "/coredns-plugin:0.2-istio-1.1"
 	defaultIncludeIPRanges           = "*"
 	defaultReplicaCount              = 1
 	defaultMinReplicas               = 1
@@ -276,6 +278,25 @@ func SetDefaults(config *Istio) {
 	}
 	if config.Spec.Tracing.Zipkin.Address == "" {
 		config.Spec.Tracing.Zipkin.Address = fmt.Sprintf(defaultZipkinAddress, config.Namespace)
+	}
+
+	// Multi mesh support
+	if config.Spec.MultiMesh == nil {
+		config.Spec.MultiMesh = util.BoolPointer(false)
+	}
+
+	// Istio CoreDNS for multi mesh support
+	if config.Spec.IstioCoreDNS.Enabled == nil {
+		config.Spec.IstioCoreDNS.Enabled = util.BoolPointer(false)
+	}
+	if config.Spec.IstioCoreDNS.Image == "" {
+		config.Spec.IstioCoreDNS.Image = defaultCoreDNSImage
+	}
+	if config.Spec.IstioCoreDNS.PluginImage == "" {
+		config.Spec.IstioCoreDNS.PluginImage = defaultCoreDNSPluginImage
+	}
+	if config.Spec.IstioCoreDNS.ReplicaCount == 0 {
+		config.Spec.IstioCoreDNS.ReplicaCount = 1
 	}
 
 	if config.Spec.ImagePullPolicy == "" {

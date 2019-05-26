@@ -58,6 +58,7 @@ import (
 	"github.com/banzaicloud/istio-operator/pkg/resources/common"
 	"github.com/banzaicloud/istio-operator/pkg/resources/galley"
 	"github.com/banzaicloud/istio-operator/pkg/resources/gateways"
+	"github.com/banzaicloud/istio-operator/pkg/resources/istiocoredns"
 	"github.com/banzaicloud/istio-operator/pkg/resources/mixer"
 	"github.com/banzaicloud/istio-operator/pkg/resources/nodeagent"
 	"github.com/banzaicloud/istio-operator/pkg/resources/pilot"
@@ -275,6 +276,7 @@ func (r *ReconcileConfig) reconcile(logger logr.Logger, config *istiov1beta1.Ist
 		cni.New(r.Client, config),
 		sidecarinjector.New(r.Client, config),
 		nodeagent.New(r.Client, config),
+		istiocoredns.New(r.Client, config),
 	}
 
 	for _, rec := range reconcilers {

@@ -235,6 +235,30 @@ spec:
             includeIPRanges:
               description: IncludeIPRanges the range where to capture egress traffic
               type: string
+            istioCoreDNS:
+              description: Istio CoreDNS provides DNS resolution for services in multi
+                mesh setups
+              properties:
+                affinity:
+                  type: object
+                enabled:
+                  type: boolean
+                image:
+                  type: string
+                nodeSelector:
+                  type: object
+                pluginImage:
+                  type: string
+                replicaCount:
+                  format: int32
+                  type: integer
+                resources:
+                  type: object
+                tolerations:
+                  items:
+                    type: object
+                  type: array
+              type: object
             meshExpansion:
               description: If set to true, the pilot and citadel mtls will be exposed
                 on the ingress gateway also the remote istios will be connected through
@@ -269,6 +293,12 @@ spec:
               type: object
             mtls:
               description: MTLS enables or disables global mTLS
+              type: boolean
+            multiMesh:
+              description: Set to true to connect two or more meshes via their respective
+                ingressgateway services when workloads in each cluster cannot directly
+                talk to one another. All meshes should be using Istio mTLS and must
+                have a shared root CA for this model to work.
               type: boolean
             nodeAgent:
               description: NodeAgent configuration options

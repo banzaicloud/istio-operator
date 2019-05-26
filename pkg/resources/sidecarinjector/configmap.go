@@ -97,8 +97,21 @@ func (r *Reconciler) proxyInitContainer() string {
   `
 }
 
+func (r *Reconciler) dnsConfig() string {
+	if !util.PointerToBool(r.Config.Spec.MultiMesh) {
+		return ""
+	}
+	return `
+dnsConfig:
+  searches:
+  - global
+  - "[[ valueOrDefault .DeploymentMeta.Namespace "default" ]].global"
+`
+}
+
 func (r *Reconciler) templateConfig() string {
 	return `rewriteAppHTTPProbe: ` + strconv.FormatBool(r.Config.Spec.SidecarInjector.RewriteAppHTTPProbe) + `
+` + r.dnsConfig() + `
 initContainers:
 [[ if ne (annotation .ObjectMeta ` + "`" + `sidecar.istio.io/interceptionMode` + "`" + ` .ProxyConfig.InterceptionMode) "NONE" ]]
 ` + r.proxyInitContainer() + `
