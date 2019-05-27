@@ -296,7 +296,7 @@ func SetDefaults(config *Istio) {
 		config.Spec.IstioCoreDNS.PluginImage = defaultCoreDNSPluginImage
 	}
 	if config.Spec.IstioCoreDNS.ReplicaCount == 0 {
-		config.Spec.IstioCoreDNS.ReplicaCount = 1
+		config.Spec.IstioCoreDNS.ReplicaCount = defaultReplicaCount
 	}
 
 	if config.Spec.ImagePullPolicy == "" {
