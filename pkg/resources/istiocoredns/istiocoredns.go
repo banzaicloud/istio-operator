@@ -21,11 +21,10 @@ import (
 	"github.com/goph/emperror"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
-	"github.com/banzaicloud/istio-operator/pkg/util"
-
 	istiov1beta1 "github.com/banzaicloud/istio-operator/pkg/apis/istio/v1beta1"
 	"github.com/banzaicloud/istio-operator/pkg/k8sutil"
 	"github.com/banzaicloud/istio-operator/pkg/resources"
+	"github.com/banzaicloud/istio-operator/pkg/util"
 )
 
 const (
@@ -85,6 +84,11 @@ func (r *Reconciler) Reconcile(log logr.Logger) error {
 		if err != nil {
 			return emperror.WrapWith(err, "failed to reconcile resource", "resource", o.GetObjectKind().GroupVersionKind())
 		}
+	}
+
+	err := r.reconcileKubeDNSConfigMap(log, desiredState)
+	if err != nil {
+		return emperror.WrapWith(err, "failed to update dns config")
 	}
 
 	log.Info("Reconciled")

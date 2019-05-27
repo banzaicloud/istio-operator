@@ -90,19 +90,19 @@ func GetWatchPredicateForIstioServicePods() predicate.Funcs {
 	}
 }
 
-func GetWatchPredicateForIstioIngressGateway() predicate.Funcs {
+func GetWatchPredicateForIstioService(name string) predicate.Funcs {
 	return predicate.Funcs{
 		GenericFunc: func(e event.GenericEvent) bool {
 			return false
 		},
 		CreateFunc: func(e event.CreateEvent) bool {
-			if value, ok := e.Meta.GetLabels()["istio"]; ok && value == "ingressgateway" {
+			if value, ok := e.Meta.GetLabels()["istio"]; ok && value == name {
 				return true
 			}
 			return false
 		},
 		UpdateFunc: func(e event.UpdateEvent) bool {
-			if value, ok := e.MetaNew.GetLabels()["istio"]; ok && value == "ingressgateway" {
+			if value, ok := e.MetaNew.GetLabels()["istio"]; ok && value == name {
 				return true
 			}
 			return false
@@ -111,4 +111,8 @@ func GetWatchPredicateForIstioIngressGateway() predicate.Funcs {
 			return false
 		},
 	}
+}
+
+func GetWatchPredicateForIstioIngressGateway() predicate.Funcs {
+	return GetWatchPredicateForIstioService("ingressgateway")
 }

@@ -505,6 +505,15 @@ func initWatches(c controller.Controller, scheme *runtime.Scheme, watchCreatedRe
 		return err
 	}
 
+	// Watch for changes to Istio coreDNS service
+	err = c.Watch(&source.Kind{Type: &corev1.Service{TypeMeta: metav1.TypeMeta{Kind: "Service", APIVersion: "v1"}}}, &handler.EnqueueRequestForOwner{
+		IsController: true,
+		OwnerType:    &istiov1beta1.Istio{},
+	}, k8sutil.GetWatchPredicateForIstioService("istiocoredns"))
+	if err != nil {
+		return err
+	}
+
 	if !watchCreatedResourcesEvents {
 		return nil
 	}
