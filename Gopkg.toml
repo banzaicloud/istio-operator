@@ -74,9 +74,9 @@ version="v1.4.7"
   revision = "d082d5923d3cc0bfbb066ee5fbdea3d0ca79acf8"
 
 [[constraint]]
-  name = "github.com/evanphx/json-patch"
-  version = "4.1.0"
-
-[[constraint]]
   branch = "master"
   name = "github.com/banzaicloud/k8s-objectmatcher"
+
+[[constraint]]
+  name = "github.com/mholt/caddy"
+  version = "1.0.0"
