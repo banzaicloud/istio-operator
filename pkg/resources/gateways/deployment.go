@@ -242,10 +242,10 @@ func (r *Reconciler) envVars(gwConfig *istiov1beta1.GatewayConfiguration) []apiv
 			Value: r.Config.Spec.GetNetworkName(),
 		})
 	}
-	if util.PointerToBool(r.Config.Spec.MultiMesh) {
+	if gwConfig.RequestedNetworkView != "" {
 		envVars = append(envVars, apiv1.EnvVar{
 			Name:  "ISTIO_META_REQUESTED_NETWORK_VIEW",
-			Value: "external",
+			Value: gwConfig.RequestedNetworkView,
 		})
 	}
 	return envVars

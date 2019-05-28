@@ -107,17 +107,18 @@ type GatewayConfiguration struct {
 	MinReplicas  int32 `json:"minReplicas,omitempty"`
 	MaxReplicas  int32 `json:"maxReplicas,omitempty"`
 	// +kubebuilder:validation:Enum=ClusterIP,NodePort,LoadBalancer
-	ServiceType        corev1.ServiceType           `json:"serviceType,omitempty"`
-	LoadBalancerIP     string                       `json:"loadBalancerIP,omitempty"`
-	ServiceAnnotations map[string]string            `json:"serviceAnnotations,omitempty"`
-	ServiceLabels      map[string]string            `json:"serviceLabels,omitempty"`
-	SDS                GatewaySDSConfiguration      `json:"sds,omitempty"`
-	Resources          *corev1.ResourceRequirements `json:"resources,omitempty"`
-	Ports              []corev1.ServicePort         `json:"ports,omitempty"`
-	ApplicationPorts   string                       `json:"applicationPorts,omitempty"`
-	NodeSelector       map[string]string            `json:"nodeSelector,omitempty"`
-	Affinity           *corev1.Affinity             `json:"affinity,omitempty"`
-	Tolerations        []corev1.Toleration          `json:"tolerations,omitempty"`
+	ServiceType          corev1.ServiceType           `json:"serviceType,omitempty"`
+	LoadBalancerIP       string                       `json:"loadBalancerIP,omitempty"`
+	ServiceAnnotations   map[string]string            `json:"serviceAnnotations,omitempty"`
+	ServiceLabels        map[string]string            `json:"serviceLabels,omitempty"`
+	SDS                  GatewaySDSConfiguration      `json:"sds,omitempty"`
+	Resources            *corev1.ResourceRequirements `json:"resources,omitempty"`
+	Ports                []corev1.ServicePort         `json:"ports,omitempty"`
+	ApplicationPorts     string                       `json:"applicationPorts,omitempty"`
+	RequestedNetworkView string                       `json:"requestedNetworkView,omitempty"`
+	NodeSelector         map[string]string            `json:"nodeSelector,omitempty"`
+	Affinity             *corev1.Affinity             `json:"affinity,omitempty"`
+	Tolerations          []corev1.Toleration          `json:"tolerations,omitempty"`
 }
 
 type K8sIngressConfiguration struct {

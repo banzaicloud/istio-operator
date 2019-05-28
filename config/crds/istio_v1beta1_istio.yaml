@@ -144,6 +144,8 @@ spec:
                     replicaCount:
                       format: int32
                       type: integer
+                    requestedNetworkView:
+                      type: string
                     resources:
                       type: object
                     sds:
@@ -197,6 +199,8 @@ spec:
                     replicaCount:
                       format: int32
                       type: integer
+                    requestedNetworkView:
+                      type: string
                     resources:
                       type: object
                     sds:
