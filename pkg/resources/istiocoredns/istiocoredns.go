@@ -86,9 +86,14 @@ func (r *Reconciler) Reconcile(log logr.Logger) error {
 		}
 	}
 
-	err := r.reconcileKubeDNSConfigMap(log, desiredState)
+	err := r.reconcileCoreDNSConfigMap(log, desiredState)
 	if err != nil {
-		return emperror.WrapWith(err, "failed to update dns config")
+		return emperror.WrapWith(err, "failed to update coredns configmap")
+	}
+
+	err = r.reconcileKubeDNSConfigMap(log, desiredState)
+	if err != nil {
+		return emperror.WrapWith(err, "failed to update kube-dns configmap")
 	}
 
 	log.Info("Reconciled")
