@@ -1,0 +1,69 @@
+{
+  "name": "istio-multimesh-pke",
+  "location": "eu-west-3",
+  "cloud": "amazon",
+  "secretId": "{{secretID}}",
+  "properties": {
+    "pke": {
+      "nodepools": [
+        {
+          "name": "master",
+          "roles": [
+            "master"
+          ],
+          "provider": "amazon",
+          "autoscaling": false,
+          "providerConfig": {
+            "autoScalingGroup": {
+              "name": "master",
+              "zones": [
+                "eu-west-3a"
+              ],
+              "instanceType": "c5.xlarge",
+              "launchConfigurationName": "master",
+              "spotPrice": "",
+              "size": {
+                "desired": 1,
+                "min": 1,
+                "max": 1
+              }
+            }
+          }
+        },
+        {
+          "name": "pool1",
+          "roles": [
+            "worker"
+          ],
+          "provider": "amazon",
+          "autoscaling": true,
+          "providerConfig": {
+            "autoScalingGroup": {
+              "name": "pool1",
+              "zones": [
+                "eu-west-3a"
+              ],
+              "instanceType": "t2.medium",
+              "launchConfigurationName": "pool1",
+              "spotPrice": "0.05",
+              "size": {
+                "desired": 2,
+                "min": 2,
+                "max": 2
+              }
+            }
+            }
+          }
+        ],
+      "kubernetes": {
+        "version": "1.14.2",
+        "rbac": {
+          "enabled": true
+        }
+      },
+      "cri": {
+        "runtime": "containerd"
+      }
+    }
+  }
+}
