@@ -1,21 +1,32 @@
-# Istio Multi Cluster Federation
+# Multi cluster scenarios
 
-Multi-cluster federation functions by enabling Kubernetes control planes running a remote configuration to connect to one Istio control plane. Once one or more remote Kubernetes clusters are connected to the Istio control plane, Envoy can then communicate with the single Istio control plane and form a mesh network across multiple Kubernetes clusters.
+Istio supports the following multi-cluster patterns:
 
-The main requirements for multi-cluster federation to work are that all pod CIDRs must be unique and routable to each other in every cluster and also the API servers must be routable to each other.
+- **single mesh** – which combines multiple clusters into one unit managed by one Istio control plane
+- **multi mesh** – in which they act as individual management domains and the service exposure between those domains is handled separately, controlled by one Istio control plane for each domain
 
-## tl;dr
+## Single mesh multi-cluster
 
-The operator takes care of deploying Istio components to the remote clusters and also provides a constant sync mechanism to provide reachability of Istio's central components from remote clusters.
+The single mesh scenario is most suited to those use cases wherein clusters are configured together, sharing resources and typically treated as a single infrastructural component within an organization. A single mesh multi-cluster is formed by enabling any number of Kubernetes control planes running a remote Istio configuration to connect to a single Istio control plane. Once one or more Kubernetes clusters are connected to the Istio control plane in that way, Envoy communicates with the Istio control plane in order to form a mesh network across those clusters.
 
-## How the operator manages federated Istios
+A multi cluster - single mesh setup has the advantage of all its services looking the same to clients, regardless of where the workloads are actually running; a service named `foo` in namespace `baz` of `cluster1` is the same service as the `foo` in `baz` of `cluster2`. It’s transparent to the application whether it’s been deployed in a single or multi-cluster mesh.
 
-- the first step is to create a `kubeconfig` for the remote cluster and add that as a secret to the central cluster where the operator is running.
+### Single mesh multi-cluster with flat network or VPN
 
-- create a `RemoteConfig` custom resource which contains the configuration for the operator to be able to deploy the Istio components to the remote k8s cluster and add that cluster into Istio federation.
+The [Istio operator](https://github.com/banzaicloud/istio-operator) supports setting up single mesh, multi-cluster meshes. This setup has a few network constraints, since all pod CIDRs, as well as API server communications, need to be unique and routable to each other in every cluster.
 
-The major caveat of managing a remote Istio is that it needs a constant connection to some of the components of the central Istio control plane. As we have direct pod reachability between the clusters that sounds an easy thing to do, but keeping the pod IP addresses up-to-date is something that must be solved. The operator triggers an update of those IP address for every remote cluster upon any failure or pod restart of those central components.
+You can read more about this scenario [here](flat/README.md).
 
-You can find a [detailed example](flat/README.md) about how to setup a 2 member federated Istio multi-cluster environment on GKE.
+>It's fairly straightforward to set up such an environment on-premise or Google Cloud (which allows the creation of flat networks)
 
-> PS. - [Pipeline](http://beta.banzaicloud.io) can setup and automate the whole shebang for you!
+### Single mesh multi-cluster **without** flat network or VPN
+
+The [Istio operator](https://github.com/banzaicloud/istio-operator) supports such a setup as well, using some of the features originally introduced in Istio v1.1: **Split Horizon EDS** and **SNI-based routing**. By using these features, the network constraints for this setup are not untenably steep, since communication passes through the clusters' ingress gateways.
+
+You can read more about this [here](gateway/README.md).
+
+## Multi mesh multi-cluster
+
+In a multi-mesh multi-cluster multiple service meshes are treated as independent fault domains, but with inter-mesh communication.
+
+You can read more about this [here](multimesh/README.md).
