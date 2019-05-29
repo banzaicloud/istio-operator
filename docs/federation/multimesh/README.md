@@ -268,10 +268,10 @@ It's clear from the results that although we hit the PKE cluster's ingress gatew
 Execute the following commands to clean up the clusters:
 
 ```bash
-❯ kubectl --context=${CTX_PKE} delete istios multimesh
+❯ kubectl --context=${CTX_PKE} -n istio-system delete istios multimesh
 ❯ kubectl --context=${CTX_PKE} delete namespace istio-system
 
-❯ kubectl --context=${CTX_GKE} delete istios multimesh
+❯ kubectl --context=${CTX_GKE} -n istio-system delete istios multimesh
 ❯ kubectl --context=${CTX_GKE} delete namespace istio-system
 
 ❯ banzai cluster delete istio-multimesh-pke --no-interactive
