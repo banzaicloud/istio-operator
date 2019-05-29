@@ -1,0 +1,31 @@
+{
+  "name": "istio-multimesh-gke",
+  "location": "europe-west4-a",
+  "cloud": "google",
+  "secretId": "{{secretID}}",
+  "properties": {
+    "gke": {
+      "master": {
+        "version": "1.13.6-gke.0"
+      },
+      "nodeVersion": "1.13.6-gke.0",
+      "nodePools": {
+        "pool1": {
+          "count": 1,
+          "autoscaling": true,
+          "instanceType": "n1-standard-2",
+          "preemptible": true,
+          "minCount": 1,
+          "maxCount": 2
+        },
+        "system": {
+          "count": 1,
+          "autoscaling": false,
+          "instanceType": "n1-standard-2",
+          "preemptible": false
+        }
+      },
+      "projectId": "{{projectID}}"
+    }
+  }
+}

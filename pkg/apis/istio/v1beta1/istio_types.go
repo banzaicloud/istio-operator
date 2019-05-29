@@ -107,17 +107,18 @@ type GatewayConfiguration struct {
 	MinReplicas  int32 `json:"minReplicas,omitempty"`
 	MaxReplicas  int32 `json:"maxReplicas,omitempty"`
 	// +kubebuilder:validation:Enum=ClusterIP,NodePort,LoadBalancer
-	ServiceType        corev1.ServiceType           `json:"serviceType,omitempty"`
-	LoadBalancerIP     string                       `json:"loadBalancerIP,omitempty"`
-	ServiceAnnotations map[string]string            `json:"serviceAnnotations,omitempty"`
-	ServiceLabels      map[string]string            `json:"serviceLabels,omitempty"`
-	SDS                GatewaySDSConfiguration      `json:"sds,omitempty"`
-	Resources          *corev1.ResourceRequirements `json:"resources,omitempty"`
-	Ports              []corev1.ServicePort         `json:"ports,omitempty"`
-	ApplicationPorts   string                       `json:"applicationPorts,omitempty"`
-	NodeSelector       map[string]string            `json:"nodeSelector,omitempty"`
-	Affinity           *corev1.Affinity             `json:"affinity,omitempty"`
-	Tolerations        []corev1.Toleration          `json:"tolerations,omitempty"`
+	ServiceType          corev1.ServiceType           `json:"serviceType,omitempty"`
+	LoadBalancerIP       string                       `json:"loadBalancerIP,omitempty"`
+	ServiceAnnotations   map[string]string            `json:"serviceAnnotations,omitempty"`
+	ServiceLabels        map[string]string            `json:"serviceLabels,omitempty"`
+	SDS                  GatewaySDSConfiguration      `json:"sds,omitempty"`
+	Resources            *corev1.ResourceRequirements `json:"resources,omitempty"`
+	Ports                []corev1.ServicePort         `json:"ports,omitempty"`
+	ApplicationPorts     string                       `json:"applicationPorts,omitempty"`
+	RequestedNetworkView string                       `json:"requestedNetworkView,omitempty"`
+	NodeSelector         map[string]string            `json:"nodeSelector,omitempty"`
+	Affinity             *corev1.Affinity             `json:"affinity,omitempty"`
+	Tolerations          []corev1.Toleration          `json:"tolerations,omitempty"`
 }
 
 type K8sIngressConfiguration struct {
@@ -253,6 +254,17 @@ type TracingConfiguration struct {
 	Datadog   DatadogConfiugration   `json:"datadog,omitempty"`
 }
 
+type IstioCoreDNS struct {
+	Enabled      *bool                        `json:"enabled,omitempty"`
+	Image        string                       `json:"image,omitempty"`
+	PluginImage  string                       `json:"pluginImage,omitempty"`
+	ReplicaCount int32                        `json:"replicaCount,omitempty"`
+	Resources    *corev1.ResourceRequirements `json:"resources,omitempty"`
+	NodeSelector map[string]string            `json:"nodeSelector,omitempty"`
+	Affinity     *corev1.Affinity             `json:"affinity,omitempty"`
+	Tolerations  []corev1.Toleration          `json:"tolerations,omitempty"`
+}
+
 // IstioSpec defines the desired state of Istio
 type IstioSpec struct {
 	// Contains the intended Istio version
@@ -335,6 +347,15 @@ type IstioSpec struct {
 	// If set to true, the pilot and citadel mtls will be exposed on the
 	// ingress gateway also the remote istios will be connected through gateways
 	MeshExpansion *bool `json:"meshExpansion,omitempty"`
+
+	// Set to true to connect two or more meshes via their respective
+	// ingressgateway services when workloads in each cluster cannot directly
+	// talk to one another. All meshes should be using Istio mTLS and must
+	// have a shared root CA for this model to work.
+	MultiMesh *bool `json:"multiMesh,omitempty"`
+
+	// Istio CoreDNS provides DNS resolution for services in multi mesh setups
+	IstioCoreDNS IstioCoreDNS `json:"istioCoreDNS,omitempty"`
 
 	networkName  string
 	meshNetworks *MeshNetworks

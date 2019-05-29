@@ -1,0 +1,38 @@
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: echo
+  labels:
+    k8s-app: echo
+  namespace: default
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      k8s-app: echo
+  template:
+    metadata:
+      labels:
+        k8s-app: echo
+    spec:
+      terminationGracePeriodSeconds: 2
+      containers:
+      - name: echo-service
+        image: k8s.gcr.io/echoserver:1.10
+        ports:
+        - containerPort: 8080
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: echo
+  labels:
+    k8s-app: echo
+  namespace: default
+spec:
+  ports:
+  - name: http
+    port: 80
+    targetPort: 8080
+  selector:
+    k8s-app: echo

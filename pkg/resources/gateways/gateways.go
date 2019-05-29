@@ -125,6 +125,13 @@ func (r *Reconciler) Reconcile(log logr.Logger) error {
 		meshExpansionDesiredState = k8sutil.DesiredStateAbsent
 	}
 
+	var multimeshDesiredState k8sutil.DesiredState
+	if util.PointerToBool(r.Config.Spec.MultiMesh) {
+		multimeshDesiredState = k8sutil.DesiredStatePresent
+	} else {
+		multimeshDesiredState = k8sutil.DesiredStateAbsent
+	}
+
 	if r.Config.Name == "istio-config" {
 		log.Info("Reconciled")
 		return nil
@@ -134,6 +141,10 @@ func (r *Reconciler) Reconcile(log logr.Logger) error {
 		{DynamicResource: r.gateway, DesiredState: k8sIngressDesiredState},
 		{DynamicResource: r.meshExpansionGateway, DesiredState: meshExpansionDesiredState},
 		{DynamicResource: r.clusterAwareGateway, DesiredState: meshExpansionDesiredState},
+		{DynamicResource: r.multimeshEgressGateway, DesiredState: multimeshDesiredState},
+		{DynamicResource: r.multimeshIngressGateway, DesiredState: multimeshDesiredState},
+		{DynamicResource: r.multimeshDestinationRule, DesiredState: multimeshDesiredState},
+		{DynamicResource: r.multimeshEnvoyFilter, DesiredState: multimeshDesiredState},
 	}
 	for _, dr := range drs {
 		o := dr.DynamicResource()
