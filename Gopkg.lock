@@ -269,6 +269,17 @@
   version = "v1.0.1"
 
 [[projects]]
+  digest = "1:864d011b025c37bb9833ebb11c22fe567021967a07a16df08623a328bb6e58e0"
+  name = "github.com/mholt/caddy"
+  packages = [
+    "caddyfile",
+    "telemetry",
+  ]
+  pruneopts = "T"
+  revision = "15fecbc16151308959674a5ce3843efb9e66bd5f"
+  version = "v1.0.0"
+
+[[projects]]
   digest = "1:33422d238f147d247752996a26574ac48dcf472976eda7f5134015f06bf16563"
   name = "github.com/modern-go/concurrent"
   packages = ["."]
@@ -962,11 +973,11 @@
   input-imports = [
     "github.com/banzaicloud/k8s-objectmatcher",
     "github.com/emicklei/go-restful",
-    "github.com/evanphx/json-patch",
     "github.com/ghodss/yaml",
     "github.com/go-logr/logr",
     "github.com/gofrs/uuid",
     "github.com/goph/emperror",
+    "github.com/mholt/caddy/caddyfile",
     "github.com/onsi/ginkgo",
     "github.com/onsi/gomega",
     "github.com/pkg/errors",
@@ -991,7 +1002,6 @@
     "k8s.io/apimachinery/pkg/types",
     "k8s.io/apimachinery/pkg/util/intstr",
     "k8s.io/apimachinery/pkg/util/runtime",
-    "k8s.io/apimachinery/pkg/util/strategicpatch",
     "k8s.io/apimachinery/pkg/watch",
     "k8s.io/client-go/discovery",
     "k8s.io/client-go/discovery/fake",
