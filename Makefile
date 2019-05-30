@@ -11,7 +11,7 @@ DEP_VERSION = 0.5.1
 GOLANGCI_VERSION = 1.15.0
 LICENSEI_VERSION = 0.1.0
 
-KUSTOMIZE_BASE = config/default
+KUSTOMIZE_BASE = config
 
 all: test manager
 
