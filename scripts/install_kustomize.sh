@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-version=2.03
+version=2.0.3
 opsys=$(echo "$(uname -s)" | awk '{print tolower($0)}')
 
 # download the release
