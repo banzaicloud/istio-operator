@@ -1,5 +1,8 @@
 bases:
 - ../base
 
+# Adds namespace to all resources.
+namespace: istio-system
+
 patches:
 - manager_image_patch.yaml
