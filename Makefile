@@ -82,12 +82,12 @@ vendor: bin/dep ## Install dependencies
 
 # Install CRDs into a cluster
 install: manifests
-	kubectl apply -f config/crds
+	kubectl apply -f config/base/crds
 
 # Deploy controller in the configured Kubernetes cluster in ~/.kube/config
 deploy: install-kustomize
-	kubectl apply -f config/crds
-	kubectl apply -f config/manager/namespace.yaml
+	kubectl apply -f config/base/crds
+	kubectl apply -f config/base/manager/namespace.yaml
 	./scripts/image_patch.sh ./config/custom/manager_image_patch.yaml ${IMG}
 	bin/kustomize build $(KUSTOMIZE_BASE) | kubectl apply -f -
 
