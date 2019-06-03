@@ -36,7 +36,7 @@ spec:
       containers:
       - command:
         - /manager
-        image: controller:latest
+        image: banzaicloud/istio-operator:latest
         imagePullPolicy: Always
         name: manager
         env:
