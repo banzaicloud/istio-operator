@@ -124,8 +124,10 @@ func (r *Reconciler) updateCorefile(corefile []byte, config caddyfile.EncodedSer
 		}
 	}
 
-	if remove && pos > 0 {
-		corefileJSON = append(corefileJSON[:pos], corefileJSON[pos+1:]...)
+	if remove {
+		if pos > 0 {
+			corefileJSON = append(corefileJSON[:pos], corefileJSON[pos+1:]...)
+		}
 	} else {
 		if pos > 0 {
 			corefileJSON[pos] = config
