@@ -93,7 +93,8 @@ deploy: install-kustomize
 
 # Generate manifests e.g. CRD, RBAC etc.
 manifests:
-	go run vendor/sigs.k8s.io/controller-tools/cmd/controller-gen/main.go all
+	go run vendor/sigs.k8s.io/controller-tools/cmd/controller-gen/main.go rbac --output-dir config/base/rbac
+	go run vendor/sigs.k8s.io/controller-tools/cmd/controller-gen/main.go crd --output-dir config/base/crds
 
 # Run go fmt against code
 fmt:
