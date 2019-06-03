@@ -11,10 +11,12 @@ spec:
   mtls: false
   autoInjectionNamespaces:
   - "default"
+  useMCP: false
   sds:
     enabled: false
   pilot:
     enabled: true
+    sidecar: false
   citadel:
     enabled: false
   galley:

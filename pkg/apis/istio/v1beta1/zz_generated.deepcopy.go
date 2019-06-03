@@ -737,6 +737,11 @@ func (in *PilotConfiguration) DeepCopyInto(out *PilotConfiguration) {
 		*out = new(bool)
 		**out = **in
 	}
+	if in.Sidecar != nil {
+		in, out := &in.Sidecar, &out.Sidecar
+		*out = new(bool)
+		**out = **in
+	}
 	if in.Resources != nil {
 		in, out := &in.Resources, &out.Resources
 		*out = new(v1.ResourceRequirements)
