@@ -11,7 +11,7 @@ DEP_VERSION = 0.5.1
 GOLANGCI_VERSION = 1.15.0
 LICENSEI_VERSION = 0.1.0
 
-KUSTOMIZE_BASE = config/custom
+KUSTOMIZE_BASE = config/overlays/specific-manager-version
 
 all: test manager
 
@@ -86,9 +86,7 @@ install: manifests
 
 # Deploy controller in the configured Kubernetes cluster in ~/.kube/config
 deploy: install-kustomize
-	kubectl apply -f config/base/crds
-	kubectl apply -f config/base/manager/namespace.yaml
-	./scripts/image_patch.sh ./config/custom/manager_image_patch.yaml ${IMG}
+	./scripts/image_patch.sh "${KUSTOMIZE_BASE}/manager_image_patch.yaml" ${IMG}
 	bin/kustomize build $(KUSTOMIZE_BASE) | kubectl apply -f -
 
 # Generate manifests e.g. CRD, RBAC etc.

@@ -1,0 +1,5 @@
+bases:
+- ../../base
+
+patches:
+- manager_prometheus_metrics_patch.yaml

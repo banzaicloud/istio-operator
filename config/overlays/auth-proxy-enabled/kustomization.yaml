@@ -1,0 +1,13 @@
+# The auth proxy (https://github.com/brancz/kube-rbac-proxy)
+# which protects your /metrics endpoint.
+
+bases:
+- ../../base
+
+resources:
+- rbac/auth_proxy_service.yaml
+- rbac/auth_proxy_role.yaml
+- rbac/auth_proxy_role_binding.yaml
+
+patches:
+- manager_auth_proxy_patch.yaml
