@@ -86,6 +86,7 @@ install: manifests
 
 # Deploy controller in the configured Kubernetes cluster in ~/.kube/config
 deploy: install-kustomize
+	bin/kustomize build config | kubectl apply -f -
 	./scripts/image_patch.sh "${KUSTOMIZE_BASE}/manager_image_patch.yaml" ${IMG}
 	bin/kustomize build $(KUSTOMIZE_BASE) | kubectl apply -f -
 

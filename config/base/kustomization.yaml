@@ -1,26 +1,7 @@
 # Adds namespace to all resources.
 namespace: istio-system
 
-# Value of this field is prepended to the
-# names of all resources, e.g. a deployment named
-# "wordpress" becomes "alices-wordpress".
-# Note that it should also match with the prefix (text before '-') of the namespace
-# field above.
-namePrefix: istio-operator-
-
-# Labels to add to all resources and selectors.
-#commonLabels:
-#  someName: someValue
-
-# Each entry in this list must resolve to an existing
-# resource definition in YAML.  These are the resource
-# files that kustomize reads, modifies and emits as a
-# YAML string, with resources separated by document
-# markers ("---").
 resources:
-- crds/istio_v1beta1_istio.yaml
-- crds/istio_v1beta1_remoteistio.yaml
 - rbac/rbac_role.yaml
 - rbac/rbac_role_binding.yaml
 - manager/manager.yaml
-- manager/namespace.yaml
