@@ -1,5 +1,5 @@
 bases:
-- ../../base
+- ../auth-proxy-enabled
 
 # Adds namespace to all resources.
 namespace: istio-system
