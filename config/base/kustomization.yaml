@@ -1,0 +1,7 @@
+# Adds namespace to all resources.
+namespace: istio-system
+
+resources:
+- rbac/rbac_role.yaml
+- rbac/rbac_role_binding.yaml
+- manager/manager.yaml

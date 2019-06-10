@@ -11,7 +11,7 @@ DEP_VERSION = 0.5.1
 GOLANGCI_VERSION = 1.15.0
 LICENSEI_VERSION = 0.1.0
 
-KUSTOMIZE_BASE = config/default
+KUSTOMIZE_BASE = config/overlays/specific-manager-version
 
 all: test manager
 
@@ -82,18 +82,18 @@ vendor: bin/dep ## Install dependencies
 
 # Install CRDs into a cluster
 install: manifests
-	kubectl apply -f config/crds
+	kubectl apply -f config/base/crds
 
 # Deploy controller in the configured Kubernetes cluster in ~/.kube/config
 deploy: install-kustomize
-	kubectl apply -f config/crds
-	kubectl apply -f config/manager/namespace.yaml
-	./scripts/image_patch.sh ./config/default/manager_image_patch.yaml ${IMG}
+	bin/kustomize build config | kubectl apply -f -
+	./scripts/image_patch.sh "${KUSTOMIZE_BASE}/manager_image_patch.yaml" ${IMG}
 	bin/kustomize build $(KUSTOMIZE_BASE) | kubectl apply -f -
 
 # Generate manifests e.g. CRD, RBAC etc.
 manifests:
-	go run vendor/sigs.k8s.io/controller-tools/cmd/controller-gen/main.go all
+	go run vendor/sigs.k8s.io/controller-tools/cmd/controller-gen/main.go rbac --output-dir config/base/rbac
+	go run vendor/sigs.k8s.io/controller-tools/cmd/controller-gen/main.go crd --output-dir config/base/crds
 
 # Run go fmt against code
 fmt:
