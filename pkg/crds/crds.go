@@ -20,7 +20,7 @@ import (
 	"fmt"
 	"strings"
 
-	objectmatch "github.com/banzaicloud/k8s-objectmatcher"
+	patch "github.com/banzaicloud/k8s-objectmatcher/patch"
 	"github.com/go-logr/logr"
 	"github.com/goph/emperror"
 	extensionsobj "k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1beta1"
@@ -194,6 +194,9 @@ func (r *CrdOperator) Reconcile(config *istiov1beta1.Istio, log logr.Logger) err
 			return emperror.WrapWith(err, "getting CRD failed", "kind", crd.Spec.Names.Kind)
 		}
 		if apierrors.IsNotFound(err) {
+			if err := patch.DefaultAnnotator.SetLastAppliedAnnotation(crd); err != nil {
+				log.Error(err, "Failed to set last applied annotation", "crd", crd)
+			}
 			if config.Name != "" {
 				crd.ObjectMeta.OwnerReferences = []metav1.OwnerReference{
 					{
@@ -210,14 +213,24 @@ func (r *CrdOperator) Reconcile(config *istiov1beta1.Istio, log logr.Logger) err
 				return emperror.WrapWith(err, "creating CRD failed", "kind", crd.Spec.Names.Kind)
 			}
 			log.Info("CRD created")
-		}
-		if err == nil {
-			objectsEquals, err := objectmatch.New(log).Match(current, crd)
+		} else {
+			patchResult, err := patch.DefaultPatchMaker.Calculate(current, crd)
 			if err != nil {
 				log.Error(err, "could not match objects", "kind", crd.Spec.Names.Kind)
-			} else if objectsEquals {
+			} else if patchResult.IsEmpty() {
 				log.V(1).Info("CRD is in sync")
 				continue
+			} else {
+				log.V(1).Info("resource diffs",
+					"patch", string(patchResult.Patch),
+					"current", string(patchResult.Current),
+					"modified", string(patchResult.Modified),
+					"original", string(patchResult.Original))
+			}
+			// Need to set this before resourceversion is set, as it would constantly change otherwise
+
+			if err := patch.DefaultAnnotator.SetLastAppliedAnnotation(crd); err != nil {
+				log.Error(err, "Failed to set last applied annotation", "crd", crd)
 			}
 			crd.ResourceVersion = current.ResourceVersion
 			if _, err := crdClient.Update(crd); err != nil {

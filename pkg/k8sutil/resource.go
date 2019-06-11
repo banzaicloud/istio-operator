@@ -18,19 +18,14 @@ package k8sutil
 
 import (
 	"context"
-	"errors"
 	"reflect"
 
-	objectmatch "github.com/banzaicloud/k8s-objectmatcher"
+	"github.com/banzaicloud/k8s-objectmatcher/patch"
 	"github.com/go-logr/logr"
 	"github.com/goph/emperror"
-	admissionregistrationv1beta1 "k8s.io/api/admissionregistration/v1beta1"
-	appsv1 "k8s.io/api/apps/v1"
-	autoscalingv2beta1 "k8s.io/api/autoscaling/v2beta1"
 	corev1 "k8s.io/api/core/v1"
-	policyv1beta1 "k8s.io/api/policy/v1beta1"
-	rbacv1 "k8s.io/api/rbac/v1"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
+	"k8s.io/apimachinery/pkg/api/meta"
 	"k8s.io/apimachinery/pkg/runtime"
 	runtimeClient "sigs.k8s.io/controller-runtime/pkg/client"
 )
@@ -53,79 +48,45 @@ func Reconcile(log logr.Logger, client runtimeClient.Client, desired runtime.Obj
 	if err != nil && !apierrors.IsNotFound(err) {
 		return emperror.WrapWith(err, "getting resource failed", "kind", desiredType, "name", key.Name)
 	}
-	if apierrors.IsNotFound(err) && desiredState == DesiredStatePresent {
-		if err := client.Create(context.TODO(), desired); err != nil {
-			return emperror.WrapWith(err, "creating resource failed", "kind", desiredType, "name", key.Name)
-		}
-		log.Info("resource created")
-	}
-	if err == nil {
+	if apierrors.IsNotFound(err) {
 		if desiredState == DesiredStatePresent {
-			objectsEquals, err := objectmatch.New(log).Match(current, desired)
+			if err := patch.DefaultAnnotator.SetLastAppliedAnnotation(desired); err != nil {
+				log.Error(err, "Failed to set last applied annotation", "desired", desired)
+			}
+			if err := client.Create(context.TODO(), desired); err != nil {
+				return emperror.WrapWith(err, "creating resource failed", "kind", desiredType, "name", key.Name)
+			}
+			log.Info("resource created")
+		}
+	} else {
+		if desiredState == DesiredStatePresent {
+			patchResult, err := patch.DefaultPatchMaker.Calculate(current, desired)
 			if err != nil {
 				log.Error(err, "could not match objects", "kind", desiredType, "name", key.Name)
-			} else if objectsEquals {
+			} else if patchResult.IsEmpty() {
 				log.V(1).Info("resource is in sync")
 				return nil
+			} else {
+				log.V(1).Info("resource diffs",
+					"patch", string(patchResult.Patch),
+					"current", string(patchResult.Current),
+					"modified", string(patchResult.Modified),
+					"original", string(patchResult.Original))
 			}
 
-			switch desired.(type) {
-			default:
-				return emperror.With(errors.New("unexpected resource type"), "kind", desiredType, "name", key.Name)
-			case *corev1.Namespace:
-				ns := desired.(*corev1.Namespace)
-				ns.ResourceVersion = current.(*corev1.Namespace).ResourceVersion
-				desired = ns
-			case *corev1.ServiceAccount:
-				sa := desired.(*corev1.ServiceAccount)
-				sa.ResourceVersion = current.(*corev1.ServiceAccount).ResourceVersion
-				desired = sa
-			case *rbacv1.ClusterRole:
-				cr := desired.(*rbacv1.ClusterRole)
-				cr.ResourceVersion = current.(*rbacv1.ClusterRole).ResourceVersion
-				desired = cr
-			case *rbacv1.ClusterRoleBinding:
-				crb := desired.(*rbacv1.ClusterRoleBinding)
-				crb.ResourceVersion = current.(*rbacv1.ClusterRoleBinding).ResourceVersion
-				desired = crb
-			case *corev1.ConfigMap:
-				cm := desired.(*corev1.ConfigMap)
-				cm.ResourceVersion = current.(*corev1.ConfigMap).ResourceVersion
-				desired = cm
-			case *corev1.Service:
-				svc := desired.(*corev1.Service)
-				svc.ResourceVersion = current.(*corev1.Service).ResourceVersion
-				svc.Spec.ClusterIP = current.(*corev1.Service).Spec.ClusterIP
-				desired = svc
-			case *appsv1.Deployment:
-				deploy := desired.(*appsv1.Deployment)
-				deploy.ResourceVersion = current.(*appsv1.Deployment).ResourceVersion
-				desired = deploy
-			case *autoscalingv2beta1.HorizontalPodAutoscaler:
-				hpa := desired.(*autoscalingv2beta1.HorizontalPodAutoscaler)
-				hpa.ResourceVersion = current.(*autoscalingv2beta1.HorizontalPodAutoscaler).ResourceVersion
-				desired = hpa
-			case *admissionregistrationv1beta1.MutatingWebhookConfiguration:
-				mwc := desired.(*admissionregistrationv1beta1.MutatingWebhookConfiguration)
-				mwc.ResourceVersion = current.(*admissionregistrationv1beta1.MutatingWebhookConfiguration).ResourceVersion
-				desired = mwc
-			case *policyv1beta1.PodDisruptionBudget:
-				pdb := desired.(*policyv1beta1.PodDisruptionBudget)
-				pdb.ResourceVersion = current.(*policyv1beta1.PodDisruptionBudget).ResourceVersion
-				desired = pdb
-			case *appsv1.DaemonSet:
-				ds := desired.(*appsv1.DaemonSet)
-				ds.ResourceVersion = current.(*appsv1.DaemonSet).ResourceVersion
-				desired = ds
-			case *rbacv1.Role:
-				ds := desired.(*rbacv1.Role)
-				ds.ResourceVersion = current.(*rbacv1.Role).ResourceVersion
-				desired = ds
-			case *rbacv1.RoleBinding:
-				ds := desired.(*rbacv1.RoleBinding)
-				ds.ResourceVersion = current.(*rbacv1.RoleBinding).ResourceVersion
-				desired = ds
+			// Need to set this before resourceversion is set, as it would constantly change otherwise
+			if err := patch.DefaultAnnotator.SetLastAppliedAnnotation(desired); err != nil {
+				log.Error(err, "Failed to set last applied annotation", "desired", desired)
 			}
+
+			metaAccessor := meta.NewAccessor()
+			currentResourceVersion, err := metaAccessor.ResourceVersion(current)
+			if err != nil {
+				return err
+			}
+
+			metaAccessor.SetResourceVersion(desired, currentResourceVersion)
+
 			if err := client.Update(context.TODO(), desired); err != nil {
 				if apierrors.IsConflict(err) || apierrors.IsInvalid(err) {
 					err := client.Delete(context.TODO(), current)

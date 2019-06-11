@@ -73,9 +73,9 @@ version="v1.4.7"
   # revision for tag "kubernetes-1.12.3"
   revision = "d082d5923d3cc0bfbb066ee5fbdea3d0ca79acf8"
 
-[[constraint]]
-  branch = "master"
+[[override]]
   name = "github.com/banzaicloud/k8s-objectmatcher"
+  version = "0.1.1"
 
 [[constraint]]
   name = "github.com/mholt/caddy"

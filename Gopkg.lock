@@ -10,12 +10,12 @@
   version = "v0.35.1"
 
 [[projects]]
-  branch = "master"
-  digest = "1:f5cb7e742fcf167ff7d2ac8ca6ebc7f797a04c98f2daac3de7d4323dbf3dccd7"
+  digest = "1:7e124da7e6600e670a4e44b363518ecd4fdd74cf84adf5bd00d99844702e3c9d"
   name = "github.com/banzaicloud/k8s-objectmatcher"
-  packages = ["."]
+  packages = ["patch"]
   pruneopts = "T"
-  revision = "5288f80397dd1d5c16ee4fcc7062b99322a17ca0"
+  revision = "1596e84aae2764cab454a32215e756bbbee3af5d"
+  version = "v0.1.1"
 
 [[projects]]
   branch = "master"
@@ -744,6 +744,7 @@
     "pkg/util/framer",
     "pkg/util/intstr",
     "pkg/util/json",
+    "pkg/util/jsonmergepatch",
     "pkg/util/mergepatch",
     "pkg/util/naming",
     "pkg/util/net",
@@ -971,7 +972,7 @@
   analyzer-name = "dep"
   analyzer-version = 1
   input-imports = [
-    "github.com/banzaicloud/k8s-objectmatcher",
+    "github.com/banzaicloud/k8s-objectmatcher/patch",
     "github.com/emicklei/go-restful",
     "github.com/ghodss/yaml",
     "github.com/go-logr/logr",
