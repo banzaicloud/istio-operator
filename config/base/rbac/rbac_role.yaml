@@ -145,6 +145,12 @@ rules:
   - patch
   - delete
 - apiGroups:
+  - authentication.k8s.io
+  resources:
+  - tokenreviews
+  verbs:
+  - create
+- apiGroups:
   - istio.banzaicloud.io
   resources:
   - istios
