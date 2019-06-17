@@ -427,6 +427,11 @@ spec:
                   type: boolean
                 image:
                   type: string
+                init:
+                  properties:
+                    resources:
+                      type: object
+                  type: object
                 initCNIConfiguration:
                   properties:
                     affinity:

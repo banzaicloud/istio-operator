@@ -74,6 +74,17 @@ var defaultProxyResources = &apiv1.ResourceRequirements{
 	},
 }
 
+var defaultInitResources = &apiv1.ResourceRequirements{
+	Requests: apiv1.ResourceList{
+		apiv1.ResourceCPU:    resource.MustParse("10m"),
+		apiv1.ResourceMemory: resource.MustParse("10Mi"),
+	},
+	Limits: apiv1.ResourceList{
+		apiv1.ResourceCPU:    resource.MustParse("100m"),
+		apiv1.ResourceMemory: resource.MustParse("50Mi"),
+	},
+}
+
 var defaultIngressGatewayPorts = []apiv1.ServicePort{
 	{Port: 15020, Protocol: apiv1.ProtocolTCP, TargetPort: intstr.FromInt(15020), Name: "status-port", NodePort: 31460},
 	{Port: 80, Protocol: apiv1.ProtocolTCP, TargetPort: intstr.FromInt(80), Name: "http2", NodePort: 31380},
@@ -235,6 +246,9 @@ func SetDefaults(config *Istio) {
 	}
 	if config.Spec.SidecarInjector.InitCNIConfiguration.LogLevel == "" {
 		config.Spec.SidecarInjector.InitCNIConfiguration.LogLevel = defaultInitCNILogLevel
+	}
+	if config.Spec.SidecarInjector.Init.Resources == nil {
+		config.Spec.SidecarInjector.Init.Resources = defaultInitResources
 	}
 	// SDS config
 	if config.Spec.SDS.Enabled == nil {

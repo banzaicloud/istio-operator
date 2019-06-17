@@ -18,6 +18,7 @@ package sidecarinjector
 
 import (
 	"strconv"
+	"strings"
 
 	"github.com/ghodss/yaml"
 	apiv1 "k8s.io/api/core/v1"
@@ -81,13 +82,7 @@ func (r *Reconciler) proxyInitContainer() string {
   - "[[ index .ObjectMeta.Annotations ` + "`" + `traffic.sidecar.istio.io/kubevirtInterfaces` + "`" + ` ]]"
   [[ end -]]
   imagePullPolicy: ` + string(r.Config.Spec.ImagePullPolicy) + `
-  resources:
-    requests:
-      cpu: 10m
-      memory: 10Mi
-    limits:
-      cpu: 100m
-      memory: 50Mi
+` + r.getFormattedResources(r.Config.Spec.SidecarInjector.Init.Resources, 2) + `
   securityContext:
     capabilities:
       add:
@@ -223,14 +218,13 @@ containers:
     ` + r.runAsGroup() + `
     runAsUser: 1337
     [[- end ]]
+  [[ if (isset .ObjectMeta.Annotations ` + "`" + `sidecar.istio.io/proxyCPU` + "`" + `) -]]
   resources:
-    [[ if (isset .ObjectMeta.Annotations ` + "`" + `sidecar.istio.io/proxyCPU` + "`" + `) -]]
     requests:
       cpu: [[ index .ObjectMeta.Annotations ` + "`" + `sidecar.istio.io/proxyCPU` + "`" + ` ]]
       memory: [[ index .ObjectMeta.Annotations ` + "`" + `sidecar.istio.io/proxyMemory` + "`" + ` ]]
   [[ else -]]
-    requests:
-      cpu: 10m
+` + r.getFormattedResources(r.Config.Spec.Proxy.Resources, 2) + `
   [[ end -]]
   volumeMounts:
   [[- if (isset .ObjectMeta.Annotations ` + "`" + `sidecar.istio.io/bootstrapOverride` + "`" + `) ]]
@@ -314,6 +308,26 @@ func (r *Reconciler) coreDumpContainer() string {
 	return string(coreDumpContainerYAML)
 }
 
+func (r *Reconciler) getFormattedResources(resources *apiv1.ResourceRequirements, indentSize int) string {
+	type Resources struct {
+		Resources apiv1.ResourceRequirements `json:"resources,omitempty"`
+	}
+
+	requirements := templates.GetResourcesRequirementsOrDefault(
+		resources,
+		r.Config.Spec.DefaultResources,
+	)
+
+	requirementsYAML, err := yaml.Marshal(Resources{
+		Resources: requirements,
+	})
+	if err != nil {
+		return ""
+	}
+
+	return indentWithSpaces(string(requirementsYAML), indentSize)
+}
+
 func (r *Reconciler) runAsGroup() string {
 	if util.PointerToBool(r.Config.Spec.SDS.Enabled) && r.Config.Spec.SDS.UseTrustworthyJwt {
 		return "runAsGroup: 1337"
@@ -381,4 +395,9 @@ func (r *Reconciler) volumes() string {
         audience: ""`
 	}
 	return volumes
+}
+
+func indentWithSpaces(v string, spaces int) string {
+	pad := strings.Repeat(" ", spaces)
+	return pad + strings.Replace(v, "\n", "\n"+pad, -1)
 }

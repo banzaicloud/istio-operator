@@ -106,6 +106,14 @@ spec:
     replicaCount: 1
     rewriteAppHTTPProbe: true
     autoInjectionPolicyEnabled: true
+    init:
+      resources:
+        requests:
+          cpu: 10m
+          memory: 10Mi
+        limits:
+          cpu: 100m
+          memory: 50Mi
   nodeAgent:
     enabled: false
     image: "docker.io/istio/node-agent-k8s:1.1.8"
