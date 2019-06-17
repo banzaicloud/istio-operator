@@ -119,6 +119,9 @@ func SetDefaults(config *Istio) {
 	if config.Spec.Pilot.Image == "" {
 		config.Spec.Pilot.Image = defaultPilotImage
 	}
+	if config.Spec.Pilot.Sidecar == nil {
+		config.Spec.Pilot.Sidecar = util.BoolPointer(true)
+	}
 	if config.Spec.Pilot.ReplicaCount == 0 {
 		config.Spec.Pilot.ReplicaCount = defaultReplicaCount
 	}

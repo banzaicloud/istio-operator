@@ -55,6 +55,7 @@ type SDSConfiguration struct {
 type PilotConfiguration struct {
 	Enabled       *bool                        `json:"enabled,omitempty"`
 	Image         string                       `json:"image,omitempty"`
+	Sidecar       *bool                        `json:"sidecar,omitempty"`
 	ReplicaCount  int32                        `json:"replicaCount,omitempty"`
 	MinReplicas   int32                        `json:"minReplicas,omitempty"`
 	MaxReplicas   int32                        `json:"maxReplicas,omitempty"`

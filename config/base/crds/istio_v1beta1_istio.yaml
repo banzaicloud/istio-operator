@@ -354,6 +354,8 @@ spec:
                   type: integer
                 resources:
                   type: object
+                sidecar:
+                  type: boolean
                 tolerations:
                   items:
                     type: object
