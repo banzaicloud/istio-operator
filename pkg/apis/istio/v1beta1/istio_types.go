@@ -155,13 +155,19 @@ type InitCNIConfiguration struct {
 	Affinity *corev1.Affinity `json:"affinity,omitempty"`
 }
 
+// SidecarInjectorInitConfiguration defines options for init containers in the sidecar
+type SidecarInjectorInitConfiguration struct {
+	Resources *corev1.ResourceRequirements `json:"resources,omitempty"`
+}
+
 // SidecarInjectorConfiguration defines config options for SidecarInjector
 type SidecarInjectorConfiguration struct {
-	Enabled              *bool                        `json:"enabled,omitempty"`
-	Image                string                       `json:"image,omitempty"`
-	ReplicaCount         int32                        `json:"replicaCount,omitempty"`
-	Resources            *corev1.ResourceRequirements `json:"resources,omitempty"`
-	InitCNIConfiguration InitCNIConfiguration         `json:"initCNIConfiguration,omitempty"`
+	Enabled              *bool                            `json:"enabled,omitempty"`
+	Image                string                           `json:"image,omitempty"`
+	ReplicaCount         int32                            `json:"replicaCount,omitempty"`
+	Resources            *corev1.ResourceRequirements     `json:"resources,omitempty"`
+	Init                 SidecarInjectorInitConfiguration `json:"init,omitempty"`
+	InitCNIConfiguration InitCNIConfiguration             `json:"initCNIConfiguration,omitempty"`
 	// If true, sidecar injector will rewrite PodSpec for liveness
 	// health check to redirect request to sidecar. This makes liveness check work
 	// even when mTLS is enabled.
