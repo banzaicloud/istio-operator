@@ -1,4 +1,7 @@
 version: 2.1
+orbs:
+  helm: banzaicloud/helm@0.0.3
+
 jobs:
   build:
     docker:
@@ -86,7 +89,24 @@ jobs:
           path: build/
 
 workflows:
-    version: 2
-    ci:
-        jobs:
-            - build
+  version: 2
+  ci:
+    jobs:
+      - build
+
+  helm-chart:
+    jobs:
+      - helm/lint-chart:
+          chart-path: deploy/charts/istio-operator
+          filters:
+            tags:
+              ignore: /.*/
+
+      - helm/publish-chart:
+          context: helm
+          chart-path: deploy/charts/istio-operator
+          filters:
+            branches:
+              ignore: /.*/
+            tags:
+              only: /chart\/istio-operator\/\d+.\d+.\d+/
