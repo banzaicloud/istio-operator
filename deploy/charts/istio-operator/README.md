@@ -11,7 +11,7 @@
 To install the chart:
 
 ```
-$ helm repo add banzaicloud-stable http://kubernetes-charts.banzaicloud.com/branch/master
+$ helm repo add banzaicloud-stable https://kubernetes-charts.banzaicloud.com
 $ helm install --name=istio-operator --namespace=istio-system banzaicloud-stable/istio-operator
 ```
 
