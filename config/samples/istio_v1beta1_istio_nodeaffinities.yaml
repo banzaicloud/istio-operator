@@ -5,7 +5,7 @@ metadata:
     controller-tools.k8s.io: "1.0"
   name: istio-sample
 spec:
-  version: "1.1.9"
+  version: "1.1.10"
   mtls: false
   includeIPRanges: "*"
   excludeIPRanges: ""
@@ -16,7 +16,7 @@ spec:
     enabled: false
   pilot:
     enabled: true
-    image: "docker.io/istio/pilot:1.1.9"
+    image: "docker.io/istio/pilot:1.1.10"
     replicaCount: 1
     minReplicas: 1
     maxReplicas: 5
@@ -30,10 +30,10 @@ spec:
       tolerationSeconds: 6000
   citadel:
     enabled: true
-    image: "docker.io/istio/citadel:1.1.9"
+    image: "docker.io/istio/citadel:1.1.10"
   galley:
     enabled: true
-    image: "docker.io/istio/galley:1.1.9"
+    image: "docker.io/istio/galley:1.1.10"
     replicaCount: 1
   gateways:
     enabled: true
@@ -89,24 +89,24 @@ spec:
       enabled: false
   mixer:
     enabled: true
-    image: "docker.io/istio/mixer:1.1.9"
+    image: "docker.io/istio/mixer:1.1.10"
     replicaCount: 1
     minReplicas: 1
     maxReplicas: 5
   sidecarInjector:
     enabled: true
-    image: "docker.io/istio/sidecar_injector:1.1.9"
+    image: "docker.io/istio/sidecar_injector:1.1.10"
     replicaCount: 1
     rewriteAppHTTPProbe: true
     autoInjectionPolicyEnabled: true
   nodeAgent:
     enabled: false
-    image: "docker.io/istio/node-agent-k8s:1.1.9"
+    image: "docker.io/istio/node-agent-k8s:1.1.10"
   proxy:
-    image: "docker.io/istio/proxyv2:1.1.9"
+    image: "docker.io/istio/proxyv2:1.1.10"
     enableCoreDump: false
   proxyInit:
-    image: "docker.io/istio/proxy_init:1.1.9"
+    image: "docker.io/istio/proxy_init:1.1.10"
   defaultPodDisruptionBudget:
     enabled: true
   outboundTrafficPolicy:
