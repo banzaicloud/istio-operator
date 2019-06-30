@@ -45,6 +45,7 @@ func (r *Reconciler) deployment() runtime.Object {
 				},
 				Spec: apiv1.PodSpec{
 					ServiceAccountName: serviceAccountName,
+					PriorityClassName:  "",
 					Containers: []apiv1.Container{
 						{
 							Name:            "sidecar-injector-webhook",
@@ -118,6 +119,10 @@ func (r *Reconciler) deployment() runtime.Object {
 										{
 											Key:  "config",
 											Path: "config",
+										},
+										{
+											Key:  "values",
+											Path: "values",
 										},
 									},
 									DefaultMode: util.IntPointer(420),

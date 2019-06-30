@@ -28,7 +28,7 @@ import (
 
 const (
 	defaultImageHub                  = "docker.io/istio"
-	defaultImageVersion              = "1.1.9"
+	defaultImageVersion              = "1.2.2"
 	defaultPilotImage                = defaultImageHub + "/" + "pilot" + ":" + defaultImageVersion
 	defaultCitadelImage              = defaultImageHub + "/" + "citadel" + ":" + defaultImageVersion
 	defaultGalleyImage               = defaultImageHub + "/" + "galley" + ":" + defaultImageVersion
@@ -275,6 +275,15 @@ func SetDefaults(config *Istio) {
 	if config.Spec.ProxyInit.Image == "" {
 		config.Spec.ProxyInit.Image = defaultProxyInitImage
 	}
+	if config.Spec.Proxy.ComponentLogLevel == "" {
+		config.Spec.Proxy.ComponentLogLevel = "default:error"
+	}
+	if config.Spec.Proxy.LogLevel == "" {
+		config.Spec.Proxy.LogLevel = "warning"
+	}
+	if config.Spec.Proxy.DNSRefreshRate == "" {
+		config.Spec.Proxy.DNSRefreshRate = "300s"
+	}
 	// PDB config
 	if config.Spec.DefaultPodDisruptionBudget.Enabled == nil {
 		config.Spec.DefaultPodDisruptionBudget.Enabled = util.BoolPointer(false)
@@ -322,6 +331,10 @@ func SetDefaults(config *Istio) {
 
 	if config.Spec.MeshExpansion == nil {
 		config.Spec.MeshExpansion = util.BoolPointer(defaultMeshExpansion)
+	}
+
+	if config.Spec.UseMCP == nil {
+		config.Spec.UseMCP = util.BoolPointer(true)
 	}
 }
 

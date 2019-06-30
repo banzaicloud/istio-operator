@@ -32,7 +32,9 @@ func (r *Reconciler) daemonSet() runtime.Object {
 	labels := util.MergeLabels(nodeAgentLabels, labelSelector)
 	hostPathType := apiv1.HostPathUnset
 	return &appsv1.DaemonSet{
-		ObjectMeta: templates.ObjectMeta(daemonSetName, labels, r.Config),
+		ObjectMeta: templates.ObjectMetaWithAnnotations(daemonSetName, labels, map[string]string{
+			"sidecar.istio.io/inject": "false",
+		}, r.Config),
 		Spec: appsv1.DaemonSetSpec{
 			Selector: &metav1.LabelSelector{
 				MatchLabels: labels,
@@ -44,6 +46,7 @@ func (r *Reconciler) daemonSet() runtime.Object {
 				},
 				Spec: apiv1.PodSpec{
 					ServiceAccountName: serviceAccountName,
+					PriorityClassName:  "",
 					Containers: []apiv1.Container{
 						{
 							Name:            "nodeagent",

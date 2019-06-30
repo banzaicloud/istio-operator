@@ -42,6 +42,7 @@ func (r *Reconciler) configMap() runtime.Object {
 
 func (r *Reconciler) validatingWebhookConfig(ns string) string {
 	fail := admissionv1beta1.Fail
+	se := admissionv1beta1.SideEffectClassNone
 	webhook := admissionv1beta1.ValidatingWebhookConfiguration{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      webhookName,
@@ -106,6 +107,7 @@ func (r *Reconciler) validatingWebhookConfig(ns string) string {
 					},
 				},
 				FailurePolicy: &fail,
+				SideEffects:   &se,
 			},
 			{
 				Name: "mixer.validation.istio.io",
@@ -153,11 +155,18 @@ func (r *Reconciler) validatingWebhookConfig(ns string) string {
 								"metrics",
 								"quotas",
 								"reportnothings",
-								"tracespans"},
+								"tracespans",
+								"adapters",
+								"handlers",
+								"instances",
+								"templates",
+								"zipkins",
+							},
 						},
 					},
 				},
 				FailurePolicy: &fail,
+				SideEffects:   &se,
 			},
 		},
 	}

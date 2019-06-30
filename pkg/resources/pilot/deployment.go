@@ -76,78 +76,79 @@ func (r *Reconciler) containerPorts() []apiv1.ContainerPort {
 }
 
 func (r *Reconciler) containers() []apiv1.Container {
+	discoveryContainer := apiv1.Container{
+		Name:            "discovery",
+		Image:           r.Config.Spec.Pilot.Image,
+		ImagePullPolicy: r.Config.Spec.ImagePullPolicy,
+		Args:            r.containerArgs(),
+		Ports:           r.containerPorts(),
+		ReadinessProbe: &apiv1.Probe{
+			Handler: apiv1.Handler{
+				HTTPGet: &apiv1.HTTPGetAction{
+					Path:   "/ready",
+					Port:   intstr.FromInt(8080),
+					Scheme: apiv1.URISchemeHTTP,
+				},
+			},
+			InitialDelaySeconds: 5,
+			PeriodSeconds:       30,
+			TimeoutSeconds:      5,
+			FailureThreshold:    3,
+			SuccessThreshold:    1,
+		},
+		Env: []apiv1.EnvVar{
+			{
+				Name: "POD_NAME",
+				ValueFrom: &apiv1.EnvVarSource{
+					FieldRef: &apiv1.ObjectFieldSelector{
+						APIVersion: "v1",
+						FieldPath:  "metadata.name",
+					},
+				},
+			},
+			{
+				Name: "POD_NAMESPACE",
+				ValueFrom: &apiv1.EnvVarSource{
+					FieldRef: &apiv1.ObjectFieldSelector{
+						APIVersion: "v1",
+						FieldPath:  "metadata.namespace",
+					},
+				},
+			},
+			{Name: "PILOT_PUSH_THROTTLE", Value: "100"},
+			{Name: "GODEBUG", Value: "gctrace=2"},
+			{
+				Name:  "PILOT_TRACE_SAMPLING",
+				Value: fmt.Sprintf("%.2f", r.Config.Spec.Pilot.TraceSampling),
+			},
+			{Name: "PILOT_DISABLE_XDS_MARSHALING_TO_ANY", Value: "1"},
+			{Name: "MESHNETWORKS_HASH", Value: r.Config.Spec.GetMeshNetworksHash()},
+		},
+		Resources: templates.GetResourcesRequirementsOrDefault(
+			r.Config.Spec.Pilot.Resources,
+			r.Config.Spec.DefaultResources,
+		),
+		VolumeMounts: []apiv1.VolumeMount{
+			{
+				Name:      "config-volume",
+				MountPath: "/etc/istio/config",
+			},
+			{
+				Name:      "istio-certs",
+				MountPath: "/etc/certs",
+				ReadOnly:  true,
+			},
+		},
+		TerminationMessagePath:   apiv1.TerminationMessagePathDefault,
+		TerminationMessagePolicy: apiv1.TerminationMessageReadFile,
+	}
 
 	containers := []apiv1.Container{
-		{
-			Name:            "discovery",
-			Image:           r.Config.Spec.Pilot.Image,
-			ImagePullPolicy: r.Config.Spec.ImagePullPolicy,
-			Args:            r.containerArgs(),
-			Ports:           r.containerPorts(),
-			ReadinessProbe: &apiv1.Probe{
-				Handler: apiv1.Handler{
-					HTTPGet: &apiv1.HTTPGetAction{
-						Path:   "/ready",
-						Port:   intstr.FromInt(8080),
-						Scheme: apiv1.URISchemeHTTP,
-					},
-				},
-				InitialDelaySeconds: 5,
-				PeriodSeconds:       30,
-				TimeoutSeconds:      5,
-				FailureThreshold:    3,
-				SuccessThreshold:    1,
-			},
-			Env: []apiv1.EnvVar{
-				{
-					Name: "POD_NAME",
-					ValueFrom: &apiv1.EnvVarSource{
-						FieldRef: &apiv1.ObjectFieldSelector{
-							APIVersion: "v1",
-							FieldPath:  "metadata.name",
-						},
-					},
-				},
-				{
-					Name: "POD_NAMESPACE",
-					ValueFrom: &apiv1.EnvVarSource{
-						FieldRef: &apiv1.ObjectFieldSelector{
-							APIVersion: "v1",
-							FieldPath:  "metadata.namespace",
-						},
-					},
-				},
-				{Name: "PILOT_PUSH_THROTTLE", Value: "100"},
-				{Name: "GODEBUG", Value: "gctrace=2"},
-				{
-					Name:  "PILOT_TRACE_SAMPLING",
-					Value: fmt.Sprintf("%.2f", r.Config.Spec.Pilot.TraceSampling),
-				},
-				{Name: "PILOT_DISABLE_XDS_MARSHALING_TO_ANY", Value: "1"},
-				{Name: "MESHNETWORKS_HASH", Value: r.Config.Spec.GetMeshNetworksHash()},
-			},
-			Resources: templates.GetResourcesRequirementsOrDefault(
-				r.Config.Spec.Pilot.Resources,
-				r.Config.Spec.DefaultResources,
-			),
-			VolumeMounts: []apiv1.VolumeMount{
-				{
-					Name:      "config-volume",
-					MountPath: "/etc/istio/config",
-				},
-				{
-					Name:      "istio-certs",
-					MountPath: "/etc/certs",
-					ReadOnly:  true,
-				},
-			},
-			TerminationMessagePath:   apiv1.TerminationMessagePathDefault,
-			TerminationMessagePolicy: apiv1.TerminationMessageReadFile,
-		},
+		discoveryContainer,
 	}
 
 	if util.PointerToBool(r.Config.Spec.Pilot.Sidecar) {
-		containers = append(containers, apiv1.Container{
+		proxyContainer := apiv1.Container{
 			Name:            "istio-proxy",
 			Image:           r.Config.Spec.Proxy.Image,
 			ImagePullPolicy: r.Config.Spec.ImagePullPolicy,
@@ -182,15 +183,31 @@ func (r *Reconciler) containers() []apiv1.Container {
 			},
 			TerminationMessagePath:   apiv1.TerminationMessagePathDefault,
 			TerminationMessagePolicy: apiv1.TerminationMessageReadFile,
-		})
+		}
+
+		if util.PointerToBool(r.Config.Spec.SDS.Enabled) {
+			proxyContainer.VolumeMounts = append(proxyContainer.VolumeMounts, apiv1.VolumeMount{
+				Name:      "sds-uds-path",
+				MountPath: "/var/run/sds",
+				ReadOnly:  true,
+			})
+
+			if r.Config.Spec.SDS.UseTrustworthyJwt {
+				proxyContainer.VolumeMounts = append(proxyContainer.VolumeMounts, apiv1.VolumeMount{
+					Name:      "istio-token",
+					MountPath: "/var/run/secrets/tokens",
+				})
+			}
+		}
+
+		containers = append(containers, proxyContainer)
 	}
 
 	return containers
 }
 
 func (r *Reconciler) deployment() runtime.Object {
-
-	return &appsv1.Deployment{
+	deployment := &appsv1.Deployment{
 		ObjectMeta: templates.ObjectMeta(deploymentName, util.MergeLabels(pilotLabels, labelSelector), r.Config),
 		Spec: appsv1.DeploymentSpec{
 			Replicas: util.IntPointer(k8sutil.GetHPAReplicaCountOrDefault(r.Client, types.NamespacedName{
@@ -239,4 +256,37 @@ func (r *Reconciler) deployment() runtime.Object {
 			},
 		},
 	}
+
+	if util.PointerToBool(r.Config.Spec.SDS.Enabled) {
+		deployment.Spec.Template.Spec.Volumes = append(deployment.Spec.Template.Spec.Volumes, apiv1.Volume{
+			Name: "sds-uds-path",
+			VolumeSource: apiv1.VolumeSource{
+				HostPath: &apiv1.HostPathVolumeSource{
+					Path: "/var/run/sds",
+				},
+			},
+		})
+
+		if r.Config.Spec.SDS.UseTrustworthyJwt {
+			deployment.Spec.Template.Spec.Volumes = append(deployment.Spec.Template.Spec.Volumes, apiv1.Volume{
+				Name: "istio-token",
+				VolumeSource: apiv1.VolumeSource{
+					Projected: &apiv1.ProjectedVolumeSource{
+						Sources: []apiv1.VolumeProjection{
+							{
+								ServiceAccountToken: &apiv1.ServiceAccountTokenProjection{
+									Path:              "istio-token",
+									ExpirationSeconds: util.Int64Pointer(43200),
+									Audience:          "cluster.local",
+								},
+							},
+						},
+						DefaultMode: util.IntPointer(420),
+					},
+				},
+			})
+		}
+	}
+
+	return deployment
 }

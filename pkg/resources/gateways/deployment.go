@@ -102,6 +102,14 @@ func (r *Reconciler) deployment(gw string) runtime.Object {
 		args = append(args, "--applicationPorts", gwConfig.ApplicationPorts)
 	}
 
+	if r.Config.Spec.Proxy.LogLevel != "" {
+		args = append(args, "--proxyLogLevel", r.Config.Spec.Proxy.LogLevel)
+	}
+
+	if r.Config.Spec.Proxy.ComponentLogLevel != "" {
+		args = append(args, "--proxyComponentLogLevel", r.Config.Spec.Proxy.ComponentLogLevel)
+	}
+
 	containers = append(containers, apiv1.Container{
 		Name:            "istio-proxy",
 		Image:           r.Config.Spec.Proxy.Image,
@@ -229,6 +237,15 @@ func (r *Reconciler) envVars(gwConfig *istiov1beta1.GatewayConfiguration) []apiv
 			Name:  "ISTIO_META_ROUTER_MODE",
 			Value: "sni-dnat",
 		},
+		{
+			Name: "NODE_NAME",
+			ValueFrom: &apiv1.EnvVarSource{
+				FieldRef: &apiv1.ObjectFieldSelector{
+					FieldPath:  "spec.nodeName",
+					APIVersion: "v1",
+				},
+			},
+		},
 	}
 	if util.PointerToBool(gwConfig.SDS.Enabled) {
 		envVars = append(envVars, apiv1.EnvVar{
@@ -272,7 +289,7 @@ func (r *Reconciler) volumeMounts(gw string, gwConfig *istiov1beta1.GatewayConfi
 	if util.PointerToBool(r.Config.Spec.SDS.Enabled) {
 		vms = append(vms, apiv1.VolumeMount{
 			Name:      "sdsudspath",
-			MountPath: "/var/run/sds/uds_path",
+			MountPath: "/var/run/sds",
 			ReadOnly:  true,
 		})
 		if r.Config.Spec.SDS.UseTrustworthyJwt {
@@ -325,13 +342,11 @@ func (r *Reconciler) volumes(gw string, gwConfig *istiov1beta1.GatewayConfigurat
 		},
 	}
 	if util.PointerToBool(r.Config.Spec.SDS.Enabled) {
-		hostPathType := apiv1.HostPathSocket
 		volumes = append(volumes, apiv1.Volume{
 			Name: "sdsudspath",
 			VolumeSource: apiv1.VolumeSource{
 				HostPath: &apiv1.HostPathVolumeSource{
-					Path: "/var/run/sds/uds_path",
-					Type: &hostPathType,
+					Path: "/var/run/sds",
 				},
 			},
 		})

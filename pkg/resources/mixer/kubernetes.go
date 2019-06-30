@@ -42,21 +42,24 @@ func (r *Reconciler) kubernetesEnvHandler() *k8sutil.DynamicObject {
 }
 
 func (r *Reconciler) attributesKubernetes() *k8sutil.DynamicObject {
-	return &k8sutil.DynamicObject{
+	attributes := &k8sutil.DynamicObject{
 		Gvr: schema.GroupVersionResource{
 			Group:    "config.istio.io",
 			Version:  "v1alpha2",
-			Resource: "kuberneteses",
+			Resource: "instances",
 		},
-		Kind:      "kubernetes",
+		Kind:      "instance",
 		Name:      "attributes",
 		Namespace: r.Config.Namespace,
 		Spec: map[string]interface{}{
-			"source_uid":       `source.uid | ""`,
-			"source_ip":        `source.ip | ip("0.0.0.0")`,
-			"destination_uid":  `destination.uid | ""`,
-			"destination_port": `destination.port | 0`,
-			"attribute_bindings": map[string]interface{}{
+			"compiledTemplate": "kubernetes",
+			"params": map[string]interface{}{
+				"source_uid":       `source.uid | ""`,
+				"source_ip":        `source.ip | ip("0.0.0.0")`,
+				"destination_uid":  `destination.uid | ""`,
+				"destination_port": `destination.port | 0`,
+			},
+			"attributeBindings": map[string]interface{}{
 				"source.ip":                      `$out.source_pod_ip | ip("0.0.0.0")`,
 				"source.uid":                     `$out.source_pod_uid | "unknown"`,
 				"source.labels":                  `$out.source_labels | emptyStringMap()`,
@@ -67,7 +70,7 @@ func (r *Reconciler) attributesKubernetes() *k8sutil.DynamicObject {
 				"source.workload.uid":            `$out.source_workload_uid | "unknown"`,
 				"source.workload.name":           `$out.source_workload_name | "unknown"`,
 				"source.workload.namespace":      `$out.source_workload_namespace | "unknown"`,
-				"source.cluster.id":              `$out.source_cluster_id | "unknown"`,
+				"source.cluster.id":              `"unknown"`,
 				"destination.ip":                 `$out.destination_pod_ip | ip("0.0.0.0")`,
 				"destination.uid":                `$out.destination_pod_uid | "unknown"`,
 				"destination.labels":             `$out.destination_labels | emptyStringMap()`,
@@ -79,11 +82,21 @@ func (r *Reconciler) attributesKubernetes() *k8sutil.DynamicObject {
 				"destination.workload.uid":       `$out.destination_workload_uid | "unknown"`,
 				"destination.workload.name":      `$out.destination_workload_name | "unknown"`,
 				"destination.workload.namespace": `$out.destination_workload_namespace | "unknown"`,
-				"destination.cluster.id":         `$out.destination_cluster_id | "unknown"`,
+				"destination.cluster.id":         `"unknown"`,
 			},
 		},
 		Owner: r.Config,
 	}
+
+	if util.PointerToBool(r.Config.Spec.Mixer.MultiClusterSupport) {
+		if bindings, ok := attributes.Spec["attributeBindings"].(map[string]string); ok {
+			bindings["source.cluster.id"] = `$out.source_cluster_id | "unknown"`
+			bindings["destination.cluster.id"] = `$out.destination_cluster_id | "unknown"`
+			attributes.Spec["attributeBindings"] = bindings
+		}
+	}
+
+	return attributes
 }
 
 func (r *Reconciler) kubeAttrRule() *k8sutil.DynamicObject {
@@ -100,7 +113,7 @@ func (r *Reconciler) kubeAttrRule() *k8sutil.DynamicObject {
 			"actions": []interface{}{
 				map[string]interface{}{
 					"handler":   "kubernetesenv",
-					"instances": util.EmptyTypedStrSlice("attributes.kubernetes"),
+					"instances": util.EmptyTypedStrSlice("attributes"),
 				},
 			},
 		},
@@ -122,7 +135,7 @@ func (r *Reconciler) tcpKubeAttrRule() *k8sutil.DynamicObject {
 			"actions": []interface{}{
 				map[string]interface{}{
 					"handler":   "kubernetesenv",
-					"instances": util.EmptyTypedStrSlice("attributes.kubernetes"),
+					"instances": util.EmptyTypedStrSlice("attributes"),
 				},
 			},
 			"match": `context.protocol == "tcp"`,

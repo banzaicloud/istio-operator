@@ -107,7 +107,7 @@ func (r *Reconciler) meshConfig() string {
 		"localityLbSetting": nil,
 	}
 
-	if r.Config.Spec.UseMCP {
+	if util.PointerToBool(r.Config.Spec.UseMCP) {
 		meshConfig["configSources"] = []map[string]interface{}{
 			r.defaultConfigSource(),
 		}

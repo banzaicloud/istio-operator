@@ -49,7 +49,7 @@ func (r *Reconciler) deployment() runtime.Object {
 		containerArgs = append(containerArgs, "--insecure=true")
 	}
 
-	if !r.Config.Spec.UseMCP {
+	if !util.PointerToBool(r.Config.Spec.UseMCP) {
 		containerArgs = append(containerArgs, "--enable-server=false")
 	}
 

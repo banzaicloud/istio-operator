@@ -15,7 +15,7 @@ For demo purposes, create 3 clusters, a single node [Banzai Cloud PKE](https://b
 ```bash
 ❯ git clone https://github.com/banzaicloud/istio-operator.git
 ❯ cd istio-operator
-❯ git checkout release-1.1
+❯ git checkout release-1.2
 ```
 
 [Pipeline platform](https://beta.banzaicloud.io/) is the easiest way to setup that environment using our [CLI tool](https://banzaicloud.com/blog/cli-ux/) ([install](https://github.com/banzaicloud/banzai-cli#installation)) for [Pipeline](https:/github.com/banzaicloud/pipeline), simply called `banzai`.

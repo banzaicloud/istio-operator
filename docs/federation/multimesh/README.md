@@ -15,7 +15,7 @@ For demonstrative purposes, create 2 clusters, a 2 node [Banzai Cloud PKE](https
 ```bash
 ❯ git clone https://github.com/banzaicloud/istio-operator.git
 ❯ cd istio-operator
-❯ git checkout release-1.1
+❯ git checkout release-1.2
 ```
 
 ## Create the clusters on the Banzai Cloud Pipeline platform
@@ -193,7 +193,7 @@ In order to allow access to `echo` running on the GKE cluster, we need to create
 
 For DNS resolution for services under the `*.global` domain, you need to assign these services an IP address. In this example we’ll use IPs in 127.255.0.0/16. Application traffic for these IPs will be captured by the sidecar and routed to the appropriate remote service.
 
-> Each service (in the .global DNS domain) must have a unique IP within the cluster, but they are not need to be routable.  
+> Each service (in the .global DNS domain) must have a unique IP within the cluster, but they are not need to be routable.
 
 ```bash
 ❯ kubectl apply --context=$CTX_PKE -n default -f - <<EOF

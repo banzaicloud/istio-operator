@@ -32,6 +32,11 @@ func (in *CitadelConfiguration) DeepCopyInto(out *CitadelConfiguration) {
 		*out = new(bool)
 		**out = **in
 	}
+	if in.HealthCheck != nil {
+		in, out := &in.HealthCheck, &out.HealthCheck
+		*out = new(bool)
+		**out = **in
+	}
 	if in.Resources != nil {
 		in, out := &in.Resources, &out.Resources
 		*out = new(v1.ResourceRequirements)
@@ -431,6 +436,11 @@ func (in *IstioSpec) DeepCopyInto(out *IstioSpec) {
 	in.NodeAgent.DeepCopyInto(&out.NodeAgent)
 	in.Proxy.DeepCopyInto(&out.Proxy)
 	out.ProxyInit = in.ProxyInit
+	if in.UseMCP != nil {
+		in, out := &in.UseMCP, &out.UseMCP
+		*out = new(bool)
+		**out = **in
+	}
 	in.DefaultPodDisruptionBudget.DeepCopyInto(&out.DefaultPodDisruptionBudget)
 	out.OutboundTrafficPolicy = in.OutboundTrafficPolicy
 	in.Tracing.DeepCopyInto(&out.Tracing)
@@ -633,6 +643,11 @@ func (in *MixerConfiguration) DeepCopyInto(out *MixerConfiguration) {
 		for i := range *in {
 			(*in)[i].DeepCopyInto(&(*out)[i])
 		}
+	}
+	if in.MultiClusterSupport != nil {
+		in, out := &in.MultiClusterSupport, &out.MultiClusterSupport
+		*out = new(bool)
+		**out = **in
 	}
 	return
 }
@@ -974,6 +989,11 @@ func (in *SidecarInjectorConfiguration) DeepCopyInto(out *SidecarInjectorConfigu
 	in.InitCNIConfiguration.DeepCopyInto(&out.InitCNIConfiguration)
 	if in.AutoInjectionPolicyEnabled != nil {
 		in, out := &in.AutoInjectionPolicyEnabled, &out.AutoInjectionPolicyEnabled
+		*out = new(bool)
+		**out = **in
+	}
+	if in.EnableNamespacesByDefault != nil {
+		in, out := &in.EnableNamespacesByDefault, &out.EnableNamespacesByDefault
 		*out = new(bool)
 		**out = **in
 	}

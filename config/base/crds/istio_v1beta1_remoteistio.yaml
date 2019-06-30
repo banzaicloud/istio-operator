@@ -61,6 +61,8 @@ spec:
                   type: string
                 enabled:
                   type: boolean
+                healthCheck:
+                  type: boolean
                 image:
                   type: string
                 nodeSelector:
@@ -106,11 +108,34 @@ spec:
             proxy:
               description: Proxy configuration options
               properties:
+                componentLogLevel:
+                  description: Per Component log level for proxy, applies to gateways
+                    and sidecars. If a component level is not set, then the "LogLevel"
+                    will be used. If left empty, "misc:error" is used.
+                  type: string
+                dnsRefreshRate:
+                  description: Configure the DNS refresh rate for Envoy cluster of
+                    type STRICT_DNS This must be given it terms of seconds. For example,
+                    300s is valid but 5m is invalid.
+                  pattern: ^[0-9]{1,5}s$
+                  type: string
                 enableCoreDump:
                   description: If set, newly injected sidecars will have core dumps
                     enabled.
                   type: boolean
                 image:
+                  type: string
+                logLevel:
+                  description: 'Log level for proxy, applies to gateways and sidecars.
+                    If left empty, "warning" is used. Expected values are: trace|debug|info|warning|error|critical|off'
+                  enum:
+                  - trace
+                  - debug
+                  - info
+                  - warning
+                  - error
+                  - critical
+                  - "off"
                   type: string
                 privileged:
                   description: If set to true, istio-proxy container will have privileged
@@ -132,6 +157,10 @@ spec:
                   type: object
                 autoInjectionPolicyEnabled:
                   description: This controls the 'policy' in the sidecar injector
+                  type: boolean
+                enableNamespacesByDefault:
+                  description: This controls whether the webhook looks for namespaces
+                    for injection enabled or disabled
                   type: boolean
                 enabled:
                   type: boolean
