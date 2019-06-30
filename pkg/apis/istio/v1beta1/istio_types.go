@@ -137,6 +137,8 @@ type MixerConfiguration struct {
 	NodeSelector map[string]string            `json:"nodeSelector,omitempty"`
 	Affinity     *corev1.Affinity             `json:"affinity,omitempty"`
 	Tolerations  []corev1.Toleration          `json:"tolerations,omitempty"`
+	// Turn it on if you use mixer that supports multi cluster telemetry
+	MultiClusterSupport *bool `json:"multiClusterSupport,omitempty"`
 }
 
 // InitCNIConfiguration defines config for the sidecar proxy init CNI plugin

@@ -634,6 +634,11 @@ func (in *MixerConfiguration) DeepCopyInto(out *MixerConfiguration) {
 			(*in)[i].DeepCopyInto(&(*out)[i])
 		}
 	}
+	if in.MultiClusterSupport != nil {
+		in, out := &in.MultiClusterSupport, &out.MultiClusterSupport
+		*out = new(bool)
+		**out = **in
+	}
 	return
 }
 
