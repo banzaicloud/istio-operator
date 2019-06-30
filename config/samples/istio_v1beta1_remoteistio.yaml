@@ -22,10 +22,10 @@ spec:
     labelSelector: "app=jaeger"
   controlPlaneSecurityEnabled: true
   citadel:
-      image: "istio/citadel:1.0.8"
+      image: "istio/citadel:1.0.9"
       replicaCount: 1
   sidecarInjector:
-      image: "istio/sidecar_injector:1.0.8"
+      image: "istio/sidecar_injector:1.0.9"
       replicaCount: 1
   proxy:
-      image: "istio/proxyv2:1.0.8"
+      image: "istio/proxyv2:1.0.9"

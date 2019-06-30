@@ -48,7 +48,7 @@ func (r *Reconciler) siConfig() string {
 func (r *Reconciler) templateConfig() string {
 	return `initContainers:
 - name: istio-init
-  image: docker.io/istio/proxy_init:1.0.8
+  image: docker.io/istio/proxy_init:1.0.9
   args:
   - "-p"
   - [[ .MeshConfig.ProxyListenPort ]]
@@ -73,7 +73,7 @@ func (r *Reconciler) templateConfig() string {
   restartPolicy: Always
 containers:
 - name: istio-proxy
-  image: "[[ annotation .ObjectMeta ` + "`" + `sidecar.istio.io/proxyImage` + "`" + ` "docker.io/istio/proxyv2:1.0.8" ]]"
+  image: "[[ annotation .ObjectMeta ` + "`" + `sidecar.istio.io/proxyImage` + "`" + ` "docker.io/istio/proxyv2:1.0.9" ]]"
   ports:
   - containerPort: 15090
     protocol: TCP

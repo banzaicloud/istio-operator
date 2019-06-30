@@ -19,7 +19,7 @@ package v1beta1
 import "fmt"
 
 const (
-	defaultImageVersion         = "1.0.8"
+	defaultImageVersion         = "1.0.9"
 	defaultPilotImage           = "istio/pilot" + ":" + defaultImageVersion
 	defaultCitadelImage         = "istio/citadel" + ":" + defaultImageVersion
 	defaultGalleyImage          = "istio/galley" + ":" + defaultImageVersion
