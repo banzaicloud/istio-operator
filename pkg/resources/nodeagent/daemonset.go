@@ -93,6 +93,9 @@ func (r *Reconciler) daemonSet() runtime.Object {
 					Tolerations:  r.Config.Spec.NodeAgent.Tolerations,
 				},
 			},
+			UpdateStrategy: appsv1.DaemonSetUpdateStrategy{
+				Type: appsv1.RollingUpdateDaemonSetStrategyType,
+			},
 		},
 	}
 }
