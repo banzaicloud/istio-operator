@@ -84,6 +84,7 @@ func (r *Reconciler) proxyInitContainer() string {
   imagePullPolicy: ` + string(r.Config.Spec.ImagePullPolicy) + `
 ` + r.getFormattedResources(r.Config.Spec.SidecarInjector.Init.Resources, 2) + `
   securityContext:
+    runAsUser: 0
     capabilities:
       add:
       - NET_ADMIN
