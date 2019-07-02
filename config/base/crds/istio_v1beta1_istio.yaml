@@ -283,6 +283,10 @@ spec:
                 minReplicas:
                   format: int32
                   type: integer
+                multiClusterSupport:
+                  description: Turn it on if you use mixer that supports multi cluster
+                    telemetry
+                  type: boolean
                 nodeSelector:
                   type: object
                 replicaCount:
