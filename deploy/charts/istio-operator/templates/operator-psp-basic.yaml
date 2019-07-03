@@ -86,6 +86,12 @@ subjects:
     name: istio-sidecar-injector-service-account
     namespace: {{ .Release.Namespace }}
   - kind: ServiceAccount
+    name: istiocoredns-service-account
+    namespace: {{ .Release.Namespace }}
+  - kind: ServiceAccount
+    name: istio-nodeagent-service-account
+    namespace: {{ .Release.Namespace }}
+  - kind: ServiceAccount
     name: istio-operator-operator
     namespace: {{ .Release.Namespace }}
 {{- end }}
