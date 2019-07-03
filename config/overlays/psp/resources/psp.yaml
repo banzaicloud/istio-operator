@@ -1,7 +1,7 @@
 apiVersion: policy/v1beta1
 kind: PodSecurityPolicy
 metadata:
-  name: istio-operator.allow-all
+  name: psp-basic
 spec:
   fsGroup:
     rule: RunAsAny

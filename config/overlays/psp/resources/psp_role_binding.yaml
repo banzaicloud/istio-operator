@@ -1,15 +1,31 @@
 apiVersion: rbac.authorization.k8s.io/v1
 kind: RoleBinding
 metadata:
-  name: psp:istio-operator.allow-all
+  name: psp-basic
 roleRef:
   apiGroup: rbac.authorization.k8s.io
   kind: Role
-  name: psp:istio-operator.allow-all
+  name: psp-basic
 subjects:
   - kind: ServiceAccount
-    name: statefulset-controller
-    namespace: kube-system
+    name: istio-citadel-service-account
   - kind: ServiceAccount
-    name: replicaset-controller
-    namespace: kube-system
+    name: istio-galley-service-account
+  - kind: ServiceAccount
+    name: istio-egressgateway-service-account
+  - kind: ServiceAccount
+    name: istio-ingressgateway-service-account
+  - kind: ServiceAccount
+    name: istio-mixer-service-account
+  - kind: ServiceAccount
+    name: istio-operator-authproxy
+  - kind: ServiceAccount
+    name: istio-pilot-service-account
+  - kind: ServiceAccount
+    name: istio-sidecar-injector-service-account
+  - kind: ServiceAccount
+    name: istiocoredns-service-account
+  - kind: ServiceAccount
+    name: istio-nodeagent-service-account
+  - kind: ServiceAccount
+    name: default
