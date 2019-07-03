@@ -3,6 +3,8 @@ bases:
 
 namespace: istio-system
 
+namePrefix: istio-operator-
+
 resources:
 - resources/psp.yaml
 - resources/psp_role.yaml
