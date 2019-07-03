@@ -41,3 +41,4 @@ Parameter | Description | Default
 `prometheusMetrics.authProxy.image.tag` | Auth proxy container image tag | `v0.4.0`
 `prometheusMetrics.authProxy.image.pullPolicy` | Auth proxy container image pull policy | `IfNotPresent`
 `rbac.enabled` | Create rbac service account and roles | `true`
+`rbac.psp.enabled` | Create pod security policy and binding | `false`
