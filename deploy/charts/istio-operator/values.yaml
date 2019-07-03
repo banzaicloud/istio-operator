@@ -32,6 +32,11 @@ prometheusMetrics:
 ##
 rbac:
   enabled: true
+  ## Pod Security Policies
+  ## Ref: https://kubernetes.io/docs/concepts/policy/pod-security-policy/
+  ##
+  psp:
+    enabled: false
 
 nameOverride: ""
 fullnameOverride: ""
