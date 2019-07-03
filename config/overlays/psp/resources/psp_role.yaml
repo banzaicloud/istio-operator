@@ -1,0 +1,13 @@
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: psp:istio-operator.allow-all
+rules:
+- apiGroups:
+  - policy
+  resourceNames:
+  - istio-operator.allow-all
+  resources:
+  - podsecuritypolicies
+  verbs:
+  - use
