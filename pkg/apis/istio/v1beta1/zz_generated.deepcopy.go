@@ -21,6 +21,7 @@ package v1beta1
 
 import (
 	v1 "k8s.io/api/core/v1"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	runtime "k8s.io/apimachinery/pkg/runtime"
 )
 
@@ -996,6 +997,20 @@ func (in *SidecarInjectorConfiguration) DeepCopyInto(out *SidecarInjectorConfigu
 		in, out := &in.EnableNamespacesByDefault, &out.EnableNamespacesByDefault
 		*out = new(bool)
 		**out = **in
+	}
+	if in.NeverInjectSelector != nil {
+		in, out := &in.NeverInjectSelector, &out.NeverInjectSelector
+		*out = make([]metav1.LabelSelector, len(*in))
+		for i := range *in {
+			(*in)[i].DeepCopyInto(&(*out)[i])
+		}
+	}
+	if in.AlwaysInjectSelector != nil {
+		in, out := &in.AlwaysInjectSelector, &out.AlwaysInjectSelector
+		*out = make([]metav1.LabelSelector, len(*in))
+		for i := range *in {
+			(*in)[i].DeepCopyInto(&(*out)[i])
+		}
 	}
 	if in.NodeSelector != nil {
 		in, out := &in.NodeSelector, &out.NodeSelector

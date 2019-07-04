@@ -466,6 +466,14 @@ spec:
               properties:
                 affinity:
                   type: object
+                alwaysInjectSelector:
+                  description: 'AlwaysInjectSelector: Forces the injection on pods
+                    whose labels match this selector. It''s an array of label selectors,
+                    that will be OR''ed, meaning we will iterate over it and stop
+                    at the first match'
+                  items:
+                    type: object
+                  type: array
                 autoInjectionPolicyEnabled:
                   description: This controls the 'policy' in the sidecar injector
                   type: boolean
@@ -510,6 +518,14 @@ spec:
                       description: Logging level for CNI binary
                       type: string
                   type: object
+                neverInjectSelector:
+                  description: 'NeverInjectSelector: Refuses the injection on pods
+                    whose labels match this selector. It''s an array of label selectors,
+                    that will be OR''ed, meaning we will iterate over it and stop
+                    at the first match Takes precedence over AlwaysInjectSelector.'
+                  items:
+                    type: object
+                  type: array
                 nodeSelector:
                   type: object
                 replicaCount:

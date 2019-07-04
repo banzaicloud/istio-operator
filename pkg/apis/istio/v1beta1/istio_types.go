@@ -186,10 +186,19 @@ type SidecarInjectorConfiguration struct {
 	// This controls the 'policy' in the sidecar injector
 	AutoInjectionPolicyEnabled *bool `json:"autoInjectionPolicyEnabled,omitempty"`
 	// This controls whether the webhook looks for namespaces for injection enabled or disabled
-	EnableNamespacesByDefault *bool               `json:"enableNamespacesByDefault,omitempty"`
-	NodeSelector              map[string]string   `json:"nodeSelector,omitempty"`
-	Affinity                  *corev1.Affinity    `json:"affinity,omitempty"`
-	Tolerations               []corev1.Toleration `json:"tolerations,omitempty"`
+	EnableNamespacesByDefault *bool `json:"enableNamespacesByDefault,omitempty"`
+	// NeverInjectSelector: Refuses the injection on pods whose labels match this selector.
+	// It's an array of label selectors, that will be OR'ed, meaning we will iterate
+	// over it and stop at the first match
+	// Takes precedence over AlwaysInjectSelector.
+	NeverInjectSelector []metav1.LabelSelector `json:"neverInjectSelector,omitempty"`
+	// AlwaysInjectSelector: Forces the injection on pods whose labels match this selector.
+	// It's an array of label selectors, that will be OR'ed, meaning we will iterate
+	// over it and stop at the first match
+	AlwaysInjectSelector []metav1.LabelSelector `json:"alwaysInjectSelector,omitempty"`
+	NodeSelector         map[string]string      `json:"nodeSelector,omitempty"`
+	Affinity             *corev1.Affinity       `json:"affinity,omitempty"`
+	Tolerations          []corev1.Toleration    `json:"tolerations,omitempty"`
 }
 
 // NodeAgentConfiguration defines config options for NodeAgent

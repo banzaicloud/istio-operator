@@ -104,10 +104,18 @@ func (r *Reconciler) siConfig() string {
 	if util.PointerToBool(r.Config.Spec.SidecarInjector.AutoInjectionPolicyEnabled) {
 		autoInjection = "enabled"
 	}
-	siConfig := map[string]string{
+	siConfig := map[string]interface{}{
 		"policy":   autoInjection,
 		"template": r.templateConfig(),
 	}
+
+	if len(r.Config.Spec.SidecarInjector.AlwaysInjectSelector) > 0 {
+		siConfig["alwaysInjectSelector"] = r.Config.Spec.SidecarInjector.AlwaysInjectSelector
+	}
+	if len(r.Config.Spec.SidecarInjector.NeverInjectSelector) > 0 {
+		siConfig["neverInjectSelector"] = r.Config.Spec.SidecarInjector.NeverInjectSelector
+	}
+
 	marshaledConfig, _ := yaml.Marshal(siConfig)
 	// this is a static config, so we don't have to deal with errors
 	return string(marshaledConfig)
