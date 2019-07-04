@@ -57,6 +57,20 @@ func (r *Reconciler) deployment() runtime.Object {
 		)
 	}
 
+	if r.Config.Spec.Citadel.WorkloadCertTTL != "" {
+		args = append(args,
+			"--workload-cert-ttl",
+			r.Config.Spec.Citadel.WorkloadCertTTL,
+		)
+	}
+
+	if r.Config.Spec.Citadel.MaxWorkloadCertTTL != "" {
+		args = append(args,
+			"--max-workload-cert-ttl",
+			r.Config.Spec.Citadel.MaxWorkloadCertTTL,
+		)
+	}
+
 	var citadelContainer = apiv1.Container{
 		Name:            "citadel",
 		Image:           r.Config.Spec.Citadel.Image,

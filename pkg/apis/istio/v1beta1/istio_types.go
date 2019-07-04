@@ -70,14 +70,19 @@ type PilotConfiguration struct {
 
 // CitadelConfiguration defines config options for Citadel
 type CitadelConfiguration struct {
-	Enabled      *bool                        `json:"enabled,omitempty"`
-	Image        string                       `json:"image,omitempty"`
-	CASecretName string                       `json:"caSecretName,omitempty"`
-	HealthCheck  *bool                        `json:"healthCheck,omitempty"`
-	Resources    *corev1.ResourceRequirements `json:"resources,omitempty"`
-	NodeSelector map[string]string            `json:"nodeSelector,omitempty"`
-	Affinity     *corev1.Affinity             `json:"affinity,omitempty"`
-	Tolerations  []corev1.Toleration          `json:"tolerations,omitempty"`
+	Enabled      *bool  `json:"enabled,omitempty"`
+	Image        string `json:"image,omitempty"`
+	CASecretName string `json:"caSecretName,omitempty"`
+	// Enable health checking on the Citadel CSR signing API. https://istio.io/docs/tasks/security/health-check/
+	HealthCheck *bool `json:"healthCheck,omitempty"`
+	// For the workloads running in Kubernetes, the lifetime of their Istio certificates is controlled by the workload-cert-ttl flag on Citadel. The default value is 90 days. This value should be no greater than max-workload-cert-ttl of Citadel.
+	WorkloadCertTTL string `json:"workloadCertTTL,omitempty"`
+	// Citadel uses a flag max-workload-cert-ttl to control the maximum lifetime for Istio certificates issued to workloads. The default value is 90 days. If workload-cert-ttl on Citadel or node agent is greater than max-workload-cert-ttl, Citadel will fail issuing the certificate.
+	MaxWorkloadCertTTL string                       `json:"maxWorkloadCertTTL,omitempty"`
+	Resources          *corev1.ResourceRequirements `json:"resources,omitempty"`
+	NodeSelector       map[string]string            `json:"nodeSelector,omitempty"`
+	Affinity           *corev1.Affinity             `json:"affinity,omitempty"`
+	Tolerations        []corev1.Toleration          `json:"tolerations,omitempty"`
 }
 
 // GalleyConfiguration defines config options for Galley

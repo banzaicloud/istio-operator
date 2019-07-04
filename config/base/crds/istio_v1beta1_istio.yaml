@@ -62,8 +62,17 @@ spec:
                 enabled:
                   type: boolean
                 healthCheck:
+                  description: Enable health checking on the Citadel CSR signing API.
+                    https://istio.io/docs/tasks/security/health-check/
                   type: boolean
                 image:
+                  type: string
+                maxWorkloadCertTTL:
+                  description: Citadel uses a flag max-workload-cert-ttl to control
+                    the maximum lifetime for Istio certificates issued to workloads.
+                    The default value is 90 days. If workload-cert-ttl on Citadel
+                    or node agent is greater than max-workload-cert-ttl, Citadel will
+                    fail issuing the certificate.
                   type: string
                 nodeSelector:
                   type: object
@@ -73,6 +82,12 @@ spec:
                   items:
                     type: object
                   type: array
+                workloadCertTTL:
+                  description: For the workloads running in Kubernetes, the lifetime
+                    of their Istio certificates is controlled by the workload-cert-ttl
+                    flag on Citadel. The default value is 90 days. This value should
+                    be no greater than max-workload-cert-ttl of Citadel.
+                  type: string
               type: object
             controlPlaneSecurityEnabled:
               description: ControlPlaneSecurityEnabled control plane services are
