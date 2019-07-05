@@ -276,7 +276,7 @@ func SetDefaults(config *Istio) {
 		config.Spec.ProxyInit.Image = defaultProxyInitImage
 	}
 	if config.Spec.Proxy.ComponentLogLevel == "" {
-		config.Spec.Proxy.ComponentLogLevel = "default:error"
+		config.Spec.Proxy.ComponentLogLevel = "misc:error"
 	}
 	if config.Spec.Proxy.LogLevel == "" {
 		config.Spec.Proxy.LogLevel = "warning"
