@@ -280,6 +280,51 @@ spec:
                     type: object
                   type: array
               type: object
+            localityLB:
+              description: Locality based load balancing distribution or failover
+                settings.
+              properties:
+                distribute:
+                  description: 'Optional: only one of distribute or failover can be
+                    set. Explicitly specify loadbalancing weight across different
+                    zones and geographical locations. Refer to [Locality weighted
+                    load balancing](https://www.envoyproxy.io/docs/envoy/latest/intro/arch_overview/load_balancing/locality_weight)
+                    If empty, the locality weight is set according to the endpoints
+                    number within it.'
+                  items:
+                    properties:
+                      from:
+                        description: Originating locality, '/' separated, e.g. 'region/zone'.
+                        type: string
+                      to:
+                        description: Map of upstream localities to traffic distribution
+                          weights. The sum of all weights should be == 100. Any locality
+                          not assigned a weight will receive no traffic.
+                        type: object
+                    type: object
+                  type: array
+                enabled:
+                  description: If set to true, locality based load balancing will
+                    be enabled
+                  type: boolean
+                failover:
+                  description: 'Optional: only failover or distribute can be set.
+                    Explicitly specify the region traffic will land on when endpoints
+                    in local region becomes unhealthy. Should be used together with
+                    OutlierDetection to detect unhealthy endpoints. Note: if no OutlierDetection
+                    specified, this will not take effect.'
+                  items:
+                    properties:
+                      from:
+                        description: Originating region.
+                        type: string
+                      to:
+                        description: Destination region the traffic will fail over
+                          to when endpoints in the 'from' region becomes unhealthy.
+                        type: string
+                    type: object
+                  type: array
+              type: object
             meshExpansion:
               description: If set to true, the pilot and citadel mtls will be exposed
                 on the ingress gateway also the remote istios will be connected through

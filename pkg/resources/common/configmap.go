@@ -104,7 +104,7 @@ func (r *Reconciler) meshConfig() string {
 		"defaultConfig":     defaultConfig,
 		"rootNamespace":     "istio-system",
 		"connectTimeout":    "10s",
-		"localityLbSetting": nil,
+		"localityLbSetting": r.getLocalityLBConfiguration(),
 	}
 
 	if util.PointerToBool(r.Config.Spec.UseMCP) {
@@ -115,6 +115,24 @@ func (r *Reconciler) meshConfig() string {
 
 	marshaledConfig, _ := yaml.Marshal(meshConfig)
 	return string(marshaledConfig)
+}
+
+func (r *Reconciler) getLocalityLBConfiguration() *istiov1beta1.LocalityLBConfiguration {
+	var localityLbConfiguration *istiov1beta1.LocalityLBConfiguration
+
+	if !util.PointerToBool(r.Config.Spec.LocalityLB.Enabled) {
+		return localityLbConfiguration
+	}
+
+	if r.Config.Spec.LocalityLB != nil {
+		localityLbConfiguration = r.Config.Spec.LocalityLB.DeepCopy()
+		localityLbConfiguration.Enabled = nil
+		if localityLbConfiguration.Distribute != nil && localityLbConfiguration.Failover != nil {
+			localityLbConfiguration.Failover = nil
+		}
+	}
+
+	return localityLbConfiguration
 }
 
 func (r *Reconciler) meshNetworks() string {
