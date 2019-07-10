@@ -143,7 +143,7 @@ func (r *Reconciler) containers() []apiv1.Container {
 		TerminationMessagePolicy: apiv1.TerminationMessageReadFile,
 	}
 
-	if util.PointerToBool(r.Config.Spec.LocalityLB.Enabled) {
+	if r.Config.Spec.LocalityLB != nil && util.PointerToBool(r.Config.Spec.LocalityLB.Enabled) {
 		discoveryContainer.Env = append(discoveryContainer.Env, apiv1.EnvVar{
 			Name:  "PILOT_ENABLE_LOCALITY_LOAD_BALANCING",
 			Value: "1",
