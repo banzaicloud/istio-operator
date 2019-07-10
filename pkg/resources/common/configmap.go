@@ -120,7 +120,7 @@ func (r *Reconciler) meshConfig() string {
 func (r *Reconciler) getLocalityLBConfiguration() *istiov1beta1.LocalityLBConfiguration {
 	var localityLbConfiguration *istiov1beta1.LocalityLBConfiguration
 
-	if !util.PointerToBool(r.Config.Spec.LocalityLB.Enabled) {
+	if r.Config.Spec.LocalityLB == nil || !util.PointerToBool(r.Config.Spec.LocalityLB.Enabled) {
 		return localityLbConfiguration
 	}
 
