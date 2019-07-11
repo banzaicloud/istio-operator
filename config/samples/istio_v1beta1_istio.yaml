@@ -145,3 +145,15 @@ spec:
         accessToken: <access-token>
         secure: true
         cacertPath: /etc/lightstep/cacert.pem
+    localityLB:
+      enabled: false
+      # distribute:
+      # - from: "us-central1/*"
+      # to:
+      #     "us-central1/*": 80
+      #     "us-central2/*": 20
+      # failover:
+      # - from: us-east
+      #   to: eu-west
+      # - from: us-west
+      #   to: us-east

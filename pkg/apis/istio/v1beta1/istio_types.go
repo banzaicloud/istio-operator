@@ -305,6 +305,54 @@ type IstioCoreDNS struct {
 	Tolerations  []corev1.Toleration          `json:"tolerations,omitempty"`
 }
 
+// Describes how traffic originating in the 'from' zone is
+// distributed over a set of 'to' zones. Syntax for specifying a zone is
+// {region}/{zone} and terminal wildcards are allowed on any
+// segment of the specification. Examples:
+// * - matches all localities
+// us-west/* - all zones and sub-zones within the us-west region
+type LocalityLBDistributeConfiguration struct {
+	// Originating locality, '/' separated, e.g. 'region/zone'.
+	From string `json:"from,omitempty"`
+	// Map of upstream localities to traffic distribution weights. The sum of
+	// all weights should be == 100. Any locality not assigned a weight will
+	// receive no traffic.
+	To map[string]uint32 `json:"to,omitempty"`
+}
+
+// Specify the traffic failover policy across regions. Since zone
+// failover is supported by default this only needs to be specified for
+// regions when the operator needs to constrain traffic failover so that
+// the default behavior of failing over to any endpoint globally does not
+// apply. This is useful when failing over traffic across regions would not
+// improve service health or may need to be restricted for other reasons
+// like regulatory controls.
+type LocalityLBFailoverConfiguration struct {
+	// Originating region.
+	From string `json:"from,omitempty"`
+	// Destination region the traffic will fail over to when endpoints in
+	// the 'from' region becomes unhealthy.
+	To string `json:"to,omitempty"`
+}
+
+// Locality-weighted load balancing allows administrators to control the
+// distribution of traffic to endpoints based on the localities of where the
+// traffic originates and where it will terminate.
+type LocalityLBConfiguration struct {
+	// If set to true, locality based load balancing will be enabled
+	Enabled *bool `json:"enabled,omitempty"`
+	// Optional: only one of distribute or failover can be set.
+	// Explicitly specify loadbalancing weight across different zones and geographical locations.
+	// Refer to [Locality weighted load balancing](https://www.envoyproxy.io/docs/envoy/latest/intro/arch_overview/load_balancing/locality_weight)
+	// If empty, the locality weight is set according to the endpoints number within it.
+	Distribute []*LocalityLBDistributeConfiguration `json:"distribute,omitempty"`
+	// Optional: only failover or distribute can be set.
+	// Explicitly specify the region traffic will land on when endpoints in local region becomes unhealthy.
+	// Should be used together with OutlierDetection to detect unhealthy endpoints.
+	// Note: if no OutlierDetection specified, this will not take effect.
+	Failover []*LocalityLBFailoverConfiguration `json:"failover,omitempty"`
+}
+
 // IstioSpec defines the desired state of Istio
 type IstioSpec struct {
 	// Contains the intended Istio version
@@ -396,6 +444,9 @@ type IstioSpec struct {
 
 	// Istio CoreDNS provides DNS resolution for services in multi mesh setups
 	IstioCoreDNS IstioCoreDNS `json:"istioCoreDNS,omitempty"`
+
+	// Locality based load balancing distribution or failover settings.
+	LocalityLB *LocalityLBConfiguration `json:"localityLB,omitempty"`
 
 	networkName  string
 	meshNetworks *MeshNetworks
