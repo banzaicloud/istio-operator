@@ -40,19 +40,24 @@ func (r *Reconciler) configMap() runtime.Object {
 }
 
 func (r *Reconciler) getValues() string {
+	podDNSSearchNamespaces := make([]string, 0)
+	if util.PointerToBool(r.Config.Spec.MultiMesh) {
+		podDNSSearchNamespaces = append(podDNSSearchNamespaces, []string{
+			"global",
+			"{{ valueOrDefault .DeploymentMeta.Namespace \"default\" }}.global",
+		}...)
+		return ""
+	}
+
 	values := map[string]interface{}{
 		"sidecarInjectorWebhook": map[string]interface{}{
 			"rewriteAppHTTPProbe": r.Config.Spec.SidecarInjector.RewriteAppHTTPProbe,
 		},
 		"global": map[string]interface{}{
-			"trustDomain":     "cluster.local",
-			"imagePullPolicy": r.Config.Spec.ImagePullPolicy,
-			"network":         r.Config.Spec.GetNetworkName(),
-			"podDNSSearchNamespaces": []string{
-				"global",
-				"total",
-				"{{ valueOrDefault .DeploymentMeta.Namespace \"default\" }}.global",
-			},
+			"trustDomain":            "cluster.local",
+			"imagePullPolicy":        r.Config.Spec.ImagePullPolicy,
+			"network":                r.Config.Spec.GetNetworkName(),
+			"podDNSSearchNamespaces": podDNSSearchNamespaces,
 			"proxy_init": map[string]interface{}{
 				"image": r.Config.Spec.ProxyInit.Image,
 			},
@@ -120,18 +125,6 @@ func (r *Reconciler) siConfig() string {
 	// this is a static config, so we don't have to deal with errors
 	return string(marshaledConfig)
 
-}
-
-func (r *Reconciler) dnsConfig() string {
-	if !util.PointerToBool(r.Config.Spec.MultiMesh) {
-		return ""
-	}
-	return `
-dnsConfig:
-  searches:
-  - global
-  - "{{ valueOrDefault .DeploymentMeta.Namespace "default" }}.global"
-`
 }
 
 func (r *Reconciler) templateConfig() string {
