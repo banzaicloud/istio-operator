@@ -50,37 +50,10 @@ func (r *Reconciler) deployment(t string) runtime.Object {
 				},
 				Spec: apiv1.PodSpec{
 					ServiceAccountName: serviceAccountName,
-					Volumes: []apiv1.Volume{
-						{
-							Name: "istio-certs",
-							VolumeSource: apiv1.VolumeSource{
-								Secret: &apiv1.SecretVolumeSource{
-									SecretName:  fmt.Sprintf("istio.%s", serviceAccountName),
-									Optional:    util.BoolPointer(true),
-									DefaultMode: util.IntPointer(420),
-								},
-							},
-						},
-						{
-							Name: "uds-socket",
-							VolumeSource: apiv1.VolumeSource{
-								EmptyDir: &apiv1.EmptyDirVolumeSource{},
-							},
-						},
-						{
-							Name: fmt.Sprintf("%s-adapter-secret", t),
-							VolumeSource: apiv1.VolumeSource{
-								Secret: &apiv1.SecretVolumeSource{
-									SecretName:  fmt.Sprintf("%s-adapter-secret", t),
-									Optional:    util.BoolPointer(true),
-									DefaultMode: util.IntPointer(420),
-								},
-							},
-						},
-					},
-					Affinity:     r.Config.Spec.Mixer.Affinity,
-					NodeSelector: r.Config.Spec.Mixer.NodeSelector,
-					Tolerations:  r.Config.Spec.Mixer.Tolerations,
+					Volumes:            r.volumes(t),
+					Affinity:           r.Config.Spec.Mixer.Affinity,
+					NodeSelector:       r.Config.Spec.Mixer.NodeSelector,
+					Tolerations:        r.Config.Spec.Mixer.Tolerations,
 					Containers: []apiv1.Container{
 						r.mixerContainer(t, r.Config.Namespace),
 						r.istioProxyContainer(t),
@@ -89,6 +62,69 @@ func (r *Reconciler) deployment(t string) runtime.Object {
 			},
 		},
 	}
+}
+
+func (r *Reconciler) volumes(t string) []apiv1.Volume {
+	volumes := []apiv1.Volume{
+		{
+			Name: "istio-certs",
+			VolumeSource: apiv1.VolumeSource{
+				Secret: &apiv1.SecretVolumeSource{
+					SecretName:  fmt.Sprintf("istio.%s", serviceAccountName),
+					Optional:    util.BoolPointer(true),
+					DefaultMode: util.IntPointer(420),
+				},
+			},
+		},
+		{
+			Name: "uds-socket",
+			VolumeSource: apiv1.VolumeSource{
+				EmptyDir: &apiv1.EmptyDirVolumeSource{},
+			},
+		},
+		{
+			Name: fmt.Sprintf("%s-adapter-secret", t),
+			VolumeSource: apiv1.VolumeSource{
+				Secret: &apiv1.SecretVolumeSource{
+					SecretName:  fmt.Sprintf("%s-adapter-secret", t),
+					Optional:    util.BoolPointer(true),
+					DefaultMode: util.IntPointer(420),
+				},
+			},
+		},
+	}
+
+	if util.PointerToBool(r.Config.Spec.SDS.Enabled) {
+		volumes = append(volumes, apiv1.Volume{
+			Name: "sds-uds-path",
+			VolumeSource: apiv1.VolumeSource{
+				HostPath: &apiv1.HostPathVolumeSource{
+					Path: "/var/run/sds",
+				},
+			},
+		})
+		if r.Config.Spec.SDS.UseTrustworthyJwt {
+			volumes = append(volumes, apiv1.Volume{
+				Name: "istio-token",
+				VolumeSource: apiv1.VolumeSource{
+					Projected: &apiv1.ProjectedVolumeSource{
+						Sources: []apiv1.VolumeProjection{
+							{
+								ServiceAccountToken: &apiv1.ServiceAccountTokenProjection{
+									Path:              "istio-token",
+									ExpirationSeconds: util.Int64Pointer(43200),
+									Audience:          "cluster.local",
+								},
+							},
+						},
+						DefaultMode: util.IntPointer(420),
+					},
+				},
+			})
+		}
+	}
+
+	return volumes
 }
 
 func (r *Reconciler) mixerContainer(t string, ns string) apiv1.Container {
@@ -106,7 +142,7 @@ func (r *Reconciler) mixerContainer(t string, ns string) apiv1.Container {
 			"http://"+r.Config.Spec.Tracing.Zipkin.Address+"/api/v1/spans")
 	}
 
-	if r.Config.Spec.UseMCP {
+	if util.PointerToBool(r.Config.Spec.UseMCP) {
 		if r.Config.Spec.ControlPlaneSecurityEnabled {
 			containerArgs = append(containerArgs, "--configStoreURL", "mcps://istio-galley."+r.Config.Namespace+".svc:9901")
 			if t == "telemetry" {
@@ -143,7 +179,7 @@ func (r *Reconciler) mixerContainer(t string, ns string) apiv1.Container {
 			ReadOnly:  true,
 		},
 	}
-	if r.Config.Spec.UseMCP {
+	if util.PointerToBool(r.Config.Spec.UseMCP) {
 		volumeMounts = append(volumeMounts, apiv1.VolumeMount{
 			Name:      "istio-certs",
 			MountPath: "/etc/certs",
@@ -197,6 +233,32 @@ func (r *Reconciler) mixerContainer(t string, ns string) apiv1.Container {
 }
 
 func (r *Reconciler) istioProxyContainer(t string) apiv1.Container {
+	vms := []apiv1.VolumeMount{
+		{
+			Name:      "istio-certs",
+			MountPath: "/etc/certs",
+			ReadOnly:  true,
+		},
+		{
+			Name:      "uds-socket",
+			MountPath: "/sock",
+		},
+	}
+
+	if util.PointerToBool(r.Config.Spec.SDS.Enabled) {
+		vms = append(vms, apiv1.VolumeMount{
+			Name:      "sds-uds-path",
+			MountPath: "/var/run/sds",
+			ReadOnly:  true,
+		})
+		if r.Config.Spec.SDS.UseTrustworthyJwt {
+			vms = append(vms, apiv1.VolumeMount{
+				Name:      "istio-token",
+				MountPath: "/var/run/secrets/tokens",
+			})
+		}
+	}
+
 	return apiv1.Container{
 		Name:            "istio-proxy",
 		Image:           r.Config.Spec.Proxy.Image,
@@ -222,17 +284,7 @@ func (r *Reconciler) istioProxyContainer(t string) apiv1.Container {
 			r.Config.Spec.Proxy.Resources,
 			r.Config.Spec.DefaultResources,
 		),
-		VolumeMounts: []apiv1.VolumeMount{
-			{
-				Name:      "istio-certs",
-				MountPath: "/etc/certs",
-				ReadOnly:  true,
-			},
-			{
-				Name:      "uds-socket",
-				MountPath: "/sock",
-			},
-		},
+		VolumeMounts:             vms,
 		TerminationMessagePath:   apiv1.TerminationMessagePathDefault,
 		TerminationMessagePolicy: apiv1.TerminationMessageReadFile,
 	}

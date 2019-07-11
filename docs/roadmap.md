@@ -6,8 +6,9 @@ Released:
 - [x] - Istio 1.1.x support
 - [x] - Federation, gateway
 - [x] - Configurable affinities
+- [x] - Federation, multi-mesh
+- [x] - Istio 1.2.x support
 
 Short term roadmap
 
-- [ ] - Federation, multi-mesh
 - [ ] - Kiali / Certmanager

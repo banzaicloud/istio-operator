@@ -91,6 +91,7 @@ func (r *Reconciler) Reconcile(log logr.Logger) error {
 
 	var rsv = []resources.ResourceVariationWithDesiredState{
 		{ResourceVariation: r.serviceAccount},
+		// TODO: remove
 		{ResourceVariation: r.clusterRole},
 		{ResourceVariation: r.clusterRoleBinding},
 		{ResourceVariation: r.deployment},

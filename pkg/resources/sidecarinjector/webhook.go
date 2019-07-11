@@ -28,7 +28,7 @@ import (
 func (r *Reconciler) webhook() runtime.Object {
 	fail := admissionv1beta1.Fail
 	unknownSideEffects := admissionv1beta1.SideEffectClassUnknown
-	return &admissionv1beta1.MutatingWebhookConfiguration{
+	webhook := &admissionv1beta1.MutatingWebhookConfiguration{
 		ObjectMeta: templates.ObjectMetaClusterScope(webhookName, sidecarInjectorLabels, r.Config),
 		Webhooks: []admissionv1beta1.Webhook{
 			{
@@ -63,4 +63,23 @@ func (r *Reconciler) webhook() runtime.Object {
 			},
 		},
 	}
+
+	if util.PointerToBool(r.Config.Spec.SidecarInjector.EnableNamespacesByDefault) {
+		webhook.Webhooks[0].NamespaceSelector = &metav1.LabelSelector{
+			MatchExpressions: []metav1.LabelSelectorRequirement{
+				{
+					Key:      "name",
+					Operator: metav1.LabelSelectorOpNotIn,
+					Values:   []string{r.Config.Namespace},
+				},
+				{
+					Key:      "istio-injection",
+					Operator: metav1.LabelSelectorOpNotIn,
+					Values:   []string{"disabled"},
+				},
+			},
+		}
+	}
+
+	return webhook
 }

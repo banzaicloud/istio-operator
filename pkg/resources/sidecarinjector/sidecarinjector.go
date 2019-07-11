@@ -17,10 +17,11 @@ limitations under the License.
 package sidecarinjector
 
 import (
-	"github.com/banzaicloud/istio-operator/pkg/util"
 	"github.com/go-logr/logr"
 	"github.com/goph/emperror"
 	"sigs.k8s.io/controller-runtime/pkg/client"
+
+	"github.com/banzaicloud/istio-operator/pkg/util"
 
 	istiov1beta1 "github.com/banzaicloud/istio-operator/pkg/apis/istio/v1beta1"
 	"github.com/banzaicloud/istio-operator/pkg/k8sutil"
@@ -36,6 +37,7 @@ const (
 	webhookName            = "istio-sidecar-injector"
 	deploymentName         = "istio-sidecar-injector"
 	serviceName            = "istio-sidecar-injector"
+	pdbName                = "istio-sidecar-injector"
 )
 
 var sidecarInjectorLabels = map[string]string{

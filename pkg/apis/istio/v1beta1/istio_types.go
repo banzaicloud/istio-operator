@@ -26,7 +26,7 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
-const supportedIstioMinorVersionRegex = "^1.1"
+const supportedIstioMinorVersionRegex = "^1.2"
 
 // IstioVersion stores the intended Istio version
 type IstioVersion string
@@ -49,6 +49,8 @@ type SDSConfiguration struct {
 	// and pass to sds server, which will be used to request key/cert eventually
 	// this flag is ignored if UseTrustworthyJwt is set
 	UseNormalJwt bool `json:"useNormalJwt,omitempty"`
+
+	CustomTokenDirectory string `json:"customTokenDirectory,omitempty"`
 }
 
 // PilotConfiguration defines config options for Pilot
@@ -68,13 +70,19 @@ type PilotConfiguration struct {
 
 // CitadelConfiguration defines config options for Citadel
 type CitadelConfiguration struct {
-	Enabled      *bool                        `json:"enabled,omitempty"`
-	Image        string                       `json:"image,omitempty"`
-	CASecretName string                       `json:"caSecretName,omitempty"`
-	Resources    *corev1.ResourceRequirements `json:"resources,omitempty"`
-	NodeSelector map[string]string            `json:"nodeSelector,omitempty"`
-	Affinity     *corev1.Affinity             `json:"affinity,omitempty"`
-	Tolerations  []corev1.Toleration          `json:"tolerations,omitempty"`
+	Enabled      *bool  `json:"enabled,omitempty"`
+	Image        string `json:"image,omitempty"`
+	CASecretName string `json:"caSecretName,omitempty"`
+	// Enable health checking on the Citadel CSR signing API. https://istio.io/docs/tasks/security/health-check/
+	HealthCheck *bool `json:"healthCheck,omitempty"`
+	// For the workloads running in Kubernetes, the lifetime of their Istio certificates is controlled by the workload-cert-ttl flag on Citadel. The default value is 90 days. This value should be no greater than max-workload-cert-ttl of Citadel.
+	WorkloadCertTTL string `json:"workloadCertTTL,omitempty"`
+	// Citadel uses a flag max-workload-cert-ttl to control the maximum lifetime for Istio certificates issued to workloads. The default value is 90 days. If workload-cert-ttl on Citadel or node agent is greater than max-workload-cert-ttl, Citadel will fail issuing the certificate.
+	MaxWorkloadCertTTL string                       `json:"maxWorkloadCertTTL,omitempty"`
+	Resources          *corev1.ResourceRequirements `json:"resources,omitempty"`
+	NodeSelector       map[string]string            `json:"nodeSelector,omitempty"`
+	Affinity           *corev1.Affinity             `json:"affinity,omitempty"`
+	Tolerations        []corev1.Toleration          `json:"tolerations,omitempty"`
 }
 
 // GalleyConfiguration defines config options for Galley
@@ -137,6 +145,8 @@ type MixerConfiguration struct {
 	NodeSelector map[string]string            `json:"nodeSelector,omitempty"`
 	Affinity     *corev1.Affinity             `json:"affinity,omitempty"`
 	Tolerations  []corev1.Toleration          `json:"tolerations,omitempty"`
+	// Turn it on if you use mixer that supports multi cluster telemetry
+	MultiClusterSupport *bool `json:"multiClusterSupport,omitempty"`
 }
 
 // InitCNIConfiguration defines config for the sidecar proxy init CNI plugin
@@ -174,10 +184,21 @@ type SidecarInjectorConfiguration struct {
 	// even when mTLS is enabled.
 	RewriteAppHTTPProbe bool `json:"rewriteAppHTTPProbe,omitempty"`
 	// This controls the 'policy' in the sidecar injector
-	AutoInjectionPolicyEnabled *bool               `json:"autoInjectionPolicyEnabled,omitempty"`
-	NodeSelector               map[string]string   `json:"nodeSelector,omitempty"`
-	Affinity                   *corev1.Affinity    `json:"affinity,omitempty"`
-	Tolerations                []corev1.Toleration `json:"tolerations,omitempty"`
+	AutoInjectionPolicyEnabled *bool `json:"autoInjectionPolicyEnabled,omitempty"`
+	// This controls whether the webhook looks for namespaces for injection enabled or disabled
+	EnableNamespacesByDefault *bool `json:"enableNamespacesByDefault,omitempty"`
+	// NeverInjectSelector: Refuses the injection on pods whose labels match this selector.
+	// It's an array of label selectors, that will be OR'ed, meaning we will iterate
+	// over it and stop at the first match
+	// Takes precedence over AlwaysInjectSelector.
+	NeverInjectSelector []metav1.LabelSelector `json:"neverInjectSelector,omitempty"`
+	// AlwaysInjectSelector: Forces the injection on pods whose labels match this selector.
+	// It's an array of label selectors, that will be OR'ed, meaning we will iterate
+	// over it and stop at the first match
+	AlwaysInjectSelector []metav1.LabelSelector `json:"alwaysInjectSelector,omitempty"`
+	NodeSelector         map[string]string      `json:"nodeSelector,omitempty"`
+	Affinity             *corev1.Affinity       `json:"affinity,omitempty"`
+	Tolerations          []corev1.Toleration    `json:"tolerations,omitempty"`
 }
 
 // NodeAgentConfiguration defines config options for NodeAgent
@@ -196,8 +217,20 @@ type ProxyConfiguration struct {
 	// If set to true, istio-proxy container will have privileged securityContext
 	Privileged bool `json:"privileged,omitempty"`
 	// If set, newly injected sidecars will have core dumps enabled.
-	EnableCoreDump bool                         `json:"enableCoreDump,omitempty"`
-	Resources      *corev1.ResourceRequirements `json:"resources,omitempty"`
+	EnableCoreDump bool `json:"enableCoreDump,omitempty"`
+	// Log level for proxy, applies to gateways and sidecars. If left empty, "warning" is used.
+	// Expected values are: trace|debug|info|warning|error|critical|off
+	// +kubebuilder:validation:Enum=trace,debug,info,warning,error,critical,off
+	LogLevel string `json:"logLevel,omitempty"`
+	// Per Component log level for proxy, applies to gateways and sidecars. If a component level is
+	// not set, then the "LogLevel" will be used. If left empty, "misc:error" is used.
+	ComponentLogLevel string `json:"componentLogLevel,omitempty"`
+	// Configure the DNS refresh rate for Envoy cluster of type STRICT_DNS
+	// This must be given it terms of seconds. For example, 300s is valid but 5m is invalid.
+	// +kubebuilder:validation:Pattern=^[0-9]{1,5}s$
+	DNSRefreshRate string `json:"dnsRefreshRate,omitempty"`
+
+	Resources *corev1.ResourceRequirements `json:"resources,omitempty"`
 }
 
 // ProxyInitConfiguration defines config options for Proxy Init containers
@@ -272,10 +305,58 @@ type IstioCoreDNS struct {
 	Tolerations  []corev1.Toleration          `json:"tolerations,omitempty"`
 }
 
+// Describes how traffic originating in the 'from' zone is
+// distributed over a set of 'to' zones. Syntax for specifying a zone is
+// {region}/{zone} and terminal wildcards are allowed on any
+// segment of the specification. Examples:
+// * - matches all localities
+// us-west/* - all zones and sub-zones within the us-west region
+type LocalityLBDistributeConfiguration struct {
+	// Originating locality, '/' separated, e.g. 'region/zone'.
+	From string `json:"from,omitempty"`
+	// Map of upstream localities to traffic distribution weights. The sum of
+	// all weights should be == 100. Any locality not assigned a weight will
+	// receive no traffic.
+	To map[string]uint32 `json:"to,omitempty"`
+}
+
+// Specify the traffic failover policy across regions. Since zone
+// failover is supported by default this only needs to be specified for
+// regions when the operator needs to constrain traffic failover so that
+// the default behavior of failing over to any endpoint globally does not
+// apply. This is useful when failing over traffic across regions would not
+// improve service health or may need to be restricted for other reasons
+// like regulatory controls.
+type LocalityLBFailoverConfiguration struct {
+	// Originating region.
+	From string `json:"from,omitempty"`
+	// Destination region the traffic will fail over to when endpoints in
+	// the 'from' region becomes unhealthy.
+	To string `json:"to,omitempty"`
+}
+
+// Locality-weighted load balancing allows administrators to control the
+// distribution of traffic to endpoints based on the localities of where the
+// traffic originates and where it will terminate.
+type LocalityLBConfiguration struct {
+	// If set to true, locality based load balancing will be enabled
+	Enabled *bool `json:"enabled,omitempty"`
+	// Optional: only one of distribute or failover can be set.
+	// Explicitly specify loadbalancing weight across different zones and geographical locations.
+	// Refer to [Locality weighted load balancing](https://www.envoyproxy.io/docs/envoy/latest/intro/arch_overview/load_balancing/locality_weight)
+	// If empty, the locality weight is set according to the endpoints number within it.
+	Distribute []*LocalityLBDistributeConfiguration `json:"distribute,omitempty"`
+	// Optional: only failover or distribute can be set.
+	// Explicitly specify the region traffic will land on when endpoints in local region becomes unhealthy.
+	// Should be used together with OutlierDetection to detect unhealthy endpoints.
+	// Note: if no OutlierDetection specified, this will not take effect.
+	Failover []*LocalityLBFailoverConfiguration `json:"failover,omitempty"`
+}
+
 // IstioSpec defines the desired state of Istio
 type IstioSpec struct {
 	// Contains the intended Istio version
-	// +kubebuilder:validation:Pattern=^1.1
+	// +kubebuilder:validation:Pattern=^1.2
 	Version IstioVersion `json:"version"`
 
 	// MTLS enables or disables global mTLS
@@ -330,7 +411,7 @@ type IstioSpec struct {
 	WatchOneNamespace bool `json:"watchOneNamespace,omitempty"`
 
 	// Use the Mesh Control Protocol (MCP) for configuring Mixer and Pilot. Requires galley.
-	UseMCP bool `json:"useMCP,omitempty"`
+	UseMCP *bool `json:"useMCP,omitempty"`
 
 	// Set the default set of namespaces to which services, service entries, virtual services, destination rules should be exported to
 	DefaultConfigVisibility string `json:"defaultConfigVisibility,omitempty"`
@@ -363,6 +444,9 @@ type IstioSpec struct {
 
 	// Istio CoreDNS provides DNS resolution for services in multi mesh setups
 	IstioCoreDNS IstioCoreDNS `json:"istioCoreDNS,omitempty"`
+
+	// Locality based load balancing distribution or failover settings.
+	LocalityLB *LocalityLBConfiguration `json:"localityLB,omitempty"`
 
 	networkName  string
 	meshNetworks *MeshNetworks

@@ -20,7 +20,6 @@ import (
 	"fmt"
 	"strings"
 
-	patch "github.com/banzaicloud/k8s-objectmatcher/patch"
 	"github.com/go-logr/logr"
 	"github.com/goph/emperror"
 	extensionsobj "k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1beta1"
@@ -28,6 +27,8 @@ import (
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/rest"
+
+	patch "github.com/banzaicloud/k8s-objectmatcher/patch"
 
 	istiov1beta1 "github.com/banzaicloud/istio-operator/pkg/apis/istio/v1beta1"
 	"github.com/banzaicloud/istio-operator/pkg/util"
@@ -89,36 +90,6 @@ func InitCrds() []*extensionsobj.CustomResourceDefinition {
 		crd("QuotaSpec", "QuotaSpecs", crdConfigs[Apim], "", "", "", extensionsobj.NamespaceScoped),
 		crd("rule", "rules", crdConfigs[Policy], "mixer", "istio.io.mixer", "core", extensionsobj.NamespaceScoped),
 		crd("attributemanifest", "attributemanifests", crdConfigs[Policy], "mixer", "istio.io.mixer", "core", extensionsobj.NamespaceScoped),
-		crd("bypass", "bypasses", crdConfigs[Policy], "mixer", "bypass", "mixer-adapter", extensionsobj.NamespaceScoped),
-		crd("circonus", "circonuses", crdConfigs[Policy], "mixer", "circonus", "mixer-adapter", extensionsobj.NamespaceScoped),
-		crd("denier", "deniers", crdConfigs[Policy], "mixer", "denier", "mixer-adapter", extensionsobj.NamespaceScoped),
-		crd("fluentd", "fluentds", crdConfigs[Policy], "mixer", "fluentd", "mixer-adapter", extensionsobj.NamespaceScoped),
-		crd("kubernetesenv", "kubernetesenvs", crdConfigs[Policy], "mixer", "kubernetesenv", "mixer-adapter", extensionsobj.NamespaceScoped),
-		crd("listchecker", "listcheckers", crdConfigs[Policy], "mixer", "listchecker", "mixer-adapter", extensionsobj.NamespaceScoped),
-		crd("memquota", "memquotas", crdConfigs[Policy], "mixer", "memquota", "mixer-adapter", extensionsobj.NamespaceScoped),
-		crd("noop", "noops", crdConfigs[Policy], "mixer", "noop", "mixer-adapter", extensionsobj.NamespaceScoped),
-		crd("opa", "opas", crdConfigs[Policy], "mixer", "opa", "mixer-adapter", extensionsobj.NamespaceScoped),
-		crd("prometheus", "prometheuses", crdConfigs[Policy], "mixer", "prometheus", "mixer-adapter", extensionsobj.NamespaceScoped),
-		crd("rbac", "rbacs", crdConfigs[Policy], "mixer", "rbac", "mixer-adapter", extensionsobj.NamespaceScoped),
-		crd("redisquota", "redisquotas", crdConfigs[Policy], "mixer", "redisquota", "mixer-adapter", extensionsobj.NamespaceScoped), // helm chart misses app:mixer label
-		crd("servicecontrol", "servicecontrols", crdConfigs[Policy], "mixer", "servicecontrol", "mixer-adapter", extensionsobj.NamespaceScoped),
-		crd("signalfx", "signalfxs", crdConfigs[Policy], "mixer", "signalfx", "mixer-adapter", extensionsobj.NamespaceScoped),
-		crd("solarwinds", "solarwindses", crdConfigs[Policy], "mixer", "solarwinds", "mixer-adapter", extensionsobj.NamespaceScoped),
-		crd("stackdriver", "stackdrivers", crdConfigs[Policy], "mixer", "stackdriver", "mixer-adapter", extensionsobj.NamespaceScoped),
-		crd("statsd", "statsds", crdConfigs[Policy], "mixer", "statsd", "mixer-adapter", extensionsobj.NamespaceScoped),
-		crd("stdio", "stdios", crdConfigs[Policy], "mixer", "stdio", "mixer-adapter", extensionsobj.NamespaceScoped),
-		crd("apikey", "apikeys", crdConfigs[Policy], "mixer", "apikey", "mixer-instance", extensionsobj.NamespaceScoped),
-		crd("authorization", "authorizations", crdConfigs[Policy], "mixer", "authorization", "mixer-instance", extensionsobj.NamespaceScoped),
-		crd("checknothing", "checknothings", crdConfigs[Policy], "mixer", "checknothing", "mixer-instance", extensionsobj.NamespaceScoped),
-		crd("kubernetes", "kuberneteses", crdConfigs[Policy], "mixer", "adapter.template.kubernetes", "mixer-instance", extensionsobj.NamespaceScoped),
-		crd("listentry", "listentries", crdConfigs[Policy], "mixer", "listentry", "mixer-instance", extensionsobj.NamespaceScoped),
-		crd("logentry", "logentries", crdConfigs[Policy], "mixer", "logentry", "mixer-instance", extensionsobj.NamespaceScoped),
-		crd("edge", "edges", crdConfigs[Policy], "mixer", "edge", "mixer-instance", extensionsobj.NamespaceScoped),
-		crd("metric", "metrics", crdConfigs[Policy], "mixer", "metric", "mixer-instance", extensionsobj.NamespaceScoped),
-		crd("quota", "quotas", crdConfigs[Policy], "mixer", "quota", "mixer-instance", extensionsobj.NamespaceScoped),
-		crd("reportnothing", "reportnothings", crdConfigs[Policy], "mixer", "reportnothing", "mixer-instance", extensionsobj.NamespaceScoped),
-		crd("servicecontrolreport", "servicecontrolreports", crdConfigs[Policy], "mixer", "servicecontrolreport", "mixer-instance", extensionsobj.NamespaceScoped),
-		crd("tracespan", "tracespans", crdConfigs[Policy], "mixer", "tracespan", "mixer-instance", extensionsobj.NamespaceScoped),
 		crd("RbacConfig", "RbacConfigs", crdConfigs[Rbac], "mixer", "istio.io.mixer", "rbac", extensionsobj.NamespaceScoped),
 		crd("ServiceRole", "ServiceRoles", crdConfigs[Rbac], "mixer", "istio.io.mixer", "rbac", extensionsobj.NamespaceScoped),
 		crd("ServiceRoleBinding", "ServiceRoleBindings", crdConfigs[Rbac], "mixer", "istio.io.mixer", "rbac", extensionsobj.NamespaceScoped),
@@ -126,10 +97,8 @@ func InitCrds() []*extensionsobj.CustomResourceDefinition {
 		crd("instance", "instances", crdConfigs[Policy], "mixer", "instance", "mixer-instance", extensionsobj.NamespaceScoped),
 		crd("template", "templates", crdConfigs[Policy], "mixer", "template", "mixer-template", extensionsobj.NamespaceScoped),
 		crd("handler", "handlers", crdConfigs[Policy], "mixer", "handler", "mixer-handler", extensionsobj.NamespaceScoped),
-		crd("cloudwatch", "cloudwatches", crdConfigs[Policy], "mixer", "cloudwatch", "mixer-adapter", extensionsobj.NamespaceScoped),
-		crd("dogstatsd", "dogstatsds", crdConfigs[Policy], "mixer", "dogstatsd", "mixer-adapter", extensionsobj.NamespaceScoped),
-		crd("zipkin", "zipkins", crdConfigs[Policy], "mixer", "zipkin", "mixer-adapter", extensionsobj.NamespaceScoped),
 		crd("Sidecar", "Sidecars", crdConfigs[Networking], "istio-pilot", "", "", extensionsobj.NamespaceScoped),
+		crd("AuthorizationPolicy", "authorizationpolicies", crdConfigs[Rbac], "isito-pilot", "", "rbac", extensionsobj.NamespaceScoped),
 	}
 }
 

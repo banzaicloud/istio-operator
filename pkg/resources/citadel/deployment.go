@@ -23,7 +23,6 @@ import (
 	apiv1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
-	"k8s.io/apimachinery/pkg/util/intstr"
 
 	"github.com/banzaicloud/istio-operator/pkg/resources/templates"
 	"github.com/banzaicloud/istio-operator/pkg/util"
@@ -33,7 +32,6 @@ func (r *Reconciler) deployment() runtime.Object {
 	var args = []string{
 		"--append-dns-names=true",
 		"--grpc-port=8060",
-		"--grpc-hostname=citadel",
 		fmt.Sprintf("--citadel-storage-namespace=%s", r.Config.Namespace),
 		fmt.Sprintf("--custom-dns-names=istio-pilot-service-account.%[1]s:istio-pilot.%[1]s", r.Config.Namespace),
 		"--monitoring-port=15014",
@@ -51,6 +49,28 @@ func (r *Reconciler) deployment() runtime.Object {
 		)
 	}
 
+	if util.PointerToBool(r.Config.Spec.Citadel.HealthCheck) {
+		args = append(args,
+			"--liveness-probe-path=/tmp/ca.liveness",
+			"--liveness-probe-interval=60s",
+			"--probe-check-interval=15s",
+		)
+	}
+
+	if r.Config.Spec.Citadel.WorkloadCertTTL != "" {
+		args = append(args,
+			"--workload-cert-ttl",
+			r.Config.Spec.Citadel.WorkloadCertTTL,
+		)
+	}
+
+	if r.Config.Spec.Citadel.MaxWorkloadCertTTL != "" {
+		args = append(args,
+			"--max-workload-cert-ttl",
+			r.Config.Spec.Citadel.MaxWorkloadCertTTL,
+		)
+	}
+
 	var citadelContainer = apiv1.Container{
 		Name:            "citadel",
 		Image:           r.Config.Spec.Citadel.Image,
@@ -60,22 +80,28 @@ func (r *Reconciler) deployment() runtime.Object {
 			r.Config.Spec.Citadel.Resources,
 			r.Config.Spec.DefaultResources,
 		),
-		LivenessProbe: &apiv1.Probe{
+		TerminationMessagePath:   apiv1.TerminationMessagePathDefault,
+		TerminationMessagePolicy: apiv1.TerminationMessageReadFile,
+	}
+
+	if util.PointerToBool(r.Config.Spec.Citadel.HealthCheck) {
+		citadelContainer.LivenessProbe = &apiv1.Probe{
 			Handler: apiv1.Handler{
-				HTTPGet: &apiv1.HTTPGetAction{
-					Path:   "/version",
-					Port:   intstr.FromInt(15014),
-					Scheme: apiv1.URISchemeHTTP,
+				Exec: &apiv1.ExecAction{
+					Command: []string{
+						"/usr/local/bin/istio_ca",
+						"probe",
+						"--probe-path=/tmp/ca.liveness",
+						"--interval=125s",
+					},
 				},
 			},
-			InitialDelaySeconds: 5,
-			PeriodSeconds:       5,
+			InitialDelaySeconds: 60,
+			PeriodSeconds:       60,
 			FailureThreshold:    30,
 			SuccessThreshold:    1,
 			TimeoutSeconds:      1,
-		},
-		TerminationMessagePath:   apiv1.TerminationMessagePathDefault,
-		TerminationMessagePolicy: apiv1.TerminationMessageReadFile,
+		}
 	}
 
 	if r.Config.Spec.Citadel.CASecretName != "" {

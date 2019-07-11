@@ -39,13 +39,13 @@ func (r *Reconciler) prometheusHandler() *k8sutil.DynamicObject {
 				"metrics": []map[string]interface{}{
 					{
 						"name":          "requests_total",
-						"instance_name": "requestcount.metric." + r.Config.Namespace,
+						"instance_name": "requestcount.instance." + r.Config.Namespace,
 						"kind":          "COUNTER",
 						"label_names":   metricLabels(),
 					},
 					{
 						"name":          "request_duration_seconds",
-						"instance_name": "requestduration.metric." + r.Config.Namespace,
+						"instance_name": "requestduration.instance." + r.Config.Namespace,
 						"kind":          "DISTRIBUTION",
 						"label_names":   metricLabels(),
 						"buckets": map[string]interface{}{
@@ -56,7 +56,7 @@ func (r *Reconciler) prometheusHandler() *k8sutil.DynamicObject {
 					},
 					{
 						"name":          "request_bytes",
-						"instance_name": "requestsize.metric." + r.Config.Namespace,
+						"instance_name": "requestsize.instance." + r.Config.Namespace,
 						"kind":          "DISTRIBUTION",
 						"label_names":   metricLabels(),
 						"buckets": map[string]interface{}{
@@ -69,7 +69,7 @@ func (r *Reconciler) prometheusHandler() *k8sutil.DynamicObject {
 					},
 					{
 						"name":          "response_bytes",
-						"instance_name": "responsesize.metric." + r.Config.Namespace,
+						"instance_name": "responsesize.instance." + r.Config.Namespace,
 						"kind":          "DISTRIBUTION",
 						"label_names":   metricLabels(),
 						"buckets": map[string]interface{}{
@@ -82,25 +82,25 @@ func (r *Reconciler) prometheusHandler() *k8sutil.DynamicObject {
 					},
 					{
 						"name":          "tcp_sent_bytes_total",
-						"instance_name": "tcpbytesent.metric." + r.Config.Namespace,
+						"instance_name": "tcpbytesent.instance." + r.Config.Namespace,
 						"kind":          "COUNTER",
 						"label_names":   tcpMetricLabels(),
 					},
 					{
 						"name":          "tcp_received_bytes_total",
-						"instance_name": "tcpbytereceived.metric." + r.Config.Namespace,
+						"instance_name": "tcpbytereceived.instance." + r.Config.Namespace,
 						"kind":          "COUNTER",
 						"label_names":   tcpMetricLabels(),
 					},
 					{
 						"name":          "tcp_connections_opened_total",
-						"instance_name": "tcpconnectionsopened.metric." + r.Config.Namespace,
+						"instance_name": "tcpconnectionsopened.instance." + r.Config.Namespace,
 						"kind":          "COUNTER",
 						"label_names":   tcpMetricLabels(),
 					},
 					{
 						"name":          "tcp_connections_closed_total",
-						"instance_name": "tcpconnectionsclosed.metric." + r.Config.Namespace,
+						"instance_name": "tcpconnectionsclosed.instance." + r.Config.Namespace,
 						"kind":          "COUNTER",
 						"label_names":   tcpMetricLabels(),
 					},
@@ -116,15 +116,18 @@ func (r *Reconciler) requestCountMetric() *k8sutil.DynamicObject {
 		Gvr: schema.GroupVersionResource{
 			Group:    "config.istio.io",
 			Version:  "v1alpha2",
-			Resource: "metrics",
+			Resource: "instances",
 		},
-		Kind:      "metric",
+		Kind:      "instance",
 		Name:      "requestcount",
 		Namespace: r.Config.Namespace,
 		Spec: map[string]interface{}{
-			"value":                   "1",
-			"dimensions":              metricDimensions(),
-			"monitored_resource_type": `"UNSPECIFIED"`,
+			"compiledTemplate": "metric",
+			"params": map[string]interface{}{
+				"value":                   "1",
+				"dimensions":              metricDimensions(),
+				"monitored_resource_type": `"UNSPECIFIED"`,
+			},
 		},
 		Owner: r.Config,
 	}
@@ -135,15 +138,18 @@ func (r *Reconciler) requestDurationMetric() *k8sutil.DynamicObject {
 		Gvr: schema.GroupVersionResource{
 			Group:    "config.istio.io",
 			Version:  "v1alpha2",
-			Resource: "metrics",
+			Resource: "instances",
 		},
-		Kind:      "metric",
+		Kind:      "instance",
 		Name:      "requestduration",
 		Namespace: r.Config.Namespace,
 		Spec: map[string]interface{}{
-			"value":                   `response.duration | "0ms"`,
-			"dimensions":              metricDimensions(),
-			"monitored_resource_type": `"UNSPECIFIED"`,
+			"compiledTemplate": "metric",
+			"params": map[string]interface{}{
+				"value":                   `response.duration | "0ms"`,
+				"dimensions":              metricDimensions(),
+				"monitored_resource_type": `"UNSPECIFIED"`,
+			},
 		},
 		Owner: r.Config,
 	}
@@ -154,15 +160,18 @@ func (r *Reconciler) requestSizeMetric() *k8sutil.DynamicObject {
 		Gvr: schema.GroupVersionResource{
 			Group:    "config.istio.io",
 			Version:  "v1alpha2",
-			Resource: "metrics",
+			Resource: "instances",
 		},
-		Kind:      "metric",
+		Kind:      "instance",
 		Name:      "requestsize",
 		Namespace: r.Config.Namespace,
 		Spec: map[string]interface{}{
-			"value":                   `request.size | 0`,
-			"dimensions":              metricDimensions(),
-			"monitored_resource_type": `"UNSPECIFIED"`,
+			"compiledTemplate": "metric",
+			"params": map[string]interface{}{
+				"value":                   `request.size | 0`,
+				"dimensions":              metricDimensions(),
+				"monitored_resource_type": `"UNSPECIFIED"`,
+			},
 		},
 		Owner: r.Config,
 	}
@@ -173,15 +182,18 @@ func (r *Reconciler) responseSizeMetric() *k8sutil.DynamicObject {
 		Gvr: schema.GroupVersionResource{
 			Group:    "config.istio.io",
 			Version:  "v1alpha2",
-			Resource: "metrics",
+			Resource: "instances",
 		},
-		Kind:      "metric",
+		Kind:      "instance",
 		Name:      "responsesize",
 		Namespace: r.Config.Namespace,
 		Spec: map[string]interface{}{
-			"value":                   `response.size | 0`,
-			"dimensions":              metricDimensions(),
-			"monitored_resource_type": `"UNSPECIFIED"`,
+			"compiledTemplate": "metric",
+			"params": map[string]interface{}{
+				"value":                   `response.size | 0`,
+				"dimensions":              metricDimensions(),
+				"monitored_resource_type": `"UNSPECIFIED"`,
+			},
 		},
 		Owner: r.Config,
 	}
@@ -192,15 +204,18 @@ func (r *Reconciler) tcpByteSentMetric() *k8sutil.DynamicObject {
 		Gvr: schema.GroupVersionResource{
 			Group:    "config.istio.io",
 			Version:  "v1alpha2",
-			Resource: "metrics",
+			Resource: "instances",
 		},
-		Kind:      "metric",
+		Kind:      "instance",
 		Name:      "tcpbytesent",
 		Namespace: r.Config.Namespace,
 		Spec: map[string]interface{}{
-			"value":                   `connection.sent.bytes | 0`,
-			"dimensions":              tcpMetricDimensions(),
-			"monitored_resource_type": `"UNSPECIFIED"`,
+			"compiledTemplate": "metric",
+			"params": map[string]interface{}{
+				"value":                   `connection.sent.bytes | 0`,
+				"dimensions":              tcpMetricDimensions(),
+				"monitored_resource_type": `"UNSPECIFIED"`,
+			},
 		},
 		Owner: r.Config,
 	}
@@ -211,15 +226,18 @@ func (r *Reconciler) tcpByteReceivedMetric() *k8sutil.DynamicObject {
 		Gvr: schema.GroupVersionResource{
 			Group:    "config.istio.io",
 			Version:  "v1alpha2",
-			Resource: "metrics",
+			Resource: "instances",
 		},
-		Kind:      "metric",
+		Kind:      "instance",
 		Name:      "tcpbytereceived",
 		Namespace: r.Config.Namespace,
 		Spec: map[string]interface{}{
-			"value":                   `connection.received.bytes | 0`,
-			"dimensions":              tcpMetricDimensions(),
-			"monitored_resource_type": `"UNSPECIFIED"`,
+			"compiledTemplate": "metric",
+			"params": map[string]interface{}{
+				"value":                   `connection.received.bytes | 0`,
+				"dimensions":              tcpMetricDimensions(),
+				"monitored_resource_type": `"UNSPECIFIED"`,
+			},
 		},
 		Owner: r.Config,
 	}
@@ -230,15 +248,18 @@ func (r *Reconciler) tcpConnectionsOpenedMetric() *k8sutil.DynamicObject {
 		Gvr: schema.GroupVersionResource{
 			Group:    "config.istio.io",
 			Version:  "v1alpha2",
-			Resource: "metrics",
+			Resource: "instances",
 		},
-		Kind:      "metric",
+		Kind:      "instance",
 		Name:      "tcpconnectionsopened",
 		Namespace: r.Config.Namespace,
 		Spec: map[string]interface{}{
-			"value":                   "1",
-			"dimensions":              tcpMetricDimensions(),
-			"monitored_resource_type": `"UNSPECIFIED"`,
+			"compiledTemplate": "metric",
+			"params": map[string]interface{}{
+				"value":                   "1",
+				"dimensions":              tcpMetricDimensions(),
+				"monitored_resource_type": `"UNSPECIFIED"`,
+			},
 		},
 		Owner: r.Config,
 	}
@@ -249,15 +270,18 @@ func (r *Reconciler) tcpConnectionsClosedMetric() *k8sutil.DynamicObject {
 		Gvr: schema.GroupVersionResource{
 			Group:    "config.istio.io",
 			Version:  "v1alpha2",
-			Resource: "metrics",
+			Resource: "instances",
 		},
-		Kind:      "metric",
+		Kind:      "instance",
 		Name:      "tcpconnectionsclosed",
 		Namespace: r.Config.Namespace,
 		Spec: map[string]interface{}{
-			"value":                   "1",
-			"dimensions":              tcpMetricDimensions(),
-			"monitored_resource_type": `"UNSPECIFIED"`,
+			"compiledTemplate": "metric",
+			"params": map[string]interface{}{
+				"value":                   "1",
+				"dimensions":              tcpMetricDimensions(),
+				"monitored_resource_type": `"UNSPECIFIED"`,
+			},
 		},
 		Owner: r.Config,
 	}
@@ -277,10 +301,10 @@ func (r *Reconciler) promHttpRule() *k8sutil.DynamicObject {
 			"actions": []interface{}{
 				map[string]interface{}{
 					"handler":   "prometheus",
-					"instances": util.EmptyTypedStrSlice("requestcount.metric", "requestduration.metric", "requestsize.metric", "responsesize.metric"),
+					"instances": util.EmptyTypedStrSlice("requestcount", "requestduration", "requestsize", "responsesize"),
 				},
 			},
-			"match": `(context.protocol == "http" || context.protocol == "grpc") && (match((request.useragent | "-"), "kube-probe*") == false)`,
+			"match": `(context.protocol == "http" || context.protocol == "grpc") && (match((request.useragent | "-"), "kube-probe*") == false)  && (match((request.useragent | "-"), "Prometheus*") == false)`,
 		},
 		Owner: r.Config,
 	}
@@ -300,7 +324,7 @@ func (r *Reconciler) promTcpRule() *k8sutil.DynamicObject {
 			"actions": []interface{}{
 				map[string]interface{}{
 					"handler":   "prometheus",
-					"instances": util.EmptyTypedStrSlice("tcpbytesent.metric", "tcpbytereceived.metric"),
+					"instances": util.EmptyTypedStrSlice("tcpbytesent", "tcpbytereceived"),
 				},
 			},
 			"match": `context.protocol == "tcp"`,
@@ -323,7 +347,7 @@ func (r *Reconciler) promTcpConnectionOpenRule() *k8sutil.DynamicObject {
 			"actions": []interface{}{
 				map[string]interface{}{
 					"handler":   "prometheus",
-					"instances": util.EmptyTypedStrSlice("tcpconnectionsopened.metric"),
+					"instances": util.EmptyTypedStrSlice("tcpconnectionsopened"),
 				},
 			},
 			"match": `context.protocol == "tcp" && ((connection.event | "na") == "open")`,
@@ -346,7 +370,7 @@ func (r *Reconciler) promTcpConnectionClosedRule() *k8sutil.DynamicObject {
 			"actions": []interface{}{
 				map[string]interface{}{
 					"handler":   "prometheus",
-					"instances": util.EmptyTypedStrSlice("tcpconnectionsclosed.metric"),
+					"instances": util.EmptyTypedStrSlice("tcpconnectionsclosed"),
 				},
 			},
 			"match": `context.protocol == "tcp" && ((connection.event | "na") == "close")`,
@@ -368,13 +392,13 @@ func metricDimensions() map[string]interface{} {
 
 func tcpMetricDimensions() map[string]interface{} {
 	return map[string]interface{}{
-		"reporter":                       `conditional((context.reporter.kind | "inbound") == "outbound", "source", "destination")`,
-		"source_workload":                `source.workload.name | "unknown"`,
-		"source_workload_namespace":      `source.workload.namespace | "unknown"`,
-		"source_principal":               `source.principal | "unknown"`,
-		"source_app":                     `source.labels["app"] | "unknown"`,
-		"source_version":                 `source.labels["version"] | "unknown"`,
-		"source_cluster_id":              `source.cluster.id | "unknown"`,
+		"reporter":                  `conditional((context.reporter.kind | "inbound") == "outbound", "source", "destination")`,
+		"source_workload":           `source.workload.name | "unknown"`,
+		"source_workload_namespace": `source.workload.namespace | "unknown"`,
+		"source_principal":          `source.principal | "unknown"`,
+		"source_app":                `source.labels["app"] | "unknown"`,
+		"source_version":            `source.labels["version"] | "unknown"`,
+		// "source_cluster_id":              `source.cluster.id | "unknown"`,
 		"destination_workload":           `destination.workload.name | "unknown"`,
 		"destination_workload_namespace": `destination.workload.namespace | "unknown"`,
 		"destination_principal":          `destination.principal | "unknown"`,
@@ -383,9 +407,9 @@ func tcpMetricDimensions() map[string]interface{} {
 		"destination_service":            `destination.service.host | "unknown"`,
 		"destination_service_name":       `destination.service.name | "unknown"`,
 		"destination_service_namespace":  `destination.service.namespace | "unknown"`,
-		"destination_cluster_id":         `destination.cluster.id | "unknown"`,
-		"connection_security_policy":     `conditional((context.reporter.kind | "inbound") == "outbound", "unknown", conditional(connection.mtls | false, "mutual_tls", "none"))`,
-		"response_flags":                 `context.proxy_error_code | "-"`,
+		// "destination_cluster_id":         `destination.cluster.id | "unknown"`,
+		"connection_security_policy": `conditional((context.reporter.kind | "inbound") == "outbound", "unknown", conditional(connection.mtls | false, "mutual_tls", "none"))`,
+		"response_flags":             `context.proxy_error_code | "-"`,
 	}
 }
 
@@ -406,7 +430,7 @@ func tcpMetricLabels() []interface{} {
 		"source_workload",
 		"source_workload_namespace",
 		"source_version",
-		"source_cluster_id",
+		// "source_cluster_id",
 		"destination_app",
 		"destination_principal",
 		"destination_workload",
@@ -415,7 +439,7 @@ func tcpMetricLabels() []interface{} {
 		"destination_service",
 		"destination_service_name",
 		"destination_service_namespace",
-		"destination_cluster_id",
+		// "destination_cluster_id",
 		"connection_security_policy",
 		"response_flags",
 	)

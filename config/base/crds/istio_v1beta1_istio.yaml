@@ -61,7 +61,18 @@ spec:
                   type: string
                 enabled:
                   type: boolean
+                healthCheck:
+                  description: Enable health checking on the Citadel CSR signing API.
+                    https://istio.io/docs/tasks/security/health-check/
+                  type: boolean
                 image:
+                  type: string
+                maxWorkloadCertTTL:
+                  description: Citadel uses a flag max-workload-cert-ttl to control
+                    the maximum lifetime for Istio certificates issued to workloads.
+                    The default value is 90 days. If workload-cert-ttl on Citadel
+                    or node agent is greater than max-workload-cert-ttl, Citadel will
+                    fail issuing the certificate.
                   type: string
                 nodeSelector:
                   type: object
@@ -71,6 +82,12 @@ spec:
                   items:
                     type: object
                   type: array
+                workloadCertTTL:
+                  description: For the workloads running in Kubernetes, the lifetime
+                    of their Istio certificates is controlled by the workload-cert-ttl
+                    flag on Citadel. The default value is 90 days. This value should
+                    be no greater than max-workload-cert-ttl of Citadel.
+                  type: string
               type: object
             controlPlaneSecurityEnabled:
               description: ControlPlaneSecurityEnabled control plane services are
@@ -263,6 +280,51 @@ spec:
                     type: object
                   type: array
               type: object
+            localityLB:
+              description: Locality based load balancing distribution or failover
+                settings.
+              properties:
+                distribute:
+                  description: 'Optional: only one of distribute or failover can be
+                    set. Explicitly specify loadbalancing weight across different
+                    zones and geographical locations. Refer to [Locality weighted
+                    load balancing](https://www.envoyproxy.io/docs/envoy/latest/intro/arch_overview/load_balancing/locality_weight)
+                    If empty, the locality weight is set according to the endpoints
+                    number within it.'
+                  items:
+                    properties:
+                      from:
+                        description: Originating locality, '/' separated, e.g. 'region/zone'.
+                        type: string
+                      to:
+                        description: Map of upstream localities to traffic distribution
+                          weights. The sum of all weights should be == 100. Any locality
+                          not assigned a weight will receive no traffic.
+                        type: object
+                    type: object
+                  type: array
+                enabled:
+                  description: If set to true, locality based load balancing will
+                    be enabled
+                  type: boolean
+                failover:
+                  description: 'Optional: only failover or distribute can be set.
+                    Explicitly specify the region traffic will land on when endpoints
+                    in local region becomes unhealthy. Should be used together with
+                    OutlierDetection to detect unhealthy endpoints. Note: if no OutlierDetection
+                    specified, this will not take effect.'
+                  items:
+                    properties:
+                      from:
+                        description: Originating region.
+                        type: string
+                      to:
+                        description: Destination region the traffic will fail over
+                          to when endpoints in the 'from' region becomes unhealthy.
+                        type: string
+                    type: object
+                  type: array
+              type: object
             meshExpansion:
               description: If set to true, the pilot and citadel mtls will be exposed
                 on the ingress gateway also the remote istios will be connected through
@@ -283,6 +345,10 @@ spec:
                 minReplicas:
                   format: int32
                   type: integer
+                multiClusterSupport:
+                  description: Turn it on if you use mixer that supports multi cluster
+                    telemetry
+                  type: boolean
                 nodeSelector:
                   type: object
                 replicaCount:
@@ -367,11 +433,34 @@ spec:
             proxy:
               description: Proxy configuration options
               properties:
+                componentLogLevel:
+                  description: Per Component log level for proxy, applies to gateways
+                    and sidecars. If a component level is not set, then the "LogLevel"
+                    will be used. If left empty, "misc:error" is used.
+                  type: string
+                dnsRefreshRate:
+                  description: Configure the DNS refresh rate for Envoy cluster of
+                    type STRICT_DNS This must be given it terms of seconds. For example,
+                    300s is valid but 5m is invalid.
+                  pattern: ^[0-9]{1,5}s$
+                  type: string
                 enableCoreDump:
                   description: If set, newly injected sidecars will have core dumps
                     enabled.
                   type: boolean
                 image:
+                  type: string
+                logLevel:
+                  description: 'Log level for proxy, applies to gateways and sidecars.
+                    If left empty, "warning" is used. Expected values are: trace|debug|info|warning|error|critical|off'
+                  enum:
+                  - trace
+                  - debug
+                  - info
+                  - warning
+                  - error
+                  - critical
+                  - "off"
                   type: string
                 privileged:
                   description: If set to true, istio-proxy container will have privileged
@@ -391,6 +480,8 @@ spec:
                 will be distributed through the SecretDiscoveryService instead of
                 using K8S secrets to mount the certificates
               properties:
+                customTokenDirectory:
+                  type: string
                 enabled:
                   description: If set to true, mTLS certificates for the sidecars
                     will be distributed through the SecretDiscoveryService instead
@@ -420,8 +511,20 @@ spec:
               properties:
                 affinity:
                   type: object
+                alwaysInjectSelector:
+                  description: 'AlwaysInjectSelector: Forces the injection on pods
+                    whose labels match this selector. It''s an array of label selectors,
+                    that will be OR''ed, meaning we will iterate over it and stop
+                    at the first match'
+                  items:
+                    type: object
+                  type: array
                 autoInjectionPolicyEnabled:
                   description: This controls the 'policy' in the sidecar injector
+                  type: boolean
+                enableNamespacesByDefault:
+                  description: This controls whether the webhook looks for namespaces
+                    for injection enabled or disabled
                   type: boolean
                 enabled:
                   type: boolean
@@ -460,6 +563,14 @@ spec:
                       description: Logging level for CNI binary
                       type: string
                   type: object
+                neverInjectSelector:
+                  description: 'NeverInjectSelector: Refuses the injection on pods
+                    whose labels match this selector. It''s an array of label selectors,
+                    that will be OR''ed, meaning we will iterate over it and stop
+                    at the first match Takes precedence over AlwaysInjectSelector.'
+                  items:
+                    type: object
+                  type: array
                 nodeSelector:
                   type: object
                 replicaCount:
@@ -533,7 +644,7 @@ spec:
               type: boolean
             version:
               description: Contains the intended Istio version
-              pattern: ^1.1
+              pattern: ^1.2
               type: string
             watchAdapterCRDs:
               description: Whether or not to establish watches for adapter-specific
