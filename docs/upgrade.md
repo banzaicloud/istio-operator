@@ -177,13 +177,21 @@ istio-telemetry-7b667c5fbb-2lfdc          2/2       Running   0          7m
 The `Istio` Custom Resource is showing `Available` in its status field, and the Istio components are now using `1.2.2` images:
 
 ```bash
-$ kubectl describe istio -n istio-system istio -o yaml | grep "image:"
-    image: docker.io/istio/citadel:1.2.2
-    image: docker.io/istio/galley:1.2.2
-    image: docker.io/istio-mixer:1.2.2
-    image: docker.io/istio-pilot:1.2.2
-    image: docker.io/istio/proxyv2:1.2.2
-    image: docker.io/istio/sidecar_injector:1.2.2
+$ kubectl describe istio -n istio-system istio | grep Image:
+    Image:                         docker.io/istio/citadel:1.2.2
+    Image:          docker.io/istio/galley:1.2.2
+        Image:    docker.io/istio/node-agent-k8s:1.1.9
+        Image:    docker.io/istio/node-agent-k8s:1.1.9
+    Image:          coredns/coredns:1.1.2
+    Plugin Image:   docker.io/istio/coredns-plugin:0.2-istio-1.1
+    Image:          docker.io/istio/mixer:1.2.2
+    Image:    docker.io/istio/node-agent-k8s:1.2.2
+    Image:          docker.io/istio/pilot:1.2.2
+    Image:             docker.io/istio/proxyv2:1.2.2
+    Image:  docker.io/istio/proxy_init:1.2.2
+    Image:                          docker.io/istio/sidecar_injector:1.2.2
+      Image:                 gcr.io/istio-release/install-cni:master-latest-daily
+
 ```
 
 At this point, your Istio control plane is upgraded to Istio 1.2.2 and your BookInfo application should still be available at:
