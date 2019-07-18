@@ -46,7 +46,6 @@ func (r *Reconciler) getValues() string {
 			"global",
 			"{{ valueOrDefault .DeploymentMeta.Namespace \"default\" }}.global",
 		}...)
-		return ""
 	}
 
 	values := map[string]interface{}{
