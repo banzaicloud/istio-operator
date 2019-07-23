@@ -65,9 +65,7 @@ func (c *Cluster) getIngressGatewayAddress(remoteIstio *istiov1beta1.RemoteIstio
 		}
 	}
 
-	if remoteIstio.Status.GatewayAddress == nil {
-		remoteIstio.Status.GatewayAddress = ips
-	}
+	remoteIstio.Status.GatewayAddress = ips
 
 	return nil
 }
