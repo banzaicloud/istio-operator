@@ -18,12 +18,12 @@ package remoteclusters
 
 import (
 	"context"
-	"net"
 
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/types"
 
 	istiov1beta1 "github.com/banzaicloud/istio-operator/pkg/apis/istio/v1beta1"
+	"github.com/banzaicloud/istio-operator/pkg/k8sutil"
 	"github.com/banzaicloud/istio-operator/pkg/util"
 )
 
@@ -35,7 +35,7 @@ func (c *Cluster) getIngressGatewayAddress(remoteIstio *istiov1beta1.RemoteIstio
 	c.log.Info("get ingress gateway address")
 
 	var service corev1.Service
-	ips := make([]string, 0)
+	var ips []string
 
 	err := c.ctrlRuntimeClient.Get(context.Background(), types.NamespacedName{
 		Name:      "istio-ingressgateway",
@@ -45,24 +45,9 @@ func (c *Cluster) getIngressGatewayAddress(remoteIstio *istiov1beta1.RemoteIstio
 		return err
 	}
 
-	if len(service.Status.LoadBalancer.Ingress) < 1 {
-		return IngressSetupPendingError{}
-	}
-
-	if service.Status.LoadBalancer.Ingress[0].IP != "" {
-		ips = []string{
-			service.Status.LoadBalancer.Ingress[0].IP,
-		}
-	} else if service.Status.LoadBalancer.Ingress[0].Hostname != "" {
-		hostIPs, err := net.LookupIP(service.Status.LoadBalancer.Ingress[0].Hostname)
-		if err != nil {
-			return err
-		}
-		for _, ip := range hostIPs {
-			if ip.To4() != nil {
-				ips = append(ips, ip.String())
-			}
-		}
+	ips, err = k8sutil.GetServiceEndpointIPs(service)
+	if err != nil {
+		return err
 	}
 
 	remoteIstio.Status.GatewayAddress = ips
