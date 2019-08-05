@@ -30,14 +30,19 @@ import (
 )
 
 func (r *Reconciler) deployment() runtime.Object {
-	var args = []string{
+	var args []string
+	if util.PointerToBool(r.Config.Spec.SDS.Enabled) {
+		args = append(args, "--sds-enabled=true")
+	}
+
+	args = append(args,
 		"--append-dns-names=true",
 		"--grpc-port=8060",
 		"--grpc-hostname=citadel",
 		fmt.Sprintf("--citadel-storage-namespace=%s", r.Config.Namespace),
 		fmt.Sprintf("--custom-dns-names=istio-pilot-service-account.%[1]s:istio-pilot.%[1]s", r.Config.Namespace),
 		"--monitoring-port=15014",
-	}
+	)
 
 	if r.Config.Spec.Citadel.CASecretName == "" {
 		args = append(args, "--self-signed-ca=true")
