@@ -1,0 +1,11 @@
+bases:
+- ../../base
+
+namespace: istio-system
+
+namePrefix: istio-operator-
+
+resources:
+- resources/psp.yaml
+- resources/psp_role.yaml
+- resources/psp_role_binding.yaml
