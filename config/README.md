@@ -29,3 +29,10 @@ bases:
   - github.com/banzaicloud/istio-operator/config?ref=release-1.2
   - github.com/banzaicloud/istio-operator/config/overlays/prometheus-scpraping-enabled?ref=release-1.2
 ```
+
+ - `psp`: besides the basic configs, add basic pod security policy for the operator and the Istio component pods
+
+```
+bases:
+  - github.com/banzaicloud/istio-operator/config/overlays/psp?ref=release-1.2
+```
