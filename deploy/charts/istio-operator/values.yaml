@@ -15,7 +15,7 @@ operator:
       cpu: 100m
       memory: 128Mi
 
-istioVersion: 1.2
+istioVersion: "1.2"
 
 # If you want the operator to expose the /metrics
 prometheusMetrics:
