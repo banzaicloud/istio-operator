@@ -34,5 +34,6 @@ bases:
 
 ```
 bases:
+  - github.com/banzaicloud/istio-operator/config?ref=release-1.2
   - github.com/banzaicloud/istio-operator/config/overlays/psp?ref=release-1.2
 ```
