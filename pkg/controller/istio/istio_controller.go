@@ -19,11 +19,9 @@ package istio
 import (
 	"context"
 	"flag"
-	"net"
 	"strings"
 	"time"
 
-	patch "github.com/banzaicloud/k8s-objectmatcher/patch"
 	"github.com/go-logr/logr"
 	"github.com/gofrs/uuid"
 	"github.com/goph/emperror"
@@ -48,6 +46,8 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/reconcile"
 	logf "sigs.k8s.io/controller-runtime/pkg/runtime/log"
 	"sigs.k8s.io/controller-runtime/pkg/source"
+
+	patch "github.com/banzaicloud/k8s-objectmatcher/patch"
 
 	istiov1beta1 "github.com/banzaicloud/istio-operator/pkg/apis/istio/v1beta1"
 	remoteistioCtrl "github.com/banzaicloud/istio-operator/pkg/controller/remoteistio"
@@ -321,24 +321,9 @@ func (r *ReconcileConfig) getIngressGatewayAddress(istio *istiov1beta1.Istio, lo
 		return ips, err
 	}
 
-	if len(service.Status.LoadBalancer.Ingress) < 1 {
-		return ips, errors.New("invalid ingress status")
-	}
-
-	if service.Status.LoadBalancer.Ingress[0].IP != "" {
-		ips = []string{
-			service.Status.LoadBalancer.Ingress[0].IP,
-		}
-	} else if service.Status.LoadBalancer.Ingress[0].Hostname != "" {
-		hostIPs, err := net.LookupIP(service.Status.LoadBalancer.Ingress[0].Hostname)
-		if err != nil {
-			return ips, err
-		}
-		for _, ip := range hostIPs {
-			if ip.To4() != nil {
-				ips = append(ips, ip.String())
-			}
-		}
+	ips, err = k8sutil.GetServiceEndpointIPs(service)
+	if err != nil {
+		return ips, err
 	}
 
 	return ips, nil
