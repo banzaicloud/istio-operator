@@ -77,6 +77,16 @@ helm repo add banzaicloud-stable https://kubernetes-charts.banzaicloud.com/
 helm install --name=istio-operator --namespace=istio-system banzaicloud-stable/istio-operator
 ```
 
+### Installation with Kustomize
+
+You can also have your own `kustomization.yaml` file with a reference to Istio operator as a base without the need to clone the repo. See more info in the [Kustomize usage doc](config/README.md).
+
+```
+bases:
+  - github.com/banzaicloud/istio-operator/config?ref=release-1.2
+  - github.com/banzaicloud/istio-operator/config/overlays/auth-proxy-enabled?ref=release-1.2
+```
+
 ## Istio upgrade
 
 Check out the [upgrade docs](docs/upgrade.md) to see how to upgrade between minor or major Istio versions.
