@@ -2,6 +2,7 @@ apiVersion: apps/v1
 kind: StatefulSet
 metadata:
   name: "{{ include "istio-operator.fullname" . }}-operator"
+  namespace: {{ .Release.Namespace }}
   labels:
     control-plane: controller-manager
     controller-tools.k8s.io: "1.0"

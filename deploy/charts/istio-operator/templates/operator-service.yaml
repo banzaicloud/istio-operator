@@ -2,6 +2,7 @@ apiVersion: v1
 kind: Service
 metadata:
   name: "{{ include "istio-operator.fullname" . }}-operator"
+  namespace: {{ .Release.Namespace }}
   {{- if and .Values.prometheusMetrics.enabled (not .Values.prometheusMetrics.authProxy.enabled) }}
   annotations:
     prometheus.io/scrape: "true"
@@ -26,8 +27,12 @@ spec:
     app.kubernetes.io/component: operator
   ports:
   - name: https
+    protocol: TCP
     port: 443
+    targetPort: 443
   {{- if and .Values.prometheusMetrics.enabled (not .Values.prometheusMetrics.authProxy.enabled) }}
   - name: metrics
+    protocol: TCP
     port: 8080
+    targetPort: 8080
   {{- end }}

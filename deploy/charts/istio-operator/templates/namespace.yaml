@@ -1,0 +1,14 @@
+{{- if .Values.useNamespaceResource }}
+apiVersion: v1
+kind: Namespace
+metadata:
+  labels:
+    app: {{ include "istio-operator.name" . }}
+    app.kubernetes.io/name: {{ include "istio-operator.name" . }}
+    helm.sh/chart: {{ include "istio-operator.chart" . }}
+    app.kubernetes.io/managed-by: {{ .Release.Service }}
+    app.kubernetes.io/instance: {{ .Release.Name }}
+    app.kubernetes.io/version: "{{ .Chart.AppVersion | replace "+" "_" }}"
+    app.kubernetes.io/part-of: {{ include "istio-operator.name" . }}
+  name: {{ .Release.Namespace }}
+{{- end }}

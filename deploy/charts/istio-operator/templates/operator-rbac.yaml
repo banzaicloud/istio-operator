@@ -3,6 +3,7 @@ apiVersion: v1
 kind: ServiceAccount
 metadata:
   name: {{ include "istio-operator.fullname" . }}-operator
+  namespace: {{ .Release.Namespace }}
   labels:
     app.kubernetes.io/name: {{ include "istio-operator.name" . }}
     helm.sh/chart: {{ include "istio-operator.chart" . }}
