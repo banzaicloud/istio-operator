@@ -47,8 +47,6 @@ import (
 	logf "sigs.k8s.io/controller-runtime/pkg/runtime/log"
 	"sigs.k8s.io/controller-runtime/pkg/source"
 
-	patch "github.com/banzaicloud/k8s-objectmatcher/patch"
-
 	istiov1beta1 "github.com/banzaicloud/istio-operator/pkg/apis/istio/v1beta1"
 	remoteistioCtrl "github.com/banzaicloud/istio-operator/pkg/controller/remoteistio"
 	"github.com/banzaicloud/istio-operator/pkg/crds"
@@ -540,17 +538,19 @@ func initWatches(c controller.Controller, scheme *runtime.Scheme, watchCreatedRe
 				return true
 			},
 			UpdateFunc: func(e event.UpdateEvent) bool {
-				patchResult, err := patch.DefaultPatchMaker.Calculate(e.ObjectOld, e.ObjectNew)
-				if err != nil {
-					logger.Error(err, "could not match objects", "kind", e.ObjectOld.GetObjectKind())
-				} else if patchResult.IsEmpty() {
-					return false
-				}
 				related, object, err := ownerMatcher.Match(e.ObjectNew)
 				if err != nil {
 					logger.Error(err, "could not determine relation", "kind", e.ObjectNew.GetObjectKind())
 				}
 				if related {
+					changed, err := k8sutil.IsObjectChanged(e.ObjectOld, e.ObjectNew, true)
+					if err != nil {
+						logger.Error(err, "could not check whether object is changed", "kind", e.ObjectNew.GetObjectKind())
+					}
+					if !changed {
+						return false
+					}
+
 					logger.Info("related object changed", "trigger", object.GetName())
 				}
 				return true
