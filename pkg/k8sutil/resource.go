@@ -18,9 +18,9 @@ package k8sutil
 
 import (
 	"context"
+	"encoding/json"
 	"reflect"
 
-	"github.com/banzaicloud/k8s-objectmatcher/patch"
 	"github.com/go-logr/logr"
 	"github.com/goph/emperror"
 	corev1 "k8s.io/api/core/v1"
@@ -28,6 +28,8 @@ import (
 	"k8s.io/apimachinery/pkg/api/meta"
 	"k8s.io/apimachinery/pkg/runtime"
 	runtimeClient "sigs.k8s.io/controller-runtime/pkg/client"
+
+	"github.com/banzaicloud/k8s-objectmatcher/patch"
 )
 
 func Reconcile(log logr.Logger, client runtimeClient.Client, desired runtime.Object, desiredState DesiredState) error {
@@ -86,15 +88,17 @@ func Reconcile(log logr.Logger, client runtimeClient.Client, desired runtime.Obj
 			}
 
 			metaAccessor.SetResourceVersion(desired, currentResourceVersion)
+			prepareResourceForUpdate(current, desired)
 
 			if err := client.Update(context.TODO(), desired); err != nil {
 				if apierrors.IsConflict(err) || apierrors.IsInvalid(err) {
+					log.Info("resource needs to be re-created", "error", err)
 					err := client.Delete(context.TODO(), current)
 					if err != nil {
 						return emperror.WrapWith(err, "could not delete resource", "kind", desiredType, "name", key.Name)
 					}
+					log.Info("resource deleted")
 					if err := client.Create(context.TODO(), desiredCopy); err != nil {
-						log.Info("resource needs to be re-created")
 						return emperror.WrapWith(err, "creating resource failed", "kind", desiredType, "name", key.Name)
 					}
 					log.Info("resource created")
@@ -112,6 +116,44 @@ func Reconcile(log logr.Logger, client runtimeClient.Client, desired runtime.Obj
 		}
 	}
 	return nil
+}
+
+func prepareResourceForUpdate(current, desired runtime.Object) {
+	switch desired.(type) {
+	case *corev1.Service:
+		svc := desired.(*corev1.Service)
+		svc.Spec.ClusterIP = current.(*corev1.Service).Spec.ClusterIP
+	}
+}
+
+// IsObjectChanged checks whether there is an actual difference between the two objects
+func IsObjectChanged(oldObj, newObj runtime.Object, ignoreStatusChange bool) (bool, error) {
+	old := oldObj.DeepCopyObject()
+	new := newObj.DeepCopyObject()
+
+	metaAccessor := meta.NewAccessor()
+	currentResourceVersion, err := metaAccessor.ResourceVersion(old)
+	if err == nil {
+		metaAccessor.SetResourceVersion(new, currentResourceVersion)
+	}
+
+	patchResult, err := patch.DefaultPatchMaker.Calculate(old, new)
+	if err != nil {
+		return true, emperror.WrapWith(err, "could not match objects", "kind", old.GetObjectKind())
+	} else if patchResult.IsEmpty() {
+		return false, nil
+	}
+
+	if ignoreStatusChange {
+		var patch map[string]interface{}
+		json.Unmarshal(patchResult.Patch, &patch)
+		delete(patch, "status")
+		if len(patch) == 0 {
+			return false, nil
+		}
+	}
+
+	return true, nil
 }
 
 // ReconcileNamespaceLabelsIgnoreNotFound patches namespaces by adding/removing labels, returns without error if namespace is not found
