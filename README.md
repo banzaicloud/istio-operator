@@ -87,6 +87,14 @@ bases:
   - github.com/banzaicloud/istio-operator/config/overlays/auth-proxy-enabled?ref=release-1.2
 ```
 
+### Installation with Backyards
+
+Go grab and install the [Backyards CLI](https://github.com/banzaicloud/backyards-cli) tool. 
+
+```bash
+backyards istio install
+```
+
 ## Istio upgrade
 
 Check out the [upgrade docs](docs/upgrade.md) to see how to upgrade between minor or major Istio versions.
