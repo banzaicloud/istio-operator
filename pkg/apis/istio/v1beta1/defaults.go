@@ -28,7 +28,7 @@ import (
 
 const (
 	defaultImageHub                  = "docker.io/istio"
-	defaultImageVersion              = "1.2.5"
+	defaultImageVersion              = "1.3.0-rc.2"
 	defaultPilotImage                = defaultImageHub + "/" + "pilot" + ":" + defaultImageVersion
 	defaultCitadelImage              = defaultImageHub + "/" + "citadel" + ":" + defaultImageVersion
 	defaultGalleyImage               = defaultImageHub + "/" + "galley" + ":" + defaultImageVersion
@@ -134,12 +134,18 @@ func SetDefaults(config *Istio) {
 	if config.Spec.Pilot.TraceSampling == 0 {
 		config.Spec.Pilot.TraceSampling = defaultTraceSampling
 	}
+	if config.Spec.Pilot.EnableProtocolSniffing == nil {
+		config.Spec.Pilot.EnableProtocolSniffing = util.BoolPointer(true)
+	}
 	// Citadel config
 	if config.Spec.Citadel.Enabled == nil {
 		config.Spec.Citadel.Enabled = util.BoolPointer(true)
 	}
 	if config.Spec.Citadel.Image == "" {
 		config.Spec.Citadel.Image = defaultCitadelImage
+	}
+	if config.Spec.Citadel.EnableNamespacesByDefault == nil {
+		config.Spec.Citadel.EnableNamespacesByDefault = util.BoolPointer(true)
 	}
 	// Galley config
 	if config.Spec.Galley.Enabled == nil {
@@ -150,6 +156,9 @@ func SetDefaults(config *Istio) {
 	}
 	if config.Spec.Galley.ReplicaCount == 0 {
 		config.Spec.Galley.ReplicaCount = defaultReplicaCount
+	}
+	if config.Spec.Galley.ConfigValidation == nil {
+		config.Spec.Galley.ConfigValidation = util.BoolPointer(true)
 	}
 	// Gateways config
 	if config.Spec.Gateways.Enabled == nil {
@@ -216,6 +225,15 @@ func SetDefaults(config *Istio) {
 	if config.Spec.Mixer.MaxReplicas == 0 {
 		config.Spec.Mixer.MaxReplicas = defaultMaxReplicas
 	}
+	if config.Spec.Mixer.ReportBatchMaxEntries == nil {
+		config.Spec.Mixer.ReportBatchMaxEntries = util.IntPointer(100)
+	}
+	if config.Spec.Mixer.ReportBatchMaxTime == nil {
+		config.Spec.Mixer.ReportBatchMaxTime = util.StrPointer("1s")
+	}
+	if config.Spec.Mixer.SessionAffinityEnabled == nil {
+		config.Spec.Mixer.SessionAffinityEnabled = util.BoolPointer(false)
+	}
 	// SidecarInjector config
 	if config.Spec.SidecarInjector.Enabled == nil {
 		config.Spec.SidecarInjector.Enabled = util.BoolPointer(true)
@@ -254,6 +272,9 @@ func SetDefaults(config *Istio) {
 	if config.Spec.SDS.Enabled == nil {
 		config.Spec.SDS.Enabled = util.BoolPointer(false)
 	}
+	if config.Spec.SDS.TokenAudience == "" {
+		config.Spec.SDS.TokenAudience = "istio-ca"
+	}
 	// NodeAgent config
 	if config.Spec.NodeAgent.Enabled == nil {
 		config.Spec.NodeAgent.Enabled = util.BoolPointer(false)
@@ -284,6 +305,18 @@ func SetDefaults(config *Istio) {
 	if config.Spec.Proxy.DNSRefreshRate == "" {
 		config.Spec.Proxy.DNSRefreshRate = "300s"
 	}
+	if config.Spec.Proxy.EnvoyStatsD.Enabled == nil {
+		config.Spec.Proxy.EnvoyStatsD.Enabled = util.BoolPointer(false)
+	}
+	if config.Spec.Proxy.EnvoyMetricsService.Enabled == nil {
+		config.Spec.Proxy.EnvoyMetricsService.Enabled = util.BoolPointer(false)
+	}
+	if config.Spec.Proxy.EnvoyAccessLogService.Enabled == nil {
+		config.Spec.Proxy.EnvoyAccessLogService.Enabled = util.BoolPointer(false)
+	}
+	if config.Spec.Proxy.ProtocolDetectionTimeout == nil {
+		config.Spec.Proxy.ProtocolDetectionTimeout = util.StrPointer("100ms")
+	}
 	// PDB config
 	if config.Spec.DefaultPodDisruptionBudget.Enabled == nil {
 		config.Spec.DefaultPodDisruptionBudget.Enabled = util.BoolPointer(false)
@@ -304,6 +337,10 @@ func SetDefaults(config *Istio) {
 	}
 	if config.Spec.Tracing.Zipkin.Address == "" {
 		config.Spec.Tracing.Zipkin.Address = fmt.Sprintf(defaultZipkinAddress, config.Namespace)
+	}
+
+	if config.Spec.Policy.ChecksEnabled == nil {
+		config.Spec.Policy.ChecksEnabled = util.BoolPointer(false)
 	}
 
 	// Multi mesh support

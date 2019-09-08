@@ -67,9 +67,12 @@ func (r *Reconciler) getValues() string {
 			},
 			"sds": map[string]interface{}{
 				"customTokenDirectory": r.Config.Spec.SDS.CustomTokenDirectory,
-				"useTrustworthyJwt":    r.Config.Spec.SDS.UseTrustworthyJwt,
 				"enabled":              r.Config.Spec.SDS.Enabled,
 			},
+			"multicluster": map[string]interface{}{
+				"clusterName": r.Config.Spec.ClusterName,
+			},
+			"meshID": r.Config.Spec.MeshID,
 			"proxy": map[string]interface{}{
 				"image":                        r.Config.Spec.Proxy.Image,
 				"statusPort":                   15020,
@@ -89,10 +92,13 @@ func (r *Reconciler) getValues() string {
 				"readinessPeriodSeconds":       2,
 				"resources":                    r.Config.Spec.Proxy.Resources,
 				"envoyMetricsService": map[string]interface{}{
-					"enabled": false,
+					"enabled": r.Config.Spec.Proxy.EnvoyMetricsService.Enabled,
+				},
+				"envoyAccessLogService": map[string]interface{}{
+					"enabled": r.Config.Spec.Proxy.EnvoyAccessLogService.Enabled,
 				},
 				"envoyStatsd": map[string]interface{}{
-					"enabled": false,
+					"enabled": r.Config.Spec.Proxy.EnvoyStatsD.Enabled,
 				},
 			},
 		},
@@ -185,7 +191,11 @@ containers:
 {{- end }}
 {{- if .Values.global.proxy.envoyMetricsService.enabled }}
   - --envoyMetricsServiceAddress
-  - "{{ .ProxyConfig.EnvoyMetricsServiceAddress }}"
+  - "{{ .ProxyConfig.GetEnvoyMetricsService.GetAddress }}"
+{{- end }}
+{{- if .Values.global.proxy.envoyAccessLogService.enabled }}
+  - --envoyAccessLogService
+  - '{{ structToJSON .ProxyConfig.EnvoyAccessLogService }}'
 {{- end }}
   - --proxyAdminPort
   - "{{ .ProxyConfig.ProxyAdminPort }}"
@@ -217,6 +227,10 @@ containers:
     valueFrom:
       fieldRef:
         fieldPath: status.podIP
+  - name: SERVICE_ACCOUNT
+    valueFrom:
+      fieldRef:
+        fieldPath: spec.serviceAccountName
 {{ if eq .Values.global.proxy.tracer "datadog" }}
   - name: HOST_IP
     valueFrom:
@@ -231,6 +245,19 @@ containers:
     valueFrom:
       fieldRef:
         fieldPath: metadata.namespace
+  - name: ISTIO_META_POD_PORTS
+    value: |-
+      [
+      {{- range $index1, $c := .Spec.Containers }}
+        {{- range $index2, $p := $c.Ports }}
+          {{if or (ne $index1 0) (ne $index2 0)}},{{end}}{{ structToJSON $p }}
+        {{- end}}
+      {{- end}}
+      ]
+  - name: ISTIO_META_CLUSTER_ID
+    value: "{{ valueOrDefault .Values.global.multicluster.clusterName ` + "`" + `Kubernetes` + "`" + `}}"
+  - name: SDS_ENABLED
+    value: {{ $.Values.global.sds.enabled }}
   - name: ISTIO_META_INTERCEPTION_MODE
     value: "{{ or (index .ObjectMeta.Annotations ` + "`" + `sidecar.istio.io/interceptionMode` + "`" + `) .ProxyConfig.InterceptionMode.String }}"
   - name: ISTIO_META_INCLUDE_INBOUND_PORTS
@@ -249,6 +276,14 @@ containers:
     value: |
            {{ toJSON .ObjectMeta.Labels }}
   {{ end }}
+  {{- if .DeploymentMeta.Name }}
+  - name: ISTIO_META_WORKLOAD_NAME
+    value: {{ .DeploymentMeta.Name }}
+  {{ end }}
+  {{- if and .TypeMeta.APIVersion .DeploymentMeta.Name }}
+  - name: ISTIO_META_OWNER
+    value: kubernetes://api/{{ .TypeMeta.APIVersion }}/namespaces/{{ valueOrDefault .DeploymentMeta.Namespace ` + "`" + `default` + "`" + ` }}/{{ toLower .TypeMeta.Kind}}s/{{ .DeploymentMeta.Name }}
+   {{- end}}
   {{- if (isset .ObjectMeta.Annotations ` + "`" + `sidecar.istio.io/bootstrapOverride` + "`" + `) }}
   - name: ISTIO_BOOTSTRAP_OVERRIDE
     value: "/etc/istio/custom-bootstrap/custom_bootstrap.json"
@@ -256,6 +291,13 @@ containers:
   {{- if .Values.global.sds.customTokenDirectory }}
   - name: ISTIO_META_SDS_TOKEN_PATH
     value: "{{ .Values.global.sds.customTokenDirectory -}}/sdstoken"
+  {{- end }}
+  {{- if .Values.global.meshID }}
+  - name: ISTIO_META_MESH_ID
+    value: "{{ .Values.global.meshID }}"
+  {{- else if .Values.global.trustDomain }}
+  - name: ISTIO_META_MESH_ID
+    value: "{{ .Values.global.trustDomain }}"
   {{- end }}
   imagePullPolicy: {{ .Values.global.imagePullPolicy }}
   {{ if ne (annotation .ObjectMeta ` + "`" + `status.sidecar.istio.io/port` + "`" + ` .Values.global.proxy.statusPort) ` + "`" + `0` + "`" + ` }}
@@ -280,7 +322,7 @@ containers:
       - NET_ADMIN
     runAsGroup: 1337
     {{ else -}}
-    {{ if and .Values.global.sds.enabled .Values.global.sds.useTrustworthyJwt }}
+    {{ if .Values.global.sds.enabled }}
     runAsGroup: 1337
     {{- end }}
     runAsUser: 1337
@@ -310,10 +352,8 @@ containers:
   - mountPath: /var/run/sds
     name: sds-uds-path
     readOnly: true
-  {{- if .Values.global.sds.useTrustworthyJwt }}
   - mountPath: /var/run/secrets/tokens
     name: istio-token
-  {{- end }}
   {{- if .Values.global.sds.customTokenDirectory }}
   - mountPath: "{{ .Values.global.sds.customTokenDirectory -}}"
     name: custom-sds-token
@@ -348,19 +388,17 @@ volumes:
 - name: sds-uds-path
   hostPath:
     path: /var/run/sds
+- name: istio-token
+  projected:
+    sources:
+      - serviceAccountToken:
+          path: istio-token
+          expirationSeconds: 43200
+          audience: {{ .Values.global.sds.token.aud }}
 {{- if .Values.global.sds.customTokenDirectory }}
 - name: custom-sds-token
   secret:
     secretName: sdstokensecret
-{{- end }}
-{{- if .Values.global.sds.useTrustworthyJwt }}
-- name: istio-token
-  projected:
-    sources:
-    - serviceAccountToken:
-        path: istio-token
-        expirationSeconds: 43200
-        audience: {{ .Values.global.trustDomain }}
 {{- end }}
 {{- else }}
 - name: istio-certs
@@ -384,6 +422,16 @@ volumes:
     optional: true
     secretName: lightstep.cacert
 {{- end }}
+podRedirectAnnot:
+   sidecar.istio.io/interceptionMode: "{{ annotation .ObjectMeta ` + "`" + `sidecar.istio.io/interceptionMode` + "`" + ` .ProxyConfig.InterceptionMode }}"
+   traffic.sidecar.istio.io/includeOutboundIPRanges: "{{ annotation .ObjectMeta ` + "`" + `traffic.sidecar.istio.io/includeOutboundIPRanges` + "`" + ` .Values.global.proxy.includeIPRanges }}"
+   traffic.sidecar.istio.io/excludeOutboundIPRanges: "{{ annotation .ObjectMeta ` + "`" + `traffic.sidecar.istio.io/excludeOutboundIPRanges` + "`" + ` .Values.global.proxy.excludeIPRanges }}"
+   traffic.sidecar.istio.io/includeInboundPorts: "{{ annotation .ObjectMeta ` + "`" + `traffic.sidecar.istio.io/includeInboundPorts` + "`" + ` (includeInboundPorts .Spec.Containers) }}"
+   traffic.sidecar.istio.io/excludeInboundPorts: "{{ excludeInboundPort (annotation .ObjectMeta ` + "`" + `status.sidecar.istio.io/port` + "`" + ` .Values.global.proxy.statusPort) (annotation .ObjectMeta ` + "`" + `traffic.sidecar.istio.io/excludeInboundPorts` + "`" + ` .Values.global.proxy.excludeInboundPorts) }}"
+{{ if or (isset .ObjectMeta.Annotations ` + "`" + `traffic.sidecar.istio.io/excludeOutboundPorts` + "`" + `) (ne .Values.global.proxy.excludeOutboundPorts "") }}
+   traffic.sidecar.istio.io/excludeOutboundPorts: "{{ annotation .ObjectMeta ` + "`" + `traffic.sidecar.istio.io/excludeOutboundPorts` + "`" + ` .Values.global.proxy.excludeOutboundPorts }}"
+{{- end }}
+   traffic.sidecar.istio.io/kubevirtInterfaces: "{{ index .ObjectMeta.Annotations ` + "`" + `traffic.sidecar.istio.io/kubevirtInterfaces` + "`" + ` }}"
 `
 }
 
@@ -435,6 +483,8 @@ func (r *Reconciler) proxyInitContainer() string {
   args:
   - "-p"
   - "15001"
+  - "-z"
+  - "15006"
   - "-u"
   - 1337
   - "-m"
@@ -444,7 +494,7 @@ func (r *Reconciler) proxyInitContainer() string {
   - "-x"
   - "{{ annotation .ObjectMeta ` + "`" + `traffic.sidecar.istio.io/excludeOutboundIPRanges` + "`" + ` .Values.global.proxy.excludeIPRanges }}"
   - "-b"
-  - "{{ annotation .ObjectMeta ` + "`" + `traffic.sidecar.istio.io/includeInboundPorts` + "`" + ` (includeInboundPorts .Spec.Containers) }}"
+  - "{{ annotation .ObjectMeta ` + "`" + `traffic.sidecar.istio.io/includeInboundPorts` + "` `*`" + ` }}"
   - "-d"
   - "{{ excludeInboundPort (annotation .ObjectMeta ` + "`" + `status.sidecar.istio.io/port` + "`" + ` .Values.global.proxy.statusPort) (annotation .ObjectMeta ` + "`" + `traffic.sidecar.istio.io/excludeInboundPorts` + "`" + ` .Values.global.proxy.excludeInboundPorts) }}"
   {{ if or (isset .ObjectMeta.Annotations ` + "`" + `traffic.sidecar.istio.io/excludeOutboundPorts` + "`" + `) (ne .Values.global.proxy.excludeOutboundPorts "") -}}
@@ -467,11 +517,6 @@ func (r *Reconciler) proxyInitContainer() string {
     privileged: true
     {{- end }}
   restartPolicy: Always
-  env:
-  {{- if contains "*" (annotation .ObjectMeta ` + "`" + `traffic.sidecar.istio.io/includeInboundPorts` + "`" + ` "") }}
-  - name: INBOUND_CAPTURE_PORT
-    value: 15006
-  {{- end }}
   `
 }
 

@@ -32,12 +32,16 @@ var cmLabels = map[string]string{
 }
 
 func (r *Reconciler) configMap() runtime.Object {
-	return &apiv1.ConfigMap{
+	configmap := &apiv1.ConfigMap{
 		ObjectMeta: templates.ObjectMeta(configMapName, util.MergeLabels(galleyLabels, cmLabels), r.Config),
-		Data: map[string]string{
-			"validatingwebhookconfiguration.yaml": r.validatingWebhookConfig(r.Config.Namespace),
-		},
+		Data:       make(map[string]string),
 	}
+
+	if util.PointerToBool(r.Config.Spec.Galley.ConfigValidation) {
+		configmap.Data["validatingwebhookconfiguration.yaml"] = r.validatingWebhookConfig(r.Config.Namespace)
+	}
+
+	return configmap
 }
 
 func (r *Reconciler) validatingWebhookConfig(ns string) string {

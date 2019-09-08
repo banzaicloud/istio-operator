@@ -97,6 +97,7 @@ func (r *Reconciler) istioProxyAttributeManifest() *k8sutil.DynamicObject {
 				"check.error_message":                 map[string]interface{}{"valueType": "STRING"},
 				"check.cache_hit":                     map[string]interface{}{"valueType": "BOOL"},
 				"quota.cache_hit":                     map[string]interface{}{"valueType": "BOOL"},
+				"context.proxy_version":               map[string]interface{}{"valueType": "STRING"},
 			},
 		},
 		Owner: r.Config,

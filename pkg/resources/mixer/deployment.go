@@ -103,25 +103,23 @@ func (r *Reconciler) volumes(t string) []apiv1.Volume {
 				},
 			},
 		})
-		if r.Config.Spec.SDS.UseTrustworthyJwt {
-			volumes = append(volumes, apiv1.Volume{
-				Name: "istio-token",
-				VolumeSource: apiv1.VolumeSource{
-					Projected: &apiv1.ProjectedVolumeSource{
-						Sources: []apiv1.VolumeProjection{
-							{
-								ServiceAccountToken: &apiv1.ServiceAccountTokenProjection{
-									Path:              "istio-token",
-									ExpirationSeconds: util.Int64Pointer(43200),
-									Audience:          "cluster.local",
-								},
+		volumes = append(volumes, apiv1.Volume{
+			Name: "istio-token",
+			VolumeSource: apiv1.VolumeSource{
+				Projected: &apiv1.ProjectedVolumeSource{
+					Sources: []apiv1.VolumeProjection{
+						{
+							ServiceAccountToken: &apiv1.ServiceAccountTokenProjection{
+								Path:              "istio-token",
+								ExpirationSeconds: util.Int64Pointer(43200),
+								Audience:          r.Config.Spec.SDS.TokenAudience,
 							},
 						},
-						DefaultMode: util.IntPointer(420),
 					},
+					DefaultMode: util.IntPointer(420),
 				},
-			})
-		}
+			},
+		})
 	}
 
 	return volumes
@@ -162,6 +160,8 @@ func (r *Reconciler) mixerContainer(t string, ns string) apiv1.Container {
 	} else {
 		containerArgs = append(containerArgs, "--useAdapterCRDs=false")
 	}
+
+	containerArgs = append(containerArgs, "--useAdapterCRDs=false")
 
 	if t == "telemetry" {
 		containerArgs = append(containerArgs, "--averageLatencyThreshold", "100ms")
@@ -251,12 +251,10 @@ func (r *Reconciler) istioProxyContainer(t string) apiv1.Container {
 			MountPath: "/var/run/sds",
 			ReadOnly:  true,
 		})
-		if r.Config.Spec.SDS.UseTrustworthyJwt {
-			vms = append(vms, apiv1.VolumeMount{
-				Name:      "istio-token",
-				MountPath: "/var/run/secrets/tokens",
-			})
-		}
+		vms = append(vms, apiv1.VolumeMount{
+			Name:      "istio-token",
+			MountPath: "/var/run/secrets/tokens",
+		})
 	}
 
 	return apiv1.Container{
@@ -279,7 +277,7 @@ func (r *Reconciler) istioProxyContainer(t string) apiv1.Container {
 			"--domain",
 			"$(POD_NAMESPACE).svc.cluster.local",
 		},
-		Env: templates.IstioProxyEnv(),
+		Env: templates.IstioProxyEnv(r.Config),
 		Resources: templates.GetResourcesRequirementsOrDefault(
 			r.Config.Spec.Proxy.Resources,
 			r.Config.Spec.DefaultResources,

@@ -31,9 +31,16 @@ func (r *Reconciler) service() runtime.Object {
 		Spec: apiv1.ServiceSpec{
 			Ports: []apiv1.ServicePort{
 				{
+					Name:       "https-inject",
 					Port:       443,
 					Protocol:   apiv1.ProtocolTCP,
 					TargetPort: intstr.FromInt(443),
+				},
+				{
+					Name:       "http-monitoring",
+					Port:       15014,
+					Protocol:   apiv1.ProtocolTCP,
+					TargetPort: intstr.FromInt(15014),
 				},
 			},
 			Selector: labelSelector,
