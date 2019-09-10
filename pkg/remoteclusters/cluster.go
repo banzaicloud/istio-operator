@@ -26,6 +26,7 @@ import (
 	"k8s.io/client-go/rest"
 	"k8s.io/client-go/tools/clientcmd"
 	"sigs.k8s.io/controller-runtime/pkg/client"
+	"sigs.k8s.io/controller-runtime/pkg/manager"
 
 	istiov1beta1 "github.com/banzaicloud/istio-operator/pkg/apis/istio/v1beta1"
 )
@@ -35,6 +36,11 @@ type Cluster struct {
 	config []byte
 	log    logr.Logger
 
+	stop    <-chan struct{}
+	stopper chan<- struct{}
+
+	mgr manager.Manager
+
 	restConfig        *rest.Config
 	ctrlRuntimeClient client.Client
 	dynamicClient     dynamic.Interface
@@ -43,16 +49,21 @@ type Cluster struct {
 }
 
 func NewCluster(name string, config []byte, log logr.Logger) (*Cluster, error) {
+	stop := make(chan struct{})
+
 	cluster := &Cluster{
-		name:   name,
-		config: config,
-		log:    log.WithValues("cluster", name),
+		name:    name,
+		config:  config,
+		log:     log.WithValues("cluster", name),
+		stop:    stop,
+		stopper: stop,
 	}
 
-	err := cluster.initK8SClients()
+	restConfig, err := cluster.getRestConfig(config)
 	if err != nil {
-		return nil, emperror.Wrap(err, "could not re-init k8s clients")
+		return nil, emperror.Wrap(err, "could not get k8s rest config")
 	}
+	cluster.restConfig = restConfig
 
 	return cluster, nil
 }
@@ -62,19 +73,14 @@ func (c *Cluster) GetName() string {
 }
 
 func (c *Cluster) initK8SClients() error {
-	restConfig, err := c.getRestConfig(c.config)
+	err := c.startManager(c.restConfig)
 	if err != nil {
-		return emperror.Wrap(err, "could not get k8s rest config")
+		return err
 	}
-	c.restConfig = restConfig
 
-	ctrlRuntimeClient, err := c.getCtrlRuntimeClient(restConfig)
-	if err != nil {
-		return emperror.Wrap(err, "could not get control-runtime client")
-	}
-	c.ctrlRuntimeClient = ctrlRuntimeClient
+	c.ctrlRuntimeClient = c.mgr.GetClient()
 
-	dynamicClient, err := dynamic.NewForConfig(restConfig)
+	dynamicClient, err := dynamic.NewForConfig(c.restConfig)
 	if err != nil {
 		return emperror.Wrap(err, "could not get dynamic client")
 	}
@@ -88,8 +94,18 @@ func (c *Cluster) Reconcile(remoteConfig *istiov1beta1.RemoteIstio, istio *istio
 
 	var ReconcilerFuncs []func(remoteConfig *istiov1beta1.RemoteIstio, istio *istiov1beta1.Istio) error
 
+	err := c.reconcileCRDs(remoteConfig, istio)
+	if err != nil {
+		return emperror.Wrapf(err, "could not reconcile")
+	}
+
+	// init k8s clients
+	err = c.initK8SClients()
+	if err != nil {
+		return emperror.Wrap(err, "could not init k8s clients")
+	}
+
 	ReconcilerFuncs = append(ReconcilerFuncs,
-		c.reconcileConfigCrd,
 		c.reconcileConfig,
 		c.reconcileSignCert,
 		c.reconcileEnabledServices,
@@ -126,6 +142,11 @@ func (c *Cluster) RemoveConfig() error {
 	return emperror.Wrap(err, "could not remove istio config from remote cluster")
 }
 
+func (c *Cluster) Shutdown() {
+	c.log.Info("shutdown remote cluster manager")
+	close(c.stopper)
+}
+
 func (c *Cluster) getRestConfig(kubeconfig []byte) (*rest.Config, error) {
 	clusterConfig, err := clientcmd.Load(kubeconfig)
 	if err != nil {
@@ -140,18 +161,20 @@ func (c *Cluster) getRestConfig(kubeconfig []byte) (*rest.Config, error) {
 	return rest, nil
 }
 
-func (c *Cluster) getCtrlRuntimeClient(config *rest.Config) (client.Client, error) {
-	writeObj, err := client.New(config, client.Options{})
+func (c *Cluster) startManager(config *rest.Config) error {
+	mgr, err := manager.New(config, manager.Options{
+		MetricsBindAddress: "0", // disable metrics
+	})
 	if err != nil {
-		return nil, emperror.Wrap(err, "could not create control-runtime client")
+		return emperror.Wrap(err, "could not create manager")
 	}
 
-	return client.DelegatingClient{
-		Reader: &client.DelegatingReader{
-			CacheReader:  writeObj,
-			ClientReader: writeObj,
-		},
-		Writer:       writeObj,
-		StatusClient: writeObj,
-	}, nil
+	c.mgr = mgr
+	go func() {
+		c.mgr.Start(c.stop)
+	}()
+
+	c.mgr.GetCache().WaitForCacheSync(c.stop)
+
+	return nil
 }

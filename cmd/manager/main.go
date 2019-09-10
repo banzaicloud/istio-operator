@@ -81,7 +81,7 @@ func main() {
 		os.Exit(1)
 	}
 
-	log.Info("Registering Components.")
+	log.Info("registering components")
 
 	// Setup Scheme for all resources
 	log.Info("setting up scheme")
@@ -90,9 +90,11 @@ func main() {
 		os.Exit(1)
 	}
 
+	stop := setupSignalHandler(mgr, log, shutdownWaitDuration)
+
 	// Setup all Controllers
-	log.Info("Setting up controller")
-	if err := controller.AddToManager(mgr, remoteclusters.NewManager()); err != nil {
+	log.Info("setting up controller")
+	if err := controller.AddToManager(mgr, remoteclusters.NewManager(stop)); err != nil {
 		log.Error(err, "unable to register controllers to the manager")
 		os.Exit(1)
 	}
@@ -104,8 +106,8 @@ func main() {
 	}
 
 	// Start the Cmd
-	log.Info("Starting the Cmd.")
-	if err := mgr.Start(setupSignalHandler(mgr, log, shutdownWaitDuration)); err != nil {
+	log.Info("starting the Cmd.")
+	if err := mgr.Start(stop); err != nil {
 		log.Error(err, "unable to run the manager")
 		os.Exit(1)
 	}

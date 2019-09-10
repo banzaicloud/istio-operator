@@ -42,7 +42,7 @@ var depKey = types.NamespacedName{Name: "foo-deployment", Namespace: "default"}
 
 const timeout = time.Second * 5
 
-func AATestReconcile(t *testing.T) {
+func TestReconcile(t *testing.T) {
 	g := gomega.NewGomegaWithT(t)
 	instance := &operatorv1beta1.RemoteIstio{ObjectMeta: metav1.ObjectMeta{Name: "foo", Namespace: "default"}}
 
@@ -51,8 +51,8 @@ func AATestReconcile(t *testing.T) {
 	mgr, err := manager.New(cfg, manager.Options{})
 	g.Expect(err).NotTo(gomega.HaveOccurred())
 	c = mgr.GetClient()
-
-	recFn, requests := SetupTestReconcile(newReconciler(mgr, remoteclusters.NewManager()))
+	stop := make(<-chan struct{})
+	recFn, requests := SetupTestReconcile(newReconciler(mgr, remoteclusters.NewManager(stop)))
 	g.Expect(add(mgr, recFn)).NotTo(gomega.HaveOccurred())
 
 	stopMgr, mgrStopped := StartTestManager(mgr, g)

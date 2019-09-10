@@ -24,12 +24,27 @@ import (
 type Manager struct {
 	clusters map[string]*Cluster
 	mu       *sync.RWMutex
+	stop     <-chan struct{}
 }
 
-func NewManager() *Manager {
-	return &Manager{
+func NewManager(stop <-chan struct{}) *Manager {
+	mgr := &Manager{
 		clusters: make(map[string]*Cluster),
 		mu:       &sync.RWMutex{},
+		stop:     stop,
+	}
+
+	go mgr.waitForStop(stop)
+
+	return mgr
+}
+
+func (m *Manager) waitForStop(stop <-chan struct{}) {
+	select {
+	case <-stop:
+		for _, c := range m.clusters {
+			c.Shutdown()
+		}
 	}
 }
 
@@ -60,6 +75,8 @@ func (m *Manager) Delete(cluster *Cluster) error {
 
 	m.mu.Lock()
 	defer m.mu.Unlock()
+
+	cluster.Shutdown()
 
 	delete(m.clusters, cluster.GetName())
 
