@@ -24,8 +24,8 @@ import (
 	"github.com/banzaicloud/istio-operator/pkg/crds"
 )
 
-func (c *Cluster) reconcileConfigCrd(remoteConfig *istiov1beta1.RemoteIstio, istio *istiov1beta1.Istio) error {
-	c.log.Info("reconciling config crd")
+func (c *Cluster) reconcileCRDs(remoteConfig *istiov1beta1.RemoteIstio, istio *istiov1beta1.Istio) error {
+	c.log.Info("reconciling CRDs")
 
 	crdo, err := crds.New(c.restConfig, []*extensionsobj.CustomResourceDefinition{
 		c.configcrd(),
@@ -35,12 +35,6 @@ func (c *Cluster) reconcileConfigCrd(remoteConfig *istiov1beta1.RemoteIstio, ist
 	}
 
 	err = crdo.Reconcile(&istiov1beta1.Istio{}, c.log)
-	if err != nil {
-		return err
-	}
-
-	// Re-init k8s clients
-	err = c.initK8SClients()
 	if err != nil {
 		return err
 	}
