@@ -115,8 +115,6 @@ func (r *Reconciler) meshConfig() string {
 		"accessLogFile":         "/dev/stdout",
 		"accessLogFormat":       "",
 		"accessLogEncoding":     "TEXT",
-		"mixerCheckServer":      r.mixerServer("policy"),
-		"mixerReportServer":     r.mixerServer("telemetry"),
 		"policyCheckFailOpen":   false,
 		"ingressService":        "istio-ingressgateway",
 		"ingressClass":          "istio",
@@ -126,16 +124,24 @@ func (r *Reconciler) meshConfig() string {
 		"outboundTrafficPolicy": map[string]interface{}{
 			"mode": r.Config.Spec.OutboundTrafficPolicy.Mode,
 		},
-		"defaultConfig":                     defaultConfig,
-		"rootNamespace":                     r.Config.Namespace,
-		"connectTimeout":                    "10s",
-		"localityLbSetting":                 r.getLocalityLBConfiguration(),
-		"reportBatchMaxEntries":             r.Config.Spec.Mixer.ReportBatchMaxEntries,
-		"reportBatchMaxTime":                r.Config.Spec.Mixer.ReportBatchMaxTime,
-		"sidecarToTelemetrySessionAffinity": util.PointerToBool(r.Config.Spec.Mixer.SessionAffinityEnabled),
-		"enableEnvoyAccessLogService":       util.PointerToBool(r.Config.Spec.Proxy.EnvoyAccessLogService.Enabled),
-		"protocolDetectionTimeout":          r.Config.Spec.Proxy.ProtocolDetectionTimeout,
-		"dnsRefreshRate":                    r.Config.Spec.Proxy.DNSRefreshRate,
+		"defaultConfig":               defaultConfig,
+		"rootNamespace":               r.Config.Namespace,
+		"connectTimeout":              "10s",
+		"localityLbSetting":           r.getLocalityLBConfiguration(),
+		"enableEnvoyAccessLogService": util.PointerToBool(r.Config.Spec.Proxy.EnvoyAccessLogService.Enabled),
+		"protocolDetectionTimeout":    r.Config.Spec.Proxy.ProtocolDetectionTimeout,
+		"dnsRefreshRate":              r.Config.Spec.Proxy.DNSRefreshRate,
+	}
+
+	if util.PointerToBool(r.Config.Spec.Policy.Enabled) {
+		meshConfig["mixerCheckServer"] = r.mixerServer("policy")
+		meshConfig["sidecarToTelemetrySessionAffinity"] = util.PointerToBool(r.Config.Spec.Policy.SessionAffinityEnabled)
+	}
+
+	if util.PointerToBool(r.Config.Spec.Telemetry.Enabled) {
+		meshConfig["mixerReportServer"] = r.mixerServer("telemetry")
+		meshConfig["reportBatchMaxEntries"] = r.Config.Spec.Telemetry.ReportBatchMaxEntries
+		meshConfig["reportBatchMaxTime"] = r.Config.Spec.Telemetry.ReportBatchMaxTime
 	}
 
 	if util.PointerToBool(r.Config.Spec.UseMCP) {

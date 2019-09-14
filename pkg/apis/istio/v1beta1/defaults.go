@@ -213,17 +213,17 @@ func SetDefaults(config *Istio) {
 	if config.Spec.Mixer.Enabled == nil {
 		config.Spec.Mixer.Enabled = util.BoolPointer(true)
 	}
-	if config.Spec.Mixer.Image == "" {
-		config.Spec.Mixer.Image = defaultMixerImage
+	if config.Spec.Mixer.Image == nil {
+		config.Spec.Mixer.Image = util.StrPointer(defaultMixerImage)
 	}
-	if config.Spec.Mixer.ReplicaCount == 0 {
-		config.Spec.Mixer.ReplicaCount = defaultReplicaCount
+	if config.Spec.Mixer.ReplicaCount == nil {
+		config.Spec.Mixer.ReplicaCount = util.IntPointer(defaultReplicaCount)
 	}
-	if config.Spec.Mixer.MinReplicas == 0 {
-		config.Spec.Mixer.MinReplicas = defaultMinReplicas
+	if config.Spec.Mixer.MinReplicas == nil {
+		config.Spec.Mixer.MinReplicas = util.IntPointer(defaultMinReplicas)
 	}
-	if config.Spec.Mixer.MaxReplicas == 0 {
-		config.Spec.Mixer.MaxReplicas = defaultMaxReplicas
+	if config.Spec.Mixer.MaxReplicas == nil {
+		config.Spec.Mixer.MaxReplicas = util.IntPointer(defaultMaxReplicas)
 	}
 	if config.Spec.Mixer.ReportBatchMaxEntries == nil {
 		config.Spec.Mixer.ReportBatchMaxEntries = util.IntPointer(100)
@@ -233,6 +233,9 @@ func SetDefaults(config *Istio) {
 	}
 	if config.Spec.Mixer.SessionAffinityEnabled == nil {
 		config.Spec.Mixer.SessionAffinityEnabled = util.BoolPointer(false)
+	}
+	if config.Spec.Mixer.StdioAdapterEnabled == nil {
+		config.Spec.Mixer.StdioAdapterEnabled = util.BoolPointer(false)
 	}
 	// SidecarInjector config
 	if config.Spec.SidecarInjector.Enabled == nil {
@@ -339,8 +342,74 @@ func SetDefaults(config *Istio) {
 		config.Spec.Tracing.Zipkin.Address = fmt.Sprintf(defaultZipkinAddress, config.Namespace)
 	}
 
+	// Policy
 	if config.Spec.Policy.ChecksEnabled == nil {
 		config.Spec.Policy.ChecksEnabled = util.BoolPointer(false)
+	}
+	if config.Spec.Policy.Enabled == nil {
+		config.Spec.Policy.Enabled = config.Spec.Mixer.Enabled
+	}
+	if config.Spec.Policy.Image == nil {
+		config.Spec.Policy.Image = config.Spec.Mixer.Image
+	}
+	if config.Spec.Policy.ReplicaCount == nil {
+		config.Spec.Policy.ReplicaCount = config.Spec.Mixer.ReplicaCount
+	}
+	if config.Spec.Policy.MinReplicas == nil {
+		config.Spec.Policy.MinReplicas = config.Spec.Mixer.MinReplicas
+	}
+	if config.Spec.Policy.MaxReplicas == nil {
+		config.Spec.Policy.MaxReplicas = config.Spec.Mixer.MaxReplicas
+	}
+	if config.Spec.Policy.Resources == nil {
+		config.Spec.Policy.Resources = config.Spec.Mixer.Resources
+	}
+	if config.Spec.Policy.NodeSelector == nil {
+		config.Spec.Policy.NodeSelector = config.Spec.Mixer.NodeSelector
+	}
+	if config.Spec.Policy.Affinity == nil {
+		config.Spec.Policy.Affinity = config.Spec.Mixer.Affinity
+	}
+	if config.Spec.Policy.Tolerations == nil {
+		config.Spec.Policy.Tolerations = config.Spec.Mixer.Tolerations
+	}
+	if config.Spec.Policy.SessionAffinityEnabled == nil {
+		config.Spec.Policy.SessionAffinityEnabled = config.Spec.Mixer.SessionAffinityEnabled
+	}
+
+	// Telemetry
+	if config.Spec.Telemetry.Enabled == nil {
+		config.Spec.Telemetry.Enabled = config.Spec.Mixer.Enabled
+	}
+	if config.Spec.Telemetry.Image == nil {
+		config.Spec.Telemetry.Image = config.Spec.Mixer.Image
+	}
+	if config.Spec.Telemetry.ReplicaCount == nil {
+		config.Spec.Telemetry.ReplicaCount = config.Spec.Mixer.ReplicaCount
+	}
+	if config.Spec.Telemetry.MinReplicas == nil {
+		config.Spec.Telemetry.MinReplicas = config.Spec.Mixer.MinReplicas
+	}
+	if config.Spec.Telemetry.MaxReplicas == nil {
+		config.Spec.Telemetry.MaxReplicas = config.Spec.Mixer.MaxReplicas
+	}
+	if config.Spec.Telemetry.Resources == nil {
+		config.Spec.Telemetry.Resources = config.Spec.Mixer.Resources
+	}
+	if config.Spec.Telemetry.NodeSelector == nil {
+		config.Spec.Telemetry.NodeSelector = config.Spec.Mixer.NodeSelector
+	}
+	if config.Spec.Telemetry.Affinity == nil {
+		config.Spec.Telemetry.Affinity = config.Spec.Mixer.Affinity
+	}
+	if config.Spec.Telemetry.Tolerations == nil {
+		config.Spec.Telemetry.Tolerations = config.Spec.Mixer.Tolerations
+	}
+	if config.Spec.Telemetry.ReportBatchMaxEntries == nil {
+		config.Spec.Telemetry.ReportBatchMaxEntries = config.Spec.Mixer.ReportBatchMaxEntries
+	}
+	if config.Spec.Telemetry.ReportBatchMaxTime == nil {
+		config.Spec.Telemetry.ReportBatchMaxTime = config.Spec.Mixer.ReportBatchMaxTime
 	}
 
 	// Multi mesh support

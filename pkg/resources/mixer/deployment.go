@@ -38,7 +38,7 @@ func (r *Reconciler) deployment(t string) runtime.Object {
 			Replicas: util.IntPointer(k8sutil.GetHPAReplicaCountOrDefault(r.Client, types.NamespacedName{
 				Name:      hpaName(t),
 				Namespace: r.Config.Namespace,
-			}, r.Config.Spec.Mixer.ReplicaCount)),
+			}, util.PointerToInt32(r.k8sResourceConfig.ReplicaCount))),
 			Strategy: templates.DefaultRollingUpdateStrategy(),
 			Selector: &metav1.LabelSelector{
 				MatchLabels: util.MergeLabels(labelSelector, util.MergeLabels(appLabel(t), mixerTypeLabel(t))),
@@ -51,9 +51,9 @@ func (r *Reconciler) deployment(t string) runtime.Object {
 				Spec: apiv1.PodSpec{
 					ServiceAccountName: serviceAccountName,
 					Volumes:            r.volumes(t),
-					Affinity:           r.Config.Spec.Mixer.Affinity,
-					NodeSelector:       r.Config.Spec.Mixer.NodeSelector,
-					Tolerations:        r.Config.Spec.Mixer.Tolerations,
+					Affinity:           r.k8sResourceConfig.Affinity,
+					NodeSelector:       r.k8sResourceConfig.NodeSelector,
+					Tolerations:        r.k8sResourceConfig.Tolerations,
 					Containers: []apiv1.Container{
 						r.mixerContainer(t, r.Config.Namespace),
 						r.istioProxyContainer(t),
@@ -189,7 +189,7 @@ func (r *Reconciler) mixerContainer(t string, ns string) apiv1.Container {
 
 	return apiv1.Container{
 		Name:            t,
-		Image:           r.Config.Spec.Mixer.Image,
+		Image:           util.PointerToString(r.k8sResourceConfig.Image),
 		ImagePullPolicy: r.Config.Spec.ImagePullPolicy,
 		Ports: []apiv1.ContainerPort{
 			{
@@ -209,7 +209,7 @@ func (r *Reconciler) mixerContainer(t string, ns string) apiv1.Container {
 			},
 		},
 		Resources: templates.GetResourcesRequirementsOrDefault(
-			r.Config.Spec.Mixer.Resources,
+			r.k8sResourceConfig.Resources,
 			r.Config.Spec.DefaultResources,
 		),
 		VolumeMounts: volumeMounts,
