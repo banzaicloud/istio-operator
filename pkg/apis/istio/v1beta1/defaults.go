@@ -28,7 +28,7 @@ import (
 
 const (
 	defaultImageHub                  = "docker.io/istio"
-	defaultImageVersion              = "1.3.0-rc.2"
+	defaultImageVersion              = "1.3.0"
 	defaultPilotImage                = defaultImageHub + "/" + "pilot" + ":" + defaultImageVersion
 	defaultCitadelImage              = defaultImageHub + "/" + "citadel" + ":" + defaultImageVersion
 	defaultGalleyImage               = defaultImageHub + "/" + "galley" + ":" + defaultImageVersion
@@ -38,7 +38,7 @@ const (
 	defaultSDSImage                  = defaultImageHub + "/" + "node-agent-k8s" + ":" + defaultImageVersion
 	defaultProxyImage                = defaultImageHub + "/" + "proxyv2" + ":" + defaultImageVersion
 	defaultProxyInitImage            = defaultImageHub + "/" + "proxy_init" + ":" + defaultImageVersion
-	defaultInitCNIImage              = "gcr.io/istio-release/install-cni:master-latest-daily"
+	defaultInitCNIImage              = defaultImageHub + "/" + "install-cni:" + defaultImageVersion
 	defaultCoreDNSImage              = "coredns/coredns:1.1.2"
 	defaultCoreDNSPluginImage        = defaultImageHub + "/coredns-plugin:0.2-istio-1.1"
 	defaultIncludeIPRanges           = "*"
