@@ -31,6 +31,18 @@ const supportedIstioMinorVersionRegex = "^1.3"
 // IstioVersion stores the intended Istio version
 type IstioVersion string
 
+// K8sResourceConfiguration defines basic K8s resource spec configurations
+type K8sResourceConfiguration struct {
+	Image        *string                      `json:"image,omitempty"`
+	ReplicaCount *int32                       `json:"replicaCount,omitempty"`
+	MinReplicas  *int32                       `json:"minReplicas,omitempty"`
+	MaxReplicas  *int32                       `json:"maxReplicas,omitempty"`
+	Resources    *corev1.ResourceRequirements `json:"resources,omitempty"`
+	NodeSelector map[string]string            `json:"nodeSelector,omitempty"`
+	Affinity     *corev1.Affinity             `json:"affinity,omitempty"`
+	Tolerations  []corev1.Toleration          `json:"tolerations,omitempty"`
+}
+
 // SDSConfiguration defines Secret Discovery Service config options
 type SDSConfiguration struct {
 	// If set to true, mTLS certificates for the sidecars will be
@@ -143,17 +155,35 @@ type K8sIngressConfiguration struct {
 
 // MixerConfiguration defines config options for Mixer
 type MixerConfiguration struct {
-	Enabled      *bool                        `json:"enabled,omitempty"`
-	Image        string                       `json:"image,omitempty"`
-	ReplicaCount int32                        `json:"replicaCount,omitempty"`
-	MinReplicas  int32                        `json:"minReplicas,omitempty"`
-	MaxReplicas  int32                        `json:"maxReplicas,omitempty"`
-	Resources    *corev1.ResourceRequirements `json:"resources,omitempty"`
-	NodeSelector map[string]string            `json:"nodeSelector,omitempty"`
-	Affinity     *corev1.Affinity             `json:"affinity,omitempty"`
-	Tolerations  []corev1.Toleration          `json:"tolerations,omitempty"`
+	Enabled                    *bool `json:"enabled,omitempty"`
+	K8sResourceConfiguration   `json:",inline"`
+	PolicyConfigurationSpec    `json:",inline"`
+	TelemetryConfigurationSpec `json:",inline"`
 	// Turn it on if you use mixer that supports multi cluster telemetry
 	MultiClusterSupport *bool `json:"multiClusterSupport,omitempty"`
+	// stdio is a debug adapter in Istio telemetry, it is not recommended for production use
+	StdioAdapterEnabled *bool `json:"stdioAdapterEnabled,omitempty"`
+}
+
+type PolicyConfiguration struct {
+	Enabled                  *bool `json:"enabled,omitempty"`
+	K8sResourceConfiguration `json:",inline"`
+	PolicyConfigurationSpec  `json:",inline"`
+}
+
+type PolicyConfigurationSpec struct {
+	ChecksEnabled *bool `json:"checksEnabled,omitempty"`
+	// Set whether to create a STRICT_DNS type cluster for istio-telemetry.
+	SessionAffinityEnabled *bool `json:"sessionAffinityEnabled,omitempty"`
+}
+
+type TelemetryConfiguration struct {
+	Enabled                    *bool `json:"enabled,omitempty"`
+	K8sResourceConfiguration   `json:",inline"`
+	TelemetryConfigurationSpec `json:",inline"`
+}
+
+type TelemetryConfigurationSpec struct {
 	// Set reportBatchMaxEntries to 0 to use the default batching behavior (i.e., every 100 requests).
 	// A positive value indicates the number of requests that are batched before telemetry data
 	// is sent to the mixer server
@@ -162,9 +192,6 @@ type MixerConfiguration struct {
 	// A positive time value indicates the maximum wait time since the last request will telemetry data
 	// be batched before being sent to the mixer server
 	ReportBatchMaxTime *string `json:"reportBatchMaxTime,omitempty"`
-
-	// Set whether to create a STRICT_DNS type cluster for istio-telemetry.
-	SessionAffinityEnabled *bool `json:"sessionAffinityEnabled,omitempty"`
 }
 
 // InitCNIConfiguration defines config for the sidecar proxy init CNI plugin
@@ -418,10 +445,6 @@ type LocalityLBConfiguration struct {
 	Failover []*LocalityLBFailoverConfiguration `json:"failover,omitempty"`
 }
 
-type PolicyConfiguration struct {
-	ChecksEnabled *bool `json:"checksEnabled,omitempty"`
-}
-
 // IstioSpec defines the desired state of Istio
 type IstioSpec struct {
 	// Contains the intended Istio version
@@ -466,6 +489,9 @@ type IstioSpec struct {
 
 	// Policy configuration options
 	Policy PolicyConfiguration `json:"policy,omitempty"`
+
+	// Telemetry configuration options
+	Telemetry TelemetryConfiguration `json:"telemetry,omitempty"`
 
 	// SidecarInjector configuration options
 	SidecarInjector SidecarInjectorConfiguration `json:"sidecarInjector,omitempty"`

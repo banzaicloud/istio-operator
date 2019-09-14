@@ -44,6 +44,22 @@ func PointerToBool(flag *bool) bool {
 	return *flag
 }
 
+func PointerToString(s *string) string {
+	if s == nil {
+		return ""
+	}
+
+	return *s
+}
+
+func PointerToInt32(i *int32) int32 {
+	if i == nil {
+		return 0
+	}
+
+	return *i
+}
+
 func IntstrPointer(i int) *intstr.IntOrString {
 	is := intstr.FromInt(i)
 	return &is

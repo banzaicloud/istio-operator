@@ -359,6 +359,8 @@ spec:
               properties:
                 affinity:
                   type: object
+                checksEnabled:
+                  type: boolean
                 enabled:
                   type: boolean
                 image:
@@ -397,10 +399,22 @@ spec:
                   description: Set whether to create a STRICT_DNS type cluster for
                     istio-telemetry.
                   type: boolean
+                stdioAdapterEnabled:
+                  description: stdio is a debug adapter in Istio telemetry, it is
+                    not recommended for production use
+                  type: boolean
                 tolerations:
                   items:
                     type: object
                   type: array
+              type: object
+            mixerlessTelemetry:
+              description: Mixerless telemetry configuration
+              properties:
+                enabled:
+                  description: If set to true, experimental Mixerless http telemetry
+                    will be enabled
+                  type: boolean
               type: object
             mtls:
               description: MTLS enables or disables global mTLS
@@ -476,8 +490,35 @@ spec:
             policy:
               description: Policy configuration options
               properties:
+                affinity:
+                  type: object
                 checksEnabled:
                   type: boolean
+                enabled:
+                  type: boolean
+                image:
+                  type: string
+                maxReplicas:
+                  format: int32
+                  type: integer
+                minReplicas:
+                  format: int32
+                  type: integer
+                nodeSelector:
+                  type: object
+                replicaCount:
+                  format: int32
+                  type: integer
+                resources:
+                  type: object
+                sessionAffinityEnabled:
+                  description: Set whether to create a STRICT_DNS type cluster for
+                    istio-telemetry.
+                  type: boolean
+                tolerations:
+                  items:
+                    type: object
+                  type: array
               type: object
             proxy:
               description: Proxy configuration options
@@ -688,6 +729,46 @@ spec:
                     liveness health check to redirect request to sidecar. This makes
                     liveness check work even when mTLS is enabled.
                   type: boolean
+                tolerations:
+                  items:
+                    type: object
+                  type: array
+              type: object
+            telemetry:
+              description: Telemetry configuration options
+              properties:
+                affinity:
+                  type: object
+                enabled:
+                  type: boolean
+                image:
+                  type: string
+                maxReplicas:
+                  format: int32
+                  type: integer
+                minReplicas:
+                  format: int32
+                  type: integer
+                nodeSelector:
+                  type: object
+                replicaCount:
+                  format: int32
+                  type: integer
+                reportBatchMaxEntries:
+                  description: Set reportBatchMaxEntries to 0 to use the default batching
+                    behavior (i.e., every 100 requests). A positive value indicates
+                    the number of requests that are batched before telemetry data
+                    is sent to the mixer server
+                  format: int32
+                  type: integer
+                reportBatchMaxTime:
+                  description: Set reportBatchMaxTime to 0 to use the default batching
+                    behavior (i.e., every 1 second). A positive time value indicates
+                    the maximum wait time since the last request will telemetry data
+                    be batched before being sent to the mixer server
+                  type: string
+                resources:
+                  type: object
                 tolerations:
                   items:
                     type: object
