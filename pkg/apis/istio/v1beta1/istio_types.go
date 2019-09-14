@@ -529,8 +529,16 @@ type IstioSpec struct {
 	// globally/universally unique.
 	MeshID string `json:"meshID,omitempty"`
 
+	// Mixerless telemetry configuration
+	MixerlessTelemetry *MixerlessTelemetryConfiguration `json:"mixerlessTelemetry,omitempty"`
+
 	networkName  string
 	meshNetworks *MeshNetworks
+}
+
+type MixerlessTelemetryConfiguration struct {
+	// If set to true, experimental Mixerless http telemetry will be enabled
+	Enabled *bool `json:"enabled,omitempty"`
 }
 
 type MeshNetworkEndpoint struct {
