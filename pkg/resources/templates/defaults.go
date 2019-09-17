@@ -17,6 +17,9 @@ limitations under the License.
 package templates
 
 import (
+	"strconv"
+
+	"github.com/banzaicloud/istio-operator/pkg/apis/istio/v1beta1"
 	appsv1 "k8s.io/api/apps/v1"
 	autoscalev2beta1 "k8s.io/api/autoscaling/v2beta1"
 	apiv1 "k8s.io/api/core/v1"
@@ -60,8 +63,8 @@ func TargetAvgCpuUtil80() []autoscalev2beta1.MetricSpec {
 	}
 }
 
-func IstioProxyEnv() []apiv1.EnvVar {
-	return []apiv1.EnvVar{
+func IstioProxyEnv(config *v1beta1.Istio) []apiv1.EnvVar {
+	envs := []apiv1.EnvVar{
 		{
 			Name: "POD_NAME",
 			ValueFrom: &apiv1.EnvVarSource{
@@ -90,4 +93,11 @@ func IstioProxyEnv() []apiv1.EnvVar {
 			},
 		},
 	}
+
+	envs = append(envs, apiv1.EnvVar{
+		Name:  "SDS_ENABLED",
+		Value: strconv.FormatBool(util.PointerToBool(config.Spec.SDS.Enabled)),
+	})
+
+	return envs
 }

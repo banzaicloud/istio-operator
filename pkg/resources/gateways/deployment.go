@@ -17,7 +17,9 @@ limitations under the License.
 package gateways
 
 import (
+	"encoding/json"
 	"fmt"
+	"strconv"
 
 	appsv1 "k8s.io/api/apps/v1"
 	apiv1 "k8s.io/api/core/v1"
@@ -110,6 +112,17 @@ func (r *Reconciler) deployment(gw string) runtime.Object {
 		args = append(args, "--proxyComponentLogLevel", r.Config.Spec.Proxy.ComponentLogLevel)
 	}
 
+	if util.PointerToBool(r.Config.Spec.Proxy.EnvoyMetricsService.Enabled) {
+		args = append(args, "--envoyMetricsServiceAddress", fmt.Sprintf("%s:%d", r.Config.Spec.Proxy.EnvoyMetricsService.Host, r.Config.Spec.Proxy.EnvoyMetricsService.Port))
+	}
+
+	if util.PointerToBool(r.Config.Spec.Proxy.EnvoyAccessLogService.Enabled) {
+		ealsJSON, err := r.getEnvoyAccessLogServiceConfigurationJSON(r.Config.Spec.Proxy.EnvoyAccessLogService)
+		if err == nil {
+			args = append(args, "--envoyAccessLogService", fmt.Sprintf("%s", string(ealsJSON)))
+		}
+	}
+
 	containers = append(containers, apiv1.Container{
 		Name:            "istio-proxy",
 		Image:           r.Config.Spec.Proxy.Image,
@@ -130,7 +143,7 @@ func (r *Reconciler) deployment(gw string) runtime.Object {
 			SuccessThreshold:    1,
 			TimeoutSeconds:      1,
 		},
-		Env: append(templates.IstioProxyEnv(), r.envVars(gwConfig)...),
+		Env: append(templates.IstioProxyEnv(r.Config), r.envVars(gw, gwConfig)...),
 		Resources: templates.GetResourcesRequirementsOrDefault(
 			r.Config.Spec.Proxy.Resources,
 			r.Config.Spec.DefaultResources,
@@ -169,6 +182,27 @@ func (r *Reconciler) deployment(gw string) runtime.Object {
 	}
 }
 
+func (r *Reconciler) getEnvoyAccessLogServiceConfigurationJSON(config istiov1beta1.EnvoyAccessLogService) (string, error) {
+	type Properties struct {
+		Address      string                     `json:"address,omitempty"`
+		TLSSettings  *istiov1beta1.TLSSettings  `json:"tlsSettings,omitempty"`
+		TCPKeepalive *istiov1beta1.TCPKeepalive `json:"tcpKeepalive,omitempty"`
+	}
+
+	properties := Properties{
+		Address:      fmt.Sprintf("%s:%d", config.Host, config.Port),
+		TLSSettings:  config.TLSSettings,
+		TCPKeepalive: config.TCPKeepalive,
+	}
+
+	data, err := json.Marshal(properties)
+	if err != nil {
+		return "", err
+	}
+
+	return string(data), err
+}
+
 func (r *Reconciler) ports(gw string) []apiv1.ContainerPort {
 	switch gw {
 	case ingress:
@@ -204,7 +238,7 @@ func (r *Reconciler) discoveryPort() string {
 	return "15010"
 }
 
-func (r *Reconciler) envVars(gwConfig *istiov1beta1.GatewayConfiguration) []apiv1.EnvVar {
+func (r *Reconciler) envVars(gw string, gwConfig *istiov1beta1.GatewayConfiguration) []apiv1.EnvVar {
 	envVars := []apiv1.EnvVar{
 		{
 			Name: "HOST_IP",
@@ -212,6 +246,15 @@ func (r *Reconciler) envVars(gwConfig *istiov1beta1.GatewayConfiguration) []apiv
 				FieldRef: &apiv1.ObjectFieldSelector{
 					APIVersion: "v1",
 					FieldPath:  "status.hostIP",
+				},
+			},
+		},
+		{
+			Name: "SERVICE_ACCOUNT",
+			ValueFrom: &apiv1.EnvVarSource{
+				FieldRef: &apiv1.ObjectFieldSelector{
+					FieldPath:  "spec.serviceAccountName",
+					APIVersion: "v1",
 				},
 			},
 		},
@@ -246,13 +289,25 @@ func (r *Reconciler) envVars(gwConfig *istiov1beta1.GatewayConfiguration) []apiv
 				},
 			},
 		},
+		{
+			Name:  "ISTIO_META_WORKLOAD_NAME",
+			Value: gatewayName(gw),
+		},
+		{
+			Name:  "ISTIO_META_OWNER",
+			Value: fmt.Sprintf("kubernetes://api/apps/v1/namespaces/%s/deployments/%s", r.Config.Namespace, gatewayName(gw)),
+		},
 	}
-	if util.PointerToBool(gwConfig.SDS.Enabled) {
-		envVars = append(envVars, apiv1.EnvVar{
-			Name:  "ISTIO_META_USER_SDS",
-			Value: "true",
-		})
-	}
+
+	envVars = append(envVars, apiv1.EnvVar{
+		Name:  "ISTIO_META_USER_SDS",
+		Value: strconv.FormatBool(util.PointerToBool(gwConfig.SDS.Enabled)),
+	})
+	envVars = append(envVars, apiv1.EnvVar{
+		Name:  "SDS_ENABLED",
+		Value: strconv.FormatBool(util.PointerToBool(gwConfig.SDS.Enabled)),
+	})
+
 	if util.PointerToBool(r.Config.Spec.MeshExpansion) && r.Config.Spec.GetNetworkName() != "" {
 		envVars = append(envVars, apiv1.EnvVar{
 			Name:  "ISTIO_META_NETWORK",
@@ -292,12 +347,10 @@ func (r *Reconciler) volumeMounts(gw string, gwConfig *istiov1beta1.GatewayConfi
 			MountPath: "/var/run/sds",
 			ReadOnly:  true,
 		})
-		if r.Config.Spec.SDS.UseTrustworthyJwt {
-			vms = append(vms, apiv1.VolumeMount{
-				Name:      "istio-token",
-				MountPath: "/var/run/secrets/tokens",
-			})
-		}
+		vms = append(vms, apiv1.VolumeMount{
+			Name:      "istio-token",
+			MountPath: "/var/run/secrets/tokens",
+		})
 	}
 	if util.PointerToBool(gwConfig.SDS.Enabled) {
 		vms = append(vms, apiv1.VolumeMount{
@@ -350,25 +403,24 @@ func (r *Reconciler) volumes(gw string, gwConfig *istiov1beta1.GatewayConfigurat
 				},
 			},
 		})
-		if r.Config.Spec.SDS.UseTrustworthyJwt {
-			volumes = append(volumes, apiv1.Volume{
-				Name: "istio-token",
-				VolumeSource: apiv1.VolumeSource{
-					Projected: &apiv1.ProjectedVolumeSource{
-						Sources: []apiv1.VolumeProjection{
-							{
-								ServiceAccountToken: &apiv1.ServiceAccountTokenProjection{
-									Path:              "istio-token",
-									ExpirationSeconds: util.Int64Pointer(43200),
-									Audience:          "",
-								},
+
+		volumes = append(volumes, apiv1.Volume{
+			Name: "istio-token",
+			VolumeSource: apiv1.VolumeSource{
+				Projected: &apiv1.ProjectedVolumeSource{
+					Sources: []apiv1.VolumeProjection{
+						{
+							ServiceAccountToken: &apiv1.ServiceAccountTokenProjection{
+								Path:              "istio-token",
+								ExpirationSeconds: util.Int64Pointer(43200),
+								Audience:          r.Config.Spec.SDS.TokenAudience,
 							},
 						},
-						DefaultMode: util.IntPointer(420),
 					},
+					DefaultMode: util.IntPointer(420),
 				},
-			})
-		}
+			},
+		})
 	}
 	if util.PointerToBool(gwConfig.SDS.Enabled) {
 		volumes = append(volumes, apiv1.Volume{
@@ -385,7 +437,7 @@ func (r *Reconciler) volumes(gw string, gwConfig *istiov1beta1.GatewayConfigurat
 func GetCoreDumpContainer(config *istiov1beta1.Istio) apiv1.Container {
 	return apiv1.Container{
 		Name:            "enable-core-dump",
-		Image:           config.Spec.ProxyInit.Image,
+		Image:           config.Spec.Proxy.CoreDumpImage,
 		ImagePullPolicy: config.Spec.ImagePullPolicy,
 		Command: []string{
 			"/bin/sh",

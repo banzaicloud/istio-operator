@@ -43,6 +43,10 @@ func (r *Reconciler) deployment() runtime.Object {
 		"--monitoringPort=15014",
 	}
 
+	if util.PointerToBool(r.Config.Spec.Galley.ConfigValidation) {
+		containerArgs = append(containerArgs, "--enable-validation=false")
+	}
+
 	if r.Config.Spec.ControlPlaneSecurityEnabled {
 		containerArgs = append(containerArgs, "--insecure=false")
 	} else {

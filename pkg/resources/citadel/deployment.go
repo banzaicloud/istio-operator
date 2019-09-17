@@ -18,6 +18,7 @@ package citadel
 
 import (
 	"fmt"
+	"strconv"
 
 	appsv1 "k8s.io/api/apps/v1"
 	apiv1 "k8s.io/api/core/v1"
@@ -85,6 +86,12 @@ func (r *Reconciler) deployment() runtime.Object {
 			r.Config.Spec.Citadel.Resources,
 			r.Config.Spec.DefaultResources,
 		),
+		Env: []apiv1.EnvVar{
+			{
+				Name:  "CITADEL_ENABLE_NAMESPACES_BY_DEFAULT",
+				Value: strconv.FormatBool(util.PointerToBool(r.Config.Spec.Citadel.EnableNamespacesByDefault)),
+			},
+		},
 		TerminationMessagePath:   apiv1.TerminationMessagePathDefault,
 		TerminationMessagePolicy: apiv1.TerminationMessageReadFile,
 	}

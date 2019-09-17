@@ -11,7 +11,6 @@
     <img src="https://circleci.com/gh/banzaicloud/istio-operator/tree/master.svg?style=shield" alt="CircleCI">
   </a>
 
-
   <a href="https://goreportcard.com/report/github.com/banzaicloud/istio-operator">
     <img src="https://goreportcard.com/badge/github.com/banzaicloud/istio-operator" alt="Go Report Card">
   </a>
@@ -56,7 +55,7 @@ If you are willing to kickstart your Istio experience using Pipeline, check out 
 
 ## Installation
 
-The operator (`release-1.2` branch) installs the 1.2.5 version of Istio, and can run on Minikube v0.33.1+ and Kubernetes 1.10.0+.
+The operator (`release-1.3` branch) installs the 1.3.0 version of Istio, and can run on Minikube v1.1.1+ and Kubernetes 1.13.0+.
 
 As a pre-requisite it needs a Kubernetes cluster (you can create one using [Pipeline](https://github.com/banzaicloud/pipeline)).
 
@@ -81,15 +80,15 @@ helm install --name=istio-operator --namespace=istio-system banzaicloud-stable/i
 
 You can also have your own `kustomization.yaml` file with a reference to Istio operator as a base without the need to clone the repo. See more info in the [Kustomize usage doc](config/README.md).
 
-```
+```bash
 bases:
-  - github.com/banzaicloud/istio-operator/config?ref=release-1.2
-  - github.com/banzaicloud/istio-operator/config/overlays/auth-proxy-enabled?ref=release-1.2
+  - github.com/banzaicloud/istio-operator/config?ref=release-1.3
+  - github.com/banzaicloud/istio-operator/config/overlays/auth-proxy-enabled?ref=release-1.3
 ```
 
 ### Installation with Backyards
 
-Go grab and install the [Backyards CLI](https://github.com/banzaicloud/backyards-cli) tool. 
+Go grab and install the [Backyards CLI](https://github.com/banzaicloud/backyards-cli) tool.
 
 ```bash
 backyards istio install

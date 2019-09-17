@@ -16,7 +16,9 @@ limitations under the License.
 
 package util
 
-import "k8s.io/apimachinery/pkg/util/intstr"
+import (
+	"k8s.io/apimachinery/pkg/util/intstr"
+)
 
 func StrPointer(s string) *string {
 	return &s

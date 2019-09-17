@@ -56,6 +56,29 @@ func (r *Reconciler) meshConfig() string {
 		"discoveryAddress":       fmt.Sprintf("istio-pilot.%s:%s", r.Config.Namespace, r.discoveryPort()),
 	}
 
+	if util.PointerToBool(r.Config.Spec.Proxy.EnvoyStatsD.Enabled) {
+		defaultConfig["statsdUdpAddress"] = fmt.Sprintf("%s:%d", r.Config.Spec.Proxy.EnvoyStatsD.Host, r.Config.Spec.Proxy.EnvoyStatsD.Port)
+	}
+
+	if util.PointerToBool(r.Config.Spec.Proxy.EnvoyMetricsService.Enabled) {
+		defaultConfig["envoyMetricsService"] = map[string]interface{}{
+			"address": fmt.Sprintf("%s:%d", r.Config.Spec.Proxy.EnvoyMetricsService.Host, r.Config.Spec.Proxy.EnvoyMetricsService.Port),
+		}
+	}
+
+	if util.PointerToBool(r.Config.Spec.Proxy.EnvoyAccessLogService.Enabled) {
+		accessLogService := map[string]interface{}{
+			"address": fmt.Sprintf("%s:%d", r.Config.Spec.Proxy.EnvoyAccessLogService.Host, r.Config.Spec.Proxy.EnvoyAccessLogService.Port),
+		}
+		if r.Config.Spec.Proxy.EnvoyAccessLogService.TLSSettings != nil {
+			accessLogService["tlsSettings"] = r.Config.Spec.Proxy.EnvoyAccessLogService.TLSSettings
+		}
+		if r.Config.Spec.Proxy.EnvoyAccessLogService.TCPKeepalive != nil {
+			accessLogService["tcpKeepalive"] = r.Config.Spec.Proxy.EnvoyAccessLogService.TCPKeepalive
+		}
+		defaultConfig["envoyAccessLogService"] = accessLogService
+	}
+
 	if util.PointerToBool(r.Config.Spec.Tracing.Enabled) {
 		switch r.Config.Spec.Tracing.Tracer {
 		case istiov1beta1.TracerTypeZipkin:
@@ -79,11 +102,15 @@ func (r *Reconciler) meshConfig() string {
 					"address": r.Config.Spec.Tracing.Datadog.Address,
 				},
 			}
+		case istiov1beta1.TracerTypeStackdriver:
+			defaultConfig["tracing"] = map[string]interface{}{
+				"stackdriver": r.Config.Spec.Tracing.Strackdriver,
+			}
 		}
 	}
 
 	meshConfig := map[string]interface{}{
-		"disablePolicyChecks":   false,
+		"disablePolicyChecks":   !util.PointerToBool(r.Config.Spec.Policy.ChecksEnabled),
 		"enableTracing":         r.Config.Spec.Tracing.Enabled,
 		"accessLogFile":         "/dev/stdout",
 		"accessLogFormat":       "",
@@ -95,16 +122,20 @@ func (r *Reconciler) meshConfig() string {
 		"ingressClass":          "istio",
 		"ingressControllerMode": 2,
 		"sdsUdsPath":            r.Config.Spec.SDS.UdsPath,
-		"enableSdsTokenMount":   r.Config.Spec.SDS.UseTrustworthyJwt,
-		"sdsUseK8sSaJwt":        r.Config.Spec.SDS.UseNormalJwt,
-		"trustDomain":           "",
+		"trustDomain":           "cluster.local",
 		"outboundTrafficPolicy": map[string]interface{}{
 			"mode": r.Config.Spec.OutboundTrafficPolicy.Mode,
 		},
-		"defaultConfig":     defaultConfig,
-		"rootNamespace":     "istio-system",
-		"connectTimeout":    "10s",
-		"localityLbSetting": r.getLocalityLBConfiguration(),
+		"defaultConfig":                     defaultConfig,
+		"rootNamespace":                     r.Config.Namespace,
+		"connectTimeout":                    "10s",
+		"localityLbSetting":                 r.getLocalityLBConfiguration(),
+		"reportBatchMaxEntries":             r.Config.Spec.Mixer.ReportBatchMaxEntries,
+		"reportBatchMaxTime":                r.Config.Spec.Mixer.ReportBatchMaxTime,
+		"sidecarToTelemetrySessionAffinity": util.PointerToBool(r.Config.Spec.Mixer.SessionAffinityEnabled),
+		"enableEnvoyAccessLogService":       util.PointerToBool(r.Config.Spec.Proxy.EnvoyAccessLogService.Enabled),
+		"protocolDetectionTimeout":          r.Config.Spec.Proxy.ProtocolDetectionTimeout,
+		"dnsRefreshRate":                    r.Config.Spec.Proxy.DNSRefreshRate,
 	}
 
 	if util.PointerToBool(r.Config.Spec.UseMCP) {

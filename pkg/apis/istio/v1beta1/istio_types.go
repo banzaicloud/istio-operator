@@ -26,7 +26,7 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
-const supportedIstioMinorVersionRegex = "^1.2"
+const supportedIstioMinorVersionRegex = "^1.3"
 
 // IstioVersion stores the intended Istio version
 type IstioVersion string
@@ -39,33 +39,28 @@ type SDSConfiguration struct {
 	// Unix Domain Socket through which envoy communicates with NodeAgent SDS to get
 	// key/cert for mTLS. Use secret-mount files instead of SDS if set to empty.
 	UdsPath string `json:"udsPath,omitempty"`
-	// If set to true, Istio will inject volumes mount for k8s service account JWT,
-	// so that K8s API server mounts k8s service account JWT to envoy container, which
-	// will be used to generate key/cert eventually.
-	// (prerequisite: https://kubernetes.io/docs/concepts/storage/volumes/#projected)
-	UseTrustworthyJwt bool `json:"useTrustworthyJwt,omitempty"`
-	// If set to true, envoy will fetch normal k8s service account JWT from '/var/run/secrets/kubernetes.io/serviceaccount/token'
-	// (https://kubernetes.io/docs/tasks/access-application-cluster/access-cluster/#accessing-the-api-from-a-pod)
-	// and pass to sds server, which will be used to request key/cert eventually
-	// this flag is ignored if UseTrustworthyJwt is set
-	UseNormalJwt bool `json:"useNormalJwt,omitempty"`
+	// The JWT token for SDS and the aud field of such JWT. See RFC 7519, section 4.1.3.
+	// When a CSR is sent from Citadel Agent to the CA (e.g. Citadel), this aud is to make sure the
+	// 	JWT is intended for the CA.
+	TokenAudience string `json:"tokenAudience,omitempty"`
 
 	CustomTokenDirectory string `json:"customTokenDirectory,omitempty"`
 }
 
 // PilotConfiguration defines config options for Pilot
 type PilotConfiguration struct {
-	Enabled       *bool                        `json:"enabled,omitempty"`
-	Image         string                       `json:"image,omitempty"`
-	Sidecar       *bool                        `json:"sidecar,omitempty"`
-	ReplicaCount  int32                        `json:"replicaCount,omitempty"`
-	MinReplicas   int32                        `json:"minReplicas,omitempty"`
-	MaxReplicas   int32                        `json:"maxReplicas,omitempty"`
-	TraceSampling float32                      `json:"traceSampling,omitempty"`
-	Resources     *corev1.ResourceRequirements `json:"resources,omitempty"`
-	NodeSelector  map[string]string            `json:"nodeSelector,omitempty"`
-	Affinity      *corev1.Affinity             `json:"affinity,omitempty"`
-	Tolerations   []corev1.Toleration          `json:"tolerations,omitempty"`
+	Enabled                *bool                        `json:"enabled,omitempty"`
+	Image                  string                       `json:"image,omitempty"`
+	Sidecar                *bool                        `json:"sidecar,omitempty"`
+	ReplicaCount           int32                        `json:"replicaCount,omitempty"`
+	MinReplicas            int32                        `json:"minReplicas,omitempty"`
+	MaxReplicas            int32                        `json:"maxReplicas,omitempty"`
+	TraceSampling          float32                      `json:"traceSampling,omitempty"`
+	EnableProtocolSniffing *bool                        `json:"enableProtocolSniffing,omitempty"`
+	Resources              *corev1.ResourceRequirements `json:"resources,omitempty"`
+	NodeSelector           map[string]string            `json:"nodeSelector,omitempty"`
+	Affinity               *corev1.Affinity             `json:"affinity,omitempty"`
+	Tolerations            []corev1.Toleration          `json:"tolerations,omitempty"`
 }
 
 // CitadelConfiguration defines config options for Citadel
@@ -78,22 +73,34 @@ type CitadelConfiguration struct {
 	// For the workloads running in Kubernetes, the lifetime of their Istio certificates is controlled by the workload-cert-ttl flag on Citadel. The default value is 90 days. This value should be no greater than max-workload-cert-ttl of Citadel.
 	WorkloadCertTTL string `json:"workloadCertTTL,omitempty"`
 	// Citadel uses a flag max-workload-cert-ttl to control the maximum lifetime for Istio certificates issued to workloads. The default value is 90 days. If workload-cert-ttl on Citadel or node agent is greater than max-workload-cert-ttl, Citadel will fail issuing the certificate.
-	MaxWorkloadCertTTL string                       `json:"maxWorkloadCertTTL,omitempty"`
-	Resources          *corev1.ResourceRequirements `json:"resources,omitempty"`
-	NodeSelector       map[string]string            `json:"nodeSelector,omitempty"`
-	Affinity           *corev1.Affinity             `json:"affinity,omitempty"`
-	Tolerations        []corev1.Toleration          `json:"tolerations,omitempty"`
-}
+	MaxWorkloadCertTTL string `json:"maxWorkloadCertTTL,omitempty"`
 
-// GalleyConfiguration defines config options for Galley
-type GalleyConfiguration struct {
-	Enabled      *bool                        `json:"enabled,omitempty"`
-	Image        string                       `json:"image,omitempty"`
-	ReplicaCount int32                        `json:"replicaCount,omitempty"`
+	// Determines Citadel default behavior if the ca.istio.io/env or ca.istio.io/override
+	// labels are not found on a given namespace.
+	//
+	// For example: consider a namespace called "target", which has neither the "ca.istio.io/env"
+	// nor the "ca.istio.io/override" namespace labels. To decide whether or not to generate secrets
+	// for service accounts created in this "target" namespace, Citadel will defer to this option. If the value
+	// of this option is "true" in this case, secrets will be generated for the "target" namespace.
+	// If the value of this option is "false" Citadel will not generate secrets upon service account creation.
+	EnableNamespacesByDefault *bool `json:"enableNamespacesByDefault,omitempty"`
+
 	Resources    *corev1.ResourceRequirements `json:"resources,omitempty"`
 	NodeSelector map[string]string            `json:"nodeSelector,omitempty"`
 	Affinity     *corev1.Affinity             `json:"affinity,omitempty"`
 	Tolerations  []corev1.Toleration          `json:"tolerations,omitempty"`
+}
+
+// GalleyConfiguration defines config options for Galley
+type GalleyConfiguration struct {
+	Enabled          *bool                        `json:"enabled,omitempty"`
+	Image            string                       `json:"image,omitempty"`
+	ReplicaCount     int32                        `json:"replicaCount,omitempty"`
+	ConfigValidation *bool                        `json:"configValidation,omitempty"`
+	Resources        *corev1.ResourceRequirements `json:"resources,omitempty"`
+	NodeSelector     map[string]string            `json:"nodeSelector,omitempty"`
+	Affinity         *corev1.Affinity             `json:"affinity,omitempty"`
+	Tolerations      []corev1.Toleration          `json:"tolerations,omitempty"`
 }
 
 // GatewaysConfiguration defines config options for Gateways
@@ -147,6 +154,17 @@ type MixerConfiguration struct {
 	Tolerations  []corev1.Toleration          `json:"tolerations,omitempty"`
 	// Turn it on if you use mixer that supports multi cluster telemetry
 	MultiClusterSupport *bool `json:"multiClusterSupport,omitempty"`
+	// Set reportBatchMaxEntries to 0 to use the default batching behavior (i.e., every 100 requests).
+	// A positive value indicates the number of requests that are batched before telemetry data
+	// is sent to the mixer server
+	ReportBatchMaxEntries *int32 `json:"reportBatchMaxEntries,omitempty"`
+	// Set reportBatchMaxTime to 0 to use the default batching behavior (i.e., every 1 second).
+	// A positive time value indicates the maximum wait time since the last request will telemetry data
+	// be batched before being sent to the mixer server
+	ReportBatchMaxTime *string `json:"reportBatchMaxTime,omitempty"`
+
+	// Set whether to create a STRICT_DNS type cluster for istio-telemetry.
+	SessionAffinityEnabled *bool `json:"sessionAffinityEnabled,omitempty"`
 }
 
 // InitCNIConfiguration defines config for the sidecar proxy init CNI plugin
@@ -211,6 +229,42 @@ type NodeAgentConfiguration struct {
 	Tolerations  []corev1.Toleration          `json:"tolerations,omitempty"`
 }
 
+type EnvoyStatsD struct {
+	Enabled *bool  `json:"enabled,omitempty"`
+	Host    string `json:"host,omitempty"`
+	Port    int32  `json:"port,omitempty"`
+}
+
+type EnvoyMetricsService struct {
+	Enabled *bool  `json:"enabled,omitempty"`
+	Host    string `json:"host,omitempty"`
+	Port    int32  `json:"port,omitempty"`
+}
+
+// EnvoyAccessLogService
+type EnvoyAccessLogService struct {
+	Enabled      *bool         `json:"enabled,omitempty"`
+	Host         string        `json:"host,omitempty"`
+	Port         int32         `json:"port,omitempty"`
+	TLSSettings  *TLSSettings  `json:"tlsSettings,omitempty"`
+	TCPKeepalive *TCPKeepalive `json:"tcpKeepalive,omitempty"`
+}
+
+type TLSSettings struct {
+	Mode              string   `json:"mode,omitempty"`
+	ClientCertificate string   `json:"clientCertificate,omitempty"`
+	PrivateKey        string   `json:"privateKey,omitempty"`
+	CACertificates    string   `json:"caCertificates,omitempty"`
+	SNI               string   `json:"sni,omitempty"`
+	SubjectAltNames   []string `json:"subjectAltNames,omitempty"`
+}
+
+type TCPKeepalive struct {
+	Probes   int32  `json:"probes,omitempty"`
+	Time     string `json:"time,omitempty"`
+	Interval string `json:"interval,omitempty"`
+}
+
 // ProxyConfiguration defines config options for Proxy
 type ProxyConfiguration struct {
 	Image string `json:"image,omitempty"`
@@ -218,6 +272,8 @@ type ProxyConfiguration struct {
 	Privileged bool `json:"privileged,omitempty"`
 	// If set, newly injected sidecars will have core dumps enabled.
 	EnableCoreDump bool `json:"enableCoreDump,omitempty"`
+	// Image used to enable core dumps. This is only used, when "EnableCoreDump" is set to true.
+	CoreDumpImage string `json:"coreDumpImage,omitempty"`
 	// Log level for proxy, applies to gateways and sidecars. If left empty, "warning" is used.
 	// Expected values are: trace|debug|info|warning|error|critical|off
 	// +kubebuilder:validation:Enum=trace,debug,info,warning,error,critical,off
@@ -229,6 +285,11 @@ type ProxyConfiguration struct {
 	// This must be given it terms of seconds. For example, 300s is valid but 5m is invalid.
 	// +kubebuilder:validation:Pattern=^[0-9]{1,5}s$
 	DNSRefreshRate string `json:"dnsRefreshRate,omitempty"`
+
+	EnvoyStatsD              EnvoyStatsD           `json:"envoyStatsD,omitempty"`
+	EnvoyMetricsService      EnvoyMetricsService   `json:"envoyMetricsService,omitempty"`
+	EnvoyAccessLogService    EnvoyAccessLogService `json:"envoyAccessLogService,omitempty"`
+	ProtocolDetectionTimeout *string               `json:"protocolDetectionTimeout,omitempty"`
 
 	Resources *corev1.ResourceRequirements `json:"resources,omitempty"`
 }
@@ -277,21 +338,25 @@ type DatadogConfiugration struct {
 	Address string `json:"address,omitempty"`
 }
 
+type StrackdriverConfiguration struct{}
+
 type TracerType string
 
 const (
-	TracerTypeZipkin    TracerType = "zipkin"
-	TracerTypeLightstep TracerType = "lightstep"
-	TracerTypeDatadog   TracerType = "datadog"
+	TracerTypeZipkin      TracerType = "zipkin"
+	TracerTypeLightstep   TracerType = "lightstep"
+	TracerTypeDatadog     TracerType = "datadog"
+	TracerTypeStackdriver TracerType = "stackdriver"
 )
 
 type TracingConfiguration struct {
 	Enabled *bool `json:"enabled,omitempty"`
 	// +kubebuilder:validation:Enum=zipkin,lightstep,datadog
-	Tracer    TracerType             `json:"tracer,omitempty"`
-	Zipkin    ZipkinConfiguration    `json:"zipkin,omitempty"`
-	Lightstep LightstepConfiguration `json:"lightstep,omitempty"`
-	Datadog   DatadogConfiugration   `json:"datadog,omitempty"`
+	Tracer       TracerType                `json:"tracer,omitempty"`
+	Zipkin       ZipkinConfiguration       `json:"zipkin,omitempty"`
+	Lightstep    LightstepConfiguration    `json:"lightstep,omitempty"`
+	Datadog      DatadogConfiugration      `json:"datadog,omitempty"`
+	Strackdriver StrackdriverConfiguration `json:"stackdriver,omitempty"`
 }
 
 type IstioCoreDNS struct {
@@ -353,10 +418,14 @@ type LocalityLBConfiguration struct {
 	Failover []*LocalityLBFailoverConfiguration `json:"failover,omitempty"`
 }
 
+type PolicyConfiguration struct {
+	ChecksEnabled *bool `json:"checksEnabled,omitempty"`
+}
+
 // IstioSpec defines the desired state of Istio
 type IstioSpec struct {
 	// Contains the intended Istio version
-	// +kubebuilder:validation:Pattern=^1.2
+	// +kubebuilder:validation:Pattern=^1.3
 	Version IstioVersion `json:"version"`
 
 	// MTLS enables or disables global mTLS
@@ -394,6 +463,9 @@ type IstioSpec struct {
 
 	// Mixer configuration options
 	Mixer MixerConfiguration `json:"mixer,omitempty"`
+
+	// Policy configuration options
+	Policy PolicyConfiguration `json:"policy,omitempty"`
 
 	// SidecarInjector configuration options
 	SidecarInjector SidecarInjectorConfiguration `json:"sidecarInjector,omitempty"`
@@ -448,8 +520,25 @@ type IstioSpec struct {
 	// Locality based load balancing distribution or failover settings.
 	LocalityLB *LocalityLBConfiguration `json:"localityLB,omitempty"`
 
+	// Should be set to the name of the cluster this installation will run in.
+	// This is required for sidecar injection to properly label proxies
+	ClusterName string `json:"clusterName,omitempty"`
+
+	// Mesh ID means Mesh Identifier. It should be unique within the scope where
+	// meshes will interact with each other, but it is not required to be
+	// globally/universally unique.
+	MeshID string `json:"meshID,omitempty"`
+
+	// Mixerless telemetry configuration
+	MixerlessTelemetry *MixerlessTelemetryConfiguration `json:"mixerlessTelemetry,omitempty"`
+
 	networkName  string
 	meshNetworks *MeshNetworks
+}
+
+type MixerlessTelemetryConfiguration struct {
+	// If set to true, experimental Mixerless http telemetry will be enabled
+	Enabled *bool `json:"enabled,omitempty"`
 }
 
 type MeshNetworkEndpoint struct {

@@ -5,22 +5,21 @@ metadata:
     controller-tools.k8s.io: "1.0"
   name: istio-sample
 spec:
-  version: "1.2.5"
+  version: "1.3.0"
   mtls: true
   autoInjectionNamespaces:
   - "default"
   sds:
     enabled: true
     udsPath: "unix:/var/run/sds/uds_path"
-    useTrustworthyJwt: false
-    useNormalJwt: true
+    tokenAudience: "istio-ca"
   gateways:
     enabled: true
     ingress:
       enabled: true
       sds:
         enabled: true
-        image: "docker.io/istio/node-agent-k8s:1.2.5"
+        image: "docker.io/istio/node-agent-k8s:1.3.0"
         resources:
           requests:
             cpu: 100m
@@ -30,4 +29,4 @@ spec:
             memory: 1024Mi
   nodeAgent:
     enabled: true
-    image: "docker.io/istio/node-agent-k8s:1.2.5"
+    image: "docker.io/istio/node-agent-k8s:1.3.0"

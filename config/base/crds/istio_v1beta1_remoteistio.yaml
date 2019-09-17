@@ -59,6 +59,18 @@ spec:
                   type: object
                 caSecretName:
                   type: string
+                enableNamespacesByDefault:
+                  description: 'Determines Citadel default behavior if the ca.istio.io/env
+                    or ca.istio.io/override labels are not found on a given namespace.  For
+                    example: consider a namespace called "target", which has neither
+                    the "ca.istio.io/env" nor the "ca.istio.io/override" namespace
+                    labels. To decide whether or not to generate secrets for service
+                    accounts created in this "target" namespace, Citadel will defer
+                    to this option. If the value of this option is "true" in this
+                    case, secrets will be generated for the "target" namespace. If
+                    the value of this option is "false" Citadel will not generate
+                    secrets upon service account creation.'
+                  type: boolean
                 enabled:
                   type: boolean
                 healthCheck:
@@ -89,6 +101,10 @@ spec:
                     be no greater than max-workload-cert-ttl of Citadel.
                   type: string
               type: object
+            clusterName:
+              description: Should be set to the name of the cluster, this is required
+                for sidecar injection to properly label proxies
+              type: string
             defaultResources:
               description: DefaultResources are applied for all Istio components by
                 default, can be overridden for each component
@@ -128,6 +144,10 @@ spec:
                     and sidecars. If a component level is not set, then the "LogLevel"
                     will be used. If left empty, "misc:error" is used.
                   type: string
+                coreDumpImage:
+                  description: Image used to enable core dumps. This is only used,
+                    when "EnableCoreDump" is set to true.
+                  type: string
                 dnsRefreshRate:
                   description: Configure the DNS refresh rate for Envoy cluster of
                     type STRICT_DNS This must be given it terms of seconds. For example,
@@ -138,6 +158,63 @@ spec:
                   description: If set, newly injected sidecars will have core dumps
                     enabled.
                   type: boolean
+                envoyAccessLogService:
+                  properties:
+                    enabled:
+                      type: boolean
+                    host:
+                      type: string
+                    port:
+                      format: int32
+                      type: integer
+                    tcpKeepalive:
+                      properties:
+                        interval:
+                          type: string
+                        probes:
+                          format: int32
+                          type: integer
+                        time:
+                          type: string
+                      type: object
+                    tlsSettings:
+                      properties:
+                        caCertificates:
+                          type: string
+                        clientCertificate:
+                          type: string
+                        mode:
+                          type: string
+                        privateKey:
+                          type: string
+                        sni:
+                          type: string
+                        subjectAltNames:
+                          items:
+                            type: string
+                          type: array
+                      type: object
+                  type: object
+                envoyMetricsService:
+                  properties:
+                    enabled:
+                      type: boolean
+                    host:
+                      type: string
+                    port:
+                      format: int32
+                      type: integer
+                  type: object
+                envoyStatsD:
+                  properties:
+                    enabled:
+                      type: boolean
+                    host:
+                      type: string
+                    port:
+                      format: int32
+                      type: integer
+                  type: object
                 image:
                   type: string
                 logLevel:
@@ -156,6 +233,8 @@ spec:
                   description: If set to true, istio-proxy container will have privileged
                     securityContext
                   type: boolean
+                protocolDetectionTimeout:
+                  type: string
                 resources:
                   type: object
               type: object

@@ -8,7 +8,5 @@ Released:
 - [x] - Configurable affinities
 - [x] - Federation, multi-mesh
 - [x] - Istio 1.2.x support
-
-Short term roadmap
-
-- [ ] - Kiali / Certmanager
+- [x] - Istio 1.3.x support
+- [x] - Istio 1.3.x Mixerless HTTP telemetry support

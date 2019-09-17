@@ -18,6 +18,7 @@ package pilot
 
 import (
 	"fmt"
+	"strconv"
 
 	appsv1 "k8s.io/api/apps/v1"
 	apiv1 "k8s.io/api/core/v1"
@@ -47,10 +48,8 @@ func (r *Reconciler) containerArgs() []string {
 		"30m",
 	}
 
-	if r.Config.Spec.ControlPlaneSecurityEnabled {
-		if !util.PointerToBool(r.Config.Spec.Pilot.Sidecar) {
-			containerArgs = append(containerArgs, "--secureGrpcAddr", ":15011")
-		}
+	if r.Config.Spec.ControlPlaneSecurityEnabled && !util.PointerToBool(r.Config.Spec.Pilot.Sidecar) {
+		containerArgs = append(containerArgs, "--secureGrpcAddr", ":15011")
 	} else {
 		containerArgs = append(containerArgs, "--secureGrpcAddr", "")
 	}
@@ -121,7 +120,6 @@ func (r *Reconciler) containers() []apiv1.Container {
 				Name:  "PILOT_TRACE_SAMPLING",
 				Value: fmt.Sprintf("%.2f", r.Config.Spec.Pilot.TraceSampling),
 			},
-			{Name: "PILOT_DISABLE_XDS_MARSHALING_TO_ANY", Value: "1"},
 			{Name: "MESHNETWORKS_HASH", Value: r.Config.Spec.GetMeshNetworksHash()},
 		},
 		Resources: templates.GetResourcesRequirementsOrDefault(
@@ -150,6 +148,18 @@ func (r *Reconciler) containers() []apiv1.Container {
 		})
 	}
 
+	if util.PointerToBool(r.Config.Spec.Pilot.EnableProtocolSniffing) {
+		discoveryContainer.Env = append(discoveryContainer.Env, apiv1.EnvVar{
+			Name:  "PILOT_ENABLE_PROTOCOL_SNIFFING",
+			Value: "true",
+		})
+	}
+
+	discoveryContainer.Env = append(discoveryContainer.Env, apiv1.EnvVar{
+		Name:  "SDS_ENABLED",
+		Value: strconv.FormatBool(util.PointerToBool(r.Config.Spec.SDS.Enabled)),
+	})
+
 	containers := []apiv1.Container{
 		discoveryContainer,
 	}
@@ -176,7 +186,7 @@ func (r *Reconciler) containers() []apiv1.Container {
 				"--domain",
 				r.Config.Namespace + ".svc.cluster.local",
 			},
-			Env: templates.IstioProxyEnv(),
+			Env: templates.IstioProxyEnv(r.Config),
 			Resources: templates.GetResourcesRequirementsOrDefault(
 				r.Config.Spec.Proxy.Resources,
 				r.Config.Spec.DefaultResources,
@@ -199,12 +209,10 @@ func (r *Reconciler) containers() []apiv1.Container {
 				ReadOnly:  true,
 			})
 
-			if r.Config.Spec.SDS.UseTrustworthyJwt {
-				proxyContainer.VolumeMounts = append(proxyContainer.VolumeMounts, apiv1.VolumeMount{
-					Name:      "istio-token",
-					MountPath: "/var/run/secrets/tokens",
-				})
-			}
+			proxyContainer.VolumeMounts = append(proxyContainer.VolumeMounts, apiv1.VolumeMount{
+				Name:      "istio-token",
+				MountPath: "/var/run/secrets/tokens",
+			})
 		}
 
 		containers = append(containers, proxyContainer)
@@ -274,25 +282,23 @@ func (r *Reconciler) deployment() runtime.Object {
 			},
 		})
 
-		if r.Config.Spec.SDS.UseTrustworthyJwt {
-			deployment.Spec.Template.Spec.Volumes = append(deployment.Spec.Template.Spec.Volumes, apiv1.Volume{
-				Name: "istio-token",
-				VolumeSource: apiv1.VolumeSource{
-					Projected: &apiv1.ProjectedVolumeSource{
-						Sources: []apiv1.VolumeProjection{
-							{
-								ServiceAccountToken: &apiv1.ServiceAccountTokenProjection{
-									Path:              "istio-token",
-									ExpirationSeconds: util.Int64Pointer(43200),
-									Audience:          "cluster.local",
-								},
+		deployment.Spec.Template.Spec.Volumes = append(deployment.Spec.Template.Spec.Volumes, apiv1.Volume{
+			Name: "istio-token",
+			VolumeSource: apiv1.VolumeSource{
+				Projected: &apiv1.ProjectedVolumeSource{
+					Sources: []apiv1.VolumeProjection{
+						{
+							ServiceAccountToken: &apiv1.ServiceAccountTokenProjection{
+								Path:              "istio-token",
+								ExpirationSeconds: util.Int64Pointer(43200),
+								Audience:          r.Config.Spec.SDS.TokenAudience,
 							},
 						},
-						DefaultMode: util.IntPointer(420),
 					},
+					DefaultMode: util.IntPointer(420),
 				},
-			})
-		}
+			},
+		})
 	}
 
 	return deployment

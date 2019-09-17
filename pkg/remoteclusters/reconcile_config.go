@@ -57,6 +57,7 @@ func (c *Cluster) reconcileConfig(remoteConfig *istiov1beta1.RemoteIstio, istio 
 	istioConfig.Spec.SidecarInjector.Affinity = remoteConfig.Spec.SidecarInjector.Affinity
 	istioConfig.Spec.SidecarInjector.Tolerations = remoteConfig.Spec.SidecarInjector.Tolerations
 	istioConfig.Spec.SidecarInjector.InitCNIConfiguration.Affinity = remoteConfig.Spec.SidecarInjector.InitCNIConfiguration.Affinity
+	istioConfig.Spec.ClusterName = remoteConfig.Spec.ClusterName
 
 	if remoteConfig.Spec.DefaultResources != nil {
 		istioConfig.Spec.DefaultResources = remoteConfig.Spec.DefaultResources
