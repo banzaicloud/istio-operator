@@ -17,9 +17,6 @@ limitations under the License.
 package util
 
 import (
-	"bytes"
-	"encoding/gob"
-
 	"k8s.io/apimachinery/pkg/util/intstr"
 )
 
@@ -99,25 +96,4 @@ func RemoveString(slice []string, s string) (result []string) {
 		result = append(result, item)
 	}
 	return
-}
-
-// Map performs a deep copy of the given map m.
-func Map(m map[string]interface{}) (map[string]interface{}, error) {
-	var buf bytes.Buffer
-	enc := gob.NewEncoder(&buf)
-	dec := gob.NewDecoder(&buf)
-	err := enc.Encode(m)
-	if err != nil {
-		return nil, err
-	}
-	var copy map[string]interface{}
-	err = dec.Decode(&copy)
-	if err != nil {
-		return nil, err
-	}
-	return copy, nil
-}
-
-func init() {
-	gob.Register(map[string]interface{}{})
 }

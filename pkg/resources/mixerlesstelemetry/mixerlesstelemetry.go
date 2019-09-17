@@ -17,10 +17,8 @@ limitations under the License.
 package mixerlesstelemetry
 
 import (
-	"github.com/MakeNowJust/heredoc"
 	"github.com/go-logr/logr"
 	"github.com/goph/emperror"
-	"k8s.io/apimachinery/pkg/runtime/schema"
 	"k8s.io/client-go/dynamic"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
@@ -75,110 +73,4 @@ func (r *Reconciler) Reconcile(log logr.Logger) error {
 	log.Info("Reconciled")
 
 	return nil
-}
-
-func (r *Reconciler) metaexchangeEnvoyFilter() *k8sutil.DynamicObject {
-	filterInbound := map[string]interface{}{
-		"filterConfig": map[string]interface{}{
-			"configuration": "envoy.wasm.metadata_exchange",
-			"vm_config": map[string]interface{}{
-				"code": map[string]interface{}{
-					"inline_string": "envoy.wasm.metadata_exchange",
-				},
-				"vm": "envoy.wasm.vm.null",
-			},
-		},
-		"filterName": "envoy.wasm",
-		"filterType": "HTTP",
-		"insertPosition": map[string]interface{}{
-			"index": "FIRST",
-		},
-		"listenerMatch": map[string]interface{}{
-			"listenerProtocol": "HTTP",
-			"listenerType":     "SIDECAR_INBOUND",
-		},
-	}
-
-	var filterOutbound map[string]interface{}
-	filterOutbound, _ = util.Map(filterInbound)
-	filterOutbound["listenerMatch"].(map[string]interface{})["listenerType"] = "SIDECAR_OUTBOUND"
-
-	var filterGateway map[string]interface{}
-	filterGateway, _ = util.Map(filterInbound)
-	filterGateway["listenerMatch"].(map[string]interface{})["listenerType"] = "GATEWAY"
-
-	return &k8sutil.DynamicObject{
-		Gvr: schema.GroupVersionResource{
-			Group:    "networking.istio.io",
-			Version:  "v1alpha3",
-			Resource: "envoyfilters",
-		},
-		Kind:      "EnvoyFilter",
-		Name:      componentName + "-metadata-exchange",
-		Namespace: r.Config.Namespace,
-		Spec: map[string]interface{}{
-			"filters": []map[string]interface{}{
-				filterInbound,
-				filterOutbound,
-				filterGateway,
-			},
-		},
-		Owner: r.Config,
-	}
-}
-
-func (r *Reconciler) statsEnvoyFilter() *k8sutil.DynamicObject {
-	filterInbound := map[string]interface{}{
-		"filterConfig": map[string]interface{}{
-			"configuration": heredoc.Doc(`
-{
-  "debug": "false",
-  "stat_prefix": "istio",
-}
-`),
-			"vm_config": map[string]interface{}{
-				"code": map[string]interface{}{
-					"inline_string": "envoy.wasm.stats",
-				},
-				"vm": "envoy.wasm.vm.null",
-			},
-		},
-		"filterName": "envoy.wasm",
-		"filterType": "HTTP",
-		"insertPosition": map[string]interface{}{
-			"index":      "BEFORE",
-			"relativeTo": "envoy.router",
-		},
-		"listenerMatch": map[string]interface{}{
-			"listenerProtocol": "HTTP",
-			"listenerType":     "SIDECAR_INBOUND",
-		},
-	}
-
-	var filterOutbound map[string]interface{}
-	filterOutbound, _ = util.Map(filterInbound)
-	filterOutbound["listenerMatch"].(map[string]interface{})["listenerType"] = "SIDECAR_OUTBOUND"
-
-	var filterGateway map[string]interface{}
-	filterGateway, _ = util.Map(filterInbound)
-	filterGateway["listenerMatch"].(map[string]interface{})["listenerType"] = "GATEWAY"
-
-	return &k8sutil.DynamicObject{
-		Gvr: schema.GroupVersionResource{
-			Group:    "networking.istio.io",
-			Version:  "v1alpha3",
-			Resource: "envoyfilters",
-		},
-		Kind:      "EnvoyFilter",
-		Name:      componentName + "-stats",
-		Namespace: r.Config.Namespace,
-		Spec: map[string]interface{}{
-			"filters": []map[string]interface{}{
-				filterInbound,
-				filterOutbound,
-				filterGateway,
-			},
-		},
-		Owner: r.Config,
-	}
 }
