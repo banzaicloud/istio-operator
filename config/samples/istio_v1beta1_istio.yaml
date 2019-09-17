@@ -119,6 +119,9 @@ spec:
     image: "docker.io/istio/node-agent-k8s:1.3.0"
   proxy:
     image: "docker.io/istio/proxyv2:1.3.0"
+    accessLogFile: "/dev/stdout"
+    accessLogFormat: ""
+    accessLogEncoding: "TEXT"
     enableCoreDump: false
     resources:
       requests:

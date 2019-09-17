@@ -112,9 +112,9 @@ func (r *Reconciler) meshConfig() string {
 	meshConfig := map[string]interface{}{
 		"disablePolicyChecks":   !util.PointerToBool(r.Config.Spec.Policy.ChecksEnabled),
 		"enableTracing":         r.Config.Spec.Tracing.Enabled,
-		"accessLogFile":         "/dev/stdout",
-		"accessLogFormat":       "",
-		"accessLogEncoding":     "TEXT",
+		"accessLogFile":         r.Config.Spec.Proxy.AccessLogFile,
+		"accessLogFormat":       r.Config.Spec.Proxy.AccessLogFormat,
+		"accessLogEncoding":     r.Config.Spec.Proxy.AccessLogEncoding,
 		"policyCheckFailOpen":   false,
 		"ingressService":        "istio-ingressgateway",
 		"ingressClass":          "istio",
