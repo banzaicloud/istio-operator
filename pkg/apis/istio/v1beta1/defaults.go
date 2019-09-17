@@ -373,6 +373,12 @@ func SetDefaults(config *Istio) {
 	if config.Spec.UseMCP == nil {
 		config.Spec.UseMCP = util.BoolPointer(true)
 	}
+
+	if config.Spec.MixerlessTelemetry == nil {
+		config.Spec.MixerlessTelemetry = &MixerlessTelemetryConfiguration{
+			Enabled: util.BoolPointer(false),
+		}
+	}
 }
 
 func SetRemoteIstioDefaults(remoteconfig *RemoteIstio) {
