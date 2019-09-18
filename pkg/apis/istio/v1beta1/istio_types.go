@@ -295,6 +295,22 @@ type TCPKeepalive struct {
 // ProxyConfiguration defines config options for Proxy
 type ProxyConfiguration struct {
 	Image string `json:"image,omitempty"`
+	// Configures the access log for each sidecar.
+	// Options:
+	//   "" - disables access log
+	//   "/dev/stdout" - enables access log
+	// +kubebuilder:validation:Enum=,/dev/stdout
+	AccessLogFile *string `json:"accessLogFile,omitempty"`
+	// Configure how and what fields are displayed in sidecar access log. Setting to
+	// empty string will result in default log format.
+	// If accessLogEncoding is TEXT, value will be used directly as the log format
+	// example: "[%START_TIME%] %REQ(:METHOD)% %REQ(X-ENVOY-ORIGINAL-PATH?:PATH)% %PROTOCOL%\n"
+	// If AccessLogEncoding is JSON, value will be parsed as map[string]string
+	// example: '{"start_time": "%START_TIME%", "req_method": "%REQ(:METHOD)%"}'
+	AccessLogFormat *string `json:"accessLogFormat,omitempty"`
+	// Configure the access log for sidecar to JSON or TEXT.
+	// +kubebuilder:validation:Enum=JSON,TEXT
+	AccessLogEncoding *string `json:"accessLogEncoding,omitempty"`
 	// If set to true, istio-proxy container will have privileged securityContext
 	Privileged bool `json:"privileged,omitempty"`
 	// If set, newly injected sidecars will have core dumps enabled.

@@ -55,6 +55,9 @@ const (
 	defaultInitCNILogLevel           = "info"
 	defaultImagePullPolicy           = "IfNotPresent"
 	defaultMeshExpansion             = false
+	defaultEnvoyAccessLogFile        = "/dev/stdout"
+	defaultEnvoyAccessLogFormat      = ""
+	defaultEnvoyAccessLogEncoding    = "TEXT"
 )
 
 var defaultResources = &apiv1.ResourceRequirements{
@@ -298,6 +301,15 @@ func SetDefaults(config *Istio) {
 	// Proxy Init config
 	if config.Spec.ProxyInit.Image == "" {
 		config.Spec.ProxyInit.Image = defaultProxyInitImage
+	}
+	if config.Spec.Proxy.AccessLogFile == nil {
+		config.Spec.Proxy.AccessLogFile = util.StrPointer(defaultEnvoyAccessLogFile)
+	}
+	if config.Spec.Proxy.AccessLogFormat == nil {
+		config.Spec.Proxy.AccessLogFormat = util.StrPointer(defaultEnvoyAccessLogFormat)
+	}
+	if config.Spec.Proxy.AccessLogEncoding == nil {
+		config.Spec.Proxy.AccessLogEncoding = util.StrPointer(defaultEnvoyAccessLogEncoding)
 	}
 	if config.Spec.Proxy.ComponentLogLevel == "" {
 		config.Spec.Proxy.ComponentLogLevel = "misc:error"
