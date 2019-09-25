@@ -80,7 +80,7 @@ func (r *Reconciler) getValues() string {
 				"image":                        r.Config.Spec.Proxy.Image,
 				"statusPort":                   15020,
 				"tracer":                       r.Config.Spec.Tracing.Tracer,
-				"clusterDomain":                "cluster.local",
+				"clusterDomain":                r.Config.Spec.Proxy.ClusterDomain,
 				"logLevel":                     r.Config.Spec.Proxy.LogLevel,
 				"componentLogLevel":            r.Config.Spec.Proxy.ComponentLogLevel,
 				"dnsRefreshRate":               r.Config.Spec.Proxy.DNSRefreshRate,

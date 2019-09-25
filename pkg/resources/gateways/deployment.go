@@ -84,7 +84,7 @@ func (r *Reconciler) deployment(gw string) runtime.Object {
 	args := []string{
 		"proxy",
 		"router",
-		"--domain", "$(POD_NAMESPACE).svc.cluster.local",
+		"--domain", fmt.Sprintf("$(POD_NAMESPACE).svc.%s", r.Config.Spec.Proxy.ClusterDomain),
 		"--log_output_level", "info",
 		"--drainDuration", "45s",
 		"--parentShutdownDuration", "1m0s",

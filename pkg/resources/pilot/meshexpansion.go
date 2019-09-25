@@ -35,7 +35,7 @@ func (r *Reconciler) meshExpansionVirtualService() *k8sutil.DynamicObject {
 		Labels:    pilotLabels,
 		Spec: map[string]interface{}{
 			"hosts": []string{
-				"istio-pilot." + r.Config.Namespace + ".svc.cluster.local",
+				"istio-pilot." + r.Config.Namespace + ".svc." + r.Config.Spec.Proxy.ClusterDomain,
 			},
 			"gateways": []string{
 				"meshexpansion-gateway",
@@ -50,7 +50,7 @@ func (r *Reconciler) meshExpansionVirtualService() *k8sutil.DynamicObject {
 					"route": []map[string]interface{}{
 						{
 							"destination": map[string]interface{}{
-								"host": "istio-pilot." + r.Config.Namespace + ".svc.cluster.local",
+								"host": "istio-pilot." + r.Config.Namespace + ".svc." + r.Config.Spec.Proxy.ClusterDomain,
 								"port": map[string]interface{}{
 									"number": 15011,
 								},
@@ -76,7 +76,7 @@ func (r *Reconciler) meshExpansionDestinationRule() *k8sutil.DynamicObject {
 		Namespace: r.Config.Namespace,
 		Labels:    pilotLabels,
 		Spec: map[string]interface{}{
-			"host": "istio-pilot." + r.Config.Namespace + ".svc.cluster.local",
+			"host": "istio-pilot." + r.Config.Namespace + ".svc." + r.Config.Spec.Proxy.ClusterDomain,
 			"trafficPolicy": map[string]interface{}{
 				"portLevelSettings": []map[string]interface{}{
 					{

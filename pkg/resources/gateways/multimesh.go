@@ -119,7 +119,7 @@ func (r *Reconciler) multimeshEnvoyFilter() *k8sutil.DynamicObject {
 					"filterType": "NETWORK",
 					"filterConfig": map[string]interface{}{
 						"cluster_pattern":     "\\.global$",
-						"cluster_replacement": ".svc.cluster.local",
+						"cluster_replacement": ".svc." + r.Config.Spec.Proxy.ClusterDomain,
 					},
 				},
 			},

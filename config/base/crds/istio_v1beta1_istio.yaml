@@ -545,6 +545,9 @@ spec:
                     as map[string]string example: ''{"start_time": "%START_TIME%",
                     "req_method": "%REQ(:METHOD)%"}'''
                   type: string
+                clusterDomain:
+                  description: cluster domain. Default value is "cluster.local"
+                  type: string
                 componentLogLevel:
                   description: Per Component log level for proxy, applies to gateways
                     and sidecars. If a component level is not set, then the "LogLevel"

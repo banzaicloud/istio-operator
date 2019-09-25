@@ -36,7 +36,7 @@ func (r *Reconciler) policyDestinationRule() *k8sutil.DynamicObject {
 		Namespace: r.Config.Namespace,
 		Spec: map[string]interface{}{
 			"traffic_policy": r.trafficPolicy(),
-			"host":           fmt.Sprintf("istio-policy.%s.svc.cluster.local", r.Config.Namespace),
+			"host":           fmt.Sprintf("istio-policy.%s.svc.%s", r.Config.Namespace, r.Config.Spec.Proxy.ClusterDomain),
 		},
 		Owner: r.Config,
 	}
@@ -61,7 +61,7 @@ func (r *Reconciler) telemetryDestinationRule() *k8sutil.DynamicObject {
 		Namespace: r.Config.Namespace,
 		Spec: map[string]interface{}{
 			"traffic_policy": r.trafficPolicy(),
-			"host":           fmt.Sprintf("istio-telemetry.%s.svc.cluster.local", r.Config.Namespace),
+			"host":           fmt.Sprintf("istio-telemetry.%s.svc.%s", r.Config.Namespace, r.Config.Spec.Proxy.ClusterDomain),
 		},
 		Owner: r.Config,
 	}

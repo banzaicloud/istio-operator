@@ -328,6 +328,8 @@ type ProxyConfiguration struct {
 	// This must be given it terms of seconds. For example, 300s is valid but 5m is invalid.
 	// +kubebuilder:validation:Pattern=^[0-9]{1,5}s$
 	DNSRefreshRate string `json:"dnsRefreshRate,omitempty"`
+	// cluster domain. Default value is "cluster.local"
+	ClusterDomain string `json:"clusterDomain,omitempty"`
 
 	EnvoyStatsD              EnvoyStatsD           `json:"envoyStatsD,omitempty"`
 	EnvoyMetricsService      EnvoyMetricsService   `json:"envoyMetricsService,omitempty"`

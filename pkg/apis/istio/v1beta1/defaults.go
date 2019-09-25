@@ -332,6 +332,9 @@ func SetDefaults(config *Istio) {
 	if config.Spec.Proxy.ProtocolDetectionTimeout == nil {
 		config.Spec.Proxy.ProtocolDetectionTimeout = util.StrPointer("100ms")
 	}
+	if config.Spec.Proxy.ClusterDomain == "" {
+		config.Spec.Proxy.ClusterDomain = "cluster.local"
+	}
 	// PDB config
 	if config.Spec.DefaultPodDisruptionBudget.Enabled == nil {
 		config.Spec.DefaultPodDisruptionBudget.Enabled = util.BoolPointer(false)

@@ -96,7 +96,7 @@ func (r *Reconciler) destinationRuleApiServerMtls() *k8sutil.DynamicObject {
 		Namespace: r.Config.Namespace,
 		Labels:    citadelLabels,
 		Spec: map[string]interface{}{
-			"host": "kubernetes.default.svc.cluster.local",
+			"host": "kubernetes.default.svc." + r.Config.Spec.Proxy.ClusterDomain,
 			"trafficPolicy": map[string]interface{}{
 				"tls": map[string]interface{}{
 					"mode": "DISABLE",
