@@ -182,9 +182,9 @@ func (r *Reconciler) mixerServer(mixerType string) string {
 		return fmt.Sprintf("istio-%s.%s:%s", mixerType, r.Config.Namespace, "15004")
 	}
 	if r.Config.Spec.ControlPlaneSecurityEnabled {
-		return fmt.Sprintf("istio-%s.%s.svc.cluster.local:%s", mixerType, r.Config.Namespace, "15004")
+		return fmt.Sprintf("istio-%s.%s.svc.%s:%s", mixerType, r.Config.Namespace, r.Config.Spec.Proxy.ClusterDomain, "15004")
 	}
-	return fmt.Sprintf("istio-%s.%s.svc.cluster.local:%s", mixerType, r.Config.Namespace, "9091")
+	return fmt.Sprintf("istio-%s.%s.svc.%s:%s", mixerType, r.Config.Namespace, r.Config.Spec.Proxy.ClusterDomain, "9091")
 }
 
 func (r *Reconciler) defaultConfigSource() map[string]interface{} {

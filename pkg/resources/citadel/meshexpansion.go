@@ -35,7 +35,7 @@ func (r *Reconciler) meshExpansion() *k8sutil.DynamicObject {
 		Labels:    citadelLabels,
 		Spec: map[string]interface{}{
 			"hosts": []string{
-				"istio-citadel." + r.Config.Namespace + ".svc.cluster.local",
+				"istio-citadel." + r.Config.Namespace + ".svc." + r.Config.Spec.Proxy.ClusterDomain,
 			},
 			"gateways": []string{
 				"meshexpansion-gateway",
@@ -50,7 +50,7 @@ func (r *Reconciler) meshExpansion() *k8sutil.DynamicObject {
 					"route": []map[string]interface{}{
 						{
 							"destination": map[string]interface{}{
-								"host": "istio-citadel." + r.Config.Namespace + ".svc.cluster.local",
+								"host": "istio-citadel." + r.Config.Namespace + ".svc." + r.Config.Spec.Proxy.ClusterDomain,
 								"port": map[string]interface{}{
 									"number": 8060,
 								},
