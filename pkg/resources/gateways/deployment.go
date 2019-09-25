@@ -94,6 +94,7 @@ func (r *Reconciler) deployment(gw string) runtime.Object {
 		"--statusPort", "15020",
 		"--controlPlaneAuthPolicy", templates.ControlPlaneAuthPolicy(r.Config.Spec.ControlPlaneSecurityEnabled),
 		"--discoveryAddress", fmt.Sprintf("istio-pilot.%s:%s", r.Config.Namespace, r.discoveryPort()),
+		"--trust-domain", r.Config.Spec.TrustDomain,
 	}
 
 	if util.PointerToBool(r.Config.Spec.Tracing.Enabled) {

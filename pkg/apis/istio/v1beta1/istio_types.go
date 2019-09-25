@@ -576,6 +576,9 @@ type IstioSpec struct {
 
 	networkName  string
 	meshNetworks *MeshNetworks
+
+	// The domain serves to identify the system with SPIFFE. (default "cluster.local")
+	TrustDomain string `json:"trustDomain,omitempty"`
 }
 
 type MixerlessTelemetryConfiguration struct {

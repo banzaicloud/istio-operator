@@ -53,7 +53,7 @@ func (r *Reconciler) getValues() string {
 			"rewriteAppHTTPProbe": r.Config.Spec.SidecarInjector.RewriteAppHTTPProbe,
 		},
 		"global": map[string]interface{}{
-			"trustDomain":            "cluster.local",
+			"trustDomain":            r.Config.Spec.TrustDomain,
 			"imagePullPolicy":        r.Config.Spec.ImagePullPolicy,
 			"network":                r.Config.Spec.GetNetworkName(),
 			"podDNSSearchNamespaces": podDNSSearchNamespaces,

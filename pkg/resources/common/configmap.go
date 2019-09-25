@@ -120,7 +120,7 @@ func (r *Reconciler) meshConfig() string {
 		"ingressClass":          "istio",
 		"ingressControllerMode": 2,
 		"sdsUdsPath":            r.Config.Spec.SDS.UdsPath,
-		"trustDomain":           "cluster.local",
+		"trustDomain":           r.Config.Spec.TrustDomain,
 		"outboundTrafficPolicy": map[string]interface{}{
 			"mode": r.Config.Spec.OutboundTrafficPolicy.Mode,
 		},

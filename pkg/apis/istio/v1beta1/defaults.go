@@ -460,6 +460,10 @@ func SetDefaults(config *Istio) {
 			Enabled: util.BoolPointer(false),
 		}
 	}
+
+	if config.Spec.TrustDomain == "" {
+		config.Spec.TrustDomain = "cluster.local"
+	}
 }
 
 func SetRemoteIstioDefaults(remoteconfig *RemoteIstio) {

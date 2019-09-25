@@ -848,6 +848,10 @@ spec:
                       type: string
                   type: object
               type: object
+            trustDomain:
+              description: The domain serves to identify the system with SPIFFE. (default
+                "cluster.local")
+              type: string
             useMCP:
               description: Use the Mesh Control Protocol (MCP) for configuring Mixer
                 and Pilot. Requires galley.

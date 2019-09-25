@@ -73,7 +73,7 @@ func (r *Reconciler) daemonSet() runtime.Object {
 								},
 								{
 									Name:  "Trust_Domain",
-									Value: "cluster.local",
+									Value: r.Config.Spec.TrustDomain,
 								},
 								{
 									Name: "NAMESPACE",

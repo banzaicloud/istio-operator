@@ -46,6 +46,8 @@ func (r *Reconciler) containerArgs() []string {
 		"cluster.local",
 		"--keepaliveMaxServerConnectionAge",
 		"30m",
+		"--trust-domain",
+		r.Config.Spec.TrustDomain,
 	}
 
 	if r.Config.Spec.ControlPlaneSecurityEnabled && !util.PointerToBool(r.Config.Spec.Pilot.Sidecar) {
@@ -185,6 +187,8 @@ func (r *Reconciler) containers() []apiv1.Container {
 				templates.ControlPlaneAuthPolicy(r.Config.Spec.ControlPlaneSecurityEnabled),
 				"--domain",
 				r.Config.Namespace + ".svc.cluster.local",
+				"--trust-domain",
+				r.Config.Spec.TrustDomain,
 			},
 			Env: templates.IstioProxyEnv(r.Config),
 			Resources: templates.GetResourcesRequirementsOrDefault(
