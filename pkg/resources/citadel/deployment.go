@@ -41,6 +41,7 @@ func (r *Reconciler) deployment() runtime.Object {
 		fmt.Sprintf("--citadel-storage-namespace=%s", r.Config.Namespace),
 		fmt.Sprintf("--custom-dns-names=istio-pilot-service-account.%[1]s:istio-pilot.%[1]s", r.Config.Namespace),
 		"--monitoring-port=15014",
+		fmt.Sprintf("--trust-domain=%s", r.Config.Spec.TrustDomain),
 	)
 
 	if r.Config.Spec.Citadel.CASecretName == "" {

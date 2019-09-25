@@ -360,6 +360,9 @@ spec:
                 the scope where meshes will interact with each other, but it is not
                 required to be globally/universally unique.
               type: string
+            trustDomain:
+              description: The domain serves to identify the system with SPIFFE. (default "cluster.local")
+              type: string
             mixer:
               description: Mixer configuration options
               properties:
