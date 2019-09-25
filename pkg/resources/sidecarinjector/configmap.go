@@ -68,6 +68,9 @@ func (r *Reconciler) getValues() string {
 			"sds": map[string]interface{}{
 				"customTokenDirectory": r.Config.Spec.SDS.CustomTokenDirectory,
 				"enabled":              r.Config.Spec.SDS.Enabled,
+				"token": map[string]interface{}{
+					"aud": r.Config.Spec.SDS.TokenAudience,
+				},
 			},
 			"multicluster": map[string]interface{}{
 				"clusterName": r.Config.Spec.ClusterName,
