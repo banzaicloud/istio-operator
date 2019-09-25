@@ -43,7 +43,7 @@ func (r *Reconciler) deployment() runtime.Object {
 		"--monitoringPort=15014",
 	}
 
-	if util.PointerToBool(r.Config.Spec.Galley.ConfigValidation) {
+	if !util.PointerToBool(r.Config.Spec.Galley.ConfigValidation) {
 		containerArgs = append(containerArgs, "--enable-validation=false")
 	}
 
