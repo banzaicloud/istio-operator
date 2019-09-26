@@ -56,7 +56,7 @@ If you are willing to kickstart your Istio experience using Pipeline, check out 
 
 ## Installation
 
-The operator (`release-1.2` branch) installs the 1.2.5 version of Istio, and can run on Minikube v0.33.1+ and Kubernetes 1.10.0+.
+The operator (`release-1.2` branch) installs the 1.2.6 version of Istio, and can run on Minikube v0.33.1+ and Kubernetes 1.10.0+.
 
 As a pre-requisite it needs a Kubernetes cluster (you can create one using [Pipeline](https://github.com/banzaicloud/pipeline)).
 
