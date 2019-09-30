@@ -38,20 +38,20 @@ func (r *Reconciler) configMap() runtime.Object {
 	}
 
 	if util.PointerToBool(r.Config.Spec.Galley.ConfigValidation) {
-		configmap.Data["validatingwebhookconfiguration.yaml"] = r.validatingWebhookConfig(r.Config.Namespace)
+		configmap.Data["validatingwebhookconfiguration.yaml"] = r.validatingWebhookConfig()
 	}
 
 	return configmap
 }
 
-func (r *Reconciler) validatingWebhookConfig(ns string) string {
+func (r *Reconciler) validatingWebhook() runtime.Object {
 	fail := admissionv1beta1.Fail
 	se := admissionv1beta1.SideEffectClassNone
-	webhook := admissionv1beta1.ValidatingWebhookConfiguration{
+
+	return &admissionv1beta1.ValidatingWebhookConfiguration{
 		ObjectMeta: metav1.ObjectMeta{
-			Name:      webhookName,
-			Namespace: ns,
-			Labels:    galleyLabels,
+			Name:   webhookName,
+			Labels: galleyLabels,
 		},
 		Webhooks: []admissionv1beta1.Webhook{
 			{
@@ -59,7 +59,7 @@ func (r *Reconciler) validatingWebhookConfig(ns string) string {
 				ClientConfig: admissionv1beta1.WebhookClientConfig{
 					Service: &admissionv1beta1.ServiceReference{
 						Name:      serviceName,
-						Namespace: ns,
+						Namespace: r.Config.Namespace,
 						Path:      util.StrPointer("/admitpilot"),
 					},
 					CABundle: []byte{},
@@ -118,7 +118,7 @@ func (r *Reconciler) validatingWebhookConfig(ns string) string {
 				ClientConfig: admissionv1beta1.WebhookClientConfig{
 					Service: &admissionv1beta1.ServiceReference{
 						Name:      serviceName,
-						Namespace: ns,
+						Namespace: r.Config.Namespace,
 						Path:      util.StrPointer("/admitmixer"),
 					},
 					CABundle: []byte{},
@@ -174,6 +174,10 @@ func (r *Reconciler) validatingWebhookConfig(ns string) string {
 			},
 		},
 	}
+}
+
+func (r *Reconciler) validatingWebhookConfig() string {
+	webhook := r.validatingWebhook()
 	// this is a static config, so we don't have to deal with errors
 	marshaledConfig, _ := yaml.Marshal(webhook)
 	return string(marshaledConfig)

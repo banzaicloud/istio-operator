@@ -17,7 +17,6 @@ limitations under the License.
 package galley
 
 import (
-	"github.com/banzaicloud/istio-operator/pkg/util"
 	"github.com/go-logr/logr"
 	"github.com/goph/emperror"
 	"sigs.k8s.io/controller-runtime/pkg/client"
@@ -25,6 +24,7 @@ import (
 	istiov1beta1 "github.com/banzaicloud/istio-operator/pkg/apis/istio/v1beta1"
 	"github.com/banzaicloud/istio-operator/pkg/k8sutil"
 	"github.com/banzaicloud/istio-operator/pkg/resources"
+	"github.com/banzaicloud/istio-operator/pkg/util"
 )
 
 const (
@@ -79,7 +79,7 @@ func (r *Reconciler) Reconcile(log logr.Logger) error {
 		pdbDesiredState = k8sutil.DesiredStateAbsent
 	}
 
-	resources := []resources.ResourceWithDesiredState{
+	rs := []resources.ResourceWithDesiredState{
 		{Resource: r.serviceAccount, DesiredState: galleyDesiredState},
 		{Resource: r.clusterRole, DesiredState: galleyDesiredState},
 		{Resource: r.clusterRoleBinding, DesiredState: galleyDesiredState},
@@ -89,14 +89,20 @@ func (r *Reconciler) Reconcile(log logr.Logger) error {
 		{Resource: r.podDisruptionBudget, DesiredState: pdbDesiredState},
 	}
 
-	for _, res := range resources {
+	if !util.PointerToBool(r.Config.Spec.Galley.Enabled) || !util.PointerToBool(r.Config.Spec.Galley.ConfigValidation) {
+		rs = append(rs, resources.ResourceWithDesiredState{
+			Resource:     r.validatingWebhook,
+			DesiredState: k8sutil.DesiredStateAbsent,
+		})
+	}
+
+	for _, res := range rs {
 		o := res.Resource()
 		err := k8sutil.Reconcile(log, r.Client, o, res.DesiredState)
 		if err != nil {
 			return emperror.WrapWith(err, "failed to reconcile resource", "resource", o.GetObjectKind().GroupVersionKind())
 		}
 	}
-	// TODO: wait for deployment to be available?
 
 	log.Info("Reconciled")
 
