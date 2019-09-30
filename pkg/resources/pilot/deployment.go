@@ -157,6 +157,20 @@ func (r *Reconciler) containers() []apiv1.Container {
 		})
 	}
 
+	if util.PointerToBool(r.Config.Spec.Pilot.EnableProtocolSniffingOutbound) {
+		discoveryContainer.Env = append(discoveryContainer.Env, apiv1.EnvVar{
+			Name:  "PILOT_ENABLE_PROTOCOL_SNIFFING_FOR_OUTBOUND",
+			Value: "true",
+		})
+	}
+
+	if util.PointerToBool(r.Config.Spec.Pilot.EnableProtocolSniffingInbound) {
+		discoveryContainer.Env = append(discoveryContainer.Env, apiv1.EnvVar{
+			Name:  "PILOT_ENABLE_PROTOCOL_SNIFFING_FOR_INBOUND",
+			Value: "true",
+		})
+	}
+
 	discoveryContainer.Env = append(discoveryContainer.Env, apiv1.EnvVar{
 		Name:  "SDS_ENABLED",
 		Value: strconv.FormatBool(util.PointerToBool(r.Config.Spec.SDS.Enabled)),

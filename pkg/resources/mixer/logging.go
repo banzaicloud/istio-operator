@@ -68,7 +68,7 @@ func (r *Reconciler) accessLogLogentry() *k8sutil.DynamicObject {
 					"sourceOwner":                `source.owner | ""`,
 					"destinationApp":             `destination.labels["app"] | ""`,
 					"destinationIp":              `destination.ip | ip("0.0.0.0")`,
-					"destinationServiceHost":     `destination.service.host | ""`,
+					"destinationServiceHost":     `destination.service.host | request.host | ""`,
 					"destinationWorkload":        `destination.workload.name | ""`,
 					"destinationName":            `destination.name | ""`,
 					"destinationNamespace":       `destination.namespace | ""`,

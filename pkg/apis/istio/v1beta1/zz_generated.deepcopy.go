@@ -1005,6 +1005,16 @@ func (in *PilotConfiguration) DeepCopyInto(out *PilotConfiguration) {
 		*out = new(bool)
 		**out = **in
 	}
+	if in.EnableProtocolSniffingOutbound != nil {
+		in, out := &in.EnableProtocolSniffingOutbound, &out.EnableProtocolSniffingOutbound
+		*out = new(bool)
+		**out = **in
+	}
+	if in.EnableProtocolSniffingInbound != nil {
+		in, out := &in.EnableProtocolSniffingInbound, &out.EnableProtocolSniffingInbound
+		*out = new(bool)
+		**out = **in
+	}
 	if in.Resources != nil {
 		in, out := &in.Resources, &out.Resources
 		*out = new(v1.ResourceRequirements)
