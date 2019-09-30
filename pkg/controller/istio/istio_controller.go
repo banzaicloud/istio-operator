@@ -236,14 +236,6 @@ func (r *ReconcileConfig) reconcile(logger logr.Logger, config *istiov1beta1.Ist
 		return reconcile.Result{}, nil
 	}
 
-	if config.Status.Status == istiov1beta1.Reconciling {
-		logger.Info("cannot trigger reconcile while already reconciling")
-		return reconcile.Result{
-			Requeue:      true,
-			RequeueAfter: time.Duration(30) * time.Second,
-		}, nil
-	}
-
 	err := updateStatus(r.Client, config, istiov1beta1.Reconciling, "", logger)
 	if err != nil {
 		return reconcile.Result{}, errors.WithStack(err)
