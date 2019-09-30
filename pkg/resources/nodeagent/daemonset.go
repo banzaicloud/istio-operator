@@ -76,6 +76,10 @@ func (r *Reconciler) daemonSet() runtime.Object {
 									Value: r.Config.Spec.TrustDomain,
 								},
 								{
+									Name:  "TRUST_DOMAIN",
+									Value: r.Config.Spec.TrustDomain,
+								},
+								{
 									Name: "NAMESPACE",
 									ValueFrom: &apiv1.EnvVarSource{
 										FieldRef: &apiv1.ObjectFieldSelector{

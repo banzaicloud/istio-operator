@@ -460,6 +460,10 @@ spec:
                   type: object
                 enableProtocolSniffing:
                   type: boolean
+                enableProtocolSniffingInbound:
+                  type: boolean
+                enableProtocolSniffingOutbound:
+                  type: boolean
                 enabled:
                   type: boolean
                 image:
