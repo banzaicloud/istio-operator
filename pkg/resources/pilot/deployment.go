@@ -150,26 +150,21 @@ func (r *Reconciler) containers() []apiv1.Container {
 		})
 	}
 
-	if util.PointerToBool(r.Config.Spec.Pilot.EnableProtocolSniffing) {
-		discoveryContainer.Env = append(discoveryContainer.Env, apiv1.EnvVar{
-			Name:  "PILOT_ENABLE_PROTOCOL_SNIFFING",
-			Value: "true",
-		})
-	}
+	// TODO - remove it in the next minor -- left it here for backward compatibility
+	discoveryContainer.Env = append(discoveryContainer.Env, apiv1.EnvVar{
+		Name:  "PILOT_ENABLE_PROTOCOL_SNIFFING",
+		Value: strconv.FormatBool(util.PointerToBool(r.Config.Spec.Pilot.EnableProtocolSniffing)),
+	})
 
-	if util.PointerToBool(r.Config.Spec.Pilot.EnableProtocolSniffingOutbound) {
-		discoveryContainer.Env = append(discoveryContainer.Env, apiv1.EnvVar{
-			Name:  "PILOT_ENABLE_PROTOCOL_SNIFFING_FOR_OUTBOUND",
-			Value: "true",
-		})
-	}
+	discoveryContainer.Env = append(discoveryContainer.Env, apiv1.EnvVar{
+		Name:  "PILOT_ENABLE_PROTOCOL_SNIFFING_FOR_OUTBOUND",
+		Value: strconv.FormatBool(util.PointerToBool(r.Config.Spec.Pilot.EnableProtocolSniffingOutbound)),
+	})
 
-	if util.PointerToBool(r.Config.Spec.Pilot.EnableProtocolSniffingInbound) {
-		discoveryContainer.Env = append(discoveryContainer.Env, apiv1.EnvVar{
-			Name:  "PILOT_ENABLE_PROTOCOL_SNIFFING_FOR_INBOUND",
-			Value: "true",
-		})
-	}
+	discoveryContainer.Env = append(discoveryContainer.Env, apiv1.EnvVar{
+		Name:  "PILOT_ENABLE_PROTOCOL_SNIFFING_FOR_INBOUND",
+		Value: strconv.FormatBool(util.PointerToBool(r.Config.Spec.Pilot.EnableProtocolSniffingInbound)),
+	})
 
 	discoveryContainer.Env = append(discoveryContainer.Env, apiv1.EnvVar{
 		Name:  "SDS_ENABLED",

@@ -461,8 +461,12 @@ spec:
                 enableProtocolSniffing:
                   type: boolean
                 enableProtocolSniffingInbound:
+                  description: If enabled, protocol sniffing will be used for inbound
+                    listeners whose port protocol is not specified or unsupported
                   type: boolean
                 enableProtocolSniffingOutbound:
+                  description: If enabled, protocol sniffing will be used for outbound
+                    listeners whose port protocol is not specified or unsupported
                   type: boolean
                 enabled:
                   type: boolean

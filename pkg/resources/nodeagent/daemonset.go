@@ -71,6 +71,7 @@ func (r *Reconciler) daemonSet() runtime.Object {
 									Name:  "VALID_TOKEN",
 									Value: "true",
 								},
+								// TODO - remove it in the next minor -- left it here for backward compatibility
 								{
 									Name:  "Trust_Domain",
 									Value: r.Config.Spec.TrustDomain,

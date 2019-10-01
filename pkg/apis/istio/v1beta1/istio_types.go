@@ -61,20 +61,22 @@ type SDSConfiguration struct {
 
 // PilotConfiguration defines config options for Pilot
 type PilotConfiguration struct {
-	Enabled                        *bool                        `json:"enabled,omitempty"`
-	Image                          string                       `json:"image,omitempty"`
-	Sidecar                        *bool                        `json:"sidecar,omitempty"`
-	ReplicaCount                   int32                        `json:"replicaCount,omitempty"`
-	MinReplicas                    int32                        `json:"minReplicas,omitempty"`
-	MaxReplicas                    int32                        `json:"maxReplicas,omitempty"`
-	TraceSampling                  float32                      `json:"traceSampling,omitempty"`
-	EnableProtocolSniffing         *bool                        `json:"enableProtocolSniffing,omitempty"`
-	EnableProtocolSniffingOutbound *bool                        `json:"enableProtocolSniffingOutbound,omitempty"`
-	EnableProtocolSniffingInbound  *bool                        `json:"enableProtocolSniffingInbound,omitempty"`
-	Resources                      *corev1.ResourceRequirements `json:"resources,omitempty"`
-	NodeSelector                   map[string]string            `json:"nodeSelector,omitempty"`
-	Affinity                       *corev1.Affinity             `json:"affinity,omitempty"`
-	Tolerations                    []corev1.Toleration          `json:"tolerations,omitempty"`
+	Enabled                *bool   `json:"enabled,omitempty"`
+	Image                  string  `json:"image,omitempty"`
+	Sidecar                *bool   `json:"sidecar,omitempty"`
+	ReplicaCount           int32   `json:"replicaCount,omitempty"`
+	MinReplicas            int32   `json:"minReplicas,omitempty"`
+	MaxReplicas            int32   `json:"maxReplicas,omitempty"`
+	TraceSampling          float32 `json:"traceSampling,omitempty"`
+	EnableProtocolSniffing *bool   `json:"enableProtocolSniffing,omitempty"`
+	// If enabled, protocol sniffing will be used for outbound listeners whose port protocol is not specified or unsupported
+	EnableProtocolSniffingOutbound *bool `json:"enableProtocolSniffingOutbound,omitempty"`
+	// If enabled, protocol sniffing will be used for inbound listeners whose port protocol is not specified or unsupported
+	EnableProtocolSniffingInbound *bool                        `json:"enableProtocolSniffingInbound,omitempty"`
+	Resources                     *corev1.ResourceRequirements `json:"resources,omitempty"`
+	NodeSelector                  map[string]string            `json:"nodeSelector,omitempty"`
+	Affinity                      *corev1.Affinity             `json:"affinity,omitempty"`
+	Tolerations                   []corev1.Toleration          `json:"tolerations,omitempty"`
 }
 
 // CitadelConfiguration defines config options for Citadel
