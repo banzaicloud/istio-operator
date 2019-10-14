@@ -71,6 +71,15 @@ func (r *Reconciler) daemonSet() runtime.Object {
 									Name:  "VALID_TOKEN",
 									Value: "true",
 								},
+								{
+									Name: "NAMESPACE",
+									ValueFrom: &apiv1.EnvVarSource{
+										FieldRef: &apiv1.ObjectFieldSelector{
+											FieldPath:  "metadata.namespace",
+											APIVersion: "v1",
+										},
+									},
+								},
 							},
 							Resources: templates.GetResourcesRequirementsOrDefault(
 								r.Config.Spec.NodeAgent.Resources,
