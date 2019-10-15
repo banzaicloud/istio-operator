@@ -4,10 +4,10 @@ The steps are listed in this doc to perform an Istio version upgrade with the op
 
 ## Istio Control Plane Upgrade
 
-Let us suppose that we have a [Kubernetes](https://kubernetes.io/) cluster with Istio 1.2.5, and we would like to upgrade our Istio components to Istio version 1.3.2. Here are the steps we need to perform to accomplish this with the operator:
+Let us suppose that we have a [Kubernetes](https://kubernetes.io/) cluster with Istio 1.2.5, and we would like to upgrade our Istio components to Istio version 1.3.3. Here are the steps we need to perform to accomplish this with the operator:
 
 1. Deploy a version of the operator which supports Istio 1.3.x
-2. Apply a [Custom Resource](https://kubernetes.io/docs/concepts/extend-kubernetes/api-extension/custom-resources/) using Istio 1.3.2 components
+2. Apply a [Custom Resource](https://kubernetes.io/docs/concepts/extend-kubernetes/api-extension/custom-resources/) using Istio 1.3.3 components
 
 What happens is that once the operator discerns that the Custom Resource it's watching has changed, it reconciles all Istio-related components in order to perform a control plane upgrade.
 
@@ -120,9 +120,9 @@ $ INGRESS_HOST=$(kubectl -n istio-system get service istio-ingressgateway -o jso
 $ open http://$INGRESS_HOST/productpage
 ```
 
-#### Install Istio 1.3.2
+#### Install Istio 1.3.3
 
-To install Istio 1.3.2, first we need to check out the `release-1.3` branch of our operator (this branch supports the Istio 1.3.x versions):
+To install Istio 1.3.3, first we need to check out the `release-1.3` branch of our operator (this branch supports the Istio 1.3.x versions):
 
 ```bash
 $ git clone git@github.com:banzaicloud/istio-operator.git
@@ -156,7 +156,7 @@ $ helm upgrade istio-operator --install --namespace=istio-system --set-string op
 
 > If you've installed Istio 1.1.11 or earlier with the Istio operator, and if you check the logs of the operator pod at this point, you will see the following error message: `intended Istio version is unsupported by this version of the operator`. We need to update the Istio Custom Resource with Istio 1.3's components for the operator to be reconciled with the Istio control plane.
 
-To deploy Istio 1.3.2 with its default configuration options, use the following command:
+To deploy Istio 1.3.3 with its default configuration options, use the following command:
 
 ```bash
 $ kubectl apply -n istio-system -f config/samples/istio_v1beta1_istio.yaml
@@ -178,27 +178,27 @@ istio-sidecar-injector-66cd99d8c8-bp4j7   1/1       Running   0          7m
 istio-telemetry-7b667c5fbb-2lfdc          2/2       Running   0          7m
 ```
 
-The `Istio` Custom Resource is showing `Available` in its status field, and the Istio components are now using `1.3.2` images:
+The `Istio` Custom Resource is showing `Available` in its status field, and the Istio components are now using `1.3.3` images:
 
 ```bash
 $ kubectl describe istio -n istio-system istio | grep Image:
-    Image:                         docker.io/istio/citadel:1.3.2
-    Image:          docker.io/istio/galley:1.3.2
-    Image:    docker.io/istio/node-agent-k8s:1.3.2
-        Image:    docker.io/istio/node-agent-k8s:1.3.2
+    Image:                         docker.io/istio/citadel:1.3.3
+    Image:          docker.io/istio/galley:1.3.3
+    Image:    docker.io/istio/node-agent-k8s:1.3.3
+        Image:    docker.io/istio/node-agent-k8s:1.3.3
     Image:          coredns/coredns:1.1.2
     Plugin Image:   docker.io/istio/coredns-plugin:0.2-istio-1.1
-    Image:          docker.io/istio/mixer:1.3.2
-    Image:    docker.io/istio/node-agent-k8s:1.3.2
-    Image:          docker.io/istio/pilot:1.3.2
-    Image:             docker.io/istio/proxyv2:1.3.2
-    Image:  docker.io/istio/proxy_init:1.3.2
-    Image:                          docker.io/istio/sidecar_injector:1.3.2
-      Image:                 docker.io/istio/install-cni:1.3.2
+    Image:          docker.io/istio/mixer:1.3.3
+    Image:    docker.io/istio/node-agent-k8s:1.3.3
+    Image:          docker.io/istio/pilot:1.3.3
+    Image:             docker.io/istio/proxyv2:1.3.3
+    Image:  docker.io/istio/proxy_init:1.3.3
+    Image:                          docker.io/istio/sidecar_injector:1.3.3
+      Image:                 docker.io/istio/install-cni:1.3.3
 
 ```
 
-At this point, your Istio control plane is upgraded to Istio 1.3.2 and your BookInfo application should still be available at:
+At this point, your Istio control plane is upgraded to Istio 1.3.3 and your BookInfo application should still be available at:
 ```bash
 $ open http://$INGRESS_HOST/productpage
 ```
