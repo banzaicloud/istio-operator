@@ -33,6 +33,7 @@ import (
 	rbacv1 "k8s.io/api/rbac/v1"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	k8serrors "k8s.io/apimachinery/pkg/api/errors"
+	"k8s.io/apimachinery/pkg/api/meta"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/types"
@@ -522,15 +523,32 @@ func initWatches(c controller.Controller, scheme *runtime.Scheme, watchCreatedRe
 		&appsv1.DaemonSet{TypeMeta: metav1.TypeMeta{Kind: "DaemonSet", APIVersion: "v1"}},
 		&autoscalingv2beta1.HorizontalPodAutoscaler{TypeMeta: metav1.TypeMeta{Kind: "HorizontalPodAutoscaler", APIVersion: "v2beta1"}},
 		&admissionregistrationv1beta1.MutatingWebhookConfiguration{TypeMeta: metav1.TypeMeta{Kind: "MutatingWebhookConfiguration", APIVersion: "v1beta1"}},
+		&corev1.Namespace{TypeMeta: metav1.TypeMeta{Kind: "Namespace", APIVersion: "v1"}},
 	} {
 		err = c.Watch(&source.Kind{Type: t}, &handler.EnqueueRequestForOwner{
 			IsController: true,
 			OwnerType:    &istiov1beta1.Istio{},
 		}, predicate.Funcs{
 			CreateFunc: func(e event.CreateEvent) bool {
+				object, err := meta.Accessor(e.Object)
+				if err != nil {
+					return false
+				}
+				//If a new namespace created we need to reconcile to mutate it with auto injection labels if required in the CR
+				if _, ok := object.(*corev1.Namespace); ok {
+					return true
+				}
 				return false
 			},
 			DeleteFunc: func(e event.DeleteEvent) bool {
+				object, err := meta.Accessor(e.Object)
+				if err != nil {
+					return false
+				}
+				//We don't want to run reconcile if a namespace is deleted
+				if _, ok := e.Object.(*corev1.Namespace); ok {
+					return false
+				}
 				related, object, err := ownerMatcher.Match(e.Object)
 				if err != nil {
 					logger.Error(err, "could not determine relation", "kind", e.Object.GetObjectKind())
