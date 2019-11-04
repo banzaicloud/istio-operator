@@ -98,21 +98,19 @@ func (r *Reconciler) Reconcile(log logr.Logger) error {
 	}
 
 	var meshExpansionDesiredState k8sutil.DesiredState
+	var meshExpansionDestinationRuleDesiredState k8sutil.DesiredState
 	if util.PointerToBool(r.Config.Spec.MeshExpansion) {
 		meshExpansionDesiredState = k8sutil.DesiredStatePresent
+		if r.Config.Spec.ControlPlaneSecurityEnabled {
+			meshExpansionDestinationRuleDesiredState = k8sutil.DesiredStatePresent
+		}
 	} else {
 		meshExpansionDesiredState = k8sutil.DesiredStateAbsent
-	}
-
-	var controlPlaneSecurityDesiredState k8sutil.DesiredState
-	if r.Config.Spec.ControlPlaneSecurityEnabled {
-		controlPlaneSecurityDesiredState = k8sutil.DesiredStatePresent
-	} else {
-		controlPlaneSecurityDesiredState = k8sutil.DesiredStateAbsent
+		meshExpansionDestinationRuleDesiredState = k8sutil.DesiredStateAbsent
 	}
 
 	for _, dr := range []resources.DynamicResourceWithDesiredState{
-		{DynamicResource: r.meshExpansionDestinationRule, DesiredState: controlPlaneSecurityDesiredState},
+		{DynamicResource: r.meshExpansionDestinationRule, DesiredState: meshExpansionDestinationRuleDesiredState},
 		{DynamicResource: r.meshExpansionVirtualService, DesiredState: meshExpansionDesiredState},
 	} {
 		o := dr.DynamicResource()
