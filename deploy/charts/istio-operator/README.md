@@ -35,7 +35,7 @@ Parameter | Description | Default
 `operator.image.tag` | Operator container image tag | `0.3.5`
 `operator.image.pullPolicy` | Operator container image pull policy | `IfNotPresent`
 `operator.resources` | CPU/Memory resource requests/limits (YAML) | Memory: `128Mi/256Mi`, CPU: `100m/200m`
-`istioVersion` | Supported Istio version | `1.3`
+`istioVersion` | Supported Istio version | `1.4`
 `prometheusMetrics.enabled` | If true, use direct access for Prometheus metrics | `false`
 `prometheusMetrics.authProxy.enabled` | If true, use auth proxy for Prometheus metrics | `true`
 `prometheusMetrics.authProxy.image.repository` | Auth proxy container image repository | `gcr.io/kubebuilder/kube-rbac-proxy`

@@ -26,7 +26,7 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
-const supportedIstioMinorVersionRegex = "^1.3"
+const supportedIstioMinorVersionRegex = "^1.4"
 
 // IstioVersion stores the intended Istio version
 type IstioVersion string
@@ -470,7 +470,7 @@ type LocalityLBConfiguration struct {
 // IstioSpec defines the desired state of Istio
 type IstioSpec struct {
 	// Contains the intended Istio version
-	// +kubebuilder:validation:Pattern=^1.3
+	// +kubebuilder:validation:Pattern=^1.4
 	Version IstioVersion `json:"version"`
 
 	// MTLS enables or disables global mTLS

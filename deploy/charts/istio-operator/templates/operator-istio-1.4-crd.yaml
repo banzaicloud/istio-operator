@@ -1,10 +1,16 @@
+{{ if eq .Values.istioVersion "1.4" }}
 apiVersion: apiextensions.k8s.io/v1beta1
 kind: CustomResourceDefinition
 metadata:
-  creationTimestamp: null
+  name: istios.istio.banzaicloud.io
   labels:
     controller-tools.k8s.io: "1.0"
-  name: istios.istio.banzaicloud.io
+    app.kubernetes.io/name: {{ include "istio-operator.name" . }}
+    helm.sh/chart: {{ include "istio-operator.chart" . }}
+    app.kubernetes.io/instance: {{ .Release.Name }}
+    app.kubernetes.io/managed-by: {{ .Release.Service }}
+    app.kubernetes.io/version: {{ .Chart.AppVersion }}
+    app.kubernetes.io/component: operator
 spec:
   additionalPrinterColumns:
   - JSONPath: .status.Status
@@ -354,6 +360,9 @@ spec:
                 the scope where meshes will interact with each other, but it is not
                 required to be globally/universally unique.
               type: string
+            trustDomain:
+              description: The domain serves to identify the system with SPIFFE. (default "cluster.local")
+              type: string
             mixer:
               description: Mixer configuration options
               properties:
@@ -460,14 +469,6 @@ spec:
                   type: object
                 enableProtocolSniffing:
                   type: boolean
-                enableProtocolSniffingInbound:
-                  description: If enabled, protocol sniffing will be used for inbound
-                    listeners whose port protocol is not specified or unsupported
-                  type: boolean
-                enableProtocolSniffingOutbound:
-                  description: If enabled, protocol sniffing will be used for outbound
-                    listeners whose port protocol is not specified or unsupported
-                  type: boolean
                 enabled:
                   type: boolean
                 image:
@@ -552,9 +553,6 @@ spec:
                     %PROTOCOL%\n" If AccessLogEncoding is JSON, value will be parsed
                     as map[string]string example: ''{"start_time": "%START_TIME%",
                     "req_method": "%REQ(:METHOD)%"}'''
-                  type: string
-                clusterDomain:
-                  description: cluster domain. Default value is "cluster.local"
                   type: string
                 componentLogLevel:
                   description: Per Component log level for proxy, applies to gateways
@@ -859,10 +857,6 @@ spec:
                       type: string
                   type: object
               type: object
-            trustDomain:
-              description: The domain serves to identify the system with SPIFFE. (default
-                "cluster.local")
-              type: string
             useMCP:
               description: Use the Mesh Control Protocol (MCP) for configuring Mixer
                 and Pilot. Requires galley.
@@ -892,3 +886,4 @@ status:
     plural: ""
   conditions: []
   storedVersions: []
+{{- end }}
