@@ -150,11 +150,11 @@ $ helm repo add banzaicloud-stable https://kubernetes-charts.banzaicloud.com
 $ helm upgrade istio-operator --install --namespace=istio-system --set-string operator.image.tag=0.3.5 banzaicloud-stable/istio-operator
 ```
 
-*Note: As of now, the `0.3.5` tag is the latest version of our operator to support Istio versions 1.3.x
+*Note: As of now, the `0.3.5` tag is the latest version of our operator to support Istio versions 1.3.x*
 
 **Apply the new Custom Resource**
 
-> If you've installed Istio 1.1.11 or earlier with the Istio operator, and if you check the logs of the operator pod at this point, you will see the following error message: `intended Istio version is unsupported by this version of the operator`. We need to update the Istio Custom Resource with Istio 1.3's components for the operator to be reconciled with the Istio control plane.
+> If you've installed Istio 1.2.5 or earlier with the Istio operator, and if you check the logs of the operator pod at this point, you will see the following error message: `intended Istio version is unsupported by this version of the operator`. We need to update the Istio Custom Resource with Istio 1.3's components for the operator to be reconciled with the Istio control plane.
 
 To deploy Istio 1.3.4 with its default configuration options, use the following command:
 
