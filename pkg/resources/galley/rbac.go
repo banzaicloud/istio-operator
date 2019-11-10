@@ -60,6 +60,11 @@ func (r *Reconciler) clusterRole() runtime.Object {
 				Verbs:     []string{"get", "list", "watch"},
 			},
 			{
+				APIGroups: []string{"security.istio.io"},
+				Resources: []string{"*"},
+				Verbs:     []string{"get", "list", "watch"},
+			},
+			{
 				APIGroups:     []string{"extensions", "apps"},
 				Resources:     []string{"deployments"},
 				ResourceNames: []string{"istio-galley"},
