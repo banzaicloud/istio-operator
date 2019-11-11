@@ -106,7 +106,7 @@ spec:
     image: "docker.io/istio/proxyv2:1.4.0-beta.4"
     enableCoreDump: false
   proxyInit:
-    image: "docker.io/istio/proxy_init:1.4.0-beta.4"
+    image: "docker.io/istio/proxyv2:1.4.0-beta.4"
   defaultPodDisruptionBudget:
     enabled: true
   outboundTrafficPolicy:

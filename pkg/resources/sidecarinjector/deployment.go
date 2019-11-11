@@ -31,17 +31,17 @@ import (
 
 func (r *Reconciler) deployment() runtime.Object {
 	return &appsv1.Deployment{
-		ObjectMeta: templates.ObjectMeta(deploymentName, util.MergeLabels(sidecarInjectorLabels, labelSelector), r.Config),
+		ObjectMeta: templates.ObjectMeta(deploymentName, util.MergeStringMaps(sidecarInjectorLabels, labelSelector), r.Config),
 		Spec: appsv1.DeploymentSpec{
-			Replicas: &r.Config.Spec.SidecarInjector.ReplicaCount,
+			Replicas: r.Config.Spec.SidecarInjector.ReplicaCount,
 			Strategy: templates.DefaultRollingUpdateStrategy(),
 			Selector: &metav1.LabelSelector{
-				MatchLabels: util.MergeLabels(sidecarInjectorLabels, labelSelector),
+				MatchLabels: util.MergeStringMaps(sidecarInjectorLabels, labelSelector),
 			},
 			Template: apiv1.PodTemplateSpec{
 				ObjectMeta: metav1.ObjectMeta{
-					Labels:      util.MergeLabels(sidecarInjectorLabels, labelSelector),
-					Annotations: templates.DefaultDeployAnnotations(),
+					Labels:      util.MergeStringMaps(sidecarInjectorLabels, labelSelector),
+					Annotations: util.MergeStringMaps(templates.DefaultDeployAnnotations(), r.Config.Spec.SidecarInjector.PodAnnotations),
 				},
 				Spec: apiv1.PodSpec{
 					ServiceAccountName: serviceAccountName,
@@ -49,7 +49,7 @@ func (r *Reconciler) deployment() runtime.Object {
 					Containers: []apiv1.Container{
 						{
 							Name:            "sidecar-injector-webhook",
-							Image:           r.Config.Spec.SidecarInjector.Image,
+							Image:           util.PointerToString(r.Config.Spec.SidecarInjector.Image),
 							ImagePullPolicy: r.Config.Spec.ImagePullPolicy,
 							Args: []string{
 								"--caCertFile=/etc/istio/certs/root-cert.pem",
@@ -59,6 +59,7 @@ func (r *Reconciler) deployment() runtime.Object {
 								"--meshConfig=/etc/istio/config/mesh",
 								"--healthCheckInterval=2s",
 								"--healthCheckFile=/health",
+								"--reconcileWebhookConfig=true",
 							},
 							VolumeMounts: []apiv1.VolumeMount{
 								{
@@ -87,49 +88,7 @@ func (r *Reconciler) deployment() runtime.Object {
 							TerminationMessagePolicy: apiv1.TerminationMessageReadFile,
 						},
 					},
-					Volumes: []apiv1.Volume{
-						{
-							Name: "certs",
-							VolumeSource: apiv1.VolumeSource{
-								Secret: &apiv1.SecretVolumeSource{
-									SecretName:  fmt.Sprintf("istio.%s", serviceAccountName),
-									DefaultMode: util.IntPointer(420),
-								},
-							},
-						},
-						{
-							Name: "config-volume",
-							VolumeSource: apiv1.VolumeSource{
-								ConfigMap: &apiv1.ConfigMapVolumeSource{
-									LocalObjectReference: apiv1.LocalObjectReference{
-										Name: common.IstioConfigMapName,
-									},
-									DefaultMode: util.IntPointer(420),
-								},
-							},
-						},
-						{
-							Name: "inject-config",
-							VolumeSource: apiv1.VolumeSource{
-								ConfigMap: &apiv1.ConfigMapVolumeSource{
-									LocalObjectReference: apiv1.LocalObjectReference{
-										Name: configMapName,
-									},
-									Items: []apiv1.KeyToPath{
-										{
-											Key:  "config",
-											Path: "config",
-										},
-										{
-											Key:  "values",
-											Path: "values",
-										},
-									},
-									DefaultMode: util.IntPointer(420),
-								},
-							},
-						},
-					},
+					Volumes:      r.volumes(),
 					Affinity:     r.Config.Spec.SidecarInjector.Affinity,
 					NodeSelector: r.Config.Spec.SidecarInjector.NodeSelector,
 					Tolerations:  r.Config.Spec.SidecarInjector.Tolerations,
@@ -156,5 +115,59 @@ func siProbe() *apiv1.Probe {
 		FailureThreshold:    3,
 		TimeoutSeconds:      1,
 		SuccessThreshold:    1,
+	}
+}
+
+func (r *Reconciler) volumes() []apiv1.Volume {
+	var secretPrefix string
+	if len(r.Config.Spec.Certificates) != 0 {
+		secretPrefix = "dns"
+	} else {
+		secretPrefix = "istio"
+	}
+	secretName := fmt.Sprintf("%s.%s", secretPrefix, serviceAccountName)
+
+	return []apiv1.Volume{
+		{
+			Name: "certs",
+			VolumeSource: apiv1.VolumeSource{
+				Secret: &apiv1.SecretVolumeSource{
+					SecretName:  secretName,
+					DefaultMode: util.IntPointer(420),
+				},
+			},
+		},
+		{
+			Name: "config-volume",
+			VolumeSource: apiv1.VolumeSource{
+				ConfigMap: &apiv1.ConfigMapVolumeSource{
+					LocalObjectReference: apiv1.LocalObjectReference{
+						Name: common.IstioConfigMapName,
+					},
+					DefaultMode: util.IntPointer(420),
+				},
+			},
+		},
+		{
+			Name: "inject-config",
+			VolumeSource: apiv1.VolumeSource{
+				ConfigMap: &apiv1.ConfigMapVolumeSource{
+					LocalObjectReference: apiv1.LocalObjectReference{
+						Name: configMapName,
+					},
+					Items: []apiv1.KeyToPath{
+						{
+							Key:  "config",
+							Path: "config",
+						},
+						{
+							Key:  "values",
+							Path: "values",
+						},
+					},
+					DefaultMode: util.IntPointer(420),
+				},
+			},
+		},
 	}
 }

@@ -35,34 +35,21 @@ func (r *Reconciler) clusterRole() runtime.Object {
 		ObjectMeta: templates.ObjectMetaClusterScope(clusterRoleName, galleyLabels, r.Config),
 		Rules: []rbacv1.PolicyRule{
 			{
+				// For reading Istio resources
+				APIGroups: []string{"authentication.istio.io", "config.istio.io", "networking.istio.io", "rbac.istio.io", "security.istio.io"},
+				Resources: []string{"*"},
+				Verbs:     []string{"get", "list", "watch"},
+			},
+			{
+				// For updating Istio resource statuses
+				APIGroups: []string{"authentication.istio.io", "config.istio.io", "networking.istio.io", "rbac.istio.io", "security.istio.io"},
+				Resources: []string{"*/status"},
+				Verbs:     []string{"update"},
+			},
+			{
 				APIGroups: []string{"admissionregistration.k8s.io"},
 				Resources: []string{"validatingwebhookconfigurations"},
 				Verbs:     []string{"*"},
-			},
-			{
-				APIGroups: []string{"config.istio.io"},
-				Resources: []string{"*"},
-				Verbs:     []string{"get", "list", "watch"},
-			},
-			{
-				APIGroups: []string{"networking.istio.io"},
-				Resources: []string{"*"},
-				Verbs:     []string{"get", "list", "watch"},
-			},
-			{
-				APIGroups: []string{"authentication.istio.io"},
-				Resources: []string{"*"},
-				Verbs:     []string{"get", "list", "watch"},
-			},
-			{
-				APIGroups: []string{"rbac.istio.io"},
-				Resources: []string{"*"},
-				Verbs:     []string{"get", "list", "watch"},
-			},
-			{
-				APIGroups: []string{"security.istio.io"},
-				Resources: []string{"*"},
-				Verbs:     []string{"get", "list", "watch"},
 			},
 			{
 				APIGroups:     []string{"extensions", "apps"},

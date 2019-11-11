@@ -31,7 +31,7 @@ import (
 
 func (r *Reconciler) configMap() runtime.Object {
 	return &apiv1.ConfigMap{
-		ObjectMeta: templates.ObjectMeta(configMapName, util.MergeLabels(sidecarInjectorLabels, labelSelector), r.Config),
+		ObjectMeta: templates.ObjectMeta(configMapName, util.MergeStringMaps(sidecarInjectorLabels, labelSelector), r.Config),
 		Data: map[string]string{
 			"config": r.siConfig(),
 			"values": r.getValues(),
@@ -193,12 +193,12 @@ containers:
   - "{{ .ProxyConfig.StatsdUdpAddress }}"
 {{- end }}
 {{- if .Values.global.proxy.envoyMetricsService.enabled }}
-  - --envoyMetricsServiceAddress
-  - "{{ .ProxyConfig.GetEnvoyMetricsService.GetAddress }}"
+  - --envoyMetricsService
+  - '{{ protoToJSON .ProxyConfig.EnvoyMetricsService }}'
 {{- end }}
 {{- if .Values.global.proxy.envoyAccessLogService.enabled }}
   - --envoyAccessLogService
-  - '{{ structToJSON .ProxyConfig.EnvoyAccessLogService }}'
+  - '{{ protoToJSON .ProxyConfig.EnvoyAccessLogService }}'
 {{- end }}
   - --proxyAdminPort
   - "{{ .ProxyConfig.ProxyAdminPort }}"
@@ -208,7 +208,7 @@ containers:
   {{ end -}}
   - --controlPlaneAuthPolicy
   - "{{ annotation .ObjectMeta ` + "`" + `sidecar.istio.io/controlPlaneAuthPolicy` + "`" + ` .ProxyConfig.ControlPlaneAuthPolicy }}"
-{{- if (ne (annotation .ObjectMeta "status.sidecar.istio.io/port" .Values.global.proxy.statusPort) "0") }}
+{{- if (ne (annotation .ObjectMeta "status.sidecar.istio.io/port" (valueOrDefault .Values.global.proxy.statusPort 0 )) ` + "`" + `0` + "`" + `) }}
   - --statusPort
   - "{{ annotation .ObjectMeta ` + "`" + `status.sidecar.istio.io/port` + "`" + ` .Values.global.proxy.statusPort }}"
   - --applicationPorts
@@ -234,6 +234,10 @@ containers:
     valueFrom:
       fieldRef:
         fieldPath: spec.serviceAccountName
+  {{- if .Values.global.mtls.auto }}
+  - name: ISTIO_AUTO_MTLS_ENABLED
+    value: "true"
+  {{- end }}
 {{- if eq .Values.global.proxy.tracer "datadog" }}
   - name: HOST_IP
     valueFrom:
@@ -291,7 +295,7 @@ containers:
   {{ end }}
   {{- if and .TypeMeta.APIVersion .DeploymentMeta.Name }}
   - name: ISTIO_META_OWNER
-    value: kubernetes://api/{{ .TypeMeta.APIVersion }}/namespaces/{{ valueOrDefault .DeploymentMeta.Namespace ` + "`" + `default` + "`" + ` }}/{{ toLower .TypeMeta.Kind}}s/{{ .DeploymentMeta.Name }}
+    value: kubernetes://apis/{{ .TypeMeta.APIVersion }}/namespaces/{{ valueOrDefault .DeploymentMeta.Namespace ` + "`" + `default` + "`" + ` }}/{{ toLower .TypeMeta.Kind}}s/{{ .DeploymentMeta.Name }}
    {{- end}}
   {{- if (isset .ObjectMeta.Annotations ` + "`" + `sidecar.istio.io/bootstrapOverride` + "`" + `) }}
   - name: ISTIO_BOOTSTRAP_OVERRIDE
@@ -308,8 +312,26 @@ containers:
   - name: ISTIO_META_MESH_ID
     value: "{{ .Values.global.trustDomain }}"
   {{- end }}
+  {{- if eq .Values.global.proxy.tracer "stackdriver" }}
+  - name: STACKDRIVER_TRACING_ENABLED
+    value: "true"
+  - name: STACKDRIVER_TRACING_DEBUG
+    value: "{{ .ProxyConfig.GetTracing.GetStackdriver.GetDebug }}"
+  {{- if .ProxyConfig.GetTracing.GetStackdriver.GetMaxNumberOfAnnotations }}
+  - name: STACKDRIVER_TRACING_MAX_NUMBER_OF_ANNOTATIONS
+    value: "{{ .ProxyConfig.GetTracing.GetStackdriver.GetMaxNumberOfAnnotations }}"
+  {{- end }}
+  {{- if .ProxyConfig.GetTracing.GetStackdriver.GetMaxNumberOfAttributes }}
+  - name: STACKDRIVER_TRACING_MAX_NUMBER_OF_ATTRIBUTES
+    value: "{{ .ProxyConfig.GetTracing.GetStackdriver.GetMaxNumberOfAttributes }}"
+  {{- end }}
+  {{- if .ProxyConfig.GetTracing.GetStackdriver.GetMaxNumberOfMessageEvents }}
+  - name: STACKDRIVER_TRACING_MAX_NUMBER_OF_MESSAGE_EVENTS
+    value: "{{ .ProxyConfig.GetTracing.GetStackdriver.GetMaxNumberOfMessageEvents }}"
+  {{- end }}
+  {{- end }}
   imagePullPolicy: {{ .Values.global.imagePullPolicy }}
-  {{ if ne (annotation .ObjectMeta ` + "`" + `status.sidecar.istio.io/port` + "`" + ` .Values.global.proxy.statusPort) ` + "`" + `0` + "`" + ` }}
+  {{ if ne (annotation .ObjectMeta ` + "`" + `status.sidecar.istio.io/port` + "`" + ` (valueOrDefault .Values.global.proxy.statusPort 0 )) ` + "`" + `0` + "`" + ` }}
   readinessProbe:
     httpGet:
       path: /healthz/ready
@@ -489,7 +511,8 @@ func (r *Reconciler) proxyInitContainer() string {
 
 	return `- name: istio-init
   image: "{{ .Values.global.proxy_init.image }}"
-  args:
+  command:
+  - istio-iptables
   - "-p"
   - "15001"
   - "-z"

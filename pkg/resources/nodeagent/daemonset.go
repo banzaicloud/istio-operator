@@ -29,7 +29,7 @@ import (
 )
 
 func (r *Reconciler) daemonSet() runtime.Object {
-	labels := util.MergeLabels(nodeAgentLabels, labelSelector)
+	labels := util.MergeStringMaps(nodeAgentLabels, labelSelector)
 	hostPathType := apiv1.HostPathUnset
 	return &appsv1.DaemonSet{
 		ObjectMeta: templates.ObjectMetaWithAnnotations(daemonSetName, labels, map[string]string{
@@ -50,7 +50,7 @@ func (r *Reconciler) daemonSet() runtime.Object {
 					Containers: []apiv1.Container{
 						{
 							Name:            "nodeagent",
-							Image:           r.Config.Spec.NodeAgent.Image,
+							Image:           util.PointerToString(r.Config.Spec.NodeAgent.Image),
 							ImagePullPolicy: r.Config.Spec.ImagePullPolicy,
 							VolumeMounts: []apiv1.VolumeMount{
 								{
@@ -70,11 +70,6 @@ func (r *Reconciler) daemonSet() runtime.Object {
 								{
 									Name:  "VALID_TOKEN",
 									Value: "true",
-								},
-								// TODO - remove it in the next minor -- left it here for backward compatibility
-								{
-									Name:  "Trust_Domain",
-									Value: r.Config.Spec.TrustDomain,
 								},
 								{
 									Name:  "TRUST_DOMAIN",

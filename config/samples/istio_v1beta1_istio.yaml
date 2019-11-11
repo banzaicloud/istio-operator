@@ -7,6 +7,7 @@ metadata:
 spec:
   version: "1.4.0-beta.4"
   mtls: false
+  autoMtls: false
   includeIPRanges: "*"
   excludeIPRanges: ""
   autoInjectionNamespaces:
@@ -35,6 +36,8 @@ spec:
     enabled: true
     image: "docker.io/istio/galley:1.4.0-beta.4"
     replicaCount: 1
+    enableServiceDiscovery: false
+    enableAnalysis: false
   gateways:
     enabled: true
     ingress:
@@ -131,7 +134,7 @@ spec:
         cpu: 2000m
         memory: 1024Mi
   proxyInit:
-    image: "docker.io/istio/proxy_init:1.4.0-beta.4"
+    image: "docker.io/istio/proxyv2:1.4.0-beta.4"
   defaultPodDisruptionBudget:
     enabled: true
   outboundTrafficPolicy:
@@ -152,7 +155,7 @@ spec:
       enabled: false
       # distribute:
       # - from: "us-central1/*"
-      # to:
+      #   to:
       #     "us-central1/*": 80
       #     "us-central2/*": 20
       # failover:

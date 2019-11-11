@@ -34,6 +34,14 @@
   revision = "3a771d992973f24aa725d07868b467d1ddfceafb"
 
 [[projects]]
+  digest = "1:484f9c39ef481b516dd78918feb90525ce55c03932878c090461b3cbccb631e9"
+  name = "github.com/coreos/go-semver"
+  packages = ["semver"]
+  pruneopts = "T"
+  revision = "e214231b295a8ea9479f11b70b35d5acf3556d9b"
+  version = "v0.3.0"
+
+[[projects]]
   digest = "1:9f42202ac457c462ad8bb9642806d275af9ab4850cf0b1960b9c6f083d4a309a"
   name = "github.com/davecgh/go-spew"
   packages = ["spew"]
@@ -982,6 +990,7 @@
   input-imports = [
     "github.com/MakeNowJust/heredoc",
     "github.com/banzaicloud/k8s-objectmatcher/patch",
+    "github.com/coreos/go-semver/semver",
     "github.com/emicklei/go-restful",
     "github.com/ghodss/yaml",
     "github.com/go-logr/logr",

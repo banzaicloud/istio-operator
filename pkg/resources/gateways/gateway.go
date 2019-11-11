@@ -28,6 +28,36 @@ var gatewaySelector = map[string]interface{}{
 }
 
 func (r *Reconciler) gateway() *k8sutil.DynamicObject {
+	spec := map[string]interface{}{
+		"servers": []map[string]interface{}{
+			{
+				"port": map[string]interface{}{
+					"name":     "http",
+					"protocol": "HTTP2",
+					"number":   80,
+				},
+				"hosts": util.EmptyTypedStrSlice("*"),
+			},
+		},
+		"selector": gatewaySelector,
+	}
+
+	if util.PointerToBool(r.Config.Spec.Gateways.K8sIngress.EnableHttps) {
+		spec["servers"] = append([]interface{}{spec["servers"]}, map[string]interface{}{
+			"port": map[string]interface{}{
+				"name":     "https-default",
+				"protocol": "HTTPS",
+				"number":   443,
+			},
+			"hosts": util.EmptyTypedStrSlice("*"),
+			"tls": map[string]interface{}{
+				"mode":              "SIMPLE",
+				"serverCertificate": "/etc/istio/ingressgateway-certs/tls.crt",
+				"privateKey":        "/etc/istio/ingressgateway-certs/tls.key",
+			},
+		})
+	}
+
 	return &k8sutil.DynamicObject{
 		Gvr: schema.GroupVersionResource{
 			Group:    "networking.istio.io",
@@ -37,20 +67,8 @@ func (r *Reconciler) gateway() *k8sutil.DynamicObject {
 		Kind:      "Gateway",
 		Name:      defaultGatewayName,
 		Namespace: r.Config.Namespace,
-		Spec: map[string]interface{}{
-			"servers": []map[string]interface{}{
-				{
-					"port": map[string]interface{}{
-						"name":     "http",
-						"protocol": "HTTP2",
-						"number":   80,
-					},
-					"hosts": util.EmptyTypedStrSlice("*"),
-				},
-			},
-			"selector": gatewaySelector,
-		},
-		Owner: r.Config,
+		Spec:      spec,
+		Owner:     r.Config,
 	}
 }
 

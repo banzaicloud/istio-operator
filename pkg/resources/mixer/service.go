@@ -30,7 +30,7 @@ func (r *Reconciler) service(t string) runtime.Object {
 		ObjectMeta: templates.ObjectMeta(serviceName(t), labelSelector, r.Config),
 		Spec: apiv1.ServiceSpec{
 			Ports:    r.servicePorts(t),
-			Selector: util.MergeLabels(labelSelector, mixerTypeLabel(t)),
+			Selector: util.MergeStringMaps(labelSelector, mixerTypeLabel(t)),
 		},
 	}
 	return svc

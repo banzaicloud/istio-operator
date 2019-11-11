@@ -37,9 +37,9 @@ const (
 	defaultNodeAgentImage            = defaultImageHub + "/" + "node-agent-k8s" + ":" + defaultImageVersion
 	defaultSDSImage                  = defaultImageHub + "/" + "node-agent-k8s" + ":" + defaultImageVersion
 	defaultProxyImage                = defaultImageHub + "/" + "proxyv2" + ":" + defaultImageVersion
-	defaultProxyInitImage            = defaultImageHub + "/" + "proxy_init" + ":" + defaultImageVersion
+	defaultProxyInitImage            = defaultImageHub + "/" + "proxyv2" + ":" + defaultImageVersion
 	defaultInitCNIImage              = defaultImageHub + "/" + "install-cni:" + defaultImageVersion
-	defaultCoreDNSImage              = "coredns/coredns:1.1.2"
+	defaultCoreDNSImage              = "coredns/coredns:1.6.2"
 	defaultCoreDNSPluginImage        = defaultImageHub + "/coredns-plugin:0.2-istio-1.1"
 	defaultIncludeIPRanges           = "*"
 	defaultReplicaCount              = 1
@@ -54,7 +54,6 @@ const (
 	defaultInitCNIConfDir            = "/etc/cni/net.d"
 	defaultInitCNILogLevel           = "info"
 	defaultImagePullPolicy           = "IfNotPresent"
-	defaultMeshExpansion             = false
 	defaultEnvoyAccessLogFile        = "/dev/stdout"
 	defaultEnvoyAccessLogFormat      = ""
 	defaultEnvoyAccessLogEncoding    = "TEXT"
@@ -119,29 +118,26 @@ func SetDefaults(config *Istio) {
 	if config.Spec.Pilot.Enabled == nil {
 		config.Spec.Pilot.Enabled = util.BoolPointer(true)
 	}
-	if config.Spec.Pilot.Image == "" {
-		config.Spec.Pilot.Image = defaultPilotImage
+	if config.Spec.Pilot.Image == nil {
+		config.Spec.Pilot.Image = util.StrPointer(defaultPilotImage)
 	}
 	if config.Spec.Pilot.Sidecar == nil {
 		config.Spec.Pilot.Sidecar = util.BoolPointer(true)
 	}
-	if config.Spec.Pilot.ReplicaCount == 0 {
-		config.Spec.Pilot.ReplicaCount = defaultReplicaCount
+	if config.Spec.Pilot.ReplicaCount == nil {
+		config.Spec.Pilot.ReplicaCount = util.IntPointer(defaultReplicaCount)
 	}
-	if config.Spec.Pilot.MinReplicas == 0 {
-		config.Spec.Pilot.MinReplicas = defaultMinReplicas
+	if config.Spec.Pilot.MinReplicas == nil {
+		config.Spec.Pilot.MinReplicas = util.IntPointer(defaultMinReplicas)
 	}
-	if config.Spec.Pilot.MaxReplicas == 0 {
-		config.Spec.Pilot.MaxReplicas = defaultMaxReplicas
+	if config.Spec.Pilot.MaxReplicas == nil {
+		config.Spec.Pilot.MaxReplicas = util.IntPointer(defaultMaxReplicas)
 	}
 	if config.Spec.Pilot.TraceSampling == 0 {
 		config.Spec.Pilot.TraceSampling = defaultTraceSampling
 	}
-	if config.Spec.Pilot.EnableProtocolSniffing == nil {
-		config.Spec.Pilot.EnableProtocolSniffing = util.BoolPointer(true)
-	}
 	if config.Spec.Pilot.EnableProtocolSniffingOutbound == nil {
-		config.Spec.Pilot.EnableProtocolSniffingOutbound = config.Spec.Pilot.EnableProtocolSniffing
+		config.Spec.Pilot.EnableProtocolSniffingOutbound = util.BoolPointer(true)
 	}
 	if config.Spec.Pilot.EnableProtocolSniffingInbound == nil {
 		config.Spec.Pilot.EnableProtocolSniffingInbound = util.BoolPointer(false)
@@ -150,8 +146,8 @@ func SetDefaults(config *Istio) {
 	if config.Spec.Citadel.Enabled == nil {
 		config.Spec.Citadel.Enabled = util.BoolPointer(true)
 	}
-	if config.Spec.Citadel.Image == "" {
-		config.Spec.Citadel.Image = defaultCitadelImage
+	if config.Spec.Citadel.Image == nil {
+		config.Spec.Citadel.Image = util.StrPointer(defaultCitadelImage)
 	}
 	if config.Spec.Citadel.EnableNamespacesByDefault == nil {
 		config.Spec.Citadel.EnableNamespacesByDefault = util.BoolPointer(true)
@@ -160,14 +156,20 @@ func SetDefaults(config *Istio) {
 	if config.Spec.Galley.Enabled == nil {
 		config.Spec.Galley.Enabled = util.BoolPointer(true)
 	}
-	if config.Spec.Galley.Image == "" {
-		config.Spec.Galley.Image = defaultGalleyImage
+	if config.Spec.Galley.Image == nil {
+		config.Spec.Galley.Image = util.StrPointer(defaultGalleyImage)
 	}
-	if config.Spec.Galley.ReplicaCount == 0 {
-		config.Spec.Galley.ReplicaCount = defaultReplicaCount
+	if config.Spec.Galley.ReplicaCount == nil {
+		config.Spec.Galley.ReplicaCount = util.IntPointer(defaultReplicaCount)
 	}
 	if config.Spec.Galley.ConfigValidation == nil {
 		config.Spec.Galley.ConfigValidation = util.BoolPointer(true)
+	}
+	if config.Spec.Galley.EnableServiceDiscovery == nil {
+		config.Spec.Galley.EnableServiceDiscovery = util.BoolPointer(false)
+	}
+	if config.Spec.Galley.EnableAnalysis == nil {
+		config.Spec.Galley.EnableAnalysis = util.BoolPointer(false)
 	}
 	// Gateways config
 	if config.Spec.Gateways.Enabled == nil {
@@ -176,14 +178,14 @@ func SetDefaults(config *Istio) {
 	if config.Spec.Gateways.IngressConfig.Enabled == nil {
 		config.Spec.Gateways.IngressConfig.Enabled = util.BoolPointer(true)
 	}
-	if config.Spec.Gateways.IngressConfig.ReplicaCount == 0 {
-		config.Spec.Gateways.IngressConfig.ReplicaCount = defaultReplicaCount
+	if config.Spec.Gateways.IngressConfig.ReplicaCount == nil {
+		config.Spec.Gateways.IngressConfig.ReplicaCount = util.IntPointer(defaultReplicaCount)
 	}
-	if config.Spec.Gateways.IngressConfig.MinReplicas == 0 {
-		config.Spec.Gateways.IngressConfig.MinReplicas = defaultMinReplicas
+	if config.Spec.Gateways.IngressConfig.MinReplicas == nil {
+		config.Spec.Gateways.IngressConfig.MinReplicas = util.IntPointer(defaultMinReplicas)
 	}
-	if config.Spec.Gateways.IngressConfig.MaxReplicas == 0 {
-		config.Spec.Gateways.IngressConfig.MaxReplicas = defaultMaxReplicas
+	if config.Spec.Gateways.IngressConfig.MaxReplicas == nil {
+		config.Spec.Gateways.IngressConfig.MaxReplicas = util.IntPointer(defaultMaxReplicas)
 	}
 	if config.Spec.Gateways.IngressConfig.SDS.Enabled == nil {
 		config.Spec.Gateways.IngressConfig.SDS.Enabled = util.BoolPointer(false)
@@ -194,14 +196,14 @@ func SetDefaults(config *Istio) {
 	if config.Spec.Gateways.EgressConfig.Enabled == nil {
 		config.Spec.Gateways.EgressConfig.Enabled = util.BoolPointer(true)
 	}
-	if config.Spec.Gateways.EgressConfig.ReplicaCount == 0 {
-		config.Spec.Gateways.EgressConfig.ReplicaCount = defaultReplicaCount
+	if config.Spec.Gateways.EgressConfig.ReplicaCount == nil {
+		config.Spec.Gateways.EgressConfig.ReplicaCount = util.IntPointer(defaultReplicaCount)
 	}
-	if config.Spec.Gateways.EgressConfig.MinReplicas == 0 {
-		config.Spec.Gateways.EgressConfig.MinReplicas = defaultMinReplicas
+	if config.Spec.Gateways.EgressConfig.MinReplicas == nil {
+		config.Spec.Gateways.EgressConfig.MinReplicas = util.IntPointer(defaultMinReplicas)
 	}
-	if config.Spec.Gateways.EgressConfig.MaxReplicas == 0 {
-		config.Spec.Gateways.EgressConfig.MaxReplicas = defaultMaxReplicas
+	if config.Spec.Gateways.EgressConfig.MaxReplicas == nil {
+		config.Spec.Gateways.EgressConfig.MaxReplicas = util.IntPointer(defaultMaxReplicas)
 	}
 	if config.Spec.Gateways.IngressConfig.ServiceType == "" {
 		config.Spec.Gateways.IngressConfig.ServiceType = defaultIngressGatewayServiceType
@@ -217,6 +219,9 @@ func SetDefaults(config *Istio) {
 	}
 	if config.Spec.Gateways.K8sIngress.Enabled == nil {
 		config.Spec.Gateways.K8sIngress.Enabled = util.BoolPointer(false)
+	}
+	if config.Spec.Gateways.K8sIngress.EnableHttps == nil {
+		config.Spec.Gateways.K8sIngress.EnableHttps = util.BoolPointer(false)
 	}
 	// Mixer config
 	if config.Spec.Mixer.Enabled == nil {
@@ -253,11 +258,11 @@ func SetDefaults(config *Istio) {
 	if config.Spec.SidecarInjector.AutoInjectionPolicyEnabled == nil {
 		config.Spec.SidecarInjector.AutoInjectionPolicyEnabled = util.BoolPointer(true)
 	}
-	if config.Spec.SidecarInjector.Image == "" {
-		config.Spec.SidecarInjector.Image = defaultSidecarInjectorImage
+	if config.Spec.SidecarInjector.Image == nil {
+		config.Spec.SidecarInjector.Image = util.StrPointer(defaultSidecarInjectorImage)
 	}
-	if config.Spec.SidecarInjector.ReplicaCount == 0 {
-		config.Spec.SidecarInjector.ReplicaCount = defaultReplicaCount
+	if config.Spec.SidecarInjector.ReplicaCount == nil {
+		config.Spec.SidecarInjector.ReplicaCount = util.IntPointer(defaultReplicaCount)
 	}
 	if config.Spec.SidecarInjector.InitCNIConfiguration.Enabled == nil {
 		config.Spec.SidecarInjector.InitCNIConfiguration.Enabled = util.BoolPointer(false)
@@ -291,8 +296,8 @@ func SetDefaults(config *Istio) {
 	if config.Spec.NodeAgent.Enabled == nil {
 		config.Spec.NodeAgent.Enabled = util.BoolPointer(false)
 	}
-	if config.Spec.NodeAgent.Image == "" {
-		config.Spec.NodeAgent.Image = defaultNodeAgentImage
+	if config.Spec.NodeAgent.Image == nil {
+		config.Spec.NodeAgent.Image = util.StrPointer(defaultNodeAgentImage)
 	}
 	if config.Spec.Gateways.IngressConfig.SDS.Image == "" {
 		config.Spec.Gateways.IngressConfig.SDS.Image = defaultSDSImage
@@ -332,8 +337,32 @@ func SetDefaults(config *Istio) {
 	if config.Spec.Proxy.EnvoyMetricsService.Enabled == nil {
 		config.Spec.Proxy.EnvoyMetricsService.Enabled = util.BoolPointer(false)
 	}
+	if config.Spec.Proxy.EnvoyMetricsService.TLSSettings == nil {
+		config.Spec.Proxy.EnvoyMetricsService.TLSSettings = &TLSSettings{
+			Mode: "DISABLE",
+		}
+	}
+	if config.Spec.Proxy.EnvoyMetricsService.TCPKeepalive == nil {
+		config.Spec.Proxy.EnvoyMetricsService.TCPKeepalive = &TCPKeepalive{
+			Probes:   3,
+			Time:     "10s",
+			Interval: "10s",
+		}
+	}
 	if config.Spec.Proxy.EnvoyAccessLogService.Enabled == nil {
 		config.Spec.Proxy.EnvoyAccessLogService.Enabled = util.BoolPointer(false)
+	}
+	if config.Spec.Proxy.EnvoyAccessLogService.TLSSettings == nil {
+		config.Spec.Proxy.EnvoyAccessLogService.TLSSettings = &TLSSettings{
+			Mode: "DISABLE",
+		}
+	}
+	if config.Spec.Proxy.EnvoyAccessLogService.TCPKeepalive == nil {
+		config.Spec.Proxy.EnvoyAccessLogService.TCPKeepalive = &TCPKeepalive{
+			Probes:   3,
+			Time:     "10s",
+			Interval: "10s",
+		}
 	}
 	if config.Spec.Proxy.ProtocolDetectionTimeout == nil {
 		config.Spec.Proxy.ProtocolDetectionTimeout = util.StrPointer("100ms")
@@ -341,6 +370,7 @@ func SetDefaults(config *Istio) {
 	if config.Spec.Proxy.ClusterDomain == "" {
 		config.Spec.Proxy.ClusterDomain = "cluster.local"
 	}
+
 	// PDB config
 	if config.Spec.DefaultPodDisruptionBudget.Enabled == nil {
 		config.Spec.DefaultPodDisruptionBudget.Enabled = util.BoolPointer(false)
@@ -356,11 +386,27 @@ func SetDefaults(config *Istio) {
 	if config.Spec.Tracing.Tracer == "" {
 		config.Spec.Tracing.Tracer = TracerTypeZipkin
 	}
-	if config.Spec.Tracing.Datadog.Address == "" {
-		config.Spec.Tracing.Datadog.Address = "$(HOST_IP):8126"
-	}
 	if config.Spec.Tracing.Zipkin.Address == "" {
 		config.Spec.Tracing.Zipkin.Address = fmt.Sprintf(defaultZipkinAddress, config.Namespace)
+	}
+	if config.Spec.Tracing.Tracer == TracerTypeDatadog {
+		if config.Spec.Tracing.Datadog.Address == "" {
+			config.Spec.Tracing.Datadog.Address = "$(HOST_IP):8126"
+		}
+	}
+	if config.Spec.Tracing.Tracer == TracerTypeStackdriver {
+		if config.Spec.Tracing.Strackdriver.Debug == nil {
+			config.Spec.Tracing.Strackdriver.Debug = util.BoolPointer(false)
+		}
+		if config.Spec.Tracing.Strackdriver.MaxNumberOfAttributes == nil {
+			config.Spec.Tracing.Strackdriver.MaxNumberOfAttributes = util.IntPointer(200)
+		}
+		if config.Spec.Tracing.Strackdriver.MaxNumberOfAnnotations == nil {
+			config.Spec.Tracing.Strackdriver.MaxNumberOfAnnotations = util.IntPointer(200)
+		}
+		if config.Spec.Tracing.Strackdriver.MaxNumberOfMessageEvents == nil {
+			config.Spec.Tracing.Strackdriver.MaxNumberOfMessageEvents = util.IntPointer(200)
+		}
 	}
 
 	// Policy
@@ -393,9 +439,6 @@ func SetDefaults(config *Istio) {
 	}
 	if config.Spec.Policy.Tolerations == nil {
 		config.Spec.Policy.Tolerations = config.Spec.Mixer.Tolerations
-	}
-	if config.Spec.Policy.SessionAffinityEnabled == nil {
-		config.Spec.Policy.SessionAffinityEnabled = config.Spec.Mixer.SessionAffinityEnabled
 	}
 
 	// Telemetry
@@ -432,6 +475,9 @@ func SetDefaults(config *Istio) {
 	if config.Spec.Telemetry.ReportBatchMaxTime == nil {
 		config.Spec.Telemetry.ReportBatchMaxTime = config.Spec.Mixer.ReportBatchMaxTime
 	}
+	if config.Spec.Telemetry.SessionAffinityEnabled == nil {
+		config.Spec.Telemetry.SessionAffinityEnabled = config.Spec.Mixer.SessionAffinityEnabled
+	}
 
 	// Multi mesh support
 	if config.Spec.MultiMesh == nil {
@@ -442,14 +488,14 @@ func SetDefaults(config *Istio) {
 	if config.Spec.IstioCoreDNS.Enabled == nil {
 		config.Spec.IstioCoreDNS.Enabled = util.BoolPointer(false)
 	}
-	if config.Spec.IstioCoreDNS.Image == "" {
-		config.Spec.IstioCoreDNS.Image = defaultCoreDNSImage
+	if config.Spec.IstioCoreDNS.Image == nil {
+		config.Spec.IstioCoreDNS.Image = util.StrPointer(defaultCoreDNSImage)
 	}
 	if config.Spec.IstioCoreDNS.PluginImage == "" {
 		config.Spec.IstioCoreDNS.PluginImage = defaultCoreDNSPluginImage
 	}
-	if config.Spec.IstioCoreDNS.ReplicaCount == 0 {
-		config.Spec.IstioCoreDNS.ReplicaCount = defaultReplicaCount
+	if config.Spec.IstioCoreDNS.ReplicaCount == nil {
+		config.Spec.IstioCoreDNS.ReplicaCount = util.IntPointer(defaultReplicaCount)
 	}
 
 	if config.Spec.ImagePullPolicy == "" {
@@ -457,7 +503,7 @@ func SetDefaults(config *Istio) {
 	}
 
 	if config.Spec.MeshExpansion == nil {
-		config.Spec.MeshExpansion = util.BoolPointer(defaultMeshExpansion)
+		config.Spec.MeshExpansion = util.BoolPointer(false)
 	}
 
 	if config.Spec.UseMCP == nil {
@@ -480,7 +526,7 @@ func SetRemoteIstioDefaults(remoteconfig *RemoteIstio) {
 		remoteconfig.Spec.IncludeIPRanges = defaultIncludeIPRanges
 	}
 	// SidecarInjector config
-	if remoteconfig.Spec.SidecarInjector.ReplicaCount == 0 {
-		remoteconfig.Spec.SidecarInjector.ReplicaCount = defaultReplicaCount
+	if remoteconfig.Spec.SidecarInjector.ReplicaCount == nil {
+		remoteconfig.Spec.SidecarInjector.ReplicaCount = util.IntPointer(defaultReplicaCount)
 	}
 }

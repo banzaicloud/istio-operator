@@ -88,6 +88,8 @@ spec:
                   type: string
                 nodeSelector:
                   type: object
+                podAnnotations:
+                  type: object
                 resources:
                   type: object
                 tolerations:
@@ -209,6 +211,11 @@ spec:
                         clientCertificate:
                           type: string
                         mode:
+                          enum:
+                          - DISABLE
+                          - SIMPLE
+                          - MUTUAL
+                          - ISTIO_MUTUAL
                           type: string
                         privateKey:
                           type: string
@@ -229,6 +236,38 @@ spec:
                     port:
                       format: int32
                       type: integer
+                    tcpKeepalive:
+                      properties:
+                        interval:
+                          type: string
+                        probes:
+                          format: int32
+                          type: integer
+                        time:
+                          type: string
+                      type: object
+                    tlsSettings:
+                      properties:
+                        caCertificates:
+                          type: string
+                        clientCertificate:
+                          type: string
+                        mode:
+                          enum:
+                          - DISABLE
+                          - SIMPLE
+                          - MUTUAL
+                          - ISTIO_MUTUAL
+                          type: string
+                        privateKey:
+                          type: string
+                        sni:
+                          type: string
+                        subjectAltNames:
+                          items:
+                            type: string
+                          type: array
+                      type: object
                   type: object
                 envoyStatsD:
                   properties:
@@ -335,6 +374,8 @@ spec:
                     type: object
                   type: array
                 nodeSelector:
+                  type: object
+                podAnnotations:
                   type: object
                 replicaCount:
                   format: int32

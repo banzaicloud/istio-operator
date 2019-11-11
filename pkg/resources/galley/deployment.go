@@ -30,37 +30,10 @@ import (
 )
 
 func (r *Reconciler) deployment() runtime.Object {
-	containerArgs := []string{
-		"server",
-		"--meshConfigFile=/etc/mesh-config/mesh",
-		"--livenessProbeInterval=1s",
-		"--livenessProbePath=/healthliveness",
-		"--readinessProbePath=/healthready",
-		"--readinessProbeInterval=1s",
-		fmt.Sprintf("--deployment-namespace=%s", r.Config.Namespace),
-		"--validation-webhook-config-file",
-		"/etc/config/validatingwebhookconfiguration.yaml",
-		"--monitoringPort=15014",
-	}
-
-	if !util.PointerToBool(r.Config.Spec.Galley.ConfigValidation) {
-		containerArgs = append(containerArgs, "--enable-validation=false")
-	}
-
-	if r.Config.Spec.ControlPlaneSecurityEnabled {
-		containerArgs = append(containerArgs, "--insecure=false")
-	} else {
-		containerArgs = append(containerArgs, "--insecure=true")
-	}
-
-	if !util.PointerToBool(r.Config.Spec.UseMCP) {
-		containerArgs = append(containerArgs, "--enable-server=false")
-	}
-
 	return &appsv1.Deployment{
-		ObjectMeta: templates.ObjectMeta(deploymentName, util.MergeLabels(galleyLabels, labelSelector), r.Config),
+		ObjectMeta: templates.ObjectMeta(deploymentName, util.MergeStringMaps(galleyLabels, labelSelector), r.Config),
 		Spec: appsv1.DeploymentSpec{
-			Replicas: &r.Config.Spec.Galley.ReplicaCount,
+			Replicas: r.Config.Spec.Galley.ReplicaCount,
 			Strategy: appsv1.DeploymentStrategy{
 				RollingUpdate: &appsv1.RollingUpdateDeployment{
 					MaxSurge:       util.IntstrPointer(1),
@@ -68,19 +41,19 @@ func (r *Reconciler) deployment() runtime.Object {
 				},
 			},
 			Selector: &metav1.LabelSelector{
-				MatchLabels: util.MergeLabels(galleyLabels, labelSelector),
+				MatchLabels: util.MergeStringMaps(galleyLabels, labelSelector),
 			},
 			Template: apiv1.PodTemplateSpec{
 				ObjectMeta: metav1.ObjectMeta{
-					Labels:      util.MergeLabels(galleyLabels, labelSelector),
-					Annotations: templates.DefaultDeployAnnotations(),
+					Labels:      util.MergeStringMaps(galleyLabels, labelSelector),
+					Annotations: util.MergeStringMaps(templates.DefaultDeployAnnotations(), r.Config.Spec.Galley.PodAnnotations),
 				},
 				Spec: apiv1.PodSpec{
 					ServiceAccountName: serviceAccountName,
 					Containers: []apiv1.Container{
 						{
 							Name:            "galley",
-							Image:           r.Config.Spec.Galley.Image,
+							Image:           util.PointerToString(r.Config.Spec.Galley.Image),
 							ImagePullPolicy: r.Config.Spec.ImagePullPolicy,
 							Ports: []apiv1.ContainerPort{
 								{
@@ -96,25 +69,9 @@ func (r *Reconciler) deployment() runtime.Object {
 									Protocol:      apiv1.ProtocolTCP,
 								},
 							},
-							Command: []string{"/usr/local/bin/galley"},
-							Args:    containerArgs,
-							VolumeMounts: []apiv1.VolumeMount{
-								{
-									Name:      "certs",
-									MountPath: "/etc/certs",
-									ReadOnly:  true,
-								},
-								{
-									Name:      "config",
-									MountPath: "/etc/config",
-									ReadOnly:  true,
-								},
-								{
-									Name:      "mesh-config",
-									MountPath: "/etc/mesh-config",
-									ReadOnly:  true,
-								},
-							},
+							Command:        []string{"/usr/local/bin/galley"},
+							Args:           r.containerArgs(),
+							VolumeMounts:   r.volumeMounts(),
 							LivenessProbe:  r.galleyProbe("/healthliveness"),
 							ReadinessProbe: r.galleyProbe("/healthready"),
 							Resources: templates.GetResourcesRequirementsOrDefault(
@@ -125,39 +82,7 @@ func (r *Reconciler) deployment() runtime.Object {
 							TerminationMessagePolicy: apiv1.TerminationMessageReadFile,
 						},
 					},
-					Volumes: []apiv1.Volume{
-						{
-							Name: "certs",
-							VolumeSource: apiv1.VolumeSource{
-								Secret: &apiv1.SecretVolumeSource{
-									SecretName:  fmt.Sprintf("istio.%s", serviceAccountName),
-									DefaultMode: util.IntPointer(420),
-								},
-							},
-						},
-						{
-							Name: "config",
-							VolumeSource: apiv1.VolumeSource{
-								ConfigMap: &apiv1.ConfigMapVolumeSource{
-									LocalObjectReference: apiv1.LocalObjectReference{
-										Name: configMapName,
-									},
-									DefaultMode: util.IntPointer(420),
-								},
-							},
-						},
-						{
-							Name: "mesh-config",
-							VolumeSource: apiv1.VolumeSource{
-								ConfigMap: &apiv1.ConfigMapVolumeSource{
-									LocalObjectReference: apiv1.LocalObjectReference{
-										Name: common.IstioConfigMapName,
-									},
-									DefaultMode: util.IntPointer(420),
-								},
-							},
-						},
-					},
+					Volumes:      r.volumes(),
 					Affinity:     r.Config.Spec.Galley.Affinity,
 					NodeSelector: r.Config.Spec.Galley.NodeSelector,
 					Tolerations:  r.Config.Spec.Galley.Tolerations,
@@ -165,6 +90,82 @@ func (r *Reconciler) deployment() runtime.Object {
 			},
 		},
 	}
+}
+
+func (r *Reconciler) containerArgs() []string {
+	containerArgs := []string{
+		"server",
+		"--meshConfigFile=/etc/mesh-config/mesh",
+		"--livenessProbeInterval=1s",
+		"--livenessProbePath=/healthliveness",
+		"--readinessProbePath=/healthready",
+		"--readinessProbeInterval=1s",
+		fmt.Sprintf("--deployment-namespace=%s", r.Config.Namespace),
+		"--validation-webhook-config-file",
+		"/etc/config/validatingwebhookconfiguration.yaml",
+		"--monitoringPort=15014",
+		"--enable-reconcileWebhookConfiguration=true",
+	}
+
+	if !util.PointerToBool(r.Config.Spec.Galley.ConfigValidation) {
+		containerArgs = append(containerArgs, "--enable-validation=false")
+	}
+
+	if r.Config.Spec.ControlPlaneSecurityEnabled {
+		containerArgs = append(containerArgs, "--insecure=false")
+	} else {
+		containerArgs = append(containerArgs, "--insecure=true")
+	}
+
+	if util.PointerToBool(r.Config.Spec.Galley.EnableServiceDiscovery) {
+		containerArgs = append(containerArgs, "--enableServiceDiscovery=true")
+	}
+
+	if !util.PointerToBool(r.Config.Spec.UseMCP) {
+		containerArgs = append(containerArgs, "--enable-server=false")
+	}
+
+	if util.PointerToBool(r.Config.Spec.Galley.EnableAnalysis) {
+		containerArgs = append(containerArgs, "--enableAnalysis=true")
+	}
+
+	if len(r.Config.Spec.Certificates) != 0 {
+		containerArgs = append(containerArgs, "--validation.tls.clientCertificate=/etc/dnscerts/cert-chain.pem")
+		containerArgs = append(containerArgs, "--validation.tls.privateKey=/etc/dnscerts/key.pem")
+		containerArgs = append(containerArgs, "--validation.tls.caCertificates=/etc/dnscerts/root-cert.pem")
+	}
+
+	return containerArgs
+}
+
+func (r *Reconciler) volumeMounts() []apiv1.VolumeMount {
+	volumeMounts := []apiv1.VolumeMount{
+		{
+			Name:      "certs",
+			MountPath: "/etc/certs",
+			ReadOnly:  true,
+		},
+		{
+			Name:      "config",
+			MountPath: "/etc/config",
+			ReadOnly:  true,
+		},
+		{
+			Name:      "mesh-config",
+			MountPath: "/etc/mesh-config",
+			ReadOnly:  true,
+		},
+	}
+
+	if len(r.Config.Spec.Certificates) != 0 {
+		volumeMounts = append(volumeMounts, apiv1.VolumeMount{
+			Name:      "dnscerts",
+			MountPath: "/etc/dnscerts",
+			ReadOnly:  true,
+		})
+	}
+
+	return volumeMounts
 }
 
 func (r *Reconciler) galleyProbe(path string) *apiv1.Probe {
@@ -185,4 +186,54 @@ func (r *Reconciler) galleyProbe(path string) *apiv1.Probe {
 		SuccessThreshold:    1,
 		TimeoutSeconds:      1,
 	}
+}
+
+func (r *Reconciler) volumes() []apiv1.Volume {
+	volumes := []apiv1.Volume{
+		{
+			Name: "certs",
+			VolumeSource: apiv1.VolumeSource{
+				Secret: &apiv1.SecretVolumeSource{
+					SecretName:  fmt.Sprintf("istio.%s", serviceAccountName),
+					DefaultMode: util.IntPointer(420),
+				},
+			},
+		},
+		{
+			Name: "config",
+			VolumeSource: apiv1.VolumeSource{
+				ConfigMap: &apiv1.ConfigMapVolumeSource{
+					LocalObjectReference: apiv1.LocalObjectReference{
+						Name: configMapName,
+					},
+					DefaultMode: util.IntPointer(420),
+				},
+			},
+		},
+		{
+			Name: "mesh-config",
+			VolumeSource: apiv1.VolumeSource{
+				ConfigMap: &apiv1.ConfigMapVolumeSource{
+					LocalObjectReference: apiv1.LocalObjectReference{
+						Name: common.IstioConfigMapName,
+					},
+					DefaultMode: util.IntPointer(420),
+				},
+			},
+		},
+	}
+
+	if len(r.Config.Spec.Certificates) != 0 {
+		volumes = append(volumes, apiv1.Volume{
+			Name: "dnscerts",
+			VolumeSource: apiv1.VolumeSource{
+				Secret: &apiv1.SecretVolumeSource{
+					SecretName:  fmt.Sprintf("dns.%s", serviceAccountName),
+					DefaultMode: util.IntPointer(420),
+				},
+			},
+		})
+	}
+
+	return volumes
 }

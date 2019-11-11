@@ -36,6 +36,7 @@ const (
 	clusterRoleBindingName = "istio-citadel-cluster-role-binding"
 	deploymentName         = "istio-citadel"
 	serviceName            = "istio-citadel"
+	pdbName                = "istio-citadel"
 
 	SelfSignedCASecretName = "istio-ca-secret"
 )
@@ -76,21 +77,29 @@ func (r *Reconciler) Reconcile(log logr.Logger) error {
 	log.Info("Reconciling")
 
 	var citadelDesiredState k8sutil.DesiredState
+	var pdbDesiredState k8sutil.DesiredState
 	if util.PointerToBool(r.Config.Spec.Citadel.Enabled) {
 		citadelDesiredState = k8sutil.DesiredStatePresent
+		if util.PointerToBool(r.Config.Spec.DefaultPodDisruptionBudget.Enabled) {
+			pdbDesiredState = k8sutil.DesiredStatePresent
+		} else {
+			pdbDesiredState = k8sutil.DesiredStateAbsent
+		}
 	} else {
 		citadelDesiredState = k8sutil.DesiredStateAbsent
+		pdbDesiredState = k8sutil.DesiredStateAbsent
 	}
 
-	for _, res := range []resources.Resource{
-		r.serviceAccount,
-		r.clusterRole,
-		r.clusterRoleBinding,
-		r.deployment,
-		r.service,
+	for _, res := range []resources.ResourceWithDesiredState{
+		{Resource: r.serviceAccount, DesiredState: citadelDesiredState},
+		{Resource: r.clusterRole, DesiredState: citadelDesiredState},
+		{Resource: r.clusterRoleBinding, DesiredState: citadelDesiredState},
+		{Resource: r.deployment, DesiredState: citadelDesiredState},
+		{Resource: r.service, DesiredState: citadelDesiredState},
+		{Resource: r.podDisruptionBudget, DesiredState: pdbDesiredState},
 	} {
-		o := res()
-		err := k8sutil.Reconcile(log, r.Client, o, citadelDesiredState)
+		o := res.Resource()
+		err := k8sutil.Reconcile(log, r.Client, o, res.DesiredState)
 		if err != nil {
 			return emperror.WrapWith(err, "failed to reconcile resource", "resource", o.GetObjectKind().GroupVersionKind())
 		}

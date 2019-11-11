@@ -65,7 +65,7 @@ func IntstrPointer(i int) *intstr.IntOrString {
 	return &is
 }
 
-func MergeLabels(l map[string]string, l2 map[string]string) map[string]string {
+func MergeStringMaps(l map[string]string, l2 map[string]string) map[string]string {
 	merged := make(map[string]string)
 	if l == nil {
 		l = make(map[string]string)
@@ -75,6 +75,14 @@ func MergeLabels(l map[string]string, l2 map[string]string) map[string]string {
 	}
 	for lKey, lValue := range l2 {
 		merged[lKey] = lValue
+	}
+	return merged
+}
+
+func MergeMultipleStringMaps(stringMaps ...map[string]string) map[string]string {
+	merged := make(map[string]string)
+	for _, stringMap := range stringMaps {
+		merged = MergeStringMaps(merged, stringMap)
 	}
 	return merged
 }

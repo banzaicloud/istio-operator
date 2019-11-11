@@ -61,9 +61,16 @@ func (r *Reconciler) meshConfig() string {
 	}
 
 	if util.PointerToBool(r.Config.Spec.Proxy.EnvoyMetricsService.Enabled) {
-		defaultConfig["envoyMetricsService"] = map[string]interface{}{
+		metricsService := map[string]interface{}{
 			"address": fmt.Sprintf("%s:%d", r.Config.Spec.Proxy.EnvoyMetricsService.Host, r.Config.Spec.Proxy.EnvoyMetricsService.Port),
 		}
+		if r.Config.Spec.Proxy.EnvoyMetricsService.TLSSettings != nil {
+			metricsService["tlsSettings"] = r.Config.Spec.Proxy.EnvoyMetricsService.TLSSettings
+		}
+		if r.Config.Spec.Proxy.EnvoyMetricsService.TCPKeepalive != nil {
+			metricsService["tcpKeepalive"] = r.Config.Spec.Proxy.EnvoyMetricsService.TCPKeepalive
+		}
+		defaultConfig["envoyAccessLogService"] = metricsService
 	}
 
 	if util.PointerToBool(r.Config.Spec.Proxy.EnvoyAccessLogService.Enabled) {
@@ -121,6 +128,8 @@ func (r *Reconciler) meshConfig() string {
 		"ingressControllerMode": 2,
 		"sdsUdsPath":            r.Config.Spec.SDS.UdsPath,
 		"trustDomain":           r.Config.Spec.TrustDomain,
+		"trustDomainAliases":    r.Config.Spec.TrustDomainAliases,
+		"enableAutoMtls":        r.Config.Spec.AutoMTLS,
 		"outboundTrafficPolicy": map[string]interface{}{
 			"mode": r.Config.Spec.OutboundTrafficPolicy.Mode,
 		},
@@ -131,17 +140,21 @@ func (r *Reconciler) meshConfig() string {
 		"enableEnvoyAccessLogService": util.PointerToBool(r.Config.Spec.Proxy.EnvoyAccessLogService.Enabled),
 		"protocolDetectionTimeout":    r.Config.Spec.Proxy.ProtocolDetectionTimeout,
 		"dnsRefreshRate":              r.Config.Spec.Proxy.DNSRefreshRate,
+		"certificates":                r.Config.Spec.Certificates,
 	}
 
 	if util.PointerToBool(r.Config.Spec.Policy.Enabled) {
 		meshConfig["mixerCheckServer"] = r.mixerServer("policy")
-		meshConfig["sidecarToTelemetrySessionAffinity"] = util.PointerToBool(r.Config.Spec.Policy.SessionAffinityEnabled)
 	}
 
 	if util.PointerToBool(r.Config.Spec.Telemetry.Enabled) {
 		meshConfig["mixerReportServer"] = r.mixerServer("telemetry")
 		meshConfig["reportBatchMaxEntries"] = r.Config.Spec.Telemetry.ReportBatchMaxEntries
 		meshConfig["reportBatchMaxTime"] = r.Config.Spec.Telemetry.ReportBatchMaxTime
+
+		if util.PointerToBool(r.Config.Spec.Telemetry.SessionAffinityEnabled) {
+			meshConfig["sidecarToTelemetrySessionAffinity"] = util.PointerToBool(r.Config.Spec.Telemetry.SessionAffinityEnabled)
+		}
 	}
 
 	if util.PointerToBool(r.Config.Spec.UseMCP) {

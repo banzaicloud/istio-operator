@@ -30,7 +30,7 @@ import (
 func (r *Reconciler) coreDNSContainer() apiv1.Container {
 	return apiv1.Container{
 		Name:            "coredns",
-		Image:           r.Config.Spec.IstioCoreDNS.Image,
+		Image:           util.PointerToString(r.Config.Spec.IstioCoreDNS.Image),
 		ImagePullPolicy: r.Config.Spec.ImagePullPolicy,
 		Args: []string{
 			"-conf",
@@ -109,9 +109,9 @@ func (r *Reconciler) coreDNSPluginContainer() apiv1.Container {
 
 func (r *Reconciler) deployment() runtime.Object {
 	return &appsv1.Deployment{
-		ObjectMeta: templates.ObjectMeta(deploymentName, util.MergeLabels(labels, labelSelector), r.Config),
+		ObjectMeta: templates.ObjectMeta(deploymentName, util.MergeStringMaps(labels, labelSelector), r.Config),
 		Spec: appsv1.DeploymentSpec{
-			Replicas: &r.Config.Spec.IstioCoreDNS.ReplicaCount,
+			Replicas: r.Config.Spec.IstioCoreDNS.ReplicaCount,
 			Strategy: appsv1.DeploymentStrategy{
 				RollingUpdate: &appsv1.RollingUpdateDeployment{
 					MaxSurge:       util.IntstrPointer(1),
@@ -119,12 +119,12 @@ func (r *Reconciler) deployment() runtime.Object {
 				},
 			},
 			Selector: &metav1.LabelSelector{
-				MatchLabels: util.MergeLabels(labels, labelSelector),
+				MatchLabels: util.MergeStringMaps(labels, labelSelector),
 			},
 			Template: apiv1.PodTemplateSpec{
 				ObjectMeta: metav1.ObjectMeta{
-					Labels:      util.MergeLabels(labels, labelSelector),
-					Annotations: templates.DefaultDeployAnnotations(),
+					Labels:      util.MergeStringMaps(labels, labelSelector),
+					Annotations: util.MergeStringMaps(templates.DefaultDeployAnnotations(), r.Config.Spec.IstioCoreDNS.PodAnnotations),
 				},
 				Spec: apiv1.PodSpec{
 					ServiceAccountName: serviceAccountName,

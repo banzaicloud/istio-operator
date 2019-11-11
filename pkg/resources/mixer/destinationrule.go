@@ -85,19 +85,26 @@ func (r *Reconciler) connectionPool() map[string]interface{} {
 
 func (r *Reconciler) trafficPolicy() map[string]interface{} {
 	tp := map[string]interface{}{
-		"connection_pool": r.connectionPool(),
-	}
-	if r.Config.Spec.ControlPlaneSecurityEnabled {
-		tp["portLevelSettings"] = []map[string]interface{}{
+		"portLevelSettings": []map[string]interface{}{
 			{
 				"port": map[string]interface{}{
-					"number": 15004,
+					"number": 15004, // grpc-mixer-mtls
 				},
 				"tls": map[string]interface{}{
 					"mode": "ISTIO_MUTUAL",
 				},
 			},
-		}
+			{
+				"port": map[string]interface{}{
+					"number": 9091, // grpc-mixer
+				},
+				"tls": map[string]interface{}{
+					"mode": "DISABLE",
+				},
+			},
+		},
+		"connection_pool": r.connectionPool(),
 	}
+
 	return tp
 }

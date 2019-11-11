@@ -36,6 +36,7 @@ import (
 
 func (r *Reconciler) deployment(gw string) runtime.Object {
 	gwConfig := r.getGatewayConfig(gw)
+	labels := r.labels(gw)
 
 	var initContainers []apiv1.Container
 	if r.Config.Spec.Proxy.EnableCoreDump {
@@ -98,7 +99,16 @@ func (r *Reconciler) deployment(gw string) runtime.Object {
 	}
 
 	if util.PointerToBool(r.Config.Spec.Tracing.Enabled) {
-		args = append(args, "--zipkinAddress", r.Config.Spec.Tracing.Zipkin.Address)
+		if r.Config.Spec.Tracing.Tracer == istiov1beta1.TracerTypeLightstep {
+			args = append(args, "--lightstepAddress", r.Config.Spec.Tracing.Lightstep.Address)
+			args = append(args, "--lightstepAccessToken", r.Config.Spec.Tracing.Lightstep.AccessToken)
+			args = append(args, fmt.Sprintf("--lightstepSecure=%t", r.Config.Spec.Tracing.Lightstep.Secure))
+			args = append(args, "--lightstepCacertPath", r.Config.Spec.Tracing.Lightstep.CacertPath)
+		} else if r.Config.Spec.Tracing.Tracer == istiov1beta1.TracerTypeZipkin {
+			args = append(args, "--zipkinAddress", r.Config.Spec.Tracing.Zipkin.Address)
+		} else if r.Config.Spec.Tracing.Tracer == istiov1beta1.TracerTypeDatadog {
+			args = append(args, "--datadogAgentAddress", r.Config.Spec.Tracing.Datadog.Address)
+		}
 	}
 
 	if gwConfig.ApplicationPorts != "" {
@@ -114,13 +124,16 @@ func (r *Reconciler) deployment(gw string) runtime.Object {
 	}
 
 	if util.PointerToBool(r.Config.Spec.Proxy.EnvoyMetricsService.Enabled) {
-		args = append(args, "--envoyMetricsServiceAddress", fmt.Sprintf("%s:%d", r.Config.Spec.Proxy.EnvoyMetricsService.Host, r.Config.Spec.Proxy.EnvoyMetricsService.Port))
+		envoyMetricsServiceJSON, err := r.getEnvoyServiceConfigurationJSON(r.Config.Spec.Proxy.EnvoyMetricsService)
+		if err == nil {
+			args = append(args, "--envoyMetricsService", fmt.Sprintf("%s", string(envoyMetricsServiceJSON)))
+		}
 	}
 
 	if util.PointerToBool(r.Config.Spec.Proxy.EnvoyAccessLogService.Enabled) {
-		ealsJSON, err := r.getEnvoyAccessLogServiceConfigurationJSON(r.Config.Spec.Proxy.EnvoyAccessLogService)
+		envoyAccessLogServiceJSON, err := r.getEnvoyServiceConfigurationJSON(r.Config.Spec.Proxy.EnvoyAccessLogService)
 		if err == nil {
-			args = append(args, "--envoyAccessLogService", fmt.Sprintf("%s", string(ealsJSON)))
+			args = append(args, "--envoyAccessLogService", fmt.Sprintf("%s", string(envoyAccessLogServiceJSON)))
 		}
 	}
 
@@ -155,18 +168,18 @@ func (r *Reconciler) deployment(gw string) runtime.Object {
 	})
 
 	return &appsv1.Deployment{
-		ObjectMeta: templates.ObjectMeta(gatewayName(gw), util.MergeLabels(labelSelector(gw), gwLabels(gw)), r.Config),
+		ObjectMeta: templates.ObjectMeta(gatewayName(gw), labels, r.Config),
 		Spec: appsv1.DeploymentSpec{
 			Replicas: util.IntPointer(k8sutil.GetHPAReplicaCountOrDefault(r.Client, types.NamespacedName{
 				Name:      hpaName(gw),
 				Namespace: r.Config.Namespace,
-			}, gwConfig.ReplicaCount)),
+			}, util.PointerToInt32(gwConfig.ReplicaCount))),
 			Selector: &metav1.LabelSelector{
-				MatchLabels: util.MergeLabels(labelSelector(gw), gwLabels(gw)),
+				MatchLabels: labels,
 			},
 			Template: apiv1.PodTemplateSpec{
 				ObjectMeta: metav1.ObjectMeta{
-					Labels:      util.MergeLabels(labelSelector(gw), gwLabels(gw)),
+					Labels:      labels,
 					Annotations: templates.DefaultDeployAnnotations(),
 				},
 				Spec: apiv1.PodSpec{
@@ -183,7 +196,11 @@ func (r *Reconciler) deployment(gw string) runtime.Object {
 	}
 }
 
-func (r *Reconciler) getEnvoyAccessLogServiceConfigurationJSON(config istiov1beta1.EnvoyAccessLogService) (string, error) {
+func (r *Reconciler) labels(gw string) map[string]string {
+	return util.MergeStringMaps(labelSelector(gw), gwLabels(gw))
+}
+
+func (r *Reconciler) getEnvoyServiceConfigurationJSON(config istiov1beta1.EnvoyServiceCommonConfiguration) (string, error) {
 	type Properties struct {
 		Address      string                     `json:"address,omitempty"`
 		TLSSettings  *istiov1beta1.TLSSettings  `json:"tlsSettings,omitempty"`
@@ -278,6 +295,10 @@ func (r *Reconciler) envVars(gw string, gwConfig *istiov1beta1.GatewayConfigurat
 			},
 		},
 		{
+			Name:  "ISTIO_META_CLUSTER_ID",
+			Value: "Kubernetes",
+		},
+		{
 			Name:  "ISTIO_META_ROUTER_MODE",
 			Value: "sni-dnat",
 		},
@@ -309,7 +330,7 @@ func (r *Reconciler) envVars(gw string, gwConfig *istiov1beta1.GatewayConfigurat
 		Value: strconv.FormatBool(util.PointerToBool(gwConfig.SDS.Enabled)),
 	})
 
-	if util.PointerToBool(r.Config.Spec.MeshExpansion) && r.Config.Spec.GetNetworkName() != "" {
+	if util.PointerToBool(r.Config.Spec.MeshExpansion) && gw == ingress && r.Config.Spec.GetNetworkName() != "" {
 		envVars = append(envVars, apiv1.EnvVar{
 			Name:  "ISTIO_META_NETWORK",
 			Value: r.Config.Spec.GetNetworkName(),
@@ -321,6 +342,73 @@ func (r *Reconciler) envVars(gw string, gwConfig *istiov1beta1.GatewayConfigurat
 			Value: gwConfig.RequestedNetworkView,
 		})
 	}
+	if r.Config.Spec.AutoMTLS {
+		envVars = append(envVars, apiv1.EnvVar{
+			Name:  "ISTIO_AUTO_MTLS_ENABLED",
+			Value: "true",
+		})
+	}
+
+	labelsJSON, err := json.Marshal(r.labels(gw))
+	if err == nil {
+		envVars = append(envVars, apiv1.EnvVar{
+			Name:  "ISTIO_METAJSON_LABELS",
+			Value: string(labelsJSON),
+		})
+	}
+
+	if r.Config.Spec.MeshID != "" {
+		envVars = append(envVars, apiv1.EnvVar{
+			Name:  "ISTIO_META_MESH_ID",
+			Value: r.Config.Spec.MeshID,
+		})
+	} else if r.Config.Spec.TrustDomain != "" {
+		envVars = append(envVars, apiv1.EnvVar{
+			Name:  "ISTIO_META_MESH_ID",
+			Value: r.Config.Spec.TrustDomain,
+		})
+	}
+
+	if util.PointerToBool(r.Config.Spec.Tracing.Enabled) {
+		if r.Config.Spec.Tracing.Tracer == istiov1beta1.TracerTypeDatadog {
+			envVars = append(envVars, apiv1.EnvVar{
+				Name: "HOST_IP",
+				ValueFrom: &apiv1.EnvVarSource{
+					FieldRef: &apiv1.ObjectFieldSelector{
+						FieldPath: "status.hostIP",
+					},
+				},
+			})
+		} else if r.Config.Spec.Tracing.Tracer == istiov1beta1.TracerTypeStackdriver {
+			envVars = append(envVars, apiv1.EnvVar{
+				Name:  "STACKDRIVER_TRACING_ENABLED",
+				Value: "true",
+			})
+			envVars = append(envVars, apiv1.EnvVar{
+				Name:  "STACKDRIVER_TRACING_DEBUG",
+				Value: strconv.FormatBool(util.PointerToBool(r.Config.Spec.Tracing.Strackdriver.Debug)),
+			})
+			if r.Config.Spec.Tracing.Strackdriver.MaxNumberOfAnnotations != nil {
+				envVars = append(envVars, apiv1.EnvVar{
+					Name:  "STACKDRIVER_TRACING_MAX_NUMBER_OF_ANNOTATIONS",
+					Value: string(util.PointerToInt32(r.Config.Spec.Tracing.Strackdriver.MaxNumberOfAnnotations)),
+				})
+			}
+			if r.Config.Spec.Tracing.Strackdriver.MaxNumberOfAttributes != nil {
+				envVars = append(envVars, apiv1.EnvVar{
+					Name:  "STACKDRIVER_TRACING_MAX_NUMBER_OF_ATTRIBUTES",
+					Value: string(util.PointerToInt32(r.Config.Spec.Tracing.Strackdriver.MaxNumberOfAttributes)),
+				})
+			}
+			if r.Config.Spec.Tracing.Strackdriver.MaxNumberOfMessageEvents != nil {
+				envVars = append(envVars, apiv1.EnvVar{
+					Name:  "STACKDRIVER_TRACING_MAX_NUMBER_OF_MESSAGE_EVENTS",
+					Value: string(util.PointerToInt32(r.Config.Spec.Tracing.Strackdriver.MaxNumberOfMessageEvents)),
+				})
+			}
+		}
+	}
+
 	return envVars
 }
 
@@ -359,6 +447,16 @@ func (r *Reconciler) volumeMounts(gw string, gwConfig *istiov1beta1.GatewayConfi
 			MountPath: "/var/run/ingress_gateway",
 		})
 	}
+	if util.PointerToBool(r.Config.Spec.Tracing.Enabled) &&
+		r.Config.Spec.Tracing.Tracer == istiov1beta1.TracerTypeLightstep &&
+		r.Config.Spec.Tracing.Lightstep.CacertPath != "" {
+		vms = append(vms, apiv1.VolumeMount{
+			Name:      "lightstep-certs",
+			MountPath: r.Config.Spec.Tracing.Lightstep.CacertPath,
+			ReadOnly:  true,
+		})
+	}
+
 	return vms
 }
 
@@ -431,6 +529,21 @@ func (r *Reconciler) volumes(gw string, gwConfig *istiov1beta1.GatewayConfigurat
 			},
 		})
 	}
+	if util.PointerToBool(r.Config.Spec.Tracing.Enabled) &&
+		r.Config.Spec.Tracing.Tracer == istiov1beta1.TracerTypeLightstep &&
+		r.Config.Spec.Tracing.Lightstep.CacertPath != "" {
+		volumes = append(volumes, apiv1.Volume{
+			Name: "lightstep-certs",
+			VolumeSource: apiv1.VolumeSource{
+				Secret: &apiv1.SecretVolumeSource{
+					SecretName:  "lightstep.cacert",
+					Optional:    util.BoolPointer(true),
+					DefaultMode: util.IntPointer(420),
+				},
+			},
+		})
+	}
+
 	return volumes
 }
 

@@ -186,13 +186,13 @@ $ kubectl describe istio -n istio-system istio | grep Image:
     Image:          docker.io/istio/galley:1.4.0-beta.4
     Image:    docker.io/istio/node-agent-k8s:1.4.0-beta.4
         Image:    docker.io/istio/node-agent-k8s:1.4.0-beta.4
-    Image:          coredns/coredns:1.1.2
+    Image:          coredns/coredns:1.6.2
     Plugin Image:   docker.io/istio/coredns-plugin:0.2-istio-1.1
     Image:          docker.io/istio/mixer:1.4.0-beta.4
     Image:    docker.io/istio/node-agent-k8s:1.4.0-beta.4
     Image:          docker.io/istio/pilot:1.4.0-beta.4
     Image:             docker.io/istio/proxyv2:1.4.0-beta.4
-    Image:  docker.io/istio/proxy_init:1.4.0-beta.4
+    Image:  docker.io/istio/proxyv2:1.4.0-beta.4
     Image:                          docker.io/istio/sidecar_injector:1.4.0-beta.4
       Image:                 docker.io/istio/install-cni:1.4.0-beta.4
 

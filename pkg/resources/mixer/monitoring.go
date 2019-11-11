@@ -383,7 +383,7 @@ func metricDimensions() map[string]interface{} {
 	md := tcpMetricDimensions()
 	md["request_protocol"] = `api.protocol | context.protocol | "unknown"`
 	md["response_code"] = `response.code | 200`
-	md["destination_service"] = `destination.service.host | request.host | "unknown"`
+	md["destination_service"] = `destination.service.host | conditional((destination.service.name | "unknown") == "unknown", "unknown", request.host)`
 	md["response_flags"] = `context.proxy_error_code | "-"`
 	md["permissive_response_code"] = `rbac.permissive.response_code | "none"`
 	md["permissive_response_policyid"] = `rbac.permissive.effective_policy_id | "none"`

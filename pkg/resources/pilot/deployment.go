@@ -79,7 +79,7 @@ func (r *Reconciler) containerPorts() []apiv1.ContainerPort {
 func (r *Reconciler) containers() []apiv1.Container {
 	discoveryContainer := apiv1.Container{
 		Name:            "discovery",
-		Image:           r.Config.Spec.Pilot.Image,
+		Image:           util.PointerToString(r.Config.Spec.Pilot.Image),
 		ImagePullPolicy: r.Config.Spec.ImagePullPolicy,
 		Args:            r.containerArgs(),
 		Ports:           r.containerPorts(),
@@ -92,7 +92,7 @@ func (r *Reconciler) containers() []apiv1.Container {
 				},
 			},
 			InitialDelaySeconds: 5,
-			PeriodSeconds:       30,
+			PeriodSeconds:       5,
 			TimeoutSeconds:      5,
 			FailureThreshold:    3,
 			SuccessThreshold:    1,
@@ -117,7 +117,6 @@ func (r *Reconciler) containers() []apiv1.Container {
 				},
 			},
 			{Name: "PILOT_PUSH_THROTTLE", Value: "100"},
-			{Name: "GODEBUG", Value: "gctrace=2"},
 			{
 				Name:  "PILOT_TRACE_SAMPLING",
 				Value: fmt.Sprintf("%.2f", r.Config.Spec.Pilot.TraceSampling),
@@ -149,12 +148,6 @@ func (r *Reconciler) containers() []apiv1.Container {
 			Value: "1",
 		})
 	}
-
-	// TODO - remove it in the next minor -- left it here for backward compatibility
-	discoveryContainer.Env = append(discoveryContainer.Env, apiv1.EnvVar{
-		Name:  "PILOT_ENABLE_PROTOCOL_SNIFFING",
-		Value: strconv.FormatBool(util.PointerToBool(r.Config.Spec.Pilot.EnableProtocolSniffing)),
-	})
 
 	discoveryContainer.Env = append(discoveryContainer.Env, apiv1.EnvVar{
 		Name:  "PILOT_ENABLE_PROTOCOL_SNIFFING_FOR_OUTBOUND",
@@ -228,6 +221,13 @@ func (r *Reconciler) containers() []apiv1.Container {
 			})
 		}
 
+		if r.Config.Spec.Proxy.LogLevel != "" {
+			proxyContainer.Args = append(proxyContainer.Args, fmt.Sprintf("--proxyLogLevel=%s", r.Config.Spec.Proxy.LogLevel))
+		}
+		if r.Config.Spec.Proxy.ComponentLogLevel != "" {
+			proxyContainer.Args = append(proxyContainer.Args, fmt.Sprintf("--proxyComponentLogLevel=%s", r.Config.Spec.Proxy.ComponentLogLevel))
+		}
+
 		containers = append(containers, proxyContainer)
 	}
 
@@ -236,20 +236,20 @@ func (r *Reconciler) containers() []apiv1.Container {
 
 func (r *Reconciler) deployment() runtime.Object {
 	deployment := &appsv1.Deployment{
-		ObjectMeta: templates.ObjectMeta(deploymentName, util.MergeLabels(pilotLabels, labelSelector), r.Config),
+		ObjectMeta: templates.ObjectMeta(deploymentName, util.MergeStringMaps(pilotLabels, labelSelector), r.Config),
 		Spec: appsv1.DeploymentSpec{
 			Replicas: util.IntPointer(k8sutil.GetHPAReplicaCountOrDefault(r.Client, types.NamespacedName{
 				Name:      hpaName,
 				Namespace: r.Config.Namespace,
-			}, r.Config.Spec.Pilot.ReplicaCount)),
+			}, util.PointerToInt32(r.Config.Spec.Pilot.ReplicaCount))),
 			Strategy: templates.DefaultRollingUpdateStrategy(),
 			Selector: &metav1.LabelSelector{
-				MatchLabels: util.MergeLabels(appLabels, labelSelector),
+				MatchLabels: util.MergeStringMaps(appLabels, labelSelector),
 			},
 			Template: apiv1.PodTemplateSpec{
 				ObjectMeta: metav1.ObjectMeta{
-					Labels:      util.MergeLabels(appLabels, labelSelector),
-					Annotations: templates.DefaultDeployAnnotations(),
+					Labels:      util.MergeStringMaps(appLabels, labelSelector),
+					Annotations: util.MergeStringMaps(templates.DefaultDeployAnnotations(), r.Config.Spec.Pilot.PodAnnotations),
 				},
 				Spec: apiv1.PodSpec{
 					ServiceAccountName: serviceAccountName,
