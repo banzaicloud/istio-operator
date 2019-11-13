@@ -493,7 +493,7 @@ type IstioSpec struct {
 	Version IstioVersion `json:"version"`
 
 	// Logging configurations
-	Logging LoggingConfiguration `json:"logging"`
+	Logging LoggingConfiguration `json:"logging,omitempty"`
 
 	// MTLS enables or disables global mTLS
 	MTLS bool `json:"mtls"`
@@ -502,7 +502,7 @@ type IstioSpec struct {
 	// or its DestinationRule does not have TLSSettings specified, Istio configures client side
 	// TLS configuration automatically, based on the server side mTLS authentication policy and the
 	// availibity of sidecars.
-	AutoMTLS bool `json:"autoMtls"`
+	AutoMTLS bool `json:"autoMtls,omitempty"`
 
 	// IncludeIPRanges the range where to capture egress traffic
 	IncludeIPRanges string `json:"includeIPRanges,omitempty"`

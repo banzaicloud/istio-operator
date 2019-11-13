@@ -1020,9 +1020,7 @@ spec:
               type: boolean
           required:
           - version
-          - logging
           - mtls
-          - autoMtls
           type: object
         status:
           type: object
