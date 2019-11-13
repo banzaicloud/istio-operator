@@ -86,7 +86,7 @@ func (r *Reconciler) clusterRole() runtime.Object {
 			},
 			{
 				APIGroups: []string{"certificates.k8s.io"},
-				Resources: []string{"certificatesigningrequests", "certificatesigningrequests/approval", "certificatesigningrequests/approval"},
+				Resources: []string{"certificatesigningrequests", "certificatesigningrequests/approval", "certificatesigningrequests/status"},
 				Verbs:     []string{"update", "create", "get", "delete"},
 			},
 		},
