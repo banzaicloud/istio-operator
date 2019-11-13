@@ -38,7 +38,6 @@ var appLabels = map[string]string{
 }
 
 func (r *Reconciler) containerArgs() []string {
-
 	containerArgs := []string{
 		"discovery",
 		"--monitoringAddr=:15014",
@@ -49,7 +48,9 @@ func (r *Reconciler) containerArgs() []string {
 		"--trust-domain",
 		r.Config.Spec.TrustDomain,
 	}
-
+	if r.Config.Spec.Logging.Level != nil {
+		containerArgs = append(containerArgs, fmt.Sprintf("--log_output_level=%s", util.PointerToString(r.Config.Spec.Logging.Level)))
+	}
 	if r.Config.Spec.ControlPlaneSecurityEnabled && !util.PointerToBool(r.Config.Spec.Pilot.Sidecar) {
 		containerArgs = append(containerArgs, "--secureGrpcAddr", ":15011")
 	} else {
@@ -168,6 +169,29 @@ func (r *Reconciler) containers() []apiv1.Container {
 		discoveryContainer,
 	}
 
+	args := []string{
+		"proxy",
+		"--serviceCluster",
+		"istio-pilot",
+		"--templateFile",
+		"/etc/istio/proxy/envoy_pilot.yaml.tmpl",
+		"--controlPlaneAuthPolicy",
+		templates.ControlPlaneAuthPolicy(r.Config.Spec.ControlPlaneSecurityEnabled),
+		"--domain",
+		r.Config.Namespace + ".svc." + r.Config.Spec.Proxy.ClusterDomain,
+		"--trust-domain",
+		r.Config.Spec.TrustDomain,
+	}
+	if r.Config.Spec.Proxy.LogLevel != "" {
+		args = append(args, fmt.Sprintf("--proxyLogLevel=%s", r.Config.Spec.Proxy.LogLevel))
+	}
+	if r.Config.Spec.Proxy.ComponentLogLevel != "" {
+		args = append(args, fmt.Sprintf("--proxyComponentLogLevel=%s", r.Config.Spec.Proxy.ComponentLogLevel))
+	}
+	if r.Config.Spec.Logging.Level != nil {
+		args = append(args, fmt.Sprintf("--log_output_level=%s", util.PointerToString(r.Config.Spec.Logging.Level)))
+	}
+
 	if util.PointerToBool(r.Config.Spec.Pilot.Sidecar) {
 		proxyContainer := apiv1.Container{
 			Name:            "istio-proxy",
@@ -179,20 +203,8 @@ func (r *Reconciler) containers() []apiv1.Container {
 				{ContainerPort: 15007, Protocol: apiv1.ProtocolTCP},
 				{ContainerPort: 15011, Protocol: apiv1.ProtocolTCP},
 			},
-			Args: []string{
-				"proxy",
-				"--serviceCluster",
-				"istio-pilot",
-				"--templateFile",
-				"/etc/istio/proxy/envoy_pilot.yaml.tmpl",
-				"--controlPlaneAuthPolicy",
-				templates.ControlPlaneAuthPolicy(r.Config.Spec.ControlPlaneSecurityEnabled),
-				"--domain",
-				r.Config.Namespace + ".svc." + r.Config.Spec.Proxy.ClusterDomain,
-				"--trust-domain",
-				r.Config.Spec.TrustDomain,
-			},
-			Env: templates.IstioProxyEnv(r.Config),
+			Args: args,
+			Env:  templates.IstioProxyEnv(r.Config),
 			Resources: templates.GetResourcesRequirementsOrDefault(
 				r.Config.Spec.Proxy.Resources,
 				r.Config.Spec.DefaultResources,

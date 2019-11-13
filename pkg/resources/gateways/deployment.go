@@ -123,6 +123,10 @@ func (r *Reconciler) deployment(gw string) runtime.Object {
 		args = append(args, "--proxyComponentLogLevel", r.Config.Spec.Proxy.ComponentLogLevel)
 	}
 
+	if r.Config.Spec.Logging.Level != nil {
+		args = append(args, fmt.Sprintf("--log_output_level=%s", util.PointerToString(r.Config.Spec.Logging.Level)))
+	}
+
 	if util.PointerToBool(r.Config.Spec.Proxy.EnvoyMetricsService.Enabled) {
 		envoyMetricsServiceJSON, err := r.getEnvoyServiceConfigurationJSON(r.Config.Spec.Proxy.EnvoyMetricsService)
 		if err == nil {

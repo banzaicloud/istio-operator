@@ -29,6 +29,7 @@ import (
 const (
 	defaultImageHub                  = "docker.io/istio"
 	defaultImageVersion              = "1.4.0-beta.4"
+	defaultLogLevel                  = "default:info"
 	defaultPilotImage                = defaultImageHub + "/" + "pilot" + ":" + defaultImageVersion
 	defaultCitadelImage              = defaultImageHub + "/" + "citadel" + ":" + defaultImageVersion
 	defaultGalleyImage               = defaultImageHub + "/" + "galley" + ":" + defaultImageVersion
@@ -103,6 +104,9 @@ var defaultEgressGatewayPorts = []apiv1.ServicePort{
 func SetDefaults(config *Istio) {
 	if config.Spec.IncludeIPRanges == "" {
 		config.Spec.IncludeIPRanges = defaultIncludeIPRanges
+	}
+	if config.Spec.Logging.Level == nil {
+		config.Spec.Logging.Level = util.StrPointer(defaultLogLevel)
 	}
 	if config.Spec.Proxy.Resources == nil {
 		if config.Spec.DefaultResources == nil {

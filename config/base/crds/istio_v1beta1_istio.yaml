@@ -383,6 +383,13 @@ spec:
                     type: object
                   type: array
               type: object
+            logging:
+              description: Logging configurations
+              properties:
+                level:
+                  pattern: ^([a-zA-Z]+:[a-zA-Z]+,?)+$
+                  type: string
+              type: object
             meshExpansion:
               description: If set to true, the pilot and citadel mtls will be exposed
                 on the ingress gateway also the remote istios will be connected through
@@ -1000,6 +1007,7 @@ spec:
               type: boolean
           required:
           - version
+          - logging
           - mtls
           - autoMtls
           type: object

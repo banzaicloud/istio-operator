@@ -135,6 +135,10 @@ func (r *Reconciler) mixerContainer(t string, ns string) apiv1.Container {
 		"15014",
 	}
 
+	if r.Config.Spec.Logging.Level != nil {
+		containerArgs = append(containerArgs, fmt.Sprintf("--log_output_level=%s", util.PointerToString(r.Config.Spec.Logging.Level)))
+	}
+
 	if util.PointerToBool(r.Config.Spec.Tracing.Enabled) {
 		containerArgs = append(containerArgs, "--trace_zipkin_url",
 			"http://"+r.Config.Spec.Tracing.Zipkin.Address+"/api/v1/spans")
@@ -143,7 +147,7 @@ func (r *Reconciler) mixerContainer(t string, ns string) apiv1.Container {
 	if util.PointerToBool(r.Config.Spec.UseMCP) {
 		if r.Config.Spec.ControlPlaneSecurityEnabled {
 			containerArgs = append(containerArgs, "--configStoreURL", "mcps://istio-galley."+r.Config.Namespace+".svc:9901")
-			if t == "telemetry" {
+			if t == telemetryComponentName {
 				containerArgs = append(containerArgs, "--certFile", "/etc/certs/cert-chain.pem")
 				containerArgs = append(containerArgs, "--keyFile", "/etc/certs/key.pem")
 				containerArgs = append(containerArgs, "--caCertFile", "/etc/certs/root-cert.pem")
@@ -163,7 +167,7 @@ func (r *Reconciler) mixerContainer(t string, ns string) apiv1.Container {
 
 	containerArgs = append(containerArgs, "--useAdapterCRDs=false")
 
-	if t == "telemetry" {
+	if t == telemetryComponentName {
 		containerArgs = append(containerArgs, "--averageLatencyThreshold", "100ms")
 		containerArgs = append(containerArgs, "--loadsheddingMode", "enforce")
 	}
@@ -251,6 +255,9 @@ func (r *Reconciler) istioProxyContainer(t string) apiv1.Container {
 	}
 	if r.Config.Spec.Proxy.ComponentLogLevel != "" {
 		args = append(args, fmt.Sprintf("--proxyComponentLogLevel=%s", r.Config.Spec.Proxy.ComponentLogLevel))
+	}
+	if r.Config.Spec.Logging.Level != nil {
+		args = append(args, fmt.Sprintf("--log_output_level=%s", util.PointerToString(r.Config.Spec.Logging.Level)))
 	}
 
 	vms := []apiv1.VolumeMount{

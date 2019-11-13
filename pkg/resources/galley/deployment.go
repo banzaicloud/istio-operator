@@ -107,6 +107,10 @@ func (r *Reconciler) containerArgs() []string {
 		"--enable-reconcileWebhookConfiguration=true",
 	}
 
+	if r.Config.Spec.Logging.Level != nil {
+		containerArgs = append(containerArgs, fmt.Sprintf("--log_output_level=%s", util.PointerToString(r.Config.Spec.Logging.Level)))
+	}
+
 	if !util.PointerToBool(r.Config.Spec.Galley.ConfigValidation) {
 		containerArgs = append(containerArgs, "--enable-validation=false")
 	}

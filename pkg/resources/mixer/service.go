@@ -38,9 +38,9 @@ func (r *Reconciler) service(t string) runtime.Object {
 
 func (r *Reconciler) servicePorts(t string) []apiv1.ServicePort {
 	switch t {
-	case "policy":
+	case policyComponentName:
 		return r.commonPorts()
-	case "telemetry":
+	case telemetryComponentName:
 		ports := r.commonPorts()
 		ports = append(ports, apiv1.ServicePort{
 			Name:       "prometheus",

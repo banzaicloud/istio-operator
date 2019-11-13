@@ -465,11 +465,22 @@ type CertificateConfig struct {
 	DNSNames   []string `json:"dnsNames,omitempty"`
 }
 
+// Comma-separated minimum per-scope logging level of messages to output, in the form of <scope>:<level>,<scope>:<level>
+// The control plane has different scopes depending on component, but can configure default log level across all components
+// If empty, default scope and level will be used as configured in code
+type LoggingConfiguration struct {
+	// +kubebuilder:validation:Pattern=^([a-zA-Z]+:[a-zA-Z]+,?)+$
+	Level *string `json:"level,omitempty"`
+}
+
 // IstioSpec defines the desired state of Istio
 type IstioSpec struct {
 	// Contains the intended Istio version
 	// +kubebuilder:validation:Pattern=^1.4
 	Version IstioVersion `json:"version"`
+
+	// Logging configurations
+	Logging LoggingConfiguration `json:"logging"`
 
 	// MTLS enables or disables global mTLS
 	MTLS bool `json:"mtls"`
