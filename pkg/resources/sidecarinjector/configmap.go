@@ -128,6 +128,9 @@ func (r *Reconciler) siConfig() string {
 	if len(r.Config.Spec.SidecarInjector.NeverInjectSelector) > 0 {
 		siConfig["neverInjectSelector"] = r.Config.Spec.SidecarInjector.NeverInjectSelector
 	}
+	if len(r.Config.Spec.SidecarInjector.InjectedAnnotations) > 0 {
+		siConfig["injectedAnnotations"] = r.Config.Spec.SidecarInjector.InjectedAnnotations
+	}
 
 	marshaledConfig, _ := yaml.Marshal(siConfig)
 	// this is a static config, so we don't have to deal with errors

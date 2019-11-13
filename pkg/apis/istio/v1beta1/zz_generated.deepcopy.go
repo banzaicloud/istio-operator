@@ -1338,6 +1338,13 @@ func (in *SidecarInjectorConfiguration) DeepCopyInto(out *SidecarInjectorConfigu
 			(*in)[i].DeepCopyInto(&(*out)[i])
 		}
 	}
+	if in.InjectedAnnotations != nil {
+		in, out := &in.InjectedAnnotations, &out.InjectedAnnotations
+		*out = make(map[string]string, len(*in))
+		for key, val := range *in {
+			(*out)[key] = val
+		}
+	}
 	return
 }
 

@@ -246,6 +246,19 @@ type SidecarInjectorConfiguration struct {
 	// It's an array of label selectors, that will be OR'ed, meaning we will iterate
 	// over it and stop at the first match
 	AlwaysInjectSelector []metav1.LabelSelector `json:"alwaysInjectSelector,omitempty"`
+	// injectedAnnotations are additional annotations that will be added to the pod spec after injection
+	// This is primarily to support PSP annotations. For example, if you defined a PSP with the annotations:
+	//
+	// annotations:
+	//   apparmor.security.beta.kubernetes.io/allowedProfileNames: runtime/default
+	//   apparmor.security.beta.kubernetes.io/defaultProfileName: runtime/default
+	//
+	// The PSP controller would add corresponding annotations to the pod spec for each container. However, this happens before
+	// the inject adds additional containers, so we must specify them explicitly here. With the above example, we could specify:
+	// injectedAnnotations:
+	//   container.apparmor.security.beta.kubernetes.io/istio-init: runtime/default
+	//   container.apparmor.security.beta.kubernetes.io/istio-proxy: runtime/default
+	InjectedAnnotations map[string]string `json:"injectedAnnotations,omitempty"`
 }
 
 // NodeAgentConfiguration defines config options for NodeAgent
