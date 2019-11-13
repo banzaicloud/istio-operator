@@ -11,6 +11,7 @@ spec:
   useMCP: true
   mtls: true
   multiMesh: true
+  meshName: multimesh-pke
   controlPlaneSecurityEnabled: true
   istioCoreDNS:
     enabled: true

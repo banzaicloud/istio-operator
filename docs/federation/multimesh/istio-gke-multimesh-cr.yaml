@@ -11,9 +11,20 @@ spec:
   useMCP: true
   mtls: true
   multiMesh: true
-  meshName: multimesh-1
+  meshName: multimesh-gke
   controlPlaneSecurityEnabled: true
   istioCoreDNS:
     enabled: true
   citadel:
     caSecretName: "cacerts"
+  imagePullPolicy: Always
+  pilot:
+    maxReplicas: 1
+  gateways:
+    ingress:
+      maxReplicas: 1
+    egress:
+      maxReplicas: 1
+      enabled: false
+  mixer:
+    maxReplicas: 1

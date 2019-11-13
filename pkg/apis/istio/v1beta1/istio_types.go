@@ -566,6 +566,10 @@ type IstioSpec struct {
 	// have a shared root CA for this model to work.
 	MultiMesh *bool `json:"multiMesh,omitempty"`
 
+	// Should be set to the name of the mesh this installation will run in. This is required for sidecar injection
+	// to properly label proxies
+	MeshName *string `json:"meshName,omitempty"`
+
 	// Istio CoreDNS provides DNS resolution for services in multi mesh setups
 	IstioCoreDNS IstioCoreDNS `json:"istioCoreDNS,omitempty"`
 

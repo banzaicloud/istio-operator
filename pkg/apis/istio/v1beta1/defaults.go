@@ -483,6 +483,13 @@ func SetDefaults(config *Istio) {
 	if config.Spec.MultiMesh == nil {
 		config.Spec.MultiMesh = util.BoolPointer(false)
 	}
+	if util.PointerToBool(config.Spec.MultiMesh) && config.Spec.MeshName == nil {
+		// Generate random name to avoid routing issues like this: https://github.com/istio/istio/issues/17962
+		randomMeshName, err := util.GenerateRandomLowercaseString(5)
+		if err == nil {
+			config.Spec.MeshName = util.StrPointer(fmt.Sprintf("%s-%s", config.Name, randomMeshName))
+		}
+	}
 
 	// Istio CoreDNS for multi mesh support
 	if config.Spec.IstioCoreDNS.Enabled == nil {

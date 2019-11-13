@@ -295,10 +295,6 @@ func (r *Reconciler) envVars(gw string, gwConfig *istiov1beta1.GatewayConfigurat
 			},
 		},
 		{
-			Name:  "ISTIO_META_CLUSTER_ID",
-			Value: "Kubernetes",
-		},
-		{
 			Name:  "ISTIO_META_ROUTER_MODE",
 			Value: "sni-dnat",
 		},
@@ -329,6 +325,18 @@ func (r *Reconciler) envVars(gw string, gwConfig *istiov1beta1.GatewayConfigurat
 		Name:  "SDS_ENABLED",
 		Value: strconv.FormatBool(util.PointerToBool(gwConfig.SDS.Enabled)),
 	})
+
+	if r.Config.Spec.MeshName != nil {
+		envVars = append(envVars, apiv1.EnvVar{
+			Name:  "ISTIO_META_CLUSTER_ID",
+			Value: util.PointerToString(r.Config.Spec.MeshName),
+		})
+	} else {
+		envVars = append(envVars, apiv1.EnvVar{
+			Name:  "ISTIO_META_CLUSTER_ID",
+			Value: "Kubernetes",
+		})
+	}
 
 	if util.PointerToBool(r.Config.Spec.MeshExpansion) && gw == ingress && r.Config.Spec.GetNetworkName() != "" {
 		envVars = append(envVars, apiv1.EnvVar{
