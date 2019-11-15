@@ -31,7 +31,7 @@ func (r *Reconciler) podDisruptionBudget(t string) runtime.Object {
 		Spec: policyv1beta1.PodDisruptionBudgetSpec{
 			MinAvailable: util.IntstrPointer(1),
 			Selector: &metav1.LabelSelector{
-				MatchLabels: util.MergeLabels(labelSelector, util.MergeLabels(appLabel(t), mixerTypeLabel(t))),
+				MatchLabels: util.MergeStringMaps(labelSelector, util.MergeStringMaps(appLabel(t), mixerTypeLabel(t))),
 			},
 		},
 	}

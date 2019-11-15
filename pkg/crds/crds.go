@@ -28,7 +28,7 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/rest"
 
-	patch "github.com/banzaicloud/k8s-objectmatcher/patch"
+	"github.com/banzaicloud/k8s-objectmatcher/patch"
 
 	istiov1beta1 "github.com/banzaicloud/istio-operator/pkg/apis/istio/v1beta1"
 	"github.com/banzaicloud/istio-operator/pkg/util"
@@ -51,6 +51,7 @@ const (
 	Apim
 	Policy
 	Rbac
+	Security
 )
 
 type crdConfig struct {
@@ -65,6 +66,7 @@ var crdConfigs = map[configType]crdConfig{
 	Apim:           {"v1alpha2", "config", []string{"istio-io", "apim-istio-io"}},
 	Policy:         {"v1alpha2", "config", []string{"istio-io", "policy-istio-io"}},
 	Rbac:           {"v1alpha1", "rbac", []string{"istio-io", "rbac-istio-io"}},
+	Security:       {"v1beta1", "security", []string{"istio-io", "security-istio-io"}},
 }
 
 func New(cfg *rest.Config, crds []*extensionsobj.CustomResourceDefinition) (*CrdOperator, error) {
@@ -98,7 +100,7 @@ func InitCrds() []*extensionsobj.CustomResourceDefinition {
 		crd("template", "templates", crdConfigs[Policy], "mixer", "template", "mixer-template", extensionsobj.NamespaceScoped),
 		crd("handler", "handlers", crdConfigs[Policy], "mixer", "handler", "mixer-handler", extensionsobj.NamespaceScoped),
 		crd("Sidecar", "Sidecars", crdConfigs[Networking], "istio-pilot", "", "", extensionsobj.NamespaceScoped),
-		crd("AuthorizationPolicy", "authorizationpolicies", crdConfigs[Rbac], "isito-pilot", "", "rbac", extensionsobj.NamespaceScoped),
+		crd("AuthorizationPolicy", "authorizationpolicies", crdConfigs[Security], "isito-pilot", "", "security", extensionsobj.NamespaceScoped),
 	}
 }
 

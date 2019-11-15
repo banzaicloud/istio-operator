@@ -80,7 +80,7 @@ func (r *Reconciler) deployment() runtime.Object {
 
 	var citadelContainer = apiv1.Container{
 		Name:            "citadel",
-		Image:           r.Config.Spec.Citadel.Image,
+		Image:           util.PointerToString(r.Config.Spec.Citadel.Image),
 		ImagePullPolicy: r.Config.Spec.ImagePullPolicy,
 		Args:            args,
 		Resources: templates.GetResourcesRequirementsOrDefault(
@@ -159,17 +159,17 @@ func (r *Reconciler) deployment() runtime.Object {
 	}
 
 	var deployment = &appsv1.Deployment{
-		ObjectMeta: templates.ObjectMeta(deploymentName, util.MergeLabels(citadelLabels, labelSelector), r.Config),
+		ObjectMeta: templates.ObjectMeta(deploymentName, util.MergeStringMaps(citadelLabels, labelSelector), r.Config),
 		Spec: appsv1.DeploymentSpec{
 			Replicas: util.IntPointer(1),
 			Strategy: templates.DefaultRollingUpdateStrategy(),
 			Selector: &metav1.LabelSelector{
-				MatchLabels: util.MergeLabels(citadelLabels, labelSelector),
+				MatchLabels: util.MergeStringMaps(citadelLabels, labelSelector),
 			},
 			Template: apiv1.PodTemplateSpec{
 				ObjectMeta: metav1.ObjectMeta{
-					Labels:      util.MergeLabels(citadelLabels, labelSelector),
-					Annotations: templates.DefaultDeployAnnotations(),
+					Labels:      util.MergeStringMaps(citadelLabels, labelSelector),
+					Annotations: util.MergeStringMaps(templates.DefaultDeployAnnotations(), r.Config.Spec.Citadel.PodAnnotations),
 				},
 				Spec: podSpec,
 			},

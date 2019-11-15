@@ -15,7 +15,7 @@ For demonstrative purposes, create 2 clusters, a 2 node [Banzai Cloud PKE](https
 ```bash
 ❯ git clone https://github.com/banzaicloud/istio-operator.git
 ❯ cd istio-operator
-❯ git checkout release-1.3
+❯ git checkout release-1.4
 ```
 
 ## Create the clusters on the Banzai Cloud Pipeline platform
@@ -87,7 +87,7 @@ Once you apply that to your cluster, the operator will start reconciling the Ist
     --from-file=docs/federation/multimesh/certs/ca-key.pem \
     --from-file=docs/federation/multimesh/certs/root-cert.pem \
     --from-file=docs/federation/multimesh/certs/cert-chain.pem
-❯ kubectl --context=${CTX_PKE} -n istio-system create -f docs/federation/multimesh/istio-multimesh-cr.yaml
+❯ kubectl --context=${CTX_PKE} -n istio-system create -f docs/federation/multimesh/istio-pke-multimesh-cr.yaml
 ```
 
 Wait for the `multimesh` Istio resource status to become `Available` and for the pods in the `istio-system` to become ready.
@@ -129,7 +129,7 @@ It takes exactly the same steps to setup the GKE cluster as well.
     --from-file=docs/federation/multimesh/certs/ca-key.pem \
     --from-file=docs/federation/multimesh/certs/root-cert.pem \
     --from-file=docs/federation/multimesh/certs/cert-chain.pem
-❯ kubectl --context=${CTX_GKE} -n istio-system create -f docs/federation/multimesh/istio-multimesh-cr.yaml
+❯ kubectl --context=${CTX_GKE} -n istio-system create -f docs/federation/multimesh/istio-gke-multimesh-cr.yaml
 ```
 
 Wait for the `multimesh` Istio resource status to become `Available` and for the pods in the `istio-system` to become ready.

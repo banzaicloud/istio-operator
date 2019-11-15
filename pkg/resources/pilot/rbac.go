@@ -45,6 +45,11 @@ func (r *Reconciler) clusterRole() runtime.Object {
 				Verbs:     []string{"get", "watch", "list"},
 			},
 			{
+				APIGroups: []string{"security.istio.io"},
+				Resources: []string{"*"},
+				Verbs:     []string{"get", "watch", "list"},
+			},
+			{
 				APIGroups: []string{"networking.istio.io"},
 				Resources: []string{"*"},
 				Verbs:     []string{"*"},
@@ -73,6 +78,16 @@ func (r *Reconciler) clusterRole() runtime.Object {
 				APIGroups: []string{""},
 				Resources: []string{"endpoints", "pods", "services", "namespaces", "nodes", "secrets"},
 				Verbs:     []string{"get", "list", "watch"},
+			},
+			{
+				APIGroups: []string{""},
+				Resources: []string{"secrets"},
+				Verbs:     []string{"create", "get", "watch", "list", "update", "delete"},
+			},
+			{
+				APIGroups: []string{"certificates.k8s.io"},
+				Resources: []string{"certificatesigningrequests", "certificatesigningrequests/approval", "certificatesigningrequests/status"},
+				Verbs:     []string{"update", "create", "get", "delete"},
 			},
 		},
 	}

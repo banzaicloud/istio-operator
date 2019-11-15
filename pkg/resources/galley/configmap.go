@@ -33,7 +33,7 @@ var cmLabels = map[string]string{
 
 func (r *Reconciler) configMap() runtime.Object {
 	configmap := &apiv1.ConfigMap{
-		ObjectMeta: templates.ObjectMeta(configMapName, util.MergeLabels(galleyLabels, cmLabels), r.Config),
+		ObjectMeta: templates.ObjectMeta(configMapName, util.MergeStringMaps(galleyLabels, cmLabels), r.Config),
 		Data:       make(map[string]string),
 	}
 
@@ -45,7 +45,7 @@ func (r *Reconciler) configMap() runtime.Object {
 }
 
 func (r *Reconciler) validatingWebhookConfig(ns string) string {
-	fail := admissionv1beta1.Fail
+	fail := admissionv1beta1.Ignore
 	se := admissionv1beta1.SideEffectClassNone
 	webhook := admissionv1beta1.ValidatingWebhookConfiguration{
 		ObjectMeta: metav1.ObjectMeta{
@@ -83,6 +83,17 @@ func (r *Reconciler) validatingWebhookConfig(ns string) string {
 						},
 						Rule: admissionv1beta1.Rule{
 							APIGroups:   []string{"rbac.istio.io"},
+							APIVersions: []string{"*"},
+							Resources:   []string{"*"},
+						},
+					},
+					{
+						Operations: []admissionv1beta1.OperationType{
+							admissionv1beta1.Create,
+							admissionv1beta1.Update,
+						},
+						Rule: admissionv1beta1.Rule{
+							APIGroups:   []string{"security.istio.io"},
 							APIVersions: []string{"*"},
 							Resources:   []string{"*"},
 						},

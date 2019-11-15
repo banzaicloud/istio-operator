@@ -26,21 +26,41 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
-const supportedIstioMinorVersionRegex = "^1.3"
+const supportedIstioMinorVersionRegex = "^1.4"
 
 // IstioVersion stores the intended Istio version
 type IstioVersion string
 
-// K8sResourceConfiguration defines basic K8s resource spec configurations
-type K8sResourceConfiguration struct {
-	Image        *string                      `json:"image,omitempty"`
-	ReplicaCount *int32                       `json:"replicaCount,omitempty"`
-	MinReplicas  *int32                       `json:"minReplicas,omitempty"`
-	MaxReplicas  *int32                       `json:"maxReplicas,omitempty"`
-	Resources    *corev1.ResourceRequirements `json:"resources,omitempty"`
-	NodeSelector map[string]string            `json:"nodeSelector,omitempty"`
-	Affinity     *corev1.Affinity             `json:"affinity,omitempty"`
-	Tolerations  []corev1.Toleration          `json:"tolerations,omitempty"`
+// BaseK8sResourceConfiguration defines basic K8s resource spec configurations
+type BaseK8sResourceConfiguration struct {
+	Resources      *corev1.ResourceRequirements `json:"resources,omitempty"`
+	NodeSelector   map[string]string            `json:"nodeSelector,omitempty"`
+	Affinity       *corev1.Affinity             `json:"affinity,omitempty"`
+	Tolerations    []corev1.Toleration          `json:"tolerations,omitempty"`
+	PodAnnotations map[string]string            `json:"podAnnotations,omitempty"`
+}
+
+type BaseK8sResourceConfigurationWithImage struct {
+	Image                        *string `json:"image,omitempty"`
+	BaseK8sResourceConfiguration `json:",inline"`
+}
+
+type BaseK8sResourceConfigurationWithReplicas struct {
+	ReplicaCount                          *int32 `json:"replicaCount,omitempty"`
+	BaseK8sResourceConfigurationWithImage `json:",inline"`
+}
+
+type BaseK8sResourceConfigurationWithHPA struct {
+	MinReplicas                              *int32 `json:"minReplicas,omitempty"`
+	MaxReplicas                              *int32 `json:"maxReplicas,omitempty"`
+	BaseK8sResourceConfigurationWithReplicas `json:",inline"`
+}
+
+type BaseK8sResourceConfigurationWithHPAWithoutImage struct {
+	ReplicaCount                 *int32 `json:"replicaCount,omitempty"`
+	MinReplicas                  *int32 `json:"minReplicas,omitempty"`
+	MaxReplicas                  *int32 `json:"maxReplicas,omitempty"`
+	BaseK8sResourceConfiguration `json:",inline"`
 }
 
 // SDSConfiguration defines Secret Discovery Service config options
@@ -61,29 +81,21 @@ type SDSConfiguration struct {
 
 // PilotConfiguration defines config options for Pilot
 type PilotConfiguration struct {
-	Enabled                *bool   `json:"enabled,omitempty"`
-	Image                  string  `json:"image,omitempty"`
-	Sidecar                *bool   `json:"sidecar,omitempty"`
-	ReplicaCount           int32   `json:"replicaCount,omitempty"`
-	MinReplicas            int32   `json:"minReplicas,omitempty"`
-	MaxReplicas            int32   `json:"maxReplicas,omitempty"`
-	TraceSampling          float32 `json:"traceSampling,omitempty"`
-	EnableProtocolSniffing *bool   `json:"enableProtocolSniffing,omitempty"`
+	Enabled                             *bool `json:"enabled,omitempty"`
+	BaseK8sResourceConfigurationWithHPA `json:",inline"`
+	Sidecar                             *bool   `json:"sidecar,omitempty"`
+	TraceSampling                       float32 `json:"traceSampling,omitempty"`
 	// If enabled, protocol sniffing will be used for outbound listeners whose port protocol is not specified or unsupported
 	EnableProtocolSniffingOutbound *bool `json:"enableProtocolSniffingOutbound,omitempty"`
 	// If enabled, protocol sniffing will be used for inbound listeners whose port protocol is not specified or unsupported
-	EnableProtocolSniffingInbound *bool                        `json:"enableProtocolSniffingInbound,omitempty"`
-	Resources                     *corev1.ResourceRequirements `json:"resources,omitempty"`
-	NodeSelector                  map[string]string            `json:"nodeSelector,omitempty"`
-	Affinity                      *corev1.Affinity             `json:"affinity,omitempty"`
-	Tolerations                   []corev1.Toleration          `json:"tolerations,omitempty"`
+	EnableProtocolSniffingInbound *bool `json:"enableProtocolSniffingInbound,omitempty"`
 }
 
 // CitadelConfiguration defines config options for Citadel
 type CitadelConfiguration struct {
-	Enabled      *bool  `json:"enabled,omitempty"`
-	Image        string `json:"image,omitempty"`
-	CASecretName string `json:"caSecretName,omitempty"`
+	Enabled                               *bool `json:"enabled,omitempty"`
+	BaseK8sResourceConfigurationWithImage `json:",inline"`
+	CASecretName                          string `json:"caSecretName,omitempty"`
 	// Enable health checking on the Citadel CSR signing API. https://istio.io/docs/tasks/security/health-check/
 	HealthCheck *bool `json:"healthCheck,omitempty"`
 	// For the workloads running in Kubernetes, the lifetime of their Istio certificates is controlled by the workload-cert-ttl flag on Citadel. The default value is 90 days. This value should be no greater than max-workload-cert-ttl of Citadel.
@@ -100,23 +112,15 @@ type CitadelConfiguration struct {
 	// of this option is "true" in this case, secrets will be generated for the "target" namespace.
 	// If the value of this option is "false" Citadel will not generate secrets upon service account creation.
 	EnableNamespacesByDefault *bool `json:"enableNamespacesByDefault,omitempty"`
-
-	Resources    *corev1.ResourceRequirements `json:"resources,omitempty"`
-	NodeSelector map[string]string            `json:"nodeSelector,omitempty"`
-	Affinity     *corev1.Affinity             `json:"affinity,omitempty"`
-	Tolerations  []corev1.Toleration          `json:"tolerations,omitempty"`
 }
 
 // GalleyConfiguration defines config options for Galley
 type GalleyConfiguration struct {
-	Enabled          *bool                        `json:"enabled,omitempty"`
-	Image            string                       `json:"image,omitempty"`
-	ReplicaCount     int32                        `json:"replicaCount,omitempty"`
-	ConfigValidation *bool                        `json:"configValidation,omitempty"`
-	Resources        *corev1.ResourceRequirements `json:"resources,omitempty"`
-	NodeSelector     map[string]string            `json:"nodeSelector,omitempty"`
-	Affinity         *corev1.Affinity             `json:"affinity,omitempty"`
-	Tolerations      []corev1.Toleration          `json:"tolerations,omitempty"`
+	Enabled                                  *bool `json:"enabled,omitempty"`
+	BaseK8sResourceConfigurationWithReplicas `json:",inline"`
+	ConfigValidation                         *bool `json:"configValidation,omitempty"`
+	EnableServiceDiscovery                   *bool `json:"enableServiceDiscovery,omitempty"`
+	EnableAnalysis                           *bool `json:"enableAnalysis,omitempty"`
 }
 
 // GatewaysConfiguration defines config options for Gateways
@@ -134,35 +138,34 @@ type GatewaySDSConfiguration struct {
 }
 
 type GatewayConfiguration struct {
-	Enabled      *bool `json:"enabled,omitempty"`
-	ReplicaCount int32 `json:"replicaCount,omitempty"`
-	MinReplicas  int32 `json:"minReplicas,omitempty"`
-	MaxReplicas  int32 `json:"maxReplicas,omitempty"`
+	Enabled                                         *bool `json:"enabled,omitempty"`
+	BaseK8sResourceConfigurationWithHPAWithoutImage `json:",inline"`
 	// +kubebuilder:validation:Enum=ClusterIP,NodePort,LoadBalancer
-	ServiceType          corev1.ServiceType           `json:"serviceType,omitempty"`
-	LoadBalancerIP       string                       `json:"loadBalancerIP,omitempty"`
-	ServiceAnnotations   map[string]string            `json:"serviceAnnotations,omitempty"`
-	ServiceLabels        map[string]string            `json:"serviceLabels,omitempty"`
-	SDS                  GatewaySDSConfiguration      `json:"sds,omitempty"`
-	Resources            *corev1.ResourceRequirements `json:"resources,omitempty"`
-	Ports                []corev1.ServicePort         `json:"ports,omitempty"`
-	ApplicationPorts     string                       `json:"applicationPorts,omitempty"`
-	RequestedNetworkView string                       `json:"requestedNetworkView,omitempty"`
-	NodeSelector         map[string]string            `json:"nodeSelector,omitempty"`
-	Affinity             *corev1.Affinity             `json:"affinity,omitempty"`
-	Tolerations          []corev1.Toleration          `json:"tolerations,omitempty"`
+	ServiceType          corev1.ServiceType      `json:"serviceType,omitempty"`
+	LoadBalancerIP       string                  `json:"loadBalancerIP,omitempty"`
+	ServiceAnnotations   map[string]string       `json:"serviceAnnotations,omitempty"`
+	ServiceLabels        map[string]string       `json:"serviceLabels,omitempty"`
+	SDS                  GatewaySDSConfiguration `json:"sds,omitempty"`
+	Ports                []corev1.ServicePort    `json:"ports,omitempty"`
+	ApplicationPorts     string                  `json:"applicationPorts,omitempty"`
+	RequestedNetworkView string                  `json:"requestedNetworkView,omitempty"`
 }
 
 type K8sIngressConfiguration struct {
 	Enabled *bool `json:"enabled,omitempty"`
+	// enableHttps will add port 443 on the ingress.
+	// It REQUIRES that the certificates are installed  in the
+	// expected secrets - enabling this option without certificates
+	// will result in LDS rejection and the ingress will not work.
+	EnableHttps *bool `json:"enableHttps,omitempty"`
 }
 
 // MixerConfiguration defines config options for Mixer
 type MixerConfiguration struct {
-	Enabled                    *bool `json:"enabled,omitempty"`
-	K8sResourceConfiguration   `json:",inline"`
-	PolicyConfigurationSpec    `json:",inline"`
-	TelemetryConfigurationSpec `json:",inline"`
+	Enabled                             *bool `json:"enabled,omitempty"`
+	BaseK8sResourceConfigurationWithHPA `json:",inline"`
+	PolicyConfigurationSpec             `json:",inline"`
+	TelemetryConfigurationSpec          `json:",inline"`
 	// Turn it on if you use mixer that supports multi cluster telemetry
 	MultiClusterSupport *bool `json:"multiClusterSupport,omitempty"`
 	// stdio is a debug adapter in Istio telemetry, it is not recommended for production use
@@ -170,21 +173,19 @@ type MixerConfiguration struct {
 }
 
 type PolicyConfiguration struct {
-	Enabled                  *bool `json:"enabled,omitempty"`
-	K8sResourceConfiguration `json:",inline"`
-	PolicyConfigurationSpec  `json:",inline"`
+	Enabled                             *bool `json:"enabled,omitempty"`
+	BaseK8sResourceConfigurationWithHPA `json:",inline"`
+	PolicyConfigurationSpec             `json:",inline"`
 }
 
 type PolicyConfigurationSpec struct {
 	ChecksEnabled *bool `json:"checksEnabled,omitempty"`
-	// Set whether to create a STRICT_DNS type cluster for istio-telemetry.
-	SessionAffinityEnabled *bool `json:"sessionAffinityEnabled,omitempty"`
 }
 
 type TelemetryConfiguration struct {
-	Enabled                    *bool `json:"enabled,omitempty"`
-	K8sResourceConfiguration   `json:",inline"`
-	TelemetryConfigurationSpec `json:",inline"`
+	Enabled                             *bool `json:"enabled,omitempty"`
+	BaseK8sResourceConfigurationWithHPA `json:",inline"`
+	TelemetryConfigurationSpec          `json:",inline"`
 }
 
 type TelemetryConfigurationSpec struct {
@@ -196,6 +197,8 @@ type TelemetryConfigurationSpec struct {
 	// A positive time value indicates the maximum wait time since the last request will telemetry data
 	// be batched before being sent to the mixer server
 	ReportBatchMaxTime *string `json:"reportBatchMaxTime,omitempty"`
+	// Set whether to create a STRICT_DNS type cluster for istio-telemetry.
+	SessionAffinityEnabled *bool `json:"sessionAffinityEnabled,omitempty"`
 }
 
 // InitCNIConfiguration defines config for the sidecar proxy init CNI plugin
@@ -222,12 +225,10 @@ type SidecarInjectorInitConfiguration struct {
 
 // SidecarInjectorConfiguration defines config options for SidecarInjector
 type SidecarInjectorConfiguration struct {
-	Enabled              *bool                            `json:"enabled,omitempty"`
-	Image                string                           `json:"image,omitempty"`
-	ReplicaCount         int32                            `json:"replicaCount,omitempty"`
-	Resources            *corev1.ResourceRequirements     `json:"resources,omitempty"`
-	Init                 SidecarInjectorInitConfiguration `json:"init,omitempty"`
-	InitCNIConfiguration InitCNIConfiguration             `json:"initCNIConfiguration,omitempty"`
+	Enabled                                  *bool `json:"enabled,omitempty"`
+	BaseK8sResourceConfigurationWithReplicas `json:",inline"`
+	Init                                     SidecarInjectorInitConfiguration `json:"init,omitempty"`
+	InitCNIConfiguration                     InitCNIConfiguration             `json:"initCNIConfiguration,omitempty"`
 	// If true, sidecar injector will rewrite PodSpec for liveness
 	// health check to redirect request to sidecar. This makes liveness check work
 	// even when mTLS is enabled.
@@ -245,19 +246,25 @@ type SidecarInjectorConfiguration struct {
 	// It's an array of label selectors, that will be OR'ed, meaning we will iterate
 	// over it and stop at the first match
 	AlwaysInjectSelector []metav1.LabelSelector `json:"alwaysInjectSelector,omitempty"`
-	NodeSelector         map[string]string      `json:"nodeSelector,omitempty"`
-	Affinity             *corev1.Affinity       `json:"affinity,omitempty"`
-	Tolerations          []corev1.Toleration    `json:"tolerations,omitempty"`
+	// injectedAnnotations are additional annotations that will be added to the pod spec after injection
+	// This is primarily to support PSP annotations. For example, if you defined a PSP with the annotations:
+	//
+	// annotations:
+	//   apparmor.security.beta.kubernetes.io/allowedProfileNames: runtime/default
+	//   apparmor.security.beta.kubernetes.io/defaultProfileName: runtime/default
+	//
+	// The PSP controller would add corresponding annotations to the pod spec for each container. However, this happens before
+	// the inject adds additional containers, so we must specify them explicitly here. With the above example, we could specify:
+	// injectedAnnotations:
+	//   container.apparmor.security.beta.kubernetes.io/istio-init: runtime/default
+	//   container.apparmor.security.beta.kubernetes.io/istio-proxy: runtime/default
+	InjectedAnnotations map[string]string `json:"injectedAnnotations,omitempty"`
 }
 
 // NodeAgentConfiguration defines config options for NodeAgent
 type NodeAgentConfiguration struct {
-	Enabled      *bool                        `json:"enabled,omitempty"`
-	Image        string                       `json:"image,omitempty"`
-	Resources    *corev1.ResourceRequirements `json:"resources,omitempty"`
-	NodeSelector map[string]string            `json:"nodeSelector,omitempty"`
-	Affinity     *corev1.Affinity             `json:"affinity,omitempty"`
-	Tolerations  []corev1.Toleration          `json:"tolerations,omitempty"`
+	Enabled                               *bool `json:"enabled,omitempty"`
+	BaseK8sResourceConfigurationWithImage `json:",inline"`
 }
 
 type EnvoyStatsD struct {
@@ -266,14 +273,7 @@ type EnvoyStatsD struct {
 	Port    int32  `json:"port,omitempty"`
 }
 
-type EnvoyMetricsService struct {
-	Enabled *bool  `json:"enabled,omitempty"`
-	Host    string `json:"host,omitempty"`
-	Port    int32  `json:"port,omitempty"`
-}
-
-// EnvoyAccessLogService
-type EnvoyAccessLogService struct {
+type EnvoyServiceCommonConfiguration struct {
 	Enabled      *bool         `json:"enabled,omitempty"`
 	Host         string        `json:"host,omitempty"`
 	Port         int32         `json:"port,omitempty"`
@@ -282,6 +282,7 @@ type EnvoyAccessLogService struct {
 }
 
 type TLSSettings struct {
+	// +kubebuilder:validation:Enum=DISABLE,SIMPLE,MUTUAL,ISTIO_MUTUAL
 	Mode              string   `json:"mode,omitempty"`
 	ClientCertificate string   `json:"clientCertificate,omitempty"`
 	PrivateKey        string   `json:"privateKey,omitempty"`
@@ -335,10 +336,10 @@ type ProxyConfiguration struct {
 	// cluster domain. Default value is "cluster.local"
 	ClusterDomain string `json:"clusterDomain,omitempty"`
 
-	EnvoyStatsD              EnvoyStatsD           `json:"envoyStatsD,omitempty"`
-	EnvoyMetricsService      EnvoyMetricsService   `json:"envoyMetricsService,omitempty"`
-	EnvoyAccessLogService    EnvoyAccessLogService `json:"envoyAccessLogService,omitempty"`
-	ProtocolDetectionTimeout *string               `json:"protocolDetectionTimeout,omitempty"`
+	EnvoyStatsD              EnvoyStatsD                     `json:"envoyStatsD,omitempty"`
+	EnvoyMetricsService      EnvoyServiceCommonConfiguration `json:"envoyMetricsService,omitempty"`
+	EnvoyAccessLogService    EnvoyServiceCommonConfiguration `json:"envoyAccessLogService,omitempty"`
+	ProtocolDetectionTimeout *string                         `json:"protocolDetectionTimeout,omitempty"`
 
 	Resources *corev1.ResourceRequirements `json:"resources,omitempty"`
 }
@@ -387,7 +388,16 @@ type DatadogConfiugration struct {
 	Address string `json:"address,omitempty"`
 }
 
-type StrackdriverConfiguration struct{}
+type StrackdriverConfiguration struct {
+	// enables trace output to stdout.
+	Debug *bool `json:"debug,omitempty"`
+	// The global default max number of attributes per span.
+	MaxNumberOfAttributes *int32 `json:"maxNumberOfAttributes,omitempty"`
+	// The global default max number of annotation events per span.
+	MaxNumberOfAnnotations *int32 `json:"maxNumberOfAnnotations,omitempty"`
+	// The global default max number of message events per span.
+	MaxNumberOfMessageEvents *int32 `json:"maxNumberOfMessageEvents,omitempty"`
+}
 
 type TracerType string
 
@@ -409,14 +419,9 @@ type TracingConfiguration struct {
 }
 
 type IstioCoreDNS struct {
-	Enabled      *bool                        `json:"enabled,omitempty"`
-	Image        string                       `json:"image,omitempty"`
-	PluginImage  string                       `json:"pluginImage,omitempty"`
-	ReplicaCount int32                        `json:"replicaCount,omitempty"`
-	Resources    *corev1.ResourceRequirements `json:"resources,omitempty"`
-	NodeSelector map[string]string            `json:"nodeSelector,omitempty"`
-	Affinity     *corev1.Affinity             `json:"affinity,omitempty"`
-	Tolerations  []corev1.Toleration          `json:"tolerations,omitempty"`
+	Enabled                                  *bool `json:"enabled,omitempty"`
+	BaseK8sResourceConfigurationWithReplicas `json:",inline"`
+	PluginImage                              string `json:"pluginImage,omitempty"`
 }
 
 // Describes how traffic originating in the 'from' zone is
@@ -467,14 +472,37 @@ type LocalityLBConfiguration struct {
 	Failover []*LocalityLBFailoverConfiguration `json:"failover,omitempty"`
 }
 
+// CertificateConfig configures DNS certificates provisioned through Chiron linked into Pilot
+type CertificateConfig struct {
+	SecretName *string  `json:"secretName,omitempty"`
+	DNSNames   []string `json:"dnsNames,omitempty"`
+}
+
+// Comma-separated minimum per-scope logging level of messages to output, in the form of <scope>:<level>,<scope>:<level>
+// The control plane has different scopes depending on component, but can configure default log level across all components
+// If empty, default scope and level will be used as configured in code
+type LoggingConfiguration struct {
+	// +kubebuilder:validation:Pattern=^([a-zA-Z]+:[a-zA-Z]+,?)+$
+	Level *string `json:"level,omitempty"`
+}
+
 // IstioSpec defines the desired state of Istio
 type IstioSpec struct {
 	// Contains the intended Istio version
-	// +kubebuilder:validation:Pattern=^1.3
+	// +kubebuilder:validation:Pattern=^1.4
 	Version IstioVersion `json:"version"`
+
+	// Logging configurations
+	Logging LoggingConfiguration `json:"logging,omitempty"`
 
 	// MTLS enables or disables global mTLS
 	MTLS bool `json:"mtls"`
+
+	// If set to true, and a given service does not have a corresponding DestinationRule configured,
+	// or its DestinationRule does not have TLSSettings specified, Istio configures client side
+	// TLS configuration automatically, based on the server side mTLS authentication policy and the
+	// availibity of sidecars.
+	AutoMTLS bool `json:"autoMtls,omitempty"`
 
 	// IncludeIPRanges the range where to capture egress traffic
 	IncludeIPRanges string `json:"includeIPRanges,omitempty"`
@@ -562,6 +590,10 @@ type IstioSpec struct {
 	// have a shared root CA for this model to work.
 	MultiMesh *bool `json:"multiMesh,omitempty"`
 
+	// Should be set to the name of the mesh this installation will run in. This is required for sidecar injection
+	// to properly label proxies
+	MeshName *string `json:"meshName,omitempty"`
+
 	// Istio CoreDNS provides DNS resolution for services in multi mesh setups
 	IstioCoreDNS IstioCoreDNS `json:"istioCoreDNS,omitempty"`
 
@@ -585,6 +617,26 @@ type IstioSpec struct {
 
 	// The domain serves to identify the system with SPIFFE. (default "cluster.local")
 	TrustDomain string `json:"trustDomain,omitempty"`
+
+	//  The trust domain aliases represent the aliases of trust_domain.
+	//  For example, if we have
+	//  trustDomain: td1
+	//  trustDomainAliases: [“td2”, "td3"]
+	//  Any service with the identity "td1/ns/foo/sa/a-service-account", "td2/ns/foo/sa/a-service-account",
+	//  or "td3/ns/foo/sa/a-service-account" will be treated the same in the Istio mesh.
+	TrustDomainAliases []string `json:"trustDomainAliases,omitempty"`
+
+	// Configures DNS certificates provisioned through Chiron linked into Pilot.
+	// The DNS names in this file are all hard-coded; please ensure the namespaces
+	// in dnsNames are consistent with those of your services.
+	// Example:
+	// certificates:
+	//   - secretName: dns.istio-galley-service-account
+	//     dnsNames: [istio-galley.istio-system.svc, istio-galley.istio-system]
+	//   - secretName: dns.istio-sidecar-injector-service-account
+	//     dnsNames: [istio-sidecar-injector.istio-system.svc, istio-sidecar-injector.istio-system]
+	// +k8s:deepcopy-gen:interfaces=Certificates
+	Certificates []CertificateConfig `json:"certificates,omitempty"`
 }
 
 type MixerlessTelemetryConfiguration struct {

@@ -27,7 +27,7 @@ import (
 )
 
 func (r *Reconciler) podDisruptionBudget() runtime.Object {
-	labels := util.MergeLabels(sidecarInjectorLabels, labelSelector)
+	labels := util.MergeStringMaps(sidecarInjectorLabels, labelSelector)
 	return &policyv1beta1.PodDisruptionBudget{
 		ObjectMeta: templates.ObjectMeta(pdbName, labels, r.Config),
 		Spec: policyv1beta1.PodDisruptionBudgetSpec{

@@ -143,10 +143,11 @@ type ReconcileComponent func(log logr.Logger, istio *istiov1beta1.Istio) error
 // +kubebuilder:rbac:groups="apiextensions.k8s.io",resources=customresourcedefinitions,verbs=*
 // +kubebuilder:rbac:groups="rbac.authorization.k8s.io",resources=clusterroles;clusterrolebindings;roles;rolebindings;,verbs=get;list;watch;create;update;patch;delete
 // +kubebuilder:rbac:groups="authentication.k8s.io",resources=tokenreviews,verbs=create
+// +kubebuilder:rbac:groups="certificates.k8s.io",resources=certificatesigningrequests;certificatesigningrequests/approval;certificatesigningrequests/status,verbs=update;create;get;delete
 
 // +kubebuilder:rbac:groups=istio.banzaicloud.io,resources=istios,verbs=get;list;watch;create;update;patch;delete
 // +kubebuilder:rbac:groups=istio.banzaicloud.io,resources=istios/status,verbs=get;update;patch
-// +kubebuilder:rbac:groups=authentication.istio.io;cloud.istio.io;config.istio.io;istio.istio.io;networking.istio.io;rbac.istio.io;scalingpolicy.istio.io,resources=*,verbs=*
+// +kubebuilder:rbac:groups=authentication.istio.io;cloud.istio.io;config.istio.io;istio.istio.io;networking.istio.io;rbac.istio.io;security.istio.io;scalingpolicy.istio.io,resources=*,verbs=*
 
 // Reconcile reads that state of the cluster for a Config object and makes changes based on the state read
 // and what is in the Config.Spec

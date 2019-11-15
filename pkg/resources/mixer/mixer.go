@@ -46,12 +46,16 @@ var labelSelector = map[string]string{
 	"istio": "mixer",
 }
 
+var mixerTLSModeLabel = map[string]string{
+	"security.istio.io/tlsMode": "istio",
+}
+
 type Reconciler struct {
 	resources.Reconciler
 	dynamic dynamic.Interface
 
 	component         string
-	k8sResourceConfig istiov1beta1.K8sResourceConfiguration
+	k8sResourceConfig istiov1beta1.BaseK8sResourceConfigurationWithHPA
 	telemetryConfig   istiov1beta1.TelemetryConfiguration
 	policyConfig      istiov1beta1.PolicyConfiguration
 }
@@ -65,7 +69,7 @@ func NewPolicyReconciler(client client.Client, dc dynamic.Interface, config *ist
 		dynamic: dc,
 
 		component:         policyComponentName,
-		k8sResourceConfig: config.Spec.Policy.K8sResourceConfiguration,
+		k8sResourceConfig: config.Spec.Policy.BaseK8sResourceConfigurationWithHPA,
 		policyConfig:      config.Spec.Policy,
 	}
 }
@@ -79,7 +83,7 @@ func NewTelemetryReconciler(client client.Client, dc dynamic.Interface, config *
 		dynamic: dc,
 
 		component:         telemetryComponentName,
-		k8sResourceConfig: config.Spec.Telemetry.K8sResourceConfiguration,
+		k8sResourceConfig: config.Spec.Telemetry.BaseK8sResourceConfigurationWithHPA,
 		telemetryConfig:   config.Spec.Telemetry,
 	}
 }

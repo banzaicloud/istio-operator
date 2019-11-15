@@ -14,15 +14,15 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package galley
+package citadel
 
 import (
+	"github.com/banzaicloud/istio-operator/pkg/util"
 	policyv1beta1 "k8s.io/api/policy/v1beta1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 
 	"github.com/banzaicloud/istio-operator/pkg/resources/templates"
-	"github.com/banzaicloud/istio-operator/pkg/util"
 )
 
 func (r *Reconciler) podDisruptionBudget() runtime.Object {
@@ -31,7 +31,7 @@ func (r *Reconciler) podDisruptionBudget() runtime.Object {
 		Spec: policyv1beta1.PodDisruptionBudgetSpec{
 			MinAvailable: util.IntstrPointer(1),
 			Selector: &metav1.LabelSelector{
-				MatchLabels: util.MergeStringMaps(labelSelector, galleyLabels),
+				MatchLabels: util.MergeStringMaps(labelSelector, citadelLabels),
 			},
 		},
 	}

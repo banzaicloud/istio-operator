@@ -1,15 +1,22 @@
 apiVersion: istio.banzaicloud.io/v1beta1
 kind: Istio
 metadata:
-  name: gateway-multicluster
+  labels:
+    controller-tools.k8s.io: "1.0"
+  name: multimesh
 spec:
   version: "1.4.0"
   autoInjectionNamespaces:
   - "default"
-  mtls: true
   useMCP: true
-  meshExpansion: true
+  mtls: true
+  multiMesh: true
+  meshName: multimesh-gke
   controlPlaneSecurityEnabled: true
+  istioCoreDNS:
+    enabled: true
+  citadel:
+    caSecretName: "cacerts"
   imagePullPolicy: Always
   pilot:
     maxReplicas: 1

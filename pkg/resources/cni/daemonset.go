@@ -27,7 +27,7 @@ import (
 )
 
 func (r *Reconciler) daemonSet() runtime.Object {
-	labels := util.MergeLabels(cniLabels, labelSelector)
+	labels := util.MergeStringMaps(cniLabels, labelSelector)
 	hostPathType := apiv1.HostPathUnset
 	return &appsv1.DaemonSet{
 		ObjectMeta: templates.ObjectMeta(daemonSetName, labels, r.Config),

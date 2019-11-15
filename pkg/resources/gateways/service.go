@@ -28,7 +28,7 @@ import (
 func (r *Reconciler) service(gw string) runtime.Object {
 	gwConfig := r.getGatewayConfig(gw)
 	return &apiv1.Service{
-		ObjectMeta: templates.ObjectMetaWithAnnotations(gatewayName(gw), util.MergeLabels(gwConfig.ServiceLabels, labelSelector(gw)), gwConfig.ServiceAnnotations, r.Config),
+		ObjectMeta: templates.ObjectMetaWithAnnotations(gatewayName(gw), util.MergeStringMaps(gwConfig.ServiceLabels, labelSelector(gw)), gwConfig.ServiceAnnotations, r.Config),
 		Spec: apiv1.ServiceSpec{
 			LoadBalancerIP: r.loadBalancerIP(gw),
 			Type:           r.serviceType(gw),

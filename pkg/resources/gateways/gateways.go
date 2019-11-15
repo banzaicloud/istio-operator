@@ -127,10 +127,18 @@ func (r *Reconciler) Reconcile(log logr.Logger) error {
 	}
 
 	var multimeshDesiredState k8sutil.DesiredState
+	var multimeshEgressGatewayDesiredState k8sutil.DesiredState
 	if util.PointerToBool(r.Config.Spec.MultiMesh) {
 		multimeshDesiredState = k8sutil.DesiredStatePresent
+
+		if util.PointerToBool(r.Config.Spec.Gateways.EgressConfig.Enabled) {
+			multimeshEgressGatewayDesiredState = k8sutil.DesiredStatePresent
+		} else {
+			multimeshEgressGatewayDesiredState = k8sutil.DesiredStateAbsent
+		}
 	} else {
 		multimeshDesiredState = k8sutil.DesiredStateAbsent
+		multimeshEgressGatewayDesiredState = k8sutil.DesiredStateAbsent
 	}
 
 	if r.Config.Name == "istio-config" {
@@ -142,7 +150,7 @@ func (r *Reconciler) Reconcile(log logr.Logger) error {
 		{DynamicResource: r.gateway, DesiredState: k8sIngressDesiredState},
 		{DynamicResource: r.meshExpansionGateway, DesiredState: meshExpansionDesiredState},
 		{DynamicResource: r.clusterAwareGateway, DesiredState: meshExpansionDesiredState},
-		{DynamicResource: r.multimeshEgressGateway, DesiredState: multimeshDesiredState},
+		{DynamicResource: r.multimeshEgressGateway, DesiredState: multimeshEgressGatewayDesiredState},
 		{DynamicResource: r.multimeshIngressGateway, DesiredState: multimeshDesiredState},
 		{DynamicResource: r.multimeshDestinationRule, DesiredState: multimeshDesiredState},
 		{DynamicResource: r.multimeshEnvoyFilter, DesiredState: multimeshDesiredState},
@@ -208,7 +216,7 @@ func gwLabels(gw string) map[string]string {
 }
 
 func labelSelector(gw string) map[string]string {
-	return util.MergeLabels(gwLabels(gw), map[string]string{
+	return util.MergeStringMaps(gwLabels(gw), map[string]string{
 		"istio": gw,
 	})
 }

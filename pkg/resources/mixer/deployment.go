@@ -41,11 +41,11 @@ func (r *Reconciler) deployment(t string) runtime.Object {
 			}, util.PointerToInt32(r.k8sResourceConfig.ReplicaCount))),
 			Strategy: templates.DefaultRollingUpdateStrategy(),
 			Selector: &metav1.LabelSelector{
-				MatchLabels: util.MergeLabels(labelSelector, util.MergeLabels(appLabel(t), mixerTypeLabel(t))),
+				MatchLabels: util.MergeStringMaps(labelSelector, mixerTypeLabel(t)),
 			},
 			Template: apiv1.PodTemplateSpec{
 				ObjectMeta: metav1.ObjectMeta{
-					Labels:      util.MergeLabels(labelSelector, util.MergeLabels(appLabel(t), mixerTypeLabel(t))),
+					Labels:      util.MergeMultipleStringMaps(labelSelector, appLabel(t), mixerTypeLabel(t), mixerTLSModeLabel),
 					Annotations: templates.DefaultDeployAnnotations(),
 				},
 				Spec: apiv1.PodSpec{
@@ -135,6 +135,10 @@ func (r *Reconciler) mixerContainer(t string, ns string) apiv1.Container {
 		"15014",
 	}
 
+	if r.Config.Spec.Logging.Level != nil {
+		containerArgs = append(containerArgs, fmt.Sprintf("--log_output_level=%s", util.PointerToString(r.Config.Spec.Logging.Level)))
+	}
+
 	if util.PointerToBool(r.Config.Spec.Tracing.Enabled) {
 		containerArgs = append(containerArgs, "--trace_zipkin_url",
 			"http://"+r.Config.Spec.Tracing.Zipkin.Address+"/api/v1/spans")
@@ -143,7 +147,7 @@ func (r *Reconciler) mixerContainer(t string, ns string) apiv1.Container {
 	if util.PointerToBool(r.Config.Spec.UseMCP) {
 		if r.Config.Spec.ControlPlaneSecurityEnabled {
 			containerArgs = append(containerArgs, "--configStoreURL", "mcps://istio-galley."+r.Config.Namespace+".svc:9901")
-			if t == "telemetry" {
+			if t == telemetryComponentName {
 				containerArgs = append(containerArgs, "--certFile", "/etc/certs/cert-chain.pem")
 				containerArgs = append(containerArgs, "--keyFile", "/etc/certs/key.pem")
 				containerArgs = append(containerArgs, "--caCertFile", "/etc/certs/root-cert.pem")
@@ -163,7 +167,7 @@ func (r *Reconciler) mixerContainer(t string, ns string) apiv1.Container {
 
 	containerArgs = append(containerArgs, "--useAdapterCRDs=false")
 
-	if t == "telemetry" {
+	if t == telemetryComponentName {
 		containerArgs = append(containerArgs, "--averageLatencyThreshold", "100ms")
 		containerArgs = append(containerArgs, "--loadsheddingMode", "enforce")
 	}
@@ -204,8 +208,8 @@ func (r *Reconciler) mixerContainer(t string, ns string) apiv1.Container {
 		Args: containerArgs,
 		Env: []apiv1.EnvVar{
 			{
-				Name:  "GODEBUG",
-				Value: "gctrace=2",
+				Name:  "GOMAXPROCS",
+				Value: "6",
 			},
 		},
 		Resources: templates.GetResourcesRequirementsOrDefault(
@@ -233,6 +237,29 @@ func (r *Reconciler) mixerContainer(t string, ns string) apiv1.Container {
 }
 
 func (r *Reconciler) istioProxyContainer(t string) apiv1.Container {
+	args := []string{
+		"proxy",
+		"--serviceCluster",
+		fmt.Sprintf("istio-%s", t),
+		"--templateFile",
+		fmt.Sprintf("/etc/istio/proxy/envoy_%s.yaml.tmpl", t),
+		"--controlPlaneAuthPolicy",
+		templates.ControlPlaneAuthPolicy(r.Config.Spec.ControlPlaneSecurityEnabled),
+		"--domain",
+		fmt.Sprintf("$(POD_NAMESPACE).svc.%s", r.Config.Spec.Proxy.ClusterDomain),
+		"--trust-domain",
+		r.Config.Spec.TrustDomain,
+	}
+	if r.Config.Spec.Proxy.LogLevel != "" {
+		args = append(args, fmt.Sprintf("--proxyLogLevel=%s", r.Config.Spec.Proxy.LogLevel))
+	}
+	if r.Config.Spec.Proxy.ComponentLogLevel != "" {
+		args = append(args, fmt.Sprintf("--proxyComponentLogLevel=%s", r.Config.Spec.Proxy.ComponentLogLevel))
+	}
+	if r.Config.Spec.Logging.Level != nil {
+		args = append(args, fmt.Sprintf("--log_output_level=%s", util.PointerToString(r.Config.Spec.Logging.Level)))
+	}
+
 	vms := []apiv1.VolumeMount{
 		{
 			Name:      "istio-certs",
@@ -244,7 +271,6 @@ func (r *Reconciler) istioProxyContainer(t string) apiv1.Container {
 			MountPath: "/sock",
 		},
 	}
-
 	if util.PointerToBool(r.Config.Spec.SDS.Enabled) {
 		vms = append(vms, apiv1.VolumeMount{
 			Name:      "sds-uds-path",
@@ -266,20 +292,8 @@ func (r *Reconciler) istioProxyContainer(t string) apiv1.Container {
 			{ContainerPort: 15004, Protocol: apiv1.ProtocolTCP},
 			{ContainerPort: 15090, Protocol: apiv1.ProtocolTCP, Name: "http-envoy-prom"},
 		},
-		Args: []string{
-			"proxy",
-			"--serviceCluster",
-			fmt.Sprintf("istio-%s", t),
-			"--templateFile",
-			fmt.Sprintf("/etc/istio/proxy/envoy_%s.yaml.tmpl", t),
-			"--controlPlaneAuthPolicy",
-			templates.ControlPlaneAuthPolicy(r.Config.Spec.ControlPlaneSecurityEnabled),
-			"--domain",
-			fmt.Sprintf("$(POD_NAMESPACE).svc.%s", r.Config.Spec.Proxy.ClusterDomain),
-			"--trust-domain",
-			r.Config.Spec.TrustDomain,
-		},
-		Env: templates.IstioProxyEnv(r.Config),
+		Args: args,
+		Env:  templates.IstioProxyEnv(r.Config),
 		Resources: templates.GetResourcesRequirementsOrDefault(
 			r.Config.Spec.Proxy.Resources,
 			r.Config.Spec.DefaultResources,
