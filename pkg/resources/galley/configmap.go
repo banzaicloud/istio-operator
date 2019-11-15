@@ -45,7 +45,7 @@ func (r *Reconciler) configMap() runtime.Object {
 }
 
 func (r *Reconciler) validatingWebhookConfig(ns string) string {
-	fail := admissionv1beta1.Fail
+	fail := admissionv1beta1.Ignore
 	se := admissionv1beta1.SideEffectClassNone
 	webhook := admissionv1beta1.ValidatingWebhookConfiguration{
 		ObjectMeta: metav1.ObjectMeta{
