@@ -58,6 +58,31 @@ spec:
               items:
                 type: string
               type: array
+            autoMtls:
+              description: If set to true, and a given service does not have a corresponding
+                DestinationRule configured, or its DestinationRule does not have TLSSettings
+                specified, Istio configures client side TLS configuration automatically,
+                based on the server side mTLS authentication policy and the availibity
+                of sidecars.
+              type: boolean
+            certificates:
+              description: 'Configures DNS certificates provisioned through Chiron
+                linked into Pilot. The DNS names in this file are all hard-coded;
+                please ensure the namespaces in dnsNames are consistent with those
+                of your services. Example: certificates:   - secretName: dns.istio-galley-service-account     dnsNames:
+                [istio-galley.istio-system.svc, istio-galley.istio-system]   - secretName:
+                dns.istio-sidecar-injector-service-account     dnsNames: [istio-sidecar-injector.istio-system.svc,
+                istio-sidecar-injector.istio-system] +k8s:deepcopy-gen:interfaces=Certificates'
+              items:
+                properties:
+                  dnsNames:
+                    items:
+                      type: string
+                    type: array
+                  secretName:
+                    type: string
+                type: object
+              type: array
             citadel:
               description: Citadel configuration options
               properties:
@@ -93,6 +118,8 @@ spec:
                     fail issuing the certificate.
                   type: string
                 nodeSelector:
+                  type: object
+                podAnnotations:
                   type: object
                 resources:
                   type: object
@@ -142,11 +169,17 @@ spec:
                   type: object
                 configValidation:
                   type: boolean
+                enableAnalysis:
+                  type: boolean
+                enableServiceDiscovery:
+                  type: boolean
                 enabled:
                   type: boolean
                 image:
                   type: string
                 nodeSelector:
+                  type: object
+                podAnnotations:
                   type: object
                 replicaCount:
                   format: int32
@@ -178,6 +211,8 @@ spec:
                       format: int32
                       type: integer
                     nodeSelector:
+                      type: object
+                    podAnnotations:
                       type: object
                     ports:
                       items:
@@ -233,6 +268,8 @@ spec:
                       format: int32
                       type: integer
                     nodeSelector:
+                      type: object
+                    podAnnotations:
                       type: object
                     ports:
                       items:
@@ -295,6 +332,8 @@ spec:
                   type: object
                 pluginImage:
                   type: string
+                podAnnotations:
+                  type: object
                 replicaCount:
                   format: int32
                   type: integer
@@ -350,6 +389,13 @@ spec:
                     type: object
                   type: array
               type: object
+            logging:
+              description: Logging configurations
+              properties:
+                level:
+                  pattern: ^([a-zA-Z]+:[a-zA-Z]+,?)+$
+                  type: string
+              type: object
             meshExpansion:
               description: If set to true, the pilot and citadel mtls will be exposed
                 on the ingress gateway also the remote istios will be connected through
@@ -360,8 +406,10 @@ spec:
                 the scope where meshes will interact with each other, but it is not
                 required to be globally/universally unique.
               type: string
-            trustDomain:
-              description: The domain serves to identify the system with SPIFFE. (default "cluster.local")
+            meshName:
+              description: Should be set to the name of the mesh this installation
+                will run in. This is required for sidecar injection to properly label
+                proxies
               type: string
             mixer:
               description: Mixer configuration options
@@ -385,6 +433,8 @@ spec:
                     telemetry
                   type: boolean
                 nodeSelector:
+                  type: object
+                podAnnotations:
                   type: object
                 replicaCount:
                   format: int32
@@ -445,6 +495,8 @@ spec:
                   type: string
                 nodeSelector:
                   type: object
+                podAnnotations:
+                  type: object
                 resources:
                   type: object
                 tolerations:
@@ -467,7 +519,13 @@ spec:
               properties:
                 affinity:
                   type: object
-                enableProtocolSniffing:
+                enableProtocolSniffingInbound:
+                  description: If enabled, protocol sniffing will be used for inbound
+                    listeners whose port protocol is not specified or unsupported
+                  type: boolean
+                enableProtocolSniffingOutbound:
+                  description: If enabled, protocol sniffing will be used for outbound
+                    listeners whose port protocol is not specified or unsupported
                   type: boolean
                 enabled:
                   type: boolean
@@ -480,6 +538,8 @@ spec:
                   format: int32
                   type: integer
                 nodeSelector:
+                  type: object
+                podAnnotations:
                   type: object
                 replicaCount:
                   format: int32
@@ -515,15 +575,13 @@ spec:
                   type: integer
                 nodeSelector:
                   type: object
+                podAnnotations:
+                  type: object
                 replicaCount:
                   format: int32
                   type: integer
                 resources:
                   type: object
-                sessionAffinityEnabled:
-                  description: Set whether to create a STRICT_DNS type cluster for
-                    istio-telemetry.
-                  type: boolean
                 tolerations:
                   items:
                     type: object
@@ -553,6 +611,9 @@ spec:
                     %PROTOCOL%\n" If AccessLogEncoding is JSON, value will be parsed
                     as map[string]string example: ''{"start_time": "%START_TIME%",
                     "req_method": "%REQ(:METHOD)%"}'''
+                  type: string
+                clusterDomain:
+                  description: cluster domain. Default value is "cluster.local"
                   type: string
                 componentLogLevel:
                   description: Per Component log level for proxy, applies to gateways
@@ -599,6 +660,11 @@ spec:
                         clientCertificate:
                           type: string
                         mode:
+                          enum:
+                          - DISABLE
+                          - SIMPLE
+                          - MUTUAL
+                          - ISTIO_MUTUAL
                           type: string
                         privateKey:
                           type: string
@@ -619,6 +685,38 @@ spec:
                     port:
                       format: int32
                       type: integer
+                    tcpKeepalive:
+                      properties:
+                        interval:
+                          type: string
+                        probes:
+                          format: int32
+                          type: integer
+                        time:
+                          type: string
+                      type: object
+                    tlsSettings:
+                      properties:
+                        caCertificates:
+                          type: string
+                        clientCertificate:
+                          type: string
+                        mode:
+                          enum:
+                          - DISABLE
+                          - SIMPLE
+                          - MUTUAL
+                          - ISTIO_MUTUAL
+                          type: string
+                        privateKey:
+                          type: string
+                        sni:
+                          type: string
+                        subjectAltNames:
+                          items:
+                            type: string
+                          type: array
+                      type: object
                   type: object
                 envoyStatsD:
                   properties:
@@ -740,6 +838,19 @@ spec:
                       description: Logging level for CNI binary
                       type: string
                   type: object
+                injectedAnnotations:
+                  description: 'injectedAnnotations are additional annotations that
+                    will be added to the pod spec after injection This is primarily
+                    to support PSP annotations. For example, if you defined a PSP
+                    with the annotations:  annotations:   apparmor.security.beta.kubernetes.io/allowedProfileNames:
+                    runtime/default   apparmor.security.beta.kubernetes.io/defaultProfileName:
+                    runtime/default  The PSP controller would add corresponding annotations
+                    to the pod spec for each container. However, this happens before
+                    the inject adds additional containers, so we must specify them
+                    explicitly here. With the above example, we could specify: injectedAnnotations:   container.apparmor.security.beta.kubernetes.io/istio-init:
+                    runtime/default   container.apparmor.security.beta.kubernetes.io/istio-proxy:
+                    runtime/default'
+                  type: object
                 neverInjectSelector:
                   description: 'NeverInjectSelector: Refuses the injection on pods
                     whose labels match this selector. It''s an array of label selectors,
@@ -749,6 +860,8 @@ spec:
                     type: object
                   type: array
                 nodeSelector:
+                  type: object
+                podAnnotations:
                   type: object
                 replicaCount:
                   format: int32
@@ -782,6 +895,8 @@ spec:
                   type: integer
                 nodeSelector:
                   type: object
+                podAnnotations:
+                  type: object
                 replicaCount:
                   format: int32
                   type: integer
@@ -800,6 +915,10 @@ spec:
                   type: string
                 resources:
                   type: object
+                sessionAffinityEnabled:
+                  description: Set whether to create a STRICT_DNS type cluster for
+                    istio-telemetry.
+                  type: boolean
                 tolerations:
                   items:
                     type: object
@@ -840,6 +959,25 @@ spec:
                       type: boolean
                   type: object
                 stackdriver:
+                  properties:
+                    debug:
+                      description: enables trace output to stdout.
+                      type: boolean
+                    maxNumberOfAnnotations:
+                      description: The global default max number of annotation events
+                        per span.
+                      format: int32
+                      type: integer
+                    maxNumberOfAttributes:
+                      description: The global default max number of attributes per
+                        span.
+                      format: int32
+                      type: integer
+                    maxNumberOfMessageEvents:
+                      description: The global default max number of message events
+                        per span.
+                      format: int32
+                      type: integer
                   type: object
                 tracer:
                   enum:
@@ -857,6 +995,19 @@ spec:
                       type: string
                   type: object
               type: object
+            trustDomain:
+              description: The domain serves to identify the system with SPIFFE. (default
+                "cluster.local")
+              type: string
+            trustDomainAliases:
+              description: ' The trust domain aliases represent the aliases of trust_domain.  For
+                example, if we have  trustDomain: td1  trustDomainAliases: [“td2”,
+                "td3"]  Any service with the identity "td1/ns/foo/sa/a-service-account",
+                "td2/ns/foo/sa/a-service-account",  or "td3/ns/foo/sa/a-service-account"
+                will be treated the same in the Istio mesh.'
+              items:
+                type: string
+              type: array
             useMCP:
               description: Use the Mesh Control Protocol (MCP) for configuring Mixer
                 and Pilot. Requires galley.
