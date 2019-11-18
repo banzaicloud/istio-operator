@@ -171,6 +171,17 @@ rules:
   verbs:
   - create
 - apiGroups:
+  - certificates.k8s.io
+  resources:
+  - certificatesigningrequests
+  - certificatesigningrequests/approval
+  - certificatesigningrequests/status
+  verbs:
+  - update
+  - create
+  - get
+  - delete
+- apiGroups:
   - istio.banzaicloud.io
   resources:
   - istios
@@ -197,6 +208,7 @@ rules:
   - istio.istio.io
   - networking.istio.io
   - rbac.istio.io
+  - security.istio.io
   - scalingpolicy.istio.io
   resources:
   - '*'
