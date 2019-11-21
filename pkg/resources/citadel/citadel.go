@@ -121,7 +121,12 @@ func (r *Reconciler) Reconcile(log logr.Logger) error {
 	if util.PointerToBool(r.Config.Spec.Citadel.Enabled) {
 		if r.Config.Spec.MTLS {
 			meshPolicyDesiredState = k8sutil.DesiredStatePresent
-			mTLSDesiredState = k8sutil.DesiredStatePresent
+
+			if !r.Config.Spec.AutoMTLS {
+				mTLSDesiredState = k8sutil.DesiredStatePresent
+			} else {
+				mTLSDesiredState = k8sutil.DesiredStateAbsent
+			}
 		} else {
 			meshPolicyDesiredState = k8sutil.DesiredStatePresent
 			mTLSDesiredState = k8sutil.DesiredStateAbsent
