@@ -152,14 +152,14 @@ $ helm upgrade istio-operator --install --namespace=istio-system --set-string op
 
 *Note: As of now, the `0.4.2` tag is the latest version of our operator to support Istio versions 1.4.x*
 
-**Apply the new Custom Resource**
+**Use the new Custom Resource**
 
 > If you've installed Istio 1.3.4 or earlier with the Istio operator, and if you check the logs of the operator pod at this point, you will see the following error message: `intended Istio version is unsupported by this version of the operator`. We need to update the Istio Custom Resource with Istio 1.4's components for the operator to be reconciled with the Istio control plane.
 
 To deploy Istio 1.4.0 with its default configuration options, use the following command:
 
 ```bash
-$ kubectl apply -n istio-system -f config/samples/istio_v1beta1_istio.yaml
+$ kubectl replace -n istio-system -f config/samples/istio_v1beta1_istio.yaml
 ```
 
 After some time, you should see that new Istio pods are running:
