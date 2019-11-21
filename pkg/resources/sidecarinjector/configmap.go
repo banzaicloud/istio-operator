@@ -53,6 +53,9 @@ func (r *Reconciler) getValues() string {
 			"rewriteAppHTTPProbe": r.Config.Spec.SidecarInjector.RewriteAppHTTPProbe,
 		},
 		"global": map[string]interface{}{
+			"mtls": map[string]interface{}{
+				"auto": r.Config.Spec.AutoMTLS,
+			},
 			"trustDomain":            r.Config.Spec.TrustDomain,
 			"imagePullPolicy":        r.Config.Spec.ImagePullPolicy,
 			"network":                r.Config.Spec.GetNetworkName(),
