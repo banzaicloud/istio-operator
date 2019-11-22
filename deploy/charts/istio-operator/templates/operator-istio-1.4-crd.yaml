@@ -984,6 +984,7 @@ spec:
                   - zipkin
                   - lightstep
                   - datadog
+                  - stackdriver
                   type: string
                 zipkin:
                   properties:
