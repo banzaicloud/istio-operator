@@ -17,7 +17,9 @@ limitations under the License.
 package k8sutil
 
 import (
+	"bytes"
 	"net"
+	"sort"
 
 	corev1 "k8s.io/api/core/v1"
 )
@@ -52,6 +54,9 @@ func GetServiceEndpointIPs(service corev1.Service) ([]string, error) {
 			if err != nil {
 				return ips, err
 			}
+			sort.Slice(hostIPs, func(i, j int) bool {
+				return bytes.Compare(hostIPs[i], hostIPs[j]) < 0
+			})
 			for _, ip := range hostIPs {
 				if ip.To4() != nil {
 					ips = append(ips, ip.String())
