@@ -410,7 +410,7 @@ const (
 
 type TracingConfiguration struct {
 	Enabled *bool `json:"enabled,omitempty"`
-	// +kubebuilder:validation:Enum=zipkin,lightstep,datadog
+	// +kubebuilder:validation:Enum=zipkin,lightstep,datadog,stackdriver
 	Tracer       TracerType                `json:"tracer,omitempty"`
 	Zipkin       ZipkinConfiguration       `json:"zipkin,omitempty"`
 	Lightstep    LightstepConfiguration    `json:"lightstep,omitempty"`
