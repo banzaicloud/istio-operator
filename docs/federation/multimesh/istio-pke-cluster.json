@@ -56,7 +56,7 @@
           }
         ],
       "kubernetes": {
-        "version": "1.14.2",
+        "version": "1.15.3",
         "rbac": {
           "enabled": true
         }
