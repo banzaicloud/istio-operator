@@ -590,19 +590,11 @@ type IstioSpec struct {
 	// have a shared root CA for this model to work.
 	MultiMesh *bool `json:"multiMesh,omitempty"`
 
-	// Should be set to the name of the mesh this installation will run in. This is required for sidecar injection
-	// to properly label proxies
-	MeshName *string `json:"meshName,omitempty"`
-
 	// Istio CoreDNS provides DNS resolution for services in multi mesh setups
 	IstioCoreDNS IstioCoreDNS `json:"istioCoreDNS,omitempty"`
 
 	// Locality based load balancing distribution or failover settings.
 	LocalityLB *LocalityLBConfiguration `json:"localityLB,omitempty"`
-
-	// Should be set to the name of the cluster this installation will run in.
-	// This is required for sidecar injection to properly label proxies
-	ClusterName string `json:"clusterName,omitempty"`
 
 	// Mesh ID means Mesh Identifier. It should be unique within the scope where
 	// meshes will interact with each other, but it is not required to be

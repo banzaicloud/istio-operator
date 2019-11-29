@@ -73,9 +73,6 @@ type RemoteIstioSpec struct {
 	// Proxy Init configuration options
 	ProxyInit ProxyInitConfiguration `json:"proxyInit,omitempty"`
 
-	// Should be set to the name of the cluster, this is required for sidecar injection to properly label proxies
-	ClusterName string `json:"clusterName,omitempty"`
-
 	signCert SignCert
 }
 

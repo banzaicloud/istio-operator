@@ -17,9 +17,6 @@ limitations under the License.
 package util
 
 import (
-	"crypto/rand"
-
-	"github.com/pkg/errors"
 	"k8s.io/apimachinery/pkg/util/intstr"
 )
 
@@ -123,30 +120,4 @@ func RemoveString(slice []string, s string) (result []string) {
 		result = append(result, item)
 	}
 	return
-}
-
-func generateRandomBytes(n int) ([]byte, error) {
-	b := make([]byte, n)
-	_, err := rand.Read(b)
-	if err != nil {
-		return nil, errors.Wrap(err, "failed to read random bytes")
-	}
-	return b, nil
-}
-
-const lowercaseAlphanumeric = "0123456789abcdefghijklmnopqrstuvwxyz"
-
-func GenerateRandomLowercaseString(n int) (string, error) {
-	return generateRandomString(n, lowercaseAlphanumeric)
-}
-
-func generateRandomString(n int, letters string) (string, error) {
-	bytes, err := generateRandomBytes(n)
-	if err != nil {
-		return "", err
-	}
-	for i, b := range bytes {
-		bytes[i] = letters[b%byte(len(letters))]
-	}
-	return string(bytes), nil
 }
