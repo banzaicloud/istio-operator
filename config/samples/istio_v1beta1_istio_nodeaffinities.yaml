@@ -87,7 +87,13 @@ spec:
           name: tls
     k8singress:
       enabled: false
-  mixer:
+  policy:
+    enabled: true
+    image: "docker.io/istio/mixer:1.4.0"
+    replicaCount: 1
+    minReplicas: 1
+    maxReplicas: 5
+  telemetry:
     enabled: true
     image: "docker.io/istio/mixer:1.4.0"
     replicaCount: 1
