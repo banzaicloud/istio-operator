@@ -29,7 +29,9 @@ spec:
       enabled: false
     k8singress:
       enabled: false
-  mixer:
+  policy:
+    enabled: false
+  telemetry:
     enabled: false
   sidecarInjector:
     enabled: false
