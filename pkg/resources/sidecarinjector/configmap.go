@@ -76,7 +76,7 @@ func (r *Reconciler) getValues() string {
 				},
 			},
 			"multicluster": map[string]interface{}{
-				"clusterName": r.Config.Spec.GetNetworkName(),
+				"clusterName": r.Config.Spec.ClusterName,
 			},
 			"meshID": r.Config.Spec.MeshID,
 			"proxy": map[string]interface{}{

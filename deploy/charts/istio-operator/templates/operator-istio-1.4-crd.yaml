@@ -134,6 +134,11 @@ spec:
                     be no greater than max-workload-cert-ttl of Citadel.
                   type: string
               type: object
+            clusterName:
+              description: Should be set to the name of the cluster this installation
+                will run in. This is required for sidecar injection to properly label
+                proxies
+              type: string
             controlPlaneSecurityEnabled:
               description: ControlPlaneSecurityEnabled control plane services are
                 communicating through mTLS
