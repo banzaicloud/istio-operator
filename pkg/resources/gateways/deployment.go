@@ -330,10 +330,10 @@ func (r *Reconciler) envVars(gw string, gwConfig *istiov1beta1.GatewayConfigurat
 		Value: strconv.FormatBool(util.PointerToBool(gwConfig.SDS.Enabled)),
 	})
 
-	if r.Config.Spec.MeshName != nil {
+	if r.Config.Spec.ClusterName != "" {
 		envVars = append(envVars, apiv1.EnvVar{
 			Name:  "ISTIO_META_CLUSTER_ID",
-			Value: util.PointerToString(r.Config.Spec.MeshName),
+			Value: r.Config.Spec.ClusterName,
 		})
 	} else {
 		envVars = append(envVars, apiv1.EnvVar{

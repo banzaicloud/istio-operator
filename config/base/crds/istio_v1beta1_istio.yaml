@@ -400,11 +400,6 @@ spec:
                 the scope where meshes will interact with each other, but it is not
                 required to be globally/universally unique.
               type: string
-            meshName:
-              description: Should be set to the name of the mesh this installation
-                will run in. This is required for sidecar injection to properly label
-                proxies
-              type: string
             mixer:
               description: Mixer configuration options
               properties:

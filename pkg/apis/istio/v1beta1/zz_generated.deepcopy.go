@@ -614,11 +614,6 @@ func (in *IstioSpec) DeepCopyInto(out *IstioSpec) {
 		*out = new(bool)
 		**out = **in
 	}
-	if in.MeshName != nil {
-		in, out := &in.MeshName, &out.MeshName
-		*out = new(string)
-		**out = **in
-	}
 	in.IstioCoreDNS.DeepCopyInto(&out.IstioCoreDNS)
 	if in.LocalityLB != nil {
 		in, out := &in.LocalityLB, &out.LocalityLB
