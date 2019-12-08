@@ -451,6 +451,22 @@
   version = "v1.1.0"
 
 [[projects]]
+  branch = "master"
+  digest = "1:4a0243e7807071601369ff7ed5ccf7769fb27d8a1fd7db4926c41dedf9e32058"
+  name = "github.com/shurcooL/httpfs"
+  packages = ["vfsutil"]
+  pruneopts = "T"
+  revision = "8d4bc4ba774931155e6cd5ef6098cb038dd45135"
+
+[[projects]]
+  branch = "master"
+  digest = "1:7035b65f829b3dff911034dcbf0ae67907d85d9df6a856d766fbf1dc7437f2cb"
+  name = "github.com/shurcooL/vfsgen"
+  packages = ["."]
+  pruneopts = "T"
+  revision = "6a9ea43bcacdf716a5c1b38efff722c07adf0069"
+
+[[projects]]
   digest = "1:2c31831b97353515f0bb77a3e7f2df69e50c4173116aad4250e22b1c664a1484"
   name = "github.com/spf13/afero"
   packages = [
@@ -1000,6 +1016,7 @@
     "github.com/onsi/ginkgo",
     "github.com/onsi/gomega",
     "github.com/pkg/errors",
+    "github.com/shurcooL/vfsgen",
     "golang.org/x/net/context",
     "k8s.io/api/admissionregistration/v1beta1",
     "k8s.io/api/apps/v1",
@@ -1021,6 +1038,7 @@
     "k8s.io/apimachinery/pkg/types",
     "k8s.io/apimachinery/pkg/util/intstr",
     "k8s.io/apimachinery/pkg/util/runtime",
+    "k8s.io/apimachinery/pkg/util/yaml",
     "k8s.io/apimachinery/pkg/watch",
     "k8s.io/client-go/discovery",
     "k8s.io/client-go/discovery/fake",
