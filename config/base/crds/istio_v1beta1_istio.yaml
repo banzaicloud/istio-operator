@@ -196,6 +196,8 @@ spec:
                       type: string
                     enabled:
                       type: boolean
+                    labels:
+                      type: object
                     loadBalancerIP:
                       type: string
                     maxReplicas:
@@ -253,6 +255,8 @@ spec:
                       type: string
                     enabled:
                       type: boolean
+                    labels:
+                      type: object
                     loadBalancerIP:
                       type: string
                     maxReplicas:
