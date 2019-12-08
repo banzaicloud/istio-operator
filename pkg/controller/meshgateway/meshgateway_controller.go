@@ -92,6 +92,9 @@ func add(mgr manager.Manager, r reconcile.Reconciler) error {
 			IsController: true,
 			OwnerType:    &istiov1beta1.MeshGateway{},
 		})
+		if err != nil {
+			return err
+		}
 	}
 
 	return nil
