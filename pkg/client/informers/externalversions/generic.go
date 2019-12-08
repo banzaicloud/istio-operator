@@ -54,6 +54,8 @@ func (f *sharedInformerFactory) ForResource(resource schema.GroupVersionResource
 	// Group=istio.banzaicloud.io, Version=v1beta1
 	case v1beta1.SchemeGroupVersion.WithResource("istios"):
 		return &genericInformer{resource: resource.GroupResource(), informer: f.Istio().V1beta1().Istios().Informer()}, nil
+	case v1beta1.SchemeGroupVersion.WithResource("meshgateways"):
+		return &genericInformer{resource: resource.GroupResource(), informer: f.Istio().V1beta1().MeshGateways().Informer()}, nil
 	case v1beta1.SchemeGroupVersion.WithResource("remoteistios"):
 		return &genericInformer{resource: resource.GroupResource(), informer: f.Istio().V1beta1().RemoteIstios().Informer()}, nil
 

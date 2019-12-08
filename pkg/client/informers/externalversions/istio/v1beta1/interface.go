@@ -25,6 +25,8 @@ import (
 type Interface interface {
 	// Istios returns a IstioInformer.
 	Istios() IstioInformer
+	// MeshGateways returns a MeshGatewayInformer.
+	MeshGateways() MeshGatewayInformer
 	// RemoteIstios returns a RemoteIstioInformer.
 	RemoteIstios() RemoteIstioInformer
 }
@@ -43,6 +45,11 @@ func New(f internalinterfaces.SharedInformerFactory, namespace string, tweakList
 // Istios returns a IstioInformer.
 func (v *version) Istios() IstioInformer {
 	return &istioInformer{factory: v.factory, namespace: v.namespace, tweakListOptions: v.tweakListOptions}
+}
+
+// MeshGateways returns a MeshGatewayInformer.
+func (v *version) MeshGateways() MeshGatewayInformer {
+	return &meshGatewayInformer{factory: v.factory, namespace: v.namespace, tweakListOptions: v.tweakListOptions}
 }
 
 // RemoteIstios returns a RemoteIstioInformer.
