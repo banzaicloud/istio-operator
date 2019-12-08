@@ -195,6 +195,26 @@ rules:
   verbs:
   - '*'
 - apiGroups:
+  - istio.banzaicloud.io
+  resources:
+  - meshgateways
+  verbs:
+  - get
+  - list
+  - watch
+  - create
+  - update
+  - patch
+  - delete
+- apiGroups:
+  - istio.banzaicloud.io
+  resources:
+  - meshgateways/status
+  verbs:
+  - get
+  - update
+  - patch
+- apiGroups:
   - apps
   resources:
   - deployments
