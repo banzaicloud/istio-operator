@@ -17,22 +17,23 @@ limitations under the License.
 package gateways
 
 import (
-	"github.com/banzaicloud/istio-operator/pkg/util"
 	policyv1beta1 "k8s.io/api/policy/v1beta1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 
+	"github.com/banzaicloud/istio-operator/pkg/util"
+
 	"github.com/banzaicloud/istio-operator/pkg/resources/templates"
 )
 
-func (r *Reconciler) podDisruptionBudget(gw string) runtime.Object {
-	labels := util.MergeStringMaps(labelSelector(gw), gwLabels(gw))
+func (r *Reconciler) podDisruptionBudget() runtime.Object {
+	labels := r.labels()
 	return &policyv1beta1.PodDisruptionBudget{
-		ObjectMeta: templates.ObjectMeta(pdbName(gw), labels, r.Config),
+		ObjectMeta: templates.ObjectMeta(r.pdbName(), labels, r.gw),
 		Spec: policyv1beta1.PodDisruptionBudgetSpec{
 			MinAvailable: util.IntstrPointer(1),
 			Selector: &metav1.LabelSelector{
-				MatchLabels: labels,
+				MatchLabels: r.labels(),
 			},
 		},
 	}

@@ -56,8 +56,9 @@ import (
 	"github.com/banzaicloud/istio-operator/pkg/resources/citadel"
 	"github.com/banzaicloud/istio-operator/pkg/resources/cni"
 	"github.com/banzaicloud/istio-operator/pkg/resources/common"
+	"github.com/banzaicloud/istio-operator/pkg/resources/egressgateway"
 	"github.com/banzaicloud/istio-operator/pkg/resources/galley"
-	"github.com/banzaicloud/istio-operator/pkg/resources/gateways"
+	"github.com/banzaicloud/istio-operator/pkg/resources/ingressgateway"
 	"github.com/banzaicloud/istio-operator/pkg/resources/istiocoredns"
 	"github.com/banzaicloud/istio-operator/pkg/resources/mixer"
 	"github.com/banzaicloud/istio-operator/pkg/resources/mixerlesstelemetry"
@@ -239,7 +240,7 @@ func (r *ReconcileConfig) reconcile(logger logr.Logger, config *istiov1beta1.Ist
 	}
 
 	if config.Status.Status == istiov1beta1.Reconciling {
-		logger.Info("cannot trigger reconcile while already reconciling")
+		logger.V(1).Info("cannot trigger reconcile while already reconciling")
 		return reconcile.Result{
 			Requeue:      true,
 			RequeueAfter: time.Duration(30) * time.Second,
@@ -273,9 +274,10 @@ func (r *ReconcileConfig) reconcile(logger logr.Logger, config *istiov1beta1.Ist
 		}, r.Client, r.dynamic, config),
 		galley.New(r.Client, config),
 		pilot.New(r.Client, r.dynamic, config),
-		gateways.New(r.Client, r.dynamic, config),
 		mixer.NewPolicyReconciler(r.Client, r.dynamic, config),
 		mixer.NewTelemetryReconciler(r.Client, r.dynamic, config),
+		ingressgateway.New(r.Client, r.dynamic, config),
+		egressgateway.New(r.Client, r.dynamic, config),
 		cni.New(r.Client, config),
 		sidecarinjector.New(r.Client, config),
 		nodeagent.New(r.Client, config),
@@ -490,7 +492,7 @@ func initWatches(c controller.Controller, scheme *runtime.Scheme, watchCreatedRe
 				},
 			}
 		}),
-	})
+	}, k8sutil.GetWatchPredicateForRemoteIstioAvailability())
 	if err != nil {
 		return err
 	}

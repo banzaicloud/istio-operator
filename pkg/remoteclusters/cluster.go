@@ -18,6 +18,7 @@ package remoteclusters
 
 import (
 	"context"
+	"sync"
 
 	"github.com/go-logr/logr"
 	"github.com/goph/emperror"
@@ -29,6 +30,7 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/manager"
 
 	istiov1beta1 "github.com/banzaicloud/istio-operator/pkg/apis/istio/v1beta1"
+	"github.com/banzaicloud/istio-operator/pkg/controller/meshgateway"
 )
 
 type Cluster struct {
@@ -36,8 +38,9 @@ type Cluster struct {
 	config []byte
 	log    logr.Logger
 
-	stop    <-chan struct{}
-	stopper chan<- struct{}
+	stop       <-chan struct{}
+	stopper    chan<- struct{}
+	initClient sync.Once
 
 	mgr manager.Manager
 
@@ -78,6 +81,9 @@ func (c *Cluster) initK8SClients() error {
 		return err
 	}
 
+	// add mesh gateway controller to the manager
+	meshgateway.Add(c.mgr)
+
 	c.ctrlRuntimeClient = c.mgr.GetClient()
 
 	dynamicClient, err := dynamic.NewForConfig(c.restConfig)
@@ -100,7 +106,9 @@ func (c *Cluster) Reconcile(remoteConfig *istiov1beta1.RemoteIstio, istio *istio
 	}
 
 	// init k8s clients
-	err = c.initK8SClients()
+	c.initClient.Do(func() {
+		err = c.initK8SClients()
+	})
 	if err != nil {
 		return emperror.Wrap(err, "could not init k8s clients")
 	}
@@ -129,17 +137,23 @@ func (c *Cluster) GetRemoteConfig() *istiov1beta1.RemoteIstio {
 	return c.remoteConfig
 }
 
-func (c *Cluster) RemoveConfig() error {
+func (c *Cluster) RemoveRemoteIstioComponents() error {
 	if c.istioConfig == nil {
 		return nil
 	}
-	c.log.Info("removing istio from remote cluster by removing its config")
-	err := c.ctrlRuntimeClient.Delete(context.TODO(), c.istioConfig)
-	if k8serrors.IsNotFound(err) {
-		err = nil
+	c.log.Info("removing istio from remote cluster by removing installed CRDs")
+
+	err := c.ctrlRuntimeClient.Delete(context.TODO(), c.istiocrd())
+	if err != nil && !k8serrors.IsNotFound(err) {
+		emperror.Wrap(err, "could not remove istio CRD from remote cluster")
 	}
 
-	return emperror.Wrap(err, "could not remove istio config from remote cluster")
+	err = c.ctrlRuntimeClient.Delete(context.TODO(), c.meshgatewaycrd())
+	if err != nil && k8serrors.IsNotFound(err) {
+		return emperror.Wrap(err, "could not remove mesh gateway CRD from remote cluster")
+	}
+
+	return nil
 }
 
 func (c *Cluster) Shutdown() {

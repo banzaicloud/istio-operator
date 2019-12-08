@@ -23,15 +23,15 @@ import (
 	"k8s.io/apimachinery/pkg/runtime"
 )
 
-func (r *Reconciler) serviceAccount(gw string) runtime.Object {
+func (r *Reconciler) serviceAccount() runtime.Object {
 	return &apiv1.ServiceAccount{
-		ObjectMeta: templates.ObjectMeta(serviceAccountName(gw), gwLabels(gw), r.Config),
+		ObjectMeta: templates.ObjectMeta(r.serviceAccountName(), r.labels(), r.gw),
 	}
 }
 
-func (r *Reconciler) clusterRole(gw string) runtime.Object {
+func (r *Reconciler) clusterRole() runtime.Object {
 	return &rbacv1.ClusterRole{
-		ObjectMeta: templates.ObjectMetaClusterScope(clusterRoleName(gw), labelSelector(gw), r.Config),
+		ObjectMeta: templates.ObjectMetaClusterScope(r.clusterRoleName(), r.labelSelector(), r.gw),
 		Rules: []rbacv1.PolicyRule{
 			{
 				APIGroups: []string{"networking.istio.io"},
@@ -42,27 +42,27 @@ func (r *Reconciler) clusterRole(gw string) runtime.Object {
 	}
 }
 
-func (r *Reconciler) clusterRoleBinding(gw string) runtime.Object {
+func (r *Reconciler) clusterRoleBinding() runtime.Object {
 	return &rbacv1.ClusterRoleBinding{
-		ObjectMeta: templates.ObjectMetaClusterScope(clusterRoleBindingName(gw), labelSelector(gw), r.Config),
+		ObjectMeta: templates.ObjectMetaClusterScope(r.clusterRoleBindingName(), r.labelSelector(), r.gw),
 		RoleRef: rbacv1.RoleRef{
 			Kind:     "ClusterRole",
 			APIGroup: "rbac.authorization.k8s.io",
-			Name:     clusterRoleName(gw),
+			Name:     r.clusterRoleName(),
 		},
 		Subjects: []rbacv1.Subject{
 			{
 				Kind:      "ServiceAccount",
-				Name:      serviceAccountName(gw),
+				Name:      r.serviceAccountName(),
 				Namespace: r.Config.Namespace,
 			},
 		},
 	}
 }
 
-func (r *Reconciler) role(gw string) runtime.Object {
+func (r *Reconciler) role() runtime.Object {
 	return &rbacv1.Role{
-		ObjectMeta: templates.ObjectMeta(roleName(gw), labelSelector(gw), r.Config),
+		ObjectMeta: templates.ObjectMeta(r.roleName(), r.labelSelector(), r.gw),
 		Rules: []rbacv1.PolicyRule{
 			{
 				APIGroups: []string{""},
@@ -73,18 +73,18 @@ func (r *Reconciler) role(gw string) runtime.Object {
 	}
 }
 
-func (r *Reconciler) roleBinding(gw string) runtime.Object {
+func (r *Reconciler) roleBinding() runtime.Object {
 	return &rbacv1.RoleBinding{
-		ObjectMeta: templates.ObjectMeta(roleBindingName(gw), labelSelector(gw), r.Config),
+		ObjectMeta: templates.ObjectMeta(r.roleBindingName(), r.labelSelector(), r.gw),
 		RoleRef: rbacv1.RoleRef{
 			Kind:     "Role",
 			APIGroup: "rbac.authorization.k8s.io",
-			Name:     roleName(gw),
+			Name:     r.roleName(),
 		},
 		Subjects: []rbacv1.Subject{
 			{
 				Kind:      "ServiceAccount",
-				Name:      serviceAccountName(gw),
+				Name:      r.serviceAccountName(),
 				Namespace: r.Config.Namespace,
 			},
 		},

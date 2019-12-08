@@ -14,7 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package gateways
+package egressgateway
 
 import (
 	"k8s.io/apimachinery/pkg/runtime/schema"
@@ -23,7 +23,11 @@ import (
 	"github.com/banzaicloud/istio-operator/pkg/util"
 )
 
-func (r *Reconciler) meshExpansionGateway() *k8sutil.DynamicObject {
+const (
+	multimeshResourceNamePrefix = "istio-multicluster"
+)
+
+func (r *Reconciler) multimeshEgressGateway() *k8sutil.DynamicObject {
 	return &k8sutil.DynamicObject{
 		Gvr: schema.GroupVersionResource{
 			Group:    "networking.istio.io",
@@ -31,41 +35,23 @@ func (r *Reconciler) meshExpansionGateway() *k8sutil.DynamicObject {
 			Resource: "gateways",
 		},
 		Kind:      "Gateway",
-		Name:      "meshexpansion-gateway",
+		Name:      multimeshResourceNamePrefix + "-egressgateway",
 		Namespace: r.Config.Namespace,
 		Spec: map[string]interface{}{
 			"servers": []map[string]interface{}{
 				{
+					"hosts": util.EmptyTypedStrSlice("*.global"),
 					"port": map[string]interface{}{
-						"name":     "tcp-pilot",
-						"protocol": "TCP",
-						"number":   15011,
-					},
-					"hosts": util.EmptyTypedStrSlice("*"),
-				},
-				{
-					"port": map[string]interface{}{
-						"name":     "tcp-citadel",
-						"protocol": "TCP",
-						"number":   8060,
-					},
-					"hosts": util.EmptyTypedStrSlice("*"),
-				},
-				{
-					"port": map[string]interface{}{
-						"name":     "tls-mixer",
+						"name":     "tls",
 						"protocol": "TLS",
-						"number":   15004,
+						"number":   15443,
 					},
 					"tls": map[string]interface{}{
 						"mode": "AUTO_PASSTHROUGH",
 					},
-					"hosts": util.EmptyTypedStrSlice("*"),
 				},
 			},
-			"selector": map[string]interface{}{
-				"istio": "ingressgateway",
-			},
+			"selector": r.labels(),
 		},
 		Owner: r.Config,
 	}

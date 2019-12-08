@@ -14,7 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package gateways
+package ingressgateway
 
 import (
 	"k8s.io/apimachinery/pkg/runtime/schema"
@@ -26,38 +26,6 @@ import (
 const (
 	multimeshResourceNamePrefix = "istio-multicluster"
 )
-
-func (r *Reconciler) multimeshEgressGateway() *k8sutil.DynamicObject {
-	return &k8sutil.DynamicObject{
-		Gvr: schema.GroupVersionResource{
-			Group:    "networking.istio.io",
-			Version:  "v1alpha3",
-			Resource: "gateways",
-		},
-		Kind:      "Gateway",
-		Name:      multimeshResourceNamePrefix + "-egressgateway",
-		Namespace: r.Config.Namespace,
-		Spec: map[string]interface{}{
-			"servers": []map[string]interface{}{
-				{
-					"hosts": util.EmptyTypedStrSlice("*.global"),
-					"port": map[string]interface{}{
-						"name":     "tls",
-						"protocol": "TLS",
-						"number":   15443,
-					},
-					"tls": map[string]interface{}{
-						"mode": "AUTO_PASSTHROUGH",
-					},
-				},
-			},
-			"selector": map[string]interface{}{
-				"istio": "egressgateway",
-			},
-		},
-		Owner: r.Config,
-	}
-}
 
 func (r *Reconciler) multimeshIngressGateway() *k8sutil.DynamicObject {
 	return &k8sutil.DynamicObject{
@@ -83,9 +51,7 @@ func (r *Reconciler) multimeshIngressGateway() *k8sutil.DynamicObject {
 					},
 				},
 			},
-			"selector": map[string]interface{}{
-				"istio": "ingressgateway",
-			},
+			"selector": resourceLabels,
 		},
 		Owner: r.Config,
 	}
@@ -102,9 +68,7 @@ func (r *Reconciler) multimeshEnvoyFilter() *k8sutil.DynamicObject {
 		Name:      multimeshResourceNamePrefix + "-ingressgateway",
 		Namespace: r.Config.Namespace,
 		Spec: map[string]interface{}{
-			"workloadLabels": map[string]interface{}{
-				"istio": "ingressgateway",
-			},
+			"workloadLabels": resourceLabels,
 			"filters": []map[string]interface{}{
 				{
 					"listenerMatch": map[string]interface{}{

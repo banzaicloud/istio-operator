@@ -89,7 +89,7 @@ func (c *Cluster) reconcileConfig(remoteConfig *istiov1beta1.RemoteIstio, istio 
 		}
 	}
 
-	crd := c.configcrd()
+	crd := c.istiocrd()
 	istioConfig.TypeMeta.Kind = crd.Spec.Names.Kind
 	istioConfig.TypeMeta.APIVersion = crd.Spec.Group + "/" + crd.Spec.Version
 	c.istioConfig = &istioConfig
