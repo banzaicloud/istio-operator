@@ -185,6 +185,7 @@ func (r *CrdOperator) Reconcile(config *istiov1beta1.Istio, log logr.Logger) err
 			}
 			log.Info("CRD created")
 		} else {
+			crd.ResourceVersion = current.ResourceVersion
 			patchResult, err := patch.DefaultPatchMaker.Calculate(current, crd)
 			if err != nil {
 				log.Error(err, "could not match objects", "kind", crd.Spec.Names.Kind)
@@ -198,12 +199,11 @@ func (r *CrdOperator) Reconcile(config *istiov1beta1.Istio, log logr.Logger) err
 					"modified", string(patchResult.Modified),
 					"original", string(patchResult.Original))
 			}
-			// Need to set this before resourceversion is set, as it would constantly change otherwise
 
 			if err := patch.DefaultAnnotator.SetLastAppliedAnnotation(crd); err != nil {
 				log.Error(err, "Failed to set last applied annotation", "crd", crd)
 			}
-			crd.ResourceVersion = current.ResourceVersion
+
 			if _, err := crdClient.Update(crd); err != nil {
 				if apierrors.IsConflict(err) || apierrors.IsInvalid(err) {
 					err := crdClient.Delete(crd.Name, &metav1.DeleteOptions{})
