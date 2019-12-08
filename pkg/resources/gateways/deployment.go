@@ -34,23 +34,20 @@ import (
 	"github.com/banzaicloud/istio-operator/pkg/util"
 )
 
-func (r *Reconciler) deployment(gw string) runtime.Object {
-	gwConfig := r.getGatewayConfig(gw)
-	labels := r.labels(gw)
-
+func (r *Reconciler) deployment() runtime.Object {
 	var initContainers []apiv1.Container
 	if r.Config.Spec.Proxy.EnableCoreDump {
 		initContainers = []apiv1.Container{GetCoreDumpContainer(r.Config)}
 	}
 
 	var containers = make([]apiv1.Container, 0)
-	if gw == ingress && util.PointerToBool(gwConfig.SDS.Enabled) {
+	if util.PointerToBool(r.gw.Spec.SDS.Enabled) {
 		containers = append(containers, apiv1.Container{
 			Name:            "ingress-sds",
-			Image:           gwConfig.SDS.Image,
+			Image:           r.gw.Spec.SDS.Image,
 			ImagePullPolicy: r.Config.Spec.ImagePullPolicy,
 			Resources: templates.GetResourcesRequirementsOrDefault(
-				gwConfig.SDS.Resources,
+				r.gw.Spec.SDS.Resources,
 				r.Config.Spec.DefaultResources,
 			),
 			Env: []apiv1.EnvVar{
@@ -90,7 +87,7 @@ func (r *Reconciler) deployment(gw string) runtime.Object {
 		"--drainDuration", "45s",
 		"--parentShutdownDuration", "1m0s",
 		"--connectTimeout", "10s",
-		"--serviceCluster", fmt.Sprintf("istio-%s", gw),
+		"--serviceCluster", r.gw.Name,
 		"--proxyAdminPort", "15000",
 		"--statusPort", "15020",
 		"--controlPlaneAuthPolicy", templates.ControlPlaneAuthPolicy(r.Config.Spec.ControlPlaneSecurityEnabled),
@@ -111,8 +108,8 @@ func (r *Reconciler) deployment(gw string) runtime.Object {
 		}
 	}
 
-	if gwConfig.ApplicationPorts != "" {
-		args = append(args, "--applicationPorts", gwConfig.ApplicationPorts)
+	if r.gw.Spec.ApplicationPorts != "" {
+		args = append(args, "--applicationPorts", r.gw.Spec.ApplicationPorts)
 	}
 
 	if r.Config.Spec.Proxy.LogLevel != "" {
@@ -146,7 +143,7 @@ func (r *Reconciler) deployment(gw string) runtime.Object {
 		Image:           r.Config.Spec.Proxy.Image,
 		ImagePullPolicy: r.Config.Spec.ImagePullPolicy,
 		Args:            args,
-		Ports:           r.ports(gw),
+		Ports:           r.ports(),
 		ReadinessProbe: &apiv1.Probe{
 			Handler: apiv1.Handler{
 				HTTPGet: &apiv1.HTTPGetAction{
@@ -161,47 +158,43 @@ func (r *Reconciler) deployment(gw string) runtime.Object {
 			SuccessThreshold:    1,
 			TimeoutSeconds:      1,
 		},
-		Env: append(templates.IstioProxyEnv(r.Config), r.envVars(gw, gwConfig)...),
+		Env: append(templates.IstioProxyEnv(r.Config), r.envVars()...),
 		Resources: templates.GetResourcesRequirementsOrDefault(
 			r.Config.Spec.Proxy.Resources,
 			r.Config.Spec.DefaultResources,
 		),
-		VolumeMounts:             r.volumeMounts(gw, gwConfig),
+		VolumeMounts:             r.volumeMounts(),
 		TerminationMessagePath:   apiv1.TerminationMessagePathDefault,
 		TerminationMessagePolicy: apiv1.TerminationMessageReadFile,
 	})
 
 	return &appsv1.Deployment{
-		ObjectMeta: templates.ObjectMeta(gatewayName(gw), labels, r.Config),
+		ObjectMeta: templates.ObjectMeta(r.gatewayName(), r.labels(), r.gw),
 		Spec: appsv1.DeploymentSpec{
 			Replicas: util.IntPointer(k8sutil.GetHPAReplicaCountOrDefault(r.Client, types.NamespacedName{
-				Name:      hpaName(gw),
+				Name:      r.hpaName(),
 				Namespace: r.Config.Namespace,
-			}, util.PointerToInt32(gwConfig.ReplicaCount))),
+			}, *r.gw.Spec.ReplicaCount)),
 			Selector: &metav1.LabelSelector{
-				MatchLabels: labels,
+				MatchLabels: r.labels(),
 			},
 			Template: apiv1.PodTemplateSpec{
 				ObjectMeta: metav1.ObjectMeta{
-					Labels:      labels,
+					Labels:      r.labels(),
 					Annotations: templates.DefaultDeployAnnotations(),
 				},
 				Spec: apiv1.PodSpec{
-					ServiceAccountName: serviceAccountName(gw),
+					ServiceAccountName: r.serviceAccountName(),
 					InitContainers:     initContainers,
 					Containers:         containers,
-					Volumes:            r.volumes(gw, gwConfig),
-					Affinity:           gwConfig.Affinity,
-					NodeSelector:       gwConfig.NodeSelector,
-					Tolerations:        gwConfig.Tolerations,
+					Volumes:            r.volumes(),
+					Affinity:           r.gw.Spec.Affinity,
+					NodeSelector:       r.gw.Spec.NodeSelector,
+					Tolerations:        r.gw.Spec.Tolerations,
 				},
 			},
 		},
 	}
-}
-
-func (r *Reconciler) labels(gw string) map[string]string {
-	return util.MergeStringMaps(labelSelector(gw), gwLabels(gw))
 }
 
 func (r *Reconciler) getEnvoyServiceConfigurationJSON(config istiov1beta1.EnvoyServiceCommonConfiguration) (string, error) {
@@ -225,32 +218,17 @@ func (r *Reconciler) getEnvoyServiceConfigurationJSON(config istiov1beta1.EnvoyS
 	return string(data), err
 }
 
-func (r *Reconciler) ports(gw string) []apiv1.ContainerPort {
-	switch gw {
-	case ingress:
-		var ports []apiv1.ContainerPort
-		for _, port := range r.Config.Spec.Gateways.IngressConfig.Ports {
-			ports = append(ports, apiv1.ContainerPort{
-				ContainerPort: port.Port, Protocol: port.Protocol, Name: port.Name,
-			})
-		}
+func (r *Reconciler) ports() []apiv1.ContainerPort {
+	var ports []apiv1.ContainerPort
+	for _, port := range r.gw.Spec.Ports {
 		ports = append(ports, apiv1.ContainerPort{
-			ContainerPort: 15090, Protocol: apiv1.ProtocolTCP, Name: "http-envoy-prom",
+			ContainerPort: port.Port, Protocol: port.Protocol, Name: port.Name,
 		})
-		return ports
-	case egress:
-		var ports []apiv1.ContainerPort
-		for _, port := range r.Config.Spec.Gateways.EgressConfig.Ports {
-			ports = append(ports, apiv1.ContainerPort{
-				ContainerPort: port.Port, Protocol: port.Protocol, Name: port.Name,
-			})
-		}
-		ports = append(ports, apiv1.ContainerPort{
-			ContainerPort: 15090, Protocol: apiv1.ProtocolTCP, Name: "http-envoy-prom",
-		})
-		return ports
 	}
-	return nil
+	ports = append(ports, apiv1.ContainerPort{
+		ContainerPort: 15090, Protocol: apiv1.ProtocolTCP, Name: "http-envoy-prom",
+	})
+	return ports
 }
 
 func (r *Reconciler) discoveryPort() string {
@@ -260,7 +238,7 @@ func (r *Reconciler) discoveryPort() string {
 	return "15010"
 }
 
-func (r *Reconciler) envVars(gw string, gwConfig *istiov1beta1.GatewayConfiguration) []apiv1.EnvVar {
+func (r *Reconciler) envVars() []apiv1.EnvVar {
 	envVars := []apiv1.EnvVar{
 		{
 			Name: "HOST_IP",
@@ -313,21 +291,21 @@ func (r *Reconciler) envVars(gw string, gwConfig *istiov1beta1.GatewayConfigurat
 		},
 		{
 			Name:  "ISTIO_META_WORKLOAD_NAME",
-			Value: gatewayName(gw),
+			Value: r.gatewayName(),
 		},
 		{
 			Name:  "ISTIO_META_OWNER",
-			Value: fmt.Sprintf("kubernetes://api/apps/v1/namespaces/%s/deployments/%s", r.Config.Namespace, gatewayName(gw)),
+			Value: fmt.Sprintf("kubernetes://api/apps/v1/namespaces/%s/deployments/%s", r.Config.Namespace, r.gatewayName()),
 		},
 	}
 
 	envVars = append(envVars, apiv1.EnvVar{
 		Name:  "ISTIO_META_USER_SDS",
-		Value: strconv.FormatBool(util.PointerToBool(gwConfig.SDS.Enabled)),
+		Value: strconv.FormatBool(util.PointerToBool(r.gw.Spec.SDS.Enabled)),
 	})
 	envVars = append(envVars, apiv1.EnvVar{
 		Name:  "SDS_ENABLED",
-		Value: strconv.FormatBool(util.PointerToBool(gwConfig.SDS.Enabled)),
+		Value: strconv.FormatBool(util.PointerToBool(r.gw.Spec.SDS.Enabled)),
 	})
 
 	if r.Config.Spec.ClusterName != "" {
@@ -342,16 +320,17 @@ func (r *Reconciler) envVars(gw string, gwConfig *istiov1beta1.GatewayConfigurat
 		})
 	}
 
-	if util.PointerToBool(r.Config.Spec.MeshExpansion) && gw == ingress && r.Config.Spec.GetNetworkName() != "" {
+	// TODO ingress
+	if util.PointerToBool(r.Config.Spec.MeshExpansion) && r.Config.Spec.ClusterName != "" {
 		envVars = append(envVars, apiv1.EnvVar{
 			Name:  "ISTIO_META_NETWORK",
-			Value: r.Config.Spec.GetNetworkName(),
+			Value: r.Config.Spec.ClusterName,
 		})
 	}
-	if gwConfig.RequestedNetworkView != "" {
+	if r.gw.Spec.RequestedNetworkView != "" {
 		envVars = append(envVars, apiv1.EnvVar{
 			Name:  "ISTIO_META_REQUESTED_NETWORK_VIEW",
-			Value: gwConfig.RequestedNetworkView,
+			Value: r.gw.Spec.RequestedNetworkView,
 		})
 	}
 	if r.Config.Spec.AutoMTLS {
@@ -361,7 +340,7 @@ func (r *Reconciler) envVars(gw string, gwConfig *istiov1beta1.GatewayConfigurat
 		})
 	}
 
-	labelsJSON, err := json.Marshal(r.labels(gw))
+	labelsJSON, err := json.Marshal(r.labels())
 	if err == nil {
 		envVars = append(envVars, apiv1.EnvVar{
 			Name:  "ISTIO_METAJSON_LABELS",
@@ -424,7 +403,7 @@ func (r *Reconciler) envVars(gw string, gwConfig *istiov1beta1.GatewayConfigurat
 	return envVars
 }
 
-func (r *Reconciler) volumeMounts(gw string, gwConfig *istiov1beta1.GatewayConfiguration) []apiv1.VolumeMount {
+func (r *Reconciler) volumeMounts() []apiv1.VolumeMount {
 	vms := []apiv1.VolumeMount{
 		{
 			Name:      "istio-certs",
@@ -432,13 +411,13 @@ func (r *Reconciler) volumeMounts(gw string, gwConfig *istiov1beta1.GatewayConfi
 			ReadOnly:  true,
 		},
 		{
-			Name:      fmt.Sprintf("%s-certs", gw),
-			MountPath: fmt.Sprintf("/etc/istio/%s-certs", gw),
+			Name:      fmt.Sprintf("%s-certs", "ingressgateway"),
+			MountPath: fmt.Sprintf("/etc/istio/%s-certs", "ingressgateway"),
 			ReadOnly:  true,
 		},
 		{
-			Name:      fmt.Sprintf("%s-ca-certs", gw),
-			MountPath: fmt.Sprintf("/etc/istio/%s-ca-certs", gw),
+			Name:      fmt.Sprintf("%s-ca-certs", "ingressgateway"),
+			MountPath: fmt.Sprintf("/etc/istio/%s-ca-certs", "ingressgateway"),
 			ReadOnly:  true,
 		},
 	}
@@ -453,7 +432,7 @@ func (r *Reconciler) volumeMounts(gw string, gwConfig *istiov1beta1.GatewayConfi
 			MountPath: "/var/run/secrets/tokens",
 		})
 	}
-	if util.PointerToBool(gwConfig.SDS.Enabled) {
+	if util.PointerToBool(r.gw.Spec.SDS.Enabled) {
 		vms = append(vms, apiv1.VolumeMount{
 			Name:      "ingressgatewaysdsudspath",
 			MountPath: "/var/run/ingress_gateway",
@@ -472,33 +451,33 @@ func (r *Reconciler) volumeMounts(gw string, gwConfig *istiov1beta1.GatewayConfi
 	return vms
 }
 
-func (r *Reconciler) volumes(gw string, gwConfig *istiov1beta1.GatewayConfiguration) []apiv1.Volume {
+func (r *Reconciler) volumes() []apiv1.Volume {
 	volumes := []apiv1.Volume{
 		{
 			Name: "istio-certs",
 			VolumeSource: apiv1.VolumeSource{
 				Secret: &apiv1.SecretVolumeSource{
-					SecretName:  fmt.Sprintf("istio.%s", serviceAccountName(gw)),
+					SecretName:  fmt.Sprintf("istio.%s", r.serviceAccountName()),
 					Optional:    util.BoolPointer(true),
 					DefaultMode: util.IntPointer(420),
 				},
 			},
 		},
 		{
-			Name: fmt.Sprintf("%s-certs", gw),
+			Name: fmt.Sprintf("%s-certs", "ingressgateway"),
 			VolumeSource: apiv1.VolumeSource{
 				Secret: &apiv1.SecretVolumeSource{
-					SecretName:  fmt.Sprintf("istio-%s-certs", gw),
+					SecretName:  fmt.Sprintf("%s-certs", r.gw.Name),
 					Optional:    util.BoolPointer(true),
 					DefaultMode: util.IntPointer(420),
 				},
 			},
 		},
 		{
-			Name: fmt.Sprintf("%s-ca-certs", gw),
+			Name: fmt.Sprintf("%s-ca-certs", "ingressgateway"),
 			VolumeSource: apiv1.VolumeSource{
 				Secret: &apiv1.SecretVolumeSource{
-					SecretName:  fmt.Sprintf("istio-%s-ca-certs", gw),
+					SecretName:  fmt.Sprintf("%s-ca-certs", r.gw.Name),
 					Optional:    util.BoolPointer(true),
 					DefaultMode: util.IntPointer(420),
 				},
@@ -533,7 +512,7 @@ func (r *Reconciler) volumes(gw string, gwConfig *istiov1beta1.GatewayConfigurat
 			},
 		})
 	}
-	if util.PointerToBool(gwConfig.SDS.Enabled) {
+	if util.PointerToBool(r.gw.Spec.SDS.Enabled) {
 		volumes = append(volumes, apiv1.Volume{
 			Name: "ingressgatewaysdsudspath",
 			VolumeSource: apiv1.VolumeSource{

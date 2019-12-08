@@ -25,54 +25,30 @@ import (
 	"github.com/banzaicloud/istio-operator/pkg/util"
 )
 
-func (r *Reconciler) service(gw string) runtime.Object {
-	gwConfig := r.getGatewayConfig(gw)
+func (r *Reconciler) service() runtime.Object {
 	return &apiv1.Service{
-		ObjectMeta: templates.ObjectMetaWithAnnotations(gatewayName(gw), util.MergeStringMaps(gwConfig.ServiceLabels, labelSelector(gw)), gwConfig.ServiceAnnotations, r.Config),
+		ObjectMeta: templates.ObjectMetaWithAnnotations(r.gatewayName(), util.MergeStringMaps(r.gw.Spec.ServiceLabels, r.labels()), r.gw.Spec.ServiceAnnotations, r.gw),
 		Spec: apiv1.ServiceSpec{
-			LoadBalancerIP: r.loadBalancerIP(gw),
-			Type:           r.serviceType(gw),
-			Ports:          r.servicePorts(gw),
-			Selector:       labelSelector(gw),
+			LoadBalancerIP: r.gw.Spec.LoadBalancerIP,
+			Type:           r.gw.Spec.ServiceType,
+			Ports:          r.servicePorts(r.gw.Name),
+			Selector:       r.labelSelector(),
 		},
 	}
 }
 
-func (r *Reconciler) servicePorts(gw string) []apiv1.ServicePort {
-	switch gw {
-	case ingress:
-		ports := r.Config.Spec.Gateways.IngressConfig.Ports
+func (r *Reconciler) servicePorts(name string) []apiv1.ServicePort {
+	if name == defaultIngressgatewayName {
+		ports := r.gw.Spec.Ports
 		if util.PointerToBool(r.Config.Spec.MeshExpansion) {
 			ports = append(ports, []apiv1.ServicePort{
-				{Port: 15011, Protocol: apiv1.ProtocolTCP, TargetPort: intstr.FromInt(15011), Name: "tcp-pilot-grpc-tls", NodePort: 31470},
-				{Port: 15004, Protocol: apiv1.ProtocolTCP, TargetPort: intstr.FromInt(15004), Name: "tcp-mixer-grpc-tls", NodePort: 31480},
-				{Port: 8060, Protocol: apiv1.ProtocolTCP, TargetPort: intstr.FromInt(8060), Name: "tcp-citadel-grpc-tls", NodePort: 31490},
-				{Port: 853, Protocol: apiv1.ProtocolTCP, TargetPort: intstr.FromInt(853), Name: "tcp-dns-tls", NodePort: 31500},
+				{Port: 15011, Protocol: apiv1.ProtocolTCP, TargetPort: intstr.FromInt(15011), Name: "tcp-pilot-grpc-tls"},
+				{Port: 15004, Protocol: apiv1.ProtocolTCP, TargetPort: intstr.FromInt(15004), Name: "tcp-mixer-grpc-tls"},
+				{Port: 8060, Protocol: apiv1.ProtocolTCP, TargetPort: intstr.FromInt(8060), Name: "tcp-citadel-grpc-tls"},
+				{Port: 853, Protocol: apiv1.ProtocolTCP, TargetPort: intstr.FromInt(853), Name: "tcp-dns-tls"},
 			}...)
 		}
 		return ports
-	case egress:
-		return r.Config.Spec.Gateways.EgressConfig.Ports
 	}
-	return []apiv1.ServicePort{}
-}
-
-func (r *Reconciler) serviceType(gw string) apiv1.ServiceType {
-	switch gw {
-	case ingress:
-		return r.Config.Spec.Gateways.IngressConfig.ServiceType
-	case egress:
-		return r.Config.Spec.Gateways.EgressConfig.ServiceType
-	}
-	return ""
-}
-
-func (r *Reconciler) loadBalancerIP(gw string) string {
-	switch gw {
-	case ingress:
-		return r.Config.Spec.Gateways.IngressConfig.LoadBalancerIP
-	case egress:
-		return r.Config.Spec.Gateways.EgressConfig.LoadBalancerIP
-	}
-	return ""
+	return r.gw.Spec.Ports
 }

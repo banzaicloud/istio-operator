@@ -138,17 +138,9 @@ type GatewaySDSConfiguration struct {
 }
 
 type GatewayConfiguration struct {
-	Enabled                                         *bool `json:"enabled,omitempty"`
-	BaseK8sResourceConfigurationWithHPAWithoutImage `json:",inline"`
-	// +kubebuilder:validation:Enum=ClusterIP,NodePort,LoadBalancer
-	ServiceType          corev1.ServiceType      `json:"serviceType,omitempty"`
-	LoadBalancerIP       string                  `json:"loadBalancerIP,omitempty"`
-	ServiceAnnotations   map[string]string       `json:"serviceAnnotations,omitempty"`
-	ServiceLabels        map[string]string       `json:"serviceLabels,omitempty"`
-	SDS                  GatewaySDSConfiguration `json:"sds,omitempty"`
-	Ports                []corev1.ServicePort    `json:"ports,omitempty"`
-	ApplicationPorts     string                  `json:"applicationPorts,omitempty"`
-	RequestedNetworkView string                  `json:"requestedNetworkView,omitempty"`
+	MeshGatewayConfiguration `json:",inline"`
+	Ports                    []corev1.ServicePort `json:"ports,omitempty"`
+	Enabled                  *bool                `json:"enabled,omitempty"`
 }
 
 type K8sIngressConfiguration struct {

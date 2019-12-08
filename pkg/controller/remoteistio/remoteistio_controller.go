@@ -163,7 +163,7 @@ func (r *ReconcileRemoteConfig) Reconcile(request reconcile.Request) (reconcile.
 			logger.Info("removing remote istio")
 			cluster, err := r.remoteClustersMgr.Get(remoteConfig.Name)
 			if err == nil {
-				err = cluster.RemoveConfig()
+				err = cluster.RemoveRemoteIstioComponents()
 				if err != nil {
 					return reconcile.Result{}, emperror.Wrap(err, "could not remove remote config to remote istio")
 				}
@@ -244,7 +244,7 @@ func (r *ReconcileRemoteConfig) reconcile(remoteConfig *istiov1beta1.RemoteIstio
 	}
 
 	if remoteConfig.Status.Status == istiov1beta1.Reconciling {
-		logger.Info("cannot trigger reconcile while already reconciling")
+		logger.V(1).Info("cannot trigger reconcile while already reconciling")
 		return reconcile.Result{
 			Requeue:      true,
 			RequeueAfter: time.Duration(30) * time.Second,

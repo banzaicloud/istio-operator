@@ -46,6 +46,24 @@ func GetWatchPredicateForIstio() predicate.Funcs {
 	}
 }
 
+func GetWatchPredicateForRemoteIstioAvailability() predicate.Funcs {
+	return predicate.Funcs{
+		CreateFunc: func(e event.CreateEvent) bool {
+			return false
+		},
+		DeleteFunc: func(e event.DeleteEvent) bool {
+			return true
+		},
+		UpdateFunc: func(e event.UpdateEvent) bool {
+			new := e.ObjectNew.(*istiov1beta1.RemoteIstio)
+			if new.Status.Status == istiov1beta1.Available {
+				return true
+			}
+			return false
+		},
+	}
+}
+
 func GetWatchPredicateForRemoteIstio() predicate.Funcs {
 	return predicate.Funcs{
 		CreateFunc: func(e event.CreateEvent) bool {
@@ -115,4 +133,25 @@ func GetWatchPredicateForIstioService(name string) predicate.Funcs {
 
 func GetWatchPredicateForIstioIngressGateway() predicate.Funcs {
 	return GetWatchPredicateForIstioService("ingressgateway")
+}
+
+func GetWatchPredicateForMeshGateway() predicate.Funcs {
+	return predicate.Funcs{
+		CreateFunc: func(e event.CreateEvent) bool {
+			return true
+		},
+		DeleteFunc: func(e event.DeleteEvent) bool {
+			return true
+		},
+		UpdateFunc: func(e event.UpdateEvent) bool {
+			old := e.ObjectOld.(*istiov1beta1.MeshGateway)
+			new := e.ObjectNew.(*istiov1beta1.MeshGateway)
+			if !reflect.DeepEqual(old.Spec, new.Spec) ||
+				old.GetDeletionTimestamp() != new.GetDeletionTimestamp() ||
+				old.GetGeneration() != new.GetGeneration() {
+				return true
+			}
+			return false
+		},
+	}
 }

@@ -17,23 +17,28 @@ limitations under the License.
 package templates
 
 import (
+	"k8s.io/apimachinery/pkg/api/meta"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/runtime"
 
-	istiov1beta1 "github.com/banzaicloud/istio-operator/pkg/apis/istio/v1beta1"
 	"github.com/banzaicloud/istio-operator/pkg/util"
 )
 
-func ObjectMeta(name string, labels map[string]string, config *istiov1beta1.Istio) metav1.ObjectMeta {
+func ObjectMeta(name string, labels map[string]string, config runtime.Object) metav1.ObjectMeta {
+	obj := config.DeepCopyObject()
+	objMeta, _ := meta.Accessor(obj)
+	ovk := config.GetObjectKind().GroupVersionKind()
+
 	return metav1.ObjectMeta{
 		Name:      name,
-		Namespace: config.Namespace,
+		Namespace: objMeta.GetNamespace(),
 		Labels:    labels,
 		OwnerReferences: []metav1.OwnerReference{
 			{
-				APIVersion:         config.APIVersion,
-				Kind:               config.Kind,
-				Name:               config.Name,
-				UID:                config.UID,
+				APIVersion:         ovk.GroupVersion().String(),
+				Kind:               ovk.Kind,
+				Name:               objMeta.GetName(),
+				UID:                objMeta.GetUID(),
 				Controller:         util.BoolPointer(true),
 				BlockOwnerDeletion: util.BoolPointer(true),
 			},
@@ -41,22 +46,26 @@ func ObjectMeta(name string, labels map[string]string, config *istiov1beta1.Isti
 	}
 }
 
-func ObjectMetaWithAnnotations(name string, labels map[string]string, annotations map[string]string, config *istiov1beta1.Istio) metav1.ObjectMeta {
+func ObjectMetaWithAnnotations(name string, labels map[string]string, annotations map[string]string, config runtime.Object) metav1.ObjectMeta {
 	o := ObjectMeta(name, labels, config)
 	o.Annotations = annotations
 	return o
 }
 
-func ObjectMetaClusterScope(name string, labels map[string]string, config *istiov1beta1.Istio) metav1.ObjectMeta {
+func ObjectMetaClusterScope(name string, labels map[string]string, config runtime.Object) metav1.ObjectMeta {
+	obj := config.DeepCopyObject()
+	objMeta, _ := meta.Accessor(obj)
+	ovk := config.GetObjectKind().GroupVersionKind()
+
 	return metav1.ObjectMeta{
 		Name:   name,
 		Labels: labels,
 		OwnerReferences: []metav1.OwnerReference{
 			{
-				APIVersion:         config.APIVersion,
-				Kind:               config.Kind,
-				Name:               config.Name,
-				UID:                config.UID,
+				APIVersion:         ovk.GroupVersion().String(),
+				Kind:               ovk.Kind,
+				Name:               objMeta.GetName(),
+				UID:                objMeta.GetUID(),
 				Controller:         util.BoolPointer(true),
 				BlockOwnerDeletion: util.BoolPointer(true),
 			},

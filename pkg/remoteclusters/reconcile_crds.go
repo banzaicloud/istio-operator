@@ -17,18 +17,23 @@ limitations under the License.
 package remoteclusters
 
 import (
+	apiextensionsv1beta1 "k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1beta1"
 	extensionsobj "k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1beta1"
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
+	"k8s.io/apimachinery/pkg/runtime"
+	k8syaml "k8s.io/apimachinery/pkg/util/yaml"
 
 	istiov1beta1 "github.com/banzaicloud/istio-operator/pkg/apis/istio/v1beta1"
 	"github.com/banzaicloud/istio-operator/pkg/crds"
+	"github.com/banzaicloud/istio-operator/pkg/crds/generated"
 )
 
 func (c *Cluster) reconcileCRDs(remoteConfig *istiov1beta1.RemoteIstio, istio *istiov1beta1.Istio) error {
 	c.log.Info("reconciling CRDs")
 
 	crdo, err := crds.New(c.restConfig, []*extensionsobj.CustomResourceDefinition{
-		c.configcrd(),
+		c.istiocrd(),
+		c.meshgatewaycrd(),
 	})
 	if err != nil {
 		return err
@@ -42,24 +47,38 @@ func (c *Cluster) reconcileCRDs(remoteConfig *istiov1beta1.RemoteIstio, istio *i
 	return nil
 }
 
-func (c *Cluster) configcrd() *extensionsobj.CustomResourceDefinition {
-	return &extensionsobj.CustomResourceDefinition{
-		ObjectMeta: metav1.ObjectMeta{
-			Name: "istios.istio.banzaicloud.io",
-			Labels: map[string]string{
-				"controller-tools.k8s.io": "1.0",
-			},
-		},
-		Spec: extensionsobj.CustomResourceDefinitionSpec{
-			Group:   "istio.banzaicloud.io",
-			Version: "v1beta1",
-			Scope:   "Namespaced",
-			Names: extensionsobj.CustomResourceDefinitionNames{
-				Singular: "istio",
-				Plural:   "istios",
-				Kind:     "Istio",
-				ListKind: "IstioList",
-			},
-		},
+func (c *Cluster) istiocrd() *extensionsobj.CustomResourceDefinition {
+	return c.getCRD("istio_v1beta1_istio.yaml")
+}
+
+func (c *Cluster) meshgatewaycrd() *extensionsobj.CustomResourceDefinition {
+	return c.getCRD("istio_v1beta1_meshgateway.yaml")
+}
+
+func (c *Cluster) getCRD(name string) *extensionsobj.CustomResourceDefinition {
+	var resource apiextensionsv1beta1.CustomResourceDefinition
+
+	f, err := generated.CRDs.Open("/" + name)
+	if err != nil {
+		return nil
 	}
+
+	s := runtime.NewScheme()
+	apiextensionsv1beta1.AddToScheme(s)
+
+	decoder := k8syaml.NewYAMLOrJSONDecoder(f, 1024)
+	out := &unstructured.Unstructured{}
+	err = decoder.Decode(out)
+	if err != nil {
+		return nil
+	}
+
+	err = s.Convert(out, &resource, nil)
+	if err != nil {
+		return nil
+	}
+
+	resource.Status = apiextensionsv1beta1.CustomResourceDefinitionStatus{}
+
+	return &resource
 }
