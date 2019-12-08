@@ -19,4 +19,6 @@ package v1beta1
 
 type IstioExpansion interface{}
 
+type MeshGatewayExpansion interface{}
+
 type RemoteIstioExpansion interface{}

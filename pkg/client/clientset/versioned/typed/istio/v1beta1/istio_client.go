@@ -27,6 +27,7 @@ import (
 type IstioV1beta1Interface interface {
 	RESTClient() rest.Interface
 	IstiosGetter
+	MeshGatewaysGetter
 	RemoteIstiosGetter
 }
 
@@ -37,6 +38,10 @@ type IstioV1beta1Client struct {
 
 func (c *IstioV1beta1Client) Istios(namespace string) IstioInterface {
 	return newIstios(c, namespace)
+}
+
+func (c *IstioV1beta1Client) MeshGateways(namespace string) MeshGatewayInterface {
+	return newMeshGateways(c, namespace)
 }
 
 func (c *IstioV1beta1Client) RemoteIstios(namespace string) RemoteIstioInterface {

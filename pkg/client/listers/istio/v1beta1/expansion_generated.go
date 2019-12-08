@@ -25,6 +25,14 @@ type IstioListerExpansion interface{}
 // IstioNamespaceLister.
 type IstioNamespaceListerExpansion interface{}
 
+// MeshGatewayListerExpansion allows custom methods to be added to
+// MeshGatewayLister.
+type MeshGatewayListerExpansion interface{}
+
+// MeshGatewayNamespaceListerExpansion allows custom methods to be added to
+// MeshGatewayNamespaceLister.
+type MeshGatewayNamespaceListerExpansion interface{}
+
 // RemoteIstioListerExpansion allows custom methods to be added to
 // RemoteIstioLister.
 type RemoteIstioListerExpansion interface{}

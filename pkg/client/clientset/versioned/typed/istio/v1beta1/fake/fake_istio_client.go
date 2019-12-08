@@ -31,6 +31,10 @@ func (c *FakeIstioV1beta1) Istios(namespace string) v1beta1.IstioInterface {
 	return &FakeIstios{c, namespace}
 }
 
+func (c *FakeIstioV1beta1) MeshGateways(namespace string) v1beta1.MeshGatewayInterface {
+	return &FakeMeshGateways{c, namespace}
+}
+
 func (c *FakeIstioV1beta1) RemoteIstios(namespace string) v1beta1.RemoteIstioInterface {
 	return &FakeRemoteIstios{c, namespace}
 }
