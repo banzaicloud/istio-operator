@@ -94,6 +94,7 @@ deploy: install-kustomize
 manifests:
 	go run vendor/sigs.k8s.io/controller-tools/cmd/controller-gen/main.go rbac --output-dir config/base/rbac
 	go run vendor/sigs.k8s.io/controller-tools/cmd/controller-gen/main.go crd --output-dir config/base/crds
+	find config/base/crds -exec touch -t 201901010101 {} +
 
 # Run go fmt against code
 fmt:
