@@ -160,8 +160,8 @@ func (r *Reconciler) deployment() runtime.Object {
 		},
 		Env: append(templates.IstioProxyEnv(r.Config), r.envVars()...),
 		Resources: templates.GetResourcesRequirementsOrDefault(
+			r.gw.Spec.Resources,
 			r.Config.Spec.Proxy.Resources,
-			r.Config.Spec.DefaultResources,
 		),
 		VolumeMounts:             r.volumeMounts(),
 		TerminationMessagePath:   apiv1.TerminationMessagePathDefault,
@@ -320,7 +320,6 @@ func (r *Reconciler) envVars() []apiv1.EnvVar {
 		})
 	}
 
-	// TODO ingress
 	if util.PointerToBool(r.Config.Spec.MeshExpansion) && r.Config.Spec.ClusterName != "" {
 		envVars = append(envVars, apiv1.EnvVar{
 			Name:  "ISTIO_META_NETWORK",
@@ -411,13 +410,13 @@ func (r *Reconciler) volumeMounts() []apiv1.VolumeMount {
 			ReadOnly:  true,
 		},
 		{
-			Name:      fmt.Sprintf("%s-certs", "ingressgateway"),
-			MountPath: fmt.Sprintf("/etc/istio/%s-certs", "ingressgateway"),
+			Name:      fmt.Sprintf("%s-certs", r.gw.Name),
+			MountPath: fmt.Sprintf("/etc/istio/%s-certs", r.gw.Spec.Type+"gateway"),
 			ReadOnly:  true,
 		},
 		{
-			Name:      fmt.Sprintf("%s-ca-certs", "ingressgateway"),
-			MountPath: fmt.Sprintf("/etc/istio/%s-ca-certs", "ingressgateway"),
+			Name:      fmt.Sprintf("%s-ca-certs", r.gw.Name),
+			MountPath: fmt.Sprintf("/etc/istio/%s-ca-certs", r.gw.Spec.Type+"gateway"),
 			ReadOnly:  true,
 		},
 	}
@@ -464,7 +463,7 @@ func (r *Reconciler) volumes() []apiv1.Volume {
 			},
 		},
 		{
-			Name: fmt.Sprintf("%s-certs", "ingressgateway"),
+			Name: fmt.Sprintf("%s-certs", r.gw.Name),
 			VolumeSource: apiv1.VolumeSource{
 				Secret: &apiv1.SecretVolumeSource{
 					SecretName:  fmt.Sprintf("%s-certs", r.gw.Name),
@@ -474,7 +473,7 @@ func (r *Reconciler) volumes() []apiv1.Volume {
 			},
 		},
 		{
-			Name: fmt.Sprintf("%s-ca-certs", "ingressgateway"),
+			Name: fmt.Sprintf("%s-ca-certs", r.gw.Name),
 			VolumeSource: apiv1.VolumeSource{
 				Secret: &apiv1.SecretVolumeSource{
 					SecretName:  fmt.Sprintf("%s-ca-certs", r.gw.Name),
