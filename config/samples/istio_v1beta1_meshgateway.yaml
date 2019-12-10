@@ -20,10 +20,8 @@ spec:
     - port: 80
       targetPort: 80
       name: http2
-      nodePort: 31380
     - port: 443
       name: https
-      nodePort: 31390
     - port: 15443
       targetPort: 15443
       name: tls
