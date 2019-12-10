@@ -72,7 +72,7 @@ func add(mgr manager.Manager, r reconcile.Reconciler) error {
 	}
 
 	// Watch for changes to MeshGateway
-	err = c.Watch(&source.Kind{Type: &istiov1beta1.MeshGateway{}}, &handler.EnqueueRequestForObject{}, k8sutil.GetWatchPredicateForMeshGateway())
+	err = c.Watch(&source.Kind{Type: &istiov1beta1.MeshGateway{TypeMeta: metav1.TypeMeta{Kind: "MeshGateway", APIVersion: "istio.banzaicloud.io/v1beta1"}}}, &handler.EnqueueRequestForObject{}, k8sutil.GetWatchPredicateForMeshGateway())
 	if err != nil {
 		return err
 	}
