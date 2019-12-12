@@ -202,6 +202,26 @@ rules:
   - update
   - patch
 - apiGroups:
+  - istio.banzaicloud.io
+  resources:
+  - meshgateways
+  verbs:
+  - get
+  - list
+  - watch
+  - create
+  - update
+  - patch
+  - delete
+- apiGroups:
+  - istio.banzaicloud.io
+  resources:
+  - meshgateways/status
+  verbs:
+  - get
+  - update
+  - patch
+- apiGroups:
   - authentication.istio.io
   - cloud.istio.io
   - config.istio.io
