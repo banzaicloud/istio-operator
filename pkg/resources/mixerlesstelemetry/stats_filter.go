@@ -17,11 +17,41 @@ limitations under the License.
 package mixerlesstelemetry
 
 import (
-	"github.com/MakeNowJust/heredoc"
+	"strings"
+
+	"github.com/ghodss/yaml"
 	"k8s.io/apimachinery/pkg/runtime/schema"
 
 	"github.com/banzaicloud/istio-operator/pkg/k8sutil"
 )
+
+var statsFilterYAML = `applyTo: HTTP_FILTER
+match:
+  context: %CONTEXT%
+  listener:
+    filterChain:
+      filter:
+        name: "envoy.http_connection_manager"
+        subFilter:
+          name: "envoy.router"
+patch:
+  operation: INSERT_BEFORE
+  value:
+    name: envoy.filters.http.wasm
+    config:
+      config:
+        root_id: stats_outbound
+        configuration: |
+          {
+            "debug": "false",
+            "stat_prefix": "istio",
+          }
+        vm_config:
+          vm_id: stats_outbound
+          runtime: envoy.wasm.runtime.null
+          code:
+            inline_string: envoy.wasm.stats
+`
 
 func (r *Reconciler) statsEnvoyFilter() *k8sutil.DynamicObject {
 	return &k8sutil.DynamicObject{
@@ -34,7 +64,7 @@ func (r *Reconciler) statsEnvoyFilter() *k8sutil.DynamicObject {
 		Name:      componentName + "-stats",
 		Namespace: r.Config.Namespace,
 		Spec: map[string]interface{}{
-			"filters": []map[string]interface{}{
+			"configPatches": []map[string]interface{}{
 				r.getStatFilter("SIDECAR_INBOUND"),
 				r.getStatFilter("SIDECAR_OUTBOUND"),
 				r.getStatFilter("GATEWAY"),
@@ -45,30 +75,8 @@ func (r *Reconciler) statsEnvoyFilter() *k8sutil.DynamicObject {
 }
 
 func (r *Reconciler) getStatFilter(listenerType string) map[string]interface{} {
-	return map[string]interface{}{
-		"filterConfig": map[string]interface{}{
-			"configuration": heredoc.Doc(`
-			  {
-			    "debug": "false",
-			    "stat_prefix": "istio",
-			  }
-			`),
-			"vm_config": map[string]interface{}{
-				"code": map[string]interface{}{
-					"inline_string": "envoy.wasm.stats",
-				},
-				"vm": "envoy.wasm.vm.null",
-			},
-		},
-		"filterName": "envoy.wasm",
-		"filterType": "HTTP",
-		"insertPosition": map[string]interface{}{
-			"index":      "BEFORE",
-			"relativeTo": "envoy.router",
-		},
-		"listenerMatch": map[string]interface{}{
-			"listenerProtocol": "HTTP",
-			"listenerType":     listenerType,
-		},
-	}
+	var y map[string]interface{}
+	yaml.Unmarshal([]byte(strings.Replace(statsFilterYAML, "%CONTEXT%", listenerType, 1)), &y)
+
+	return y
 }

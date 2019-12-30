@@ -17,12 +17,36 @@ limitations under the License.
 package mixerlesstelemetry
 
 import (
+	"github.com/ghodss/yaml"
 	"k8s.io/apimachinery/pkg/runtime/schema"
 
 	"github.com/banzaicloud/istio-operator/pkg/k8sutil"
 )
 
+const metadataExchangeFilterYAML = `applyTo: HTTP_FILTER
+match:
+  context: ANY # inbound, outbound, and gateway
+  listener:
+    filterChain:
+      filter:
+        name: "envoy.http_connection_manager"
+patch:
+  operation: INSERT_BEFORE
+  value:
+    name: envoy.filters.http.wasm
+    config:
+      config:
+        configuration: envoy.wasm.metadata_exchange
+        vm_config:
+          runtime: envoy.wasm.runtime.null
+          code:
+            inline_string: envoy.wasm.metadata_exchange
+`
+
 func (r *Reconciler) metaexchangeEnvoyFilter() *k8sutil.DynamicObject {
+	var y map[string]interface{}
+	yaml.Unmarshal([]byte(metadataExchangeFilterYAML), &y)
+
 	return &k8sutil.DynamicObject{
 		Gvr: schema.GroupVersionResource{
 			Group:    "networking.istio.io",
@@ -33,35 +57,10 @@ func (r *Reconciler) metaexchangeEnvoyFilter() *k8sutil.DynamicObject {
 		Name:      componentName + "-metadata-exchange",
 		Namespace: r.Config.Namespace,
 		Spec: map[string]interface{}{
-			"filters": []map[string]interface{}{
-				r.getMetaExchangeFilter("SIDECAR_INBOUND"),
-				r.getMetaExchangeFilter("SIDECAR_OUTBOUND"),
-				r.getMetaExchangeFilter("GATEWAY"),
+			"configPatches": []map[string]interface{}{
+				y,
 			},
 		},
 		Owner: r.Config,
-	}
-}
-
-func (r *Reconciler) getMetaExchangeFilter(listenerType string) map[string]interface{} {
-	return map[string]interface{}{
-		"filterConfig": map[string]interface{}{
-			"configuration": "envoy.wasm.metadata_exchange",
-			"vm_config": map[string]interface{}{
-				"code": map[string]interface{}{
-					"inline_string": "envoy.wasm.metadata_exchange",
-				},
-				"vm": "envoy.wasm.vm.null",
-			},
-		},
-		"filterName": "envoy.wasm",
-		"filterType": "HTTP",
-		"insertPosition": map[string]interface{}{
-			"index": "FIRST",
-		},
-		"listenerMatch": map[string]interface{}{
-			"listenerProtocol": "HTTP",
-			"listenerType":     listenerType,
-		},
 	}
 }
