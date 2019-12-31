@@ -745,6 +745,8 @@ spec:
                   type: string
                 resources:
                   type: object
+                useMetadataExchangeFilter:
+                  type: boolean
               type: object
             proxyInit:
               description: Proxy Init configuration options
