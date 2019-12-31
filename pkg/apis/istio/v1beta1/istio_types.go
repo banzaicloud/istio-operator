@@ -328,10 +328,11 @@ type ProxyConfiguration struct {
 	// cluster domain. Default value is "cluster.local"
 	ClusterDomain string `json:"clusterDomain,omitempty"`
 
-	EnvoyStatsD              EnvoyStatsD                     `json:"envoyStatsD,omitempty"`
-	EnvoyMetricsService      EnvoyServiceCommonConfiguration `json:"envoyMetricsService,omitempty"`
-	EnvoyAccessLogService    EnvoyServiceCommonConfiguration `json:"envoyAccessLogService,omitempty"`
-	ProtocolDetectionTimeout *string                         `json:"protocolDetectionTimeout,omitempty"`
+	EnvoyStatsD               EnvoyStatsD                     `json:"envoyStatsD,omitempty"`
+	EnvoyMetricsService       EnvoyServiceCommonConfiguration `json:"envoyMetricsService,omitempty"`
+	EnvoyAccessLogService     EnvoyServiceCommonConfiguration `json:"envoyAccessLogService,omitempty"`
+	ProtocolDetectionTimeout  *string                         `json:"protocolDetectionTimeout,omitempty"`
+	UseMetadataExchangeFilter *bool                           `json:"useMetadataExchangeFilter,omitempty"`
 
 	Lifecycle corev1.Lifecycle `json:"lifecycle,omitempty"`
 

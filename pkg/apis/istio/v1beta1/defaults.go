@@ -530,6 +530,10 @@ func SetDefaults(config *Istio) {
 	if config.Spec.TrustDomain == "" {
 		config.Spec.TrustDomain = "cluster.local"
 	}
+
+	if config.Spec.Proxy.UseMetadataExchangeFilter == nil {
+		config.Spec.Proxy.UseMetadataExchangeFilter = util.BoolPointer(false)
+	}
 }
 
 func SetRemoteIstioDefaults(remoteconfig *RemoteIstio) {
@@ -539,5 +543,8 @@ func SetRemoteIstioDefaults(remoteconfig *RemoteIstio) {
 	// SidecarInjector config
 	if remoteconfig.Spec.SidecarInjector.ReplicaCount == nil {
 		remoteconfig.Spec.SidecarInjector.ReplicaCount = util.IntPointer(defaultReplicaCount)
+	}
+	if remoteconfig.Spec.Proxy.UseMetadataExchangeFilter == nil {
+		remoteconfig.Spec.Proxy.UseMetadataExchangeFilter = util.BoolPointer(false)
 	}
 }
