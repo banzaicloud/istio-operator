@@ -39,6 +39,7 @@ const (
 	defaultSDSImage                  = defaultImageHub + "/" + "node-agent-k8s" + ":" + defaultImageVersion
 	defaultProxyImage                = defaultImageHub + "/" + "proxyv2" + ":" + defaultImageVersion
 	defaultProxyInitImage            = defaultImageHub + "/" + "proxyv2" + ":" + defaultImageVersion
+	defaultProxyCoreDumpImage        = "busybox"
 	defaultInitCNIImage              = defaultImageHub + "/" + "install-cni:" + defaultImageVersion
 	defaultCoreDNSImage              = "coredns/coredns:1.6.2"
 	defaultCoreDNSPluginImage        = defaultImageHub + "/coredns-plugin:0.2-istio-1.1"
@@ -373,6 +374,12 @@ func SetDefaults(config *Istio) {
 	}
 	if config.Spec.Proxy.ClusterDomain == "" {
 		config.Spec.Proxy.ClusterDomain = "cluster.local"
+	}
+	if config.Spec.Proxy.EnableCoreDump == nil {
+		config.Spec.Proxy.EnableCoreDump = util.BoolPointer(false)
+	}
+	if config.Spec.Proxy.CoreDumpImage == "" {
+		config.Spec.Proxy.CoreDumpImage = defaultProxyCoreDumpImage
 	}
 
 	// PDB config

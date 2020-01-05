@@ -36,7 +36,7 @@ import (
 
 func (r *Reconciler) deployment() runtime.Object {
 	var initContainers []apiv1.Container
-	if r.Config.Spec.Proxy.EnableCoreDump {
+	if util.PointerToBool(r.Config.Spec.Proxy.EnableCoreDump) && r.Config.Spec.Proxy.CoreDumpImage != "" {
 		initContainers = []apiv1.Container{GetCoreDumpContainer(r.Config)}
 	}
 

@@ -496,7 +496,7 @@ func (r *Reconciler) tracingProxyArgs() string {
 }
 
 func (r *Reconciler) coreDumpContainer() string {
-	if !r.Config.Spec.Proxy.EnableCoreDump {
+	if !util.PointerToBool(r.Config.Spec.Proxy.EnableCoreDump) {
 		return ""
 	}
 
