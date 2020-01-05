@@ -1238,6 +1238,11 @@ func (in *ProxyConfiguration) DeepCopyInto(out *ProxyConfiguration) {
 		*out = new(string)
 		**out = **in
 	}
+	if in.EnableCoreDump != nil {
+		in, out := &in.EnableCoreDump, &out.EnableCoreDump
+		*out = new(bool)
+		**out = **in
+	}
 	in.EnvoyStatsD.DeepCopyInto(&out.EnvoyStatsD)
 	in.EnvoyMetricsService.DeepCopyInto(&out.EnvoyMetricsService)
 	in.EnvoyAccessLogService.DeepCopyInto(&out.EnvoyAccessLogService)

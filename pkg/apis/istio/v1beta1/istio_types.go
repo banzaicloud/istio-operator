@@ -311,7 +311,7 @@ type ProxyConfiguration struct {
 	// If set to true, istio-proxy container will have privileged securityContext
 	Privileged bool `json:"privileged,omitempty"`
 	// If set, newly injected sidecars will have core dumps enabled.
-	EnableCoreDump bool `json:"enableCoreDump,omitempty"`
+	EnableCoreDump *bool `json:"enableCoreDump,omitempty"`
 	// Image used to enable core dumps. This is only used, when "EnableCoreDump" is set to true.
 	CoreDumpImage string `json:"coreDumpImage,omitempty"`
 	// Log level for proxy, applies to gateways and sidecars. If left empty, "warning" is used.
