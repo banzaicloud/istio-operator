@@ -243,14 +243,6 @@ func (r *ReconcileRemoteConfig) reconcile(remoteConfig *istiov1beta1.RemoteIstio
 		}
 	}
 
-	if remoteConfig.Status.Status == istiov1beta1.Reconciling {
-		logger.V(1).Info("cannot trigger reconcile while already reconciling")
-		return reconcile.Result{
-			Requeue:      true,
-			RequeueAfter: time.Duration(30) * time.Second,
-		}, nil
-	}
-
 	err = updateRemoteConfigStatus(r.Client, remoteConfig, istiov1beta1.Reconciling, "", logger)
 	if err != nil {
 		return reconcile.Result{}, errors.WithStack(err)
