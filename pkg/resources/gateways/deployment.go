@@ -295,7 +295,7 @@ func (r *Reconciler) envVars() []apiv1.EnvVar {
 		},
 		{
 			Name:  "ISTIO_META_OWNER",
-			Value: fmt.Sprintf("kubernetes://api/apps/v1/namespaces/%s/deployments/%s", r.Config.Namespace, r.gatewayName()),
+			Value: fmt.Sprintf("kubernetes://apis/apps/v1/namespaces/%s/deployments/%s", r.Config.Namespace, r.gatewayName()),
 		},
 	}
 
@@ -552,7 +552,20 @@ func GetCoreDumpContainer(config *istiov1beta1.Istio) apiv1.Container {
 		},
 		Resources: templates.GetResourcesRequirementsOrDefault(config.Spec.SidecarInjector.Init.Resources, config.Spec.DefaultResources),
 		SecurityContext: &apiv1.SecurityContext{
-			Privileged: util.BoolPointer(true),
+			AllowPrivilegeEscalation: util.BoolPointer(true),
+			Capabilities: &apiv1.Capabilities{
+				Add: []apiv1.Capability{
+					"SYS_ADMIN",
+				},
+				Drop: []apiv1.Capability{
+					"ALL",
+				},
+			},
+			Privileged:             util.BoolPointer(true),
+			ReadOnlyRootFilesystem: util.BoolPointer(false),
+			RunAsGroup:             util.Int64Pointer(0),
+			RunAsNonRoot:           util.BoolPointer(false),
+			RunAsUser:              util.Int64Pointer(0),
 		},
 		TerminationMessagePath:   apiv1.TerminationMessagePathDefault,
 		TerminationMessagePolicy: apiv1.TerminationMessageReadFile,
