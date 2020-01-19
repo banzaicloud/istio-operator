@@ -311,7 +311,7 @@ type ProxyConfiguration struct {
 	// If set to true, istio-proxy container will have privileged securityContext
 	Privileged bool `json:"privileged,omitempty"`
 	// If set, newly injected sidecars will have core dumps enabled.
-	EnableCoreDump bool `json:"enableCoreDump,omitempty"`
+	EnableCoreDump *bool `json:"enableCoreDump,omitempty"`
 	// Image used to enable core dumps. This is only used, when "EnableCoreDump" is set to true.
 	CoreDumpImage string `json:"coreDumpImage,omitempty"`
 	// Log level for proxy, applies to gateways and sidecars. If left empty, "warning" is used.
@@ -328,10 +328,13 @@ type ProxyConfiguration struct {
 	// cluster domain. Default value is "cluster.local"
 	ClusterDomain string `json:"clusterDomain,omitempty"`
 
-	EnvoyStatsD              EnvoyStatsD                     `json:"envoyStatsD,omitempty"`
-	EnvoyMetricsService      EnvoyServiceCommonConfiguration `json:"envoyMetricsService,omitempty"`
-	EnvoyAccessLogService    EnvoyServiceCommonConfiguration `json:"envoyAccessLogService,omitempty"`
-	ProtocolDetectionTimeout *string                         `json:"protocolDetectionTimeout,omitempty"`
+	EnvoyStatsD               EnvoyStatsD                     `json:"envoyStatsD,omitempty"`
+	EnvoyMetricsService       EnvoyServiceCommonConfiguration `json:"envoyMetricsService,omitempty"`
+	EnvoyAccessLogService     EnvoyServiceCommonConfiguration `json:"envoyAccessLogService,omitempty"`
+	ProtocolDetectionTimeout  *string                         `json:"protocolDetectionTimeout,omitempty"`
+	UseMetadataExchangeFilter *bool                           `json:"useMetadataExchangeFilter,omitempty"`
+
+	Lifecycle corev1.Lifecycle `json:"lifecycle,omitempty"`
 
 	Resources *corev1.ResourceRequirements `json:"resources,omitempty"`
 }

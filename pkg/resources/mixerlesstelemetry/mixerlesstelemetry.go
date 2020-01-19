@@ -52,19 +52,25 @@ func (r *Reconciler) Reconcile(log logr.Logger) error {
 
 	log.Info("Reconciling")
 
-	desiredState := k8sutil.DesiredStateAbsent
+	exchangeFilterDesiredState := k8sutil.DesiredStateAbsent
+	statsFilterDesiredState := k8sutil.DesiredStateAbsent
 	if util.PointerToBool(r.Config.Spec.MixerlessTelemetry.Enabled) {
-		desiredState = k8sutil.DesiredStatePresent
+		exchangeFilterDesiredState = k8sutil.DesiredStatePresent
+		statsFilterDesiredState = k8sutil.DesiredStatePresent
+	}
+
+	if util.PointerToBool(r.Config.Spec.Proxy.UseMetadataExchangeFilter) {
+		exchangeFilterDesiredState = k8sutil.DesiredStatePresent
 	}
 
 	drs := []resources.DynamicResourceWithDesiredState{
-		{DynamicResource: r.metaexchangeEnvoyFilter},
-		{DynamicResource: r.statsEnvoyFilter},
+		{DynamicResource: r.metaexchangeEnvoyFilter, DesiredState: exchangeFilterDesiredState},
+		{DynamicResource: r.statsEnvoyFilter, DesiredState: statsFilterDesiredState},
 	}
 
 	for _, dr := range drs {
 		o := dr.DynamicResource()
-		err := o.Reconcile(log, r.dynamic, desiredState)
+		err := o.Reconcile(log, r.dynamic, dr.DesiredState)
 		if err != nil {
 			return emperror.WrapWith(err, "failed to reconcile dynamic resource", "resource", o.Gvr)
 		}

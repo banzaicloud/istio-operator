@@ -1238,6 +1238,11 @@ func (in *ProxyConfiguration) DeepCopyInto(out *ProxyConfiguration) {
 		*out = new(string)
 		**out = **in
 	}
+	if in.EnableCoreDump != nil {
+		in, out := &in.EnableCoreDump, &out.EnableCoreDump
+		*out = new(bool)
+		**out = **in
+	}
 	in.EnvoyStatsD.DeepCopyInto(&out.EnvoyStatsD)
 	in.EnvoyMetricsService.DeepCopyInto(&out.EnvoyMetricsService)
 	in.EnvoyAccessLogService.DeepCopyInto(&out.EnvoyAccessLogService)
@@ -1246,6 +1251,12 @@ func (in *ProxyConfiguration) DeepCopyInto(out *ProxyConfiguration) {
 		*out = new(string)
 		**out = **in
 	}
+	if in.UseMetadataExchangeFilter != nil {
+		in, out := &in.UseMetadataExchangeFilter, &out.UseMetadataExchangeFilter
+		*out = new(bool)
+		**out = **in
+	}
+	in.Lifecycle.DeepCopyInto(&out.Lifecycle)
 	if in.Resources != nil {
 		in, out := &in.Resources, &out.Resources
 		*out = new(v1.ResourceRequirements)

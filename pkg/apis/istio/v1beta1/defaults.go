@@ -28,7 +28,7 @@ import (
 
 const (
 	defaultImageHub                  = "docker.io/istio"
-	defaultImageVersion              = "1.4.2"
+	defaultImageVersion              = "1.4.3"
 	defaultLogLevel                  = "default:info"
 	defaultPilotImage                = defaultImageHub + "/" + "pilot" + ":" + defaultImageVersion
 	defaultCitadelImage              = defaultImageHub + "/" + "citadel" + ":" + defaultImageVersion
@@ -39,6 +39,7 @@ const (
 	defaultSDSImage                  = defaultImageHub + "/" + "node-agent-k8s" + ":" + defaultImageVersion
 	defaultProxyImage                = defaultImageHub + "/" + "proxyv2" + ":" + defaultImageVersion
 	defaultProxyInitImage            = defaultImageHub + "/" + "proxyv2" + ":" + defaultImageVersion
+	defaultProxyCoreDumpImage        = "busybox"
 	defaultInitCNIImage              = defaultImageHub + "/" + "install-cni:" + defaultImageVersion
 	defaultCoreDNSImage              = "coredns/coredns:1.6.2"
 	defaultCoreDNSPluginImage        = defaultImageHub + "/coredns-plugin:0.2-istio-1.1"
@@ -374,6 +375,12 @@ func SetDefaults(config *Istio) {
 	if config.Spec.Proxy.ClusterDomain == "" {
 		config.Spec.Proxy.ClusterDomain = "cluster.local"
 	}
+	if config.Spec.Proxy.EnableCoreDump == nil {
+		config.Spec.Proxy.EnableCoreDump = util.BoolPointer(false)
+	}
+	if config.Spec.Proxy.CoreDumpImage == "" {
+		config.Spec.Proxy.CoreDumpImage = defaultProxyCoreDumpImage
+	}
 
 	// PDB config
 	if config.Spec.DefaultPodDisruptionBudget.Enabled == nil {
@@ -523,6 +530,10 @@ func SetDefaults(config *Istio) {
 	if config.Spec.TrustDomain == "" {
 		config.Spec.TrustDomain = "cluster.local"
 	}
+
+	if config.Spec.Proxy.UseMetadataExchangeFilter == nil {
+		config.Spec.Proxy.UseMetadataExchangeFilter = util.BoolPointer(false)
+	}
 }
 
 func SetRemoteIstioDefaults(remoteconfig *RemoteIstio) {
@@ -532,5 +543,8 @@ func SetRemoteIstioDefaults(remoteconfig *RemoteIstio) {
 	// SidecarInjector config
 	if remoteconfig.Spec.SidecarInjector.ReplicaCount == nil {
 		remoteconfig.Spec.SidecarInjector.ReplicaCount = util.IntPointer(defaultReplicaCount)
+	}
+	if remoteconfig.Spec.Proxy.UseMetadataExchangeFilter == nil {
+		remoteconfig.Spec.Proxy.UseMetadataExchangeFilter = util.BoolPointer(false)
 	}
 }

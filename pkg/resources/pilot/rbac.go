@@ -76,7 +76,7 @@ func (r *Reconciler) clusterRole() runtime.Object {
 			},
 			{
 				APIGroups: []string{""},
-				Resources: []string{"endpoints", "pods", "services", "namespaces", "nodes", "secrets"},
+				Resources: []string{"endpoints", "pods", "services", "namespaces", "nodes"},
 				Verbs:     []string{"get", "list", "watch"},
 			},
 			{

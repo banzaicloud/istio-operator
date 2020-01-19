@@ -17,8 +17,13 @@ limitations under the License.
 package remoteclusters
 
 import (
+	"time"
+
+	"github.com/pkg/errors"
 	apiextensionsv1beta1 "k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1beta1"
 	extensionsobj "k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1beta1"
+	apiextensionsclient "k8s.io/apiextensions-apiserver/pkg/client/clientset/clientset"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/apimachinery/pkg/runtime"
 	k8syaml "k8s.io/apimachinery/pkg/util/yaml"
@@ -31,10 +36,12 @@ import (
 func (c *Cluster) reconcileCRDs(remoteConfig *istiov1beta1.RemoteIstio, istio *istiov1beta1.Istio) error {
 	c.log.Info("reconciling CRDs")
 
-	crdo, err := crds.New(c.restConfig, []*extensionsobj.CustomResourceDefinition{
+	resources := []*extensionsobj.CustomResourceDefinition{
 		c.istiocrd(),
 		c.meshgatewaycrd(),
-	})
+	}
+
+	crdo, err := crds.New(c.restConfig, resources)
 	if err != nil {
 		return err
 	}
@@ -44,7 +51,47 @@ func (c *Cluster) reconcileCRDs(remoteConfig *istiov1beta1.RemoteIstio, istio *i
 		return err
 	}
 
+	time.Sleep(time.Second * 1)
+	err = c.waitForCRDs(resources)
+	if err != nil {
+		return err
+	}
+
 	return nil
+}
+
+func (c *Cluster) waitForCRDs(crds []*extensionsobj.CustomResourceDefinition) error {
+	apiExtensions, err := apiextensionsclient.NewForConfig(c.restConfig)
+	if err != nil {
+		return errors.Wrap(err, "instantiating apiextensions client failed")
+	}
+	crdClient := apiExtensions.ApiextensionsV1beta1().CustomResourceDefinitions()
+
+	for _, crd := range crds {
+		crd, err := crdClient.Get(crd.Name, metav1.GetOptions{IncludeUninitialized: true})
+		if err != nil {
+			return err
+		}
+		c.log.Info("wait for CRD", "name", crd.Name)
+		err = c.waitForCRD(crd)
+		if err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (c *Cluster) waitForCRD(crd *extensionsobj.CustomResourceDefinition) error {
+	for _, condition := range crd.Status.Conditions {
+		if condition.Type == apiextensionsv1beta1.Established {
+			if condition.Status == apiextensionsv1beta1.ConditionTrue {
+				return nil
+			}
+		}
+	}
+
+	return errors.Errorf("CRD '%s' is not established yet", crd.Name)
 }
 
 func (c *Cluster) istiocrd() *extensionsobj.CustomResourceDefinition {
