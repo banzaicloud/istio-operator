@@ -5,15 +5,12 @@
 operator:
   image:
     repository: banzaicloud/istio-operator
-    tag: 0.4.5
+    tag: 0.4.6
     pullPolicy: IfNotPresent
   resources:
-    limits:
+    requests:
       cpu: 200m
       memory: 256Mi
-    requests:
-      cpu: 100m
-      memory: 128Mi
 
 istioVersion: "1.4"
 
