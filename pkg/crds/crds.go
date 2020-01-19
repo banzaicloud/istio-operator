@@ -31,7 +31,6 @@ import (
 	"github.com/banzaicloud/k8s-objectmatcher/patch"
 
 	istiov1beta1 "github.com/banzaicloud/istio-operator/pkg/apis/istio/v1beta1"
-	"github.com/banzaicloud/istio-operator/pkg/util"
 )
 
 const (
@@ -167,18 +166,6 @@ func (r *CrdOperator) Reconcile(config *istiov1beta1.Istio, log logr.Logger) err
 		if apierrors.IsNotFound(err) {
 			if err := patch.DefaultAnnotator.SetLastAppliedAnnotation(crd); err != nil {
 				log.Error(err, "Failed to set last applied annotation", "crd", crd)
-			}
-			if config.Name != "" {
-				crd.ObjectMeta.OwnerReferences = []metav1.OwnerReference{
-					{
-						Kind:               config.Kind,
-						APIVersion:         config.APIVersion,
-						Name:               config.Name,
-						UID:                config.GetUID(),
-						Controller:         util.BoolPointer(true),
-						BlockOwnerDeletion: util.BoolPointer(true),
-					},
-				}
 			}
 			if _, err := crdClient.Create(crd); err != nil {
 				return emperror.WrapWith(err, "creating CRD failed", "kind", crd.Spec.Names.Kind)
