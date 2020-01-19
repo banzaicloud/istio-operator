@@ -1251,6 +1251,7 @@ func (in *ProxyConfiguration) DeepCopyInto(out *ProxyConfiguration) {
 		*out = new(string)
 		**out = **in
 	}
+	in.Lifecycle.DeepCopyInto(&out.Lifecycle)
 	if in.Resources != nil {
 		in, out := &in.Resources, &out.Resources
 		*out = new(v1.ResourceRequirements)

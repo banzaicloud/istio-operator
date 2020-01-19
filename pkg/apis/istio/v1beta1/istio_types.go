@@ -333,6 +333,8 @@ type ProxyConfiguration struct {
 	EnvoyAccessLogService    EnvoyServiceCommonConfiguration `json:"envoyAccessLogService,omitempty"`
 	ProtocolDetectionTimeout *string                         `json:"protocolDetectionTimeout,omitempty"`
 
+	Lifecycle corev1.Lifecycle `json:"lifecycle,omitempty"`
+
 	Resources *corev1.ResourceRequirements `json:"resources,omitempty"`
 }
 
