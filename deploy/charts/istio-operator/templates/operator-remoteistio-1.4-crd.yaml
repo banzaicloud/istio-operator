@@ -283,6 +283,8 @@ spec:
                   type: object
                 image:
                   type: string
+                lifecycle:
+                  type: object
                 logLevel:
                   description: 'Log level for proxy, applies to gateways and sidecars.
                     If left empty, "warning" is used. Expected values are: trace|debug|info|warning|error|critical|off'
@@ -303,6 +305,8 @@ spec:
                   type: string
                 resources:
                   type: object
+                useMetadataExchangeFilter:
+                  type: boolean
               type: object
             proxyInit:
               description: Proxy Init configuration options
