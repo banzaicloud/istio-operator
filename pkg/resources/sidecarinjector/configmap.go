@@ -24,6 +24,7 @@ import (
 	apiv1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 
+	"github.com/banzaicloud/istio-operator/pkg/apis/istio/v1beta1"
 	"github.com/banzaicloud/istio-operator/pkg/resources/gateways"
 	"github.com/banzaicloud/istio-operator/pkg/resources/templates"
 	"github.com/banzaicloud/istio-operator/pkg/util"
@@ -46,6 +47,11 @@ func (r *Reconciler) getValues() string {
 			"global",
 			"{{ valueOrDefault .DeploymentMeta.Namespace \"default\" }}.global",
 		}...)
+	}
+
+	var zipkinTLSSettingsJSON []byte
+	if r.Config.Spec.Tracing.Tracer == v1beta1.TracerTypeZipkin {
+		zipkinTLSSettingsJSON, _ = json.Marshal(r.Config.Spec.Tracing.Zipkin.TLSSettings)
 	}
 
 	values := map[string]interface{}{
@@ -106,7 +112,8 @@ func (r *Reconciler) getValues() string {
 				"envoyStatsd": map[string]interface{}{
 					"enabled": r.Config.Spec.Proxy.EnvoyStatsD.Enabled,
 				},
-				"lifecycle": r.Config.Spec.Proxy.Lifecycle,
+				"lifecycle":             r.Config.Spec.Proxy.Lifecycle,
+				"zipkinTLSSettingsJSON": string(zipkinTLSSettingsJSON),
 			},
 		},
 	}
@@ -284,6 +291,10 @@ containers:
       ]
   - name: ISTIO_META_CLUSTER_ID
     value: "{{ valueOrDefault .Values.global.multicluster.clusterName ` + "`" + `Kubernetes` + "`" + `}}"
+{{- if eq .Values.global.proxy.tracer "zipkin" }}
+  - name: ISTIO_META_ZIPKIN_TLS_SETTINGS_JSON
+    value: '{{ .Values.global.proxy.zipkinTLSSettingsJSON }}'
+{{- end }}
   - name: SDS_ENABLED
     value: {{ $.Values.global.sds.enabled }}
   - name: ISTIO_META_INTERCEPTION_MODE

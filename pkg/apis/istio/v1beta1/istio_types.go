@@ -359,6 +359,8 @@ type ZipkinConfiguration struct {
 	// Host:Port for reporting trace data in zipkin format. If not specified, will default to zipkin service (port 9411) in the same namespace as the other istio components.
 	// +kubebuilder:validation:Pattern=^[^\:]+:[0-9]{1,5}$
 	Address string `json:"address,omitempty"`
+	// TLS setting for Zipkin endpoint.
+	TLSSettings *TLSSettings `json:"tlsSettings,omitempty"`
 }
 
 // Configuration for Envoy to send trace data to Lightstep
