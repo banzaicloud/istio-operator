@@ -991,6 +991,29 @@ spec:
                         in the same namespace as the other istio components.
                       pattern: ^[^\:]+:[0-9]{1,5}$
                       type: string
+                    tlsSettings:
+                      description: TLS setting for Zipkin endpoint.
+                      properties:
+                        caCertificates:
+                          type: string
+                        clientCertificate:
+                          type: string
+                        mode:
+                          enum:
+                          - DISABLE
+                          - SIMPLE
+                          - MUTUAL
+                          - ISTIO_MUTUAL
+                          type: string
+                        privateKey:
+                          type: string
+                        sni:
+                          type: string
+                        subjectAltNames:
+                          items:
+                            type: string
+                          type: array
+                      type: object
                   type: object
               type: object
             trustDomain:
