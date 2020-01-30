@@ -50,7 +50,7 @@ func (r *Reconciler) getValues() string {
 	}
 
 	var zipkinTLSSettingsJSON []byte
-	if r.Config.Spec.Tracing.Tracer == v1beta1.TracerTypeZipkin {
+	if r.Config.Spec.Tracing.Tracer == v1beta1.TracerTypeZipkin && r.Config.Spec.Tracing.Zipkin.TLSSettings != nil {
 		zipkinTLSSettingsJSON, _ = json.Marshal(r.Config.Spec.Tracing.Zipkin.TLSSettings)
 	}
 
