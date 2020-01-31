@@ -89,6 +89,9 @@ type PilotConfiguration struct {
 	EnableProtocolSniffingOutbound *bool `json:"enableProtocolSniffingOutbound,omitempty"`
 	// If enabled, protocol sniffing will be used for inbound listeners whose port protocol is not specified or unsupported
 	EnableProtocolSniffingInbound *bool `json:"enableProtocolSniffingInbound,omitempty"`
+
+	// If present will be appended at the end of the initial/preconfigured container arguments
+	AdditionalContainerArgs []string `json:"additionalContainerArgs,omitempty"`
 }
 
 // CitadelConfiguration defines config options for Citadel
@@ -112,6 +115,9 @@ type CitadelConfiguration struct {
 	// of this option is "true" in this case, secrets will be generated for the "target" namespace.
 	// If the value of this option is "false" Citadel will not generate secrets upon service account creation.
 	EnableNamespacesByDefault *bool `json:"enableNamespacesByDefault,omitempty"`
+
+	// If present will be appended at the end of the initial/preconfigured container arguments
+	AdditionalContainerArgs []string `json:"additionalContainerArgs,omitempty"`
 }
 
 // GalleyConfiguration defines config options for Galley
@@ -121,6 +127,9 @@ type GalleyConfiguration struct {
 	ConfigValidation                         *bool `json:"configValidation,omitempty"`
 	EnableServiceDiscovery                   *bool `json:"enableServiceDiscovery,omitempty"`
 	EnableAnalysis                           *bool `json:"enableAnalysis,omitempty"`
+
+	// If present will be appended at the end of the initial/preconfigured container arguments
+	AdditionalContainerArgs []string `json:"additionalContainerArgs,omitempty"`
 }
 
 // GatewaysConfiguration defines config options for Gateways
@@ -162,6 +171,9 @@ type MixerConfiguration struct {
 	MultiClusterSupport *bool `json:"multiClusterSupport,omitempty"`
 	// stdio is a debug adapter in Istio telemetry, it is not recommended for production use
 	StdioAdapterEnabled *bool `json:"stdioAdapterEnabled,omitempty"`
+
+	// If present will be appended at the end of the initial/preconfigured container arguments
+	AdditionalContainerArgs []string `json:"additionalContainerArgs,omitempty"`
 }
 
 type PolicyConfiguration struct {
@@ -251,6 +263,9 @@ type SidecarInjectorConfiguration struct {
 	//   container.apparmor.security.beta.kubernetes.io/istio-init: runtime/default
 	//   container.apparmor.security.beta.kubernetes.io/istio-proxy: runtime/default
 	InjectedAnnotations map[string]string `json:"injectedAnnotations,omitempty"`
+
+	// If present will be appended at the end of the initial/preconfigured container arguments
+	AdditionalContainerArgs []string `json:"additionalContainerArgs,omitempty"`
 }
 
 // NodeAgentConfiguration defines config options for NodeAgent

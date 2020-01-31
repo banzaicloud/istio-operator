@@ -139,6 +139,10 @@ func (r *Reconciler) containerArgs() []string {
 		containerArgs = append(containerArgs, "--validation.tls.caCertificates=/etc/dnscerts/root-cert.pem")
 	}
 
+	if len(r.Config.Spec.Galley.AdditionalContainerArgs) != 0 {
+		containerArgs = append(containerArgs, r.Config.Spec.Galley.AdditionalContainerArgs...)
+	}
+
 	return containerArgs
 }
 
