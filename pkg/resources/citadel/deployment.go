@@ -29,13 +29,14 @@ import (
 	"github.com/banzaicloud/istio-operator/pkg/util"
 )
 
-func (r *Reconciler) deployment() runtime.Object {
-	var args []string
+func (r *Reconciler) containerArgs() []string {
+	var containerArgs []string
+
 	if util.PointerToBool(r.Config.Spec.SDS.Enabled) {
-		args = append(args, "--sds-enabled=true")
+		containerArgs = append(containerArgs, "--sds-enabled=true")
 	}
 
-	args = append(args,
+	containerArgs = append(containerArgs,
 		"--append-dns-names=true",
 		"--grpc-port=8060",
 		fmt.Sprintf("--citadel-storage-namespace=%s", r.Config.Namespace),
@@ -45,9 +46,9 @@ func (r *Reconciler) deployment() runtime.Object {
 	)
 
 	if r.Config.Spec.Citadel.CASecretName == "" {
-		args = append(args, "--self-signed-ca=true")
+		containerArgs = append(containerArgs, "--self-signed-ca=true")
 	} else {
-		args = append(args,
+		containerArgs = append(containerArgs,
 			"--self-signed-ca=false",
 			"--signing-cert=/etc/cacerts/ca-cert.pem",
 			"--signing-key=/etc/cacerts/ca-key.pem",
@@ -57,7 +58,7 @@ func (r *Reconciler) deployment() runtime.Object {
 	}
 
 	if util.PointerToBool(r.Config.Spec.Citadel.HealthCheck) {
-		args = append(args,
+		containerArgs = append(containerArgs,
 			"--liveness-probe-path=/tmp/ca.liveness",
 			"--liveness-probe-interval=60s",
 			"--probe-check-interval=15s",
@@ -65,24 +66,33 @@ func (r *Reconciler) deployment() runtime.Object {
 	}
 
 	if r.Config.Spec.Citadel.WorkloadCertTTL != "" {
-		args = append(args,
+		containerArgs = append(containerArgs,
 			"--workload-cert-ttl",
 			r.Config.Spec.Citadel.WorkloadCertTTL,
 		)
 	}
 
 	if r.Config.Spec.Citadel.MaxWorkloadCertTTL != "" {
-		args = append(args,
+		containerArgs = append(containerArgs,
 			"--max-workload-cert-ttl",
 			r.Config.Spec.Citadel.MaxWorkloadCertTTL,
 		)
 	}
 
+	if len(r.Config.Spec.Citadel.AdditionalContainerArgs) != 0 {
+		containerArgs = append(containerArgs, r.Config.Spec.Citadel.AdditionalContainerArgs...)
+	}
+
+	return containerArgs
+}
+
+func (r *Reconciler) deployment() runtime.Object {
+
 	var citadelContainer = apiv1.Container{
 		Name:            "citadel",
 		Image:           util.PointerToString(r.Config.Spec.Citadel.Image),
 		ImagePullPolicy: r.Config.Spec.ImagePullPolicy,
-		Args:            args,
+		Args:            r.containerArgs(),
 		Resources: templates.GetResourcesRequirementsOrDefault(
 			r.Config.Spec.Citadel.Resources,
 			r.Config.Spec.DefaultResources,

@@ -29,6 +29,25 @@ import (
 	"github.com/banzaicloud/istio-operator/pkg/util"
 )
 
+func (r *Reconciler) containerArgs() []string {
+	containerArgs := []string{
+		"--caCertFile=/etc/istio/certs/root-cert.pem",
+		"--tlsCertFile=/etc/istio/certs/cert-chain.pem",
+		"--tlsKeyFile=/etc/istio/certs/key.pem",
+		"--injectConfig=/etc/istio/inject/config",
+		"--meshConfig=/etc/istio/config/mesh",
+		"--healthCheckInterval=2s",
+		"--healthCheckFile=/health",
+		"--reconcileWebhookConfig=true",
+	}
+
+	if len(r.Config.Spec.SidecarInjector.AdditionalContainerArgs) != 0 {
+		containerArgs = append(containerArgs, r.Config.Spec.SidecarInjector.AdditionalContainerArgs...)
+	}
+
+	return containerArgs
+}
+
 func (r *Reconciler) deployment() runtime.Object {
 	return &appsv1.Deployment{
 		ObjectMeta: templates.ObjectMeta(deploymentName, util.MergeStringMaps(sidecarInjectorLabels, labelSelector), r.Config),
@@ -51,16 +70,7 @@ func (r *Reconciler) deployment() runtime.Object {
 							Name:            "sidecar-injector-webhook",
 							Image:           util.PointerToString(r.Config.Spec.SidecarInjector.Image),
 							ImagePullPolicy: r.Config.Spec.ImagePullPolicy,
-							Args: []string{
-								"--caCertFile=/etc/istio/certs/root-cert.pem",
-								"--tlsCertFile=/etc/istio/certs/cert-chain.pem",
-								"--tlsKeyFile=/etc/istio/certs/key.pem",
-								"--injectConfig=/etc/istio/inject/config",
-								"--meshConfig=/etc/istio/config/mesh",
-								"--healthCheckInterval=2s",
-								"--healthCheckFile=/health",
-								"--reconcileWebhookConfig=true",
-							},
+							Args:            r.containerArgs(),
 							VolumeMounts: []apiv1.VolumeMount{
 								{
 									Name:      "config-volume",

@@ -48,16 +48,23 @@ func (r *Reconciler) containerArgs() []string {
 		"--trust-domain",
 		r.Config.Spec.TrustDomain,
 	}
+
 	if r.Config.Spec.Logging.Level != nil {
 		containerArgs = append(containerArgs, fmt.Sprintf("--log_output_level=%s", util.PointerToString(r.Config.Spec.Logging.Level)))
 	}
+
 	if r.Config.Spec.ControlPlaneSecurityEnabled && !util.PointerToBool(r.Config.Spec.Pilot.Sidecar) {
 		containerArgs = append(containerArgs, "--secureGrpcAddr", ":15011")
 	} else {
 		containerArgs = append(containerArgs, "--secureGrpcAddr", "")
 	}
+
 	if r.Config.Spec.WatchOneNamespace {
 		containerArgs = append(containerArgs, "-a", r.Config.Namespace)
+	}
+
+	if len(r.Config.Spec.Pilot.AdditionalContainerArgs) != 0 {
+		containerArgs = append(containerArgs, r.Config.Spec.Pilot.AdditionalContainerArgs...)
 	}
 
 	return containerArgs

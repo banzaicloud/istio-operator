@@ -125,7 +125,7 @@ func (r *Reconciler) volumes(t string) []apiv1.Volume {
 	return volumes
 }
 
-func (r *Reconciler) mixerContainer(t string, ns string) apiv1.Container {
+func (r *Reconciler) containerArgs(t string, ns string) []string {
 	containerArgs := []string{
 		"--address",
 		"unix:///sock/mixer.socket",
@@ -172,6 +172,14 @@ func (r *Reconciler) mixerContainer(t string, ns string) apiv1.Container {
 		containerArgs = append(containerArgs, "--loadsheddingMode", "enforce")
 	}
 
+	if len(r.Config.Spec.Mixer.AdditionalContainerArgs) != 0 {
+		containerArgs = append(containerArgs, r.Config.Spec.Mixer.AdditionalContainerArgs...)
+	}
+
+	return containerArgs
+}
+
+func (r *Reconciler) mixerContainer(t string, ns string) apiv1.Container {
 	volumeMounts := []apiv1.VolumeMount{
 		{
 			Name:      "uds-socket",
@@ -205,7 +213,7 @@ func (r *Reconciler) mixerContainer(t string, ns string) apiv1.Container {
 				Protocol:      apiv1.ProtocolTCP,
 			},
 		},
-		Args: containerArgs,
+		Args: r.containerArgs(t, ns),
 		Env: []apiv1.EnvVar{
 			{
 				Name:  "GOMAXPROCS",
