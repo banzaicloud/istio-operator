@@ -51,9 +51,9 @@ type MeshGatewayConfiguration struct {
 
 // MeshGatewayStatus defines the observed state of MeshGateway
 type MeshGatewayStatus struct {
-	Status         ConfigState `json:"status"`
-	GatewayAddress []string
-	ErrorMessage   string `json:"errorMessage,omitempty"`
+	Status         ConfigState `json:"Status,omitempty"`
+	GatewayAddress []string    `json:"GatewayAddress,omitempty"`
+	ErrorMessage   string      `json:"ErrorMessage,omitempty"`
 }
 
 // +genclient
@@ -64,9 +64,9 @@ type MeshGatewayStatus struct {
 // +kubebuilder:subresource:status
 // +kubebuilder:printcolumn:name="Type",type="string",JSONPath=".spec.type",description="Type of the gateway"
 // +kubebuilder:printcolumn:name="Service Type",type="string",JSONPath=".spec.serviceType",description="Type of the service"
-// +kubebuilder:printcolumn:name="Status",type="string",JSONPath=".status.status",description="Status of the resource"
-// +kubebuilder:printcolumn:name="Gateways",type="string",JSONPath=".status.GatewayAddress",description="Ingress gateways of the resource"
-// +kubebuilder:printcolumn:name="Error",type="string",JSONPath=".status.errorMessage",description="Error message"
+// +kubebuilder:printcolumn:name="Status",type="string",JSONPath=".status.Status",description="Status of the resource"
+// +kubebuilder:printcolumn:name="Ingress IPs",type="string",JSONPath=".status.GatewayAddress",description="Ingress gateways of the resource"
+// +kubebuilder:printcolumn:name="Error",type="string",JSONPath=".status.ErrorMessage",description="Error message"
 // +kubebuilder:printcolumn:name="Age",type="date",JSONPath=".metadata.creationTimestamp"
 // +kubebuilder:resource:path=meshgateways,shortName=mgw
 type MeshGateway struct {

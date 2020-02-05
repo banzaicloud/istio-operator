@@ -15,15 +15,15 @@ spec:
     description: Type of the service
     name: Service Type
     type: string
-  - JSONPath: .status.status
+  - JSONPath: .status.Status
     description: Status of the resource
     name: Status
     type: string
   - JSONPath: .status.GatewayAddress
     description: Ingress gateways of the resource
-    name: Gateways
+    name: Ingress IPs
     type: string
-  - JSONPath: .status.errorMessage
+  - JSONPath: .status.ErrorMessage
     description: Error message
     name: Error
     type: string
@@ -117,12 +117,14 @@ spec:
           type: object
         status:
           properties:
-            errorMessage:
+            ErrorMessage:
               type: string
-            status:
+            GatewayAddress:
+              items:
+                type: string
+              type: array
+            Status:
               type: string
-          required:
-          - status
           type: object
   version: v1beta1
 status:

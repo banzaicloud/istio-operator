@@ -31,7 +31,6 @@ import (
 	autoscalingv2beta1 "k8s.io/api/autoscaling/v2beta1"
 	corev1 "k8s.io/api/core/v1"
 	rbacv1 "k8s.io/api/rbac/v1"
-	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	k8serrors "k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/api/meta"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -159,7 +158,7 @@ func (r *ReconcileConfig) Reconcile(request reconcile.Request) (reconcile.Result
 	config := &istiov1beta1.Istio{}
 	err := r.Get(context.TODO(), request.NamespacedName, config)
 	if err != nil {
-		if apierrors.IsNotFound(err) {
+		if k8serrors.IsNotFound(err) {
 			// Object not found, return.  Created objects are automatically garbage collected.
 			// For additional cleanup logic use finalizers.
 			return reconcile.Result{}, nil
@@ -285,16 +284,18 @@ func (r *ReconcileConfig) reconcile(logger logr.Logger, config *istiov1beta1.Ist
 	}
 
 	if util.PointerToBool(config.Spec.Gateways.Enabled) && util.PointerToBool(config.Spec.Gateways.IngressConfig.Enabled) {
-		ingressGatewayAddress, err := r.setIngressGatewayAddress(config, logger)
+		config.Status.GatewayAddress, err = k8sutil.GetMeshGatewayAddress(r.Client, client.ObjectKey{
+			Name:      ingressgateway.ResourceName,
+			Namespace: config.Namespace,
+		})
 		if err != nil {
-			log.Info(err.Error())
+			log.Error(err, "ingress gateway address pending")
 			updateStatus(r.Client, config, istiov1beta1.ReconcileFailed, err.Error(), logger)
 			return reconcile.Result{
 				Requeue:      true,
 				RequeueAfter: time.Duration(30) * time.Second,
 			}, nil
 		}
-		config.Status.GatewayAddress = ingressGatewayAddress
 	}
 
 	err = updateStatus(r.Client, config, istiov1beta1.Available, "", logger)
@@ -303,28 +304,6 @@ func (r *ReconcileConfig) reconcile(logger logr.Logger, config *istiov1beta1.Ist
 	}
 	logger.Info("reconcile finished")
 	return reconcile.Result{}, nil
-}
-
-func (r *ReconcileConfig) setIngressGatewayAddress(istio *istiov1beta1.Istio, logger logr.Logger) ([]string, error) {
-	var mgw istiov1beta1.MeshGateway
-
-	ips := make([]string, 0)
-
-	err := r.Get(context.TODO(), client.ObjectKey{
-		Name:      ingressgateway.ResourceName,
-		Namespace: istio.Namespace,
-	}, &mgw)
-	if err != nil && !k8serrors.IsNotFound(err) {
-		return ips, err
-	}
-
-	if mgw.Status.Status != istiov1beta1.Available {
-		return ips, errors.New("gateway is pending")
-	}
-
-	ips = mgw.Status.GatewayAddress
-
-	return ips, nil
 }
 
 func (r *ReconcileConfig) getMeshNetworks(config *istiov1beta1.Istio, logger logr.Logger) (*istiov1beta1.MeshNetworks, error) {

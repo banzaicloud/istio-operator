@@ -151,15 +151,14 @@ func (r *ReconcileMeshGateway) Reconcile(request reconcile.Request) (reconcile.R
 
 	err = reconciler.Reconcile(log)
 	if err == nil {
-		err = reconciler.GetGatewayAddress()
+		instance.Status.GatewayAddress, err = reconciler.GetGatewayAddress()
 		if err != nil {
 			log.Error(err, "gateway address pending")
 			return reconcile.Result{
 				RequeueAfter: time.Second * 30,
 			}, nil
 		}
-	}
-	if err != nil {
+	} else {
 		updateErr := updateStatus(r.Client, instance, istiov1beta1.ReconcileFailed, err.Error(), logger)
 		if updateErr != nil {
 			logger.Error(updateErr, "failed to update state")

@@ -14,33 +14,33 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package gateways
+package k8sutil
 
 import (
 	"context"
 
-	corev1 "k8s.io/api/core/v1"
-	"k8s.io/apimachinery/pkg/types"
+	"github.com/pkg/errors"
+	k8serrors "k8s.io/apimachinery/pkg/api/errors"
+	"sigs.k8s.io/controller-runtime/pkg/client"
 
-	"github.com/banzaicloud/istio-operator/pkg/k8sutil"
+	istiov1beta1 "github.com/banzaicloud/istio-operator/pkg/apis/istio/v1beta1"
 )
 
-func (r *Reconciler) GetGatewayAddress() ([]string, error) {
-	var service corev1.Service
-	var ips []string
+func GetMeshGatewayAddress(client client.Client, key client.ObjectKey) ([]string, error) {
+	var mgw istiov1beta1.MeshGateway
 
-	err := r.Get(context.Background(), types.NamespacedName{
-		Name:      r.gatewayName(),
-		Namespace: r.gw.Namespace,
-	}, &service)
-	if err != nil {
-		return nil, err
+	ips := make([]string, 0)
+
+	err := client.Get(context.TODO(), key, &mgw)
+	if err != nil && !k8serrors.IsNotFound(err) {
+		return ips, err
 	}
 
-	ips, err = k8sutil.GetServiceEndpointIPs(service)
-	if err != nil {
-		return nil, err
+	if mgw.Status.Status != istiov1beta1.Available {
+		return ips, errors.New("gateway is pending")
 	}
+
+	ips = mgw.Status.GatewayAddress
 
 	return ips, nil
 }
