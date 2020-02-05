@@ -283,6 +283,7 @@ func (r *ReconcileRemoteConfig) reconcile(remoteConfig *istiov1beta1.RemoteIstio
 		err = cluster.SetIngressGatewayAddress(remoteConfig, istio)
 		if err != nil {
 			log.Error(err, "ingress gateway address pending")
+			updateRemoteConfigStatus(r.Client, remoteConfig, istiov1beta1.ReconcileFailed, errors.Cause(err).Error(), logger)
 			return reconcile.Result{
 				RequeueAfter: time.Second * 30,
 			}, nil
