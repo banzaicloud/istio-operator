@@ -18,6 +18,7 @@ package meshgateway
 
 import (
 	"context"
+	"time"
 
 	"github.com/go-logr/logr"
 	"github.com/gofrs/uuid"
@@ -131,6 +132,11 @@ func (r *ReconcileMeshGateway) Reconcile(request reconcile.Request) (reconcile.R
 	}
 	instance.SetDefaults()
 
+	err = updateStatus(r.Client, instance, istiov1beta1.Reconciling, "", logger)
+	if err != nil {
+		return reconcile.Result{}, errors.WithStack(err)
+	}
+
 	var configs istiov1beta1.IstioList
 	err = r.Client.List(context.TODO(), &client.ListOptions{}, &configs)
 	if err != nil {
@@ -141,7 +147,18 @@ func (r *ReconcileMeshGateway) Reconcile(request reconcile.Request) (reconcile.R
 	}
 	istio := configs.Items[0]
 
-	err = gateways.New(r.Client, r.dynamic, &istio, instance).Reconcile(log)
+	reconciler := gateways.New(r.Client, r.dynamic, &istio, instance)
+
+	err = reconciler.Reconcile(log)
+	if err == nil {
+		err = reconciler.GetGatewayAddress()
+		if err != nil {
+			log.Error(err, "gateway address pending")
+			return reconcile.Result{
+				RequeueAfter: time.Second * 30,
+			}, nil
+		}
+	}
 	if err != nil {
 		updateErr := updateStatus(r.Client, instance, istiov1beta1.ReconcileFailed, err.Error(), logger)
 		if updateErr != nil {

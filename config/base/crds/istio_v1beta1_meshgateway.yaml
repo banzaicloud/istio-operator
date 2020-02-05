@@ -19,6 +19,10 @@ spec:
     description: Status of the resource
     name: Status
     type: string
+  - JSONPath: .status.GatewayAddress
+    description: Ingress gateways of the resource
+    name: Gateways
+    type: string
   - JSONPath: .status.errorMessage
     description: Error message
     name: Error

@@ -285,7 +285,7 @@ func (r *ReconcileConfig) reconcile(logger logr.Logger, config *istiov1beta1.Ist
 	}
 
 	if util.PointerToBool(config.Spec.Gateways.Enabled) && util.PointerToBool(config.Spec.Gateways.IngressConfig.Enabled) {
-		ingressGatewayAddress, err := r.getIngressGatewayAddress(config, logger)
+		ingressGatewayAddress, err := r.setIngressGatewayAddress(config, logger)
 		if err != nil {
 			log.Info(err.Error())
 			updateStatus(r.Client, config, istiov1beta1.ReconcileFailed, err.Error(), logger)
@@ -305,23 +305,24 @@ func (r *ReconcileConfig) reconcile(logger logr.Logger, config *istiov1beta1.Ist
 	return reconcile.Result{}, nil
 }
 
-func (r *ReconcileConfig) getIngressGatewayAddress(istio *istiov1beta1.Istio, logger logr.Logger) ([]string, error) {
-	var service corev1.Service
+func (r *ReconcileConfig) setIngressGatewayAddress(istio *istiov1beta1.Istio, logger logr.Logger) ([]string, error) {
+	var mgw istiov1beta1.MeshGateway
 
 	ips := make([]string, 0)
 
 	err := r.Get(context.TODO(), client.ObjectKey{
-		Name:      "istio-ingressgateway",
+		Name:      ingressgateway.ResourceName,
 		Namespace: istio.Namespace,
-	}, &service)
+	}, &mgw)
 	if err != nil && !k8serrors.IsNotFound(err) {
 		return ips, err
 	}
 
-	ips, err = k8sutil.GetServiceEndpointIPs(service)
-	if err != nil {
-		return ips, err
+	if mgw.Status.Status != istiov1beta1.Available {
+		return ips, errors.New("gateway is pending")
 	}
+
+	ips = mgw.Status.GatewayAddress
 
 	return ips, nil
 }
@@ -519,6 +520,7 @@ func initWatches(c controller.Controller, scheme *runtime.Scheme, watchCreatedRe
 		&autoscalingv2beta1.HorizontalPodAutoscaler{TypeMeta: metav1.TypeMeta{Kind: "HorizontalPodAutoscaler", APIVersion: "v2beta1"}},
 		&admissionregistrationv1beta1.MutatingWebhookConfiguration{TypeMeta: metav1.TypeMeta{Kind: "MutatingWebhookConfiguration", APIVersion: "v1beta1"}},
 		&corev1.Namespace{TypeMeta: metav1.TypeMeta{Kind: "Namespace", APIVersion: "v1"}},
+		&istiov1beta1.MeshGateway{TypeMeta: metav1.TypeMeta{Kind: "MeshGateway", APIVersion: "istio.banzaicloud.io/v1beta1"}},
 	} {
 		err = c.Watch(&source.Kind{Type: t}, &handler.EnqueueRequestForOwner{
 			IsController: true,
