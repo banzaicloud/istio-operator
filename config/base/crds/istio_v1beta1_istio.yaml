@@ -16,7 +16,7 @@ spec:
     name: Error
     type: string
   - JSONPath: .status.GatewayAddress
-    description: Ingress gateways of the resource
+    description: Ingress gateway addresses of the resource
     name: Ingress IPs
     type: string
   - JSONPath: .metadata.creationTimestamp
