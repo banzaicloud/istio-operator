@@ -19,36 +19,38 @@ package remoteclusters
 import (
 	"context"
 
-	corev1 "k8s.io/api/core/v1"
+	"github.com/pkg/errors"
+	k8serrors "k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/types"
 
 	istiov1beta1 "github.com/banzaicloud/istio-operator/pkg/apis/istio/v1beta1"
-	"github.com/banzaicloud/istio-operator/pkg/k8sutil"
+	"github.com/banzaicloud/istio-operator/pkg/resources/ingressgateway"
 	"github.com/banzaicloud/istio-operator/pkg/util"
 )
 
-func (c *Cluster) getIngressGatewayAddress(remoteIstio *istiov1beta1.RemoteIstio, istio *istiov1beta1.Istio) error {
-	if !util.PointerToBool(istio.Spec.MeshExpansion) {
+func (c *Cluster) SetIngressGatewayAddress(remoteIstio *istiov1beta1.RemoteIstio, istio *istiov1beta1.Istio) error {
+	if !util.PointerToBool(istio.Spec.Gateways.Enabled) || !util.PointerToBool(istio.Spec.Gateways.IngressConfig.Enabled) || !util.PointerToBool(istio.Spec.MeshExpansion) {
 		return nil
 	}
 
 	c.log.Info("get ingress gateway address")
 
-	var service corev1.Service
+	var mgw istiov1beta1.MeshGateway
 	var ips []string
 
 	err := c.ctrlRuntimeClient.Get(context.Background(), types.NamespacedName{
-		Name:      "istio-ingressgateway",
+		Name:      ingressgateway.ResourceName,
 		Namespace: remoteIstio.Namespace,
-	}, &service)
-	if err != nil {
+	}, &mgw)
+	if err != nil && !k8serrors.IsNotFound(err) {
 		return err
 	}
 
-	ips, err = k8sutil.GetServiceEndpointIPs(service)
-	if err != nil {
-		return err
+	if mgw.Status.Status != istiov1beta1.Available {
+		return errors.New("gateway is pending")
 	}
+
+	ips = mgw.Status.GatewayAddress
 
 	remoteIstio.Status.GatewayAddress = ips
 
