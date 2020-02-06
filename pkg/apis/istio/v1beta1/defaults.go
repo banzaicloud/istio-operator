@@ -147,9 +147,6 @@ func SetDefaults(config *Istio) {
 	if config.Spec.Pilot.EnableProtocolSniffingInbound == nil {
 		config.Spec.Pilot.EnableProtocolSniffingInbound = util.BoolPointer(false)
 	}
-	if config.Spec.Pilot.AdditionalContainerArgs == nil {
-		config.Spec.Pilot.AdditionalContainerArgs = []string{}
-	}
 	// Citadel config
 	if config.Spec.Citadel.Enabled == nil {
 		config.Spec.Citadel.Enabled = util.BoolPointer(true)
@@ -159,9 +156,6 @@ func SetDefaults(config *Istio) {
 	}
 	if config.Spec.Citadel.EnableNamespacesByDefault == nil {
 		config.Spec.Citadel.EnableNamespacesByDefault = util.BoolPointer(true)
-	}
-	if config.Spec.Citadel.AdditionalContainerArgs == nil {
-		config.Spec.Citadel.AdditionalContainerArgs = []string{}
 	}
 	// Galley config
 	if config.Spec.Galley.Enabled == nil {
@@ -181,9 +175,6 @@ func SetDefaults(config *Istio) {
 	}
 	if config.Spec.Galley.EnableAnalysis == nil {
 		config.Spec.Galley.EnableAnalysis = util.BoolPointer(false)
-	}
-	if config.Spec.Galley.AdditionalContainerArgs == nil {
-		config.Spec.Galley.AdditionalContainerArgs = []string{}
 	}
 	// Gateways config
 	if config.Spec.Gateways.Enabled == nil {
@@ -265,9 +256,6 @@ func SetDefaults(config *Istio) {
 	if config.Spec.Mixer.StdioAdapterEnabled == nil {
 		config.Spec.Mixer.StdioAdapterEnabled = util.BoolPointer(false)
 	}
-	if config.Spec.Mixer.AdditionalContainerArgs == nil {
-		config.Spec.Mixer.AdditionalContainerArgs = []string{}
-	}
 	// SidecarInjector config
 	if config.Spec.SidecarInjector.Enabled == nil {
 		config.Spec.SidecarInjector.Enabled = util.BoolPointer(true)
@@ -301,9 +289,6 @@ func SetDefaults(config *Istio) {
 	}
 	if config.Spec.SidecarInjector.Init.Resources == nil {
 		config.Spec.SidecarInjector.Init.Resources = defaultInitResources
-	}
-	if config.Spec.SidecarInjector.AdditionalContainerArgs == nil {
-		config.Spec.SidecarInjector.AdditionalContainerArgs = []string{}
 	}
 	// SDS config
 	if config.Spec.SDS.Enabled == nil {
