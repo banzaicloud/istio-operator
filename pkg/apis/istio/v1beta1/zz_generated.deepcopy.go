@@ -220,6 +220,11 @@ func (in *CitadelConfiguration) DeepCopyInto(out *CitadelConfiguration) {
 		*out = new(bool)
 		**out = **in
 	}
+	if in.AdditionalContainerArgs != nil {
+		in, out := &in.AdditionalContainerArgs, &out.AdditionalContainerArgs
+		*out = make([]string, len(*in))
+		copy(*out, *in)
+	}
 	return
 }
 
@@ -324,6 +329,11 @@ func (in *GalleyConfiguration) DeepCopyInto(out *GalleyConfiguration) {
 		in, out := &in.EnableAnalysis, &out.EnableAnalysis
 		*out = new(bool)
 		**out = **in
+	}
+	if in.AdditionalContainerArgs != nil {
+		in, out := &in.AdditionalContainerArgs, &out.AdditionalContainerArgs
+		*out = make([]string, len(*in))
+		copy(*out, *in)
 	}
 	return
 }
@@ -1051,6 +1061,11 @@ func (in *MixerConfiguration) DeepCopyInto(out *MixerConfiguration) {
 		*out = new(bool)
 		**out = **in
 	}
+	if in.AdditionalContainerArgs != nil {
+		in, out := &in.AdditionalContainerArgs, &out.AdditionalContainerArgs
+		*out = make([]string, len(*in))
+		copy(*out, *in)
+	}
 	return
 }
 
@@ -1167,6 +1182,11 @@ func (in *PilotConfiguration) DeepCopyInto(out *PilotConfiguration) {
 		in, out := &in.EnableProtocolSniffingInbound, &out.EnableProtocolSniffingInbound
 		*out = new(bool)
 		**out = **in
+	}
+	if in.AdditionalContainerArgs != nil {
+		in, out := &in.AdditionalContainerArgs, &out.AdditionalContainerArgs
+		*out = make([]string, len(*in))
+		copy(*out, *in)
 	}
 	return
 }
@@ -1478,6 +1498,11 @@ func (in *SidecarInjectorConfiguration) DeepCopyInto(out *SidecarInjectorConfigu
 		for key, val := range *in {
 			(*out)[key] = val
 		}
+	}
+	if in.AdditionalContainerArgs != nil {
+		in, out := &in.AdditionalContainerArgs, &out.AdditionalContainerArgs
+		*out = make([]string, len(*in))
+		copy(*out, *in)
 	}
 	return
 }
