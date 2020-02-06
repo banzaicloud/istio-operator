@@ -4,7 +4,7 @@
 
 ## Prerequisites
 
-- Kubernetes 1.10.0+
+- Kubernetes 1.13.0+
 
 ## Installing the chart
 
@@ -32,7 +32,7 @@ The following table lists the configurable parameters of the Banzaicloud Istio O
 Parameter | Description | Default
 --------- | ----------- | -------
 `operator.image.repository` | Operator container image repository | `banzaicloud/istio-operator`
-`operator.image.tag` | Operator container image tag | `0.4.6`
+`operator.image.tag` | Operator container image tag | `0.4.7`
 `operator.image.pullPolicy` | Operator container image pull policy | `IfNotPresent`
 `operator.resources` | CPU/Memory resource requests/limits (YAML) | Memory: `256Mi`, CPU: `200m`
 `istioVersion` | Supported Istio version | `1.4`
