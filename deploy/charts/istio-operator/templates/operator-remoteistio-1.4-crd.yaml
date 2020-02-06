@@ -61,6 +61,12 @@ spec:
             citadel:
               description: Citadel configuration options
               properties:
+                additionalContainerArgs:
+                  description: If present will be appended at the end of the initial/preconfigured
+                    container arguments
+                  items:
+                    type: string
+                  type: array
                 affinity:
                   type: object
                 caSecretName:
@@ -317,6 +323,12 @@ spec:
             sidecarInjector:
               description: SidecarInjector configuration options
               properties:
+                additionalContainerArgs:
+                  description: If present will be appended at the end of the initial/preconfigured
+                    container arguments
+                  items:
+                    type: string
+                  type: array
                 affinity:
                   type: object
                 alwaysInjectSelector:
