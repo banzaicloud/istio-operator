@@ -419,7 +419,6 @@ func (r *ReconcileConfig) checkIstioCount(ctx context.Context, logger logr.Logge
 			RequeueAfter: 30 * time.Second,
 		}, nil
 	}
-	logger.Info("Got Istio CR count", "count", count)
 
 	if count > 1 {
 		err := errors.New("multiple Istio CRs found")
