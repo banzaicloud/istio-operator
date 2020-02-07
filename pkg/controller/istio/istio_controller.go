@@ -167,6 +167,10 @@ func (r *ReconcileConfig) Reconcile(request reconcile.Request) (reconcile.Result
 		return reconcile.Result{}, err
 	}
 
+	if result, err := r.checkIstioCount(context.TODO(), logger, request.Namespace, config); err != nil {
+		return result, emperror.Wrap(err, "could not reconcile istio")
+	}
+
 	logger.Info("Reconciling Istio")
 
 	if !config.Spec.Version.IsSupported() {
@@ -404,6 +408,40 @@ func (r *ReconcileConfig) deleteRemoteIstios(config *istiov1beta1.Istio, logger 
 			logger.Error(err, "could not delete remote istio resource", "name", remoteIstio.Name)
 		}
 	}
+}
+
+func (r *ReconcileConfig) checkIstioCount(ctx context.Context, logger logr.Logger, namespace string, config *istiov1beta1.Istio) (reconcile.Result, error) {
+	count, err := r.getIstioCount(ctx, namespace)
+	if err != nil {
+		logger.Error(err, "cannot get Istio CR count")
+		return reconcile.Result{
+			Requeue:      true,
+			RequeueAfter: 30 * time.Second,
+		}, nil
+	}
+	logger.Info("Got Istio CR count", "count", count)
+
+	if count > 1 {
+		err := errors.New("multiple Istio CRs found")
+		logger.Error(err, "", "count", count)
+		result := reconcile.Result{Requeue: false}
+
+		updateErr := updateStatus(r.Client, config, istiov1beta1.Conflicting, err.Error(), logger)
+		if updateErr != nil {
+			logger.Error(updateErr, "failed to update state")
+		}
+		return result, err
+	}
+
+	return reconcile.Result{}, nil
+}
+
+func (r *ReconcileConfig) getIstioCount(ctx context.Context, namespace string) (int, error) {
+	var istios istiov1beta1.IstioList
+	if err := r.List(ctx, client.InNamespace(namespace), &istios); err != nil {
+		return 0, err
+	}
+	return len(istios.Items), nil
 }
 
 func updateStatus(c client.Client, config *istiov1beta1.Istio, status istiov1beta1.ConfigState, errorMessage string, logger logr.Logger) error {

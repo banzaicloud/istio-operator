@@ -24,4 +24,5 @@ const (
 	Reconciling     ConfigState = "Reconciling"
 	Available       ConfigState = "Available"
 	Unmanaged       ConfigState = "Unmanaged"
+	Conflicting     ConfigState = "Conflicting"
 )
