@@ -59,13 +59,13 @@ run: generate fmt vet
 
 # Install kustomize
 install-kustomize:
-	@ if ! which bin/kustomize &>/dev/null; then\
+	@ if ! which bin/kustomize >/dev/null 2>&1; then\
 		scripts/install_kustomize.sh;\
 	fi
 
 # Install kubebuilder
 install-kubebuilder:
-	@ if ! which bin/kubebuilder/bin/kubebuilder &>/dev/null; then\
+	@ if ! which bin/kubebuilder/bin/kubebuilder >/dev/null 2>&1; then\
 		scripts/install_kubebuilder.sh;\
 	fi
 
