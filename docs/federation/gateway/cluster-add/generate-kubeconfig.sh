@@ -4,23 +4,23 @@ if [ -z "$1" ]; then
     exit
 fi
 
-if ! kubectl config get-contexts -o name $1 >/dev/null; then
+if ! kubectl config get-contexts -o name "$1" >/dev/null; then
     exit
 fi
 
 CONTEXT=$1
 
-export WORK_DIR=$(pwd)
-CLUSTER_NAME=$(kubectl --context ${CONTEXT} config view --minify=true -o "jsonpath={.clusters[].name}")
+export WORK_DIR=${PWD}
+CLUSTER_NAME=$(kubectl --context "${CONTEXT}" config view --minify=true -o "jsonpath={.clusters[].name}")
 export KUBECFG_FILE=${WORK_DIR}/${CLUSTER_NAME}
-SERVER=$(kubectl --context ${CONTEXT} config view --minify=true -o "jsonpath={.clusters[].cluster.server}")
+SERVER=$(kubectl --context "${CONTEXT}" config view --minify=true -o "jsonpath={.clusters[].cluster.server}")
 NAMESPACE=istio-system
 SERVICE_ACCOUNT=istio-operator
-SECRET_NAME=$(kubectl --context ${CONTEXT} get sa ${SERVICE_ACCOUNT} -n ${NAMESPACE} -o jsonpath='{.secrets[].name}')
-CA_DATA=$(kubectl --context ${CONTEXT} get secret ${SECRET_NAME} -n ${NAMESPACE} -o "jsonpath={.data['ca\.crt']}")
-TOKEN=$(kubectl --context ${CONTEXT} get secret ${SECRET_NAME} -n ${NAMESPACE} -o "jsonpath={.data['token']}" | base64 --decode)
+SECRET_NAME=$(kubectl --context "${CONTEXT}" get sa ${SERVICE_ACCOUNT} -n ${NAMESPACE} -o jsonpath='{.secrets[].name}')
+CA_DATA=$(kubectl --context "${CONTEXT}" get secret "${SECRET_NAME}" -n ${NAMESPACE} -o "jsonpath={.data['ca\\.crt']}")
+TOKEN=$(kubectl --context "${CONTEXT}" get secret "${SECRET_NAME}" -n ${NAMESPACE} -o "jsonpath={.data['token']}" | base64 --decode)
 
-cat <<EOF > ${KUBECFG_FILE}
+cat <<EOF > "${KUBECFG_FILE}"
 apiVersion: v1
 clusters:
    - cluster:

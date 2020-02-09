@@ -3,28 +3,33 @@
 while getopts ":Mmp" opt; do
   case $opt in
     M )
-      relType=major
+      relType="major"
       ;;
     m )
-      relType=minor
+      relType="minor"
       ;;
     p )
-      relType=patch
+      relType="patch"
+      ;;
+    *)
+      echo "Unexpected flag: -$opt"
+      exit 1
       ;;
   esac
 done
 
 if [ -z $relType ]; then
-  echo "usage: $(basename $0) [-Mmp] major.minor.patch"
+  echo "usage: $(basename "$0") [-Mmp] major.minor.patch"
   exit 1
 fi
 
-if [ -z $2 ]; then
-  echo "usage: $(basename $0) [-Mmp] major.minor.patch"
+if [ -z "$2" ]; then
+  echo "usage: $(basename "$0") [-Mmp] major.minor.patch"
   exit 1
 fi
 
 version=$2
+# shellcheck disable=SC2206
 parts=( ${version//./ } )
 
 if [ $relType == "major" ]; then
