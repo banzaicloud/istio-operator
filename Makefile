@@ -132,3 +132,10 @@ check_release:
 release: check_release
 	git tag -a ${REL_TAG} -m ${RELEASE_MSG}
 	git push origin ${REL_TAG}
+
+.PHONY: shellcheck-makefile
+shellcheck-makefile: ## Check each makefile recipe using shellcheck
+	@for target in $$(grep -h -E '^[a-zA-Z_-]+:' $(MAKEFILE_LIST) | awk 'BEGIN {FS = ":"}; {print $$1}'); do \
+		echo "Checking make target: $$target"; \
+		make -s $$target SHELL=scripts/shellcheck-makefile.sh || exit 1; \
+	done
