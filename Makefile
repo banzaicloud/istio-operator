@@ -125,7 +125,7 @@ docker-push:
 	docker push ${IMG}
 
 check_release:
-	@echo "A new tag (${REL_TAG}) will be pushed to Github, and a new Docker image will be released. Are you sure? [y/N] " && read ans && [ $${ans:-N} == y ]
+	@echo "A new tag (${REL_TAG}) will be pushed to Github, and a new Docker image will be released. Are you sure? [y/N] " && read -r ans && [ "$${ans:-N}" = y ]
 
 release: check_release
 	git tag -a ${REL_TAG} -m ${RELEASE_MSG}
@@ -133,7 +133,7 @@ release: check_release
 
 .PHONY: shellcheck-makefile
 shellcheck-makefile: ## Check each makefile recipe using shellcheck
-	@for target in $$(grep -h -E '^[a-zA-Z_-]+:' $(MAKEFILE_LIST) | awk 'BEGIN {FS = ":"}; {print $$1}'); do \
+	@grep -h -E '^[a-zA-Z_-]+:' $(MAKEFILE_LIST) | cut -d: -f1 | while IFS= read -r target; do \
 		echo "Checking make target: $$target"; \
-		make -s $$target SHELL=scripts/shellcheck-makefile.sh || exit 1; \
+		make -s "$$target" SHELL=scripts/shellcheck-makefile.sh || exit 1; \
 	done
