@@ -58,16 +58,14 @@ run: generate fmt vet
 	go run ./cmd/manager/main.go
 
 # Install kustomize
-install-kustomize:
-	@ if ! which bin/kustomize >/dev/null 2>&1; then\
-		scripts/install_kustomize.sh;\
-	fi
+install-kustomize: bin/kustomize
+bin/kustomize:
+	scripts/install_kustomize.sh
 
 # Install kubebuilder
-install-kubebuilder:
-	@ if ! which bin/kubebuilder/bin/kubebuilder >/dev/null 2>&1; then\
-		scripts/install_kubebuilder.sh;\
-	fi
+install-kubebuilder: bin/kubebuilder/bin/kubebuilder
+bin/kubebuilder/bin/kubebuilder:
+	scripts/install_kubebuilder.sh
 
 bin/dep: bin/dep-${DEP_VERSION}
 	@ln -sf dep-${DEP_VERSION} bin/dep
