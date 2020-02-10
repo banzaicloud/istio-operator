@@ -9,6 +9,6 @@ spec:
   autoInjectionNamespaces:
   - "default"
   useMCP: true
-  mtls: true
+  meshPolicy: STRICT
   meshExpansion: true
   controlPlaneSecurityEnabled: true

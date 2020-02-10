@@ -9,7 +9,7 @@ spec:
   autoInjectionNamespaces:
   - "default"
   useMCP: true
-  mtls: true
+  meshPolicy: STRICT
   multiMesh: true
   controlPlaneSecurityEnabled: true
   istioCoreDNS:

@@ -19,6 +19,7 @@ package istio
 import (
 	"context"
 	"flag"
+	"fmt"
 	"strings"
 	"time"
 
@@ -37,6 +38,7 @@ import (
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/client-go/dynamic"
+	"k8s.io/client-go/tools/record"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/controller"
 	"sigs.k8s.io/controller-runtime/pkg/event"
@@ -99,6 +101,7 @@ func newReconciler(mgr manager.Manager, d dynamic.Interface, crd *crds.CrdOperat
 		dynamic:     d,
 		crdOperator: crd,
 		mgr:         mgr,
+		recorder:    mgr.GetRecorder("config-controller"),
 	}
 }
 
@@ -124,6 +127,7 @@ type ReconcileConfig struct {
 	dynamic     dynamic.Interface
 	crdOperator *crds.CrdOperator
 	mgr         manager.Manager
+	recorder    record.EventRecorder
 }
 
 type ReconcileComponent func(log logr.Logger, istio *istiov1beta1.Istio) error
@@ -131,6 +135,7 @@ type ReconcileComponent func(log logr.Logger, istio *istiov1beta1.Istio) error
 // +kubebuilder:rbac:groups="",resources=nodes;services;endpoints;pods;replicationcontrollers;services;endpoints;pods,verbs=get;list;watch
 // +kubebuilder:rbac:groups="",resources=serviceaccounts;configmaps,verbs=get;list;watch;create;update;patch;delete
 // +kubebuilder:rbac:groups="",resources=namespaces,verbs=get;list;watch;update;patch
+// +kubebuilder:rbac:groups="",resources=events,verbs=create;patch
 // +kubebuilder:rbac:groups="apps",resources=replicasets,verbs=get;list;watch
 // +kubebuilder:rbac:groups="apps",resources=deployments;daemonsets,verbs=get;list;watch;create;update;patch;delete
 // +kubebuilder:rbac:groups="apps",resources=deployments/status,verbs=get;update;patch
@@ -176,6 +181,8 @@ func (r *ReconcileConfig) Reconcile(request reconcile.Request) (reconcile.Result
 			Requeue: false,
 		}, nil
 	}
+
+	r.checkMeshPolicyConflict(config, logger)
 
 	// Set default values where not set
 	istiov1beta1.SetDefaults(config)
@@ -304,6 +311,27 @@ func (r *ReconcileConfig) reconcile(logger logr.Logger, config *istiov1beta1.Ist
 	}
 	logger.Info("reconcile finished")
 	return reconcile.Result{}, nil
+}
+
+func (r *ReconcileConfig) checkMeshPolicyConflict(config *istiov1beta1.Istio, logger logr.Logger) {
+	if config.Spec.MTLS != nil {
+		mTLS := util.PointerToBool(config.Spec.MTLS)
+		if (mTLS && config.Spec.MeshPolicy != istiov1beta1.STRICT) ||
+			(!mTLS && config.Spec.MeshPolicy != istiov1beta1.PERMISSIVE) {
+			warningMessage := fmt.Sprintf(
+				"Value '%t' set in spec.mtls is overriden by value '%s' set in spec.meshPolicy",
+				mTLS,
+				config.Spec.MeshPolicy,
+			)
+			logger.Info(warningMessage)
+			r.recorder.Event(
+				config,
+				"Warning",
+				"MeshPolicyConflict",
+				warningMessage,
+			)
+		}
+	}
 }
 
 func (r *ReconcileConfig) getMeshNetworks(config *istiov1beta1.Istio, logger logr.Logger) (*istiov1beta1.MeshNetworks, error) {

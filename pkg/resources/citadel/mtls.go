@@ -19,21 +19,28 @@ package citadel
 import (
 	"k8s.io/apimachinery/pkg/runtime/schema"
 
+	"github.com/banzaicloud/istio-operator/pkg/apis/istio/v1beta1"
 	"github.com/banzaicloud/istio-operator/pkg/k8sutil"
 )
 
-// mTLS returns a map to configure the default MeshPolicy
-func (r *Reconciler) mTLS() map[string]interface{} {
-	if r.Config.Spec.MTLS {
-		return map[string]interface{}{}
+// peers returns a map slice to configure the default MeshPolicy
+func (r *Reconciler) peers() []map[string]interface{} {
+	if r.Config.Spec.MeshPolicy == v1beta1.DISABLED {
+		return []map[string]interface{}{
+			{},
+		}
 	}
 
-	return map[string]interface{}{
-		"mode": "PERMISSIVE",
+	return []map[string]interface{}{
+		{
+			"mtls": map[string]interface{}{
+				"mode": r.Config.Spec.MeshPolicy,
+			},
+		},
 	}
 }
 
-// meshPolicy returns an authentication policy to either enable or disable mutual TLS
+// meshPolicy returns an authentication policy to either enable, allow or disable mutual TLS
 // for all services (that have sidecar) in the mesh
 // https://istio.io/docs/tasks/security/authn-policy/
 func (r *Reconciler) meshPolicy() *k8sutil.DynamicObject {
@@ -47,11 +54,7 @@ func (r *Reconciler) meshPolicy() *k8sutil.DynamicObject {
 		Name:   "default",
 		Labels: citadelLabels,
 		Spec: map[string]interface{}{
-			"peers": []map[string]interface{}{
-				{
-					"mtls": r.mTLS(),
-				},
-			},
+			"peers": r.peers(),
 		},
 		Owner: r.Config,
 	}

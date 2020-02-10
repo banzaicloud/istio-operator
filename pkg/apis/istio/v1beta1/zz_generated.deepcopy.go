@@ -569,6 +569,11 @@ func (in *IstioService) DeepCopy() *IstioService {
 func (in *IstioSpec) DeepCopyInto(out *IstioSpec) {
 	*out = *in
 	in.Logging.DeepCopyInto(&out.Logging)
+	if in.MTLS != nil {
+		in, out := &in.MTLS, &out.MTLS
+		*out = new(bool)
+		**out = **in
+	}
 	if in.AutoInjectionNamespaces != nil {
 		in, out := &in.AutoInjectionNamespaces, &out.AutoInjectionNamespaces
 		*out = make([]string, len(*in))

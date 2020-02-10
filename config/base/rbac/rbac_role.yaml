@@ -43,6 +43,13 @@ rules:
   - update
   - patch
 - apiGroups:
+  - ""
+  resources:
+  - events
+  verbs:
+  - create
+  - patch
+- apiGroups:
   - apps
   resources:
   - replicasets
