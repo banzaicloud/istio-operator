@@ -24,7 +24,6 @@ import (
 	"sync"
 	"time"
 
-	"github.com/banzaicloud/istio-client-go/pkg/authentication/v1alpha1"
 	"github.com/go-logr/logr"
 	"github.com/gofrs/uuid"
 	"github.com/goph/emperror"
@@ -265,8 +264,10 @@ func (r *ReconcileConfig) reconcile(logger logr.Logger, config *istiov1beta1.Ist
 	}
 
 	once.Do(func() {
-		meshPolicyResource := &v1alpha1.MeshPolicy{TypeMeta: metav1.TypeMeta{Kind: "MeshPolicy", APIVersion: "authentication.istio.io/v1alpha1"}}
-		err = watchResource(meshPolicyResource, logger)
+		err = watchMeshPolicy(types.NamespacedName{
+			Namespace: config.Namespace,
+			Name:      config.Name,
+		})
 		if err != nil {
 			logger.Error(err, "unable to watch MeshPolicy")
 		}
@@ -675,6 +676,44 @@ func watchResource(resource runtime.Object, logger logr.Logger) error {
 
 					logger.Info("related object changed", "trigger", object.GetName())
 				}
+				return true
+			},
+		},
+	)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func watchMeshPolicy(nn types.NamespacedName) error {
+	err := contr.Watch(
+		&source.Kind{
+			Type: &istiov1beta1.RemoteIstio{
+				TypeMeta: metav1.TypeMeta{
+					Kind:       "MeshPolicy",
+					APIVersion: "authentication.istio.io/v1alpha1",
+				},
+			},
+		},
+		&handler.EnqueueRequestsFromMapFunc{
+			ToRequests: handler.ToRequestsFunc(func(object handler.MapObject) []reconcile.Request {
+				return []reconcile.Request{
+					{
+						NamespacedName: nn,
+					},
+				}
+			}),
+		},
+		predicate.Funcs{
+			CreateFunc: func(e event.CreateEvent) bool {
+				return false
+			},
+			DeleteFunc: func(e event.DeleteEvent) bool {
+				return true
+			},
+			UpdateFunc: func(e event.UpdateEvent) bool {
 				return true
 			},
 		},
