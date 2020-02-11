@@ -84,7 +84,7 @@ func InitCrds() []*extensionsobj.CustomResourceDefinition {
 		crd("Gateway", "Gateways", crdConfigs[Networking], "istio-pilot", "", "", extensionsobj.NamespaceScoped),
 		crd("EnvoyFilter", "EnvoyFilters", crdConfigs[Networking], "istio-pilot", "", "", extensionsobj.NamespaceScoped),
 		crd("Policy", "Policies", crdConfigs[Authentication], "", "", "", extensionsobj.NamespaceScoped),
-		crd("MeshPolicy", "MeshPolicies", crdConfigs[Authentication], "", "", "", extensionsobj.ClusterScoped),
+		MeshPolicy(),
 		crd("HTTPAPISpecBinding", "HTTPAPISpecBindings", crdConfigs[Apim], "", "", "", extensionsobj.NamespaceScoped),
 		crd("HTTPAPISpec", "HTTPAPISpecs", crdConfigs[Apim], "", "", "", extensionsobj.NamespaceScoped),
 		crd("QuotaSpecBinding", "QuotaSpecBindings", crdConfigs[Apim], "", "", "", extensionsobj.NamespaceScoped),

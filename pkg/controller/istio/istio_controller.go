@@ -21,6 +21,7 @@ import (
 	"flag"
 	"fmt"
 	"strings"
+	"sync"
 	"time"
 
 	"github.com/banzaicloud/istio-client-go/pkg/authentication/v1alpha1"
@@ -76,6 +77,9 @@ const localNetworkName = "local-network"
 
 var log = logf.Log.WithName("controller")
 var watchCreatedResourcesEvents bool
+var contr controller.Controller
+var mgrScheme *runtime.Scheme
+var once sync.Once
 
 func init() {
 	flag.BoolVar(&watchCreatedResourcesEvents, "watch-created-resources-events", true, "Whether to watch created resources events")
@@ -109,11 +113,13 @@ func newReconciler(mgr manager.Manager, d dynamic.Interface, crd *crds.CrdOperat
 // add adds a new Controller to mgr with r as the reconcile.Reconciler
 func add(mgr manager.Manager, r reconcile.Reconciler) error {
 	// Create a new controller
-	c, err := controller.New("config-controller", mgr, controller.Options{Reconciler: r})
+	newController, err := controller.New("config-controller", mgr, controller.Options{Reconciler: r})
 	if err != nil {
 		return err
 	}
-	err = initWatches(c, mgr.GetScheme(), watchCreatedResourcesEvents, log)
+	contr = newController
+	mgrScheme = mgr.GetScheme()
+	err = initWatches(watchCreatedResourcesEvents, log)
 	if err != nil {
 		return err
 	}
@@ -257,6 +263,14 @@ func (r *ReconcileConfig) reconcile(logger logr.Logger, config *istiov1beta1.Ist
 		logger.Error(err, "unable to reconcile CRDs")
 		return reconcile.Result{}, err
 	}
+
+	once.Do(func() {
+		meshPolicyResource := &v1alpha1.MeshPolicy{TypeMeta: metav1.TypeMeta{Kind: "MeshPolicy", APIVersion: "authentication.istio.io/v1alpha1"}}
+		err = watchResource(meshPolicyResource, logger)
+		if err != nil {
+			logger.Error(err, "unable to watch MeshPolicy")
+		}
+	})
 
 	if util.PointerToBool(config.Spec.MeshExpansion) {
 		meshNetworks, err := r.getMeshNetworks(config, logger)
@@ -470,39 +484,18 @@ func updateStatus(c client.Client, config *istiov1beta1.Istio, status istiov1bet
 	return nil
 }
 
-func initWatches(c controller.Controller, scheme *runtime.Scheme, watchCreatedResourcesEvents bool, logger logr.Logger) error {
-	// Watch for changes to Config
-	err := c.Watch(&source.Kind{Type: &istiov1beta1.Istio{TypeMeta: metav1.TypeMeta{Kind: "Istio", APIVersion: "istio.banzaicloud.io/v1beta1"}}}, &handler.EnqueueRequestForObject{}, k8sutil.GetWatchPredicateForIstio())
+func initWatches(watchCreatedResourcesEvents bool, logger logr.Logger) error {
+	err := watchIstioConfig()
 	if err != nil {
 		return err
 	}
 
-	// Watch for RemoteIstio changes to trigger reconciliation
-	err = c.Watch(&source.Kind{Type: &istiov1beta1.RemoteIstio{TypeMeta: metav1.TypeMeta{Kind: "RemoteIstio", APIVersion: "istio.banzaicloud.io/v1beta1"}}}, &handler.EnqueueRequestsFromMapFunc{
-		ToRequests: handler.ToRequestsFunc(func(object handler.MapObject) []reconcile.Request {
-			own := object.Meta.GetOwnerReferences()
-			if len(own) < 1 {
-				return nil
-			}
-			return []reconcile.Request{
-				{
-					NamespacedName: types.NamespacedName{
-						Name:      own[0].Name,
-						Namespace: object.Meta.GetNamespace(),
-					},
-				},
-			}
-		}),
-	}, k8sutil.GetWatchPredicateForRemoteIstioAvailability())
+	err = watchRemoteIstioConfig()
 	if err != nil {
 		return err
 	}
 
-	// Watch for changes to Istio coreDNS service
-	err = c.Watch(&source.Kind{Type: &corev1.Service{TypeMeta: metav1.TypeMeta{Kind: "Service", APIVersion: "v1"}}}, &handler.EnqueueRequestForOwner{
-		IsController: true,
-		OwnerType:    &istiov1beta1.Istio{},
-	}, k8sutil.GetWatchPredicateForIstioService("istiocoredns"))
+	err = watchIstioCoreDNSService()
 	if err != nil {
 		return err
 	}
@@ -511,11 +504,7 @@ func initWatches(c controller.Controller, scheme *runtime.Scheme, watchCreatedRe
 		return nil
 	}
 
-	// Initialize owner matcher
-	ownerMatcher := k8sutil.NewOwnerReferenceMatcher(&istiov1beta1.Istio{TypeMeta: metav1.TypeMeta{Kind: "Istio", APIVersion: "istio.banzaicloud.io/v1beta1"}}, true, scheme)
-
-	// Watch for changes to resources managed by the operator
-	for _, t := range []runtime.Object{
+	createdResources := []runtime.Object{
 		&corev1.ServiceAccount{TypeMeta: metav1.TypeMeta{Kind: "ServiceAccount", APIVersion: "v1"}},
 		&rbacv1.Role{TypeMeta: metav1.TypeMeta{Kind: "ClusterRole", APIVersion: "v1"}},
 		&rbacv1.RoleBinding{TypeMeta: metav1.TypeMeta{Kind: "ClusterRoleBinding", APIVersion: "v1"}},
@@ -529,12 +518,118 @@ func initWatches(c controller.Controller, scheme *runtime.Scheme, watchCreatedRe
 		&admissionregistrationv1beta1.MutatingWebhookConfiguration{TypeMeta: metav1.TypeMeta{Kind: "MutatingWebhookConfiguration", APIVersion: "v1beta1"}},
 		&corev1.Namespace{TypeMeta: metav1.TypeMeta{Kind: "Namespace", APIVersion: "v1"}},
 		&istiov1beta1.MeshGateway{TypeMeta: metav1.TypeMeta{Kind: "MeshGateway", APIVersion: "istio.banzaicloud.io/v1beta1"}},
-		&v1alpha1.MeshPolicy{TypeMeta: metav1.TypeMeta{Kind: "MeshPolicy", APIVersion: "authentication.istio.io/v1alpha1"}},
-	} {
-		err = c.Watch(&source.Kind{Type: t}, &handler.EnqueueRequestForOwner{
+	}
+
+	// Watch for changes to resources managed by the operator
+	for _, resource := range createdResources {
+		err = watchResource(resource, logger)
+		if err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
+func watchIstioConfig() error {
+	err := contr.Watch(
+		&source.Kind{
+			Type: &istiov1beta1.Istio{
+				TypeMeta: metav1.TypeMeta{
+					Kind:       "Istio",
+					APIVersion: "istio.banzaicloud.io/v1beta1",
+				},
+			},
+		},
+		&handler.EnqueueRequestForObject{},
+		k8sutil.GetWatchPredicateForIstio(),
+	)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func watchRemoteIstioConfig() error {
+	err := contr.Watch(
+		&source.Kind{
+			Type: &istiov1beta1.RemoteIstio{
+				TypeMeta: metav1.TypeMeta{
+					Kind:       "RemoteIstio",
+					APIVersion: "istio.banzaicloud.io/v1beta1",
+				},
+			},
+		},
+		&handler.EnqueueRequestsFromMapFunc{
+			ToRequests: handler.ToRequestsFunc(func(object handler.MapObject) []reconcile.Request {
+				own := object.Meta.GetOwnerReferences()
+				if len(own) < 1 {
+					return nil
+				}
+				return []reconcile.Request{
+					{
+						NamespacedName: types.NamespacedName{
+							Name:      own[0].Name,
+							Namespace: object.Meta.GetNamespace(),
+						},
+					},
+				}
+			}),
+		},
+		k8sutil.GetWatchPredicateForRemoteIstioAvailability(),
+	)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func watchIstioCoreDNSService() error {
+	err := contr.Watch(
+		&source.Kind{
+			Type: &corev1.Service{
+				TypeMeta: metav1.TypeMeta{
+					Kind:       "Service",
+					APIVersion: "v1",
+				},
+			},
+		},
+		&handler.EnqueueRequestForOwner{
 			IsController: true,
 			OwnerType:    &istiov1beta1.Istio{},
-		}, predicate.Funcs{
+		},
+		k8sutil.GetWatchPredicateForIstioService("istiocoredns"),
+	)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func watchResource(resource runtime.Object, logger logr.Logger) error {
+	ownerMatcher := k8sutil.NewOwnerReferenceMatcher(
+		&istiov1beta1.Istio{
+			TypeMeta: metav1.TypeMeta{
+				Kind:       "Istio",
+				APIVersion: "istio.banzaicloud.io/v1beta1",
+			},
+		},
+		true,
+		mgrScheme,
+	)
+
+	err := contr.Watch(
+		&source.Kind{
+			Type: resource,
+		},
+		&handler.EnqueueRequestForOwner{
+			IsController: true,
+			OwnerType:    &istiov1beta1.Istio{},
+		},
+		predicate.Funcs{
 			CreateFunc: func(e event.CreateEvent) bool {
 				object, err := meta.Accessor(e.Object)
 				if err != nil {
@@ -582,11 +677,12 @@ func initWatches(c controller.Controller, scheme *runtime.Scheme, watchCreatedRe
 				}
 				return true
 			},
-		})
-		if err != nil {
-			return err
-		}
+		},
+	)
+	if err != nil {
+		return err
 	}
+
 	return nil
 }
 
