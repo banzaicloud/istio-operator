@@ -23,13 +23,15 @@ import (
 	"sync"
 	"testing"
 
-	"github.com/banzaicloud/istio-operator/pkg/apis"
 	"github.com/onsi/gomega"
 	"k8s.io/client-go/kubernetes/scheme"
 	"k8s.io/client-go/rest"
 	"sigs.k8s.io/controller-runtime/pkg/envtest"
 	"sigs.k8s.io/controller-runtime/pkg/manager"
 	"sigs.k8s.io/controller-runtime/pkg/reconcile"
+
+	"github.com/banzaicloud/istio-operator/pkg/apis"
+	"github.com/banzaicloud/istio-operator/pkg/crds"
 )
 
 var cfg *rest.Config
@@ -38,6 +40,8 @@ func TestMain(m *testing.M) {
 	t := &envtest.Environment{
 		CRDDirectoryPaths: []string{filepath.Join("..", "..", "..", "config", "base", "crds")},
 	}
+
+	t.CRDs = append(t.CRDs, crds.MeshPolicy())
 
 	err := apis.AddToScheme(scheme.Scheme)
 	if err != nil {

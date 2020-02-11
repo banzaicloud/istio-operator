@@ -103,6 +103,10 @@ func InitCrds() []*extensionsobj.CustomResourceDefinition {
 	}
 }
 
+func MeshPolicy() *extensionsobj.CustomResourceDefinition {
+	return crd("MeshPolicy", "MeshPolicies", crdConfigs[Authentication], "", "", "", extensionsobj.ClusterScoped)
+}
+
 func crd(kind string, plural string, config crdConfig, appLabel string, pckLabel string, istioLabel string, scope extensionsobj.ResourceScope) *extensionsobj.CustomResourceDefinition {
 	return crdL(kind, plural, config, appLabel, pckLabel, istioLabel, scope, false)
 }
