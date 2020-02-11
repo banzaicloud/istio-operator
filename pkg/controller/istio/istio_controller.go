@@ -23,6 +23,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/banzaicloud/istio-client-go/pkg/authentication/v1alpha1"
 	"github.com/go-logr/logr"
 	"github.com/gofrs/uuid"
 	"github.com/goph/emperror"
@@ -528,6 +529,7 @@ func initWatches(c controller.Controller, scheme *runtime.Scheme, watchCreatedRe
 		&admissionregistrationv1beta1.MutatingWebhookConfiguration{TypeMeta: metav1.TypeMeta{Kind: "MutatingWebhookConfiguration", APIVersion: "v1beta1"}},
 		&corev1.Namespace{TypeMeta: metav1.TypeMeta{Kind: "Namespace", APIVersion: "v1"}},
 		&istiov1beta1.MeshGateway{TypeMeta: metav1.TypeMeta{Kind: "MeshGateway", APIVersion: "istio.banzaicloud.io/v1beta1"}},
+		&v1alpha1.MeshPolicy{TypeMeta: metav1.TypeMeta{Kind: "MeshPolicy", APIVersion: "authentication.istio.io/v1alpha1"}},
 	} {
 		err = c.Watch(&source.Kind{Type: t}, &handler.EnqueueRequestForOwner{
 			IsController: true,
