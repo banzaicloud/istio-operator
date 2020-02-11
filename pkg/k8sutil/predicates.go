@@ -19,10 +19,14 @@ package k8sutil
 import (
 	"reflect"
 
+	corev1 "k8s.io/api/core/v1"
+	"k8s.io/apimachinery/pkg/api/meta"
+	"k8s.io/apimachinery/pkg/runtime"
 	"sigs.k8s.io/controller-runtime/pkg/event"
 	"sigs.k8s.io/controller-runtime/pkg/predicate"
 
 	istiov1beta1 "github.com/banzaicloud/istio-operator/pkg/apis/istio/v1beta1"
+	"github.com/go-logr/logr"
 )
 
 func GetWatchPredicateForIstio() predicate.Funcs {
@@ -152,6 +156,60 @@ func GetWatchPredicateForMeshGateway() predicate.Funcs {
 				return true
 			}
 			return false
+		},
+	}
+}
+
+func GetWatchPredicateForOwnedResources(owner runtime.Object, isController bool, scheme *runtime.Scheme, logger logr.Logger) predicate.Funcs {
+	ownerMatcher := NewOwnerReferenceMatcher(owner, isController, scheme)
+
+	return predicate.Funcs{
+		CreateFunc: func(e event.CreateEvent) bool {
+			object, err := meta.Accessor(e.Object)
+			if err != nil {
+				return false
+			}
+			// If a new namespace created we need to reconcile to mutate it with auto injection labels if required in the CR
+			if _, ok := object.(*corev1.Namespace); ok {
+				return true
+			}
+			return false
+		},
+		DeleteFunc: func(e event.DeleteEvent) bool {
+			object, err := meta.Accessor(e.Object)
+			if err != nil {
+				return false
+			}
+			// We don't want to run reconcile if a namespace is deleted
+			if _, ok := e.Object.(*corev1.Namespace); ok {
+				return false
+			}
+			related, object, err := ownerMatcher.Match(e.Object)
+			if err != nil {
+				logger.Error(err, "could not determine relation", "kind", e.Object.GetObjectKind())
+			}
+			if related {
+				logger.Info("related object deleted", "trigger", object.GetName())
+			}
+			return true
+		},
+		UpdateFunc: func(e event.UpdateEvent) bool {
+			related, object, err := ownerMatcher.Match(e.ObjectNew)
+			if err != nil {
+				logger.Error(err, "could not determine relation", "kind", e.ObjectNew.GetObjectKind())
+			}
+			if related {
+				changed, err := IsObjectChanged(e.ObjectOld, e.ObjectNew, true)
+				if err != nil {
+					logger.Error(err, "could not check whether object is changed", "kind", e.ObjectNew.GetObjectKind())
+				}
+				if !changed {
+					return false
+				}
+
+				logger.Info("related object changed", "trigger", object.GetName())
+			}
+			return true
 		},
 	}
 }

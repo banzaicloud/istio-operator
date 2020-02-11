@@ -28,27 +28,18 @@ import (
 	"github.com/gofrs/uuid"
 	"github.com/goph/emperror"
 	"github.com/pkg/errors"
-	admissionregistrationv1beta1 "k8s.io/api/admissionregistration/v1beta1"
 	appsv1 "k8s.io/api/apps/v1"
-	autoscalingv2beta1 "k8s.io/api/autoscaling/v2beta1"
 	corev1 "k8s.io/api/core/v1"
-	rbacv1 "k8s.io/api/rbac/v1"
 	k8serrors "k8s.io/apimachinery/pkg/api/errors"
-	"k8s.io/apimachinery/pkg/api/meta"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/client-go/dynamic"
 	"k8s.io/client-go/tools/record"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/controller"
-	"sigs.k8s.io/controller-runtime/pkg/event"
-	"sigs.k8s.io/controller-runtime/pkg/handler"
 	"sigs.k8s.io/controller-runtime/pkg/manager"
-	"sigs.k8s.io/controller-runtime/pkg/predicate"
 	"sigs.k8s.io/controller-runtime/pkg/reconcile"
 	logf "sigs.k8s.io/controller-runtime/pkg/runtime/log"
-	"sigs.k8s.io/controller-runtime/pkg/source"
 
 	istiov1beta1 "github.com/banzaicloud/istio-operator/pkg/apis/istio/v1beta1"
 	remoteistioCtrl "github.com/banzaicloud/istio-operator/pkg/controller/remoteistio"
@@ -76,15 +67,18 @@ const localNetworkName = "local-network"
 
 var log = logf.Log.WithName("controller")
 var watchCreatedResourcesEvents bool
-var contr controller.Controller
-var mgrScheme *runtime.Scheme
-var once sync.Once
+
+type IstioReconciler interface {
+	reconcile.Reconciler
+	initWatches(watchCreatedResourcesEvents bool) error
+	setController(ctrl controller.Controller)
+}
 
 func init() {
 	flag.BoolVar(&watchCreatedResourcesEvents, "watch-created-resources-events", true, "Whether to watch created resources events")
 }
 
-// Add creates a new Config Controller and adds it to the Manager with default RBAC. The Manager will set fields on the Controller
+// Add creates a new Controller and adds it to the Manager with default RBAC. The Manager will set fields on the Controller
 // and Start it when the Manager is Started.
 func Add(mgr manager.Manager) error {
 	dynamic, err := dynamic.NewForConfig(mgr.GetConfig())
@@ -93,47 +87,57 @@ func Add(mgr manager.Manager) error {
 	}
 	crd, err := crds.New(mgr.GetConfig(), crds.InitCrds())
 	if err != nil {
-		return emperror.Wrap(err, "unable to set up crd operator")
+		return emperror.Wrap(err, "unable to set up crd reconciler")
 	}
-	return add(mgr, newReconciler(mgr, dynamic, crd))
-}
-
-// newReconciler returns a new reconcile.Reconciler
-func newReconciler(mgr manager.Manager, d dynamic.Interface, crd *crds.CrdOperator) reconcile.Reconciler {
-	return &ReconcileConfig{
-		Client:      mgr.GetClient(),
-		dynamic:     d,
-		crdOperator: crd,
-		mgr:         mgr,
-		recorder:    mgr.GetRecorder("config-controller"),
-	}
-}
-
-// add adds a new Controller to mgr with r as the reconcile.Reconciler
-func add(mgr manager.Manager, r reconcile.Reconciler) error {
-	// Create a new controller
-	newController, err := controller.New("config-controller", mgr, controller.Options{Reconciler: r})
+	r := newReconciler(mgr, dynamic, crd)
+	err = newController(mgr, r)
 	if err != nil {
-		return err
-	}
-	contr = newController
-	mgrScheme = mgr.GetScheme()
-	err = initWatches(watchCreatedResourcesEvents, log)
-	if err != nil {
-		return err
+		return emperror.Wrap(err, "failed to create controller")
 	}
 	return nil
 }
 
-var _ reconcile.Reconciler = &ReconcileConfig{}
+// newReconciler returns a new IstioReconciler
+func newReconciler(mgr manager.Manager, d dynamic.Interface, crd *crds.CrdOperator) reconcile.Reconciler {
+	return &ReconcileIstio{
+		Client:      mgr.GetClient(),
+		dynamic:     d,
+		crdOperator: crd,
+		mgr:         mgr,
+		recorder:    mgr.GetRecorder("istio-controller"),
+	}
+}
+
+// add adds a new Controller to mgr with r as the reconcile.Reconciler
+func newController(mgr manager.Manager, r reconcile.Reconciler) error {
+	// Create a new controller
+	ctrl, err := controller.New("istio-controller", mgr, controller.Options{Reconciler: r})
+	if err != nil {
+		return err
+	}
+
+	if r, ok := r.(IstioReconciler); ok {
+		r.setController(ctrl)
+		err = r.initWatches(watchCreatedResourcesEvents)
+		if err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
+var _ reconcile.Reconciler = &ReconcileIstio{}
 
 // ReconcileConfig reconciles a Config object
-type ReconcileConfig struct {
+type ReconcileIstio struct {
 	client.Client
-	dynamic     dynamic.Interface
-	crdOperator *crds.CrdOperator
-	mgr         manager.Manager
-	recorder    record.EventRecorder
+	dynamic          dynamic.Interface
+	crdOperator      *crds.CrdOperator
+	mgr              manager.Manager
+	recorder         record.EventRecorder
+	ctrl             controller.Controller
+	watchersInitOnce sync.Once
 }
 
 type ReconcileComponent func(log logr.Logger, istio *istiov1beta1.Istio) error
@@ -163,7 +167,7 @@ type ReconcileComponent func(log logr.Logger, istio *istiov1beta1.Istio) error
 // Reconcile reads that state of the cluster for a Config object and makes changes based on the state read
 // and what is in the Config.Spec
 // Automatically generate RBAC rules to allow the Controller to read and write Deployments
-func (r *ReconcileConfig) Reconcile(request reconcile.Request) (reconcile.Result, error) {
+func (r *ReconcileIstio) Reconcile(request reconcile.Request) (reconcile.Result, error) {
 	logger := log.WithValues("trigger", request.Namespace+"/"+request.Name, "correlationID", uuid.Must(uuid.NewV4()).String())
 	// Fetch the Config instance
 	config := &istiov1beta1.Istio{}
@@ -204,7 +208,11 @@ func (r *ReconcileConfig) Reconcile(request reconcile.Request) (reconcile.Result
 	return result, nil
 }
 
-func (r *ReconcileConfig) reconcile(logger logr.Logger, config *istiov1beta1.Istio) (reconcile.Result, error) {
+func (r *ReconcileIstio) setController(ctrl controller.Controller) {
+	r.ctrl = ctrl
+}
+
+func (r *ReconcileIstio) reconcile(logger logr.Logger, config *istiov1beta1.Istio) (reconcile.Result, error) {
 
 	if config.Status.Status == "" {
 		err := updateStatus(r.Client, config, istiov1beta1.Created, "", logger)
@@ -263,8 +271,8 @@ func (r *ReconcileConfig) reconcile(logger logr.Logger, config *istiov1beta1.Ist
 		return reconcile.Result{}, err
 	}
 
-	once.Do(func() {
-		err = watchMeshPolicy(types.NamespacedName{
+	r.watchersInitOnce.Do(func() {
+		err = r.watchMeshPolicy(types.NamespacedName{
 			Namespace: config.Namespace,
 			Name:      config.Name,
 		})
@@ -329,7 +337,7 @@ func (r *ReconcileConfig) reconcile(logger logr.Logger, config *istiov1beta1.Ist
 	return reconcile.Result{}, nil
 }
 
-func (r *ReconcileConfig) checkMeshPolicyConflict(config *istiov1beta1.Istio, logger logr.Logger) {
+func (r *ReconcileIstio) checkMeshPolicyConflict(config *istiov1beta1.Istio, logger logr.Logger) {
 	if config.Spec.MTLS != nil {
 		mTLS := util.PointerToBool(config.Spec.MTLS)
 		if (mTLS && config.Spec.MeshPolicy != istiov1beta1.STRICT) ||
@@ -350,7 +358,7 @@ func (r *ReconcileConfig) checkMeshPolicyConflict(config *istiov1beta1.Istio, lo
 	}
 }
 
-func (r *ReconcileConfig) getMeshNetworks(config *istiov1beta1.Istio, logger logr.Logger) (*istiov1beta1.MeshNetworks, error) {
+func (r *ReconcileIstio) getMeshNetworks(config *istiov1beta1.Istio, logger logr.Logger) (*istiov1beta1.MeshNetworks, error) {
 	meshNetworks := make(map[string]istiov1beta1.MeshNetwork)
 
 	if len(config.Status.GatewayAddress) > 0 {
@@ -398,7 +406,7 @@ func (r *ReconcileConfig) getMeshNetworks(config *istiov1beta1.Istio, logger log
 	}, nil
 }
 
-func (r *ReconcileConfig) setCitadelAsOwnerReferenceToIstioSecrets(config *istiov1beta1.Istio, deployment appsv1.Deployment, logger logr.Logger) error {
+func (r *ReconcileIstio) setCitadelAsOwnerReferenceToIstioSecrets(config *istiov1beta1.Istio, deployment appsv1.Deployment, logger logr.Logger) error {
 	var secrets corev1.SecretList
 
 	err := r.Client.Get(context.TODO(), types.NamespacedName{
@@ -440,7 +448,7 @@ func (r *ReconcileConfig) setCitadelAsOwnerReferenceToIstioSecrets(config *istio
 	return nil
 }
 
-func (r *ReconcileConfig) deleteRemoteIstios(config *istiov1beta1.Istio, logger logr.Logger) {
+func (r *ReconcileIstio) deleteRemoteIstios(config *istiov1beta1.Istio, logger logr.Logger) {
 	remoteIstios := remoteistioCtrl.GetRemoteIstiosByOwnerReference(r.mgr, config, logger)
 	for _, remoteIstio := range remoteIstios {
 		err := r.Client.Delete(context.Background(), &remoteIstio)
@@ -482,246 +490,6 @@ func updateStatus(c client.Client, config *istiov1beta1.Istio, status istiov1bet
 	// update loses the typeMeta of the config that's used later when setting ownerrefs
 	config.TypeMeta = typeMeta
 	logger.Info("Istio state updated", "status", status)
-	return nil
-}
-
-func initWatches(watchCreatedResourcesEvents bool, logger logr.Logger) error {
-	err := watchIstioConfig()
-	if err != nil {
-		return err
-	}
-
-	err = watchRemoteIstioConfig()
-	if err != nil {
-		return err
-	}
-
-	err = watchIstioCoreDNSService()
-	if err != nil {
-		return err
-	}
-
-	if !watchCreatedResourcesEvents {
-		return nil
-	}
-
-	createdResources := []runtime.Object{
-		&corev1.ServiceAccount{TypeMeta: metav1.TypeMeta{Kind: "ServiceAccount", APIVersion: "v1"}},
-		&rbacv1.Role{TypeMeta: metav1.TypeMeta{Kind: "ClusterRole", APIVersion: "v1"}},
-		&rbacv1.RoleBinding{TypeMeta: metav1.TypeMeta{Kind: "ClusterRoleBinding", APIVersion: "v1"}},
-		&rbacv1.ClusterRole{TypeMeta: metav1.TypeMeta{Kind: "ClusterRole", APIVersion: "v1"}},
-		&rbacv1.ClusterRoleBinding{TypeMeta: metav1.TypeMeta{Kind: "ClusterRoleBinding", APIVersion: "v1"}},
-		&corev1.ConfigMap{TypeMeta: metav1.TypeMeta{Kind: "ConfigMap", APIVersion: "v1"}},
-		&corev1.Service{TypeMeta: metav1.TypeMeta{Kind: "Service", APIVersion: "v1"}},
-		&appsv1.Deployment{TypeMeta: metav1.TypeMeta{Kind: "Deployment", APIVersion: "v1"}},
-		&appsv1.DaemonSet{TypeMeta: metav1.TypeMeta{Kind: "DaemonSet", APIVersion: "v1"}},
-		&autoscalingv2beta1.HorizontalPodAutoscaler{TypeMeta: metav1.TypeMeta{Kind: "HorizontalPodAutoscaler", APIVersion: "v2beta1"}},
-		&admissionregistrationv1beta1.MutatingWebhookConfiguration{TypeMeta: metav1.TypeMeta{Kind: "MutatingWebhookConfiguration", APIVersion: "v1beta1"}},
-		&corev1.Namespace{TypeMeta: metav1.TypeMeta{Kind: "Namespace", APIVersion: "v1"}},
-		&istiov1beta1.MeshGateway{TypeMeta: metav1.TypeMeta{Kind: "MeshGateway", APIVersion: "istio.banzaicloud.io/v1beta1"}},
-	}
-
-	// Watch for changes to resources managed by the operator
-	for _, resource := range createdResources {
-		err = watchResource(resource, logger)
-		if err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-func watchIstioConfig() error {
-	err := contr.Watch(
-		&source.Kind{
-			Type: &istiov1beta1.Istio{
-				TypeMeta: metav1.TypeMeta{
-					Kind:       "Istio",
-					APIVersion: "istio.banzaicloud.io/v1beta1",
-				},
-			},
-		},
-		&handler.EnqueueRequestForObject{},
-		k8sutil.GetWatchPredicateForIstio(),
-	)
-	if err != nil {
-		return err
-	}
-
-	return nil
-}
-
-func watchRemoteIstioConfig() error {
-	err := contr.Watch(
-		&source.Kind{
-			Type: &istiov1beta1.RemoteIstio{
-				TypeMeta: metav1.TypeMeta{
-					Kind:       "RemoteIstio",
-					APIVersion: "istio.banzaicloud.io/v1beta1",
-				},
-			},
-		},
-		&handler.EnqueueRequestsFromMapFunc{
-			ToRequests: handler.ToRequestsFunc(func(object handler.MapObject) []reconcile.Request {
-				own := object.Meta.GetOwnerReferences()
-				if len(own) < 1 {
-					return nil
-				}
-				return []reconcile.Request{
-					{
-						NamespacedName: types.NamespacedName{
-							Name:      own[0].Name,
-							Namespace: object.Meta.GetNamespace(),
-						},
-					},
-				}
-			}),
-		},
-		k8sutil.GetWatchPredicateForRemoteIstioAvailability(),
-	)
-	if err != nil {
-		return err
-	}
-
-	return nil
-}
-
-func watchIstioCoreDNSService() error {
-	err := contr.Watch(
-		&source.Kind{
-			Type: &corev1.Service{
-				TypeMeta: metav1.TypeMeta{
-					Kind:       "Service",
-					APIVersion: "v1",
-				},
-			},
-		},
-		&handler.EnqueueRequestForOwner{
-			IsController: true,
-			OwnerType:    &istiov1beta1.Istio{},
-		},
-		k8sutil.GetWatchPredicateForIstioService("istiocoredns"),
-	)
-	if err != nil {
-		return err
-	}
-
-	return nil
-}
-
-func watchResource(resource runtime.Object, logger logr.Logger) error {
-	ownerMatcher := k8sutil.NewOwnerReferenceMatcher(
-		&istiov1beta1.Istio{
-			TypeMeta: metav1.TypeMeta{
-				Kind:       "Istio",
-				APIVersion: "istio.banzaicloud.io/v1beta1",
-			},
-		},
-		true,
-		mgrScheme,
-	)
-
-	err := contr.Watch(
-		&source.Kind{
-			Type: resource,
-		},
-		&handler.EnqueueRequestForOwner{
-			IsController: true,
-			OwnerType:    &istiov1beta1.Istio{},
-		},
-		predicate.Funcs{
-			CreateFunc: func(e event.CreateEvent) bool {
-				object, err := meta.Accessor(e.Object)
-				if err != nil {
-					return false
-				}
-				//If a new namespace created we need to reconcile to mutate it with auto injection labels if required in the CR
-				if _, ok := object.(*corev1.Namespace); ok {
-					return true
-				}
-				return false
-			},
-			DeleteFunc: func(e event.DeleteEvent) bool {
-				object, err := meta.Accessor(e.Object)
-				if err != nil {
-					return false
-				}
-				//We don't want to run reconcile if a namespace is deleted
-				if _, ok := e.Object.(*corev1.Namespace); ok {
-					return false
-				}
-				related, object, err := ownerMatcher.Match(e.Object)
-				if err != nil {
-					logger.Error(err, "could not determine relation", "kind", e.Object.GetObjectKind())
-				}
-				if related {
-					logger.Info("related object deleted", "trigger", object.GetName())
-				}
-				return true
-			},
-			UpdateFunc: func(e event.UpdateEvent) bool {
-				related, object, err := ownerMatcher.Match(e.ObjectNew)
-				if err != nil {
-					logger.Error(err, "could not determine relation", "kind", e.ObjectNew.GetObjectKind())
-				}
-				if related {
-					changed, err := k8sutil.IsObjectChanged(e.ObjectOld, e.ObjectNew, true)
-					if err != nil {
-						logger.Error(err, "could not check whether object is changed", "kind", e.ObjectNew.GetObjectKind())
-					}
-					if !changed {
-						return false
-					}
-
-					logger.Info("related object changed", "trigger", object.GetName())
-				}
-				return true
-			},
-		},
-	)
-	if err != nil {
-		return err
-	}
-
-	return nil
-}
-
-func watchMeshPolicy(nn types.NamespacedName) error {
-	err := contr.Watch(
-		&source.Kind{
-			Type: &istiov1beta1.RemoteIstio{
-				TypeMeta: metav1.TypeMeta{
-					Kind:       "MeshPolicy",
-					APIVersion: "authentication.istio.io/v1alpha1",
-				},
-			},
-		},
-		&handler.EnqueueRequestsFromMapFunc{
-			ToRequests: handler.ToRequestsFunc(func(object handler.MapObject) []reconcile.Request {
-				return []reconcile.Request{
-					{
-						NamespacedName: nn,
-					},
-				}
-			}),
-		},
-		predicate.Funcs{
-			CreateFunc: func(e event.CreateEvent) bool {
-				return false
-			},
-			DeleteFunc: func(e event.DeleteEvent) bool {
-				return true
-			},
-			UpdateFunc: func(e event.UpdateEvent) bool {
-				return true
-			},
-		},
-	)
-	if err != nil {
-		return err
-	}
-
 	return nil
 }
 
