@@ -25,7 +25,7 @@ import (
 
 // peers returns a map slice to configure the default MeshPolicy
 func (r *Reconciler) peers() []map[string]interface{} {
-	if r.Config.Spec.MeshPolicy == v1beta1.DISABLED {
+	if r.Config.Spec.MeshPolicy.MTLSMode == v1beta1.DISABLED {
 		return []map[string]interface{}{
 			{},
 		}
@@ -34,7 +34,7 @@ func (r *Reconciler) peers() []map[string]interface{} {
 	return []map[string]interface{}{
 		{
 			"mtls": map[string]interface{}{
-				"mode": r.Config.Spec.MeshPolicy,
+				"mode": r.Config.Spec.MeshPolicy.MTLSMode,
 			},
 		},
 	}

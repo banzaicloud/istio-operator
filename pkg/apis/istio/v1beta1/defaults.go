@@ -105,11 +105,11 @@ var defaultEgressGatewayPorts = []apiv1.ServicePort{
 
 func SetDefaults(config *Istio) {
 	// MeshPolicy config
-	if config.Spec.MeshPolicy == "" {
+	if config.Spec.MeshPolicy.MTLSMode == "" {
 		if util.PointerToBool(config.Spec.MTLS) {
-			config.Spec.MeshPolicy = STRICT
+			config.Spec.MeshPolicy.MTLSMode = STRICT
 		} else {
-			config.Spec.MeshPolicy = defaultMeshPolicy
+			config.Spec.MeshPolicy.MTLSMode = defaultMeshPolicy
 		}
 	}
 

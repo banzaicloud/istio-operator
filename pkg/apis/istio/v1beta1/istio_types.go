@@ -498,12 +498,19 @@ type LoggingConfiguration struct {
 	Level *string `json:"level,omitempty"`
 }
 
-type MeshPolicy string
+// MeshPolicyConfiguration configures the default MeshPolicy resource
+type MeshPolicyConfiguration struct {
+	// MTLSMode sets the mesh-wide mTLS policy
+	// +kubebuilder:validation:Enum=STRICT,PERMISSIVE,DISABLED
+	MTLSMode MTLSMode `json:"mtlsMode,omitempty"`
+}
+
+type MTLSMode string
 
 const (
-	STRICT     MeshPolicy = "STRICT"
-	PERMISSIVE MeshPolicy = "PERMISSIVE"
-	DISABLED   MeshPolicy = "DISABLED"
+	STRICT     MTLSMode = "STRICT"
+	PERMISSIVE MTLSMode = "PERMISSIVE"
+	DISABLED   MTLSMode = "DISABLED"
 )
 
 // IstioSpec defines the desired state of Istio
@@ -515,9 +522,8 @@ type IstioSpec struct {
 	// Logging configurations
 	Logging LoggingConfiguration `json:"logging,omitempty"`
 
-	// MeshPolicy sets the mesh-wide mTLS policy
-	// +kubebuilder:validation:Enum=STRICT,PERMISSIVE,DISABLED
-	MeshPolicy MeshPolicy `json:"meshPolicy,omitempty"`
+	// MeshPolicy configures the default MeshPolicy resource
+	MeshPolicy MeshPolicyConfiguration `json:"meshPolicy,omitempty"`
 
 	// DEPRECATED: Use meshPolicy instead.
 	// MTLS enables or disables global mTLS

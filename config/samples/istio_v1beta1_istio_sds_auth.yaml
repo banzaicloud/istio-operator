@@ -6,7 +6,8 @@ metadata:
   name: istio-sample
 spec:
   version: "1.4.4"
-  meshPolicy: STRICT
+  meshPolicy:
+    mtlsMode: STRICT
   autoInjectionNamespaces:
   - "default"
   sds:

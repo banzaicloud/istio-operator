@@ -417,12 +417,16 @@ spec:
                 required to be globally/universally unique.
               type: string
             meshPolicy:
-              description: MeshPolicy sets the mesh-wide mTLS policy
-              enum:
-              - STRICT
-              - PERMISSIVE
-              - DISABLED
-              type: string
+              description: MeshPolicy configures the default MeshPolicy resource
+              properties:
+                mtlsMode:
+                  description: MTLSMode sets the mesh-wide mTLS policy
+                  enum:
+                  - STRICT
+                  - PERMISSIVE
+                  - DISABLED
+                  type: string
+              type: object
             mixer:
               description: Mixer configuration options
               properties:

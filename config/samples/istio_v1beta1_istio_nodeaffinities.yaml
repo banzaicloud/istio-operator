@@ -6,7 +6,8 @@ metadata:
   name: istio-sample
 spec:
   version: "1.4.4"
-  meshPolicy: PERMISSIVE
+  meshPolicy:
+    mtlsMode: PERMISSIVE
   includeIPRanges: "*"
   excludeIPRanges: ""
   autoInjectionNamespaces:

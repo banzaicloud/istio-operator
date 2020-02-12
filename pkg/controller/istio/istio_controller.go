@@ -338,14 +338,14 @@ func (r *ReconcileIstio) reconcile(logger logr.Logger, config *istiov1beta1.Isti
 }
 
 func (r *ReconcileIstio) checkMeshPolicyConflict(config *istiov1beta1.Istio, logger logr.Logger) {
-	if config.Spec.MTLS != nil {
+	if config.Spec.MTLS != nil && config.Spec.MeshPolicy.MTLSMode != "" {
 		mTLS := util.PointerToBool(config.Spec.MTLS)
-		if (mTLS && config.Spec.MeshPolicy != istiov1beta1.STRICT) ||
-			(!mTLS && config.Spec.MeshPolicy != istiov1beta1.PERMISSIVE) {
+		if (mTLS && config.Spec.MeshPolicy.MTLSMode != istiov1beta1.STRICT) ||
+			(!mTLS && config.Spec.MeshPolicy.MTLSMode != istiov1beta1.PERMISSIVE) {
 			warningMessage := fmt.Sprintf(
-				"Value '%t' set in spec.mtls is overriden by value '%s' set in spec.meshPolicy",
+				"Value '%t' set in spec.mtls is overriden by value '%s' set in spec.meshPolicy.mtlsMode",
 				mTLS,
-				config.Spec.MeshPolicy,
+				config.Spec.MeshPolicy.MTLSMode,
 			)
 			logger.Info(warningMessage)
 			r.recorder.Event(
