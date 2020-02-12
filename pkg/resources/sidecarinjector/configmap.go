@@ -257,9 +257,13 @@ containers:
   - name: ISTIO_META_POD_PORTS
     value: |-
       [
+      {{- $first := true }}
       {{- range $index1, $c := .Spec.Containers }}
         {{- range $index2, $p := $c.Ports }}
-          {{if or (ne $index1 0) (ne $index2 0)}},{{end}}{{ structToJSON $p }}
+          {{- if (structToJSON $p) }}
+          {{if not $first}},{{end}}{{ structToJSON $p }}
+          {{- $first = false }}
+          {{- end }}
         {{- end}}
       {{- end}}
       ]
@@ -319,21 +323,22 @@ containers:
     failureThreshold: {{ annotation .ObjectMeta ` + "`" + `readiness.status.sidecar.istio.io/failureThreshold` + "`" + ` .Values.global.proxy.readinessFailureThreshold }}
   {{ end -}}
   securityContext:
-    {{- if .Values.global.proxy.privileged }}
-    privileged: true
-    {{- end }}
-    {{- if ne .Values.global.proxy.enableCoreDump true }}
-    readOnlyRootFilesystem: true
-    {{- end }}
-    {{ if eq (annotation .ObjectMeta ` + "`" + `sidecar.istio.io/interceptionMode` + "`" + ` .ProxyConfig.InterceptionMode) ` + "`" + `TPROXY` + "`" + ` -}}
+    allowPrivilegeEscalation: {{ .Values.global.proxy.privileged }}
     capabilities:
+      {{ if eq (annotation .ObjectMeta ` + "`" + `sidecar.istio.io/interceptionMode` + "`" + ` .ProxyConfig.InterceptionMode) ` + "`" + `TPROXY` + "`" + ` -}}
       add:
       - NET_ADMIN
+      {{- end }}
+      drop:
+      - ALL
+    privileged: {{ .Values.global.proxy.privileged }}
+    readOnlyRootFilesystem: {{ not .Values.global.proxy.enableCoreDump }}
     runAsGroup: 1337
-    {{ else -}}
-    {{ if .Values.global.sds.enabled }}
-    runAsGroup: 1337
-    {{- end }}
+    {{ if eq (annotation .ObjectMeta ` + "`" + `sidecar.istio.io/interceptionMode` + "`" + ` .ProxyConfig.InterceptionMode) ` + "`" + `TPROXY` + "`" + ` -}}
+    runAsNonRoot: false
+    runAsUser: 0
+    {{- else -}}
+    runAsNonRoot: true
     runAsUser: 1337
     {{- end }}
   resources:
@@ -517,14 +522,18 @@ func (r *Reconciler) proxyInitContainer() string {
   imagePullPolicy: "{{ .Values.global.imagePullPolicy }}"
 ` + r.getFormattedResources(r.Config.Spec.SidecarInjector.Init.Resources, 2) + `
   securityContext:
-    runAsUser: 0
-    runAsNonRoot: false
+    allowPrivilegeEscalation: {{ .Values.global.proxy.privileged }}
     capabilities:
       add:
       - NET_ADMIN
-    {{- if .Values.global.proxy.privileged }}
-    privileged: true
-    {{- end }}
+      - NET_RAW
+      drop:
+      - ALL
+    privileged: {{ .Values.global.proxy.privileged }}
+    readOnlyRootFilesystem: false
+    runAsUser: 0
+    runAsGroup: 0
+    runAsNonRoot: false
   restartPolicy: Always
   `
 }
