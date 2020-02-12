@@ -28,7 +28,7 @@ import (
 
 const (
 	defaultImageHub                  = "docker.io/istio"
-	defaultImageVersion              = "1.3.6"
+	defaultImageVersion              = "1.3.8"
 	defaultPilotImage                = defaultImageHub + "/" + "pilot" + ":" + defaultImageVersion
 	defaultCitadelImage              = defaultImageHub + "/" + "citadel" + ":" + defaultImageVersion
 	defaultGalleyImage               = defaultImageHub + "/" + "galley" + ":" + defaultImageVersion
