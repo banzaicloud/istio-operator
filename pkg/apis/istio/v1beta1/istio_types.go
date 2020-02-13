@@ -92,6 +92,9 @@ type PilotConfiguration struct {
 
 	// If present will be appended at the end of the initial/preconfigured container arguments
 	AdditionalContainerArgs []string `json:"additionalContainerArgs,omitempty"`
+
+	// If present will be appended to the environment variables of the container
+	AdditionalEnvVars []corev1.EnvVar `json:"additionalEnvVars,omitempty"`
 }
 
 // CitadelConfiguration defines config options for Citadel
@@ -118,6 +121,9 @@ type CitadelConfiguration struct {
 
 	// If present will be appended at the end of the initial/preconfigured container arguments
 	AdditionalContainerArgs []string `json:"additionalContainerArgs,omitempty"`
+
+	// If present will be appended to the environment variables of the container
+	AdditionalEnvVars []corev1.EnvVar `json:"additionalEnvVars,omitempty"`
 }
 
 // GalleyConfiguration defines config options for Galley
@@ -130,6 +136,9 @@ type GalleyConfiguration struct {
 
 	// If present will be appended at the end of the initial/preconfigured container arguments
 	AdditionalContainerArgs []string `json:"additionalContainerArgs,omitempty"`
+
+	// If present will be appended to the environment variables of the container
+	AdditionalEnvVars []corev1.EnvVar `json:"additionalEnvVars,omitempty"`
 }
 
 // GatewaysConfiguration defines config options for Gateways
@@ -174,12 +183,18 @@ type MixerConfiguration struct {
 
 	// If present will be appended at the end of the initial/preconfigured container arguments
 	AdditionalContainerArgs []string `json:"additionalContainerArgs,omitempty"`
+
+	// If present will be appended to the environment variables of the container
+	AdditionalEnvVars []corev1.EnvVar `json:"additionalEnvVars,omitempty"`
 }
 
 type PolicyConfiguration struct {
 	Enabled                             *bool `json:"enabled,omitempty"`
 	BaseK8sResourceConfigurationWithHPA `json:",inline"`
 	PolicyConfigurationSpec             `json:",inline"`
+
+	// If present will be appended to the environment variables of the container
+	AdditionalEnvVars []corev1.EnvVar `json:"additionalEnvVars,omitempty"`
 }
 
 type PolicyConfigurationSpec struct {
@@ -190,6 +205,9 @@ type TelemetryConfiguration struct {
 	Enabled                             *bool `json:"enabled,omitempty"`
 	BaseK8sResourceConfigurationWithHPA `json:",inline"`
 	TelemetryConfigurationSpec          `json:",inline"`
+
+	// If present will be appended to the environment variables of the container
+	AdditionalEnvVars []corev1.EnvVar `json:"additionalEnvVars,omitempty"`
 }
 
 type TelemetryConfigurationSpec struct {
@@ -266,6 +284,9 @@ type SidecarInjectorConfiguration struct {
 
 	// If present will be appended at the end of the initial/preconfigured container arguments
 	AdditionalContainerArgs []string `json:"additionalContainerArgs,omitempty"`
+
+	// If present will be appended to the environment variables of the container
+	AdditionalEnvVars []corev1.EnvVar `json:"additionalEnvVars,omitempty"`
 }
 
 // NodeAgentConfiguration defines config options for NodeAgent

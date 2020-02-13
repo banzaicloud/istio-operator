@@ -86,6 +86,12 @@ spec:
                   items:
                     type: string
                   type: array
+                additionalEnvVars:
+                  description: If present will be appended to the environment variables
+                    of the container
+                  items:
+                    type: object
+                  type: array
                 affinity:
                   type: object
                 caSecretName:
@@ -170,6 +176,12 @@ spec:
                     container arguments
                   items:
                     type: string
+                  type: array
+                additionalEnvVars:
+                  description: If present will be appended to the environment variables
+                    of the container
+                  items:
+                    type: object
                   type: array
                 affinity:
                   type: object
@@ -436,6 +448,12 @@ spec:
                   items:
                     type: string
                   type: array
+                additionalEnvVars:
+                  description: If present will be appended to the environment variables
+                    of the container
+                  items:
+                    type: object
+                  type: array
                 affinity:
                   type: object
                 checksEnabled:
@@ -546,6 +564,12 @@ spec:
                   items:
                     type: string
                   type: array
+                additionalEnvVars:
+                  description: If present will be appended to the environment variables
+                    of the container
+                  items:
+                    type: object
+                  type: array
                 affinity:
                   type: object
                 enableProtocolSniffingInbound:
@@ -588,6 +612,12 @@ spec:
             policy:
               description: Policy configuration options
               properties:
+                additionalEnvVars:
+                  description: If present will be appended to the environment variables
+                    of the container
+                  items:
+                    type: object
+                  type: array
                 affinity:
                   type: object
                 checksEnabled:
@@ -823,6 +853,12 @@ spec:
                   items:
                     type: string
                   type: array
+                additionalEnvVars:
+                  description: If present will be appended to the environment variables
+                    of the container
+                  items:
+                    type: object
+                  type: array
                 affinity:
                   type: object
                 alwaysInjectSelector:
@@ -920,6 +956,12 @@ spec:
             telemetry:
               description: Telemetry configuration options
               properties:
+                additionalEnvVars:
+                  description: If present will be appended to the environment variables
+                    of the container
+                  items:
+                    type: object
+                  type: array
                 affinity:
                   type: object
                 enabled:

@@ -70,6 +70,64 @@ func (r *Reconciler) containerArgs() []string {
 	return containerArgs
 }
 
+func (r *Reconciler) containerEnvs() []apiv1.EnvVar {
+	envs := []apiv1.EnvVar{
+		{
+			Name: "POD_NAME",
+			ValueFrom: &apiv1.EnvVarSource{
+				FieldRef: &apiv1.ObjectFieldSelector{
+					APIVersion: "v1",
+					FieldPath:  "metadata.name",
+				},
+			},
+		},
+		{
+			Name: "POD_NAMESPACE",
+			ValueFrom: &apiv1.EnvVarSource{
+				FieldRef: &apiv1.ObjectFieldSelector{
+					APIVersion: "v1",
+					FieldPath:  "metadata.namespace",
+				},
+			},
+		},
+		{
+			Name:  "PILOT_PUSH_THROTTLE",
+			Value: "100",
+		},
+		{
+			Name:  "PILOT_TRACE_SAMPLING",
+			Value: fmt.Sprintf("%.2f", r.Config.Spec.Pilot.TraceSampling),
+		},
+		{
+			Name:  "MESHNETWORKS_HASH",
+			Value: r.Config.Spec.GetMeshNetworksHash(),
+		},
+		{
+			Name:  "PILOT_ENABLE_PROTOCOL_SNIFFING_FOR_OUTBOUND",
+			Value: strconv.FormatBool(util.PointerToBool(r.Config.Spec.Pilot.EnableProtocolSniffingOutbound)),
+		},
+		{
+			Name:  "PILOT_ENABLE_PROTOCOL_SNIFFING_FOR_INBOUND",
+			Value: strconv.FormatBool(util.PointerToBool(r.Config.Spec.Pilot.EnableProtocolSniffingInbound)),
+		},
+		{
+			Name:  "SDS_ENABLED",
+			Value: strconv.FormatBool(util.PointerToBool(r.Config.Spec.SDS.Enabled)),
+		},
+	}
+
+	if r.Config.Spec.LocalityLB != nil && util.PointerToBool(r.Config.Spec.LocalityLB.Enabled) {
+		envs = append(envs, apiv1.EnvVar{
+			Name:  "PILOT_ENABLE_LOCALITY_LOAD_BALANCING",
+			Value: "1",
+		})
+	}
+
+	envs = k8sutil.MergeEnvVars(envs, r.Config.Spec.Pilot.AdditionalEnvVars)
+
+	return envs
+}
+
 func (r *Reconciler) containerPorts() []apiv1.ContainerPort {
 
 	containerPorts := []apiv1.ContainerPort{
@@ -105,32 +163,7 @@ func (r *Reconciler) containers() []apiv1.Container {
 			FailureThreshold:    3,
 			SuccessThreshold:    1,
 		},
-		Env: []apiv1.EnvVar{
-			{
-				Name: "POD_NAME",
-				ValueFrom: &apiv1.EnvVarSource{
-					FieldRef: &apiv1.ObjectFieldSelector{
-						APIVersion: "v1",
-						FieldPath:  "metadata.name",
-					},
-				},
-			},
-			{
-				Name: "POD_NAMESPACE",
-				ValueFrom: &apiv1.EnvVarSource{
-					FieldRef: &apiv1.ObjectFieldSelector{
-						APIVersion: "v1",
-						FieldPath:  "metadata.namespace",
-					},
-				},
-			},
-			{Name: "PILOT_PUSH_THROTTLE", Value: "100"},
-			{
-				Name:  "PILOT_TRACE_SAMPLING",
-				Value: fmt.Sprintf("%.2f", r.Config.Spec.Pilot.TraceSampling),
-			},
-			{Name: "MESHNETWORKS_HASH", Value: r.Config.Spec.GetMeshNetworksHash()},
-		},
+		Env: r.containerEnvs(),
 		Resources: templates.GetResourcesRequirementsOrDefault(
 			r.Config.Spec.Pilot.Resources,
 			r.Config.Spec.DefaultResources,
@@ -149,28 +182,6 @@ func (r *Reconciler) containers() []apiv1.Container {
 		TerminationMessagePath:   apiv1.TerminationMessagePathDefault,
 		TerminationMessagePolicy: apiv1.TerminationMessageReadFile,
 	}
-
-	if r.Config.Spec.LocalityLB != nil && util.PointerToBool(r.Config.Spec.LocalityLB.Enabled) {
-		discoveryContainer.Env = append(discoveryContainer.Env, apiv1.EnvVar{
-			Name:  "PILOT_ENABLE_LOCALITY_LOAD_BALANCING",
-			Value: "1",
-		})
-	}
-
-	discoveryContainer.Env = append(discoveryContainer.Env, apiv1.EnvVar{
-		Name:  "PILOT_ENABLE_PROTOCOL_SNIFFING_FOR_OUTBOUND",
-		Value: strconv.FormatBool(util.PointerToBool(r.Config.Spec.Pilot.EnableProtocolSniffingOutbound)),
-	})
-
-	discoveryContainer.Env = append(discoveryContainer.Env, apiv1.EnvVar{
-		Name:  "PILOT_ENABLE_PROTOCOL_SNIFFING_FOR_INBOUND",
-		Value: strconv.FormatBool(util.PointerToBool(r.Config.Spec.Pilot.EnableProtocolSniffingInbound)),
-	})
-
-	discoveryContainer.Env = append(discoveryContainer.Env, apiv1.EnvVar{
-		Name:  "SDS_ENABLED",
-		Value: strconv.FormatBool(util.PointerToBool(r.Config.Spec.SDS.Enabled)),
-	})
 
 	containers := []apiv1.Container{
 		discoveryContainer,

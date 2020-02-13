@@ -225,6 +225,13 @@ func (in *CitadelConfiguration) DeepCopyInto(out *CitadelConfiguration) {
 		*out = make([]string, len(*in))
 		copy(*out, *in)
 	}
+	if in.AdditionalEnvVars != nil {
+		in, out := &in.AdditionalEnvVars, &out.AdditionalEnvVars
+		*out = make([]v1.EnvVar, len(*in))
+		for i := range *in {
+			(*in)[i].DeepCopyInto(&(*out)[i])
+		}
+	}
 	return
 }
 
@@ -334,6 +341,13 @@ func (in *GalleyConfiguration) DeepCopyInto(out *GalleyConfiguration) {
 		in, out := &in.AdditionalContainerArgs, &out.AdditionalContainerArgs
 		*out = make([]string, len(*in))
 		copy(*out, *in)
+	}
+	if in.AdditionalEnvVars != nil {
+		in, out := &in.AdditionalEnvVars, &out.AdditionalEnvVars
+		*out = make([]v1.EnvVar, len(*in))
+		for i := range *in {
+			(*in)[i].DeepCopyInto(&(*out)[i])
+		}
 	}
 	return
 }
@@ -1088,6 +1102,13 @@ func (in *MixerConfiguration) DeepCopyInto(out *MixerConfiguration) {
 		*out = make([]string, len(*in))
 		copy(*out, *in)
 	}
+	if in.AdditionalEnvVars != nil {
+		in, out := &in.AdditionalEnvVars, &out.AdditionalEnvVars
+		*out = make([]v1.EnvVar, len(*in))
+		for i := range *in {
+			(*in)[i].DeepCopyInto(&(*out)[i])
+		}
+	}
 	return
 }
 
@@ -1210,6 +1231,13 @@ func (in *PilotConfiguration) DeepCopyInto(out *PilotConfiguration) {
 		*out = make([]string, len(*in))
 		copy(*out, *in)
 	}
+	if in.AdditionalEnvVars != nil {
+		in, out := &in.AdditionalEnvVars, &out.AdditionalEnvVars
+		*out = make([]v1.EnvVar, len(*in))
+		for i := range *in {
+			(*in)[i].DeepCopyInto(&(*out)[i])
+		}
+	}
 	return
 }
 
@@ -1233,6 +1261,13 @@ func (in *PolicyConfiguration) DeepCopyInto(out *PolicyConfiguration) {
 	}
 	in.BaseK8sResourceConfigurationWithHPA.DeepCopyInto(&out.BaseK8sResourceConfigurationWithHPA)
 	in.PolicyConfigurationSpec.DeepCopyInto(&out.PolicyConfigurationSpec)
+	if in.AdditionalEnvVars != nil {
+		in, out := &in.AdditionalEnvVars, &out.AdditionalEnvVars
+		*out = make([]v1.EnvVar, len(*in))
+		for i := range *in {
+			(*in)[i].DeepCopyInto(&(*out)[i])
+		}
+	}
 	return
 }
 
@@ -1526,6 +1561,13 @@ func (in *SidecarInjectorConfiguration) DeepCopyInto(out *SidecarInjectorConfigu
 		*out = make([]string, len(*in))
 		copy(*out, *in)
 	}
+	if in.AdditionalEnvVars != nil {
+		in, out := &in.AdditionalEnvVars, &out.AdditionalEnvVars
+		*out = make([]v1.EnvVar, len(*in))
+		for i := range *in {
+			(*in)[i].DeepCopyInto(&(*out)[i])
+		}
+	}
 	return
 }
 
@@ -1679,6 +1721,13 @@ func (in *TelemetryConfiguration) DeepCopyInto(out *TelemetryConfiguration) {
 	}
 	in.BaseK8sResourceConfigurationWithHPA.DeepCopyInto(&out.BaseK8sResourceConfigurationWithHPA)
 	in.TelemetryConfigurationSpec.DeepCopyInto(&out.TelemetryConfigurationSpec)
+	if in.AdditionalEnvVars != nil {
+		in, out := &in.AdditionalEnvVars, &out.AdditionalEnvVars
+		*out = make([]v1.EnvVar, len(*in))
+		for i := range *in {
+			(*in)[i].DeepCopyInto(&(*out)[i])
+		}
+	}
 	return
 }
 

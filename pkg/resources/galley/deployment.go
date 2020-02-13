@@ -24,6 +24,7 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 
+	"github.com/banzaicloud/istio-operator/pkg/k8sutil"
 	"github.com/banzaicloud/istio-operator/pkg/resources/common"
 	"github.com/banzaicloud/istio-operator/pkg/resources/templates"
 	"github.com/banzaicloud/istio-operator/pkg/util"
@@ -78,6 +79,7 @@ func (r *Reconciler) deployment() runtime.Object {
 								r.Config.Spec.Galley.Resources,
 								r.Config.Spec.DefaultResources,
 							),
+							Env:                      r.containerEnvs(),
 							TerminationMessagePath:   apiv1.TerminationMessagePathDefault,
 							TerminationMessagePolicy: apiv1.TerminationMessageReadFile,
 						},
@@ -90,6 +92,14 @@ func (r *Reconciler) deployment() runtime.Object {
 			},
 		},
 	}
+}
+
+func (r *Reconciler) containerEnvs() []apiv1.EnvVar {
+	envs := make([]apiv1.EnvVar, 0)
+
+	envs = k8sutil.MergeEnvVars(envs, r.Config.Spec.Galley.AdditionalEnvVars)
+
+	return envs
 }
 
 func (r *Reconciler) containerArgs() []string {

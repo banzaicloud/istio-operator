@@ -25,6 +25,7 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 
+	"github.com/banzaicloud/istio-operator/pkg/k8sutil"
 	"github.com/banzaicloud/istio-operator/pkg/resources/templates"
 	"github.com/banzaicloud/istio-operator/pkg/util"
 )
@@ -86,6 +87,19 @@ func (r *Reconciler) containerArgs() []string {
 	return containerArgs
 }
 
+func (r *Reconciler) containerEnvs() []apiv1.EnvVar {
+	envs := []apiv1.EnvVar{
+		{
+			Name:  "CITADEL_ENABLE_NAMESPACES_BY_DEFAULT",
+			Value: strconv.FormatBool(util.PointerToBool(r.Config.Spec.Citadel.EnableNamespacesByDefault)),
+		},
+	}
+
+	envs = k8sutil.MergeEnvVars(envs, r.Config.Spec.Citadel.AdditionalEnvVars)
+
+	return envs
+}
+
 func (r *Reconciler) deployment() runtime.Object {
 
 	var citadelContainer = apiv1.Container{
@@ -97,12 +111,7 @@ func (r *Reconciler) deployment() runtime.Object {
 			r.Config.Spec.Citadel.Resources,
 			r.Config.Spec.DefaultResources,
 		),
-		Env: []apiv1.EnvVar{
-			{
-				Name:  "CITADEL_ENABLE_NAMESPACES_BY_DEFAULT",
-				Value: strconv.FormatBool(util.PointerToBool(r.Config.Spec.Citadel.EnableNamespacesByDefault)),
-			},
-		},
+		Env:                      r.containerEnvs(),
 		TerminationMessagePath:   apiv1.TerminationMessagePathDefault,
 		TerminationMessagePolicy: apiv1.TerminationMessageReadFile,
 	}
