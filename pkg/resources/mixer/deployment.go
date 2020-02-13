@@ -125,6 +125,26 @@ func (r *Reconciler) volumes(t string) []apiv1.Volume {
 	return volumes
 }
 
+func (r *Reconciler) containerEnvs(t string) []apiv1.EnvVar {
+	envs := []apiv1.EnvVar{
+		{
+			Name:  "GOMAXPROCS",
+			Value: "6",
+		},
+	}
+
+	envs = k8sutil.MergeEnvVars(envs, r.Config.Spec.Mixer.AdditionalEnvVars)
+
+	switch t {
+	case telemetryComponentName:
+		envs = k8sutil.MergeEnvVars(envs, r.Config.Spec.Telemetry.AdditionalEnvVars)
+	case policyComponentName:
+		envs = k8sutil.MergeEnvVars(envs, r.Config.Spec.Policy.AdditionalEnvVars)
+	}
+
+	return envs
+}
+
 func (r *Reconciler) containerArgs(t string, ns string) []string {
 	containerArgs := []string{
 		"--address",
@@ -214,12 +234,7 @@ func (r *Reconciler) mixerContainer(t string, ns string) apiv1.Container {
 			},
 		},
 		Args: r.containerArgs(t, ns),
-		Env: []apiv1.EnvVar{
-			{
-				Name:  "GOMAXPROCS",
-				Value: "6",
-			},
-		},
+		Env:  r.containerEnvs(t),
 		Resources: templates.GetResourcesRequirementsOrDefault(
 			r.k8sResourceConfig.Resources,
 			r.Config.Spec.DefaultResources,
