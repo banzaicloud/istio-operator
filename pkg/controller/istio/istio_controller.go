@@ -192,10 +192,11 @@ func (r *ReconcileIstio) Reconcile(request reconcile.Request) (reconcile.Result,
 		}, nil
 	}
 
-	r.checkMeshPolicyConflict(config, logger)
-
 	// Set default values where not set
 	istiov1beta1.SetDefaults(config)
+
+	r.checkMeshPolicyConflict(config, logger)
+
 	result, err := r.reconcile(logger, config)
 	if err != nil {
 		updateErr := updateStatus(r.Client, config, istiov1beta1.ReconcileFailed, err.Error(), logger)
