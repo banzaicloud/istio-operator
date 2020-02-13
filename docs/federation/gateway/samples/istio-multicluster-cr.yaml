@@ -6,7 +6,8 @@ spec:
   version: "1.4.4"
   autoInjectionNamespaces:
   - "default"
-  mtls: true
+  meshPolicy:
+    mtlsMode: STRICT
   useMCP: true
   meshExpansion: true
   controlPlaneSecurityEnabled: true

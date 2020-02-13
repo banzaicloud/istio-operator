@@ -498,6 +498,21 @@ type LoggingConfiguration struct {
 	Level *string `json:"level,omitempty"`
 }
 
+// MeshPolicyConfiguration configures the default MeshPolicy resource
+type MeshPolicyConfiguration struct {
+	// MTLSMode sets the mesh-wide mTLS policy
+	// +kubebuilder:validation:Enum=STRICT,PERMISSIVE,DISABLED
+	MTLSMode MTLSMode `json:"mtlsMode,omitempty"`
+}
+
+type MTLSMode string
+
+const (
+	STRICT     MTLSMode = "STRICT"
+	PERMISSIVE MTLSMode = "PERMISSIVE"
+	DISABLED   MTLSMode = "DISABLED"
+)
+
 // IstioSpec defines the desired state of Istio
 type IstioSpec struct {
 	// Contains the intended Istio version
@@ -507,13 +522,17 @@ type IstioSpec struct {
 	// Logging configurations
 	Logging LoggingConfiguration `json:"logging,omitempty"`
 
+	// MeshPolicy configures the default MeshPolicy resource
+	MeshPolicy MeshPolicyConfiguration `json:"meshPolicy,omitempty"`
+
+	// DEPRECATED: Use meshPolicy instead.
 	// MTLS enables or disables global mTLS
-	MTLS bool `json:"mtls"`
+	MTLS *bool `json:"mtls,omitempty"`
 
 	// If set to true, and a given service does not have a corresponding DestinationRule configured,
 	// or its DestinationRule does not have TLSSettings specified, Istio configures client side
 	// TLS configuration automatically, based on the server side mTLS authentication policy and the
-	// availibity of sidecars.
+	// availability of sidecars.
 	AutoMTLS bool `json:"autoMtls,omitempty"`
 
 	// IncludeIPRanges the range where to capture egress traffic

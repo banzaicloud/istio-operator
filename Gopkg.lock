@@ -10,12 +10,16 @@
   version = "v0.35.1"
 
 [[projects]]
-  digest = "1:7750029196fa434448f10c1585278b0f8d5a7383df98e02f2f4ca1abf9212f44"
-  name = "github.com/MakeNowJust/heredoc"
-  packages = ["."]
+  digest = "1:6612bd7776ff595b51d6fc0f627a115587896b30c5685886729d2f9c36d3cacb"
+  name = "github.com/banzaicloud/istio-client-go"
+  packages = [
+    "pkg/authentication",
+    "pkg/authentication/v1alpha1",
+    "pkg/common/v1alpha1",
+  ]
   pruneopts = "T"
-  revision = "efb6ca8de9d5385c3963279701760e37637cf238"
-  version = "v2.0.1"
+  revision = "91a635b1ee1b542bdac1d33a3da3b0339ec6e7a7"
+  version = "0.0.3"
 
 [[projects]]
   digest = "1:7e124da7e6600e670a4e44b363518ecd4fdd74cf84adf5bd00d99844702e3c9d"
@@ -1004,7 +1008,7 @@
   analyzer-name = "dep"
   analyzer-version = 1
   input-imports = [
-    "github.com/MakeNowJust/heredoc",
+    "github.com/banzaicloud/istio-client-go/pkg/authentication/v1alpha1",
     "github.com/banzaicloud/k8s-objectmatcher/patch",
     "github.com/coreos/go-semver/semver",
     "github.com/emicklei/go-restful",
@@ -1049,6 +1053,7 @@
     "k8s.io/client-go/testing",
     "k8s.io/client-go/tools/cache",
     "k8s.io/client-go/tools/clientcmd",
+    "k8s.io/client-go/tools/record",
     "k8s.io/client-go/util/flowcontrol",
     "k8s.io/code-generator/cmd/client-gen",
     "k8s.io/code-generator/cmd/deepcopy-gen",

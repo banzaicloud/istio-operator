@@ -57,7 +57,7 @@ spec:
           {{- if and .Values.prometheusMetrics.enabled .Values.prometheusMetrics.authProxy.enabled }}
           - "--metrics-addr=127.0.0.1:8080"
           {{- end }}
-          - "--watch-created-resources-events=false"
+          - "--watch-created-resources-events=true"
         env:
           - name: POD_NAMESPACE
             valueFrom:

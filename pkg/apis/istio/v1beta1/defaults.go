@@ -30,6 +30,7 @@ const (
 	defaultImageHub                  = "docker.io/istio"
 	defaultImageVersion              = "1.4.4"
 	defaultLogLevel                  = "default:info"
+	defaultMeshPolicy                = PERMISSIVE
 	defaultPilotImage                = defaultImageHub + "/" + "pilot" + ":" + defaultImageVersion
 	defaultCitadelImage              = defaultImageHub + "/" + "citadel" + ":" + defaultImageVersion
 	defaultGalleyImage               = defaultImageHub + "/" + "galley" + ":" + defaultImageVersion
@@ -103,6 +104,15 @@ var defaultEgressGatewayPorts = []apiv1.ServicePort{
 }
 
 func SetDefaults(config *Istio) {
+	// MeshPolicy config
+	if config.Spec.MeshPolicy.MTLSMode == "" {
+		if util.PointerToBool(config.Spec.MTLS) {
+			config.Spec.MeshPolicy.MTLSMode = STRICT
+		} else {
+			config.Spec.MeshPolicy.MTLSMode = defaultMeshPolicy
+		}
+	}
+
 	if config.Spec.IncludeIPRanges == "" {
 		config.Spec.IncludeIPRanges = defaultIncludeIPRanges
 	}

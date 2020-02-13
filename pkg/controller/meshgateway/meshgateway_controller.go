@@ -187,18 +187,19 @@ func updateStatus(c client.Client, instance *istiov1beta1.MeshGateway, status is
 		if !k8serrors.IsConflict(err) {
 			return emperror.Wrapf(err, "could not update mesh gateway state to '%s'", status)
 		}
+		var actualInstance istiov1beta1.MeshGateway
 		err := c.Get(context.TODO(), types.NamespacedName{
 			Namespace: instance.Namespace,
 			Name:      instance.Name,
-		}, instance)
+		}, &actualInstance)
 		if err != nil {
 			return emperror.Wrap(err, "could not get resource for updating status")
 		}
-		instance.Status.Status = status
-		instance.Status.ErrorMessage = errorMessage
-		err = c.Status().Update(context.Background(), instance)
+		actualInstance.Status.Status = status
+		actualInstance.Status.ErrorMessage = errorMessage
+		err = c.Status().Update(context.Background(), &actualInstance)
 		if k8serrors.IsNotFound(err) {
-			err = c.Update(context.Background(), instance)
+			err = c.Update(context.Background(), &actualInstance)
 		}
 		if err != nil {
 			return emperror.Wrapf(err, "could not update mesh gateway state to '%s'", status)

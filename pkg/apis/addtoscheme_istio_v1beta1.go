@@ -17,12 +17,15 @@ limitations under the License.
 package apis
 
 import (
-	"github.com/banzaicloud/istio-operator/pkg/apis/istio/v1beta1"
+	"github.com/banzaicloud/istio-client-go/pkg/authentication/v1alpha1"
 	extensionsv1beta1 "k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1beta1"
+
+	"github.com/banzaicloud/istio-operator/pkg/apis/istio/v1beta1"
 )
 
 func init() {
 	// Register the types with the Scheme so the components can map objects to GroupVersionKinds and back
 	AddToSchemes = append(AddToSchemes, v1beta1.SchemeBuilder.AddToScheme)
 	AddToSchemes = append(AddToSchemes, extensionsv1beta1.AddToScheme)
+	AddToSchemes = append(AddToSchemes, v1alpha1.SchemeBuilder.AddToScheme)
 }
