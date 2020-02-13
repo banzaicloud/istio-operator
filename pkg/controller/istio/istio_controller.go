@@ -470,18 +470,19 @@ func updateStatus(c client.Client, config *istiov1beta1.Istio, status istiov1bet
 		if !k8serrors.IsConflict(err) {
 			return emperror.Wrapf(err, "could not update Istio state to '%s'", status)
 		}
+		var actualConfig istiov1beta1.Istio
 		err := c.Get(context.TODO(), types.NamespacedName{
 			Namespace: config.Namespace,
 			Name:      config.Name,
-		}, config)
+		}, &actualConfig)
 		if err != nil {
 			return emperror.Wrap(err, "could not get config for updating status")
 		}
-		config.Status.Status = status
-		config.Status.ErrorMessage = errorMessage
-		err = c.Status().Update(context.Background(), config)
+		actualConfig.Status.Status = status
+		actualConfig.Status.ErrorMessage = errorMessage
+		err = c.Status().Update(context.Background(), &actualConfig)
 		if k8serrors.IsNotFound(err) {
-			err = c.Update(context.Background(), config)
+			err = c.Update(context.Background(), &actualConfig)
 		}
 		if err != nil {
 			return emperror.Wrapf(err, "could not update Istio state to '%s'", status)

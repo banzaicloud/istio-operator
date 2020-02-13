@@ -331,18 +331,19 @@ func updateRemoteConfigStatus(c client.Client, remoteConfig *istiov1beta1.Remote
 		if !k8serrors.IsConflict(err) {
 			return emperror.Wrapf(err, "could not update remote Istio state to '%s'", status)
 		}
+		var actualRemoteConfig istiov1beta1.RemoteIstio
 		err := c.Get(context.TODO(), client.ObjectKey{
 			Namespace: remoteConfig.Namespace,
 			Name:      remoteConfig.Name,
-		}, remoteConfig)
+		}, &actualRemoteConfig)
 		if err != nil {
 			return emperror.Wrap(err, "could not get remoteconfig for updating status")
 		}
-		remoteConfig.Status.Status = status
-		remoteConfig.Status.ErrorMessage = errorMessage
-		err = c.Status().Update(context.Background(), remoteConfig)
+		actualRemoteConfig.Status.Status = status
+		actualRemoteConfig.Status.ErrorMessage = errorMessage
+		err = c.Status().Update(context.Background(), &actualRemoteConfig)
 		if k8serrors.IsNotFound(err) {
-			err = c.Update(context.Background(), remoteConfig)
+			err = c.Update(context.Background(), &actualRemoteConfig)
 		}
 		if err != nil {
 			return emperror.Wrapf(err, "could not update remoteconfig status to '%s'", status)
