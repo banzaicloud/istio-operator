@@ -17,6 +17,7 @@ limitations under the License.
 package istio
 
 import (
+	"github.com/pkg/errors"
 	admissionregistrationv1beta1 "k8s.io/api/admissionregistration/v1beta1"
 	appsv1 "k8s.io/api/apps/v1"
 	autoscalingv2beta1 "k8s.io/api/autoscaling/v2beta1"
@@ -35,6 +36,10 @@ import (
 )
 
 func (r *ReconcileIstio) initWatches(watchCreatedResourcesEvents bool) error {
+	if r.ctrl == nil {
+		return errors.New("controller is not set")
+	}
+
 	err := r.watchIstioConfig()
 	if err != nil {
 		return err

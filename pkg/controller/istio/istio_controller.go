@@ -120,7 +120,7 @@ func newController(mgr manager.Manager, r reconcile.Reconciler) error {
 		r.setController(ctrl)
 		err = r.initWatches(watchCreatedResourcesEvents)
 		if err != nil {
-			return err
+			return emperror.Wrapf(err, "could not init watches")
 		}
 	}
 
