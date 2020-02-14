@@ -55,7 +55,7 @@ func TestReconcile(t *testing.T) {
 	dynamic, err := dynamic.NewForConfig(mgr.GetConfig())
 	g.Expect(err).NotTo(gomega.HaveOccurred())
 
-	crd, err := crds.New(mgr.GetConfig(), crds.InitCrds())
+	crd, err := crds.New(mgr.GetConfig())
 	g.Expect(err).NotTo(gomega.HaveOccurred())
 
 	recFn, requests := SetupTestReconcile(newReconciler(mgr, dynamic, crd))
