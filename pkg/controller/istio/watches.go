@@ -23,6 +23,7 @@ import (
 	autoscalingv2beta1 "k8s.io/api/autoscaling/v2beta1"
 	corev1 "k8s.io/api/core/v1"
 	rbacv1 "k8s.io/api/rbac/v1"
+	extensionsobj "k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1beta1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/types"
@@ -32,6 +33,7 @@ import (
 
 	v1alpha1 "github.com/banzaicloud/istio-client-go/pkg/authentication/v1alpha1"
 	istiov1beta1 "github.com/banzaicloud/istio-operator/pkg/apis/istio/v1beta1"
+	"github.com/banzaicloud/istio-operator/pkg/crds"
 	"github.com/banzaicloud/istio-operator/pkg/k8sutil"
 )
 
@@ -187,6 +189,31 @@ func (r *ReconcileIstio) watchResource(resource runtime.Object) error {
 	return nil
 }
 
+func (r *ReconcileIstio) watchCRDs(nn types.NamespacedName) error {
+	err := r.ctrl.Watch(
+		&source.Kind{
+			Type: &extensionsobj.CustomResourceDefinition{
+				TypeMeta: metav1.TypeMeta{
+					Kind:       "CustomResourceDefinition",
+					APIVersion: extensionsobj.SchemeGroupVersion.String(),
+				},
+			},
+		},
+		&handler.EnqueueRequestsFromMapFunc{
+			ToRequests: handler.ToRequestsFunc(func(object handler.MapObject) []reconcile.Request {
+				return []reconcile.Request{
+					{
+						NamespacedName: nn,
+					},
+				}
+			}),
+		},
+		crds.GetWatchPredicateForCRDs(),
+	)
+
+	return err
+}
+
 func (r *ReconcileIstio) watchMeshPolicy(nn types.NamespacedName) error {
 	err := r.ctrl.Watch(
 		&source.Kind{
@@ -213,9 +240,6 @@ func (r *ReconcileIstio) watchMeshPolicy(nn types.NamespacedName) error {
 			},
 		}, true, r.mgr.GetScheme(), log),
 	)
-	if err != nil {
-		return err
-	}
 
-	return nil
+	return err
 }

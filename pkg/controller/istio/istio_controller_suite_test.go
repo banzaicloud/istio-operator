@@ -24,6 +24,7 @@ import (
 	"testing"
 
 	"github.com/onsi/gomega"
+	extensionsobj "k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1beta1"
 	"k8s.io/client-go/kubernetes/scheme"
 	"k8s.io/client-go/rest"
 	"sigs.k8s.io/controller-runtime/pkg/envtest"
@@ -31,17 +32,18 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/reconcile"
 
 	"github.com/banzaicloud/istio-operator/pkg/apis"
-	"github.com/banzaicloud/istio-operator/pkg/crds"
 )
 
 var cfg *rest.Config
+
+func init() {
+	extensionsobj.AddToScheme(scheme.Scheme)
+}
 
 func TestMain(m *testing.M) {
 	t := &envtest.Environment{
 		CRDDirectoryPaths: []string{filepath.Join("..", "..", "..", "config", "base", "crds")},
 	}
-
-	t.CRDs = append(t.CRDs, crds.MeshPolicy())
 
 	err := apis.AddToScheme(scheme.Scheme)
 	if err != nil {

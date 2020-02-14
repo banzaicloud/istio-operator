@@ -15,6 +15,7 @@ limitations under the License.
 */
 
 //go:generate go run ../../pkg/crds/generate.go
+//go:generate go run ../../pkg/manifests/generate.go
 
 package main
 
@@ -36,6 +37,7 @@ import (
 	"github.com/banzaicloud/istio-operator/pkg/controller"
 	"github.com/banzaicloud/istio-operator/pkg/controller/istio"
 	"github.com/banzaicloud/istio-operator/pkg/controller/remoteistio"
+	"github.com/banzaicloud/istio-operator/pkg/k8sutil"
 	"github.com/banzaicloud/istio-operator/pkg/remoteclusters"
 	"github.com/banzaicloud/istio-operator/pkg/webhook"
 )
@@ -77,7 +79,11 @@ func main() {
 
 	// Create a new Cmd to provide shared dependencies and start components
 	log.Info("setting up manager")
-	mgr, err := manager.New(cfg, manager.Options{MetricsBindAddress: metricsAddr, Namespace: namespace})
+	mgr, err := manager.New(cfg, manager.Options{
+		MetricsBindAddress: metricsAddr,
+		Namespace:          namespace,
+		MapperProvider:     k8sutil.NewCachedRESTMapper,
+	})
 	if err != nil {
 		log.Error(err, "unable to set up overall controller manager")
 		os.Exit(1)

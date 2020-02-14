@@ -109,6 +109,8 @@ generate:
 ifndef GOPATH
 	$(error GOPATH not defined, please define GOPATH. Run "go help gopath" to learn more about GOPATH)
 endif
+	find config/base/crds -exec touch -t 201901010101 {} +
+	find pkg/manifests/istio-crds -exec touch -t 201901010101 {} +
 	go generate ./pkg/... ./cmd/...
 	./hack/update-codegen.sh
 

@@ -41,7 +41,7 @@ func (c *Cluster) reconcileCRDs(remoteConfig *istiov1beta1.RemoteIstio, istio *i
 		c.meshgatewaycrd(),
 	}
 
-	crdo, err := crds.New(c.restConfig, resources)
+	crdo, err := crds.New(c.restConfig, resources...)
 	if err != nil {
 		return err
 	}

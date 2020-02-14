@@ -85,9 +85,13 @@ func Add(mgr manager.Manager) error {
 	if err != nil {
 		return emperror.Wrap(err, "failed to create dynamic client")
 	}
-	crd, err := crds.New(mgr.GetConfig(), crds.InitCrds())
+	crd, err := crds.New(mgr.GetConfig())
 	if err != nil {
-		return emperror.Wrap(err, "unable to set up crd reconciler")
+		return emperror.Wrap(err, "unable to set up CRD reconciler")
+	}
+	err = crd.LoadCRDs()
+	if err != nil {
+		return emperror.Wrap(err, "unable to load CRDs from manifests")
 	}
 	r := newReconciler(mgr, dynamic, crd)
 	err = newController(mgr, r)
@@ -98,13 +102,13 @@ func Add(mgr manager.Manager) error {
 }
 
 // newReconciler returns a new IstioReconciler
-func newReconciler(mgr manager.Manager, d dynamic.Interface, crd *crds.CrdOperator) reconcile.Reconciler {
+func newReconciler(mgr manager.Manager, d dynamic.Interface, crd *crds.CRDReconciler) reconcile.Reconciler {
 	return &ReconcileIstio{
-		Client:      mgr.GetClient(),
-		dynamic:     d,
-		crdOperator: crd,
-		mgr:         mgr,
-		recorder:    mgr.GetRecorder("istio-controller"),
+		Client:        mgr.GetClient(),
+		dynamic:       d,
+		crdReconciler: crd,
+		mgr:           mgr,
+		recorder:      mgr.GetRecorder("istio-controller"),
 	}
 }
 
@@ -133,7 +137,7 @@ var _ reconcile.Reconciler = &ReconcileIstio{}
 type ReconcileIstio struct {
 	client.Client
 	dynamic          dynamic.Interface
-	crdOperator      *crds.CrdOperator
+	crdReconciler    *crds.CRDReconciler
 	mgr              manager.Manager
 	recorder         record.EventRecorder
 	ctrl             controller.Controller
@@ -266,19 +270,24 @@ func (r *ReconcileIstio) reconcile(logger logr.Logger, config *istiov1beta1.Isti
 	}
 
 	logger.Info("reconciling CRDs")
-	err = r.crdOperator.Reconcile(config, logger)
+	err = r.crdReconciler.Reconcile(config, logger)
 	if err != nil {
 		logger.Error(err, "unable to reconcile CRDs")
 		return reconcile.Result{}, err
 	}
 
 	r.watchersInitOnce.Do(func() {
-		err = r.watchMeshPolicy(types.NamespacedName{
+		nn := types.NamespacedName{
 			Namespace: config.Namespace,
 			Name:      config.Name,
-		})
+		}
+		err = r.watchMeshPolicy(nn)
 		if err != nil {
 			logger.Error(err, "unable to watch MeshPolicy")
+		}
+		err = r.watchCRDs(nn)
+		if err != nil {
+			logger.Error(err, "unable to watch CRDs")
 		}
 	})
 
