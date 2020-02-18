@@ -23,18 +23,18 @@ import (
 	"github.com/banzaicloud/istio-operator/pkg/k8sutil"
 )
 
-// peers returns a map slice to configure the default MeshPolicy
-func (r *Reconciler) peers() []map[string]interface{} {
+// spec returns a map to configure the default MeshPolicy
+func (r *Reconciler) spec() map[string]interface{} {
 	if r.Config.Spec.MeshPolicy.MTLSMode == v1beta1.DISABLED {
-		return []map[string]interface{}{
-			{},
-		}
+		return map[string]interface{}{}
 	}
 
-	return []map[string]interface{}{
-		{
-			"mtls": map[string]interface{}{
-				"mode": r.Config.Spec.MeshPolicy.MTLSMode,
+	return map[string]interface{}{
+		"peers": []map[string]interface{}{
+			{
+				"mtls": map[string]interface{}{
+					"mode": r.Config.Spec.MeshPolicy.MTLSMode,
+				},
 			},
 		},
 	}
@@ -53,10 +53,8 @@ func (r *Reconciler) meshPolicy() *k8sutil.DynamicObject {
 		Kind:   "MeshPolicy",
 		Name:   "default",
 		Labels: citadelLabels,
-		Spec: map[string]interface{}{
-			"peers": r.peers(),
-		},
-		Owner: r.Config,
+		Spec:   r.spec(),
+		Owner:  r.Config,
 	}
 }
 
