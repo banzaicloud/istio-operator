@@ -5,7 +5,7 @@ metadata:
     controller-tools.k8s.io: "1.0"
   name: multimesh
 spec:
-  version: "1.4.4"
+  version: "1.4.5"
   autoInjectionNamespaces:
   - "default"
   useMCP: true
