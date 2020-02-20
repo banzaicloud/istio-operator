@@ -63,6 +63,19 @@ rules:
   - update
   - patch
 - apiGroups:
+  - ""
+  resources:
+  - events
+  verbs:
+  - create
+  - patch
+- apiGroups:
+  - ""
+  resources:
+  - namespaces/finalizers
+  verbs:
+  - update
+- apiGroups:
   - apps
   resources:
   - replicasets
@@ -104,12 +117,6 @@ rules:
   - deployments
   verbs:
   - get
-- apiGroups:
-  - extensions
-  resources:
-  - deployments/finalizers
-  verbs:
-  - update
 - apiGroups:
   - extensions
   resources:

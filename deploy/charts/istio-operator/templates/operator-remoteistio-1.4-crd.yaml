@@ -67,6 +67,12 @@ spec:
                   items:
                     type: string
                   type: array
+                additionalEnvVars:
+                  description: If present will be appended to the environment variables
+                    of the container
+                  items:
+                    type: object
+                  type: array
                 affinity:
                   type: object
                 caSecretName:
@@ -328,6 +334,12 @@ spec:
                     container arguments
                   items:
                     type: string
+                  type: array
+                additionalEnvVars:
+                  description: If present will be appended to the environment variables
+                    of the container
+                  items:
+                    type: object
                   type: array
                 affinity:
                   type: object
