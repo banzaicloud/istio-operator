@@ -43,6 +43,7 @@ import (
 const (
 	componentName  = "crds"
 	createdByLabel = "banzaicloud.io/created-by"
+	createdBy      = "istio-operator"
 )
 
 type CRDReconciler struct {
@@ -60,8 +61,17 @@ func New(cfg *rest.Config, crds ...*extensionsobj.CustomResourceDefinition) (*CR
 }
 
 func (r *CRDReconciler) LoadCRDs() error {
-	for _, file := range []string{"crd-10.yaml", "crd-11.yaml", "crd-14.yaml"} {
-		f, err := istio_crds.CRDs.Open(file)
+	dir, err := istio_crds.CRDs.Open("/")
+	if err != nil {
+		return err
+	}
+
+	dirFiles, err := dir.Readdir(-1)
+	if err != nil {
+		return err
+	}
+	for _, file := range dirFiles {
+		f, err := istio_crds.CRDs.Open(file.Name())
 		if err != nil {
 			return err
 		}
@@ -116,7 +126,7 @@ func (r *CRDReconciler) load(f io.Reader) error {
 		crd.Status = extensionsobj.CustomResourceDefinitionStatus{}
 		crd.SetGroupVersionKind(schema.GroupVersionKind{})
 		labels := crd.GetLabels()
-		labels[createdByLabel] = "istio-operator"
+		labels[createdByLabel] = createdBy
 		r.crds = append(r.crds, crd)
 	}
 
@@ -203,19 +213,19 @@ func (r *CRDReconciler) Reconcile(config *istiov1beta1.Istio, log logr.Logger) e
 func GetWatchPredicateForCRDs() predicate.Funcs {
 	return predicate.Funcs{
 		CreateFunc: func(e event.CreateEvent) bool {
-			if e.Meta.GetLabels()[createdByLabel] == "istio-operator" {
+			if e.Meta.GetLabels()[createdByLabel] == createdBy {
 				return true
 			}
 			return false
 		},
 		DeleteFunc: func(e event.DeleteEvent) bool {
-			if e.Meta.GetLabels()[createdByLabel] == "istio-operator" {
+			if e.Meta.GetLabels()[createdByLabel] == createdBy {
 				return true
 			}
 			return true
 		},
 		UpdateFunc: func(e event.UpdateEvent) bool {
-			if e.MetaOld.GetLabels()[createdByLabel] == "istio-operator" || e.MetaNew.GetLabels()[createdByLabel] == "istio-operator" {
+			if e.MetaOld.GetLabels()[createdByLabel] == createdBy || e.MetaNew.GetLabels()[createdByLabel] == createdBy {
 				return true
 			}
 			return false
