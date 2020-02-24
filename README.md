@@ -134,7 +134,7 @@ If you find this project useful here's how you can help:
 
 ## Community
 
- If you have any questions about the Istio operator, and would like to talk to us and the other members of the Banzai Cloud community, please join our **#istio-operator** channel on [Slack](https://slack.banzaicloud.io/).
+ If you have any questions about the Istio operator, and would like to talk to us and the other members of the Banzai Cloud community, please join our **#istio-operator** channel on [Slack](https://pages.banzaicloud.com/invite-slack).
 
 ## License
 
