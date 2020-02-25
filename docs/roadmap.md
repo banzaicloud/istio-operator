@@ -12,3 +12,4 @@ Released:
 - [x] - Istio 1.3.x Mixerless HTTP telemetry support
 - [x] - Istio 1.4.x support
 - [x] - Support multiple ingress gateways
+- [x] - Istio 1.5.x support

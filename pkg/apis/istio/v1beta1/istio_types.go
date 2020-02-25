@@ -26,7 +26,7 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
-const supportedIstioMinorVersionRegex = "^1.4"
+const supportedIstioMinorVersionRegex = "^1.5"
 
 // IstioVersion stores the intended Istio version
 type IstioVersion string
@@ -543,7 +543,7 @@ const (
 // IstioSpec defines the desired state of Istio
 type IstioSpec struct {
 	// Contains the intended Istio version
-	// +kubebuilder:validation:Pattern=^1.4
+	// +kubebuilder:validation:Pattern=^1.5
 	Version IstioVersion `json:"version"`
 
 	// Logging configurations
