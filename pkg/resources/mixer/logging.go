@@ -76,7 +76,7 @@ func (r *Reconciler) accessLogLogentry() *k8sutil.DynamicObject {
 					"destinationPrincipal":       `destination.principal | ""`,
 					"apiClaims":                  `request.auth.raw_claims | ""`,
 					"apiKey":                     `request.api_key | request.headers["x-api-key"] | ""`,
-					"protocol":                   `request.scheme | context.protocol | "http"`,
+					"protocol":                   `api.protocol | context.protocol | "http"`,
 					"method":                     `request.method | ""`,
 					"url":                        `request.path | ""`,
 					"responseCode":               `response.code | 0`,
