@@ -399,6 +399,8 @@ func (r *Reconciler) envVars() []apiv1.EnvVar {
 		}
 	}
 
+	envVars = k8sutil.MergeEnvVars(envVars, r.gw.Spec.AdditionalEnvVars)
+
 	return envVars
 }
 
