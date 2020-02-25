@@ -16,7 +16,7 @@ KUSTOMIZE_BASE = config/overlays/specific-manager-version
 all: test manager
 
 .PHONY: check
-check: test lint ## Run tests and linters
+check: test lint shellcheck-makefile shellcheck ## Run tests and linters
 
 bin/golangci-lint: bin/golangci-lint-${GOLANGCI_VERSION}
 	@ln -sf golangci-lint-${GOLANGCI_VERSION} bin/golangci-lint
@@ -132,8 +132,15 @@ release: check_release
 	git push origin ${REL_TAG}
 
 .PHONY: shellcheck-makefile
-shellcheck-makefile: ## Check each makefile recipe using shellcheck
+shellcheck-makefile: bin/shellcheck ## Check each makefile recipe using shellcheck
 	@grep -h -E '^[a-zA-Z_-]+:' $(MAKEFILE_LIST) | cut -d: -f1 | while IFS= read -r target; do \
 		echo "Checking make target: $$target"; \
 		make -s "$$target" SHELL=scripts/shellcheck-makefile.sh || exit 1; \
 	done
+
+.PHONY: shellcheck
+shellcheck: bin/shellcheck ## Check shell scripts
+	bin/shellcheck scripts/*.sh hack/*.sh docs/federation/gateway/cluster-add/*.sh docs/federation/flat/*.sh
+
+bin/shellcheck:
+	scripts/install_shellcheck.sh
