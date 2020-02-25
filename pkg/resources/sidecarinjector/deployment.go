@@ -38,7 +38,7 @@ func (r *Reconciler) containerArgs() []string {
 		"--injectConfig=/etc/istio/inject/config",
 		"--meshConfig=/etc/istio/config/mesh",
 		"--healthCheckInterval=2s",
-		"--healthCheckFile=/health",
+		"--healthCheckFile=/tmp/health",
 		"--reconcileWebhookConfig=true",
 	}
 
@@ -125,7 +125,7 @@ func siProbe() *apiv1.Probe {
 				Command: []string{
 					"/usr/local/bin/sidecar-injector",
 					"probe",
-					"--probe-path=/health",
+					"--probe-path=/tmp/health",
 					"--interval=4s",
 				},
 			},

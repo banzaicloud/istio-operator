@@ -34,7 +34,7 @@ func (r *Reconciler) service() runtime.Object {
 					Name:       "https-inject",
 					Port:       443,
 					Protocol:   apiv1.ProtocolTCP,
-					TargetPort: intstr.FromInt(443),
+					TargetPort: intstr.FromInt(9443),
 				},
 				{
 					Name:       "http-monitoring",
