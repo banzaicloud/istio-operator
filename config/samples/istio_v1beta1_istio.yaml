@@ -63,7 +63,6 @@ spec:
         - port: 15443
           targetPort: 15443
           name: tls
-      applicationPorts: ""
       resources:
         requests:
           cpu: 100m
@@ -89,7 +88,6 @@ spec:
         - port: 15443
           targetPort: 15443
           name: tls
-      applicationPorts: ""
       resources:
         requests:
           cpu: 100m
