@@ -5,7 +5,7 @@ metadata:
     controller-tools.k8s.io: "1.0"
   name: istio-sample
 spec:
-  version: "1.4.5"
+  version: "1.5.0-beta.2"
   meshPolicy:
     mtlsMode: PERMISSIVE
   includeIPRanges: "*"
@@ -17,7 +17,7 @@ spec:
     enabled: false
   pilot:
     enabled: true
-    image: "docker.io/istio/pilot:1.4.5"
+    image: "docker.io/istio/pilot:1.5.0-beta.2"
     replicaCount: 1
     minReplicas: 1
     maxReplicas: 5
@@ -31,10 +31,10 @@ spec:
       tolerationSeconds: 6000
   citadel:
     enabled: true
-    image: "docker.io/istio/citadel:1.4.5"
+    image: "docker.io/istio/citadel:1.5.0-beta.2"
   galley:
     enabled: true
-    image: "docker.io/istio/galley:1.4.5"
+    image: "docker.io/istio/galley:1.5.0-beta.2"
     replicaCount: 1
   gateways:
     enabled: true
@@ -90,30 +90,30 @@ spec:
       enabled: false
   policy:
     enabled: true
-    image: "docker.io/istio/mixer:1.4.5"
+    image: "docker.io/istio/mixer:1.5.0-beta.2"
     replicaCount: 1
     minReplicas: 1
     maxReplicas: 5
   telemetry:
     enabled: true
-    image: "docker.io/istio/mixer:1.4.5"
+    image: "docker.io/istio/mixer:1.5.0-beta.2"
     replicaCount: 1
     minReplicas: 1
     maxReplicas: 5
   sidecarInjector:
     enabled: true
-    image: "docker.io/istio/sidecar_injector:1.4.5"
+    image: "docker.io/istio/sidecar_injector:1.5.0-beta.2"
     replicaCount: 1
     rewriteAppHTTPProbe: true
     autoInjectionPolicyEnabled: true
   nodeAgent:
     enabled: false
-    image: "docker.io/istio/node-agent-k8s:1.4.5"
+    image: "docker.io/istio/node-agent-k8s:1.5.0-beta.2"
   proxy:
-    image: "docker.io/istio/proxyv2:1.4.5"
+    image: "docker.io/istio/proxyv2:1.5.0-beta.2"
     enableCoreDump: false
   proxyInit:
-    image: "docker.io/istio/proxyv2:1.4.5"
+    image: "docker.io/istio/proxyv2:1.5.0-beta.2"
   defaultPodDisruptionBudget:
     enabled: true
   outboundTrafficPolicy:
