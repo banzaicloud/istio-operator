@@ -58,8 +58,6 @@ spec:
           properties:
             affinity:
               type: object
-            applicationPorts:
-              type: string
             labels:
               type: object
             loadBalancerIP:

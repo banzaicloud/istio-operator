@@ -68,22 +68,32 @@ func (r *Reconciler) multimeshEnvoyFilter() *k8sutil.DynamicObject {
 		Name:      multimeshResourceNamePrefix + "-ingressgateway",
 		Namespace: r.Config.Namespace,
 		Spec: map[string]interface{}{
-			"workloadLabels": resourceLabels,
-			"filters": []map[string]interface{}{
+			"workloadSelector": map[string]interface{}{
+				"labels": resourceLabels,
+			},
+			"configPatches": []map[string]interface{}{
 				{
-					"listenerMatch": map[string]interface{}{
-						"portNumber":   15443,
-						"listenerType": "GATEWAY",
+					"applyTo": "NETWORK_FILTER",
+					"match": map[string]interface{}{
+						"context": "GATEWAY",
+						"listener": map[string]interface{}{
+							"portNumber": 15443,
+							"filterChain": map[string]interface{}{
+								"filter": map[string]interface{}{
+									"name": "envoy.filters.network.sni_cluster",
+								},
+							},
+						},
 					},
-					"insertPosition": map[string]interface{}{
-						"index":      "AFTER",
-						"relativeTo": "envoy.filters.network.sni_cluster",
-					},
-					"filterName": "envoy.filters.network.tcp_cluster_rewrite",
-					"filterType": "NETWORK",
-					"filterConfig": map[string]interface{}{
-						"cluster_pattern":     "\\.global$",
-						"cluster_replacement": ".svc." + r.Config.Spec.Proxy.ClusterDomain,
+					"patch": map[string]interface{}{
+						"operation": "INSERT_AFTER",
+						"value": map[string]interface{}{
+							"name": "envoy.filters.network.tcp_cluster_rewrite",
+							"config": map[string]interface{}{
+								"cluster_pattern":     "\\.global$",
+								"cluster_replacement": ".svc." + r.Config.Spec.Proxy.ClusterDomain,
+							},
+						},
 					},
 				},
 			},

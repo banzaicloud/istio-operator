@@ -45,7 +45,6 @@ type MeshGatewayConfiguration struct {
 	ServiceAnnotations   map[string]string       `json:"serviceAnnotations,omitempty"`
 	ServiceLabels        map[string]string       `json:"serviceLabels,omitempty"`
 	SDS                  GatewaySDSConfiguration `json:"sds,omitempty"`
-	ApplicationPorts     string                  `json:"applicationPorts,omitempty"`
 	RequestedNetworkView string                  `json:"requestedNetworkView,omitempty"`
 }
 

@@ -216,8 +216,6 @@ spec:
                   properties:
                     affinity:
                       type: object
-                    applicationPorts:
-                      type: string
                     enabled:
                       type: boolean
                     labels:
@@ -275,8 +273,6 @@ spec:
                   properties:
                     affinity:
                       type: object
-                    applicationPorts:
-                      type: string
                     enabled:
                       type: boolean
                     labels:
