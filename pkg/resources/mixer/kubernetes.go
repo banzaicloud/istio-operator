@@ -35,7 +35,7 @@ func (r *Reconciler) kubernetesEnvHandler() *k8sutil.DynamicObject {
 		Namespace: r.Config.Namespace,
 		Spec: map[string]interface{}{
 			"compiledAdapter": "kubernetesenv",
-			"params":          nil,
+			"params":          map[string]interface{}{},
 		},
 		Owner: r.Config,
 	}

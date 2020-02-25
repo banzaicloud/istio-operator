@@ -131,6 +131,15 @@ func (r *Reconciler) containerEnvs(t string) []apiv1.EnvVar {
 			Name:  "GOMAXPROCS",
 			Value: "6",
 		},
+		{
+			Name: "POD_NAMESPACE",
+			ValueFrom: &apiv1.EnvVarSource{
+				FieldRef: &apiv1.ObjectFieldSelector{
+					APIVersion: "v1",
+					FieldPath:  "metadata.namespace",
+				},
+			},
+		},
 	}
 
 	envs = k8sutil.MergeEnvVars(envs, r.Config.Spec.Mixer.AdditionalEnvVars)
@@ -185,7 +194,7 @@ func (r *Reconciler) containerArgs(t string, ns string) []string {
 		containerArgs = append(containerArgs, "--useAdapterCRDs=false")
 	}
 
-	containerArgs = append(containerArgs, "--useAdapterCRDs=false")
+	containerArgs = append(containerArgs, "--useTemplateCRDs=false")
 
 	if t == telemetryComponentName {
 		containerArgs = append(containerArgs, "--averageLatencyThreshold", "100ms")
