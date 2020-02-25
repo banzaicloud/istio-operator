@@ -52,10 +52,9 @@ func (r *Reconciler) clusterRole() runtime.Object {
 				Verbs:     []string{"*"},
 			},
 			{
-				APIGroups:     []string{"extensions", "apps"},
-				Resources:     []string{"deployments"},
-				ResourceNames: []string{"istio-galley"},
-				Verbs:         []string{"get"},
+				APIGroups: []string{"extensions", "apps"},
+				Resources: []string{"deployments"},
+				Verbs:     []string{"get", "list", "watch"},
 			},
 			{
 				APIGroups: []string{""},
@@ -75,6 +74,11 @@ func (r *Reconciler) clusterRole() runtime.Object {
 			{
 				APIGroups: []string{"apiextensions.k8s.io"},
 				Resources: []string{"customresourcedefinitions"},
+				Verbs:     []string{"get", "list", "watch"},
+			},
+			{
+				APIGroups: []string{"rbac.authorization.k8s.io"},
+				Resources: []string{"clusterroles"},
 				Verbs:     []string{"get", "list", "watch"},
 			},
 		},
