@@ -58,7 +58,7 @@ func (r *Reconciler) deployment() runtime.Object {
 							ImagePullPolicy: r.Config.Spec.ImagePullPolicy,
 							Ports: []apiv1.ContainerPort{
 								{
-									ContainerPort: 443,
+									ContainerPort: 9443,
 									Protocol:      apiv1.ProtocolTCP,
 								},
 								{
@@ -73,8 +73,8 @@ func (r *Reconciler) deployment() runtime.Object {
 							Command:        []string{"/usr/local/bin/galley"},
 							Args:           r.containerArgs(),
 							VolumeMounts:   r.volumeMounts(),
-							LivenessProbe:  r.galleyProbe("/healthliveness"),
-							ReadinessProbe: r.galleyProbe("/healthready"),
+							LivenessProbe:  r.galleyProbe("/tmp/healthliveness"),
+							ReadinessProbe: r.galleyProbe("/tmp/healthready"),
 							Resources: templates.GetResourcesRequirementsOrDefault(
 								r.Config.Spec.Galley.Resources,
 								r.Config.Spec.DefaultResources,
@@ -107,8 +107,8 @@ func (r *Reconciler) containerArgs() []string {
 		"server",
 		"--meshConfigFile=/etc/mesh-config/mesh",
 		"--livenessProbeInterval=1s",
-		"--livenessProbePath=/healthliveness",
-		"--readinessProbePath=/healthready",
+		"--livenessProbePath=/tmp/healthliveness",
+		"--readinessProbePath=/tmp/healthready",
 		"--readinessProbeInterval=1s",
 		fmt.Sprintf("--deployment-namespace=%s", r.Config.Namespace),
 		"--validation-webhook-config-file",
