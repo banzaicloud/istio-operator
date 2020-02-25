@@ -890,6 +890,13 @@ func (in *MeshGatewayConfiguration) DeepCopyInto(out *MeshGatewayConfiguration) 
 		}
 	}
 	in.SDS.DeepCopyInto(&out.SDS)
+	if in.AdditionalEnvVars != nil {
+		in, out := &in.AdditionalEnvVars, &out.AdditionalEnvVars
+		*out = make([]v1.EnvVar, len(*in))
+		for i := range *in {
+			(*in)[i].DeepCopyInto(&(*out)[i])
+		}
+	}
 	return
 }
 
