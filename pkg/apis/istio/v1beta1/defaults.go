@@ -155,7 +155,7 @@ func SetDefaults(config *Istio) {
 		config.Spec.Pilot.EnableProtocolSniffingOutbound = util.BoolPointer(true)
 	}
 	if config.Spec.Pilot.EnableProtocolSniffingInbound == nil {
-		config.Spec.Pilot.EnableProtocolSniffingInbound = util.BoolPointer(false)
+		config.Spec.Pilot.EnableProtocolSniffingInbound = util.BoolPointer(true)
 	}
 	// Citadel config
 	if config.Spec.Citadel.Enabled == nil {
