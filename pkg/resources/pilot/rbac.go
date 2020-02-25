@@ -35,34 +35,9 @@ func (r *Reconciler) clusterRole() runtime.Object {
 		ObjectMeta: templates.ObjectMetaClusterScope(clusterRoleName, pilotLabels, r.Config),
 		Rules: []rbacv1.PolicyRule{
 			{
-				APIGroups: []string{"config.istio.io"},
-				Resources: []string{"*"},
-				Verbs:     []string{"*"},
-			},
-			{
-				APIGroups: []string{"rbac.istio.io"},
+				APIGroups: []string{"config.istio.io", "rbac.istio.io", "security.istio.io", "networking.istio.io", "authentication.istio.io"},
 				Resources: []string{"*"},
 				Verbs:     []string{"get", "watch", "list"},
-			},
-			{
-				APIGroups: []string{"security.istio.io"},
-				Resources: []string{"*"},
-				Verbs:     []string{"get", "watch", "list"},
-			},
-			{
-				APIGroups: []string{"networking.istio.io"},
-				Resources: []string{"*"},
-				Verbs:     []string{"*"},
-			},
-			{
-				APIGroups: []string{"authentication.istio.io"},
-				Resources: []string{"*"},
-				Verbs:     []string{"*"},
-			},
-			{
-				APIGroups: []string{"apiextensions.k8s.io"},
-				Resources: []string{"customresourcedefinitions"},
-				Verbs:     []string{"*"},
 			},
 			{
 				APIGroups: []string{"extensions"},
@@ -77,6 +52,11 @@ func (r *Reconciler) clusterRole() runtime.Object {
 			{
 				APIGroups: []string{""},
 				Resources: []string{"endpoints", "pods", "services", "namespaces", "nodes"},
+				Verbs:     []string{"get", "list", "watch"},
+			},
+			{
+				APIGroups: []string{"discovery.k8s.io"},
+				Resources: []string{"endpointslices"},
 				Verbs:     []string{"get", "list", "watch"},
 			},
 			{
