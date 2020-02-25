@@ -36,7 +36,7 @@ func (r *Reconciler) service() runtime.Object {
 				{
 					Name:       "https-validation",
 					Port:       443,
-					TargetPort: intstr.FromInt(443),
+					TargetPort: intstr.FromInt(9443),
 					Protocol:   apiv1.ProtocolTCP,
 				},
 				{
