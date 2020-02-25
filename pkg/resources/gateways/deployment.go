@@ -108,10 +108,6 @@ func (r *Reconciler) deployment() runtime.Object {
 		}
 	}
 
-	if r.gw.Spec.ApplicationPorts != "" {
-		args = append(args, "--applicationPorts", r.gw.Spec.ApplicationPorts)
-	}
-
 	if r.Config.Spec.Proxy.LogLevel != "" {
 		args = append(args, "--proxyLogLevel", r.Config.Spec.Proxy.LogLevel)
 	}
@@ -278,7 +274,7 @@ func (r *Reconciler) envVars() []apiv1.EnvVar {
 		},
 		{
 			Name:  "ISTIO_META_ROUTER_MODE",
-			Value: "sni-dnat",
+			Value: "standard",
 		},
 		{
 			Name: "NODE_NAME",

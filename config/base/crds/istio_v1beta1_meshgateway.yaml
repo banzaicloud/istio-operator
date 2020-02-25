@@ -64,8 +64,6 @@ spec:
               type: array
             affinity:
               type: object
-            applicationPorts:
-              type: string
             labels:
               type: object
             loadBalancerIP:

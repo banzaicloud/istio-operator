@@ -222,8 +222,6 @@ spec:
                       type: array
                     affinity:
                       type: object
-                    applicationPorts:
-                      type: string
                     enabled:
                       type: boolean
                     labels:
@@ -287,8 +285,6 @@ spec:
                       type: array
                     affinity:
                       type: object
-                    applicationPorts:
-                      type: string
                     enabled:
                       type: boolean
                     labels:
