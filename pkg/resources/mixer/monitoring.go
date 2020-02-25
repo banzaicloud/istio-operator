@@ -383,10 +383,9 @@ func metricDimensions() map[string]interface{} {
 	md := tcpMetricDimensions()
 	md["request_protocol"] = `api.protocol | context.protocol | "unknown"`
 	md["response_code"] = `response.code | 200`
+	md["grpc_response_status"] = `response.grpc_status | ""`
 	md["destination_service"] = `destination.service.host | conditional((destination.service.name | "unknown") == "unknown", "unknown", request.host)`
 	md["response_flags"] = `context.proxy_error_code | "-"`
-	md["permissive_response_code"] = `rbac.permissive.response_code | "none"`
-	md["permissive_response_policyid"] = `rbac.permissive.effective_policy_id | "none"`
 	return md
 }
 
@@ -417,8 +416,7 @@ func metricLabels() []interface{} {
 	ml := tcpMetricLabels()
 	ml = append(ml, "request_protocol")
 	ml = append(ml, "response_code")
-	ml = append(ml, "permissive_response_code")
-	ml = append(ml, "permissive_response_policyid")
+	ml = append(ml, "grpc_response_status")
 	return ml
 }
 
