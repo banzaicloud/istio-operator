@@ -28,7 +28,7 @@ import (
 
 const (
 	defaultImageHub                  = "docker.io/istio"
-	defaultImageVersion              = "1.4.6"
+	defaultImageVersion              = "1.5.0-beta.2"
 	defaultLogLevel                  = "default:info"
 	defaultMeshPolicy                = PERMISSIVE
 	defaultPilotImage                = defaultImageHub + "/" + "pilot" + ":" + defaultImageVersion
