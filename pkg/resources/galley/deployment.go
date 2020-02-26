@@ -111,8 +111,6 @@ func (r *Reconciler) containerArgs() []string {
 		"--readinessProbePath=/tmp/healthready",
 		"--readinessProbeInterval=1s",
 		fmt.Sprintf("--deployment-namespace=%s", r.Config.Namespace),
-		"--validation-webhook-config-file",
-		"/etc/config/validatingwebhookconfiguration.yaml",
 		"--monitoringPort=15014",
 		"--enable-reconcileWebhookConfiguration=true",
 	}
@@ -218,13 +216,11 @@ func (r *Reconciler) volumes() []apiv1.Volume {
 			},
 		},
 		{
+			// galley expects /etc/config to exist even though it doesn't include any files.
 			Name: "config",
 			VolumeSource: apiv1.VolumeSource{
-				ConfigMap: &apiv1.ConfigMapVolumeSource{
-					LocalObjectReference: apiv1.LocalObjectReference{
-						Name: configMapName,
-					},
-					DefaultMode: util.IntPointer(420),
+				EmptyDir: &apiv1.EmptyDirVolumeSource{
+					Medium: apiv1.StorageMediumMemory,
 				},
 			},
 		},

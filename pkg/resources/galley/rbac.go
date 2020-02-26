@@ -49,7 +49,7 @@ func (r *Reconciler) clusterRole() runtime.Object {
 			{
 				APIGroups: []string{"admissionregistration.k8s.io"},
 				Resources: []string{"validatingwebhookconfigurations"},
-				Verbs:     []string{"*"},
+				Verbs:     []string{"get", "list", "watch", "update"},
 			},
 			{
 				APIGroups: []string{"extensions", "apps"},
