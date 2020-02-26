@@ -114,6 +114,13 @@ spec:
   sidecarInjector:
     enabled: true
     image: "docker.io/istio/sidecar_injector:1.4.5"
+    # injectedContainerAdditionalArgs:
+    # - --proxyAdminPort=16000
+    # injectedContainerAdditionalEnvVars:
+    # - name: META_POD_NAME
+    #   valueFrom:
+    #     fieldRef:
+    #       fieldPath: metadata.name
     replicaCount: 1
     rewriteAppHTTPProbe: true
     autoInjectionPolicyEnabled: true

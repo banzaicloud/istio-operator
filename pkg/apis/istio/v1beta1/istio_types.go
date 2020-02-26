@@ -287,6 +287,12 @@ type SidecarInjectorConfiguration struct {
 
 	// If present will be appended to the environment variables of the container
 	AdditionalEnvVars []corev1.EnvVar `json:"additionalEnvVars,omitempty"`
+
+	// If present will be appended at the end of the initial/preconfigured container arguments
+	InjectedContainerAdditionalArgs []string `json:"injectedContainerAdditionalArgs,omitempty"`
+
+	// If present will be appended to the environment variables of the container
+	InjectedContainerAdditionalEnvVars []corev1.EnvVar `json:"injectedContainerAdditionalEnvVars,omitempty"`
 }
 
 // NodeAgentConfiguration defines config options for NodeAgent

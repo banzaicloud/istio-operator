@@ -1575,6 +1575,18 @@ func (in *SidecarInjectorConfiguration) DeepCopyInto(out *SidecarInjectorConfigu
 			(*in)[i].DeepCopyInto(&(*out)[i])
 		}
 	}
+	if in.InjectedContainerAdditionalArgs != nil {
+		in, out := &in.InjectedContainerAdditionalArgs, &out.InjectedContainerAdditionalArgs
+		*out = make([]string, len(*in))
+		copy(*out, *in)
+	}
+	if in.InjectedContainerAdditionalEnvVars != nil {
+		in, out := &in.InjectedContainerAdditionalEnvVars, &out.InjectedContainerAdditionalEnvVars
+		*out = make([]v1.EnvVar, len(*in))
+		for i := range *in {
+			(*in)[i].DeepCopyInto(&(*out)[i])
+		}
+	}
 	return
 }
 
