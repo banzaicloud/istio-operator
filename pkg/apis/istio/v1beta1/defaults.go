@@ -28,7 +28,7 @@ import (
 
 const (
 	defaultImageHub                  = "docker.io/istio"
-	defaultImageVersion              = "1.5.0-beta.2"
+	defaultImageVersion              = "1.5.0-beta.3"
 	defaultLogLevel                  = "default:info"
 	defaultMeshPolicy                = PERMISSIVE
 	defaultPilotImage                = defaultImageHub + "/" + "pilot" + ":" + defaultImageVersion
@@ -159,7 +159,7 @@ func SetDefaults(config *Istio) {
 		config.Spec.Pilot.EnableProtocolSniffingOutbound = util.BoolPointer(true)
 	}
 	if config.Spec.Pilot.EnableProtocolSniffingInbound == nil {
-		config.Spec.Pilot.EnableProtocolSniffingInbound = util.BoolPointer(true)
+		config.Spec.Pilot.EnableProtocolSniffingInbound = util.BoolPointer(false)
 	}
 	// Citadel config
 	if config.Spec.Citadel.Enabled == nil {
