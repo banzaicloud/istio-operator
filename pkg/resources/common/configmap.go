@@ -95,13 +95,16 @@ func (r *Reconciler) meshConfig() string {
 				},
 			}
 		case istiov1beta1.TracerTypeLightstep:
+			lightStep := map[string]interface{}{
+				"address":     r.Config.Spec.Tracing.Lightstep.Address,
+				"accessToken": r.Config.Spec.Tracing.Lightstep.AccessToken,
+				"secure":      r.Config.Spec.Tracing.Lightstep.Secure,
+			}
+			if r.Config.Spec.Tracing.Lightstep.Secure {
+				lightStep["cacertPath"] = r.Config.Spec.Tracing.Lightstep.CacertPath
+			}
 			defaultConfig["tracing"] = map[string]interface{}{
-				"lightstep": map[string]interface{}{
-					"address":     r.Config.Spec.Tracing.Lightstep.Address,
-					"accessToken": r.Config.Spec.Tracing.Lightstep.AccessToken,
-					"secure":      r.Config.Spec.Tracing.Lightstep.Secure,
-					"cacertPath":  r.Config.Spec.Tracing.Lightstep.CacertPath,
-				},
+				"lightstep": lightStep,
 			}
 		case istiov1beta1.TracerTypeDatadog:
 			defaultConfig["tracing"] = map[string]interface{}{
