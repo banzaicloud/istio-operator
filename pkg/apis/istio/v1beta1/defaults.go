@@ -113,6 +113,10 @@ func SetDefaults(config *Istio) {
 		}
 	}
 
+	if config.Spec.AutoMTLS == nil {
+		config.Spec.AutoMTLS = util.BoolPointer(true)
+	}
+
 	if config.Spec.IncludeIPRanges == "" {
 		config.Spec.IncludeIPRanges = defaultIncludeIPRanges
 	}

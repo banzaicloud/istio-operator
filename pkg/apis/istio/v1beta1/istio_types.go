@@ -560,7 +560,7 @@ type IstioSpec struct {
 	// or its DestinationRule does not have TLSSettings specified, Istio configures client side
 	// TLS configuration automatically, based on the server side mTLS authentication policy and the
 	// availability of sidecars.
-	AutoMTLS bool `json:"autoMtls,omitempty"`
+	AutoMTLS *bool `json:"autoMtls,omitempty"`
 
 	// IncludeIPRanges the range where to capture egress traffic
 	IncludeIPRanges string `json:"includeIPRanges,omitempty"`
