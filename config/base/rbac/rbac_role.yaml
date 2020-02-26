@@ -97,6 +97,8 @@ rules:
   - deployments
   verbs:
   - get
+  - list
+  - watch
 - apiGroups:
   - extensions
   resources:
@@ -168,6 +170,14 @@ rules:
   - create
   - get
   - delete
+- apiGroups:
+  - discovery.k8s.io
+  resources:
+  - endpointslices
+  verbs:
+  - get
+  - list
+  - watch
 - apiGroups:
   - istio.banzaicloud.io
   resources:
