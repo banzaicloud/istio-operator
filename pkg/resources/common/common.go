@@ -28,6 +28,7 @@ import (
 
 const (
 	componentName      = "common"
+	istioReaderName    = "istio-reader"
 	IstioConfigMapName = "istio"
 )
 
@@ -52,6 +53,9 @@ func (r *Reconciler) Reconcile(log logr.Logger) error {
 	log.Info("Reconciling")
 
 	for _, res := range []resources.Resource{
+		r.serviceAccount,
+		r.clusterRole,
+		r.clusterRoleBinding,
 		r.configMap,
 	} {
 		o := res()
