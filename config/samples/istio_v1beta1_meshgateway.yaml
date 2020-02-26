@@ -25,7 +25,13 @@ spec:
     - port: 15443
       targetPort: 15443
       name: tls
-  additionalEnvVars: []
+#   additionalEnvVars:
+#   - name: ADDITIONAL_VARIABLE
+#     value: "value"
+#   - name: META_POD_NAME
+#     valueFrom:
+#       fieldRef:
+#         fieldPath: metadata.name
   applicationPorts: ""
   resources:
     requests:
