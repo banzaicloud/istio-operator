@@ -133,7 +133,7 @@ func (r *Reconciler) meshConfig() string {
 		"sdsUdsPath":              r.Config.Spec.SDS.UdsPath,
 		"trustDomain":             r.Config.Spec.TrustDomain,
 		"trustDomainAliases":      r.Config.Spec.TrustDomainAliases,
-		"enableAutoMtls":          r.Config.Spec.AutoMTLS,
+		"enableAutoMtls":          util.PointerToBool(r.Config.Spec.AutoMTLS),
 		"outboundTrafficPolicy": map[string]interface{}{
 			"mode": r.Config.Spec.OutboundTrafficPolicy.Mode,
 		},

@@ -328,7 +328,7 @@ func (r *Reconciler) envVars() []apiv1.EnvVar {
 			Value: r.gw.Spec.RequestedNetworkView,
 		})
 	}
-	if r.Config.Spec.AutoMTLS {
+	if util.PointerToBool(r.Config.Spec.AutoMTLS) {
 		envVars = append(envVars, apiv1.EnvVar{
 			Name:  "ISTIO_AUTO_MTLS_ENABLED",
 			Value: "true",

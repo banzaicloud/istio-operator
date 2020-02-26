@@ -121,7 +121,7 @@ func (r *Reconciler) Reconcile(log logr.Logger) error {
 		if r.Config.Spec.MeshPolicy.MTLSMode == istiov1beta1.STRICT {
 			meshPolicyDesiredState = k8sutil.DesiredStatePresent
 
-			if !r.Config.Spec.AutoMTLS {
+			if !util.PointerToBool(r.Config.Spec.AutoMTLS) {
 				mTLSDesiredState = k8sutil.DesiredStatePresent
 			} else {
 				mTLSDesiredState = k8sutil.DesiredStateAbsent

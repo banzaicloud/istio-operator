@@ -60,7 +60,7 @@ func (r *Reconciler) getValues() string {
 		},
 		"global": map[string]interface{}{
 			"mtls": map[string]interface{}{
-				"auto": r.Config.Spec.AutoMTLS,
+				"auto": util.PointerToBool(r.Config.Spec.AutoMTLS),
 			},
 			"trustDomain":            r.Config.Spec.TrustDomain,
 			"imagePullPolicy":        r.Config.Spec.ImagePullPolicy,
