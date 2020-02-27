@@ -62,7 +62,7 @@ func Reconcile(log logr.Logger, client runtimeClient.Client, desired runtime.Obj
 		}
 	} else {
 		if desiredState == DesiredStatePresent {
-			patchResult, err := patch.DefaultPatchMaker.Calculate(current, desired)
+			patchResult, err := patch.DefaultPatchMaker.Calculate(current, desired, patch.IgnoreStatusFields())
 			if err != nil {
 				log.Error(err, "could not match objects", "kind", desiredType, "name", key.Name)
 			} else if patchResult.IsEmpty() {
@@ -137,7 +137,7 @@ func IsObjectChanged(oldObj, newObj runtime.Object, ignoreStatusChange bool) (bo
 		metaAccessor.SetResourceVersion(new, currentResourceVersion)
 	}
 
-	patchResult, err := patch.DefaultPatchMaker.Calculate(old, new)
+	patchResult, err := patch.DefaultPatchMaker.Calculate(old, new, patch.IgnoreStatusFields())
 	if err != nil {
 		return true, emperror.WrapWith(err, "could not match objects", "kind", old.GetObjectKind())
 	} else if patchResult.IsEmpty() {

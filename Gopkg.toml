@@ -75,7 +75,7 @@ version="v1.4.7"
 
 [[override]]
   name = "github.com/banzaicloud/k8s-objectmatcher"
-  version = "0.1.1"
+  version = "v1.2.0"
 
 [[constraint]]
   name = "github.com/mholt/caddy"

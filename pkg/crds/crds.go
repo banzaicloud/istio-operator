@@ -167,7 +167,7 @@ func (r *CRDReconciler) Reconcile(config *istiov1beta1.Istio, log logr.Logger) e
 			log.Info("CRD created")
 		} else {
 			crd.ResourceVersion = current.ResourceVersion
-			patchResult, err := patch.DefaultPatchMaker.Calculate(current, crd)
+			patchResult, err := patch.DefaultPatchMaker.Calculate(current, crd, patch.IgnoreStatusFields())
 			if err != nil {
 				log.Error(err, "could not match objects", "kind", crd.Spec.Names.Kind)
 			} else if patchResult.IsEmpty() {
