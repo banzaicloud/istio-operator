@@ -72,7 +72,7 @@ func (d *DynamicObject) Reconcile(log logr.Logger, client dynamic.Interface, des
 		}
 	} else {
 		if desiredState == DesiredStatePresent {
-			patchResult, err := patch.DefaultPatchMaker.Calculate(current, desired)
+			patchResult, err := patch.DefaultPatchMaker.Calculate(current, desired, patch.IgnoreStatusFields())
 			if err != nil {
 				log.Error(err, "could not match objects", "kind", desiredType)
 			} else if patchResult.IsEmpty() {
