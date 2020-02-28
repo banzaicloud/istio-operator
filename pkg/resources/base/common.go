@@ -14,7 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package common
+package base
 
 import (
 	"github.com/go-logr/logr"
@@ -27,10 +27,15 @@ import (
 )
 
 const (
-	componentName      = "common"
-	istioReaderName    = "istio-reader"
-	IstioConfigMapName = "istio"
+	componentName                 = "common"
+	istioReaderName               = "istio-reader"
+	istioReaderServiceAccountName = istioReaderName + "service-account"
+	IstioConfigMapName            = "istio"
 )
+
+var istioReaderLabel = map[string]string{
+	"app": istioReaderName,
+}
 
 type Reconciler struct {
 	resources.Reconciler
