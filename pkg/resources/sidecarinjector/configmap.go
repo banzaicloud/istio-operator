@@ -294,8 +294,6 @@ containers:
   - name: ISTIO_META_ZIPKIN_TLS_SETTINGS_JSON
     value: '{{ .Values.global.proxy.zipkinTLSSettingsJSON }}'
 {{- end }}
-  - name: SDS_ENABLED
-    value: {{ $.Values.global.sds.enabled }}
   - name: ISTIO_META_INTERCEPTION_MODE
     value: "{{ or (index .ObjectMeta.Annotations ` + "`" + `sidecar.istio.io/interceptionMode` + "`" + `) .ProxyConfig.InterceptionMode.String }}"
   {{- if .Values.global.network }}
@@ -404,22 +402,9 @@ containers:
   {{- end }}
   - mountPath: /etc/istio/proxy
     name: istio-envoy
-  {{- if .Values.global.sds.enabled }}
-  - mountPath: /var/run/sds
-    name: sds-uds-path
-    readOnly: true
-  - mountPath: /var/run/secrets/tokens
-    name: istio-token
-  {{- if .Values.global.sds.customTokenDirectory }}
-  - mountPath: "{{ .Values.global.sds.customTokenDirectory -}}"
-    name: custom-sds-token
-    readOnly: true
-  {{- end }}
-  {{- else }}
   - mountPath: /etc/certs/
     name: istio-certs
     readOnly: true
-  {{- end }}
   {{- if and (eq .Values.global.proxy.tracer "lightstep") .Values.global.tracer.lightstep.cacertPath }}
   - mountPath: {{ directory .ProxyConfig.GetTracing.GetLightstep.GetCacertPath }}
     name: lightstep-certs
@@ -440,23 +425,6 @@ volumes:
 - emptyDir:
     medium: Memory
   name: istio-envoy
-{{- if .Values.global.sds.enabled }}
-- name: sds-uds-path
-  hostPath:
-    path: /var/run/sds
-- name: istio-token
-  projected:
-    sources:
-      - serviceAccountToken:
-          path: istio-token
-          expirationSeconds: 43200
-          audience: {{ .Values.global.sds.token.aud }}
-{{- if .Values.global.sds.customTokenDirectory }}
-- name: custom-sds-token
-  secret:
-    secretName: sdstokensecret
-{{- end }}
-{{- else }}
 - name: istio-certs
   secret:
     optional: true
@@ -471,7 +439,6 @@ volumes:
   {{ toYaml $value | indent 2 }}
   {{ end }}
   {{ end }}
-{{- end }}
 {{- if and (eq .Values.global.proxy.tracer "lightstep") .Values.global.tracer.lightstep.cacertPath }}
 - name: lightstep-certs
   secret:
@@ -579,7 +546,7 @@ func (r *Reconciler) proxyInitContainer() string {
   - "-b"
   - "{{ annotation .ObjectMeta ` + "`" + `traffic.sidecar.istio.io/includeInboundPorts` + "` `*`" + ` }}"
   - "-d"
-  - "{{ excludeInboundPort (annotation .ObjectMeta ` + "`" + `status.sidecar.istio.io/port` + "`" + ` .Values.global.proxy.statusPort) (annotation .ObjectMeta ` + "`" + `traffic.sidecar.istio.io/excludeInboundPorts` + "`" + ` .Values.global.proxy.excludeInboundPorts) }}"
+  - "15090,{{ excludeInboundPort (annotation .ObjectMeta ` + "`" + `status.sidecar.istio.io/port` + "`" + ` .Values.global.proxy.statusPort) (annotation .ObjectMeta ` + "`" + `traffic.sidecar.istio.io/excludeInboundPorts` + "`" + ` .Values.global.proxy.excludeInboundPorts) }}"
   {{ if or (isset .ObjectMeta.Annotations ` + "`" + `traffic.sidecar.istio.io/excludeOutboundPorts` + "`" + `) (ne (valueOrDefault .Values.global.proxy.excludeOutboundPorts "") "") -}}
   - "-o"
   - "{{ annotation .ObjectMeta ` + "`" + `traffic.sidecar.istio.io/excludeOutboundPorts` + "`" + ` .Values.global.proxy.excludeOutboundPorts }}"

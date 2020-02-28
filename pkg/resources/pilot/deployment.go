@@ -110,10 +110,6 @@ func (r *Reconciler) containerEnvs() []apiv1.EnvVar {
 			Name:  "PILOT_ENABLE_PROTOCOL_SNIFFING_FOR_INBOUND",
 			Value: strconv.FormatBool(util.PointerToBool(r.Config.Spec.Pilot.EnableProtocolSniffingInbound)),
 		},
-		{
-			Name:  "SDS_ENABLED",
-			Value: strconv.FormatBool(util.PointerToBool(r.Config.Spec.SDS.Enabled)),
-		},
 	}
 
 	if r.Config.Spec.LocalityLB != nil && util.PointerToBool(r.Config.Spec.LocalityLB.Enabled) {
@@ -238,19 +234,6 @@ func (r *Reconciler) containers() []apiv1.Container {
 			TerminationMessagePolicy: apiv1.TerminationMessageReadFile,
 		}
 
-		if util.PointerToBool(r.Config.Spec.SDS.Enabled) {
-			proxyContainer.VolumeMounts = append(proxyContainer.VolumeMounts, apiv1.VolumeMount{
-				Name:      "sds-uds-path",
-				MountPath: "/var/run/sds",
-				ReadOnly:  true,
-			})
-
-			proxyContainer.VolumeMounts = append(proxyContainer.VolumeMounts, apiv1.VolumeMount{
-				Name:      "istio-token",
-				MountPath: "/var/run/secrets/tokens",
-			})
-		}
-
 		if r.Config.Spec.Proxy.LogLevel != "" {
 			proxyContainer.Args = append(proxyContainer.Args, fmt.Sprintf("--proxyLogLevel=%s", r.Config.Spec.Proxy.LogLevel))
 		}
@@ -313,35 +296,6 @@ func (r *Reconciler) deployment() runtime.Object {
 				},
 			},
 		},
-	}
-
-	if util.PointerToBool(r.Config.Spec.SDS.Enabled) {
-		deployment.Spec.Template.Spec.Volumes = append(deployment.Spec.Template.Spec.Volumes, apiv1.Volume{
-			Name: "sds-uds-path",
-			VolumeSource: apiv1.VolumeSource{
-				HostPath: &apiv1.HostPathVolumeSource{
-					Path: "/var/run/sds",
-				},
-			},
-		})
-
-		deployment.Spec.Template.Spec.Volumes = append(deployment.Spec.Template.Spec.Volumes, apiv1.Volume{
-			Name: "istio-token",
-			VolumeSource: apiv1.VolumeSource{
-				Projected: &apiv1.ProjectedVolumeSource{
-					Sources: []apiv1.VolumeProjection{
-						{
-							ServiceAccountToken: &apiv1.ServiceAccountTokenProjection{
-								Path:              "istio-token",
-								ExpirationSeconds: util.Int64Pointer(43200),
-								Audience:          r.Config.Spec.SDS.TokenAudience,
-							},
-						},
-					},
-					DefaultMode: util.IntPointer(420),
-				},
-			},
-		})
 	}
 
 	return deployment

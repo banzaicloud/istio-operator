@@ -28,7 +28,7 @@ import (
 
 const (
 	defaultImageHub                  = "docker.io/istio"
-	defaultImageVersion              = "1.5.0-beta.3"
+	defaultImageVersion              = "1.5.0-beta.4"
 	defaultLogLevel                  = "default:info"
 	defaultMeshPolicy                = PERMISSIVE
 	defaultPilotImage                = defaultImageHub + "/" + "pilot" + ":" + defaultImageVersion
@@ -95,6 +95,7 @@ var defaultIngressGatewayPorts = []apiv1.ServicePort{
 	{Port: 80, Protocol: apiv1.ProtocolTCP, TargetPort: intstr.FromInt(80), Name: "http2"},
 	{Port: 443, Protocol: apiv1.ProtocolTCP, TargetPort: intstr.FromInt(443), Name: "https"},
 	{Port: 15443, Protocol: apiv1.ProtocolTCP, TargetPort: intstr.FromInt(15443), Name: "tls"},
+	{Port: 31400, Protocol: apiv1.ProtocolTCP, TargetPort: intstr.FromInt(31400), Name: "tcp"},
 }
 
 var defaultEgressGatewayPorts = []apiv1.ServicePort{
