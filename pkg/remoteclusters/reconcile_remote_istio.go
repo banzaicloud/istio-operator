@@ -19,9 +19,9 @@ package remoteclusters
 import (
 	istiov1beta1 "github.com/banzaicloud/istio-operator/pkg/apis/istio/v1beta1"
 	"github.com/banzaicloud/istio-operator/pkg/resources"
+	"github.com/banzaicloud/istio-operator/pkg/resources/base"
 	"github.com/banzaicloud/istio-operator/pkg/resources/citadel"
 	"github.com/banzaicloud/istio-operator/pkg/resources/cni"
-	"github.com/banzaicloud/istio-operator/pkg/resources/common"
 	"github.com/banzaicloud/istio-operator/pkg/resources/egressgateway"
 	"github.com/banzaicloud/istio-operator/pkg/resources/ingressgateway"
 	"github.com/banzaicloud/istio-operator/pkg/resources/nodeagent"
@@ -32,7 +32,7 @@ func (c *Cluster) reconcileComponents(remoteConfig *istiov1beta1.RemoteIstio, is
 	c.log.Info("reconciling components")
 
 	reconcilers := []resources.ComponentReconciler{
-		common.New(c.ctrlRuntimeClient, c.istioConfig, true),
+		base.New(c.ctrlRuntimeClient, c.istioConfig, true),
 		citadel.New(citadel.Configuration{
 			DeployMeshPolicy: false,
 		}, c.ctrlRuntimeClient, c.dynamicClient, c.istioConfig),

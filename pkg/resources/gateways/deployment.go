@@ -274,7 +274,7 @@ func (r *Reconciler) envVars() []apiv1.EnvVar {
 		},
 		{
 			Name:  "ISTIO_META_ROUTER_MODE",
-			Value: "standard",
+			Value: "sni-dnat",
 		},
 		{
 			Name: "NODE_NAME",
