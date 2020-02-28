@@ -94,34 +94,6 @@ func (r *Reconciler) volumes(t string) []apiv1.Volume {
 		},
 	}
 
-	if util.PointerToBool(r.Config.Spec.SDS.Enabled) {
-		volumes = append(volumes, apiv1.Volume{
-			Name: "sds-uds-path",
-			VolumeSource: apiv1.VolumeSource{
-				HostPath: &apiv1.HostPathVolumeSource{
-					Path: "/var/run/sds",
-				},
-			},
-		})
-		volumes = append(volumes, apiv1.Volume{
-			Name: "istio-token",
-			VolumeSource: apiv1.VolumeSource{
-				Projected: &apiv1.ProjectedVolumeSource{
-					Sources: []apiv1.VolumeProjection{
-						{
-							ServiceAccountToken: &apiv1.ServiceAccountTokenProjection{
-								Path:              "istio-token",
-								ExpirationSeconds: util.Int64Pointer(43200),
-								Audience:          r.Config.Spec.SDS.TokenAudience,
-							},
-						},
-					},
-					DefaultMode: util.IntPointer(420),
-				},
-			},
-		})
-	}
-
 	return volumes
 }
 
@@ -302,17 +274,6 @@ func (r *Reconciler) istioProxyContainer(t string) apiv1.Container {
 			Name:      "uds-socket",
 			MountPath: "/sock",
 		},
-	}
-	if util.PointerToBool(r.Config.Spec.SDS.Enabled) {
-		vms = append(vms, apiv1.VolumeMount{
-			Name:      "sds-uds-path",
-			MountPath: "/var/run/sds",
-			ReadOnly:  true,
-		})
-		vms = append(vms, apiv1.VolumeMount{
-			Name:      "istio-token",
-			MountPath: "/var/run/secrets/tokens",
-		})
 	}
 
 	return apiv1.Container{

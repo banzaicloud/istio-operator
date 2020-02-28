@@ -299,10 +299,6 @@ func (r *Reconciler) envVars() []apiv1.EnvVar {
 		Name:  "ISTIO_META_USER_SDS",
 		Value: strconv.FormatBool(util.PointerToBool(r.gw.Spec.SDS.Enabled)),
 	})
-	envVars = append(envVars, apiv1.EnvVar{
-		Name:  "SDS_ENABLED",
-		Value: strconv.FormatBool(util.PointerToBool(r.gw.Spec.SDS.Enabled)),
-	})
 
 	if r.Config.Spec.ClusterName != "" {
 		envVars = append(envVars, apiv1.EnvVar{
@@ -418,11 +414,6 @@ func (r *Reconciler) volumeMounts() []apiv1.VolumeMount {
 	}
 	if util.PointerToBool(r.Config.Spec.SDS.Enabled) {
 		vms = append(vms, apiv1.VolumeMount{
-			Name:      "sdsudspath",
-			MountPath: "/var/run/sds",
-			ReadOnly:  true,
-		})
-		vms = append(vms, apiv1.VolumeMount{
 			Name:      "istio-token",
 			MountPath: "/var/run/secrets/tokens",
 		})
@@ -478,34 +469,6 @@ func (r *Reconciler) volumes() []apiv1.Volume {
 				},
 			},
 		},
-	}
-	if util.PointerToBool(r.Config.Spec.SDS.Enabled) {
-		volumes = append(volumes, apiv1.Volume{
-			Name: "sdsudspath",
-			VolumeSource: apiv1.VolumeSource{
-				HostPath: &apiv1.HostPathVolumeSource{
-					Path: "/var/run/sds",
-				},
-			},
-		})
-
-		volumes = append(volumes, apiv1.Volume{
-			Name: "istio-token",
-			VolumeSource: apiv1.VolumeSource{
-				Projected: &apiv1.ProjectedVolumeSource{
-					Sources: []apiv1.VolumeProjection{
-						{
-							ServiceAccountToken: &apiv1.ServiceAccountTokenProjection{
-								Path:              "istio-token",
-								ExpirationSeconds: util.Int64Pointer(43200),
-								Audience:          r.Config.Spec.SDS.TokenAudience,
-							},
-						},
-					},
-					DefaultMode: util.IntPointer(420),
-				},
-			},
-		})
 	}
 	if util.PointerToBool(r.gw.Spec.SDS.Enabled) {
 		volumes = append(volumes, apiv1.Volume{
