@@ -49,9 +49,8 @@ func (r *Reconciler) validatingWebhookConfig(ns string) string {
 	se := admissionv1beta1.SideEffectClassNone
 	webhook := admissionv1beta1.ValidatingWebhookConfiguration{
 		ObjectMeta: metav1.ObjectMeta{
-			Name:      webhookName,
-			Namespace: ns,
-			Labels:    galleyLabels,
+			Name:   webhookName,
+			Labels: galleyLabels,
 		},
 		Webhooks: []admissionv1beta1.Webhook{
 			{
