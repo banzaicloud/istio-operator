@@ -312,10 +312,10 @@ func (r *Reconciler) envVars() []apiv1.EnvVar {
 		})
 	}
 
-	if util.PointerToBool(r.Config.Spec.MeshExpansion) && r.Config.Spec.ClusterName != "" {
+	if util.PointerToBool(r.Config.Spec.MeshExpansion) && r.Config.Spec.NetworkName != "" {
 		envVars = append(envVars, apiv1.EnvVar{
 			Name:  "ISTIO_META_NETWORK",
-			Value: r.Config.Spec.ClusterName,
+			Value: r.Config.Spec.NetworkName,
 		})
 	}
 	if r.gw.Spec.RequestedNetworkView != "" {

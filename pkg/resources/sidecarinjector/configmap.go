@@ -64,7 +64,7 @@ func (r *Reconciler) getValues() string {
 			},
 			"trustDomain":            r.Config.Spec.TrustDomain,
 			"imagePullPolicy":        r.Config.Spec.ImagePullPolicy,
-			"network":                r.Config.Spec.GetNetworkName(),
+			"network":                r.Config.Spec.NetworkName,
 			"podDNSSearchNamespaces": podDNSSearchNamespaces,
 			"proxy_init": map[string]interface{}{
 				"image": r.Config.Spec.ProxyInit.Image,

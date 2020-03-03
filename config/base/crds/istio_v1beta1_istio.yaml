@@ -521,6 +521,10 @@ spec:
                 talk to one another. All meshes should be using Istio mTLS and must
                 have a shared root CA for this model to work.
               type: boolean
+            networkName:
+              description: Network defines the network this cluster belong to. This
+                name corresponds to the networks in the map of mesh networks.
+              type: string
             nodeAgent:
               description: NodeAgent configuration options
               properties:
