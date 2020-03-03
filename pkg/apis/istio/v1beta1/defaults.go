@@ -60,6 +60,8 @@ const (
 	defaultEnvoyAccessLogFile        = "/dev/stdout"
 	defaultEnvoyAccessLogFormat      = ""
 	defaultEnvoyAccessLogEncoding    = "TEXT"
+	defaultClusterName               = "Kubernetes"
+	defaultNetworkName               = "local-network"
 )
 
 var defaultResources = &apiv1.ResourceRequirements{
@@ -112,6 +114,14 @@ func SetDefaults(config *Istio) {
 		} else {
 			config.Spec.MeshPolicy.MTLSMode = defaultMeshPolicy
 		}
+	}
+
+	if config.Spec.ClusterName == "" {
+		config.Spec.ClusterName = defaultClusterName
+	}
+
+	if config.Spec.NetworkName == "" {
+		config.Spec.NetworkName = defaultNetworkName
 	}
 
 	if config.Spec.AutoMTLS == nil {
