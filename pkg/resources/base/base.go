@@ -29,7 +29,7 @@ import (
 const (
 	componentName                 = "common"
 	istioReaderName               = "istio-reader"
-	istioReaderServiceAccountName = istioReaderName + "service-account"
+	istioReaderServiceAccountName = istioReaderName + "-service-account"
 	IstioConfigMapName            = "istio"
 )
 
