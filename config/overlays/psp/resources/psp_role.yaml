@@ -1,12 +1,12 @@
 apiVersion: rbac.authorization.k8s.io/v1
 kind: Role
 metadata:
-  name: psp-basic
+  name: psp-restricted
 rules:
 - apiGroups:
   - policy
   resourceNames:
-  - istio-operator-psp-basic
+  - istio-operator-psp-restricted
   resources:
   - podsecuritypolicies
   verbs:

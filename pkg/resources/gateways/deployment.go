@@ -47,6 +47,7 @@ func (r *Reconciler) deployment() runtime.Object {
 		"--log_output_level", "info",
 		"--serviceCluster", r.gw.Name,
 		"--trust-domain", r.Config.Spec.TrustDomain,
+		"--configPath", "/tmp",
 	}
 
 	if r.Config.Spec.Proxy.LogLevel != "" {
@@ -87,7 +88,8 @@ func (r *Reconciler) deployment() runtime.Object {
 			r.gw.Spec.Resources,
 			r.Config.Spec.Proxy.Resources,
 		),
-		SecurityContext:          r.securityContext(),
+		SecurityContext: r.securityContext(),
+		// gw.spec.securityContext
 		VolumeMounts:             r.volumeMounts(),
 		TerminationMessagePath:   apiv1.TerminationMessagePathDefault,
 		TerminationMessagePolicy: apiv1.TerminationMessageReadFile,
@@ -109,7 +111,6 @@ func (r *Reconciler) deployment() runtime.Object {
 					Annotations: templates.DefaultDeployAnnotations(),
 				},
 				Spec: apiv1.PodSpec{
-					SecurityContext:    r.podSecurityContext(),
 					ServiceAccountName: r.serviceAccountName(),
 					InitContainers:     initContainers,
 					Containers:         containers,
@@ -118,6 +119,8 @@ func (r *Reconciler) deployment() runtime.Object {
 					NodeSelector:       r.gw.Spec.NodeSelector,
 					Tolerations:        r.gw.Spec.Tolerations,
 					PriorityClassName:  r.Config.Spec.PriorityClassName,
+					SecurityContext:    util.GetPSPFromSecurityContext(r.gw.Spec.SecurityContext),
+					// r.podSecurityContext()
 				},
 			},
 		},

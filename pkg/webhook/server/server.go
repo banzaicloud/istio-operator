@@ -45,6 +45,7 @@ func add(mgr manager.Manager) error {
 	}
 
 	svr, err := webhook.NewServer(name, mgr, webhook.ServerOptions{
+		Port:    9443,
 		CertDir: "/tmp/cert",
 		BootstrapOptions: &webhook.BootstrapOptions{
 			ValidatingWebhookConfigName: name,

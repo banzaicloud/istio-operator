@@ -17,8 +17,6 @@ limitations under the License.
 package nodeagent
 
 import (
-	"fmt"
-
 	appsv1 "k8s.io/api/apps/v1"
 	apiv1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -110,25 +108,5 @@ func (r *Reconciler) daemonSet() runtime.Object {
 				},
 			},
 		},
-	}
-}
-
-func (r *Reconciler) galleyProbe(path string) *apiv1.Probe {
-	return &apiv1.Probe{
-		Handler: apiv1.Handler{
-			Exec: &apiv1.ExecAction{
-				Command: []string{
-					"/usr/local/bin/galley",
-					"probe",
-					fmt.Sprintf("--probe-path=%s", path),
-					"--interval=10s",
-				},
-			},
-		},
-		InitialDelaySeconds: 5,
-		PeriodSeconds:       5,
-		FailureThreshold:    3,
-		SuccessThreshold:    1,
-		TimeoutSeconds:      1,
 	}
 }

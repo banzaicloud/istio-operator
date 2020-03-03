@@ -140,6 +140,8 @@ spec:
                 sdsEnabled:
                   description: Whether SDS is enabled.
                   type: boolean
+                securityContext:
+                  type: object
                 tolerations:
                   items:
                     type: object
@@ -215,6 +217,8 @@ spec:
                   minimum: 0
                   type: integer
                 resources:
+                  type: object
+                securityContext:
                   type: object
                 tolerations:
                   items:
@@ -310,6 +314,8 @@ spec:
                           type: string
                         resources:
                           type: object
+                      type: object
+                    securityContext:
                       type: object
                     serviceAnnotations:
                       type: object
@@ -415,6 +421,8 @@ spec:
                         resources:
                           type: object
                       type: object
+                    securityContext:
+                      type: object
                     serviceAnnotations:
                       type: object
                     serviceLabels:
@@ -463,6 +471,8 @@ spec:
                   minimum: 0
                   type: integer
                 resources:
+                  type: object
+                securityContext:
                   type: object
                 tolerations:
                   items:
@@ -616,6 +626,8 @@ spec:
                   type: string
                 resources:
                   type: object
+                securityContext:
+                  type: object
                 sessionAffinityEnabled:
                   description: Set whether to create a STRICT_DNS type cluster for
                     istio-telemetry.
@@ -669,6 +681,8 @@ spec:
                 podAnnotations:
                   type: object
                 resources:
+                  type: object
+                securityContext:
                   type: object
                 tolerations:
                   items:
@@ -741,6 +755,8 @@ spec:
                   type: integer
                 resources:
                   type: object
+                securityContext:
+                  type: object
                 sidecar:
                   type: boolean
                 tolerations:
@@ -785,6 +801,8 @@ spec:
                   minimum: 0
                   type: integer
                 resources:
+                  type: object
+                securityContext:
                   type: object
                 tolerations:
                   items:
@@ -966,6 +984,8 @@ spec:
                   type: string
                 resources:
                   type: object
+                securityContext:
+                  type: object
                 useMetadataExchangeFilter:
                   type: boolean
               type: object
@@ -1143,6 +1163,8 @@ spec:
                     liveness health check to redirect request to sidecar. This makes
                     liveness check work even when mTLS is enabled.
                   type: boolean
+                securityContext:
+                  type: object
                 tolerations:
                   items:
                     type: object
@@ -1193,6 +1215,8 @@ spec:
                     be batched before being sent to the mixer server
                   type: string
                 resources:
+                  type: object
+                securityContext:
                   type: object
                 sessionAffinityEnabled:
                   description: Set whether to create a STRICT_DNS type cluster for

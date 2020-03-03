@@ -1,17 +1,37 @@
 apiVersion: policy/v1beta1
 kind: PodSecurityPolicy
 metadata:
-  name: psp-basic
+  kubernetes.io/description: "This policy requires pods to run with a non-root UID, and prevents pods from accessing the host."
+  name: psp-restricted
 spec:
+  allowPrivilegeEscalation: false
+  forbiddenSysctls:
+  - '*'
   fsGroup:
-    rule: RunAsAny
+      ranges:
+        - max: 65535
+          min: 1
+      rule: MustRunAs
+  requiredDropCapabilities:
+  - ALL
   runAsUser:
-    rule: RunAsAny
+      rule: MustRunAsNonRoot
+  runAsGroup:
+      rule: MustRunAs
+      ranges:
+      - min: 1
+        max: 65535
   seLinux:
-    rule: RunAsAny
+      rule: RunAsAny
   supplementalGroups:
-    rule: RunAsAny
+      ranges:
+        - max: 65535
+          min: 1
+      rule: MustRunAs
   volumes:
-  - secret
   - configMap
   - emptyDir
+  - projected
+  - secret
+  - downwardAPI
+  - persistentVolumeClaim

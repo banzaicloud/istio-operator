@@ -506,21 +506,11 @@
   version = "v1.0.3"
 
 [[projects]]
-  digest = "1:739a91c5ac140919729b57d1093157148944efdc9d6065633235443c02732431"
-  name = "github.com/stretchr/objx"
-  packages = ["."]
-  pruneopts = "T"
-  revision = "ea4fe68685ee0d3cee7032121851b57e7494e8ea"
-  version = "v0.2.0"
-
-[[projects]]
   digest = "1:a3fa29f60026db0b3fb59dc0358108c6d604dfe808e705ad774163a0532274d4"
   name = "github.com/stretchr/testify"
   packages = [
-    ".",
     "assert",
-    "http",
-    "mock",
+    "require",
   ]
   pruneopts = "T"
   revision = "004e3cb72213e5e727e4e08f668ee6c8f27e5d32"
@@ -1058,7 +1048,7 @@
     "github.com/onsi/gomega",
     "github.com/pkg/errors",
     "github.com/shurcooL/vfsgen",
-    "github.com/stretchr/testify",
+    "github.com/stretchr/testify/require",
     "golang.org/x/net/context",
     "golang.org/x/time/rate",
     "k8s.io/api/admissionregistration/v1beta1",
@@ -1082,6 +1072,7 @@
     "k8s.io/apimachinery/pkg/types",
     "k8s.io/apimachinery/pkg/util/intstr",
     "k8s.io/apimachinery/pkg/util/runtime",
+    "k8s.io/apimachinery/pkg/util/sets",
     "k8s.io/apimachinery/pkg/watch",
     "k8s.io/client-go/discovery",
     "k8s.io/client-go/discovery/fake",

@@ -36,11 +36,12 @@ type IstioVersion string
 
 // BaseK8sResourceConfiguration defines basic K8s resource spec configurations
 type BaseK8sResourceConfiguration struct {
-	Resources      *corev1.ResourceRequirements `json:"resources,omitempty"`
-	NodeSelector   map[string]string            `json:"nodeSelector,omitempty"`
-	Affinity       *corev1.Affinity             `json:"affinity,omitempty"`
-	Tolerations    []corev1.Toleration          `json:"tolerations,omitempty"`
-	PodAnnotations map[string]string            `json:"podAnnotations,omitempty"`
+	Resources       *corev1.ResourceRequirements `json:"resources,omitempty"`
+	NodeSelector    map[string]string            `json:"nodeSelector,omitempty"`
+	Affinity        *corev1.Affinity             `json:"affinity,omitempty"`
+	Tolerations     []corev1.Toleration          `json:"tolerations,omitempty"`
+	PodAnnotations  map[string]string            `json:"podAnnotations,omitempty"`
+	SecurityContext *corev1.SecurityContext      `json:"securityContext,omitempty"`
 }
 
 type BaseK8sResourceConfigurationWithImage struct {
@@ -472,7 +473,8 @@ type ProxyConfiguration struct {
 
 	Lifecycle corev1.Lifecycle `json:"lifecycle,omitempty"`
 
-	Resources *corev1.ResourceRequirements `json:"resources,omitempty"`
+	Resources       *corev1.ResourceRequirements `json:"resources,omitempty"`
+	SecurityContext *corev1.SecurityContext      `json:"securityContext,omitempty"`
 }
 
 // ProxyInitConfiguration defines config options for Proxy Init containers
