@@ -17,6 +17,7 @@ limitations under the License.
 package util
 
 import (
+	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/util/intstr"
 )
 
@@ -120,4 +121,12 @@ func RemoveString(slice []string, s string) (result []string) {
 		result = append(result, item)
 	}
 	return
+}
+
+func GetPSPFromSecurityContext(sc *corev1.SecurityContext) *corev1.PodSecurityContext {
+	return &corev1.PodSecurityContext{
+		RunAsGroup:   sc.RunAsGroup,
+		RunAsNonRoot: sc.RunAsNonRoot,
+		RunAsUser:    sc.RunAsUser,
+	}
 }

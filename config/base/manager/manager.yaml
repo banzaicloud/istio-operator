@@ -33,6 +33,8 @@ spec:
         control-plane: controller-manager
         controller-tools.k8s.io: "1.0"
     spec:
+      securityContext:
+        runAsUser: 1000
       containers:
       - command:
         - /manager

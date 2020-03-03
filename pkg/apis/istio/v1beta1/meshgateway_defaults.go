@@ -50,4 +50,7 @@ func (gw *MeshGateway) SetDefaults() {
 	if gw.Spec.RunAsRoot == nil {
 		gw.Spec.RunAsRoot = util.BoolPointer(true)
 	}
+	if gw.Spec.SecurityContext == nil {
+		gw.Spec.SecurityContext = defaultProxySecurityContext
+	}
 }

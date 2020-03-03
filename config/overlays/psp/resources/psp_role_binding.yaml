@@ -1,16 +1,12 @@
 apiVersion: rbac.authorization.k8s.io/v1
 kind: RoleBinding
 metadata:
-  name: psp-basic
+  name: psp-restricted
 roleRef:
   apiGroup: rbac.authorization.k8s.io
   kind: Role
-  name: psp-basic
+  name: psp-restricted
 subjects:
-  - kind: ServiceAccount
-    name: istio-citadel-service-account
-  - kind: ServiceAccount
-    name: istio-galley-service-account
   - kind: ServiceAccount
     name: istio-egressgateway-service-account
   - kind: ServiceAccount
@@ -20,12 +16,10 @@ subjects:
   - kind: ServiceAccount
     name: istio-operator-authproxy
   - kind: ServiceAccount
-    name: istio-pilot-service-account
+    name: istiod-service-account
   - kind: ServiceAccount
     name: istio-sidecar-injector-service-account
   - kind: ServiceAccount
     name: istiocoredns-service-account
-  - kind: ServiceAccount
-    name: istio-nodeagent-service-account
   - kind: ServiceAccount
     name: default

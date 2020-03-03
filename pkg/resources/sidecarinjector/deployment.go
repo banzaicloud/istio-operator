@@ -42,6 +42,7 @@ func (r *Reconciler) containerArgs() []string {
 		"--healthCheckInterval=2s",
 		"--healthCheckFile=/tmp/health",
 		"--reconcileWebhookConfig=true",
+		"--port=9443",
 	}
 
 	if len(r.Config.Spec.SidecarInjector.AdditionalContainerArgs) != 0 {
@@ -114,14 +115,12 @@ func (r *Reconciler) deployment() runtime.Object {
 							TerminationMessagePolicy: apiv1.TerminationMessageReadFile,
 						},
 					},
-					SecurityContext: &apiv1.PodSecurityContext{
-						FSGroup: util.Int64Pointer(1337),
-					},
 					Volumes:           r.volumes(),
 					Affinity:          r.Config.Spec.SidecarInjector.Affinity,
 					NodeSelector:      r.Config.Spec.SidecarInjector.NodeSelector,
 					Tolerations:       r.Config.Spec.SidecarInjector.Tolerations,
 					PriorityClassName: r.Config.Spec.PriorityClassName,
+					SecurityContext:   util.GetPSPFromSecurityContext(r.Config.Spec.SidecarInjector.SecurityContext),
 				},
 			},
 		},
