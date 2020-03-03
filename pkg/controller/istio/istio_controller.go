@@ -63,7 +63,6 @@ import (
 
 const finalizerID = "istio-operator.finializer.banzaicloud.io"
 const istioSecretTypePrefix = "istio.io"
-const localNetworkName = "local-network"
 
 var log = logf.Log.WithName("controller")
 var watchCreatedResourcesEvents bool
@@ -379,10 +378,10 @@ func (r *ReconcileIstio) getMeshNetworks(config *istiov1beta1.Istio, logger logr
 				Address: address, Port: 443,
 			})
 		}
-		meshNetworks[localNetworkName] = istiov1beta1.MeshNetwork{
+		meshNetworks[config.Spec.NetworkName] = istiov1beta1.MeshNetwork{
 			Endpoints: []istiov1beta1.MeshNetworkEndpoint{
 				{
-					FromCIDR: "127.0.0.1/8",
+					FromRegistry: config.Spec.ClusterName,
 				},
 			},
 			Gateways: gateways,

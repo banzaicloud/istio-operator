@@ -658,6 +658,10 @@ type IstioSpec struct {
 	// This is required for sidecar injection to properly label proxies
 	ClusterName string `json:"clusterName,omitempty"`
 
+	// Network defines the network this cluster belong to. This name
+	// corresponds to the networks in the map of mesh networks.
+	NetworkName string `json:"networkName,omitempty"`
+
 	// Mesh ID means Mesh Identifier. It should be unique within the scope where
 	// meshes will interact with each other, but it is not required to be
 	// globally/universally unique.
@@ -736,15 +740,6 @@ func (s *IstioSpec) GetMeshNetworksHash() string {
 	hash = fmt.Sprintf("%x", md5.Sum(j))
 
 	return hash
-}
-
-func (s *IstioSpec) SetNetworkName(networkName string) *IstioSpec {
-	s.networkName = networkName
-	return s
-}
-
-func (s *IstioSpec) GetNetworkName() string {
-	return s.networkName
 }
 
 func (s IstioSpec) GetDefaultConfigVisibility() string {
