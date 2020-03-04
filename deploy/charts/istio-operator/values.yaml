@@ -43,3 +43,5 @@ fullnameOverride: ""
 nodeSelector: {}
 tolerations: []
 affinity: {}
+
+operatorComponentSuffix: ""
