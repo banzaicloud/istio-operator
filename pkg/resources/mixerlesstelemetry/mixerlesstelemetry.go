@@ -65,6 +65,7 @@ func (r *Reconciler) Reconcile(log logr.Logger) error {
 
 	drs := []resources.DynamicResourceWithDesiredState{
 		{DynamicResource: r.metaexchangeEnvoyFilter, DesiredState: exchangeFilterDesiredState},
+		{DynamicResource: r.TCPMetaexchangeEnvoyFilter, DesiredState: exchangeFilterDesiredState},
 		{DynamicResource: r.statsEnvoyFilter, DesiredState: statsFilterDesiredState},
 	}
 
