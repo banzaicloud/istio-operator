@@ -8,7 +8,7 @@ spec:
   version: "1.5.0-beta.5"
   autoInjectionNamespaces:
   - "default"
-  useMCP: true
+  useMCP: false
   meshPolicy:
     mtlsMode: STRICT
   meshExpansion: true

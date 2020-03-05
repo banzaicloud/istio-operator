@@ -79,6 +79,11 @@ type SDSConfiguration struct {
 	CustomTokenDirectory string `json:"customTokenDirectory,omitempty"`
 }
 
+// IstiodConfiguration defines config options for Istiod
+type IstiodConfiguration struct {
+	Enabled *bool `json:"enabled,omitempty"`
+}
+
 // PilotConfiguration defines config options for Pilot
 type PilotConfiguration struct {
 	Enabled                             *bool `json:"enabled,omitempty"`
@@ -540,6 +545,20 @@ const (
 	DISABLED   MTLSMode = "DISABLED"
 )
 
+type PilotCertProviderType string
+
+const (
+	PilotCertProviderTypeKubernetes PilotCertProviderType = "kubernetes"
+	PilotCertProviderTypeIstiod     PilotCertProviderType = "istiod"
+)
+
+type JWTPolicyType string
+
+const (
+	JWTPolicyThirdPartyJWT JWTPolicyType = "third-party-jwt"
+	JWTPolicyFirstPartyJWT JWTPolicyType = "first-party-jwt"
+)
+
 // IstioSpec defines the desired state of Istio
 type IstioSpec struct {
 	// Contains the intended Istio version
@@ -574,11 +593,17 @@ type IstioSpec struct {
 	// ControlPlaneSecurityEnabled control plane services are communicating through mTLS
 	ControlPlaneSecurityEnabled bool `json:"controlPlaneSecurityEnabled,omitempty"`
 
+	// Use the user-specified, secret volume mounted key and certs for Pilot and workloads.
+	MountMtlsCerts *bool `json:"mountMtlsCerts,omitempty"`
+
 	// DefaultResources are applied for all Istio components by default, can be overridden for each component
 	DefaultResources *corev1.ResourceRequirements `json:"defaultResources,omitempty"`
 
 	// If SDS is configured, mTLS certificates for the sidecars will be distributed through the SecretDiscoveryService instead of using K8S secrets to mount the certificates
 	SDS SDSConfiguration `json:"sds,omitempty"`
+
+	// Istiod configuration
+	Istiod IstiodConfiguration `json:"istiod,omitempty"`
 
 	// Pilot configuration options
 	Pilot PilotConfiguration `json:"pilot,omitempty"`
@@ -694,6 +719,18 @@ type IstioSpec struct {
 	//     dnsNames: [istio-sidecar-injector.istio-system.svc, istio-sidecar-injector.istio-system]
 	// +k8s:deepcopy-gen:interfaces=Certificates
 	Certificates []CertificateConfig `json:"certificates,omitempty"`
+
+	// Configure the certificate provider for control plane communication.
+	// Currently, two providers are supported: "kubernetes" and "istiod".
+	// As some platforms may not have kubernetes signing APIs,
+	// Istiod is the default
+	// +kubebuilder:validation:Enum=kubernetes,istiod
+	PilotCertProvider PilotCertProviderType `json:"pilotCertProvider,omitempty"`
+
+	// Configure the policy for validating JWT.
+	// Currently, two options are supported: "third-party-jwt" and "first-party-jwt".
+	// +kubebuilder:validation:Enum=third-party-jwt,first-party-jwt
+	JWTPolicy JWTPolicyType `json:"jwtPolicy,omitempty"`
 }
 
 type MixerlessTelemetryConfiguration struct {

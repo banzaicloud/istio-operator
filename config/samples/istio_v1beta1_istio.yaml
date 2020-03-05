@@ -14,11 +14,14 @@ spec:
   autoInjectionNamespaces:
   - "default"
   controlPlaneSecurityEnabled: false
+  mountMtlsCerts: false
   defaultResources:
     requests:
       cpu: 10m
   sds:
     enabled: false
+  istiod:
+    enabled: true
   pilot:
     enabled: true
     image: "docker.io/istio/pilot:1.5.0-beta.5"
@@ -157,15 +160,17 @@ spec:
         accessToken: <access-token>
         secure: true
         cacertPath: /etc/lightstep/cacert.pem
-    localityLB:
-      enabled: false
-      # distribute:
-      # - from: "us-central1/*"
-      #   to:
-      #     "us-central1/*": 80
-      #     "us-central2/*": 20
-      # failover:
-      # - from: us-east
-      #   to: eu-west
-      # - from: us-west
-      #   to: us-east
+  localityLB:
+    enabled: false
+    # distribute:
+    # - from: "us-central1/*"
+    #   to:
+    #     "us-central1/*": 80
+    #     "us-central2/*": 20
+    # failover:
+    # - from: us-east
+    #   to: eu-west
+    # - from: us-west
+    #   to: us-east
+  pilotCertProvider: "istiod"
+  jwtPolicy: "third-party-jwt"

@@ -90,8 +90,8 @@ func (r *Reconciler) deployment() runtime.Object {
 		"--serviceCluster", r.gw.Name,
 		"--proxyAdminPort", "15000",
 		"--statusPort", "15020",
-		"--controlPlaneAuthPolicy", templates.ControlPlaneAuthPolicy(r.Config.Spec.ControlPlaneSecurityEnabled),
-		"--discoveryAddress", fmt.Sprintf("istio-pilot.%s:%s", r.Config.Namespace, r.discoveryPort()),
+		"--controlPlaneAuthPolicy", templates.ControlPlaneAuthPolicy(util.PointerToBool(r.Config.Spec.Istiod.Enabled), r.Config.Spec.ControlPlaneSecurityEnabled),
+		"--discoveryAddress", r.discoveryAddress(),
 		"--trust-domain", r.Config.Spec.TrustDomain,
 	}
 
@@ -227,6 +227,13 @@ func (r *Reconciler) ports() []apiv1.ContainerPort {
 	return ports
 }
 
+func (r *Reconciler) discoveryAddress() string {
+	if util.PointerToBool(r.Config.Spec.Istiod.Enabled) {
+		return fmt.Sprintf("istio-pilot.%s.svc:15012", r.Config.Namespace)
+	}
+	return fmt.Sprintf("istio-pilot.%s:%s", r.Config.Namespace, r.discoveryPort())
+}
+
 func (r *Reconciler) discoveryPort() string {
 	if r.Config.Spec.ControlPlaneSecurityEnabled {
 		return "15011"
@@ -295,10 +302,19 @@ func (r *Reconciler) envVars() []apiv1.EnvVar {
 		},
 	}
 
-	envVars = append(envVars, apiv1.EnvVar{
-		Name:  "ISTIO_META_USER_SDS",
-		Value: strconv.FormatBool(util.PointerToBool(r.gw.Spec.SDS.Enabled)),
-	})
+	if r.gw.Spec.Type == istiov1beta1.GatewayTypeIngress && (util.PointerToBool(r.Config.Spec.Istiod.Enabled) || util.PointerToBool(r.gw.Spec.SDS.Enabled)) {
+		envVars = append(envVars, apiv1.EnvVar{
+			Name:  "ISTIO_META_USER_SDS",
+			Value: "true",
+		})
+	}
+
+	if r.gw.Spec.Type == istiov1beta1.GatewayTypeIngress && util.PointerToBool(r.Config.Spec.Istiod.Enabled) {
+		envVars = append(envVars, apiv1.EnvVar{
+			Name:  "CA_ADDR",
+			Value: fmt.Sprintf("istio-pilot.%s.svc:15012", r.Config.Namespace),
+		})
+	}
 
 	if r.Config.Spec.ClusterName != "" {
 		envVars = append(envVars, apiv1.EnvVar{
@@ -328,14 +344,6 @@ func (r *Reconciler) envVars() []apiv1.EnvVar {
 		envVars = append(envVars, apiv1.EnvVar{
 			Name:  "ISTIO_AUTO_MTLS_ENABLED",
 			Value: "true",
-		})
-	}
-
-	labelsJSON, err := json.Marshal(r.labels())
-	if err == nil {
-		envVars = append(envVars, apiv1.EnvVar{
-			Name:  "ISTIO_METAJSON_LABELS",
-			Value: string(labelsJSON),
 		})
 	}
 
@@ -399,11 +407,6 @@ func (r *Reconciler) envVars() []apiv1.EnvVar {
 func (r *Reconciler) volumeMounts() []apiv1.VolumeMount {
 	vms := []apiv1.VolumeMount{
 		{
-			Name:      "istio-certs",
-			MountPath: "/etc/certs",
-			ReadOnly:  true,
-		},
-		{
 			Name:      fmt.Sprintf("%s-certs", r.gw.Name),
 			MountPath: fmt.Sprintf("/etc/istio/%s-certs", r.gw.Spec.Type+"gateway"),
 			ReadOnly:  true,
@@ -414,43 +417,47 @@ func (r *Reconciler) volumeMounts() []apiv1.VolumeMount {
 			ReadOnly:  true,
 		},
 	}
-	if util.PointerToBool(r.Config.Spec.SDS.Enabled) {
+
+	if r.Config.Spec.PilotCertProvider == istiov1beta1.PilotCertProviderTypeIstiod {
+		vms = append(vms, apiv1.VolumeMount{
+			Name:      "istiod-ca-cert",
+			MountPath: "/var/run/secrets/istio",
+		})
+	}
+
+	if util.PointerToBool(r.Config.Spec.Istiod.Enabled) && r.Config.Spec.JWTPolicy == istiov1beta1.JWTPolicyThirdPartyJWT {
 		vms = append(vms, apiv1.VolumeMount{
 			Name:      "istio-token",
 			MountPath: "/var/run/secrets/tokens",
+			ReadOnly:  true,
 		})
 	}
-	if util.PointerToBool(r.gw.Spec.SDS.Enabled) {
+
+	if r.gw.Spec.Type == istiov1beta1.GatewayTypeIngress && (util.PointerToBool(r.Config.Spec.Istiod.Enabled) || util.PointerToBool(r.gw.Spec.SDS.Enabled)) {
 		vms = append(vms, apiv1.VolumeMount{
 			Name:      "ingressgatewaysdsudspath",
 			MountPath: "/var/run/ingress_gateway",
 		})
 	}
-	if util.PointerToBool(r.Config.Spec.Tracing.Enabled) &&
-		r.Config.Spec.Tracing.Tracer == istiov1beta1.TracerTypeLightstep &&
-		r.Config.Spec.Tracing.Lightstep.CacertPath != "" {
+
+	if util.PointerToBool(r.Config.Spec.MountMtlsCerts) {
 		vms = append(vms, apiv1.VolumeMount{
-			Name:      "lightstep-certs",
-			MountPath: r.Config.Spec.Tracing.Lightstep.CacertPath,
+			Name:      "istio-certs",
+			MountPath: "/etc/certs",
 			ReadOnly:  true,
 		})
 	}
+
+	vms = append(vms, apiv1.VolumeMount{
+		Name:      "podinfo",
+		MountPath: "/etc/istio/pod",
+	})
 
 	return vms
 }
 
 func (r *Reconciler) volumes() []apiv1.Volume {
 	volumes := []apiv1.Volume{
-		{
-			Name: "istio-certs",
-			VolumeSource: apiv1.VolumeSource{
-				Secret: &apiv1.SecretVolumeSource{
-					SecretName:  fmt.Sprintf("istio.%s", r.serviceAccountName()),
-					Optional:    util.BoolPointer(true),
-					DefaultMode: util.IntPointer(420),
-				},
-			},
-		},
 		{
 			Name: fmt.Sprintf("%s-certs", r.gw.Name),
 			VolumeSource: apiv1.VolumeSource{
@@ -472,7 +479,43 @@ func (r *Reconciler) volumes() []apiv1.Volume {
 			},
 		},
 	}
-	if util.PointerToBool(r.gw.Spec.SDS.Enabled) {
+
+	if r.Config.Spec.PilotCertProvider == istiov1beta1.PilotCertProviderTypeIstiod {
+		volumes = append(volumes, apiv1.Volume{
+			Name: "istiod-ca-cert",
+			VolumeSource: apiv1.VolumeSource{
+				ConfigMap: &apiv1.ConfigMapVolumeSource{
+					LocalObjectReference: apiv1.LocalObjectReference{
+						Name: "istio-ca-root-cert",
+					},
+				},
+			},
+		})
+	}
+
+	volumes = append(volumes, apiv1.Volume{
+		Name: "podinfo",
+		VolumeSource: apiv1.VolumeSource{
+			DownwardAPI: &apiv1.DownwardAPIVolumeSource{
+				Items: []apiv1.DownwardAPIVolumeFile{
+					{
+						Path: "labels",
+						FieldRef: &apiv1.ObjectFieldSelector{
+							FieldPath: "metadata.labels",
+						},
+					},
+					{
+						Path: "annotations",
+						FieldRef: &apiv1.ObjectFieldSelector{
+							FieldPath: "metadata.annotations",
+						},
+					},
+				},
+			},
+		},
+	})
+
+	if r.gw.Spec.Type == istiov1beta1.GatewayTypeIngress && (util.PointerToBool(r.Config.Spec.Istiod.Enabled) || util.PointerToBool(r.gw.Spec.SDS.Enabled)) {
 		volumes = append(volumes, apiv1.Volume{
 			Name: "ingressgatewaysdsudspath",
 			VolumeSource: apiv1.VolumeSource{
@@ -480,16 +523,33 @@ func (r *Reconciler) volumes() []apiv1.Volume {
 			},
 		})
 	}
-	if util.PointerToBool(r.Config.Spec.Tracing.Enabled) &&
-		r.Config.Spec.Tracing.Tracer == istiov1beta1.TracerTypeLightstep &&
-		r.Config.Spec.Tracing.Lightstep.CacertPath != "" {
+
+	if util.PointerToBool(r.Config.Spec.Istiod.Enabled) && r.Config.Spec.JWTPolicy == istiov1beta1.JWTPolicyThirdPartyJWT {
 		volumes = append(volumes, apiv1.Volume{
-			Name: "lightstep-certs",
+			Name: "istio-token",
+			VolumeSource: apiv1.VolumeSource{
+				Projected: &apiv1.ProjectedVolumeSource{
+					Sources: []apiv1.VolumeProjection{
+						{
+							ServiceAccountToken: &apiv1.ServiceAccountTokenProjection{
+								Audience:          r.Config.Spec.SDS.TokenAudience,
+								ExpirationSeconds: util.Int64Pointer(43200),
+								Path:              "istio-token",
+							},
+						},
+					},
+				},
+			},
+		})
+	}
+
+	if util.PointerToBool(r.Config.Spec.MountMtlsCerts) {
+		volumes = append(volumes, apiv1.Volume{
+			Name: "istio-certs",
 			VolumeSource: apiv1.VolumeSource{
 				Secret: &apiv1.SecretVolumeSource{
-					SecretName:  "lightstep.cacert",
-					Optional:    util.BoolPointer(true),
-					DefaultMode: util.IntPointer(420),
+					SecretName: "istio.default",
+					Optional:   util.BoolPointer(true),
 				},
 			},
 		})

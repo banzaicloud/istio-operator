@@ -52,7 +52,7 @@ func (r *Reconciler) meshConfig() string {
 		"parentShutdownDuration": "1m0s",
 		"proxyAdminPort":         15000,
 		"concurrency":            0,
-		"controlPlaneAuthPolicy": templates.ControlPlaneAuthPolicy(r.Config.Spec.ControlPlaneSecurityEnabled),
+		"controlPlaneAuthPolicy": templates.ControlPlaneAuthPolicy(util.PointerToBool(r.Config.Spec.Istiod.Enabled), r.Config.Spec.ControlPlaneSecurityEnabled),
 		"discoveryAddress":       fmt.Sprintf("istio-pilot.%s:%s", r.Config.Namespace, r.discoveryPort()),
 	}
 

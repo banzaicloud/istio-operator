@@ -131,6 +131,9 @@ func SetDefaults(config *Istio) {
 	if config.Spec.IncludeIPRanges == "" {
 		config.Spec.IncludeIPRanges = defaultIncludeIPRanges
 	}
+	if config.Spec.MountMtlsCerts == nil {
+		config.Spec.MountMtlsCerts = util.BoolPointer(false)
+	}
 	if config.Spec.Logging.Level == nil {
 		config.Spec.Logging.Level = util.StrPointer(defaultLogLevel)
 	}
@@ -144,6 +147,12 @@ func SetDefaults(config *Istio) {
 	if config.Spec.DefaultResources == nil {
 		config.Spec.DefaultResources = defaultResources
 	}
+
+	// Istiod config
+	if config.Spec.Istiod.Enabled == nil {
+		config.Spec.Istiod.Enabled = util.BoolPointer(true)
+	}
+
 	// Pilot config
 	if config.Spec.Pilot.Enabled == nil {
 		config.Spec.Pilot.Enabled = util.BoolPointer(true)
@@ -543,7 +552,7 @@ func SetDefaults(config *Istio) {
 	}
 
 	if config.Spec.UseMCP == nil {
-		config.Spec.UseMCP = util.BoolPointer(true)
+		config.Spec.UseMCP = util.BoolPointer(false)
 	}
 
 	if config.Spec.MixerlessTelemetry == nil {
@@ -558,6 +567,14 @@ func SetDefaults(config *Istio) {
 
 	if config.Spec.Proxy.UseMetadataExchangeFilter == nil {
 		config.Spec.Proxy.UseMetadataExchangeFilter = util.BoolPointer(false)
+	}
+
+	if config.Spec.PilotCertProvider == "" {
+		config.Spec.PilotCertProvider = PilotCertProviderTypeIstiod
+	}
+
+	if config.Spec.JWTPolicy == "" {
+		config.Spec.JWTPolicy = JWTPolicyThirdPartyJWT
 	}
 }
 
