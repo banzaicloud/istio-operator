@@ -27,41 +27,44 @@ import (
 )
 
 const (
-	defaultImageHub                  = "docker.io/istio"
-	defaultImageVersion              = "1.5.0-beta.5"
-	defaultLogLevel                  = "default:info"
-	defaultMeshPolicy                = PERMISSIVE
-	defaultPilotImage                = defaultImageHub + "/" + "pilot" + ":" + defaultImageVersion
-	defaultCitadelImage              = defaultImageHub + "/" + "citadel" + ":" + defaultImageVersion
-	defaultGalleyImage               = defaultImageHub + "/" + "galley" + ":" + defaultImageVersion
-	defaultMixerImage                = defaultImageHub + "/" + "mixer" + ":" + defaultImageVersion
-	defaultSidecarInjectorImage      = defaultImageHub + "/" + "sidecar_injector" + ":" + defaultImageVersion
-	defaultNodeAgentImage            = defaultImageHub + "/" + "node-agent-k8s" + ":" + defaultImageVersion
-	defaultSDSImage                  = defaultImageHub + "/" + "node-agent-k8s" + ":" + defaultImageVersion
-	defaultProxyImage                = defaultImageHub + "/" + "proxyv2" + ":" + defaultImageVersion
-	defaultProxyInitImage            = defaultImageHub + "/" + "proxyv2" + ":" + defaultImageVersion
-	defaultProxyCoreDumpImage        = "busybox"
-	defaultInitCNIImage              = defaultImageHub + "/" + "install-cni:" + defaultImageVersion
-	defaultCoreDNSImage              = "coredns/coredns:1.6.2"
-	defaultCoreDNSPluginImage        = defaultImageHub + "/coredns-plugin:0.2-istio-1.1"
-	defaultIncludeIPRanges           = "*"
-	defaultReplicaCount              = 1
-	defaultMinReplicas               = 1
-	defaultMaxReplicas               = 5
-	defaultTraceSampling             = 1.0
-	defaultIngressGatewayServiceType = apiv1.ServiceTypeLoadBalancer
-	defaultEgressGatewayServiceType  = apiv1.ServiceTypeClusterIP
-	outboundTrafficPolicyAllowAny    = "ALLOW_ANY"
-	defaultZipkinAddress             = "zipkin.%s:9411"
-	defaultInitCNIBinDir             = "/opt/cni/bin"
-	defaultInitCNIConfDir            = "/etc/cni/net.d"
-	defaultInitCNILogLevel           = "info"
-	defaultImagePullPolicy           = "IfNotPresent"
-	defaultEnvoyAccessLogFile        = "/dev/stdout"
-	defaultEnvoyAccessLogFormat      = ""
-	defaultEnvoyAccessLogEncoding    = "TEXT"
-	defaultClusterName               = "Kubernetes"
-	defaultNetworkName               = "local-network"
+	defaultImageHub                   = "docker.io/istio"
+	defaultImageVersion               = "1.5.0-beta.5"
+	defaultLogLevel                   = "default:info"
+	defaultMeshPolicy                 = PERMISSIVE
+	defaultPilotImage                 = defaultImageHub + "/" + "pilot" + ":" + defaultImageVersion
+	defaultCitadelImage               = defaultImageHub + "/" + "citadel" + ":" + defaultImageVersion
+	defaultGalleyImage                = defaultImageHub + "/" + "galley" + ":" + defaultImageVersion
+	defaultMixerImage                 = defaultImageHub + "/" + "mixer" + ":" + defaultImageVersion
+	defaultSidecarInjectorImage       = defaultImageHub + "/" + "sidecar_injector" + ":" + defaultImageVersion
+	defaultNodeAgentImage             = defaultImageHub + "/" + "node-agent-k8s" + ":" + defaultImageVersion
+	defaultSDSImage                   = defaultImageHub + "/" + "node-agent-k8s" + ":" + defaultImageVersion
+	defaultProxyImage                 = defaultImageHub + "/" + "proxyv2" + ":" + defaultImageVersion
+	defaultProxyInitImage             = defaultImageHub + "/" + "proxyv2" + ":" + defaultImageVersion
+	defaultProxyCoreDumpImage         = "busybox"
+	defaultInitCNIImage               = defaultImageHub + "/" + "install-cni:" + defaultImageVersion
+	defaultCoreDNSImage               = "coredns/coredns:1.6.2"
+	defaultCoreDNSPluginImage         = defaultImageHub + "/coredns-plugin:0.2-istio-1.1"
+	defaultIncludeIPRanges            = "*"
+	defaultReplicaCount               = 1
+	defaultMinReplicas                = 1
+	defaultMaxReplicas                = 5
+	defaultTraceSampling              = 1.0
+	defaultIngressGatewayServiceType  = apiv1.ServiceTypeLoadBalancer
+	defaultEgressGatewayServiceType   = apiv1.ServiceTypeClusterIP
+	outboundTrafficPolicyAllowAny     = "ALLOW_ANY"
+	defaultZipkinAddress              = "zipkin.%s:9411"
+	defaultInitCNIBinDir              = "/opt/cni/bin"
+	defaultInitCNIConfDir             = "/etc/cni/net.d"
+	defaultInitCNILogLevel            = "info"
+	defaultInitCNIContainerName       = "istio-validation"
+	defaultInitCNIBrokenPodLabelKey   = "cni.istio.io/uninitialized"
+	defaultInitCNIBrokenPodLabelValue = "true"
+	defaultImagePullPolicy            = "IfNotPresent"
+	defaultEnvoyAccessLogFile         = "/dev/stdout"
+	defaultEnvoyAccessLogFormat       = ""
+	defaultEnvoyAccessLogEncoding     = "TEXT"
+	defaultClusterName                = "Kubernetes"
+	defaultNetworkName                = "local-network"
 )
 
 var defaultResources = &apiv1.ResourceRequirements{
@@ -320,6 +323,34 @@ func SetDefaults(config *Istio) {
 	}
 	if config.Spec.SidecarInjector.InitCNIConfiguration.LogLevel == "" {
 		config.Spec.SidecarInjector.InitCNIConfiguration.LogLevel = defaultInitCNILogLevel
+	}
+	if config.Spec.SidecarInjector.InitCNIConfiguration.Chained == nil {
+		config.Spec.SidecarInjector.InitCNIConfiguration.Chained = util.BoolPointer(true)
+	}
+	// CNI repair config
+	if config.Spec.SidecarInjector.InitCNIConfiguration.Repair.Enabled == nil {
+		config.Spec.SidecarInjector.InitCNIConfiguration.Repair.Enabled = util.BoolPointer(true)
+	}
+	if config.Spec.SidecarInjector.InitCNIConfiguration.Repair.Hub == nil {
+		config.Spec.SidecarInjector.InitCNIConfiguration.Repair.Hub = util.StrPointer("")
+	}
+	if config.Spec.SidecarInjector.InitCNIConfiguration.Repair.Tag == nil {
+		config.Spec.SidecarInjector.InitCNIConfiguration.Repair.Tag = util.StrPointer("")
+	}
+	if config.Spec.SidecarInjector.InitCNIConfiguration.Repair.LabelPods == nil {
+		config.Spec.SidecarInjector.InitCNIConfiguration.Repair.LabelPods = util.BoolPointer(true)
+	}
+	if config.Spec.SidecarInjector.InitCNIConfiguration.Repair.DeletePods == nil {
+		config.Spec.SidecarInjector.InitCNIConfiguration.Repair.DeletePods = util.BoolPointer(true)
+	}
+	if config.Spec.SidecarInjector.InitCNIConfiguration.Repair.InitContainerName == nil {
+		config.Spec.SidecarInjector.InitCNIConfiguration.Repair.InitContainerName = util.StrPointer(defaultInitCNIContainerName)
+	}
+	if config.Spec.SidecarInjector.InitCNIConfiguration.Repair.BrokenPodLabelKey == nil {
+		config.Spec.SidecarInjector.InitCNIConfiguration.Repair.BrokenPodLabelKey = util.StrPointer(defaultInitCNIBrokenPodLabelKey)
+	}
+	if config.Spec.SidecarInjector.InitCNIConfiguration.Repair.BrokenPodLabelValue == nil {
+		config.Spec.SidecarInjector.InitCNIConfiguration.Repair.BrokenPodLabelValue = util.StrPointer(defaultInitCNIBrokenPodLabelValue)
 	}
 	if config.Spec.SidecarInjector.Init.Resources == nil {
 		config.Spec.SidecarInjector.Init.Resources = defaultInitResources

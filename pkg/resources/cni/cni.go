@@ -28,16 +28,22 @@ import (
 )
 
 const (
-	componentName          = "cni"
-	serviceAccountName     = "istio-cni"
-	clusterRoleName        = "istio-cni"
-	clusterRoleBindingName = "istio-cni"
-	daemonSetName          = "istio-cni-node"
-	configMapName          = "istio-cni-config"
+	componentName                = "cni"
+	serviceAccountName           = "istio-cni"
+	clusterRoleName              = "istio-cni"
+	clusterRoleRepairName        = "istio-cni-repair-role"
+	clusterRoleBindingName       = "istio-cni"
+	clusterRoleBindingRepairName = "istio-cni-repair-rolebinding"
+	daemonSetName                = "istio-cni-node"
+	configMapName                = "istio-cni-config"
 )
 
 var cniLabels = map[string]string{
 	"k8s-app": "istio-cni-node",
+}
+
+var cniRepairLabels = map[string]string{
+	"k8s-app": "istio-cni-repair",
 }
 
 var labelSelector = map[string]string{
@@ -61,8 +67,13 @@ func (r *Reconciler) Reconcile(log logr.Logger) error {
 	log = log.WithValues("component", componentName)
 
 	desiredState := k8sutil.DesiredStatePresent
+	desiredStateRepair := k8sutil.DesiredStatePresent
 	if !util.PointerToBool(r.Config.Spec.SidecarInjector.InitCNIConfiguration.Enabled) {
 		desiredState = k8sutil.DesiredStateAbsent
+		desiredStateRepair = k8sutil.DesiredStateAbsent
+	}
+	if !util.PointerToBool(r.Config.Spec.SidecarInjector.InitCNIConfiguration.Repair.Enabled) {
+		desiredStateRepair = k8sutil.DesiredStateAbsent
 	}
 
 	log.Info("Reconciling")
@@ -70,7 +81,9 @@ func (r *Reconciler) Reconcile(log logr.Logger) error {
 	for _, res := range []resources.ResourceWithDesiredState{
 		{Resource: r.serviceAccount, DesiredState: desiredState},
 		{Resource: r.clusterRole, DesiredState: desiredState},
+		{Resource: r.clusterRoleRepair, DesiredState: desiredStateRepair},
 		{Resource: r.clusterRoleBinding, DesiredState: desiredState},
+		{Resource: r.clusterRoleBindingRepair, DesiredState: desiredStateRepair},
 		{Resource: r.configMap, DesiredState: desiredState},
 		{Resource: r.daemonSet, DesiredState: desiredState},
 	} {

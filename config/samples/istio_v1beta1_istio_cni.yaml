@@ -14,3 +14,13 @@ spec:
     enabled: true
     initCNIConfiguration:
       enabled: true
+      chained: true
+      repair:
+        enabled: true
+        hub: ""
+        tag: ""
+        labelPods: true
+        deletePods: true
+        initContainerName: "istio-validation"
+        brokenPodLabelKey: "cni.istio.io/uninitialized"
+        brokenPodLabelValue: "true"
