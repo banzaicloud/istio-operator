@@ -107,6 +107,16 @@ func (r *Reconciler) deployment() runtime.Object {
 		Image:           util.PointerToString(r.Config.Spec.Citadel.Image),
 		ImagePullPolicy: r.Config.Spec.ImagePullPolicy,
 		Args:            r.containerArgs(),
+		SecurityContext: &apiv1.SecurityContext{
+			RunAsUser:    util.Int64Pointer(1337),
+			RunAsGroup:   util.Int64Pointer(1337),
+			RunAsNonRoot: util.BoolPointer(true),
+			Capabilities: &apiv1.Capabilities{
+				Drop: []apiv1.Capability{
+					"ALL",
+				},
+			},
+		},
 		Resources: templates.GetResourcesRequirementsOrDefault(
 			r.Config.Spec.Citadel.Resources,
 			r.Config.Spec.DefaultResources,
@@ -151,8 +161,10 @@ func (r *Reconciler) deployment() runtime.Object {
 		DNSPolicy:                     apiv1.DNSClusterFirst,
 		RestartPolicy:                 apiv1.RestartPolicyAlways,
 		TerminationGracePeriodSeconds: util.Int64Pointer(int64(30)),
-		SecurityContext:               &apiv1.PodSecurityContext{},
-		SchedulerName:                 "default-scheduler",
+		SecurityContext: &apiv1.PodSecurityContext{
+			FSGroup: util.Int64Pointer(1337),
+		},
+		SchedulerName: "default-scheduler",
 		Containers: []apiv1.Container{
 			citadelContainer,
 		},
