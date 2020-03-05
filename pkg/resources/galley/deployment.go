@@ -70,8 +70,18 @@ func (r *Reconciler) deployment() runtime.Object {
 									Protocol:      apiv1.ProtocolTCP,
 								},
 							},
-							Command:        []string{"/usr/local/bin/galley"},
-							Args:           r.containerArgs(),
+							Command: []string{"/usr/local/bin/galley"},
+							Args:    r.containerArgs(),
+							SecurityContext: &apiv1.SecurityContext{
+								RunAsUser:    util.Int64Pointer(1337),
+								RunAsGroup:   util.Int64Pointer(1337),
+								RunAsNonRoot: util.BoolPointer(true),
+								Capabilities: &apiv1.Capabilities{
+									Drop: []apiv1.Capability{
+										"ALL",
+									},
+								},
+							},
 							VolumeMounts:   r.volumeMounts(),
 							LivenessProbe:  r.galleyProbe("/tmp/healthliveness"),
 							ReadinessProbe: r.galleyProbe("/tmp/healthready"),
@@ -83,6 +93,9 @@ func (r *Reconciler) deployment() runtime.Object {
 							TerminationMessagePath:   apiv1.TerminationMessagePathDefault,
 							TerminationMessagePolicy: apiv1.TerminationMessageReadFile,
 						},
+					},
+					SecurityContext: &apiv1.PodSecurityContext{
+						FSGroup: util.Int64Pointer(1337),
 					},
 					Volumes:      r.volumes(),
 					Affinity:     r.Config.Spec.Galley.Affinity,
@@ -119,7 +132,9 @@ func (r *Reconciler) containerArgs() []string {
 		containerArgs = append(containerArgs, fmt.Sprintf("--log_output_level=%s", util.PointerToString(r.Config.Spec.Logging.Level)))
 	}
 
-	if !util.PointerToBool(r.Config.Spec.Galley.ConfigValidation) {
+	if util.PointerToBool(r.Config.Spec.Galley.ConfigValidation) && !util.PointerToBool(r.Config.Spec.Istiod.Enabled) {
+		containerArgs = append(containerArgs, "--enable-validation=true")
+	} else {
 		containerArgs = append(containerArgs, "--enable-validation=false")
 	}
 
@@ -157,11 +172,6 @@ func (r *Reconciler) containerArgs() []string {
 func (r *Reconciler) volumeMounts() []apiv1.VolumeMount {
 	volumeMounts := []apiv1.VolumeMount{
 		{
-			Name:      "certs",
-			MountPath: "/etc/certs",
-			ReadOnly:  true,
-		},
-		{
 			Name:      "config",
 			MountPath: "/etc/config",
 			ReadOnly:  true,
@@ -171,6 +181,14 @@ func (r *Reconciler) volumeMounts() []apiv1.VolumeMount {
 			MountPath: "/etc/mesh-config",
 			ReadOnly:  true,
 		},
+	}
+
+	if util.PointerToBool(r.Config.Spec.Galley.ConfigValidation) && !util.PointerToBool(r.Config.Spec.Istiod.Enabled) {
+		volumeMounts = append(volumeMounts, apiv1.VolumeMount{
+			Name:      "istio-certs",
+			MountPath: "/etc/certs",
+			ReadOnly:  true,
+		})
 	}
 
 	if len(r.Config.Spec.Certificates) != 0 {
@@ -207,15 +225,6 @@ func (r *Reconciler) galleyProbe(path string) *apiv1.Probe {
 func (r *Reconciler) volumes() []apiv1.Volume {
 	volumes := []apiv1.Volume{
 		{
-			Name: "certs",
-			VolumeSource: apiv1.VolumeSource{
-				Secret: &apiv1.SecretVolumeSource{
-					SecretName:  fmt.Sprintf("istio.%s", serviceAccountName),
-					DefaultMode: util.IntPointer(420),
-				},
-			},
-		},
-		{
 			// galley expects /etc/config to exist even though it doesn't include any files.
 			Name: "config",
 			VolumeSource: apiv1.VolumeSource{
@@ -237,12 +246,38 @@ func (r *Reconciler) volumes() []apiv1.Volume {
 		},
 	}
 
+	if r.Config.Spec.ControlPlaneSecurityEnabled || (util.PointerToBool(r.Config.Spec.Galley.ConfigValidation) && !util.PointerToBool(r.Config.Spec.Istiod.Enabled)) {
+		volumes = append(volumes, apiv1.Volume{
+			Name: "istio-certs",
+			VolumeSource: apiv1.VolumeSource{
+				Secret: &apiv1.SecretVolumeSource{
+					SecretName:  fmt.Sprintf("istio.%s", serviceAccountName),
+					DefaultMode: util.IntPointer(420),
+				},
+			},
+		})
+	}
+
 	if len(r.Config.Spec.Certificates) != 0 {
 		volumes = append(volumes, apiv1.Volume{
 			Name: "dnscerts",
 			VolumeSource: apiv1.VolumeSource{
 				Secret: &apiv1.SecretVolumeSource{
 					SecretName:  fmt.Sprintf("dns.%s", serviceAccountName),
+					DefaultMode: util.IntPointer(420),
+				},
+			},
+		})
+	}
+
+	if r.Config.Spec.ControlPlaneSecurityEnabled {
+		volumes = append(volumes, apiv1.Volume{
+			Name: "envoy-config",
+			VolumeSource: apiv1.VolumeSource{
+				ConfigMap: &apiv1.ConfigMapVolumeSource{
+					LocalObjectReference: apiv1.LocalObjectReference{
+						Name: "galley-envoy-config",
+					},
 					DefaultMode: util.IntPointer(420),
 				},
 			},
