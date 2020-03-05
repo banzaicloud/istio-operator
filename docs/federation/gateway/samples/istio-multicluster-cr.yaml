@@ -8,7 +8,7 @@ spec:
   - "default"
   meshPolicy:
     mtlsMode: STRICT
-  useMCP: true
+  useMCP: false
   meshExpansion: true
   controlPlaneSecurityEnabled: true
   imagePullPolicy: Always

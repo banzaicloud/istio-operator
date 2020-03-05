@@ -362,6 +362,19 @@ spec:
                     type: object
                   type: array
               type: object
+            istiod:
+              description: Istiod configuration
+              properties:
+                enabled:
+                  type: boolean
+              type: object
+            jwtPolicy:
+              description: 'Configure the policy for validating JWT. Currently, two
+                options are supported: "third-party-jwt" and "first-party-jwt".'
+              enum:
+              - third-party-jwt
+              - first-party-jwt
+              type: string
             localityLB:
               description: Locality based load balancing distribution or failover
                 settings.
@@ -511,6 +524,10 @@ spec:
                     will be enabled
                   type: boolean
               type: object
+            mountMtlsCerts:
+              description: Use the user-specified, secret volume mounted key and certs
+                for Pilot and workloads.
+              type: boolean
             mtls:
               description: 'DEPRECATED: Use meshPolicy instead. MTLS enables or disables
                 global mTLS'
@@ -609,6 +626,15 @@ spec:
                   format: float
                   type: number
               type: object
+            pilotCertProvider:
+              description: 'Configure the certificate provider for control plane communication.
+                Currently, two providers are supported: "kubernetes" and "istiod".
+                As some platforms may not have kubernetes signing APIs, Istiod is
+                the default'
+              enum:
+              - kubernetes
+              - istiod
+              type: string
             policy:
               description: Policy configuration options
               properties:

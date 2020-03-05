@@ -108,13 +108,6 @@ func (r *Reconciler) Reconcile(log logr.Logger) error {
 		return nil
 	}
 
-	var meshExpansionDesiredState k8sutil.DesiredState
-	if util.PointerToBool(r.Config.Spec.MeshExpansion) {
-		meshExpansionDesiredState = k8sutil.DesiredStatePresent
-	} else {
-		meshExpansionDesiredState = k8sutil.DesiredStateAbsent
-	}
-
 	var meshPolicyDesiredState k8sutil.DesiredState
 	var mTLSDesiredState k8sutil.DesiredState
 	if util.PointerToBool(r.Config.Spec.Citadel.Enabled) {
@@ -138,7 +131,6 @@ func (r *Reconciler) Reconcile(log logr.Logger) error {
 		{DynamicResource: r.meshPolicy, DesiredState: meshPolicyDesiredState},
 		{DynamicResource: r.destinationRuleDefaultMtls, DesiredState: mTLSDesiredState},
 		{DynamicResource: r.destinationRuleApiServerMtls, DesiredState: mTLSDesiredState},
-		{DynamicResource: r.meshExpansion, DesiredState: meshExpansionDesiredState},
 	}
 
 	for _, dr := range drs {

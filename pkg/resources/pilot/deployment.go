@@ -190,7 +190,7 @@ func (r *Reconciler) containers() []apiv1.Container {
 		"--templateFile",
 		"/etc/istio/proxy/envoy_pilot.yaml.tmpl",
 		"--controlPlaneAuthPolicy",
-		templates.ControlPlaneAuthPolicy(r.Config.Spec.ControlPlaneSecurityEnabled),
+		templates.ControlPlaneAuthPolicy(util.PointerToBool(r.Config.Spec.Istiod.Enabled), r.Config.Spec.ControlPlaneSecurityEnabled),
 		"--domain",
 		r.Config.Namespace + ".svc." + r.Config.Spec.Proxy.ClusterDomain,
 		"--trust-domain",
