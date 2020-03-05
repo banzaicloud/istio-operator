@@ -80,6 +80,11 @@ func (r *Reconciler) deployment() runtime.Object {
 							Image:           util.PointerToString(r.Config.Spec.SidecarInjector.Image),
 							ImagePullPolicy: r.Config.Spec.ImagePullPolicy,
 							Args:            r.containerArgs(),
+							SecurityContext: &apiv1.SecurityContext{
+								RunAsUser:    util.Int64Pointer(1337),
+								RunAsGroup:   util.Int64Pointer(1337),
+								RunAsNonRoot: util.BoolPointer(true),
+							},
 							VolumeMounts: []apiv1.VolumeMount{
 								{
 									Name:      "config-volume",
@@ -107,6 +112,9 @@ func (r *Reconciler) deployment() runtime.Object {
 							TerminationMessagePath:   apiv1.TerminationMessagePathDefault,
 							TerminationMessagePolicy: apiv1.TerminationMessageReadFile,
 						},
+					},
+					SecurityContext: &apiv1.PodSecurityContext{
+						FSGroup: util.Int64Pointer(1337),
 					},
 					Volumes:      r.volumes(),
 					Affinity:     r.Config.Spec.SidecarInjector.Affinity,
