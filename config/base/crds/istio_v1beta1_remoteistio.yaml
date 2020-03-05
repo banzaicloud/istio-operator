@@ -369,6 +369,8 @@ spec:
                       description: Must be the same as the environment’s --cni-bin-dir
                         setting (kubelet parameter)
                       type: string
+                    chained:
+                      type: boolean
                     confDir:
                       description: Must be the same as the environment’s --cni-conf-dir
                         setting (kubelet parameter)
@@ -388,6 +390,25 @@ spec:
                     logLevel:
                       description: Logging level for CNI binary
                       type: string
+                    repair:
+                      properties:
+                        brokenPodLabelKey:
+                          type: string
+                        brokenPodLabelValue:
+                          type: string
+                        deletePods:
+                          type: boolean
+                        enabled:
+                          type: boolean
+                        hub:
+                          type: string
+                        initContainerName:
+                          type: string
+                        labelPods:
+                          type: boolean
+                        tag:
+                          type: string
+                      type: object
                   type: object
                 injectedAnnotations:
                   description: 'injectedAnnotations are additional annotations that
