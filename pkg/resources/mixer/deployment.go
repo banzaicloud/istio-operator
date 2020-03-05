@@ -248,7 +248,7 @@ func (r *Reconciler) istioProxyContainer(t string) apiv1.Container {
 		"--templateFile",
 		fmt.Sprintf("/etc/istio/proxy/envoy_%s.yaml.tmpl", t),
 		"--controlPlaneAuthPolicy",
-		templates.ControlPlaneAuthPolicy(r.Config.Spec.ControlPlaneSecurityEnabled),
+		templates.ControlPlaneAuthPolicy(util.PointerToBool(r.Config.Spec.Istiod.Enabled), r.Config.Spec.ControlPlaneSecurityEnabled),
 		"--domain",
 		fmt.Sprintf("$(POD_NAMESPACE).svc.%s", r.Config.Spec.Proxy.ClusterDomain),
 		"--trust-domain",

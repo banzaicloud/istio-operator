@@ -37,28 +37,9 @@ func (r *Reconciler) meshExpansionGateway() *k8sutil.DynamicObject {
 			"servers": []map[string]interface{}{
 				{
 					"port": map[string]interface{}{
-						"name":     "tcp-pilot",
+						"name":     "tcp-istiod",
 						"protocol": "TCP",
-						"number":   15011,
-					},
-					"hosts": util.EmptyTypedStrSlice("*"),
-				},
-				{
-					"port": map[string]interface{}{
-						"name":     "tcp-citadel",
-						"protocol": "TCP",
-						"number":   8060,
-					},
-					"hosts": util.EmptyTypedStrSlice("*"),
-				},
-				{
-					"port": map[string]interface{}{
-						"name":     "tls-mixer",
-						"protocol": "TLS",
-						"number":   15004,
-					},
-					"tls": map[string]interface{}{
-						"mode": "AUTO_PASSTHROUGH",
+						"number":   15012,
 					},
 					"hosts": util.EmptyTypedStrSlice("*"),
 				},
