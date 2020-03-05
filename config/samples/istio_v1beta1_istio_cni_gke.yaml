@@ -15,3 +15,13 @@ spec:
     initCNIConfiguration:
       enabled: true
       binDir: /home/kubernetes/bin
+      chained: true
+      repair:
+        enabled: true
+        hub: ""
+        tag: ""
+        labelPods: true
+        deletePods: true
+        initContainerName: "istio-validation"
+        brokenPodLabelKey: "cni.istio.io/uninitialized"
+        brokenPodLabelValue: "true"

@@ -241,8 +241,22 @@ type InitCNIConfiguration struct {
 	// List of namespaces to exclude from Istio pod check
 	ExcludeNamespaces []string `json:"excludeNamespaces,omitempty"`
 	// Logging level for CNI binary
-	LogLevel string           `json:"logLevel,omitempty"`
-	Affinity *corev1.Affinity `json:"affinity,omitempty"`
+	LogLevel string                 `json:"logLevel,omitempty"`
+	Affinity *corev1.Affinity       `json:"affinity,omitempty"`
+	Chained  *bool                  `json:"chained,omitempty"`
+	Repair   CNIRepairConfiguration `json:"repair,omitempty"`
+}
+
+// CNIRepairConfiguration defines config for the repair CNI container
+type CNIRepairConfiguration struct {
+	Enabled             *bool   `json:"enabled,omitempty"`
+	Hub                 *string `json:"hub,omitempty"`
+	Tag                 *string `json:"tag,omitempty"`
+	LabelPods           *bool   `json:"labelPods,omitempty"`
+	DeletePods          *bool   `json:"deletePods,omitempty"`
+	InitContainerName   *string `json:"initContainerName,omitempty"`
+	BrokenPodLabelKey   *string `json:"brokenPodLabelKey,omitempty"`
+	BrokenPodLabelValue *string `json:"brokenPodLabelValue,omitempty"`
 }
 
 // SidecarInjectorInitConfiguration defines options for init containers in the sidecar
