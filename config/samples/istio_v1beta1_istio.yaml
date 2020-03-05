@@ -5,7 +5,7 @@ metadata:
     controller-tools.k8s.io: "1.0"
   name: istio-sample
 spec:
-  version: "1.4.5"
+  version: "1.4.6"
   meshPolicy:
     mtlsMode: PERMISSIVE
   autoMtls: false
@@ -21,7 +21,7 @@ spec:
     enabled: false
   pilot:
     enabled: true
-    image: "docker.io/istio/pilot:1.4.5"
+    image: "docker.io/istio/pilot:1.4.6"
     replicaCount: 1
     minReplicas: 1
     maxReplicas: 5
@@ -32,10 +32,10 @@ spec:
         memory: 2048Mi
   citadel:
     enabled: true
-    image: "docker.io/istio/citadel:1.4.5"
+    image: "docker.io/istio/citadel:1.4.6"
   galley:
     enabled: true
-    image: "docker.io/istio/galley:1.4.5"
+    image: "docker.io/istio/galley:1.4.6"
     replicaCount: 1
     enableServiceDiscovery: false
     enableAnalysis: false
@@ -101,19 +101,19 @@ spec:
       enabled: false
   policy:
     enabled: true
-    image: "docker.io/istio/mixer:1.4.5"
+    image: "docker.io/istio/mixer:1.4.6"
     replicaCount: 1
     minReplicas: 1
     maxReplicas: 5
   telemetry:
     enabled: true
-    image: "docker.io/istio/mixer:1.4.5"
+    image: "docker.io/istio/mixer:1.4.6"
     replicaCount: 1
     minReplicas: 1
     maxReplicas: 5
   sidecarInjector:
     enabled: true
-    image: "docker.io/istio/sidecar_injector:1.4.5"
+    image: "docker.io/istio/sidecar_injector:1.4.6"
     # injectedContainerAdditionalArgs:
     # - --proxyAdminPort=16000
     # injectedContainerAdditionalEnvVars:
@@ -134,9 +134,9 @@ spec:
           memory: 50Mi
   nodeAgent:
     enabled: false
-    image: "docker.io/istio/node-agent-k8s:1.4.5"
+    image: "docker.io/istio/node-agent-k8s:1.4.6"
   proxy:
-    image: "docker.io/istio/proxyv2:1.4.5"
+    image: "docker.io/istio/proxyv2:1.4.6"
     accessLogFile: "/dev/stdout"
     accessLogFormat: ""
     accessLogEncoding: "TEXT"
@@ -149,7 +149,7 @@ spec:
         cpu: 2000m
         memory: 1024Mi
   proxyInit:
-    image: "docker.io/istio/proxyv2:1.4.5"
+    image: "docker.io/istio/proxyv2:1.4.6"
   defaultPodDisruptionBudget:
     enabled: true
   outboundTrafficPolicy:
