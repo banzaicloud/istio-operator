@@ -155,13 +155,14 @@ type ReconcileComponent func(log logr.Logger, istio *istiov1beta1.Istio) error
 // +kubebuilder:rbac:groups="apps",resources=deployments/status,verbs=get;update;patch
 // +kubebuilder:rbac:groups="extensions",resources=ingresses;ingresses/status,verbs=*
 // +kubebuilder:rbac:groups="extensions",resources=deployments,verbs=get;list;watch
+// +kubebuilder:rbac:groups="extensions",resources=deployments/finalizers,verbs=update
 // +kubebuilder:rbac:groups="extensions",resources=replicasets,verbs=get;list;watch
 // +kubebuilder:rbac:groups="policy",resources=poddisruptionbudgets,verbs=get;list;watch;create;update;patch;delete
 // +kubebuilder:rbac:groups="autoscaling",resources=horizontalpodautoscalers,verbs=get;list;watch;create;update;patch;delete
 // +kubebuilder:rbac:groups="apiextensions.k8s.io",resources=customresourcedefinitions,verbs=*
 // +kubebuilder:rbac:groups="rbac.authorization.k8s.io",resources=clusterroles;clusterrolebindings;roles;rolebindings;,verbs=get;list;watch;create;update;patch;delete
 // +kubebuilder:rbac:groups="authentication.k8s.io",resources=tokenreviews,verbs=create
-// +kubebuilder:rbac:groups="certificates.k8s.io",resources=certificatesigningrequests;certificatesigningrequests/approval;certificatesigningrequests/status,verbs=update;create;get;delete
+// +kubebuilder:rbac:groups="certificates.k8s.io",resources=certificatesigningrequests;certificatesigningrequests/approval;certificatesigningrequests/status,verbs=update;create;get;delete;watch
 // +kubebuilder:rbac:groups="discovery.k8s.io",resources=endpointslices,verbs=get;list;watch
 
 // +kubebuilder:rbac:groups=istio.banzaicloud.io,resources=istios,verbs=get;list;watch;create;update;patch;delete
