@@ -293,13 +293,11 @@ func (r *ReconcileIstio) reconcile(logger logr.Logger, config *istiov1beta1.Isti
 		}
 	})
 
-	if util.PointerToBool(config.Spec.MeshExpansion) {
-		meshNetworks, err := r.getMeshNetworks(config, logger)
-		if err != nil {
-			return reconcile.Result{}, err
-		}
-		config.Spec.SetMeshNetworks(meshNetworks)
+	meshNetworks, err := r.getMeshNetworks(config, logger)
+	if err != nil {
+		return reconcile.Result{}, err
 	}
+	config.Spec.SetMeshNetworks(meshNetworks)
 
 	reconcilers := []resources.ComponentReconciler{
 		base.New(r.Client, config, false),
@@ -374,6 +372,14 @@ func (r *ReconcileIstio) checkMeshPolicyConflict(config *istiov1beta1.Istio, log
 func (r *ReconcileIstio) getMeshNetworks(config *istiov1beta1.Istio, logger logr.Logger) (*istiov1beta1.MeshNetworks, error) {
 	meshNetworks := make(map[string]istiov1beta1.MeshNetwork)
 
+	localNetwork := istiov1beta1.MeshNetwork{
+		Endpoints: []istiov1beta1.MeshNetworkEndpoint{
+			{
+				FromRegistry: config.Spec.ClusterName,
+			},
+		},
+	}
+
 	if len(config.Status.GatewayAddress) > 0 {
 		gateways := make([]istiov1beta1.MeshNetworkGateway, 0)
 		for _, address := range config.Status.GatewayAddress {
@@ -381,15 +387,10 @@ func (r *ReconcileIstio) getMeshNetworks(config *istiov1beta1.Istio, logger logr
 				Address: address, Port: 443,
 			})
 		}
-		meshNetworks[config.Spec.NetworkName] = istiov1beta1.MeshNetwork{
-			Endpoints: []istiov1beta1.MeshNetworkEndpoint{
-				{
-					FromRegistry: config.Spec.ClusterName,
-				},
-			},
-			Gateways: gateways,
-		}
+		localNetwork.Gateways = gateways
 	}
+
+	meshNetworks[config.Spec.NetworkName] = localNetwork
 
 	remoteIstios := remoteistioCtrl.GetRemoteIstiosByOwnerReference(r.mgr, config, logger)
 	for _, remoteIstio := range remoteIstios {
