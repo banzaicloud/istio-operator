@@ -342,6 +342,15 @@ func (r *Reconciler) volumes() []apiv1.Volume {
 	}
 
 	if util.PointerToBool(r.Config.Spec.Istiod.Enabled) {
+		volumes = append(volumes, apiv1.Volume{
+			Name: "local-certs",
+			VolumeSource: apiv1.VolumeSource{
+				EmptyDir: &apiv1.EmptyDirVolumeSource{
+					Medium: apiv1.StorageMediumMemory,
+				},
+			},
+		})
+
 		if r.Config.Spec.JWTPolicy == v1beta1.JWTPolicyThirdPartyJWT {
 			volumes = append(volumes, apiv1.Volume{
 				Name: "istio-token",

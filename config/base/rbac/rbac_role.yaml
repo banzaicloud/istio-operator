@@ -102,6 +102,12 @@ rules:
 - apiGroups:
   - extensions
   resources:
+  - deployments/finalizers
+  verbs:
+  - update
+- apiGroups:
+  - extensions
+  resources:
   - replicasets
   verbs:
   - get
@@ -170,6 +176,7 @@ rules:
   - create
   - get
   - delete
+  - watch
 - apiGroups:
   - discovery.k8s.io
   resources:
