@@ -32,7 +32,7 @@ func (r *Reconciler) meshExpansionVirtualService() *k8sutil.DynamicObject {
 		Kind:      "VirtualService",
 		Name:      "meshexpansion-vs-istiod",
 		Namespace: r.Config.Namespace,
-		Labels:    pilotLabels,
+		Labels:    istiodLabels,
 		Spec: map[string]interface{}{
 			"hosts": []string{
 				"istiod." + r.Config.Namespace + ".svc." + r.Config.Spec.Proxy.ClusterDomain,
@@ -74,7 +74,7 @@ func (r *Reconciler) meshExpansionDestinationRule() *k8sutil.DynamicObject {
 		Kind:      "DestinationRule",
 		Name:      "meshexpansion-dr-istiod",
 		Namespace: r.Config.Namespace,
-		Labels:    pilotLabels,
+		Labels:    istiodLabels,
 		Spec: map[string]interface{}{
 			"host": "istiod." + r.Config.Namespace + ".svc." + r.Config.Spec.Proxy.ClusterDomain,
 			"trafficPolicy": map[string]interface{}{

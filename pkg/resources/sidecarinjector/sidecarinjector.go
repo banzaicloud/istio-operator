@@ -33,7 +33,8 @@ const (
 	serviceAccountName     = "istio-sidecar-injector-service-account"
 	clusterRoleName        = "istio-sidecar-injector-cluster-role"
 	clusterRoleBindingName = "istio-sidecar-injector-cluster-role-binding"
-	configMapName          = "istio-sidecar-injector"
+	configMapNameInjector  = "istio-sidecar-injector"
+	IstioConfigMapName     = "istio"
 	webhookName            = "istio-sidecar-injector"
 	deploymentName         = "istio-sidecar-injector"
 	serviceName            = "istio-sidecar-injector"
@@ -50,9 +51,10 @@ var labelSelector = map[string]string{
 
 type Reconciler struct {
 	resources.Reconciler
+	remote bool
 }
 
-func New(client client.Client, config *istiov1beta1.Istio) *Reconciler {
+func New(client client.Client, config *istiov1beta1.Istio, isRemote bool) *Reconciler {
 	if config.Spec.ExcludeIPRanges == "" && config.Spec.IncludeIPRanges == "" {
 		config.Spec.IncludeIPRanges = "*"
 	}
@@ -62,6 +64,7 @@ func New(client client.Client, config *istiov1beta1.Istio) *Reconciler {
 			Client: client,
 			Config: config,
 		},
+		remote: isRemote,
 	}
 }
 
@@ -82,6 +85,7 @@ func (r *Reconciler) Reconcile(log logr.Logger) error {
 		r.clusterRole,
 		r.clusterRoleBinding,
 		r.configMap,
+		r.configMapInjector,
 		r.deployment,
 		r.service,
 		r.webhook,
