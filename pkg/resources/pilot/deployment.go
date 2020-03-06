@@ -417,7 +417,7 @@ func (r *Reconciler) volumes() []apiv1.Volume {
 
 func (r *Reconciler) deployment() runtime.Object {
 	deployment := &appsv1.Deployment{
-		ObjectMeta: templates.ObjectMeta(deploymentName, util.MergeStringMaps(istiodLabels, labelSelector), r.Config),
+		ObjectMeta: templates.ObjectMeta(deploymentName, util.MergeStringMaps(istiodLabels, pilotLabelSelector), r.Config),
 		Spec: appsv1.DeploymentSpec{
 			Replicas: util.IntPointer(k8sutil.GetHPAReplicaCountOrDefault(r.Client, types.NamespacedName{
 				Name:      hpaName,
@@ -425,11 +425,11 @@ func (r *Reconciler) deployment() runtime.Object {
 			}, util.PointerToInt32(r.Config.Spec.Pilot.ReplicaCount))),
 			Strategy: templates.DefaultRollingUpdateStrategy(),
 			Selector: &metav1.LabelSelector{
-				MatchLabels: util.MergeStringMaps(appLabels, labelSelector),
+				MatchLabels: util.MergeStringMaps(appLabels, pilotLabelSelector),
 			},
 			Template: apiv1.PodTemplateSpec{
 				ObjectMeta: metav1.ObjectMeta{
-					Labels:      util.MergeStringMaps(appLabels, labelSelector),
+					Labels:      util.MergeStringMaps(appLabels, pilotLabelSelector),
 					Annotations: util.MergeStringMaps(templates.DefaultDeployAnnotations(), r.Config.Spec.Pilot.PodAnnotations),
 				},
 				Spec: apiv1.PodSpec{
