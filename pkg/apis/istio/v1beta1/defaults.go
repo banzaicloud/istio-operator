@@ -186,7 +186,7 @@ func SetDefaults(config *Istio) {
 	}
 	// Citadel config
 	if config.Spec.Citadel.Enabled == nil {
-		config.Spec.Citadel.Enabled = util.BoolPointer(true)
+		config.Spec.Citadel.Enabled = util.BoolPointer(false)
 	}
 	if config.Spec.Citadel.Image == nil {
 		config.Spec.Citadel.Image = util.StrPointer(defaultCitadelImage)
@@ -196,7 +196,7 @@ func SetDefaults(config *Istio) {
 	}
 	// Galley config
 	if config.Spec.Galley.Enabled == nil {
-		config.Spec.Galley.Enabled = util.BoolPointer(true)
+		config.Spec.Galley.Enabled = util.BoolPointer(false)
 	}
 	if config.Spec.Galley.Image == nil {
 		config.Spec.Galley.Image = util.StrPointer(defaultGalleyImage)
@@ -236,7 +236,7 @@ func SetDefaults(config *Istio) {
 		config.Spec.Gateways.IngressConfig.Ports = defaultIngressGatewayPorts
 	}
 	if config.Spec.Gateways.EgressConfig.Enabled == nil {
-		config.Spec.Gateways.EgressConfig.Enabled = util.BoolPointer(true)
+		config.Spec.Gateways.EgressConfig.Enabled = util.BoolPointer(false)
 	}
 	if config.Spec.Gateways.EgressConfig.ReplicaCount == nil {
 		config.Spec.Gateways.EgressConfig.ReplicaCount = util.IntPointer(defaultReplicaCount)
@@ -267,7 +267,7 @@ func SetDefaults(config *Istio) {
 	}
 	// Mixer config
 	if config.Spec.Mixer.Enabled == nil {
-		config.Spec.Mixer.Enabled = util.BoolPointer(true)
+		config.Spec.Mixer.Enabled = util.BoolPointer(false)
 	}
 	if config.Spec.Mixer.Image == nil {
 		config.Spec.Mixer.Image = util.StrPointer(defaultMixerImage)
@@ -295,7 +295,7 @@ func SetDefaults(config *Istio) {
 	}
 	// SidecarInjector config
 	if config.Spec.SidecarInjector.Enabled == nil {
-		config.Spec.SidecarInjector.Enabled = util.BoolPointer(true)
+		config.Spec.SidecarInjector.Enabled = util.BoolPointer(false)
 	}
 	if config.Spec.SidecarInjector.AutoInjectionPolicyEnabled == nil {
 		config.Spec.SidecarInjector.AutoInjectionPolicyEnabled = util.BoolPointer(true)

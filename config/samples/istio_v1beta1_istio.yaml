@@ -34,10 +34,10 @@ spec:
         cpu: 500m
         memory: 2048Mi
   citadel:
-    enabled: true
+    enabled: false
     image: "docker.io/istio/citadel:1.5.0-beta.5"
   galley:
-    enabled: true
+    enabled: false
     image: "docker.io/istio/galley:1.5.0-beta.5"
     replicaCount: 1
     enableServiceDiscovery: false
@@ -74,7 +74,7 @@ spec:
           cpu: 2000m
           memory: 1024Mi
     egress:
-      enabled: true
+      enabled: false
       replicaCount: 1
       minReplicas: 1
       maxReplicas: 5
@@ -101,19 +101,19 @@ spec:
     k8singress:
       enabled: false
   policy:
-    enabled: true
+    enabled: false
     image: "docker.io/istio/mixer:1.5.0-beta.5"
     replicaCount: 1
     minReplicas: 1
     maxReplicas: 5
   telemetry:
-    enabled: true
+    enabled: false
     image: "docker.io/istio/mixer:1.5.0-beta.5"
     replicaCount: 1
     minReplicas: 1
     maxReplicas: 5
   sidecarInjector:
-    enabled: true
+    enabled: false
     image: "docker.io/istio/sidecar_injector:1.5.0-beta.5"
     replicaCount: 1
     rewriteAppHTTPProbe: true
