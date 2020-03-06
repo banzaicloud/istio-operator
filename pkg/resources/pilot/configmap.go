@@ -14,7 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package base
+package pilot
 
 import (
 	"fmt"
@@ -34,7 +34,7 @@ var cmLabels = map[string]string{
 
 func (r *Reconciler) configMap() runtime.Object {
 	return &apiv1.ConfigMap{
-		ObjectMeta: templates.ObjectMeta(IstioConfigMapName, cmLabels, r.Config),
+		ObjectMeta: templates.ObjectMeta(configMapName, cmLabels, r.Config),
 		Data: map[string]string{
 			"mesh":         r.meshConfig(),
 			"meshNetworks": r.meshNetworks(),
@@ -130,7 +130,6 @@ func (r *Reconciler) meshConfig() string {
 		"ingressService":          "istio-ingressgateway",
 		"ingressClass":            "istio",
 		"ingressControllerMode":   2,
-		"sdsUdsPath":              r.Config.Spec.SDS.UdsPath,
 		"trustDomain":             r.Config.Spec.TrustDomain,
 		"trustDomainAliases":      r.Config.Spec.TrustDomainAliases,
 		"enableAutoMtls":          util.PointerToBool(r.Config.Spec.AutoMTLS),
@@ -145,6 +144,14 @@ func (r *Reconciler) meshConfig() string {
 		"protocolDetectionTimeout":    r.Config.Spec.Proxy.ProtocolDetectionTimeout,
 		"dnsRefreshRate":              r.Config.Spec.Proxy.DNSRefreshRate,
 		"certificates":                r.Config.Spec.Certificates,
+	}
+
+	if util.PointerToBool(r.Config.Spec.Istiod.Enabled) {
+		meshConfig["sdsUdsPath"] = "unix:/etc/istio/proxy/SDS"
+	} else {
+		meshConfig["sdsUdsPath"] = ""
+		meshConfig["enableSdsTokenMount"] = false
+		meshConfig["sdsUseK8sSaJwt"] = false
 	}
 
 	if util.PointerToBool(r.Config.Spec.Policy.Enabled) {

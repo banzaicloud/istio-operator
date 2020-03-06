@@ -26,7 +26,7 @@ import (
 
 func (r *Reconciler) serviceAccount() runtime.Object {
 	return &apiv1.ServiceAccount{
-		ObjectMeta: templates.ObjectMeta(serviceAccountName, pilotLabels, r.Config),
+		ObjectMeta: templates.ObjectMeta(serviceAccountName, istiodLabels, r.Config),
 	}
 }
 
@@ -40,8 +40,18 @@ func (r *Reconciler) clusterRole() runtime.Object {
 				Verbs:     []string{"get", "watch", "list"},
 			},
 			{
+				APIGroups: []string{"apiextensions.k8s.io"},
+				Resources: []string{"customresourcedefinitions"},
+				Verbs:     []string{"get", "watch", "list"},
+			},
+			{
 				APIGroups: []string{"extensions"},
-				Resources: []string{"ingresses", "ingresses/status"},
+				Resources: []string{"ingresses"},
+				Verbs:     []string{"get", "watch", "list"},
+			},
+			{
+				APIGroups: []string{"extensions"},
+				Resources: []string{"ingresses/status"},
 				Verbs:     []string{"*"},
 			},
 			{
@@ -51,12 +61,7 @@ func (r *Reconciler) clusterRole() runtime.Object {
 			},
 			{
 				APIGroups: []string{""},
-				Resources: []string{"endpoints", "pods", "services", "namespaces", "nodes"},
-				Verbs:     []string{"get", "list", "watch"},
-			},
-			{
-				APIGroups: []string{"discovery.k8s.io"},
-				Resources: []string{"endpointslices"},
+				Resources: []string{"endpoints", "pods", "services", "namespaces", "nodes", "secrets"},
 				Verbs:     []string{"get", "list", "watch"},
 			},
 			{
@@ -67,7 +72,12 @@ func (r *Reconciler) clusterRole() runtime.Object {
 			{
 				APIGroups: []string{"certificates.k8s.io"},
 				Resources: []string{"certificatesigningrequests", "certificatesigningrequests/approval", "certificatesigningrequests/status"},
-				Verbs:     []string{"update", "create", "get", "delete"},
+				Verbs:     []string{"update", "create", "get", "delete", "watch"},
+			},
+			{
+				APIGroups: []string{"discovery.k8s.io"},
+				Resources: []string{"endpointslices"},
+				Verbs:     []string{"get", "list", "watch"},
 			},
 		},
 	}

@@ -300,18 +300,18 @@ func (r *ReconcileIstio) reconcile(logger logr.Logger, config *istiov1beta1.Isti
 	}
 
 	reconcilers := []resources.ComponentReconciler{
-		base.New(r.Client, config, false),
+		base.New(r.Client, config),
 		citadel.New(citadel.Configuration{
 			DeployMeshPolicy: true,
 		}, r.Client, r.dynamic, config),
 		galley.New(r.Client, config),
-		pilot.New(r.Client, r.dynamic, config),
+		pilot.New(r.Client, r.dynamic, config, false),
 		mixer.NewPolicyReconciler(r.Client, r.dynamic, config),
 		mixer.NewTelemetryReconciler(r.Client, r.dynamic, config),
 		ingressgateway.New(r.Client, r.dynamic, config),
 		egressgateway.New(r.Client, r.dynamic, config),
 		cni.New(r.Client, config),
-		sidecarinjector.New(r.Client, config),
+		sidecarinjector.New(r.Client, config, false),
 		nodeagent.New(r.Client, config),
 		istiocoredns.New(r.Client, config),
 		mixerlesstelemetry.New(r.Client, r.dynamic, config),
