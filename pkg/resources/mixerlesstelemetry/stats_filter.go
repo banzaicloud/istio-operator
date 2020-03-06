@@ -17,43 +17,208 @@ limitations under the License.
 package mixerlesstelemetry
 
 import (
-	"strings"
-
 	"github.com/ghodss/yaml"
 	"k8s.io/apimachinery/pkg/runtime/schema"
 
 	"github.com/banzaicloud/istio-operator/pkg/k8sutil"
 )
 
-var statsFilterYAML = `applyTo: HTTP_FILTER
-match:
-  context: %CONTEXT%
-  listener:
-    filterChain:
-      filter:
-        name: "envoy.http_connection_manager"
-        subFilter:
-          name: "envoy.router"
-patch:
-  operation: INSERT_BEFORE
-  value:
-    name: envoy.filters.http.wasm
-    config:
-      config:
-        root_id: stats_outbound
-        configuration: |
-          {
-            "debug": "false",
-            "stat_prefix": "istio",
-          }
-        vm_config:
-          vm_id: stats_outbound
-          runtime: envoy.wasm.runtime.null
-          code:
-            inline_string: envoy.wasm.stats
+const httpStatsFilterYAML = `
+- applyTo: HTTP_FILTER
+  match:
+    context: SIDECAR_OUTBOUND
+    proxy:
+      proxyVersion: '^1\.5.*'
+    listener:
+      filterChain:
+        filter:
+          name: envoy.http_connection_manager
+          subFilter:
+            name: envoy.router
+  patch:
+    operation: INSERT_BEFORE
+    value:
+      name: envoy.filters.http.wasm
+      typed_config:
+        '@type': type.googleapis.com/udpa.type.v1.TypedStruct
+        type_url: type.googleapis.com/envoy.config.filter.http.wasm.v2.Wasm
+        value:
+          config:
+            configuration: |
+              {
+                "debug": "false",
+                "stat_prefix": "istio"
+              }
+            root_id: stats_outbound
+            vm_config:
+              code:
+                local:
+                  inline_string: envoy.wasm.stats
+              runtime: envoy.wasm.runtime.null
+              vm_id: stats_outbound
+- applyTo: HTTP_FILTER
+  match:
+    context: SIDECAR_INBOUND
+    proxy:
+      proxyVersion: '^1\.5.*'
+    listener:
+      filterChain:
+        filter:
+          name: envoy.http_connection_manager
+          subFilter:
+            name: envoy.router
+  patch:
+    operation: INSERT_BEFORE
+    value:
+      name: envoy.filters.http.wasm
+      typed_config:
+        '@type': type.googleapis.com/udpa.type.v1.TypedStruct
+        type_url: type.googleapis.com/envoy.config.filter.http.wasm.v2.Wasm
+        value:
+          config:
+            configuration: |
+              {
+                "debug": "false",
+                "stat_prefix": "istio"
+              }
+            root_id: stats_inbound
+            vm_config:
+              code:
+                local:
+                  inline_string: envoy.wasm.stats
+              runtime: envoy.wasm.runtime.null
+              vm_id: stats_inbound
+- applyTo: HTTP_FILTER
+  match:
+    context: GATEWAY
+    proxy:
+      proxyVersion: '^1\.5.*'
+    listener:
+      filterChain:
+        filter:
+          name: envoy.http_connection_manager
+          subFilter:
+            name: envoy.router
+  patch:
+    operation: INSERT_BEFORE
+    value:
+      name: envoy.filters.http.wasm
+      typed_config:
+        '@type': type.googleapis.com/udpa.type.v1.TypedStruct
+        type_url: type.googleapis.com/envoy.config.filter.http.wasm.v2.Wasm
+        value:
+          config:
+            configuration: |
+              {
+                "debug": "false",
+                "stat_prefix": "istio"
+              }
+            root_id: stats_outbound
+            vm_config:
+              code:
+                local:
+                  inline_string: envoy.wasm.stats
+              runtime: envoy.wasm.runtime.null
+              vm_id: stats_outbound
 `
 
-func (r *Reconciler) statsEnvoyFilter() *k8sutil.DynamicObject {
+const tcpStatsFilterYAML = `
+- applyTo: NETWORK_FILTER
+  match:
+    context: SIDECAR_INBOUND
+    listener:
+      filterChain:
+        filter:
+          name: envoy.tcp_proxy
+    proxy:
+      proxyVersion: 1\.5.*
+  patch:
+    operation: INSERT_BEFORE
+    value:
+      name: envoy.filters.network.wasm
+      typed_config:
+        '@type': type.googleapis.com/udpa.type.v1.TypedStruct
+        type_url: type.googleapis.com/envoy.config.filter.network.wasm.v2.Wasm
+        value:
+          config:
+            configuration: |
+              {
+                "debug": "false",
+                "stat_prefix": "istio",
+              }
+            root_id: stats_inbound
+            vm_config:
+              code:
+                local:
+                  inline_string: envoy.wasm.stats
+              runtime: envoy.wasm.runtime.null
+              vm_id: stats_inbound
+- applyTo: NETWORK_FILTER
+  match:
+    context: SIDECAR_OUTBOUND
+    listener:
+      filterChain:
+        filter:
+          name: envoy.tcp_proxy
+    proxy:
+      proxyVersion: 1\.5.*
+  patch:
+    operation: INSERT_BEFORE
+    value:
+      name: envoy.filters.network.wasm
+      typed_config:
+        '@type': type.googleapis.com/udpa.type.v1.TypedStruct
+        type_url: type.googleapis.com/envoy.config.filter.network.wasm.v2.Wasm
+        value:
+          config:
+            configuration: |
+              {
+                "debug": "false",
+                "stat_prefix": "istio",
+              }
+            root_id: stats_outbound
+            vm_config:
+              code:
+                local:
+                  inline_string: envoy.wasm.stats
+              runtime: envoy.wasm.runtime.null
+              vm_id: stats_outbound
+- applyTo: NETWORK_FILTER
+  match:
+    context: GATEWAY
+    listener:
+      filterChain:
+        filter:
+          name: envoy.tcp_proxy
+    proxy:
+      proxyVersion: 1\.5.*
+  patch:
+    operation: INSERT_BEFORE
+    value:
+      name: envoy.filters.network.wasm
+      typed_config:
+        '@type': type.googleapis.com/udpa.type.v1.TypedStruct
+        type_url: type.googleapis.com/envoy.config.filter.network.wasm.v2.Wasm
+        value:
+          config:
+            configuration: |
+              {
+                "debug": "false",
+                "stat_prefix": "istio",
+              }
+            root_id: stats_outbound
+            vm_config:
+              code:
+                local:
+                  inline_string: envoy.wasm.stats
+              runtime: envoy.wasm.runtime.null
+              vm_id: stats_outbound
+`
+
+func (r *Reconciler) httpStatsFilter() *k8sutil.DynamicObject {
+	var y []map[string]interface{}
+	yaml.Unmarshal([]byte(httpStatsFilterYAML), &y)
+
 	return &k8sutil.DynamicObject{
 		Gvr: schema.GroupVersionResource{
 			Group:    "networking.istio.io",
@@ -64,19 +229,28 @@ func (r *Reconciler) statsEnvoyFilter() *k8sutil.DynamicObject {
 		Name:      componentName + "-stats",
 		Namespace: r.Config.Namespace,
 		Spec: map[string]interface{}{
-			"configPatches": []map[string]interface{}{
-				r.getStatFilter("SIDECAR_INBOUND"),
-				r.getStatFilter("SIDECAR_OUTBOUND"),
-				r.getStatFilter("GATEWAY"),
-			},
+			"configPatches": y,
 		},
 		Owner: r.Config,
 	}
 }
 
-func (r *Reconciler) getStatFilter(listenerType string) map[string]interface{} {
-	var y map[string]interface{}
-	yaml.Unmarshal([]byte(strings.Replace(statsFilterYAML, "%CONTEXT%", listenerType, 1)), &y)
+func (r *Reconciler) tcpStatsFilter() *k8sutil.DynamicObject {
+	var y []map[string]interface{}
+	yaml.Unmarshal([]byte(tcpStatsFilterYAML), &y)
 
-	return y
+	return &k8sutil.DynamicObject{
+		Gvr: schema.GroupVersionResource{
+			Group:    "networking.istio.io",
+			Version:  "v1alpha3",
+			Resource: "envoyfilters",
+		},
+		Kind:      "EnvoyFilter",
+		Name:      componentName + "-tcp-stats",
+		Namespace: r.Config.Namespace,
+		Spec: map[string]interface{}{
+			"configPatches": y,
+		},
+		Owner: r.Config,
+	}
 }
