@@ -38,13 +38,13 @@ func (r *Reconciler) configMap() runtime.Object {
 	}
 
 	if util.PointerToBool(r.Config.Spec.Galley.ConfigValidation) {
-		configmap.Data["validatingwebhookconfiguration.yaml"] = r.validatingWebhookConfig(r.Config.Namespace)
+		configmap.Data["validatingwebhookconfiguration.yaml"] = r.validatingWebhookConfig()
 	}
 
 	return configmap
 }
 
-func (r *Reconciler) validatingWebhookConfig(ns string) string {
+func (r *Reconciler) validatingWebhookConfig() string {
 	ignore := admissionv1beta1.Ignore
 	se := admissionv1beta1.SideEffectClassNone
 	webhook := admissionv1beta1.ValidatingWebhookConfiguration{
@@ -58,7 +58,7 @@ func (r *Reconciler) validatingWebhookConfig(ns string) string {
 				ClientConfig: admissionv1beta1.WebhookClientConfig{
 					Service: &admissionv1beta1.ServiceReference{
 						Name:      serviceName,
-						Namespace: ns,
+						Namespace: r.Config.Namespace,
 						Path:      util.StrPointer("/admitpilot"),
 					},
 					CABundle: []byte{},
@@ -128,7 +128,7 @@ func (r *Reconciler) validatingWebhookConfig(ns string) string {
 				ClientConfig: admissionv1beta1.WebhookClientConfig{
 					Service: &admissionv1beta1.ServiceReference{
 						Name:      serviceName,
-						Namespace: ns,
+						Namespace: r.Config.Namespace,
 						Path:      util.StrPointer("/admitmixer"),
 					},
 					CABundle: []byte{},
