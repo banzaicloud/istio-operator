@@ -408,6 +408,18 @@ spec:
                     runtime/default   container.apparmor.security.beta.kubernetes.io/istio-proxy:
                     runtime/default'
                   type: object
+                injectedContainerAdditionalArgs:
+                  description: If present will be appended at the end of the initial/preconfigured
+                    container arguments
+                  items:
+                    type: string
+                  type: array
+                injectedContainerAdditionalEnvVars:
+                  description: If present will be appended to the environment variables
+                    of the container
+                  items:
+                    type: object
+                  type: array
                 neverInjectSelector:
                   description: 'NeverInjectSelector: Refuses the injection on pods
                     whose labels match this selector. It''s an array of label selectors,
