@@ -45,6 +45,8 @@ const (
 	hpaName                      = "istiod-autoscaler"
 	pdbName                      = "istiod"
 	mutatingWebhookName          = "istio-sidecar-injector"
+	validatingWebhookName        = "istiod"
+	validatingWebhookNameGalley  = "istio-galley"
 )
 
 var pilotLabels = map[string]string{
@@ -55,12 +57,20 @@ var istiodLabels = map[string]string{
 	"app": "istiod",
 }
 
-var labelSelector = map[string]string{
+var pilotLabelSelector = map[string]string{
 	"istio": "pilot",
 }
 
+var istiodLabelSelector = map[string]string{
+	"istio": "istiod",
+}
+
+var galleyLabelSelector = map[string]string{
+	"istio": "galley",
+}
+
 var galleyLabels = map[string]string{
-	"app": "istio-galley",
+	"app": "galley",
 }
 
 var sidecarInjectorLabels = map[string]string{
@@ -133,6 +143,8 @@ func (r *Reconciler) Reconcile(log logr.Logger) error {
 		{Resource: r.horizontalPodAutoscaler, DesiredState: pilotDesiredState},
 		{Resource: r.podDisruptionBudget, DesiredState: pdbDesiredState},
 		{Resource: r.mutatingWebhook, DesiredState: istiodDesiredState},
+		{Resource: r.validatingWebhook, DesiredState: pilotDesiredState},
+		{Resource: r.validatingWebhookGalley, DesiredState: istiodDesiredState},
 	} {
 		o := res.Resource()
 		err := k8sutil.Reconcile(log, r.Client, o, res.DesiredState)

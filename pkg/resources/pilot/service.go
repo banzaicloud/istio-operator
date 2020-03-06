@@ -73,10 +73,10 @@ func (r *Reconciler) servicePorts() []apiv1.ServicePort {
 
 func (r *Reconciler) service() runtime.Object {
 	return &apiv1.Service{
-		ObjectMeta: templates.ObjectMeta(serviceName, util.MergeStringMaps(pilotLabels, labelSelector), r.Config),
+		ObjectMeta: templates.ObjectMeta(serviceName, util.MergeStringMaps(pilotLabels, pilotLabelSelector), r.Config),
 		Spec: apiv1.ServiceSpec{
 			Ports:    r.servicePorts(),
-			Selector: labelSelector,
+			Selector: pilotLabelSelector,
 		},
 	}
 }
@@ -99,7 +99,7 @@ func (r *Reconciler) serviceIstiod() runtime.Object {
 					Protocol:   apiv1.ProtocolTCP,
 				},
 			},
-			Selector: util.MergeStringMaps(istiodLabels, labelSelector),
+			Selector: util.MergeStringMaps(istiodLabels, pilotLabelSelector),
 		},
 	}
 }
