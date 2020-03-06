@@ -29,36 +29,58 @@ import (
 )
 
 const (
-	componentName          = "pilot"
-	serviceAccountName     = "istio-pilot-service-account"
-	clusterRoleName        = "istio-pilot-cluster-role"
-	clusterRoleBindingName = "istio-pilot-cluster-role-binding"
-	deploymentName         = "istio-pilot"
-	serviceName            = "istio-pilot"
-	hpaName                = "istio-pilot-autoscaler"
-	pdbName                = "istio-pilot"
+	componentName                = "pilot"
+	serviceAccountName           = "istiod-service-account"
+	clusterRoleName              = "istio-pilot-cluster-role"
+	clusterRoleNameIstiod        = "istiod-cluster-role"
+	clusterRoleNameGalley        = "istio-galley-cluster-role"
+	clusterRoleBindingName       = "istio-pilot-cluster-role-binding"
+	clusterRoleBindingNameIstiod = "istiod-cluster-role-binding"
+	configMapName                = "istio"
+	configMapNameInjector        = "istio-sidecar-injector"
+	configMapNameEnvoy           = "pilot-envoy-config"
+	deploymentName               = "istiod"
+	serviceName                  = "istio-pilot"
+	serviceNameIstiod            = "istiod"
+	hpaName                      = "istiod-autoscaler"
+	pdbName                      = "istiod"
+	mutatingWebhookName          = "istio-sidecar-injector"
 )
 
 var pilotLabels = map[string]string{
-	"app": "istio-pilot",
+	"app": "pilot",
+}
+
+var istiodLabels = map[string]string{
+	"app": "istiod",
 }
 
 var labelSelector = map[string]string{
 	"istio": "pilot",
 }
 
+var galleyLabels = map[string]string{
+	"app": "istio-galley",
+}
+
+var sidecarInjectorLabels = map[string]string{
+	"app": "sidecar-injector",
+}
+
 type Reconciler struct {
 	resources.Reconciler
 	dynamic dynamic.Interface
+	remote  bool
 }
 
-func New(client client.Client, dc dynamic.Interface, config *istiov1beta1.Istio) *Reconciler {
+func New(client client.Client, dc dynamic.Interface, config *istiov1beta1.Istio, isRemote bool) *Reconciler {
 	return &Reconciler{
 		Reconciler: resources.Reconciler{
 			Client: client,
 			Config: config,
 		},
 		dynamic: dc,
+		remote:  isRemote,
 	}
 }
 
@@ -81,14 +103,36 @@ func (r *Reconciler) Reconcile(log logr.Logger) error {
 		pdbDesiredState = k8sutil.DesiredStateAbsent
 	}
 
+	var istiodDesiredState k8sutil.DesiredState
+	var galleyDesiredState k8sutil.DesiredState
+	if util.PointerToBool(r.Config.Spec.Istiod.Enabled) {
+		istiodDesiredState = k8sutil.DesiredStatePresent
+		if !util.PointerToBool(r.Config.Spec.Galley.Enabled) {
+			galleyDesiredState = k8sutil.DesiredStatePresent
+		} else {
+			galleyDesiredState = k8sutil.DesiredStateAbsent
+		}
+	} else {
+		istiodDesiredState = k8sutil.DesiredStateAbsent
+		galleyDesiredState = k8sutil.DesiredStateAbsent
+	}
+
 	for _, res := range []resources.ResourceWithDesiredState{
 		{Resource: r.serviceAccount, DesiredState: pilotDesiredState},
 		{Resource: r.clusterRole, DesiredState: pilotDesiredState},
+		{Resource: r.clusterRoleIstiod, DesiredState: pilotDesiredState},
+		{Resource: r.clusterRoleGalley, DesiredState: galleyDesiredState},
 		{Resource: r.clusterRoleBinding, DesiredState: pilotDesiredState},
+		{Resource: r.clusterRoleBindingIstiod, DesiredState: istiodDesiredState},
+		{Resource: r.configMap, DesiredState: istiodDesiredState},
+		{Resource: r.configMapInjector, DesiredState: istiodDesiredState},
+		{Resource: r.configMapEnvoy, DesiredState: pilotDesiredState},
 		{Resource: r.deployment, DesiredState: pilotDesiredState},
 		{Resource: r.service, DesiredState: pilotDesiredState},
+		{Resource: r.serviceIstiod, DesiredState: istiodDesiredState},
 		{Resource: r.horizontalPodAutoscaler, DesiredState: pilotDesiredState},
 		{Resource: r.podDisruptionBudget, DesiredState: pdbDesiredState},
+		{Resource: r.mutatingWebhook, DesiredState: istiodDesiredState},
 	} {
 		o := res.Resource()
 		err := k8sutil.Reconcile(log, r.Client, o, res.DesiredState)

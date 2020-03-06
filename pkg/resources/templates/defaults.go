@@ -66,6 +66,14 @@ func TargetAvgCpuUtil80() []autoscalev2beta1.MetricSpec {
 func IstioProxyEnv(config *v1beta1.Istio) []apiv1.EnvVar {
 	envs := []apiv1.EnvVar{
 		{
+			Name:  "JWT_POLICY",
+			Value: string(config.Spec.JWTPolicy),
+		},
+		{
+			Name:  "PILOT_CERT_PROVIDER",
+			Value: string(config.Spec.PilotCertProvider),
+		},
+		{
 			Name: "POD_NAME",
 			ValueFrom: &apiv1.EnvVarSource{
 				FieldRef: &apiv1.ObjectFieldSelector{
