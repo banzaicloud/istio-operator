@@ -495,17 +495,20 @@ func (r *Reconciler) volumes() []apiv1.Volume {
 		Name: "podinfo",
 		VolumeSource: apiv1.VolumeSource{
 			DownwardAPI: &apiv1.DownwardAPIVolumeSource{
+				DefaultMode: util.IntPointer(420),
 				Items: []apiv1.DownwardAPIVolumeFile{
 					{
 						Path: "labels",
 						FieldRef: &apiv1.ObjectFieldSelector{
-							FieldPath: "metadata.labels",
+							APIVersion: "v1",
+							FieldPath:  "metadata.labels",
 						},
 					},
 					{
 						Path: "annotations",
 						FieldRef: &apiv1.ObjectFieldSelector{
-							FieldPath: "metadata.annotations",
+							APIVersion: "v1",
+							FieldPath:  "metadata.annotations",
 						},
 					},
 				},
