@@ -17,11 +17,11 @@ limitations under the License.
 package pilot
 
 import (
-	"github.com/banzaicloud/istio-operator/pkg/util"
 	rbacv1 "k8s.io/api/rbac/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 
 	"github.com/banzaicloud/istio-operator/pkg/resources/templates"
+	"github.com/banzaicloud/istio-operator/pkg/util"
 )
 
 func (r *Reconciler) clusterRoleIstiod() runtime.Object {
@@ -97,7 +97,7 @@ func (r *Reconciler) clusterRoleIstiod() runtime.Object {
 		rules = append(rules, rbacv1.PolicyRule{
 			APIGroups: []string{"admissionregistration.k8s.io"},
 			Resources: []string{"mutatingwebhookconfigurations", "validatingwebhookconfigurations"},
-			Verbs:     []string{"get", "list", "watch", "patch"},
+			Verbs:     []string{"get", "list", "watch", "patch", "update"},
 		})
 	}
 
