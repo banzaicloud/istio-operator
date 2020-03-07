@@ -255,7 +255,6 @@ containers:
   # Temp, pending PR to make it default or based on the istiodAddr env
   - name: CA_ADDR
     value: istio-pilot.istio-system.svc:15012
-  {{- end }}
   - name: POD_NAME
     valueFrom:
       fieldRef:
