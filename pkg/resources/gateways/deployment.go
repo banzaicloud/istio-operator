@@ -41,7 +41,7 @@ func (r *Reconciler) deployment() runtime.Object {
 	}
 
 	var containers = make([]apiv1.Container, 0)
-	if util.PointerToBool(r.gw.Spec.SDS.Enabled) {
+	if !util.PointerToBool(r.Config.Spec.Istiod.Enabled) && util.PointerToBool(r.gw.Spec.SDS.Enabled) {
 		containers = append(containers, apiv1.Container{
 			Name:            "ingress-sds",
 			Image:           r.gw.Spec.SDS.Image,
