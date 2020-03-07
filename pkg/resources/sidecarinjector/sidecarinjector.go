@@ -80,7 +80,7 @@ func (r *Reconciler) Reconcile(log logr.Logger) error {
 		sidecarInjectorDesiredState = k8sutil.DesiredStateAbsent
 	}
 
-	for _, res := range []resources.Resource{
+	ress := []resources.Resource{
 		r.serviceAccount,
 		r.clusterRole,
 		r.clusterRoleBinding,
@@ -88,8 +88,13 @@ func (r *Reconciler) Reconcile(log logr.Logger) error {
 		r.configMapInjector,
 		r.deployment,
 		r.service,
-		r.webhook,
-	} {
+	}
+
+	if sidecarInjectorDesiredState == k8sutil.DesiredStatePresent {
+		ress = append(ress, r.webhook)
+	}
+
+	for _, res := range  {
 		o := res()
 		err := k8sutil.Reconcile(log, r.Client, o, sidecarInjectorDesiredState)
 		if err != nil {
