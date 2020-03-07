@@ -94,7 +94,7 @@ func (r *Reconciler) Reconcile(log logr.Logger) error {
 		ress = append(ress, r.webhook)
 	}
 
-	for _, res := range  {
+	for _, res := range ress {
 		o := res()
 		err := k8sutil.Reconcile(log, r.Client, o, sidecarInjectorDesiredState)
 		if err != nil {
