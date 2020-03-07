@@ -34,7 +34,7 @@ var cmLabels = map[string]string{
 
 func (r *Reconciler) configMap() runtime.Object {
 	return &apiv1.ConfigMap{
-		ObjectMeta: templates.ObjectMeta(IstioConfigMapName, cmLabels, r.Config),
+		ObjectMeta: templates.ObjectMeta(istioConfigMapName, cmLabels, r.Config),
 		Data: map[string]string{
 			"mesh":         r.meshConfig(),
 			"meshNetworks": r.meshNetworks(),
