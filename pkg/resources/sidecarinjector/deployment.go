@@ -169,7 +169,7 @@ func (r *Reconciler) volumes() []apiv1.Volume {
 			VolumeSource: apiv1.VolumeSource{
 				ConfigMap: &apiv1.ConfigMapVolumeSource{
 					LocalObjectReference: apiv1.LocalObjectReference{
-						Name: IstioConfigMapName,
+						Name: istioConfigMapName,
 					},
 					DefaultMode: util.IntPointer(420),
 				},
