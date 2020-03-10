@@ -30,6 +30,7 @@ const (
 	componentName                 = "common"
 	istioReaderName               = "istio-reader"
 	istioReaderServiceAccountName = istioReaderName + "-service-account"
+	IstioConfigMapName            = "istio"
 )
 
 var istioReaderLabel = map[string]string{
@@ -38,14 +39,16 @@ var istioReaderLabel = map[string]string{
 
 type Reconciler struct {
 	resources.Reconciler
+	remote bool
 }
 
-func New(client client.Client, config *istiov1beta1.Istio) *Reconciler {
+func New(client client.Client, config *istiov1beta1.Istio, isRemote bool) *Reconciler {
 	return &Reconciler{
 		Reconciler: resources.Reconciler{
 			Client: client,
 			Config: config,
 		},
+		remote: isRemote,
 	}
 }
 
@@ -58,6 +61,7 @@ func (r *Reconciler) Reconcile(log logr.Logger) error {
 		r.serviceAccount,
 		r.clusterRole,
 		r.clusterRoleBinding,
+		r.configMap,
 	} {
 		o := res()
 		err := k8sutil.Reconcile(log, r.Client, o, k8sutil.DesiredStatePresent)

@@ -85,7 +85,7 @@ func (r *Reconciler) roleBinding() runtime.Object {
 			{
 				Kind:      "ServiceAccount",
 				Name:      r.serviceAccountName(),
-				Namespace: r.Config.Namespace,
+				Namespace: r.gw.Namespace,
 			},
 		},
 	}

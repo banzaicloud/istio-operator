@@ -14,7 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package pilot
+package istiod
 
 import (
 	"github.com/banzaicloud/istio-operator/pkg/util"
@@ -26,7 +26,7 @@ import (
 )
 
 func (r *Reconciler) podDisruptionBudget() runtime.Object {
-	labels := util.MergeStringMaps(pilotLabels, labelSelector)
+	labels := istiodLabels
 	return &policyv1beta1.PodDisruptionBudget{
 		ObjectMeta: templates.ObjectMeta(pdbName, labels, r.Config),
 		Spec: policyv1beta1.PodDisruptionBudgetSpec{

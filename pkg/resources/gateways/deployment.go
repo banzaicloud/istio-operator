@@ -418,14 +418,15 @@ func (r *Reconciler) volumeMounts() []apiv1.VolumeMount {
 		},
 	}
 
-	if r.Config.Spec.PilotCertProvider == istiov1beta1.PilotCertProviderTypeIstiod {
+	if util.PointerToBool(r.Config.Spec.Istiod.Enabled) && r.Config.Spec.PilotCertProvider == istiov1beta1.PilotCertProviderTypeIstiod {
 		vms = append(vms, apiv1.VolumeMount{
 			Name:      "istiod-ca-cert",
 			MountPath: "/var/run/secrets/istio",
 		})
 	}
 
-	if util.PointerToBool(r.Config.Spec.Istiod.Enabled) && r.Config.Spec.JWTPolicy == istiov1beta1.JWTPolicyThirdPartyJWT {
+	if (util.PointerToBool(r.Config.Spec.Istiod.Enabled) && r.Config.Spec.JWTPolicy == istiov1beta1.JWTPolicyThirdPartyJWT) ||
+		(!util.PointerToBool(r.Config.Spec.Istiod.Enabled) && util.PointerToBool(r.Config.Spec.SDS.Enabled)) {
 		vms = append(vms, apiv1.VolumeMount{
 			Name:      "istio-token",
 			MountPath: "/var/run/secrets/tokens",
@@ -440,7 +441,8 @@ func (r *Reconciler) volumeMounts() []apiv1.VolumeMount {
 		})
 	}
 
-	if util.PointerToBool(r.Config.Spec.MountMtlsCerts) {
+	if (util.PointerToBool(r.Config.Spec.Istiod.Enabled) && util.PointerToBool(r.Config.Spec.MountMtlsCerts)) ||
+		(!util.PointerToBool(r.Config.Spec.Istiod.Enabled) && !util.PointerToBool(r.Config.Spec.SDS.Enabled)) {
 		vms = append(vms, apiv1.VolumeMount{
 			Name:      "istio-certs",
 			MountPath: "/etc/certs",
@@ -480,7 +482,7 @@ func (r *Reconciler) volumes() []apiv1.Volume {
 		},
 	}
 
-	if r.Config.Spec.PilotCertProvider == istiov1beta1.PilotCertProviderTypeIstiod {
+	if util.PointerToBool(r.Config.Spec.Istiod.Enabled) && r.Config.Spec.PilotCertProvider == istiov1beta1.PilotCertProviderTypeIstiod {
 		volumes = append(volumes, apiv1.Volume{
 			Name: "istiod-ca-cert",
 			VolumeSource: apiv1.VolumeSource{
@@ -527,7 +529,8 @@ func (r *Reconciler) volumes() []apiv1.Volume {
 		})
 	}
 
-	if util.PointerToBool(r.Config.Spec.Istiod.Enabled) && r.Config.Spec.JWTPolicy == istiov1beta1.JWTPolicyThirdPartyJWT {
+	if (util.PointerToBool(r.Config.Spec.Istiod.Enabled) && r.Config.Spec.JWTPolicy == istiov1beta1.JWTPolicyThirdPartyJWT) ||
+		(!util.PointerToBool(r.Config.Spec.Istiod.Enabled) && util.PointerToBool(r.Config.Spec.SDS.Enabled)) {
 		volumes = append(volumes, apiv1.Volume{
 			Name: "istio-token",
 			VolumeSource: apiv1.VolumeSource{
@@ -546,7 +549,8 @@ func (r *Reconciler) volumes() []apiv1.Volume {
 		})
 	}
 
-	if util.PointerToBool(r.Config.Spec.MountMtlsCerts) {
+	if (util.PointerToBool(r.Config.Spec.Istiod.Enabled) && util.PointerToBool(r.Config.Spec.MountMtlsCerts)) ||
+		(!util.PointerToBool(r.Config.Spec.Istiod.Enabled) && !util.PointerToBool(r.Config.Spec.SDS.Enabled)) {
 		volumes = append(volumes, apiv1.Volume{
 			Name: "istio-certs",
 			VolumeSource: apiv1.VolumeSource{

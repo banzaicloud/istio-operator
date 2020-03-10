@@ -14,9 +14,10 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package pilot
+package istiod
 
 import (
+	apiv1 "k8s.io/api/core/v1"
 	rbacv1 "k8s.io/api/rbac/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 
@@ -24,7 +25,13 @@ import (
 	"github.com/banzaicloud/istio-operator/pkg/util"
 )
 
-func (r *Reconciler) clusterRoleIstiod() runtime.Object {
+func (r *Reconciler) serviceAccount() runtime.Object {
+	return &apiv1.ServiceAccount{
+		ObjectMeta: templates.ObjectMeta(serviceAccountName, istiodLabels, r.Config),
+	}
+}
+
+func (r *Reconciler) clusterRole() runtime.Object {
 	rules := []rbacv1.PolicyRule{
 		{
 			APIGroups: []string{"networking.istio.io"},
@@ -107,7 +114,7 @@ func (r *Reconciler) clusterRoleIstiod() runtime.Object {
 	}
 }
 
-func (r *Reconciler) clusterRoleBindingIstiod() runtime.Object {
+func (r *Reconciler) clusterRoleBinding() runtime.Object {
 	return &rbacv1.ClusterRoleBinding{
 		ObjectMeta: templates.ObjectMetaClusterScope(clusterRoleBindingNameIstiod, istiodLabels, r.Config),
 		RoleRef: rbacv1.RoleRef{

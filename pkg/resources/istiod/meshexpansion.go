@@ -14,7 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package pilot
+package istiod
 
 import (
 	"k8s.io/apimachinery/pkg/runtime/schema"
@@ -30,12 +30,12 @@ func (r *Reconciler) meshExpansionVirtualService() *k8sutil.DynamicObject {
 			Resource: "virtualservices",
 		},
 		Kind:      "VirtualService",
-		Name:      "meshexpansion-vs-pilot",
+		Name:      "meshexpansion-vs-istiod",
 		Namespace: r.Config.Namespace,
-		Labels:    pilotLabels,
+		Labels:    istiodLabels,
 		Spec: map[string]interface{}{
 			"hosts": []string{
-				"istio-pilot." + r.Config.Namespace + ".svc." + r.Config.Spec.Proxy.ClusterDomain,
+				"istiod." + r.Config.Namespace + ".svc." + r.Config.Spec.Proxy.ClusterDomain,
 			},
 			"gateways": []string{
 				"meshexpansion-gateway",
@@ -44,15 +44,15 @@ func (r *Reconciler) meshExpansionVirtualService() *k8sutil.DynamicObject {
 				{
 					"match": []map[string]interface{}{
 						{
-							"port": 15011,
+							"port": 15012,
 						},
 					},
 					"route": []map[string]interface{}{
 						{
 							"destination": map[string]interface{}{
-								"host": "istio-pilot." + r.Config.Namespace + ".svc." + r.Config.Spec.Proxy.ClusterDomain,
+								"host": "istiod." + r.Config.Namespace + ".svc." + r.Config.Spec.Proxy.ClusterDomain,
 								"port": map[string]interface{}{
-									"number": 15011,
+									"number": 15012,
 								},
 							},
 						},
@@ -72,16 +72,16 @@ func (r *Reconciler) meshExpansionDestinationRule() *k8sutil.DynamicObject {
 			Resource: "destinationrules",
 		},
 		Kind:      "DestinationRule",
-		Name:      "meshexpansion-dr-pilot",
+		Name:      "meshexpansion-dr-istiod",
 		Namespace: r.Config.Namespace,
-		Labels:    pilotLabels,
+		Labels:    istiodLabels,
 		Spec: map[string]interface{}{
-			"host": "istio-pilot." + r.Config.Namespace + ".svc." + r.Config.Spec.Proxy.ClusterDomain,
+			"host": "istiod." + r.Config.Namespace + ".svc." + r.Config.Spec.Proxy.ClusterDomain,
 			"trafficPolicy": map[string]interface{}{
 				"portLevelSettings": []map[string]interface{}{
 					{
 						"port": map[string]interface{}{
-							"number": 15011,
+							"number": 15012,
 						},
 						"tls": map[string]interface{}{
 							"mode": "DISABLE",

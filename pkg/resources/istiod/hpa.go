@@ -14,7 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package pilot
+package istiod
 
 import (
 	"github.com/banzaicloud/istio-operator/pkg/resources/templates"
@@ -25,7 +25,7 @@ import (
 
 func (r *Reconciler) horizontalPodAutoscaler() runtime.Object {
 	return &autoscalev2beta1.HorizontalPodAutoscaler{
-		ObjectMeta: templates.ObjectMeta(hpaName, nil, r.Config),
+		ObjectMeta: templates.ObjectMeta(hpaName, istiodLabels, r.Config),
 		Spec: autoscalev2beta1.HorizontalPodAutoscalerSpec{
 			MaxReplicas: util.PointerToInt32(r.Config.Spec.Pilot.MaxReplicas),
 			MinReplicas: r.Config.Spec.Pilot.MinReplicas,

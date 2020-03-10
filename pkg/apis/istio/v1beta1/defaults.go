@@ -362,6 +362,9 @@ func SetDefaults(config *Istio) {
 	if config.Spec.SDS.TokenAudience == "" {
 		config.Spec.SDS.TokenAudience = "istio-ca"
 	}
+	if config.Spec.SDS.UdsPath == "" {
+		config.Spec.SDS.UdsPath = "unix:/var/run/sds/uds_path"
+	}
 	// NodeAgent config
 	if config.Spec.NodeAgent.Enabled == nil {
 		config.Spec.NodeAgent.Enabled = util.BoolPointer(false)
