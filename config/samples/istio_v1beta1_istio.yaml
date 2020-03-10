@@ -5,7 +5,7 @@ metadata:
     controller-tools.k8s.io: "1.0"
   name: istio-sample
 spec:
-  version: "1.5.0-beta.5"
+  version: "1.5.0"
   meshPolicy:
     mtlsMode: PERMISSIVE
   autoMtls: true
@@ -24,7 +24,7 @@ spec:
     enabled: true
   pilot:
     enabled: true
-    image: "docker.io/istio/pilot:1.5.0-beta.5"
+    image: "docker.io/istio/pilot:1.5.0"
     replicaCount: 1
     minReplicas: 1
     maxReplicas: 5
@@ -35,10 +35,10 @@ spec:
         memory: 2048Mi
   citadel:
     enabled: false
-    image: "docker.io/istio/citadel:1.5.0-beta.5"
+    image: "docker.io/istio/citadel:1.5.0"
   galley:
     enabled: false
-    image: "docker.io/istio/galley:1.5.0-beta.5"
+    image: "docker.io/istio/galley:1.5.0"
     replicaCount: 1
     enableServiceDiscovery: false
     enableAnalysis: false
@@ -102,19 +102,19 @@ spec:
       enabled: false
   policy:
     enabled: false
-    image: "docker.io/istio/mixer:1.5.0-beta.5"
+    image: "docker.io/istio/mixer:1.5.0"
     replicaCount: 1
     minReplicas: 1
     maxReplicas: 5
   telemetry:
     enabled: false
-    image: "docker.io/istio/mixer:1.5.0-beta.5"
+    image: "docker.io/istio/mixer:1.5.0"
     replicaCount: 1
     minReplicas: 1
     maxReplicas: 5
   sidecarInjector:
     enabled: false
-    image: "docker.io/istio/sidecar_injector:1.5.0-beta.5"
+    image: "docker.io/istio/sidecar_injector:1.5.0"
     replicaCount: 1
     rewriteAppHTTPProbe: true
     autoInjectionPolicyEnabled: true
@@ -128,9 +128,9 @@ spec:
           memory: 50Mi
   nodeAgent:
     enabled: false
-    image: "docker.io/istio/node-agent-k8s:1.5.0-beta.5"
+    image: "docker.io/istio/node-agent-k8s:1.5.0"
   proxy:
-    image: "docker.io/istio/proxyv2:1.5.0-beta.5"
+    image: "docker.io/istio/proxyv2:1.5.0"
     accessLogFile: "/dev/stdout"
     accessLogFormat: ""
     accessLogEncoding: "TEXT"
@@ -143,7 +143,7 @@ spec:
         cpu: 2000m
         memory: 1024Mi
   proxyInit:
-    image: "docker.io/istio/proxyv2:1.5.0-beta.5"
+    image: "docker.io/istio/proxyv2:1.5.0"
   defaultPodDisruptionBudget:
     enabled: true
   outboundTrafficPolicy:
