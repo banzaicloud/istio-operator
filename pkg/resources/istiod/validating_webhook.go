@@ -14,7 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package pilot
+package istiod
 
 import (
 	"github.com/banzaicloud/istio-operator/pkg/util"
@@ -24,10 +24,6 @@ import (
 )
 
 func (r *Reconciler) webhooks() []admissionv1beta1.Webhook {
-	if !util.PointerToBool(r.Config.Spec.Istiod.Enabled) {
-		return nil
-	}
-
 	ignore := admissionv1beta1.Ignore
 	se := admissionv1beta1.SideEffectClassNone
 	return []admissionv1beta1.Webhook{
@@ -35,7 +31,7 @@ func (r *Reconciler) webhooks() []admissionv1beta1.Webhook {
 			Name: "validation.istio.io",
 			ClientConfig: admissionv1beta1.WebhookClientConfig{
 				Service: &admissionv1beta1.ServiceReference{
-					Name:      serviceNameIstiod,
+					Name:      ServiceNameIstiod,
 					Namespace: r.Config.Namespace,
 					Path:      util.StrPointer("/validate"),
 				},
@@ -67,15 +63,5 @@ func (r *Reconciler) validatingWebhook() runtime.Object {
 			Labels: util.MergeStringMaps(istiodLabels, istiodLabelSelector),
 		},
 		Webhooks: r.webhooks(),
-	}
-}
-
-func (r *Reconciler) validatingWebhookGalley() runtime.Object {
-	return &admissionv1beta1.ValidatingWebhookConfiguration{
-		ObjectMeta: metav1.ObjectMeta{
-			Name:   validatingWebhookNameGalley,
-			Labels: util.MergeStringMaps(galleyLabels, galleyLabelSelector),
-		},
-		Webhooks: nil,
 	}
 }

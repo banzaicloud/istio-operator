@@ -31,8 +31,12 @@ import (
 )
 
 func (r *Reconciler) configMapInjector() runtime.Object {
+	labels := util.MergeStringMaps(sidecarInjectorLabels, labelSelector)
+	if util.PointerToBool(r.Config.Spec.Istiod.Enabled) {
+		labels = nil
+	}
 	return &apiv1.ConfigMap{
-		ObjectMeta: templates.ObjectMeta(configMapNameInjector, util.MergeStringMaps(sidecarInjectorLabels, labelSelector), r.Config),
+		ObjectMeta: templates.ObjectMeta(configMapNameInjector, labels, r.Config),
 		Data: map[string]string{
 			"config": r.siConfig(),
 			"values": r.getValues(),
@@ -62,6 +66,11 @@ func (r *Reconciler) getValues() string {
 			"mtls": map[string]interface{}{
 				"auto": util.PointerToBool(r.Config.Spec.AutoMTLS),
 			},
+			"istiod": map[string]interface{}{
+				"enabled": util.PointerToBool(r.Config.Spec.Istiod.Enabled),
+			},
+			"jwtPolicy":              r.Config.Spec.JWTPolicy,
+			"pilotCertProvider":      r.Config.Spec.PilotCertProvider,
 			"trustDomain":            r.Config.Spec.TrustDomain,
 			"imagePullPolicy":        r.Config.Spec.ImagePullPolicy,
 			"network":                r.Config.Spec.NetworkName,
@@ -220,8 +229,16 @@ containers:
   - --concurrency
   - "{{ .ProxyConfig.Concurrency }}"
   {{ end -}}
+  {{- if .Values.global.istiod.enabled }}
   - --controlPlaneAuthPolicy
-  - "{{ annotation .ObjectMeta ` + "`" + `sidecar.istio.io/controlPlaneAuthPolicy` + "`" + ` .ProxyConfig.ControlPlaneAuthPolicy }}"
+  - NONE
+  {{- else if .Values.global.controlPlaneSecurityEnabled }}
+  - --controlPlaneAuthPolicy
+  - MUTUAL_TLS
+  {{- else }}
+  - --controlPlaneAuthPolicy
+  - NONE
+  {{- end }}
 {{- if (ne (annotation .ObjectMeta "status.sidecar.istio.io/port" (valueOrDefault .Values.global.proxy.statusPort 0 )) ` + "`" + `0` + "`" + `) }}
   - --statusPort
   - "{{ annotation .ObjectMeta ` + "`" + `status.sidecar.istio.io/port` + "`" + ` .Values.global.proxy.statusPort }}"
@@ -229,11 +246,23 @@ containers:
 {{- if .Values.global.trustDomain }}
   - --trust-domain={{ .Values.global.trustDomain }}
 {{- end }}
+{{- if .Values.global.istiod.enabled }}
+  - --controlPlaneBootstrap=false
+{{- end }}
 {{- if .Values.global.proxy.lifecycle }}
   lifecycle:
     {{ toYaml .Values.global.proxy.lifecycle | indent 4 }}
 {{- end }}
   env:
+{{- if .Values.global.istiod.enabled }}
+  - name: JWT_POLICY
+    value: {{ .Values.global.jwtPolicy }}
+  - name: PILOT_CERT_PROVIDER
+    value: {{ .Values.global.pilotCertProvider }}
+  # Temp, pending PR to make it default or based on the istiodAddr env
+  - name: CA_ADDR
+    value: istio-pilot.istio-system.svc:15012
+{{- end }}
   - name: POD_NAME
     valueFrom:
       fieldRef:
@@ -304,11 +333,13 @@ containers:
     value: |
            {{ toJSON .ObjectMeta.Annotations }}
   {{ end }}
+  {{- if not .Values.global.istiod.enabled }}
   {{ if .ObjectMeta.Labels }}
   - name: ISTIO_METAJSON_LABELS
     value: |
            {{ toJSON .ObjectMeta.Labels }}
   {{ end }}
+  {{- end }}
   {{- if .DeploymentMeta.Name }}
   - name: ISTIO_META_WORKLOAD_NAME
     value: {{ .DeploymentMeta.Name }}
@@ -321,9 +352,11 @@ containers:
   - name: ISTIO_BOOTSTRAP_OVERRIDE
     value: "/etc/istio/custom-bootstrap/custom_bootstrap.json"
   {{- end }}
+  {{- if not .Values.global.istiod.enabled }}
   {{- if .Values.global.sds.customTokenDirectory }}
   - name: ISTIO_META_SDS_TOKEN_PATH
     value: "{{ .Values.global.sds.customTokenDirectory -}}/sdstoken"
+  {{- end }}
   {{- end }}
   {{- if .Values.global.meshID }}
   - name: ISTIO_META_MESH_ID
@@ -372,6 +405,9 @@ containers:
     privileged: {{ .Values.global.proxy.privileged }}
     readOnlyRootFilesystem: {{ not .Values.global.proxy.enableCoreDump }}
     runAsGroup: 1337
+    {{- if .Values.global.istiod.enabled }}
+    fsGroup: 1337
+    {{- end }}
     {{ if eq (annotation .ObjectMeta ` + "`" + `sidecar.istio.io/interceptionMode` + "`" + ` .ProxyConfig.InterceptionMode) ` + "`" + `TPROXY` + "`" + ` -}}
     runAsNonRoot: false
     runAsUser: 0
@@ -394,15 +430,37 @@ containers:
 {{- end }}
   {{  end -}}
   volumeMounts:
+  {{- if .Values.global.istiod.enabled }}
+  {{- if eq .Values.global.pilotCertProvider "istiod" }}
+  - mountPath: /var/run/secrets/istio
+    name: istiod-ca-cert
+  {{- end }}
+  {{- end }}
   {{ if (isset .ObjectMeta.Annotations ` + "`" + `sidecar.istio.io/bootstrapOverride` + "`" + `) }}
   - mountPath: /etc/istio/custom-bootstrap
     name: custom-bootstrap-volume
   {{- end }}
+  # SDS channel between istioagent and Envoy
   - mountPath: /etc/istio/proxy
     name: istio-envoy
+  {{- if .Values.global.istiod.enabled }}
+  {{- if eq .Values.global.jwtPolicy "third-party-jwt" }}
+  - mountPath: /var/run/secrets/tokens
+    name: istio-token
+  {{- end }}
+  {{- if .Values.global.mountMtlsCerts }}
+  # Use the key and cert mounted to /etc/certs/ for the in-cluster mTLS communications.
   - mountPath: /etc/certs/
     name: istio-certs
     readOnly: true
+  {{- end }}
+  - name: podinfo
+    mountPath: /etc/istio/pod
+  {{- else }}
+  - mountPath: /etc/certs/
+    name: istio-certs
+    readOnly: true
+  {{- end }}
   {{- if and (eq .Values.global.proxy.tracer "lightstep") .Values.global.tracer.lightstep.cacertPath }}
   - mountPath: {{ directory .ProxyConfig.GetTracing.GetLightstep.GetCacertPath }}
     name: lightstep-certs
@@ -420,9 +478,36 @@ volumes:
   configMap:
     name: {{ annotation .ObjectMeta ` + "`" + `sidecar.istio.io/bootstrapOverride` + "`" + ` "" }}
 {{- end }}
+# SDS channel between istioagent and Envoy
 - emptyDir:
     medium: Memory
   name: istio-envoy
+{{- if .Values.global.istiod.enabled }}
+- name: podinfo
+  downwardAPI:
+    items:
+      - path: "labels"
+        fieldRef:
+          fieldPath: metadata.labels
+      - path: "annotations"
+        fieldRef:
+          fieldPath: metadata.annotations
+{{- if eq .Values.global.jwtPolicy "third-party-jwt" }}
+- name: istio-token
+  projected:
+    sources:
+    - serviceAccountToken:
+        path: istio-token
+        expirationSeconds: 43200
+        audience: {{ .Values.global.sds.token.aud }}
+{{- end }}
+{{- if eq .Values.global.pilotCertProvider "istiod" }}
+- name: istiod-ca-cert
+  configMap:
+    name: istio-ca-root-cert
+{{- end }}
+{{- if .Values.global.mountMtlsCerts }}
+# Use the key and cert mounted to /etc/certs/ for the in-cluster mTLS communications.
 - name: istio-certs
   secret:
     optional: true
@@ -431,6 +516,17 @@ volumes:
     {{ else -}}
     secretName: {{  printf "istio.%s" .Spec.ServiceAccountName }}
     {{  end -}}
+{{- end }}
+{{- else }}
+- name: istio-certs
+  secret:
+    optional: true
+    {{ if eq .Spec.ServiceAccountName "" }}
+    secretName: istio.default
+    {{ else -}}
+    secretName: {{  printf "istio.%s" .Spec.ServiceAccountName }}
+    {{  end -}}
+{{- end }}
   {{- if isset .ObjectMeta.Annotations ` + "`" + `sidecar.istio.io/userVolume` + "`" + ` }}
   {{range $index, $value := fromJSON (index .ObjectMeta.Annotations ` + "`" + `sidecar.istio.io/userVolume` + "`" + `) }}
 - name: "{{ $index }}"

@@ -14,7 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package pilot
+package base
 
 import (
 	"fmt"
@@ -34,7 +34,7 @@ var cmLabels = map[string]string{
 
 func (r *Reconciler) configMap() runtime.Object {
 	return &apiv1.ConfigMap{
-		ObjectMeta: templates.ObjectMeta(configMapName, cmLabels, r.Config),
+		ObjectMeta: templates.ObjectMeta(IstioConfigMapName, cmLabels, r.Config),
 		Data: map[string]string{
 			"mesh":         r.meshConfig(),
 			"meshNetworks": r.meshNetworks(),
@@ -149,7 +149,7 @@ func (r *Reconciler) meshConfig() string {
 	if util.PointerToBool(r.Config.Spec.Istiod.Enabled) {
 		meshConfig["sdsUdsPath"] = "unix:/etc/istio/proxy/SDS"
 	} else {
-		meshConfig["sdsUdsPath"] = ""
+		meshConfig["sdsUdsPath"] = r.Config.Spec.SDS.UdsPath
 		meshConfig["enableSdsTokenMount"] = false
 		meshConfig["sdsUseK8sSaJwt"] = false
 	}

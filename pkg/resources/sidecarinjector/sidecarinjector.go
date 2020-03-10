@@ -33,8 +33,7 @@ const (
 	serviceAccountName     = "istio-sidecar-injector-service-account"
 	clusterRoleName        = "istio-sidecar-injector-cluster-role"
 	clusterRoleBindingName = "istio-sidecar-injector-cluster-role-binding"
-	configMapNameInjector  = "istio-sidecar-injector-old"
-	istioConfigMapName     = "injector-mesh"
+	configMapNameInjector  = "istio-sidecar-injector"
 	webhookName            = "istio-sidecar-injector"
 	deploymentName         = "istio-sidecar-injector"
 	serviceName            = "istio-sidecar-injector"
@@ -51,10 +50,9 @@ var labelSelector = map[string]string{
 
 type Reconciler struct {
 	resources.Reconciler
-	remote bool
 }
 
-func New(client client.Client, config *istiov1beta1.Istio, isRemote bool) *Reconciler {
+func New(client client.Client, config *istiov1beta1.Istio) *Reconciler {
 	if config.Spec.ExcludeIPRanges == "" && config.Spec.IncludeIPRanges == "" {
 		config.Spec.IncludeIPRanges = "*"
 	}
@@ -64,7 +62,6 @@ func New(client client.Client, config *istiov1beta1.Istio, isRemote bool) *Recon
 			Client: client,
 			Config: config,
 		},
-		remote: isRemote,
 	}
 }
 
@@ -74,29 +71,29 @@ func (r *Reconciler) Reconcile(log logr.Logger) error {
 	log.Info("Reconciling")
 
 	var sidecarInjectorDesiredState k8sutil.DesiredState
+	var istiodDesiredState k8sutil.DesiredState
 	if util.PointerToBool(r.Config.Spec.SidecarInjector.Enabled) {
 		sidecarInjectorDesiredState = k8sutil.DesiredStatePresent
+		istiodDesiredState = k8sutil.DesiredStatePresent
+	} else if util.PointerToBool(r.Config.Spec.Istiod.Enabled) {
+		sidecarInjectorDesiredState = k8sutil.DesiredStateAbsent
+		istiodDesiredState = k8sutil.DesiredStatePresent
 	} else {
 		sidecarInjectorDesiredState = k8sutil.DesiredStateAbsent
+		istiodDesiredState = k8sutil.DesiredStateAbsent
 	}
 
-	ress := []resources.Resource{
-		r.serviceAccount,
-		r.clusterRole,
-		r.clusterRoleBinding,
-		r.configMap,
-		r.configMapInjector,
-		r.deployment,
-		r.service,
-	}
-
-	if sidecarInjectorDesiredState == k8sutil.DesiredStatePresent {
-		ress = append(ress, r.webhook)
-	}
-
-	for _, res := range ress {
-		o := res()
-		err := k8sutil.Reconcile(log, r.Client, o, sidecarInjectorDesiredState)
+	for _, res := range []resources.ResourceWithDesiredState{
+		{Resource: r.serviceAccount, DesiredState: sidecarInjectorDesiredState},
+		{Resource: r.clusterRole, DesiredState: sidecarInjectorDesiredState},
+		{Resource: r.clusterRoleBinding, DesiredState: sidecarInjectorDesiredState},
+		{Resource: r.configMapInjector, DesiredState: istiodDesiredState},
+		{Resource: r.deployment, DesiredState: sidecarInjectorDesiredState},
+		{Resource: r.service, DesiredState: sidecarInjectorDesiredState},
+		{Resource: r.webhook, DesiredState: istiodDesiredState},
+	} {
+		o := res.Resource()
+		err := k8sutil.Reconcile(log, r.Client, o, res.DesiredState)
 		if err != nil {
 			return emperror.WrapWith(err, "failed to reconcile resource", "resource", o.GetObjectKind().GroupVersionKind())
 		}
