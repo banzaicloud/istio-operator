@@ -16,7 +16,7 @@ limitations under the License.
 
 package sidecarinjector
 
-import 	(
+import (
 	admissionv1beta1 "k8s.io/api/admissionregistration/v1beta1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
