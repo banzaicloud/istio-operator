@@ -61,7 +61,7 @@ func (r *Reconciler) Reconcile(log logr.Logger) error {
 	}
 
 	sdsDesiredState := k8sutil.DesiredStateAbsent
-	if util.PointerToBool(r.gw.Spec.SDS.Enabled) {
+	if util.PointerToBool(r.gw.Spec.SDS.Enabled) || util.PointerToBool(r.Config.Spec.Istiod.Enabled) {
 		sdsDesiredState = k8sutil.DesiredStatePresent
 	}
 

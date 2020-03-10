@@ -14,27 +14,36 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package pilot
+package istiod
 
 import (
+	apiv1 "k8s.io/api/core/v1"
+	"k8s.io/apimachinery/pkg/runtime"
+	"k8s.io/apimachinery/pkg/util/intstr"
+
 	"github.com/banzaicloud/istio-operator/pkg/resources/templates"
 	"github.com/banzaicloud/istio-operator/pkg/util"
-	autoscalev2beta1 "k8s.io/api/autoscaling/v2beta1"
-	"k8s.io/apimachinery/pkg/runtime"
 )
 
-func (r *Reconciler) horizontalPodAutoscaler() runtime.Object {
-	return &autoscalev2beta1.HorizontalPodAutoscaler{
-		ObjectMeta: templates.ObjectMeta(hpaName, nil, r.Config),
-		Spec: autoscalev2beta1.HorizontalPodAutoscalerSpec{
-			MaxReplicas: util.PointerToInt32(r.Config.Spec.Pilot.MaxReplicas),
-			MinReplicas: r.Config.Spec.Pilot.MinReplicas,
-			ScaleTargetRef: autoscalev2beta1.CrossVersionObjectReference{
-				Name:       deploymentName,
-				Kind:       "Deployment",
-				APIVersion: "apps/v1",
+func (r *Reconciler) service() runtime.Object {
+	return &apiv1.Service{
+		ObjectMeta: templates.ObjectMeta(ServiceNameIstiod, istiodLabels, r.Config),
+		Spec: apiv1.ServiceSpec{
+			Ports: []apiv1.ServicePort{
+				{
+					Name:       "https-dns",
+					Port:       15012,
+					TargetPort: intstr.FromInt(15012),
+					Protocol:   apiv1.ProtocolTCP,
+				},
+				{
+					Name:       "https-webhook",
+					Port:       443,
+					TargetPort: intstr.FromInt(15017),
+					Protocol:   apiv1.ProtocolTCP,
+				},
 			},
-			Metrics: templates.TargetAvgCpuUtil80(),
+			Selector: util.MergeStringMaps(istiodLabels, pilotLabelSelector),
 		},
 	}
 }

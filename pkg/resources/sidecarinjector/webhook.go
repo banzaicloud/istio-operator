@@ -16,11 +16,12 @@ limitations under the License.
 
 package sidecarinjector
 
-import (
+import 	(
 	admissionv1beta1 "k8s.io/api/admissionregistration/v1beta1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 
+	"github.com/banzaicloud/istio-operator/pkg/resources/istiod"
 	"github.com/banzaicloud/istio-operator/pkg/resources/templates"
 	"github.com/banzaicloud/istio-operator/pkg/util"
 )
@@ -28,6 +29,10 @@ import (
 func (r *Reconciler) webhook() runtime.Object {
 	fail := admissionv1beta1.Fail
 	unknownSideEffects := admissionv1beta1.SideEffectClassUnknown
+	service := serviceName
+	if util.PointerToBool(r.Config.Spec.Istiod.Enabled) {
+		service = istiod.ServiceNameIstiod
+	}
 	webhook := &admissionv1beta1.MutatingWebhookConfiguration{
 		ObjectMeta: templates.ObjectMetaClusterScope(webhookName, sidecarInjectorLabels, r.Config),
 		Webhooks: []admissionv1beta1.Webhook{
@@ -35,7 +40,7 @@ func (r *Reconciler) webhook() runtime.Object {
 				Name: "sidecar-injector.istio.io",
 				ClientConfig: admissionv1beta1.WebhookClientConfig{
 					Service: &admissionv1beta1.ServiceReference{
-						Name:      serviceName,
+						Name:      service,
 						Namespace: r.Config.Namespace,
 						Path:      util.StrPointer("/inject"),
 					},
@@ -79,6 +84,19 @@ func (r *Reconciler) webhook() runtime.Object {
 				},
 			},
 		}
+	}
+
+	if util.PointerToBool(r.Config.Spec.Istiod.Enabled) {
+		webhook.Webhooks[0].NamespaceSelector.MatchExpressions = append(webhook.Webhooks[0].NamespaceSelector.MatchExpressions, []metav1.LabelSelectorRequirement{
+			{
+				Key:      "istio-env",
+				Operator: metav1.LabelSelectorOpDoesNotExist,
+			},
+			{
+				Key:      "istio.io/rev",
+				Operator: metav1.LabelSelectorOpDoesNotExist,
+			},
+		}...)
 	}
 
 	return webhook

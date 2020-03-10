@@ -14,7 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package pilot
+package istiod
 
 import (
 	"github.com/go-logr/logr"
@@ -29,21 +29,27 @@ import (
 )
 
 const (
-	componentName          = "pilot"
-	serviceAccountName     = "istio-pilot-service-account"
-	clusterRoleName        = "istio-pilot-cluster-role"
-	clusterRoleBindingName = "istio-pilot-cluster-role-binding"
-	deploymentName         = "istio-pilot"
-	serviceName            = "istio-pilot"
-	hpaName                = "istio-pilot-autoscaler"
-	pdbName                = "istio-pilot"
+	componentName                = "istiod"
+	serviceAccountName           = "istiod-service-account"
+	clusterRoleNameIstiod        = "istiod-cluster-role"
+	clusterRoleBindingNameIstiod = "istiod-cluster-role-binding"
+	configMapNameEnvoy           = "pilot-envoy-config"
+	deploymentName               = "istiod"
+	ServiceNameIstiod            = "istiod"
+	hpaName                      = "istiod-autoscaler"
+	pdbName                      = "istiod"
+	validatingWebhookName        = "istiod-istio-system"
 )
 
-var pilotLabels = map[string]string{
-	"app": "istio-pilot",
+var istiodLabels = map[string]string{
+	"app": "istiod",
 }
 
-var labelSelector = map[string]string{
+var istiodLabelSelector = map[string]string{
+	"istio": "istiod",
+}
+
+var pilotLabelSelector = map[string]string{
 	"istio": "pilot",
 }
 
@@ -67,35 +73,30 @@ func (r *Reconciler) Reconcile(log logr.Logger) error {
 
 	log.Info("Reconciling")
 
-	var pilotDesiredState k8sutil.DesiredState
+	var istiodDesiredState k8sutil.DesiredState
 	var pdbDesiredState k8sutil.DesiredState
-	var serviceDesiredState k8sutil.DesiredState
 	if util.PointerToBool(r.Config.Spec.Istiod.Enabled) {
-		pilotDesiredState = k8sutil.DesiredStateAbsent
-		pdbDesiredState = k8sutil.DesiredStateAbsent
-		serviceDesiredState = k8sutil.DesiredStatePresent
-	} else if util.PointerToBool(r.Config.Spec.Pilot.Enabled) {
-		pilotDesiredState = k8sutil.DesiredStatePresent
-		serviceDesiredState = k8sutil.DesiredStatePresent
+		istiodDesiredState = k8sutil.DesiredStatePresent
 		if util.PointerToBool(r.Config.Spec.DefaultPodDisruptionBudget.Enabled) {
 			pdbDesiredState = k8sutil.DesiredStatePresent
 		} else {
 			pdbDesiredState = k8sutil.DesiredStateAbsent
 		}
 	} else {
-		pilotDesiredState = k8sutil.DesiredStateAbsent
+		istiodDesiredState = k8sutil.DesiredStateAbsent
 		pdbDesiredState = k8sutil.DesiredStateAbsent
-		serviceDesiredState = k8sutil.DesiredStateAbsent
 	}
 
 	for _, res := range []resources.ResourceWithDesiredState{
-		{Resource: r.serviceAccount, DesiredState: pilotDesiredState},
-		{Resource: r.clusterRole, DesiredState: pilotDesiredState},
-		{Resource: r.clusterRoleBinding, DesiredState: pilotDesiredState},
-		{Resource: r.deployment, DesiredState: pilotDesiredState},
-		{Resource: r.service, DesiredState: serviceDesiredState},
-		{Resource: r.horizontalPodAutoscaler, DesiredState: pilotDesiredState},
+		{Resource: r.serviceAccount, DesiredState: istiodDesiredState},
+		{Resource: r.clusterRole, DesiredState: istiodDesiredState},
+		{Resource: r.clusterRoleBinding, DesiredState: istiodDesiredState},
+		{Resource: r.configMapEnvoy, DesiredState: istiodDesiredState},
+		{Resource: r.deployment, DesiredState: istiodDesiredState},
+		{Resource: r.service, DesiredState: istiodDesiredState},
+		{Resource: r.horizontalPodAutoscaler, DesiredState: istiodDesiredState},
 		{Resource: r.podDisruptionBudget, DesiredState: pdbDesiredState},
+		{Resource: r.validatingWebhook, DesiredState: istiodDesiredState},
 	} {
 		o := res.Resource()
 		err := k8sutil.Reconcile(log, r.Client, o, res.DesiredState)

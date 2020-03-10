@@ -73,33 +73,10 @@ func (r *Reconciler) servicePorts() []apiv1.ServicePort {
 
 func (r *Reconciler) service() runtime.Object {
 	return &apiv1.Service{
-		ObjectMeta: templates.ObjectMeta(serviceName, util.MergeStringMaps(pilotLabels, pilotLabelSelector), r.Config),
+		ObjectMeta: templates.ObjectMeta(serviceName, util.MergeStringMaps(pilotLabels, labelSelector), r.Config),
 		Spec: apiv1.ServiceSpec{
 			Ports:    r.servicePorts(),
-			Selector: pilotLabelSelector,
-		},
-	}
-}
-
-func (r *Reconciler) serviceIstiod() runtime.Object {
-	return &apiv1.Service{
-		ObjectMeta: templates.ObjectMeta(serviceNameIstiod, istiodLabels, r.Config),
-		Spec: apiv1.ServiceSpec{
-			Ports: []apiv1.ServicePort{
-				{
-					Name:       "https-dns",
-					Port:       15012,
-					TargetPort: intstr.FromInt(15012),
-					Protocol:   apiv1.ProtocolTCP,
-				},
-				{
-					Name:       "https-webhook",
-					Port:       443,
-					TargetPort: intstr.FromInt(15017),
-					Protocol:   apiv1.ProtocolTCP,
-				},
-			},
-			Selector: util.MergeStringMaps(istiodLabels, pilotLabelSelector),
+			Selector: labelSelector,
 		},
 	}
 }

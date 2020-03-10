@@ -53,6 +53,7 @@ import (
 	"github.com/banzaicloud/istio-operator/pkg/resources/galley"
 	"github.com/banzaicloud/istio-operator/pkg/resources/ingressgateway"
 	"github.com/banzaicloud/istio-operator/pkg/resources/istiocoredns"
+	"github.com/banzaicloud/istio-operator/pkg/resources/istiod"
 	"github.com/banzaicloud/istio-operator/pkg/resources/mixer"
 	"github.com/banzaicloud/istio-operator/pkg/resources/mixerlesstelemetry"
 	"github.com/banzaicloud/istio-operator/pkg/resources/nodeagent"
@@ -301,18 +302,19 @@ func (r *ReconcileIstio) reconcile(logger logr.Logger, config *istiov1beta1.Isti
 	}
 
 	reconcilers := []resources.ComponentReconciler{
-		base.New(r.Client, config),
+		base.New(r.Client, config, false),
 		citadel.New(citadel.Configuration{
 			DeployMeshPolicy: true,
 		}, r.Client, r.dynamic, config),
 		galley.New(r.Client, config),
-		pilot.New(r.Client, r.dynamic, config, false),
+		pilot.New(r.Client, r.dynamic, config),
+		istiod.New(r.Client, r.dynamic, config),
 		mixer.NewPolicyReconciler(r.Client, r.dynamic, config),
 		mixer.NewTelemetryReconciler(r.Client, r.dynamic, config),
 		ingressgateway.New(r.Client, r.dynamic, config),
 		egressgateway.New(r.Client, r.dynamic, config),
 		cni.New(r.Client, config),
-		sidecarinjector.New(r.Client, config, false),
+		sidecarinjector.New(r.Client, config),
 		nodeagent.New(r.Client, config),
 		istiocoredns.New(r.Client, config),
 		mixerlesstelemetry.New(r.Client, r.dynamic, config),
