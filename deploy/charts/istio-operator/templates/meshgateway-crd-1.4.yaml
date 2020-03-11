@@ -63,6 +63,12 @@ spec:
           type: object
         spec:
           properties:
+            additionalEnvVars:
+              description: If present will be appended to the environment variables
+                of the container
+              items:
+                type: object
+              type: array
             affinity:
               type: object
             applicationPorts:
