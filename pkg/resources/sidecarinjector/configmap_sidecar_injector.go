@@ -69,12 +69,13 @@ func (r *Reconciler) getValues() string {
 			"istiod": map[string]interface{}{
 				"enabled": util.PointerToBool(r.Config.Spec.Istiod.Enabled),
 			},
-			"jwtPolicy":              r.Config.Spec.JWTPolicy,
-			"pilotCertProvider":      r.Config.Spec.PilotCertProvider,
-			"trustDomain":            r.Config.Spec.TrustDomain,
-			"imagePullPolicy":        r.Config.Spec.ImagePullPolicy,
-			"network":                r.Config.Spec.NetworkName,
-			"podDNSSearchNamespaces": podDNSSearchNamespaces,
+			"controlPlaneSecurityEnabled": r.Config.Spec.ControlPlaneSecurityEnabled,
+			"jwtPolicy":                   r.Config.Spec.JWTPolicy,
+			"pilotCertProvider":           r.Config.Spec.Pilot.CertProvider,
+			"trustDomain":                 r.Config.Spec.TrustDomain,
+			"imagePullPolicy":             r.Config.Spec.ImagePullPolicy,
+			"network":                     r.Config.Spec.NetworkName,
+			"podDNSSearchNamespaces":      podDNSSearchNamespaces,
 			"proxy_init": map[string]interface{}{
 				"image": r.Config.Spec.ProxyInit.Image,
 			},
@@ -259,7 +260,6 @@ containers:
     value: {{ .Values.global.jwtPolicy }}
   - name: PILOT_CERT_PROVIDER
     value: {{ .Values.global.pilotCertProvider }}
-  # Temp, pending PR to make it default or based on the istiodAddr env
   - name: CA_ADDR
     value: istio-pilot.istio-system.svc:15012
 {{- end }}
@@ -353,6 +353,8 @@ containers:
     value: "/etc/istio/custom-bootstrap/custom_bootstrap.json"
   {{- end }}
   {{- if not .Values.global.istiod.enabled }}
+  - name: SDS_ENABLED
+    value: {{ $.Values.global.sds.enabled }}
   {{- if .Values.global.sds.customTokenDirectory }}
   - name: ISTIO_META_SDS_TOKEN_PATH
     value: "{{ .Values.global.sds.customTokenDirectory -}}/sdstoken"
@@ -457,9 +459,22 @@ containers:
   - name: podinfo
     mountPath: /etc/istio/pod
   {{- else }}
+  {{- if .Values.global.sds.enabled }}
+  - mountPath: /var/run/sds
+    name: sds-uds-path
+    readOnly: true
+  - mountPath: /var/run/secrets/tokens
+    name: istio-token
+  {{- if .Values.global.sds.customTokenDirectory }}
+  - mountPath: "{{ .Values.global.sds.customTokenDirectory -}}"
+    name: custom-sds-token
+    readOnly: true
+  {{- end }}
+  {{- else }}
   - mountPath: /etc/certs/
     name: istio-certs
     readOnly: true
+  {{- end }}
   {{- end }}
   {{- if and (eq .Values.global.proxy.tracer "lightstep") .Values.global.tracer.lightstep.cacertPath }}
   - mountPath: {{ directory .ProxyConfig.GetTracing.GetLightstep.GetCacertPath }}
@@ -518,6 +533,23 @@ volumes:
     {{  end -}}
 {{- end }}
 {{- else }}
+{{- if .Values.global.sds.enabled }}
+- name: sds-uds-path
+  hostPath:
+    path: /var/run/sds
+- name: istio-token
+  projected:
+    sources:
+      - serviceAccountToken:
+          path: istio-token
+          expirationSeconds: 43200
+          audience: {{ .Values.global.sds.token.aud }}
+{{- if .Values.global.sds.customTokenDirectory }}
+- name: custom-sds-token
+  secret:
+    secretName: sdstokensecret
+{{- end }}
+{{- else }}
 - name: istio-certs
   secret:
     optional: true
@@ -526,6 +558,7 @@ volumes:
     {{ else -}}
     secretName: {{  printf "istio.%s" .Spec.ServiceAccountName }}
     {{  end -}}
+{{- end }}
 {{- end }}
   {{- if isset .ObjectMeta.Annotations ` + "`" + `sidecar.istio.io/userVolume` + "`" + ` }}
   {{range $index, $value := fromJSON (index .ObjectMeta.Annotations ` + "`" + `sidecar.istio.io/userVolume` + "`" + `) }}
