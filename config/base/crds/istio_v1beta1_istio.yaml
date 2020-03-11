@@ -601,6 +601,15 @@ spec:
                   type: array
                 affinity:
                   type: object
+                certProvider:
+                  description: 'Configure the certificate provider for control plane
+                    communication. Currently, two providers are supported: "kubernetes"
+                    and "istiod". As some platforms may not have kubernetes signing
+                    APIs, Istiod is the default'
+                  enum:
+                  - kubernetes
+                  - istiod
+                  type: string
                 enableProtocolSniffingInbound:
                   description: If enabled, protocol sniffing will be used for inbound
                     listeners whose port protocol is not specified or unsupported
@@ -638,15 +647,6 @@ spec:
                   format: float
                   type: number
               type: object
-            pilotCertProvider:
-              description: 'Configure the certificate provider for control plane communication.
-                Currently, two providers are supported: "kubernetes" and "istiod".
-                As some platforms may not have kubernetes signing APIs, Istiod is
-                the default'
-              enum:
-              - kubernetes
-              - istiod
-              type: string
             policy:
               description: Policy configuration options
               properties:

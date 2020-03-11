@@ -270,19 +270,5 @@ func (r *Reconciler) volumes() []apiv1.Volume {
 		})
 	}
 
-	if r.Config.Spec.ControlPlaneSecurityEnabled {
-		volumes = append(volumes, apiv1.Volume{
-			Name: "envoy-config",
-			VolumeSource: apiv1.VolumeSource{
-				ConfigMap: &apiv1.ConfigMapVolumeSource{
-					LocalObjectReference: apiv1.LocalObjectReference{
-						Name: "galley-envoy-config",
-					},
-					DefaultMode: util.IntPointer(420),
-				},
-			},
-		})
-	}
-
 	return volumes
 }

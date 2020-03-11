@@ -33,6 +33,7 @@ spec:
       requests:
         cpu: 500m
         memory: 2048Mi
+    certProvider: "istiod"
   citadel:
     enabled: false
     image: "docker.io/istio/citadel:1.5.0"
@@ -172,5 +173,4 @@ spec:
     #   to: eu-west
     # - from: us-west
     #   to: us-east
-  pilotCertProvider: "istiod"
   jwtPolicy: "third-party-jwt"

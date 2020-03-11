@@ -224,7 +224,7 @@ func (r *Reconciler) defaultConfigSource() map[string]interface{} {
 }
 
 func (r *Reconciler) discoveryPort() string {
-	if r.Config.Spec.ControlPlaneSecurityEnabled {
+	if r.Config.Spec.ControlPlaneSecurityEnabled && !util.PointerToBool(r.Config.Spec.Istiod.Enabled) {
 		return "15011"
 	}
 	return "15010"
