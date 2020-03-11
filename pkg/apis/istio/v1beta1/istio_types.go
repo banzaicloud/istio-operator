@@ -94,6 +94,12 @@ type PilotConfiguration struct {
 	EnableProtocolSniffingOutbound *bool `json:"enableProtocolSniffingOutbound,omitempty"`
 	// If enabled, protocol sniffing will be used for inbound listeners whose port protocol is not specified or unsupported
 	EnableProtocolSniffingInbound *bool `json:"enableProtocolSniffingInbound,omitempty"`
+	// Configure the certificate provider for control plane communication.
+	// Currently, two providers are supported: "kubernetes" and "istiod".
+	// As some platforms may not have kubernetes signing APIs,
+	// Istiod is the default
+	// +kubebuilder:validation:Enum=kubernetes,istiod
+	CertProvider PilotCertProviderType `json:"certProvider,omitempty"`
 
 	// If present will be appended at the end of the initial/preconfigured container arguments
 	AdditionalContainerArgs []string `json:"additionalContainerArgs,omitempty"`
@@ -733,13 +739,6 @@ type IstioSpec struct {
 	//     dnsNames: [istio-sidecar-injector.istio-system.svc, istio-sidecar-injector.istio-system]
 	// +k8s:deepcopy-gen:interfaces=Certificates
 	Certificates []CertificateConfig `json:"certificates,omitempty"`
-
-	// Configure the certificate provider for control plane communication.
-	// Currently, two providers are supported: "kubernetes" and "istiod".
-	// As some platforms may not have kubernetes signing APIs,
-	// Istiod is the default
-	// +kubebuilder:validation:Enum=kubernetes,istiod
-	PilotCertProvider PilotCertProviderType `json:"pilotCertProvider,omitempty"`
 
 	// Configure the policy for validating JWT.
 	// Currently, two options are supported: "third-party-jwt" and "first-party-jwt".

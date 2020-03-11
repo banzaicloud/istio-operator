@@ -71,32 +71,6 @@ func (r *Reconciler) containerArgs() []string {
 func (r *Reconciler) containerEnvs() []apiv1.EnvVar {
 	envs := []apiv1.EnvVar{
 		{
-			Name:  "JWT_POLICY",
-			Value: string(r.Config.Spec.JWTPolicy),
-		},
-		{
-			Name:  "PILOT_CERT_PROVIDER",
-			Value: string(r.Config.Spec.PilotCertProvider),
-		},
-		{
-			Name: "POD_NAME",
-			ValueFrom: &apiv1.EnvVarSource{
-				FieldRef: &apiv1.ObjectFieldSelector{
-					APIVersion: "v1",
-					FieldPath:  "metadata.name",
-				},
-			},
-		},
-		{
-			Name: "POD_NAMESPACE",
-			ValueFrom: &apiv1.EnvVarSource{
-				FieldRef: &apiv1.ObjectFieldSelector{
-					APIVersion: "v1",
-					FieldPath:  "metadata.namespace",
-				},
-			},
-		},
-		{
 			Name:  "PILOT_PUSH_THROTTLE",
 			Value: "100",
 		},
@@ -120,14 +94,21 @@ func (r *Reconciler) containerEnvs() []apiv1.EnvVar {
 			Name:  "INJECTION_WEBHOOK_CONFIG_NAME",
 			Value: "istio-sidecar-injector",
 		},
-		{
-			Name:  "ISTIOD_ADDR",
-			Value: fmt.Sprintf("istiod-%s.svc:15012", r.Config.Namespace),
-		},
-		{
-			Name:  "PILOT_EXTERNAL_GALLEY",
-			Value: "false",
-		},
+	}
+
+	envs = append(envs, templates.IstioProxyEnv(r.Config)...)
+
+	if util.PointerToBool(r.Config.Spec.Istiod.Enabled) {
+		envs = append(envs, []apiv1.EnvVar{
+			{
+				Name:  "ISTIOD_ADDR",
+				Value: fmt.Sprintf("istiod-%s.svc:15012", r.Config.Namespace),
+			},
+			{
+				Name:  "PILOT_EXTERNAL_GALLEY",
+				Value: "false",
+			},
+		}...)
 	}
 
 	if r.Config.Spec.LocalityLB != nil && util.PointerToBool(r.Config.Spec.LocalityLB.Enabled) {

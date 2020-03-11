@@ -184,6 +184,9 @@ func SetDefaults(config *Istio) {
 	if config.Spec.Pilot.EnableProtocolSniffingInbound == nil {
 		config.Spec.Pilot.EnableProtocolSniffingInbound = util.BoolPointer(false)
 	}
+	if config.Spec.Pilot.CertProvider == "" {
+		config.Spec.Pilot.CertProvider = PilotCertProviderTypeIstiod
+	}
 	// Citadel config
 	if config.Spec.Citadel.Enabled == nil {
 		config.Spec.Citadel.Enabled = util.BoolPointer(false)
@@ -601,10 +604,6 @@ func SetDefaults(config *Istio) {
 
 	if config.Spec.Proxy.UseMetadataExchangeFilter == nil {
 		config.Spec.Proxy.UseMetadataExchangeFilter = util.BoolPointer(false)
-	}
-
-	if config.Spec.PilotCertProvider == "" {
-		config.Spec.PilotCertProvider = PilotCertProviderTypeIstiod
 	}
 
 	if config.Spec.JWTPolicy == "" {
