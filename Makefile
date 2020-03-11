@@ -16,7 +16,7 @@ KUSTOMIZE_BASE = config/overlays/specific-manager-version
 all: test manager
 
 .PHONY: check
-check: test lint ## Run tests and linters
+check: test lint shellcheck-makefile shellcheck ## Run tests and linters
 
 bin/golangci-lint: bin/golangci-lint-${GOLANGCI_VERSION}
 	@ln -sf golangci-lint-${GOLANGCI_VERSION} bin/golangci-lint
@@ -58,16 +58,14 @@ run: generate fmt vet
 	go run ./cmd/manager/main.go
 
 # Install kustomize
-install-kustomize:
-	@ if ! which bin/kustomize >/dev/null 2>&1; then\
-		scripts/install_kustomize.sh;\
-	fi
+install-kustomize: bin/kustomize
+bin/kustomize:
+	scripts/install_kustomize.sh
 
 # Install kubebuilder
-install-kubebuilder:
-	@ if ! which bin/kubebuilder/bin/kubebuilder >/dev/null 2>&1; then\
-		scripts/install_kubebuilder.sh;\
-	fi
+install-kubebuilder: bin/kubebuilder/bin/kubebuilder
+bin/kubebuilder/bin/kubebuilder:
+	scripts/install_kubebuilder.sh
 
 bin/dep: bin/dep-${DEP_VERSION}
 	@ln -sf dep-${DEP_VERSION} bin/dep
@@ -127,8 +125,22 @@ docker-push:
 	docker push ${IMG}
 
 check_release:
-	@echo "A new tag (${REL_TAG}) will be pushed to Github, and a new Docker image will be released. Are you sure? [y/N] " && read ans && [ $${ans:-N} == y ]
+	@echo "A new tag (${REL_TAG}) will be pushed to Github, and a new Docker image will be released. Are you sure? [y/N] " && read -r ans && [ "$${ans:-N}" = y ]
 
 release: check_release
 	git tag -a ${REL_TAG} -m ${RELEASE_MSG}
 	git push origin ${REL_TAG}
+
+.PHONY: shellcheck-makefile
+shellcheck-makefile: bin/shellcheck ## Check each makefile recipe using shellcheck
+	@grep -h -E '^[a-zA-Z_-]+:' $(MAKEFILE_LIST) | cut -d: -f1 | while IFS= read -r target; do \
+		echo "Checking make target: $$target"; \
+		make -s "$$target" SHELL=scripts/shellcheck-makefile.sh || exit 1; \
+	done
+
+.PHONY: shellcheck
+shellcheck: bin/shellcheck ## Check shell scripts
+	bin/shellcheck scripts/*.sh hack/*.sh docs/federation/gateway/cluster-add/*.sh docs/federation/flat/*.sh
+
+bin/shellcheck:
+	scripts/install_shellcheck.sh

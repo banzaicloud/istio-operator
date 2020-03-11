@@ -1,9 +1,9 @@
 #!/usr/bin/env bash
 
-: ${1?"Usage: $0 PATCH_FILE IMG_NAME"}
-: ${2?"Usage: $0 PATCH_FILE IMG_NAME"}
+: "${1?"Usage: $0 PATCH_FILE IMG_NAME"}"
+: "${2?"Usage: $0 PATCH_FILE IMG_NAME"}"
 
-cat << EOF > ${1}
+cat << EOF > "${1}"
 apiVersion: apps/v1
 kind: StatefulSet
 metadata:
