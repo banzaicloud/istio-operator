@@ -353,7 +353,7 @@ func (r *ReconcileIstio) checkMeshPolicyConflict(config *istiov1beta1.Istio, log
 		if (mTLS && config.Spec.MeshPolicy.MTLSMode != istiov1beta1.STRICT) ||
 			(!mTLS && config.Spec.MeshPolicy.MTLSMode != istiov1beta1.PERMISSIVE) {
 			warningMessage := fmt.Sprintf(
-				"Value '%t' set in spec.mtls is overriden by value '%s' set in spec.meshPolicy.mtlsMode",
+				"Value '%t' set in spec.mtls is overridden by value '%s' set in spec.meshPolicy.mtlsMode",
 				mTLS,
 				config.Spec.MeshPolicy.MTLSMode,
 			)

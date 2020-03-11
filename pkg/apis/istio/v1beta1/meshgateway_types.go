@@ -47,6 +47,8 @@ type MeshGatewayConfiguration struct {
 	SDS                  GatewaySDSConfiguration `json:"sds,omitempty"`
 	ApplicationPorts     string                  `json:"applicationPorts,omitempty"`
 	RequestedNetworkView string                  `json:"requestedNetworkView,omitempty"`
+	// If present will be appended to the environment variables of the container
+	AdditionalEnvVars []corev1.EnvVar `json:"additionalEnvVars,omitempty"`
 }
 
 // MeshGatewayStatus defines the observed state of MeshGateway
