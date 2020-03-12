@@ -17,14 +17,15 @@ limitations under the License.
 package istiod
 
 import (
-	"github.com/banzaicloud/istio-operator/pkg/util"
 	admissionv1beta1 "k8s.io/api/admissionregistration/v1beta1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
+
+	"github.com/banzaicloud/istio-operator/pkg/util"
 )
 
 func (r *Reconciler) webhooks() []admissionv1beta1.Webhook {
-	ignore := admissionv1beta1.Ignore
+	ignore := admissionv1beta1.Fail
 	se := admissionv1beta1.SideEffectClassNone
 	return []admissionv1beta1.Webhook{
 		{
@@ -35,7 +36,7 @@ func (r *Reconciler) webhooks() []admissionv1beta1.Webhook {
 					Namespace: r.Config.Namespace,
 					Path:      util.StrPointer("/validate"),
 				},
-				CABundle: []byte{},
+				CABundle: nil,
 			},
 			Rules: []admissionv1beta1.RuleWithOperations{
 				{
