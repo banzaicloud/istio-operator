@@ -17,8 +17,12 @@ limitations under the License.
 package gateways
 
 import (
+	"context"
+
 	"github.com/go-logr/logr"
 	"github.com/goph/emperror"
+	"github.com/pkg/errors"
+	v1 "k8s.io/api/core/v1"
 	"k8s.io/client-go/dynamic"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
@@ -54,6 +58,11 @@ func (r *Reconciler) Reconcile(log logr.Logger) error {
 	log = log.WithValues("component", componentName)
 
 	log.Info("Reconciling")
+
+	err := r.waitForIstiod()
+	if err != nil {
+		return err
+	}
 
 	pdbDesiredState := k8sutil.DesiredStateAbsent
 	if util.PointerToBool(r.Config.Spec.DefaultPodDisruptionBudget.Enabled) {
@@ -91,4 +100,41 @@ func (r *Reconciler) Reconcile(log logr.Logger) error {
 	log.Info("Reconciled")
 
 	return nil
+}
+
+func (r *Reconciler) waitForIstiod() error {
+	if !util.PointerToBool(r.Config.Spec.Istiod.Enabled) {
+		return nil
+	}
+
+	var pods v1.PodList
+	o := &client.ListOptions{
+		Namespace: r.Config.Namespace,
+	}
+	o.InNamespace(r.Config.Namespace)
+	err := o.SetLabelSelector("app=istiod")
+	if err != nil {
+		return err
+	}
+
+	err = r.Client.List(context.Background(), o, &pods)
+	if err != nil {
+		return emperror.Wrap(err, "could not list pods")
+	}
+
+	for _, pod := range pods.Items {
+		if pod.Status.Phase == v1.PodRunning {
+			readyContainers := 0
+			for _, cs := range pod.Status.ContainerStatuses {
+				if cs.Ready {
+					readyContainers++
+				}
+			}
+			if readyContainers == len(pod.Status.ContainerStatuses) {
+				return nil
+			}
+		}
+	}
+
+	return errors.Errorf("Istiod is not running yet")
 }
