@@ -18,14 +18,14 @@ package istiod
 
 import (
 	admissionv1beta1 "k8s.io/api/admissionregistration/v1beta1"
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 
+	"github.com/banzaicloud/istio-operator/pkg/resources/templates"
 	"github.com/banzaicloud/istio-operator/pkg/util"
 )
 
 func (r *Reconciler) webhooks() []admissionv1beta1.Webhook {
-	ignore := admissionv1beta1.Fail
+	// ignore := admissionv1beta1.Fail
 	se := admissionv1beta1.SideEffectClassNone
 	return []admissionv1beta1.Webhook{
 		{
@@ -51,7 +51,7 @@ func (r *Reconciler) webhooks() []admissionv1beta1.Webhook {
 					},
 				},
 			},
-			FailurePolicy: &ignore,
+			FailurePolicy: nil,
 			SideEffects:   &se,
 		},
 	}
@@ -59,10 +59,7 @@ func (r *Reconciler) webhooks() []admissionv1beta1.Webhook {
 
 func (r *Reconciler) validatingWebhook() runtime.Object {
 	return &admissionv1beta1.ValidatingWebhookConfiguration{
-		ObjectMeta: metav1.ObjectMeta{
-			Name:   validatingWebhookName,
-			Labels: util.MergeStringMaps(istiodLabels, istiodLabelSelector),
-		},
-		Webhooks: r.webhooks(),
+		ObjectMeta: templates.ObjectMetaClusterScope(validatingWebhookName, util.MergeStringMaps(istiodLabels, istiodLabelSelector), r.Config),
+		Webhooks:   r.webhooks(),
 	}
 }
