@@ -305,17 +305,17 @@ func (r *ReconcileIstio) reconcile(logger logr.Logger, config *istiov1beta1.Isti
 			DeployMeshPolicy: true,
 		}, r.Client, r.dynamic, config),
 		galley.New(r.Client, config),
-		pilot.New(r.Client, r.dynamic, config),
-		istiod.New(r.Client, r.dynamic, config),
+		sidecarinjector.New(r.Client, config),
 		mixer.NewPolicyReconciler(r.Client, r.dynamic, config),
 		mixer.NewTelemetryReconciler(r.Client, r.dynamic, config),
-		ingressgateway.New(r.Client, r.dynamic, config),
-		egressgateway.New(r.Client, r.dynamic, config),
+		pilot.New(r.Client, r.dynamic, config),
+		istiod.New(r.Client, r.dynamic, config),
 		cni.New(r.Client, config),
-		sidecarinjector.New(r.Client, config),
 		nodeagent.New(r.Client, config),
 		istiocoredns.New(r.Client, config),
 		mixerlesstelemetry.New(r.Client, r.dynamic, config),
+		ingressgateway.New(r.Client, r.dynamic, config),
+		egressgateway.New(r.Client, r.dynamic, config),
 	}
 
 	for _, rec := range reconcilers {
