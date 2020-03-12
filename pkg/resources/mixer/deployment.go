@@ -267,13 +267,13 @@ func (r *Reconciler) mixerContainer(t string, ns string) apiv1.Container {
 		})
 	}
 
-	volumeMounts = append(volumeMounts, apiv1.VolumeMount{
-		Name:      "config-volume",
-		MountPath: "/etc/istio/config",
-		ReadOnly:  true,
-	})
-
 	if util.PointerToBool(r.Config.Spec.Istiod.Enabled) {
+		volumeMounts = append(volumeMounts, apiv1.VolumeMount{
+			Name:      "config-volume",
+			MountPath: "/etc/istio/config",
+			ReadOnly:  true,
+		})
+
 		if r.Config.Spec.Pilot.CertProvider == istiov1beta1.PilotCertProviderTypeIstiod {
 			volumeMounts = append(volumeMounts, apiv1.VolumeMount{
 				Name:      "istiod-ca-cert",
@@ -380,13 +380,13 @@ func (r *Reconciler) istioProxyContainer(t string) apiv1.Container {
 		},
 	}
 
-	vms = append(vms, apiv1.VolumeMount{
-		Name:      "config-volume",
-		MountPath: "/etc/istio/config",
-		ReadOnly:  true,
-	})
-
 	if util.PointerToBool(r.Config.Spec.Istiod.Enabled) {
+		vms = append(vms, apiv1.VolumeMount{
+			Name:      "config-volume",
+			MountPath: "/etc/istio/config",
+			ReadOnly:  true,
+		})
+
 		vms = append(vms, apiv1.VolumeMount{
 			Name:      "telemetry-envoy-config",
 			MountPath: "/var/lib/envoy",
