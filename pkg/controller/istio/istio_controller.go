@@ -166,7 +166,7 @@ type ReconcileComponent func(log logr.Logger, istio *istiov1beta1.Istio) error
 // +kubebuilder:rbac:groups="certificates.k8s.io",resources=certificatesigningrequests;certificatesigningrequests/approval;certificatesigningrequests/status,verbs=update;create;get;delete;watch
 // +kubebuilder:rbac:groups="discovery.k8s.io",resources=endpointslices,verbs=get;list;watch
 
-// +kubebuilder:rbac:groups=istio.banzaicloud.io,resources=istios,verbs=get;list;watch;create;update;patch;delete
+// +kubebuilder:rbac:groups=istio.banzaicloud.io,resources=istios;istios/finalizers,verbs=get;list;watch;create;update;patch;delete
 // +kubebuilder:rbac:groups=istio.banzaicloud.io,resources=istios/status,verbs=get;update;patch
 // +kubebuilder:rbac:groups=authentication.istio.io;cloud.istio.io;config.istio.io;istio.istio.io;networking.istio.io;rbac.istio.io;security.istio.io;scalingpolicy.istio.io,resources=*,verbs=*
 
