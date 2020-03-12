@@ -594,7 +594,7 @@ func SetDefaults(config *Istio) {
 
 	if config.Spec.MixerlessTelemetry == nil {
 		config.Spec.MixerlessTelemetry = &MixerlessTelemetryConfiguration{
-			Enabled: util.BoolPointer(false),
+			Enabled: util.BoolPointer(true),
 		}
 	}
 
@@ -607,7 +607,7 @@ func SetDefaults(config *Istio) {
 	}
 
 	if config.Spec.JWTPolicy == "" {
-		config.Spec.JWTPolicy = JWTPolicyThirdPartyJWT
+		config.Spec.JWTPolicy = JWTPolicyFirstPartyJWT
 	}
 }
 
