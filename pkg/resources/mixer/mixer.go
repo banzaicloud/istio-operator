@@ -37,6 +37,7 @@ const (
 	serviceAccountName     = "istio-mixer-service-account"
 	clusterRoleName        = "istio-mixer-cluster-role"
 	clusterRoleBindingName = "istio-mixer-cluster-role-binding"
+	configMapNameEnvoy     = "telemetry-envoy-config"
 )
 
 var mixerLabels = map[string]string{
@@ -112,6 +113,7 @@ func (r *Reconciler) Reconcile(log logr.Logger) error {
 		{Resource: r.serviceAccount},
 		{Resource: r.clusterRole},
 		{Resource: r.clusterRoleBinding},
+		{Resource: r.configMapEnvoy},
 	}
 	rsv := []resources.ResourceVariationWithDesiredState{
 		{ResourceVariation: r.deployment},

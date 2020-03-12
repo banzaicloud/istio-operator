@@ -26,7 +26,9 @@ import (
 	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/apimachinery/pkg/util/intstr"
 
+	istiov1beta1 "github.com/banzaicloud/istio-operator/pkg/apis/istio/v1beta1"
 	"github.com/banzaicloud/istio-operator/pkg/k8sutil"
+	"github.com/banzaicloud/istio-operator/pkg/resources/base"
 	"github.com/banzaicloud/istio-operator/pkg/resources/templates"
 	"github.com/banzaicloud/istio-operator/pkg/util"
 )
@@ -97,6 +99,46 @@ func (r *Reconciler) volumes(t string) []apiv1.Volume {
 		},
 	}
 
+	if util.PointerToBool(r.Config.Spec.Istiod.Enabled) {
+		volumes = append(volumes, []apiv1.Volume{
+			{
+				Name: "config-volume",
+				VolumeSource: apiv1.VolumeSource{
+					ConfigMap: &apiv1.ConfigMapVolumeSource{
+						LocalObjectReference: apiv1.LocalObjectReference{
+							Name: base.IstioConfigMapName,
+						},
+						DefaultMode: util.IntPointer(420),
+					},
+				},
+			},
+			{
+				Name: "telemetry-envoy-config",
+				VolumeSource: apiv1.VolumeSource{
+					ConfigMap: &apiv1.ConfigMapVolumeSource{
+						LocalObjectReference: apiv1.LocalObjectReference{
+							Name: configMapNameEnvoy,
+						},
+						DefaultMode: util.IntPointer(420),
+					},
+				},
+			},
+		}...)
+
+		if r.Config.Spec.Pilot.CertProvider == istiov1beta1.PilotCertProviderTypeIstiod {
+			volumes = append(volumes, apiv1.Volume{
+				Name: "istiod-ca-cert",
+				VolumeSource: apiv1.VolumeSource{
+					ConfigMap: &apiv1.ConfigMapVolumeSource{
+						LocalObjectReference: apiv1.LocalObjectReference{
+							Name: "istio-ca-root-cert",
+						},
+					},
+				},
+			})
+		}
+	}
+
 	return volumes
 }
 
@@ -115,6 +157,28 @@ func (r *Reconciler) containerEnvs(t string) []apiv1.EnvVar {
 				},
 			},
 		},
+	}
+
+	envs = append(envs, []apiv1.EnvVar{
+		{
+			Name:  "JWT_POLICY",
+			Value: string(r.Config.Spec.JWTPolicy),
+		},
+		{
+			Name:  "PILOT_CERT_PROVIDER",
+			Value: string(r.Config.Spec.Pilot.CertProvider),
+		},
+		{
+			Name:  "ISTIO_META_USER_SDS",
+			Value: "true",
+		},
+	}...)
+
+	if util.PointerToBool(r.Config.Spec.Istiod.Enabled) {
+		envs = append(envs, apiv1.EnvVar{
+			Name:  "CA_ADDR",
+			Value: fmt.Sprintf("istio-pilot.%s.svc:15012", r.Config.Namespace),
+		})
 	}
 
 	envs = k8sutil.MergeEnvVars(envs, r.Config.Spec.Mixer.AdditionalEnvVars)
@@ -203,6 +267,28 @@ func (r *Reconciler) mixerContainer(t string, ns string) apiv1.Container {
 		})
 	}
 
+	volumeMounts = append(volumeMounts, apiv1.VolumeMount{
+		Name:      "config-volume",
+		MountPath: "/etc/istio/config",
+		ReadOnly:  true,
+	})
+
+	if util.PointerToBool(r.Config.Spec.Istiod.Enabled) {
+		if r.Config.Spec.Pilot.CertProvider == istiov1beta1.PilotCertProviderTypeIstiod {
+			volumeMounts = append(volumeMounts, apiv1.VolumeMount{
+				Name:      "istiod-ca-cert",
+				MountPath: "/var/run/secrets/istio",
+			})
+		}
+		if r.Config.Spec.JWTPolicy == istiov1beta1.JWTPolicyThirdPartyJWT {
+			volumeMounts = append(volumeMounts, apiv1.VolumeMount{
+				Name:      "istio-token",
+				MountPath: "/var/run/secrets/tokens",
+				ReadOnly:  true,
+			})
+		}
+	}
+
 	return apiv1.Container{
 		Name:            t,
 		Image:           util.PointerToString(r.k8sResourceConfig.Image),
@@ -254,12 +340,17 @@ func (r *Reconciler) mixerContainer(t string, ns string) apiv1.Container {
 }
 
 func (r *Reconciler) istioProxyContainer(t string) apiv1.Container {
+	templateFile := fmt.Sprintf("/etc/istio/proxy/envoy_%s.yaml.tmpl", t)
+	if t == telemetryComponentName && util.PointerToBool(r.Config.Spec.Istiod.Enabled) {
+		templateFile = "/var/lib/envoy/envoy.yaml.tmpl"
+	}
+
 	args := []string{
 		"proxy",
 		"--serviceCluster",
 		fmt.Sprintf("istio-%s", t),
 		"--templateFile",
-		fmt.Sprintf("/etc/istio/proxy/envoy_%s.yaml.tmpl", t),
+		templateFile,
 		"--controlPlaneAuthPolicy",
 		templates.ControlPlaneAuthPolicy(util.PointerToBool(r.Config.Spec.Istiod.Enabled), r.Config.Spec.ControlPlaneSecurityEnabled),
 		"--domain",
@@ -287,6 +378,33 @@ func (r *Reconciler) istioProxyContainer(t string) apiv1.Container {
 			Name:      "uds-socket",
 			MountPath: "/sock",
 		},
+	}
+
+	vms = append(vms, apiv1.VolumeMount{
+		Name:      "config-volume",
+		MountPath: "/etc/istio/config",
+		ReadOnly:  true,
+	})
+
+	if util.PointerToBool(r.Config.Spec.Istiod.Enabled) {
+		vms = append(vms, apiv1.VolumeMount{
+			Name:      "telemetry-envoy-config",
+			MountPath: "/var/lib/envoy",
+		})
+
+		if r.Config.Spec.Pilot.CertProvider == istiov1beta1.PilotCertProviderTypeIstiod {
+			vms = append(vms, apiv1.VolumeMount{
+				Name:      "istiod-ca-cert",
+				MountPath: "/var/run/secrets/istio",
+			})
+		}
+		if r.Config.Spec.JWTPolicy == istiov1beta1.JWTPolicyThirdPartyJWT {
+			vms = append(vms, apiv1.VolumeMount{
+				Name:      "istio-token",
+				MountPath: "/var/run/secrets/tokens",
+				ReadOnly:  true,
+			})
+		}
 	}
 
 	return apiv1.Container{
