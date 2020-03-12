@@ -19,11 +19,11 @@ spec:
     requests:
       cpu: 10m
   mixerlessTelemetry:
-    enabled: true
+    enabled: false
   sds:
     enabled: false
   istiod:
-    enabled: true
+    enabled: false
   pilot:
     enabled: true
     image: "docker.io/istio/pilot:1.5.0"
@@ -37,10 +37,10 @@ spec:
         memory: 2048Mi
     certProvider: "istiod"
   citadel:
-    enabled: false
+    enabled: true
     image: "docker.io/istio/citadel:1.5.0"
   galley:
-    enabled: false
+    enabled: true
     image: "docker.io/istio/galley:1.5.0"
     replicaCount: 1
     enableServiceDiscovery: false
@@ -110,13 +110,13 @@ spec:
     minReplicas: 1
     maxReplicas: 5
   telemetry:
-    enabled: false
+    enabled: true
     image: "docker.io/istio/mixer:1.5.0"
     replicaCount: 1
     minReplicas: 1
     maxReplicas: 5
   sidecarInjector:
-    enabled: false
+    enabled: true
     image: "docker.io/istio/sidecar_injector:1.5.0"
     replicaCount: 1
     rewriteAppHTTPProbe: true
