@@ -19,11 +19,12 @@ package mixer
 import (
 	"fmt"
 
-	"github.com/banzaicloud/istio-operator/pkg/util"
 	"github.com/go-logr/logr"
 	"github.com/goph/emperror"
 	"k8s.io/client-go/dynamic"
 	"sigs.k8s.io/controller-runtime/pkg/client"
+
+	"github.com/banzaicloud/istio-operator/pkg/util"
 
 	istiov1beta1 "github.com/banzaicloud/istio-operator/pkg/apis/istio/v1beta1"
 	"github.com/banzaicloud/istio-operator/pkg/k8sutil"
@@ -128,13 +129,17 @@ func (r *Reconciler) Reconcile(log logr.Logger) error {
 		}
 	}
 
+	commonDesiredState := k8sutil.DesiredStatePresent
+	if !util.PointerToBool(r.Config.Spec.Policy.Enabled) && !util.PointerToBool(r.Config.Spec.Telemetry.Enabled) {
+		commonDesiredState = k8sutil.DesiredStateAbsent
+	}
 	drs := []resources.DynamicResourceWithDesiredState{
-		{DynamicResource: r.istioProxyAttributeManifest},
-		{DynamicResource: r.kubernetesAttributeManifest},
-		{DynamicResource: r.kubernetesEnvHandler},
-		{DynamicResource: r.attributesKubernetes},
-		{DynamicResource: r.kubeAttrRule},
-		{DynamicResource: r.tcpKubeAttrRule},
+		{DynamicResource: r.istioProxyAttributeManifest, DesiredState: commonDesiredState},
+		{DynamicResource: r.kubernetesAttributeManifest, DesiredState: commonDesiredState},
+		{DynamicResource: r.kubernetesEnvHandler, DesiredState: commonDesiredState},
+		{DynamicResource: r.attributesKubernetes, DesiredState: commonDesiredState},
+		{DynamicResource: r.kubeAttrRule, DesiredState: commonDesiredState},
+		{DynamicResource: r.tcpKubeAttrRule, DesiredState: commonDesiredState},
 	}
 
 	if r.component == telemetryComponentName {
@@ -177,7 +182,10 @@ func (r *Reconciler) Reconcile(log logr.Logger) error {
 
 	for _, dr := range drs {
 		o := dr.DynamicResource()
-		err := o.Reconcile(log, r.dynamic, mixerDesiredState)
+		if dr.DesiredState == "" {
+			dr.DesiredState = mixerDesiredState
+		}
+		err := o.Reconcile(log, r.dynamic, dr.DesiredState)
 		if err != nil {
 			return emperror.WrapWith(err, "failed to reconcile dynamic resource", "resource", o.Gvr)
 		}
