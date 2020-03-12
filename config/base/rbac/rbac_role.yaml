@@ -189,6 +189,7 @@ rules:
   - istio.banzaicloud.io
   resources:
   - istios
+  - istios/finalizers
   verbs:
   - get
   - list
@@ -222,6 +223,7 @@ rules:
   - istio.banzaicloud.io
   resources:
   - meshgateways
+  - meshgateways/finalizers
   verbs:
   - get
   - list
@@ -262,6 +264,7 @@ rules:
   - istio.banzaicloud.io
   resources:
   - remoteistios
+  - remoteistios/finalizers
   verbs:
   - get
   - list
