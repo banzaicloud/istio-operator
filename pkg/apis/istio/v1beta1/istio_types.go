@@ -661,7 +661,7 @@ type IstioSpec struct {
 	// Whether to restrict the applications namespace the controller manages
 	WatchOneNamespace bool `json:"watchOneNamespace,omitempty"`
 
-	// Under Kubernetes v1.17.0 it is not allowed to use the system-cluster-critical and system-node-critical
+	// Prior to Kubernetes v1.17.0 it was not allowed to use the system-cluster-critical and system-node-critical
 	// PriorityClass outside of the kube-system namespace, so it is advised to create your own PriorityClass
 	// and use its name here
 	// On Kubernetes >=v1.17.0 it is possible to configure system-cluster-critical and
