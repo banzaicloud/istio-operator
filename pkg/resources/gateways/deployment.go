@@ -191,6 +191,7 @@ func (r *Reconciler) deployment() runtime.Object {
 					Affinity:           r.gw.Spec.Affinity,
 					NodeSelector:       r.gw.Spec.NodeSelector,
 					Tolerations:        r.gw.Spec.Tolerations,
+					PriorityClassName:  r.Config.Spec.PriorityClassName,
 				},
 			},
 		},

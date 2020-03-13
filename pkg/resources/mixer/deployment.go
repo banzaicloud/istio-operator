@@ -58,6 +58,7 @@ func (r *Reconciler) deployment(t string) runtime.Object {
 						r.mixerContainer(t, r.Config.Namespace),
 						r.istioProxyContainer(t),
 					},
+					PriorityClassName: r.Config.Spec.PriorityClassName,
 				},
 			},
 		},

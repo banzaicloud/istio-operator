@@ -46,7 +46,6 @@ func (r *Reconciler) daemonSet() runtime.Object {
 				},
 				Spec: apiv1.PodSpec{
 					ServiceAccountName: serviceAccountName,
-					PriorityClassName:  "",
 					Containers: []apiv1.Container{
 						{
 							Name:            "nodeagent",
@@ -104,9 +103,10 @@ func (r *Reconciler) daemonSet() runtime.Object {
 							},
 						},
 					},
-					Affinity:     r.Config.Spec.NodeAgent.Affinity,
-					NodeSelector: r.Config.Spec.NodeAgent.NodeSelector,
-					Tolerations:  r.Config.Spec.NodeAgent.Tolerations,
+					Affinity:          r.Config.Spec.NodeAgent.Affinity,
+					NodeSelector:      r.Config.Spec.NodeAgent.NodeSelector,
+					Tolerations:       r.Config.Spec.NodeAgent.Tolerations,
+					PriorityClassName: r.Config.Spec.PriorityClassName,
 				},
 			},
 		},
