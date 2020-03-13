@@ -15,6 +15,7 @@ spec:
   - "default"
   controlPlaneSecurityEnabled: false
   mountMtlsCerts: false
+  # priorityClassName: system-cluster-critical
   defaultResources:
     requests:
       cpu: 10m
