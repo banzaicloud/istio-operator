@@ -63,12 +63,16 @@ func (r *Reconciler) reconcileCoreDNSConfigMap(log logr.Logger, desiredState k8s
 		clusterIP = svc.Spec.ClusterIP
 	}
 
+	proxyOrForward := "proxy"
+	if r.isProxyPluginDeprecated() {
+		proxyOrForward = "forward"
+	}
 	config := caddyfile.EncodedServerBlock{
 		Keys: []string{"global:53"},
 		Body: [][]interface{}{
 			{"errors"},
 			{"cache", "30"},
-			{"proxy", ".", clusterIP},
+			{proxyOrForward, ".", clusterIP},
 		},
 	}
 
