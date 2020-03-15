@@ -80,6 +80,13 @@ func (r *Reconciler) containerArgs() []string {
 		)
 	}
 
+	if util.PointerToString(r.Config.Spec.Citadel.ListenedNamespaces) != "" {
+		containerArgs = append(containerArgs,
+			"--listened-namespaces",
+			util.PointerToString(r.Config.Spec.Citadel.ListenedNamespaces),
+		)
+	}
+
 	if len(r.Config.Spec.Citadel.AdditionalContainerArgs) != 0 {
 		containerArgs = append(containerArgs, r.Config.Spec.Citadel.AdditionalContainerArgs...)
 	}

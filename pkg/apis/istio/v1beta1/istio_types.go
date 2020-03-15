@@ -130,6 +130,10 @@ type CitadelConfiguration struct {
 	// If the value of this option is "false" Citadel will not generate secrets upon service account creation.
 	EnableNamespacesByDefault *bool `json:"enableNamespacesByDefault,omitempty"`
 
+	// Select the namespaces for the Citadel to listen to, separated by comma. If set to empty,
+	// Citadel listens to all namespaces.
+	ListenedNamespaces *string `json:"listenedNamespaces,omitempty"`
+
 	// If present will be appended at the end of the initial/preconfigured container arguments
 	AdditionalContainerArgs []string `json:"additionalContainerArgs,omitempty"`
 
