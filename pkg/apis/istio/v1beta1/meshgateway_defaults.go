@@ -34,6 +34,9 @@ func (gw *MeshGateway) SetDefaults() {
 	if gw.Spec.SDS.Enabled == nil {
 		gw.Spec.SDS.Enabled = util.BoolPointer(false)
 	}
+	if gw.Spec.SDS.Image == "" {
+		gw.Spec.SDS.Image = defaultNodeAgentImage
+	}
 	if gw.Spec.Type == GatewayTypeIngress && gw.Spec.ServiceType == "" {
 		gw.Spec.ServiceType = defaultIngressGatewayServiceType
 	}
