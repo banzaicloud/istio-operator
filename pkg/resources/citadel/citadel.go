@@ -110,7 +110,7 @@ func (r *Reconciler) Reconcile(log logr.Logger) error {
 
 	var meshPolicyDesiredState k8sutil.DesiredState
 	var mTLSDesiredState k8sutil.DesiredState
-	if util.PointerToBool(r.Config.Spec.Citadel.Enabled) {
+	if util.PointerToBool(r.Config.Spec.Istiod.Enabled) || util.PointerToBool(r.Config.Spec.Citadel.Enabled) {
 		if r.Config.Spec.MeshPolicy.MTLSMode == istiov1beta1.STRICT {
 			meshPolicyDesiredState = k8sutil.DesiredStatePresent
 
