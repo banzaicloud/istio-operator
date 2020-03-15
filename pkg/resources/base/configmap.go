@@ -53,7 +53,7 @@ func (r *Reconciler) meshConfig() string {
 		"proxyAdminPort":         15000,
 		"concurrency":            0,
 		"controlPlaneAuthPolicy": templates.ControlPlaneAuthPolicy(util.PointerToBool(r.Config.Spec.Istiod.Enabled), r.Config.Spec.ControlPlaneSecurityEnabled),
-		"discoveryAddress":       fmt.Sprintf("istio-pilot.%s:%s", r.Config.Namespace, r.discoveryPort()),
+		"discoveryAddress":       fmt.Sprintf("istio-pilot.%s.svc:%s", r.Config.Namespace, r.discoveryPort()),
 	}
 
 	if util.PointerToBool(r.Config.Spec.Proxy.EnvoyStatsD.Enabled) {
@@ -224,7 +224,10 @@ func (r *Reconciler) defaultConfigSource() map[string]interface{} {
 }
 
 func (r *Reconciler) discoveryPort() string {
-	if r.Config.Spec.ControlPlaneSecurityEnabled && !util.PointerToBool(r.Config.Spec.Istiod.Enabled) {
+	if util.PointerToBool(r.Config.Spec.Istiod.Enabled) {
+		return "15012"
+	}
+	if r.Config.Spec.ControlPlaneSecurityEnabled {
 		return "15011"
 	}
 	return "15010"
