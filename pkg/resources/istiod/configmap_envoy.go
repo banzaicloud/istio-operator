@@ -33,7 +33,7 @@ func (r *Reconciler) configMapEnvoy() runtime.Object {
 }
 
 func (r *Reconciler) envoyConfig() string {
-	return `|-
+	return `
     admin:
       access_log_path: /dev/null
       address:

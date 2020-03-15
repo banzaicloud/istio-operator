@@ -24,6 +24,55 @@ import (
 )
 
 func (r *Reconciler) meshExpansionGateway() *k8sutil.DynamicObject {
+	servers := make([]map[string]interface{}, 0)
+
+	if util.PointerToBool(r.Config.Spec.Pilot.Enabled) {
+		servers = append(servers, map[string]interface{}{
+			"port": map[string]interface{}{
+				"name":     "tcp-pilot",
+				"protocol": "TCP",
+				"number":   15011,
+			},
+			"hosts": util.EmptyTypedStrSlice("*"),
+		})
+	}
+
+	if util.PointerToBool(r.Config.Spec.Citadel.Enabled) {
+		servers = append(servers, map[string]interface{}{
+			"port": map[string]interface{}{
+				"name":     "tcp-citadel",
+				"protocol": "TCP",
+				"number":   8060,
+			},
+			"hosts": util.EmptyTypedStrSlice("*"),
+		})
+	}
+
+	if util.PointerToBool(r.Config.Spec.Telemetry.Enabled) {
+		servers = append(servers, map[string]interface{}{
+			"port": map[string]interface{}{
+				"name":     "tls-mixer",
+				"protocol": "TLS",
+				"number":   15004,
+			},
+			"tls": map[string]interface{}{
+				"mode": "AUTO_PASSTHROUGH",
+			},
+			"hosts": util.EmptyTypedStrSlice("*"),
+		})
+	}
+
+	if util.PointerToBool(r.Config.Spec.Istiod.Enabled) {
+		servers = append(servers, map[string]interface{}{
+			"port": map[string]interface{}{
+				"name":     "tcp-istiod",
+				"protocol": "TCP",
+				"number":   15012,
+			},
+			"hosts": util.EmptyTypedStrSlice("*"),
+		})
+	}
+
 	return &k8sutil.DynamicObject{
 		Gvr: schema.GroupVersionResource{
 			Group:    "networking.istio.io",
@@ -34,43 +83,7 @@ func (r *Reconciler) meshExpansionGateway() *k8sutil.DynamicObject {
 		Name:      "meshexpansion-gateway",
 		Namespace: r.Config.Namespace,
 		Spec: map[string]interface{}{
-			"servers": []map[string]interface{}{
-				{
-					"port": map[string]interface{}{
-						"name":     "tcp-pilot",
-						"protocol": "TCP",
-						"number":   15011,
-					},
-					"hosts": util.EmptyTypedStrSlice("*"),
-				},
-				{
-					"port": map[string]interface{}{
-						"name":     "tcp-citadel",
-						"protocol": "TCP",
-						"number":   8060,
-					},
-					"hosts": util.EmptyTypedStrSlice("*"),
-				},
-				{
-					"port": map[string]interface{}{
-						"name":     "tls-mixer",
-						"protocol": "TLS",
-						"number":   15004,
-					},
-					"tls": map[string]interface{}{
-						"mode": "AUTO_PASSTHROUGH",
-					},
-					"hosts": util.EmptyTypedStrSlice("*"),
-				},
-				{
-					"port": map[string]interface{}{
-						"name":     "tcp-istiod",
-						"protocol": "TCP",
-						"number":   15012,
-					},
-					"hosts": util.EmptyTypedStrSlice("*"),
-				},
-			},
+			"servers":  servers,
 			"selector": r.labels(),
 		},
 		Owner: r.Config,
