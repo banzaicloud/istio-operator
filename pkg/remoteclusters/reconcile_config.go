@@ -60,6 +60,12 @@ func (c *Cluster) reconcileConfig(remoteConfig *istiov1beta1.RemoteIstio, istio 
 	istioConfig.Spec.SidecarInjector.Tolerations = remoteConfig.Spec.SidecarInjector.Tolerations
 	istioConfig.Spec.SidecarInjector.InitCNIConfiguration.Affinity = remoteConfig.Spec.SidecarInjector.InitCNIConfiguration.Affinity
 
+	istioConfig.Spec.Citadel.Enabled = util.BoolPointer(true)
+	istioConfig.Spec.SidecarInjector.Enabled = util.BoolPointer(true)
+	if util.PointerToBool(istio.Spec.Istiod.Enabled) {
+		istioConfig.Spec.Citadel.ListenedNamespaces = &remoteConfig.Namespace
+	}
+
 	if remoteConfig.Spec.DefaultResources != nil {
 		istioConfig.Spec.DefaultResources = remoteConfig.Spec.DefaultResources
 	}

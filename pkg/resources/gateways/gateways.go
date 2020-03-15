@@ -103,7 +103,7 @@ func (r *Reconciler) Reconcile(log logr.Logger) error {
 }
 
 func (r *Reconciler) waitForIstiod() error {
-	if !util.PointerToBool(r.Config.Spec.Istiod.Enabled) {
+	if !util.PointerToBool(r.Config.Spec.Istiod.Enabled) || util.PointerToBool(r.Config.Spec.SidecarInjector.Enabled) {
 		return nil
 	}
 
