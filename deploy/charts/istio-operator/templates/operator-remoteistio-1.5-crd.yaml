@@ -97,6 +97,10 @@ spec:
                   type: boolean
                 image:
                   type: string
+                listenedNamespaces:
+                  description: Select the namespaces for the Citadel to listen to,
+                    separated by comma. If set to empty, Citadel listens to all namespaces.
+                  type: string
                 maxWorkloadCertTTL:
                   description: Citadel uses a flag max-workload-cert-ttl to control
                     the maximum lifetime for Istio certificates issued to workloads.
