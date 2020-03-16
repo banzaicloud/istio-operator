@@ -63,6 +63,7 @@ func (r *Reconciler) deployment(t string) runtime.Object {
 					SecurityContext: &apiv1.PodSecurityContext{
 						FSGroup: util.Int64Pointer(1337),
 					},
+					PriorityClassName: r.Config.Spec.PriorityClassName,
 				},
 			},
 		},

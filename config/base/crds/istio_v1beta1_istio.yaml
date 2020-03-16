@@ -116,6 +116,10 @@ spec:
                   type: boolean
                 image:
                   type: string
+                listenedNamespaces:
+                  description: Select the namespaces for the Citadel to listen to,
+                    separated by comma. If set to empty, Citadel listens to all namespaces.
+                  type: string
                 maxWorkloadCertTTL:
                   description: Citadel uses a flag max-workload-cert-ttl to control
                     the maximum lifetime for Istio certificates issued to workloads.
@@ -684,6 +688,16 @@ spec:
                     type: object
                   type: array
               type: object
+            priorityClassName:
+              description: Prior to Kubernetes v1.17.0 it was not allowed to use the
+                system-cluster-critical and system-node-critical PriorityClass outside
+                of the kube-system namespace, so it is advised to create your own
+                PriorityClass and use its name here On Kubernetes >=v1.17.0 it is
+                possible to configure system-cluster-critical and system-node-critical
+                PriorityClass in order to make sure your Istio pods will not be killed
+                because of low priority class. Refer to https://kubernetes.io/docs/concepts/configuration/pod-priority-preemption/#priorityclass
+                for more detail.
+              type: string
             proxy:
               description: Proxy configuration options
               properties:

@@ -130,6 +130,10 @@ type CitadelConfiguration struct {
 	// If the value of this option is "false" Citadel will not generate secrets upon service account creation.
 	EnableNamespacesByDefault *bool `json:"enableNamespacesByDefault,omitempty"`
 
+	// Select the namespaces for the Citadel to listen to, separated by comma. If set to empty,
+	// Citadel listens to all namespaces.
+	ListenedNamespaces *string `json:"listenedNamespaces,omitempty"`
+
 	// If present will be appended at the end of the initial/preconfigured container arguments
 	AdditionalContainerArgs []string `json:"additionalContainerArgs,omitempty"`
 
@@ -660,6 +664,16 @@ type IstioSpec struct {
 
 	// Whether to restrict the applications namespace the controller manages
 	WatchOneNamespace bool `json:"watchOneNamespace,omitempty"`
+
+	// Prior to Kubernetes v1.17.0 it was not allowed to use the system-cluster-critical and system-node-critical
+	// PriorityClass outside of the kube-system namespace, so it is advised to create your own PriorityClass
+	// and use its name here
+	// On Kubernetes >=v1.17.0 it is possible to configure system-cluster-critical and
+	// system-node-critical PriorityClass in order to make sure your Istio pods
+	// will not be killed because of low priority class.
+	// Refer to https://kubernetes.io/docs/concepts/configuration/pod-priority-preemption/#priorityclass
+	// for more detail.
+	PriorityClassName string `json:"priorityClassName,omitempty"`
 
 	// Use the Mesh Control Protocol (MCP) for configuring Mixer and Pilot. Requires galley.
 	UseMCP *bool `json:"useMCP,omitempty"`

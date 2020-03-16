@@ -276,6 +276,11 @@ func (in *CitadelConfiguration) DeepCopyInto(out *CitadelConfiguration) {
 		*out = new(bool)
 		**out = **in
 	}
+	if in.ListenedNamespaces != nil {
+		in, out := &in.ListenedNamespaces, &out.ListenedNamespaces
+		*out = new(string)
+		**out = **in
+	}
 	if in.AdditionalContainerArgs != nil {
 		in, out := &in.AdditionalContainerArgs, &out.AdditionalContainerArgs
 		*out = make([]string, len(*in))

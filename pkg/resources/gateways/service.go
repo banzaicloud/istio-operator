@@ -41,12 +41,30 @@ func (r *Reconciler) servicePorts(name string) []apiv1.ServicePort {
 	if name == defaultIngressgatewayName {
 		ports := r.gw.Spec.Ports
 		if util.PointerToBool(r.Config.Spec.MeshExpansion) {
-			ports = append(ports, []apiv1.ServicePort{
-				{Port: 15011, Protocol: apiv1.ProtocolTCP, TargetPort: intstr.FromInt(15011), Name: "tcp-pilot-grpc-tls"},
-				{Port: 15004, Protocol: apiv1.ProtocolTCP, TargetPort: intstr.FromInt(15004), Name: "tcp-mixer-grpc-tls"},
-				{Port: 8060, Protocol: apiv1.ProtocolTCP, TargetPort: intstr.FromInt(8060), Name: "tcp-citadel-grpc-tls"},
-				{Port: 853, Protocol: apiv1.ProtocolTCP, TargetPort: intstr.FromInt(853), Name: "tcp-dns-tls"},
-			}...)
+			ports = append(ports, apiv1.ServicePort{
+				Port: 853, Protocol: apiv1.ProtocolTCP, TargetPort: intstr.FromInt(853), Name: "tcp-dns-tls",
+			})
+
+			if util.PointerToBool(r.Config.Spec.Istiod.Enabled) {
+				ports = append(ports, apiv1.ServicePort{
+					Port: 15012, Protocol: apiv1.ProtocolTCP, TargetPort: intstr.FromInt(15012), Name: "tcp-istiod-grpc-tls",
+				})
+			}
+			if util.PointerToBool(r.Config.Spec.Pilot.Enabled) {
+				ports = append(ports, apiv1.ServicePort{
+					Port: 15011, Protocol: apiv1.ProtocolTCP, TargetPort: intstr.FromInt(15011), Name: "tcp-pilot-grpc-tls",
+				})
+			}
+			if util.PointerToBool(r.Config.Spec.Telemetry.Enabled) {
+				ports = append(ports, apiv1.ServicePort{
+					Port: 15004, Protocol: apiv1.ProtocolTCP, TargetPort: intstr.FromInt(15004), Name: "tcp-mixer-grpc-tls",
+				})
+			}
+			if util.PointerToBool(r.Config.Spec.Citadel.Enabled) {
+				ports = append(ports, apiv1.ServicePort{
+					Port: 8060, Protocol: apiv1.ProtocolTCP, TargetPort: intstr.FromInt(8060), Name: "tcp-citadel-grpc-tls",
+				})
+			}
 		}
 		return ports
 	}

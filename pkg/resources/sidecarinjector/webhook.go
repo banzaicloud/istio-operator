@@ -30,7 +30,7 @@ func (r *Reconciler) webhook() runtime.Object {
 	fail := admissionv1beta1.Fail
 	unknownSideEffects := admissionv1beta1.SideEffectClassUnknown
 	service := serviceName
-	if util.PointerToBool(r.Config.Spec.Istiod.Enabled) {
+	if !util.PointerToBool(r.Config.Spec.SidecarInjector.Enabled) && util.PointerToBool(r.Config.Spec.Istiod.Enabled) {
 		service = istiod.ServiceNameIstiod
 	}
 	webhook := &admissionv1beta1.MutatingWebhookConfiguration{

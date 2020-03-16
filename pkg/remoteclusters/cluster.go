@@ -116,6 +116,7 @@ func (c *Cluster) Reconcile(remoteConfig *istiov1beta1.RemoteIstio, istio *istio
 	ReconcilerFuncs = append(ReconcilerFuncs,
 		c.reconcileConfig,
 		c.reconcileSignCert,
+		c.reconcileCARoot,
 		c.reconcileEnabledServices,
 		c.ReconcileEnabledServiceEndpoints,
 		c.reconcileComponents,

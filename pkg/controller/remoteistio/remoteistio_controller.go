@@ -278,6 +278,14 @@ func (r *ReconcileRemoteConfig) reconcile(remoteConfig *istiov1beta1.RemoteIstio
 		return reconcile.Result{}, emperror.Wrap(err, "could not get remote cluster")
 	}
 
+	err = r.labelSecret(client.ObjectKey{
+		Name:      remoteConfig.GetName(),
+		Namespace: remoteConfig.GetNamespace(),
+	}, istioSecretLabel, "true")
+	if err != nil {
+		return reconcile.Result{}, emperror.Wrap(err, "could not reconcile remote istio")
+	}
+
 	err = cluster.Reconcile(remoteConfig, istio)
 	if err == nil {
 		err = cluster.SetIngressGatewayAddress(remoteConfig, istio)
@@ -299,14 +307,6 @@ func (r *ReconcileRemoteConfig) reconcile(remoteConfig *istiov1beta1.RemoteIstio
 			}, nil
 		}
 		return reconcile.Result{}, err
-	}
-
-	err = r.labelSecret(client.ObjectKey{
-		Name:      remoteConfig.GetName(),
-		Namespace: remoteConfig.GetNamespace(),
-	}, istioSecretLabel, "true")
-	if err != nil {
-		return reconcile.Result{}, emperror.Wrap(err, "could not reconcile remote istio")
 	}
 
 	err = updateRemoteConfigStatus(r.Client, remoteConfig, istiov1beta1.Available, "", logger)

@@ -80,6 +80,13 @@ func (r *Reconciler) containerArgs() []string {
 		)
 	}
 
+	if util.PointerToString(r.Config.Spec.Citadel.ListenedNamespaces) != "" {
+		containerArgs = append(containerArgs,
+			"--listened-namespaces",
+			util.PointerToString(r.Config.Spec.Citadel.ListenedNamespaces),
+		)
+	}
+
 	if len(r.Config.Spec.Citadel.AdditionalContainerArgs) != 0 {
 		containerArgs = append(containerArgs, r.Config.Spec.Citadel.AdditionalContainerArgs...)
 	}
@@ -168,9 +175,10 @@ func (r *Reconciler) deployment() runtime.Object {
 		Containers: []apiv1.Container{
 			citadelContainer,
 		},
-		Affinity:     r.Config.Spec.Citadel.Affinity,
-		NodeSelector: r.Config.Spec.Citadel.NodeSelector,
-		Tolerations:  r.Config.Spec.Citadel.Tolerations,
+		Affinity:          r.Config.Spec.Citadel.Affinity,
+		NodeSelector:      r.Config.Spec.Citadel.NodeSelector,
+		Tolerations:       r.Config.Spec.Citadel.Tolerations,
+		PriorityClassName: r.Config.Spec.PriorityClassName,
 	}
 
 	var optional = false
