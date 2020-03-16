@@ -24,6 +24,7 @@ import (
 )
 
 func (r *Reconciler) prometheusHandler() *k8sutil.DynamicObject {
+	multiClusterEnabled := util.PointerToBool(r.Config.Spec.Mixer.MultiClusterSupport)
 	return &k8sutil.DynamicObject{
 		Gvr: schema.GroupVersionResource{
 			Group:    "config.istio.io",
@@ -41,13 +42,13 @@ func (r *Reconciler) prometheusHandler() *k8sutil.DynamicObject {
 						"name":          "requests_total",
 						"instance_name": "requestcount.instance." + r.Config.Namespace,
 						"kind":          "COUNTER",
-						"label_names":   metricLabels(),
+						"label_names":   metricLabels(multiClusterEnabled),
 					},
 					{
 						"name":          "request_duration_seconds",
 						"instance_name": "requestduration.instance." + r.Config.Namespace,
 						"kind":          "DISTRIBUTION",
-						"label_names":   metricLabels(),
+						"label_names":   metricLabels(multiClusterEnabled),
 						"buckets": map[string]interface{}{
 							"explicit_buckets": map[string]interface{}{
 								"bounds": util.EmptyTypedFloatSlice(0.005, 0.01, 0.025, 0.05, 0.1, 0.25, 0.5, 1, 2.5, 5, 10),
@@ -58,7 +59,7 @@ func (r *Reconciler) prometheusHandler() *k8sutil.DynamicObject {
 						"name":          "request_bytes",
 						"instance_name": "requestsize.instance." + r.Config.Namespace,
 						"kind":          "DISTRIBUTION",
-						"label_names":   metricLabels(),
+						"label_names":   metricLabels(multiClusterEnabled),
 						"buckets": map[string]interface{}{
 							"exponentialBuckets": map[string]interface{}{
 								"numFiniteBuckets": 8,
@@ -71,7 +72,7 @@ func (r *Reconciler) prometheusHandler() *k8sutil.DynamicObject {
 						"name":          "response_bytes",
 						"instance_name": "responsesize.instance." + r.Config.Namespace,
 						"kind":          "DISTRIBUTION",
-						"label_names":   metricLabels(),
+						"label_names":   metricLabels(multiClusterEnabled),
 						"buckets": map[string]interface{}{
 							"exponentialBuckets": map[string]interface{}{
 								"numFiniteBuckets": 8,
@@ -84,25 +85,25 @@ func (r *Reconciler) prometheusHandler() *k8sutil.DynamicObject {
 						"name":          "tcp_sent_bytes_total",
 						"instance_name": "tcpbytesent.instance." + r.Config.Namespace,
 						"kind":          "COUNTER",
-						"label_names":   tcpMetricLabels(),
+						"label_names":   tcpMetricLabels(multiClusterEnabled),
 					},
 					{
 						"name":          "tcp_received_bytes_total",
 						"instance_name": "tcpbytereceived.instance." + r.Config.Namespace,
 						"kind":          "COUNTER",
-						"label_names":   tcpMetricLabels(),
+						"label_names":   tcpMetricLabels(multiClusterEnabled),
 					},
 					{
 						"name":          "tcp_connections_opened_total",
 						"instance_name": "tcpconnectionsopened.instance." + r.Config.Namespace,
 						"kind":          "COUNTER",
-						"label_names":   tcpMetricLabels(),
+						"label_names":   tcpMetricLabels(multiClusterEnabled),
 					},
 					{
 						"name":          "tcp_connections_closed_total",
 						"instance_name": "tcpconnectionsclosed.instance." + r.Config.Namespace,
 						"kind":          "COUNTER",
-						"label_names":   tcpMetricLabels(),
+						"label_names":   tcpMetricLabels(multiClusterEnabled),
 					},
 				},
 			},
@@ -112,6 +113,7 @@ func (r *Reconciler) prometheusHandler() *k8sutil.DynamicObject {
 }
 
 func (r *Reconciler) requestCountMetric() *k8sutil.DynamicObject {
+	multiClusterEnabled := util.PointerToBool(r.Config.Spec.Mixer.MultiClusterSupport)
 	return &k8sutil.DynamicObject{
 		Gvr: schema.GroupVersionResource{
 			Group:    "config.istio.io",
@@ -125,7 +127,7 @@ func (r *Reconciler) requestCountMetric() *k8sutil.DynamicObject {
 			"compiledTemplate": "metric",
 			"params": map[string]interface{}{
 				"value":                   "1",
-				"dimensions":              metricDimensions(),
+				"dimensions":              metricDimensions(multiClusterEnabled),
 				"monitored_resource_type": `"UNSPECIFIED"`,
 			},
 		},
@@ -134,6 +136,7 @@ func (r *Reconciler) requestCountMetric() *k8sutil.DynamicObject {
 }
 
 func (r *Reconciler) requestDurationMetric() *k8sutil.DynamicObject {
+	multiClusterEnabled := util.PointerToBool(r.Config.Spec.Mixer.MultiClusterSupport)
 	return &k8sutil.DynamicObject{
 		Gvr: schema.GroupVersionResource{
 			Group:    "config.istio.io",
@@ -147,7 +150,7 @@ func (r *Reconciler) requestDurationMetric() *k8sutil.DynamicObject {
 			"compiledTemplate": "metric",
 			"params": map[string]interface{}{
 				"value":                   `response.duration | "0ms"`,
-				"dimensions":              metricDimensions(),
+				"dimensions":              metricDimensions(multiClusterEnabled),
 				"monitored_resource_type": `"UNSPECIFIED"`,
 			},
 		},
@@ -156,6 +159,7 @@ func (r *Reconciler) requestDurationMetric() *k8sutil.DynamicObject {
 }
 
 func (r *Reconciler) requestSizeMetric() *k8sutil.DynamicObject {
+	multiClusterEnabled := util.PointerToBool(r.Config.Spec.Mixer.MultiClusterSupport)
 	return &k8sutil.DynamicObject{
 		Gvr: schema.GroupVersionResource{
 			Group:    "config.istio.io",
@@ -169,7 +173,7 @@ func (r *Reconciler) requestSizeMetric() *k8sutil.DynamicObject {
 			"compiledTemplate": "metric",
 			"params": map[string]interface{}{
 				"value":                   `request.size | 0`,
-				"dimensions":              metricDimensions(),
+				"dimensions":              metricDimensions(multiClusterEnabled),
 				"monitored_resource_type": `"UNSPECIFIED"`,
 			},
 		},
@@ -178,6 +182,7 @@ func (r *Reconciler) requestSizeMetric() *k8sutil.DynamicObject {
 }
 
 func (r *Reconciler) responseSizeMetric() *k8sutil.DynamicObject {
+	multiClusterEnabled := util.PointerToBool(r.Config.Spec.Mixer.MultiClusterSupport)
 	return &k8sutil.DynamicObject{
 		Gvr: schema.GroupVersionResource{
 			Group:    "config.istio.io",
@@ -191,7 +196,7 @@ func (r *Reconciler) responseSizeMetric() *k8sutil.DynamicObject {
 			"compiledTemplate": "metric",
 			"params": map[string]interface{}{
 				"value":                   `response.size | 0`,
-				"dimensions":              metricDimensions(),
+				"dimensions":              metricDimensions(multiClusterEnabled),
 				"monitored_resource_type": `"UNSPECIFIED"`,
 			},
 		},
@@ -200,6 +205,7 @@ func (r *Reconciler) responseSizeMetric() *k8sutil.DynamicObject {
 }
 
 func (r *Reconciler) tcpByteSentMetric() *k8sutil.DynamicObject {
+	multiClusterEnabled := util.PointerToBool(r.Config.Spec.Mixer.MultiClusterSupport)
 	return &k8sutil.DynamicObject{
 		Gvr: schema.GroupVersionResource{
 			Group:    "config.istio.io",
@@ -213,7 +219,7 @@ func (r *Reconciler) tcpByteSentMetric() *k8sutil.DynamicObject {
 			"compiledTemplate": "metric",
 			"params": map[string]interface{}{
 				"value":                   `connection.sent.bytes | 0`,
-				"dimensions":              tcpMetricDimensions(),
+				"dimensions":              tcpMetricDimensions(multiClusterEnabled),
 				"monitored_resource_type": `"UNSPECIFIED"`,
 			},
 		},
@@ -222,6 +228,7 @@ func (r *Reconciler) tcpByteSentMetric() *k8sutil.DynamicObject {
 }
 
 func (r *Reconciler) tcpByteReceivedMetric() *k8sutil.DynamicObject {
+	multiClusterEnabled := util.PointerToBool(r.Config.Spec.Mixer.MultiClusterSupport)
 	return &k8sutil.DynamicObject{
 		Gvr: schema.GroupVersionResource{
 			Group:    "config.istio.io",
@@ -235,7 +242,7 @@ func (r *Reconciler) tcpByteReceivedMetric() *k8sutil.DynamicObject {
 			"compiledTemplate": "metric",
 			"params": map[string]interface{}{
 				"value":                   `connection.received.bytes | 0`,
-				"dimensions":              tcpMetricDimensions(),
+				"dimensions":              tcpMetricDimensions(multiClusterEnabled),
 				"monitored_resource_type": `"UNSPECIFIED"`,
 			},
 		},
@@ -244,6 +251,7 @@ func (r *Reconciler) tcpByteReceivedMetric() *k8sutil.DynamicObject {
 }
 
 func (r *Reconciler) tcpConnectionsOpenedMetric() *k8sutil.DynamicObject {
+	multiClusterEnabled := util.PointerToBool(r.Config.Spec.Mixer.MultiClusterSupport)
 	return &k8sutil.DynamicObject{
 		Gvr: schema.GroupVersionResource{
 			Group:    "config.istio.io",
@@ -257,7 +265,7 @@ func (r *Reconciler) tcpConnectionsOpenedMetric() *k8sutil.DynamicObject {
 			"compiledTemplate": "metric",
 			"params": map[string]interface{}{
 				"value":                   "1",
-				"dimensions":              tcpMetricDimensions(),
+				"dimensions":              tcpMetricDimensions(multiClusterEnabled),
 				"monitored_resource_type": `"UNSPECIFIED"`,
 			},
 		},
@@ -266,6 +274,7 @@ func (r *Reconciler) tcpConnectionsOpenedMetric() *k8sutil.DynamicObject {
 }
 
 func (r *Reconciler) tcpConnectionsClosedMetric() *k8sutil.DynamicObject {
+	multiClusterEnabled := util.PointerToBool(r.Config.Spec.Mixer.MultiClusterSupport)
 	return &k8sutil.DynamicObject{
 		Gvr: schema.GroupVersionResource{
 			Group:    "config.istio.io",
@@ -279,7 +288,7 @@ func (r *Reconciler) tcpConnectionsClosedMetric() *k8sutil.DynamicObject {
 			"compiledTemplate": "metric",
 			"params": map[string]interface{}{
 				"value":                   "1",
-				"dimensions":              tcpMetricDimensions(),
+				"dimensions":              tcpMetricDimensions(multiClusterEnabled),
 				"monitored_resource_type": `"UNSPECIFIED"`,
 			},
 		},
@@ -379,8 +388,8 @@ func (r *Reconciler) promTcpConnectionClosedRule() *k8sutil.DynamicObject {
 	}
 }
 
-func metricDimensions() map[string]interface{} {
-	md := tcpMetricDimensions()
+func metricDimensions(multiClusterEnabled bool) map[string]interface{} {
+	md := tcpMetricDimensions(multiClusterEnabled)
 	md["request_protocol"] = `api.protocol | context.protocol | "unknown"`
 	md["response_code"] = `response.code | 200`
 	md["grpc_response_status"] = `response.grpc_status | ""`
@@ -389,15 +398,14 @@ func metricDimensions() map[string]interface{} {
 	return md
 }
 
-func tcpMetricDimensions() map[string]interface{} {
-	return map[string]interface{}{
-		"reporter":                  `conditional((context.reporter.kind | "inbound") == "outbound", "source", "destination")`,
-		"source_workload":           `source.workload.name | "unknown"`,
-		"source_workload_namespace": `source.workload.namespace | "unknown"`,
-		"source_principal":          `source.principal | "unknown"`,
-		"source_app":                `source.labels["app"] | "unknown"`,
-		"source_version":            `source.labels["version"] | "unknown"`,
-		// "source_cluster_id":              `source.cluster.id | "unknown"`,
+func tcpMetricDimensions(multiClusterEnabled bool) map[string]interface{} {
+	dimensions := map[string]interface{}{
+		"reporter":                       `conditional((context.reporter.kind | "inbound") == "outbound", "source", "destination")`,
+		"source_workload":                `source.workload.name | "unknown"`,
+		"source_workload_namespace":      `source.workload.namespace | "unknown"`,
+		"source_principal":               `source.principal | "unknown"`,
+		"source_app":                     `source.labels["app"] | "unknown"`,
+		"source_version":                 `source.labels["version"] | "unknown"`,
 		"destination_workload":           `destination.workload.name | "unknown"`,
 		"destination_workload_namespace": `destination.workload.namespace | "unknown"`,
 		"destination_principal":          `destination.principal | "unknown"`,
@@ -406,29 +414,34 @@ func tcpMetricDimensions() map[string]interface{} {
 		"destination_service":            `destination.service.host | "unknown"`,
 		"destination_service_name":       `destination.service.name | "unknown"`,
 		"destination_service_namespace":  `destination.service.namespace | "unknown"`,
-		// "destination_cluster_id":         `destination.cluster.id | "unknown"`,
-		"connection_security_policy": `conditional((context.reporter.kind | "inbound") == "outbound", "unknown", conditional(connection.mtls | false, "mutual_tls", "none"))`,
-		"response_flags":             `context.proxy_error_code | "-"`,
+		"connection_security_policy":     `conditional((context.reporter.kind | "inbound") == "outbound", "unknown", conditional(connection.mtls | false, "mutual_tls", "none"))`,
+		"response_flags":                 `context.proxy_error_code | "-"`,
 	}
+
+	if multiClusterEnabled {
+		dimensions["source_cluster_id"] = `source.cluster.id | "unknown"`
+		dimensions["destination_cluster_id"] = `destination.cluster.id | "unknown"`
+	}
+
+	return dimensions
 }
 
-func metricLabels() []interface{} {
-	ml := tcpMetricLabels()
+func metricLabels(multiClusterEnabled bool) []interface{} {
+	ml := tcpMetricLabels(multiClusterEnabled)
 	ml = append(ml, "request_protocol")
 	ml = append(ml, "response_code")
 	ml = append(ml, "grpc_response_status")
 	return ml
 }
 
-func tcpMetricLabels() []interface{} {
-	return util.EmptyTypedStrSlice(
+func tcpMetricLabels(multiClusterEnabled bool) []interface{} {
+	labels := []string{
 		"reporter",
 		"source_app",
 		"source_principal",
 		"source_workload",
 		"source_workload_namespace",
 		"source_version",
-		// "source_cluster_id",
 		"destination_app",
 		"destination_principal",
 		"destination_workload",
@@ -437,8 +450,13 @@ func tcpMetricLabels() []interface{} {
 		"destination_service",
 		"destination_service_name",
 		"destination_service_namespace",
-		// "destination_cluster_id",
 		"connection_security_policy",
 		"response_flags",
-	)
+	}
+
+	if multiClusterEnabled {
+		labels = append(labels, []string{"source_cluster_id", "destination_cluster_id"}...)
+	}
+
+	return util.EmptyTypedStrSlice(labels...)
 }
