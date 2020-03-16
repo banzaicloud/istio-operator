@@ -156,9 +156,10 @@ func (r *Reconciler) deployment() runtime.Object {
 		Containers: []apiv1.Container{
 			citadelContainer,
 		},
-		Affinity:     r.Config.Spec.Citadel.Affinity,
-		NodeSelector: r.Config.Spec.Citadel.NodeSelector,
-		Tolerations:  r.Config.Spec.Citadel.Tolerations,
+		Affinity:          r.Config.Spec.Citadel.Affinity,
+		NodeSelector:      r.Config.Spec.Citadel.NodeSelector,
+		Tolerations:       r.Config.Spec.Citadel.Tolerations,
+		PriorityClassName: r.Config.Spec.PriorityClassName,
 	}
 
 	var optional = false
