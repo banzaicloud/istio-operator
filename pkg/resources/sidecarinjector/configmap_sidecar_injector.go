@@ -250,6 +250,7 @@ containers:
 {{- if .Values.global.istiod.enabled }}
   - --controlPlaneBootstrap=false
 {{- end }}
+` + r.injectedAddtionalContainerArgs() + `
 {{- if .Values.global.proxy.lifecycle }}
   lifecycle:
     {{ toYaml .Values.global.proxy.lifecycle | indent 4 }}
@@ -385,6 +386,7 @@ containers:
     value: "{{ .ProxyConfig.GetTracing.GetStackdriver.GetMaxNumberOfMessageEvents }}"
   {{- end }}
   {{- end }}
+` + r.injectedAddtionalEnvVars() + `
   imagePullPolicy: {{ .Values.global.imagePullPolicy }}
   {{ if ne (annotation .ObjectMeta ` + "`" + `status.sidecar.istio.io/port` + "`" + ` (valueOrDefault .Values.global.proxy.statusPort 0 )) ` + "`" + `0` + "`" + ` }}
   readinessProbe:
@@ -621,6 +623,32 @@ func (r *Reconciler) coreDumpContainer() string {
 	}
 
 	return string(coreDumpContainerYAML)
+}
+
+func (r *Reconciler) injectedAddtionalContainerArgs() string {
+	if len(r.Config.Spec.SidecarInjector.InjectedContainerAdditionalArgs) == 0 {
+		return ""
+	}
+
+	additionalArgs, err := yaml.Marshal(r.Config.Spec.SidecarInjector.InjectedContainerAdditionalArgs)
+	if err != nil {
+		return ""
+	}
+
+	return indentWithSpaces(string(additionalArgs), 2)
+}
+
+func (r *Reconciler) injectedAddtionalEnvVars() string {
+	if len(r.Config.Spec.SidecarInjector.InjectedContainerAdditionalEnvVars) == 0 {
+		return ""
+	}
+
+	additionalEnvVars, err := yaml.Marshal(r.Config.Spec.SidecarInjector.InjectedContainerAdditionalEnvVars)
+	if err != nil {
+		return ""
+	}
+
+	return indentWithSpaces(string(additionalEnvVars), 2)
 }
 
 func (r *Reconciler) proxyInitContainer() string {
