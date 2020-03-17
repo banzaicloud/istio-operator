@@ -59,6 +59,7 @@ func (c *Cluster) reconcileConfig(remoteConfig *istiov1beta1.RemoteIstio, istio 
 	istioConfig.Spec.SidecarInjector.Affinity = remoteConfig.Spec.SidecarInjector.Affinity
 	istioConfig.Spec.SidecarInjector.Tolerations = remoteConfig.Spec.SidecarInjector.Tolerations
 	istioConfig.Spec.SidecarInjector.InitCNIConfiguration.Affinity = remoteConfig.Spec.SidecarInjector.InitCNIConfiguration.Affinity
+	istioConfig.Spec.SidecarInjector.InjectedContainerAdditionalEnvVars = remoteConfig.Spec.SidecarInjector.InjectedContainerAdditionalEnvVars
 
 	istioConfig.Spec.Citadel.Enabled = util.BoolPointer(true)
 	istioConfig.Spec.SidecarInjector.Enabled = util.BoolPointer(true)
