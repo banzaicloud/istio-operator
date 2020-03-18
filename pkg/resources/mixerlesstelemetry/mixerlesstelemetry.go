@@ -30,6 +30,8 @@ import (
 
 const (
 	componentName = "mixerless-telemetry"
+	wasmRuntime   = "envoy.wasm.runtime.v8"
+	noWasmRuntime = "envoy.wasm.runtime.null"
 )
 
 type Reconciler struct {

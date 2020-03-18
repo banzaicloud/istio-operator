@@ -324,6 +324,11 @@ type SidecarInjectorConfiguration struct {
 	InjectedContainerAdditionalEnvVars []corev1.EnvVar `json:"injectedContainerAdditionalEnvVars,omitempty"`
 }
 
+// ProxyWasmConfiguration defines config options for Envoy wasm
+type ProxyWasmConfiguration struct {
+	Enabled *bool `json:"enabled,omitempty"`
+}
+
 // NodeAgentConfiguration defines config options for NodeAgent
 type NodeAgentConfiguration struct {
 	Enabled                               *bool `json:"enabled,omitempty"`
@@ -652,6 +657,9 @@ type IstioSpec struct {
 
 	// SidecarInjector configuration options
 	SidecarInjector SidecarInjectorConfiguration `json:"sidecarInjector,omitempty"`
+
+	// ProxyWasm configuration options
+	ProxyWasm ProxyWasmConfiguration `json:"proxyWasm,omitempty"`
 
 	// NodeAgent configuration options
 	NodeAgent NodeAgentConfiguration `json:"nodeAgent,omitempty"`

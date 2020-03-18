@@ -17,13 +17,17 @@ limitations under the License.
 package mixerlesstelemetry
 
 import (
+	"fmt"
+
+	"github.com/banzaicloud/istio-operator/pkg/util"
 	"github.com/ghodss/yaml"
 	"k8s.io/apimachinery/pkg/runtime/schema"
 
 	"github.com/banzaicloud/istio-operator/pkg/k8sutil"
 )
 
-const metadataExchangeFilterYAML = `
+const (
+	metadataExchangeFilterYAML = `
 - applyTo: HTTP_FILTER
   match:
     context: ANY # inbound, outbound, and gateway
@@ -44,13 +48,12 @@ const metadataExchangeFilterYAML = `
           config:
             configuration: envoy.wasm.metadata_exchange
             vm_config:
-              runtime: envoy.wasm.runtime.null
               code:
                 local:
-                  inline_string: envoy.wasm.metadata_exchange
+                  %s
+              runtime: %s
 `
-
-const TCPMetadataExchangeFilterYAML = `
+	TCPMetadataExchangeFilterYAML = `
     - applyTo: NETWORK_FILTER
       match:
         context: SIDECAR_INBOUND
@@ -96,10 +99,23 @@ const TCPMetadataExchangeFilterYAML = `
               value:
                 protocol: istio-peer-exchange
 `
+	metaExchangeWasmLocal   = "filename: /etc/istio/extensions/metadata-exchange-filter.wasm"
+	metaExchangeNoWasmLocal = "inline_string: envoy.wasm.metadata_exchange"
+)
 
 func (r *Reconciler) metaexchangeEnvoyFilter() *k8sutil.DynamicObject {
+
+	wasmEnabled := util.PointerToBool(r.Config.Spec.ProxyWasm.Enabled)
+
+	vmConfigLocal := metaExchangeNoWasmLocal
+	vmConfigRuntime := noWasmRuntime
+	if wasmEnabled {
+		vmConfigLocal = metaExchangeWasmLocal
+		vmConfigRuntime = wasmRuntime
+	}
+
 	var y []map[string]interface{}
-	yaml.Unmarshal([]byte(metadataExchangeFilterYAML), &y)
+	yaml.Unmarshal([]byte(fmt.Sprintf(metadataExchangeFilterYAML, vmConfigLocal, vmConfigRuntime)), &y)
 
 	return &k8sutil.DynamicObject{
 		Gvr: schema.GroupVersionResource{
