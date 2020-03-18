@@ -17,13 +17,17 @@ limitations under the License.
 package mixerlesstelemetry
 
 import (
+	"fmt"
+
+	"github.com/banzaicloud/istio-operator/pkg/util"
 	"github.com/ghodss/yaml"
 	"k8s.io/apimachinery/pkg/runtime/schema"
 
 	"github.com/banzaicloud/istio-operator/pkg/k8sutil"
 )
 
-const httpStatsFilterYAML = `
+const (
+	httpStatsFilterYAML = `
 - applyTo: HTTP_FILTER
   match:
     context: SIDECAR_OUTBOUND
@@ -53,8 +57,8 @@ const httpStatsFilterYAML = `
             vm_config:
               code:
                 local:
-                  inline_string: envoy.wasm.stats
-              runtime: envoy.wasm.runtime.null
+                  %[1]s
+              runtime: %[2]s
               vm_id: stats_outbound
 - applyTo: HTTP_FILTER
   match:
@@ -85,8 +89,8 @@ const httpStatsFilterYAML = `
             vm_config:
               code:
                 local:
-                  inline_string: envoy.wasm.stats
-              runtime: envoy.wasm.runtime.null
+                  %[1]s
+              runtime: %[2]s
               vm_id: stats_inbound
 - applyTo: HTTP_FILTER
   match:
@@ -117,12 +121,11 @@ const httpStatsFilterYAML = `
             vm_config:
               code:
                 local:
-                  inline_string: envoy.wasm.stats
-              runtime: envoy.wasm.runtime.null
+                  %[1]s
+              runtime: %[2]s
               vm_id: stats_outbound
 `
-
-const tcpStatsFilterYAML = `
+	tcpStatsFilterYAML = `
 - applyTo: NETWORK_FILTER
   match:
     context: SIDECAR_INBOUND
@@ -150,8 +153,8 @@ const tcpStatsFilterYAML = `
             vm_config:
               code:
                 local:
-                  inline_string: envoy.wasm.stats
-              runtime: envoy.wasm.runtime.null
+                  %[1]s
+              runtime: %[2]s
               vm_id: stats_inbound
 - applyTo: NETWORK_FILTER
   match:
@@ -180,8 +183,8 @@ const tcpStatsFilterYAML = `
             vm_config:
               code:
                 local:
-                  inline_string: envoy.wasm.stats
-              runtime: envoy.wasm.runtime.null
+                  %[1]s
+              runtime: %[2]s
               vm_id: stats_outbound
 - applyTo: NETWORK_FILTER
   match:
@@ -210,14 +213,27 @@ const tcpStatsFilterYAML = `
             vm_config:
               code:
                 local:
-                  inline_string: envoy.wasm.stats
-              runtime: envoy.wasm.runtime.null
+                  %[1]s
+              runtime: %[2]s
               vm_id: stats_outbound
 `
+	statsWasmLocal   = "filename: /etc/istio/extensions/stats-filter.wasm"
+	statsNoWasmLocal = "inline_string: envoy.wasm.stats"
+)
 
 func (r *Reconciler) httpStatsFilter() *k8sutil.DynamicObject {
+
+	wasmEnabled := util.PointerToBool(r.Config.Spec.ProxyWasm.Enabled)
+
+	vmConfigLocal := statsNoWasmLocal
+	vmConfigRuntime := noWasmRuntime
+	if wasmEnabled {
+		vmConfigLocal = statsWasmLocal
+		vmConfigRuntime = wasmRuntime
+	}
+
 	var y []map[string]interface{}
-	yaml.Unmarshal([]byte(httpStatsFilterYAML), &y)
+	yaml.Unmarshal([]byte(fmt.Sprintf(httpStatsFilterYAML, vmConfigLocal, vmConfigRuntime)), &y)
 
 	return &k8sutil.DynamicObject{
 		Gvr: schema.GroupVersionResource{
@@ -236,8 +252,18 @@ func (r *Reconciler) httpStatsFilter() *k8sutil.DynamicObject {
 }
 
 func (r *Reconciler) tcpStatsFilter() *k8sutil.DynamicObject {
+
+	wasmEnabled := util.PointerToBool(r.Config.Spec.ProxyWasm.Enabled)
+
+	vmConfigLocal := statsNoWasmLocal
+	vmConfigRuntime := noWasmRuntime
+	if wasmEnabled {
+		vmConfigLocal = statsWasmLocal
+		vmConfigRuntime = wasmRuntime
+	}
+
 	var y []map[string]interface{}
-	yaml.Unmarshal([]byte(tcpStatsFilterYAML), &y)
+	yaml.Unmarshal([]byte(fmt.Sprintf(tcpStatsFilterYAML, vmConfigLocal, vmConfigRuntime)), &y)
 
 	return &k8sutil.DynamicObject{
 		Gvr: schema.GroupVersionResource{
