@@ -18,6 +18,7 @@ package remoteclusters
 
 import (
 	"context"
+	"fmt"
 
 	k8sapierrors "k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/types"
@@ -61,10 +62,17 @@ func (c *Cluster) reconcileConfig(remoteConfig *istiov1beta1.RemoteIstio, istio 
 	istioConfig.Spec.SidecarInjector.InitCNIConfiguration.Affinity = remoteConfig.Spec.SidecarInjector.InitCNIConfiguration.Affinity
 	istioConfig.Spec.SidecarInjector.InjectedContainerAdditionalEnvVars = remoteConfig.Spec.SidecarInjector.InjectedContainerAdditionalEnvVars
 
-	istioConfig.Spec.Citadel.Enabled = util.BoolPointer(true)
 	istioConfig.Spec.SidecarInjector.Enabled = util.BoolPointer(true)
+	istioConfig.Spec.Citadel.Enabled = util.BoolPointer(true)
+
 	if util.PointerToBool(istio.Spec.Istiod.Enabled) {
+		istioConfig.Spec.Citadel.SDSEnabled = util.BoolPointer(true)
 		istioConfig.Spec.Citadel.ListenedNamespaces = &remoteConfig.Namespace
+		if util.PointerToBool(istio.Spec.Istiod.MultiClusterSupport) {
+			istioConfig.Spec.Citadel.Enabled = util.BoolPointer(false)
+		} else {
+			istioConfig.Spec.CAAddress = fmt.Sprintf("istio-citadel.%s.svc.%s:15012", istio.Namespace, istio.Spec.Proxy.ClusterDomain)
+		}
 	}
 
 	if remoteConfig.Spec.DefaultResources != nil {

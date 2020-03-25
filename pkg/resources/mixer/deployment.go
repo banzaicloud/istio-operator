@@ -178,7 +178,7 @@ func (r *Reconciler) containerEnvs(t string) []apiv1.EnvVar {
 	if util.PointerToBool(r.Config.Spec.Istiod.Enabled) {
 		envs = append(envs, apiv1.EnvVar{
 			Name:  "CA_ADDR",
-			Value: fmt.Sprintf("istio-pilot.%s.svc:15012", r.Config.Namespace),
+			Value: r.Config.GetCAAddress(),
 		})
 	}
 

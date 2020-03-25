@@ -91,7 +91,7 @@ func (r *Reconciler) deployment() runtime.Object {
 		"--proxyAdminPort", "15000",
 		"--statusPort", "15020",
 		"--controlPlaneAuthPolicy", templates.ControlPlaneAuthPolicy(util.PointerToBool(r.Config.Spec.Istiod.Enabled), r.Config.Spec.ControlPlaneSecurityEnabled),
-		"--discoveryAddress", r.discoveryAddress(),
+		"--discoveryAddress", r.Config.GetDiscoveryAddress(),
 		"--trust-domain", r.Config.Spec.TrustDomain,
 	}
 
@@ -228,20 +228,6 @@ func (r *Reconciler) ports() []apiv1.ContainerPort {
 	return ports
 }
 
-func (r *Reconciler) discoveryAddress() string {
-	if util.PointerToBool(r.Config.Spec.Istiod.Enabled) {
-		return fmt.Sprintf("istio-pilot.%s.svc:15012", r.Config.Namespace)
-	}
-	return fmt.Sprintf("istio-pilot.%s:%s", r.Config.Namespace, r.discoveryPort())
-}
-
-func (r *Reconciler) discoveryPort() string {
-	if r.Config.Spec.ControlPlaneSecurityEnabled {
-		return "15011"
-	}
-	return "15010"
-}
-
 func (r *Reconciler) envVars() []apiv1.EnvVar {
 	envVars := []apiv1.EnvVar{
 		{
@@ -320,7 +306,7 @@ func (r *Reconciler) envVars() []apiv1.EnvVar {
 	if r.gw.Spec.Type == istiov1beta1.GatewayTypeIngress && util.PointerToBool(r.Config.Spec.Istiod.Enabled) {
 		envVars = append(envVars, apiv1.EnvVar{
 			Name:  "CA_ADDR",
-			Value: fmt.Sprintf("istio-pilot.%s.svc:15012", r.Config.Namespace),
+			Value: r.Config.GetCAAddress(),
 		})
 	}
 

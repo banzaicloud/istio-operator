@@ -69,6 +69,7 @@ func (r *Reconciler) getValues() string {
 			"istiod": map[string]interface{}{
 				"enabled": util.PointerToBool(r.Config.Spec.Istiod.Enabled),
 			},
+			"caAddress":                   r.Config.GetCAAddress(),
 			"controlPlaneSecurityEnabled": r.Config.Spec.ControlPlaneSecurityEnabled,
 			"jwtPolicy":                   r.Config.Spec.JWTPolicy,
 			"pilotCertProvider":           r.Config.Spec.Pilot.CertProvider,
@@ -262,7 +263,7 @@ containers:
   - name: PILOT_CERT_PROVIDER
     value: {{ .Values.global.pilotCertProvider }}
   - name: CA_ADDR
-    value: istio-pilot.istio-system.svc:15012
+    value: {{ .Values.global.caAddress }}
 {{- end }}
   - name: POD_NAME
     valueFrom:

@@ -46,6 +46,12 @@ func (r *Reconciler) containerArgs() []string {
 		fmt.Sprintf("--trust-domain=%s", r.Config.Spec.TrustDomain),
 	)
 
+	if util.PointerToBool(r.Config.Spec.Citadel.SDSEnabled) {
+		containerArgs = append(containerArgs,
+			"--sds-enabled",
+		)
+	}
+
 	if r.Config.Spec.Citadel.CASecretName == "" {
 		containerArgs = append(containerArgs, "--self-signed-ca=true")
 	} else {
@@ -100,6 +106,13 @@ func (r *Reconciler) containerEnvs() []apiv1.EnvVar {
 			Name:  "CITADEL_ENABLE_NAMESPACES_BY_DEFAULT",
 			Value: strconv.FormatBool(util.PointerToBool(r.Config.Spec.Citadel.EnableNamespacesByDefault)),
 		},
+	}
+
+	if util.PointerToBool(r.Config.Spec.Citadel.SDSEnabled) {
+		envs = append(envs, apiv1.EnvVar{
+			Name:  "JWT_POLICY",
+			Value: string(r.Config.Spec.JWTPolicy),
+		})
 	}
 
 	envs = k8sutil.MergeEnvVars(envs, r.Config.Spec.Citadel.AdditionalEnvVars)
