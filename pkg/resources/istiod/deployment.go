@@ -102,7 +102,7 @@ func (r *Reconciler) containerEnvs() []apiv1.EnvVar {
 		envs = append(envs, []apiv1.EnvVar{
 			{
 				Name:  "ISTIOD_ADDR",
-				Value: fmt.Sprintf("istiod.%s.svc:15012", r.Config.Namespace),
+				Value: r.Config.GetDiscoveryAddress("istiod"),
 			},
 			{
 				Name:  "PILOT_EXTERNAL_GALLEY",

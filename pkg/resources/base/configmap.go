@@ -53,7 +53,7 @@ func (r *Reconciler) meshConfig() string {
 		"proxyAdminPort":         15000,
 		"concurrency":            0,
 		"controlPlaneAuthPolicy": templates.ControlPlaneAuthPolicy(util.PointerToBool(r.Config.Spec.Istiod.Enabled), r.Config.Spec.ControlPlaneSecurityEnabled),
-		"discoveryAddress":       fmt.Sprintf("istio-pilot.%s.svc:%s", r.Config.Namespace, r.discoveryPort()),
+		"discoveryAddress":       r.Config.GetDiscoveryAddress(),
 	}
 
 	if util.PointerToBool(r.Config.Spec.Proxy.EnvoyStatsD.Enabled) {
@@ -61,29 +61,11 @@ func (r *Reconciler) meshConfig() string {
 	}
 
 	if util.PointerToBool(r.Config.Spec.Proxy.EnvoyMetricsService.Enabled) {
-		metricsService := map[string]interface{}{
-			"address": fmt.Sprintf("%s:%d", r.Config.Spec.Proxy.EnvoyMetricsService.Host, r.Config.Spec.Proxy.EnvoyMetricsService.Port),
-		}
-		if r.Config.Spec.Proxy.EnvoyMetricsService.TLSSettings != nil {
-			metricsService["tlsSettings"] = r.Config.Spec.Proxy.EnvoyMetricsService.TLSSettings
-		}
-		if r.Config.Spec.Proxy.EnvoyMetricsService.TCPKeepalive != nil {
-			metricsService["tcpKeepalive"] = r.Config.Spec.Proxy.EnvoyMetricsService.TCPKeepalive
-		}
-		defaultConfig["envoyAccessLogService"] = metricsService
+		defaultConfig["envoyAccessLogService"] = r.Config.Spec.Proxy.EnvoyMetricsService.GetData()
 	}
 
 	if util.PointerToBool(r.Config.Spec.Proxy.EnvoyAccessLogService.Enabled) {
-		accessLogService := map[string]interface{}{
-			"address": fmt.Sprintf("%s:%d", r.Config.Spec.Proxy.EnvoyAccessLogService.Host, r.Config.Spec.Proxy.EnvoyAccessLogService.Port),
-		}
-		if r.Config.Spec.Proxy.EnvoyAccessLogService.TLSSettings != nil {
-			accessLogService["tlsSettings"] = r.Config.Spec.Proxy.EnvoyAccessLogService.TLSSettings
-		}
-		if r.Config.Spec.Proxy.EnvoyAccessLogService.TCPKeepalive != nil {
-			accessLogService["tcpKeepalive"] = r.Config.Spec.Proxy.EnvoyAccessLogService.TCPKeepalive
-		}
-		defaultConfig["envoyAccessLogService"] = accessLogService
+		defaultConfig["envoyAccessLogService"] = r.Config.Spec.Proxy.EnvoyAccessLogService.GetData()
 	}
 
 	if util.PointerToBool(r.Config.Spec.Tracing.Enabled) {
@@ -221,14 +203,4 @@ func (r *Reconciler) defaultConfigSource() map[string]interface{} {
 		}
 	}
 	return cs
-}
-
-func (r *Reconciler) discoveryPort() string {
-	if util.PointerToBool(r.Config.Spec.Istiod.Enabled) {
-		return "15012"
-	}
-	if r.Config.Spec.ControlPlaneSecurityEnabled {
-		return "15011"
-	}
-	return "15010"
 }

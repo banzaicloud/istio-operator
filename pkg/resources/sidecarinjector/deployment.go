@@ -18,12 +18,14 @@ package sidecarinjector
 
 import (
 	"fmt"
+	"strings"
 
 	appsv1 "k8s.io/api/apps/v1"
 	apiv1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 
+	"github.com/banzaicloud/istio-operator/pkg/apis/istio/v1beta1"
 	"github.com/banzaicloud/istio-operator/pkg/k8sutil"
 	"github.com/banzaicloud/istio-operator/pkg/resources/base"
 	"github.com/banzaicloud/istio-operator/pkg/resources/templates"
@@ -58,7 +60,7 @@ func (r *Reconciler) containerEnvs() []apiv1.EnvVar {
 }
 
 func (r *Reconciler) deployment() runtime.Object {
-	return &appsv1.Deployment{
+	deployment := &appsv1.Deployment{
 		ObjectMeta: templates.ObjectMeta(deploymentName, util.MergeStringMaps(sidecarInjectorLabels, labelSelector), r.Config),
 		Spec: appsv1.DeploymentSpec{
 			Replicas: r.Config.Spec.SidecarInjector.ReplicaCount,
@@ -124,6 +126,14 @@ func (r *Reconciler) deployment() runtime.Object {
 			},
 		},
 	}
+
+	if util.PointerToBool(r.Config.Spec.Istiod.Enabled) && util.PointerToBool(r.Config.Spec.Istiod.MultiClusterSupport) {
+		deployment.Spec.Template.Spec.InitContainers = []apiv1.Container{
+			r.certFetcherContainer(),
+		}
+	}
+
+	return deployment
 }
 
 func siProbe() *apiv1.Probe {
@@ -147,24 +157,7 @@ func siProbe() *apiv1.Probe {
 }
 
 func (r *Reconciler) volumes() []apiv1.Volume {
-	var secretPrefix string
-	if len(r.Config.Spec.Certificates) != 0 {
-		secretPrefix = "dns"
-	} else {
-		secretPrefix = "istio"
-	}
-	secretName := fmt.Sprintf("%s.%s", secretPrefix, serviceAccountName)
-
-	return []apiv1.Volume{
-		{
-			Name: "certs",
-			VolumeSource: apiv1.VolumeSource{
-				Secret: &apiv1.SecretVolumeSource{
-					SecretName:  secretName,
-					DefaultMode: util.IntPointer(420),
-				},
-			},
-		},
+	volumes := []apiv1.Volume{
 		{
 			Name: "config-volume",
 			VolumeSource: apiv1.VolumeSource{
@@ -198,4 +191,155 @@ func (r *Reconciler) volumes() []apiv1.Volume {
 			},
 		},
 	}
+
+	if util.PointerToBool(r.Config.Spec.Istiod.Enabled) && util.PointerToBool(r.Config.Spec.Istiod.MultiClusterSupport) {
+		volumes = append(volumes, apiv1.Volume{
+			Name: "certs",
+			VolumeSource: apiv1.VolumeSource{
+				EmptyDir: &apiv1.EmptyDirVolumeSource{
+					Medium: apiv1.StorageMediumMemory,
+				},
+			},
+		})
+	} else {
+		var secretPrefix string
+		if len(r.Config.Spec.Certificates) != 0 {
+			secretPrefix = "dns"
+		} else {
+			secretPrefix = "istio"
+		}
+		secretName := fmt.Sprintf("%s.%s", secretPrefix, serviceAccountName)
+		volumes = append(volumes, apiv1.Volume{
+			Name: "certs",
+			VolumeSource: apiv1.VolumeSource{
+				Secret: &apiv1.SecretVolumeSource{
+					SecretName:  secretName,
+					DefaultMode: util.IntPointer(420),
+				},
+			},
+		})
+	}
+
+	volumes = append(volumes, apiv1.Volume{
+		Name: "istiod-ca-cert",
+		VolumeSource: apiv1.VolumeSource{
+			ConfigMap: &apiv1.ConfigMapVolumeSource{
+				LocalObjectReference: apiv1.LocalObjectReference{
+					Name: "istio-ca-root-cert",
+				},
+			},
+		},
+	})
+
+	if r.Config.Spec.JWTPolicy == v1beta1.JWTPolicyThirdPartyJWT {
+		volumes = append(volumes, apiv1.Volume{
+			Name: "istio-token",
+			VolumeSource: apiv1.VolumeSource{
+				Projected: &apiv1.ProjectedVolumeSource{
+					Sources: []apiv1.VolumeProjection{
+						{
+							ServiceAccountToken: &apiv1.ServiceAccountTokenProjection{
+								Audience:          r.Config.Spec.SDS.TokenAudience,
+								ExpirationSeconds: util.Int64Pointer(43200),
+								Path:              "istio-token",
+							},
+						},
+					},
+				},
+			},
+		})
+	}
+
+	return volumes
+}
+
+func (r *Reconciler) certFetcherContainer() apiv1.Container {
+	args := []string{
+		"proxy",
+		"sidecar",
+		"--serviceCluster",
+		"istio-si-cert-fetcher",
+		"--controlPlaneAuthPolicy",
+		templates.ControlPlaneAuthPolicy(util.PointerToBool(r.Config.Spec.Istiod.Enabled), r.Config.Spec.ControlPlaneSecurityEnabled),
+		"--domain",
+		r.Config.Namespace + ".svc." + r.Config.Spec.Proxy.ClusterDomain,
+		"--discoveryAddress", r.Config.GetDiscoveryAddress(),
+		"--trust-domain",
+		r.Config.Spec.TrustDomain,
+	}
+
+	if util.PointerToBool(r.Config.Spec.Proxy.EnvoyAccessLogService.Enabled) {
+		args = append(args, []string{
+			"--envoyAccessLogService",
+			r.Config.Spec.Proxy.EnvoyAccessLogService.GetDataJSON(),
+		}...)
+	}
+
+	return apiv1.Container{
+		Name:                     "cert-fetcher",
+		Image:                    r.Config.Spec.Proxy.Image,
+		ImagePullPolicy:          r.Config.Spec.ImagePullPolicy,
+		Args:                     args,
+		Env:                      append(templates.IstioProxyEnv(r.Config), r.cfEnvVars()...),
+		VolumeMounts:             r.cfVolumeMounts(),
+		TerminationMessagePath:   apiv1.TerminationMessagePathDefault,
+		TerminationMessagePolicy: apiv1.TerminationMessageReadFile,
+	}
+}
+
+func (r *Reconciler) cfEnvVars() []apiv1.EnvVar {
+	serviceHostnames := []string{
+		fmt.Sprintf("%s.%s", serviceName, r.Config.Namespace),
+		fmt.Sprintf("%s.%s.svc", serviceName, r.Config.Namespace),
+		fmt.Sprintf("%s.%s.svc.%s", serviceName, r.Config.Namespace, r.Config.Spec.Proxy.ClusterDomain),
+	}
+	envVars := []apiv1.EnvVar{
+		{
+			Name:  "CERT_CUSTOM_DNS_NAMES",
+			Value: strings.Join(serviceHostnames, ","),
+		},
+		{
+			Name:  "SECRET_TTL",
+			Value: "8640h",
+		},
+		{
+			Name:  "OUTPUT_CERTS",
+			Value: "/etc/certs",
+		},
+		{
+			Name:  "CERT_GENERATION_ONLY",
+			Value: "true",
+		},
+	}
+
+	envVars = append(envVars, apiv1.EnvVar{
+		Name:  "CA_ADDR",
+		Value: r.Config.GetCAAddress(),
+	})
+
+	return envVars
+}
+
+func (r *Reconciler) cfVolumeMounts() []apiv1.VolumeMount {
+	vms := []apiv1.VolumeMount{}
+
+	vms = append(vms, apiv1.VolumeMount{
+		Name:      "certs",
+		MountPath: "/etc/certs",
+	})
+
+	if r.Config.Spec.JWTPolicy == v1beta1.JWTPolicyThirdPartyJWT {
+		vms = append(vms, apiv1.VolumeMount{
+			Name:      "istio-token",
+			MountPath: "/var/run/secrets/tokens",
+			ReadOnly:  true,
+		})
+	}
+
+	vms = append(vms, apiv1.VolumeMount{
+		Name:      "istiod-ca-cert",
+		MountPath: "/var/run/secrets/istio",
+	})
+
+	return vms
 }

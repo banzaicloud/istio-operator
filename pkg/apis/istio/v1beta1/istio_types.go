@@ -24,6 +24,8 @@ import (
 
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+
+	"github.com/banzaicloud/istio-operator/pkg/util"
 )
 
 const supportedIstioMinorVersionRegex = "^1.5"
@@ -81,7 +83,8 @@ type SDSConfiguration struct {
 
 // IstiodConfiguration defines config options for Istiod
 type IstiodConfiguration struct {
-	Enabled *bool `json:"enabled,omitempty"`
+	Enabled             *bool `json:"enabled,omitempty"`
+	MultiClusterSupport *bool `json:"multiClusterSupport,omitempty"`
 }
 
 // PilotConfiguration defines config options for Pilot
@@ -129,6 +132,9 @@ type CitadelConfiguration struct {
 	// of this option is "true" in this case, secrets will be generated for the "target" namespace.
 	// If the value of this option is "false" Citadel will not generate secrets upon service account creation.
 	EnableNamespacesByDefault *bool `json:"enableNamespacesByDefault,omitempty"`
+
+	// Whether SDS is enabled.
+	SDSEnabled *bool `json:"sdsEnabled,omitempty"`
 
 	// Select the namespaces for the Citadel to listen to, separated by comma. If set to empty,
 	// Citadel listens to all namespaces.
@@ -347,6 +353,29 @@ type EnvoyServiceCommonConfiguration struct {
 	Port         int32         `json:"port,omitempty"`
 	TLSSettings  *TLSSettings  `json:"tlsSettings,omitempty"`
 	TCPKeepalive *TCPKeepalive `json:"tcpKeepalive,omitempty"`
+}
+
+func (c EnvoyServiceCommonConfiguration) GetData() map[string]interface{} {
+	data := map[string]interface{}{
+		"address": fmt.Sprintf("%s:%d", c.Host, c.Port),
+	}
+	if c.TLSSettings != nil {
+		data["tlsSettings"] = c.TLSSettings
+	}
+	if c.TCPKeepalive != nil {
+		data["tcpKeepalive"] = c.TCPKeepalive
+	}
+
+	return data
+}
+
+func (c EnvoyServiceCommonConfiguration) GetDataJSON() string {
+	j, err := json.Marshal(c.GetData())
+	if err != nil {
+		return ""
+	}
+
+	return string(j)
 }
 
 type TLSSettings struct {
@@ -766,6 +795,10 @@ type IstioSpec struct {
 	// Currently, two options are supported: "third-party-jwt" and "first-party-jwt".
 	// +kubebuilder:validation:Enum=third-party-jwt,first-party-jwt
 	JWTPolicy JWTPolicyType `json:"jwtPolicy,omitempty"`
+
+	// The customized CA address to retrieve certificates for the pods in the cluster.
+	//CSR clients such as the Istio Agent and ingress gateways can use this to specify the CA endpoint.
+	CAAddress string `json:"caAddress,omitempty"`
 }
 
 type MixerlessTelemetryConfiguration struct {
@@ -824,6 +857,32 @@ func (v IstioVersion) IsSupported() bool {
 	re, _ := regexp.Compile(supportedIstioMinorVersionRegex)
 
 	return re.Match([]byte(v))
+}
+
+func (c *Istio) GetCAAddress() string {
+	if c.Spec.CAAddress != "" {
+		return c.Spec.CAAddress
+	}
+
+	return c.GetDiscoveryAddress()
+}
+
+func (c *Istio) GetDiscoveryAddress(svcNames ...string) string {
+	svcName := "istio-pilot"
+	if len(svcNames) == 1 {
+		svcName = svcNames[0]
+	}
+	return fmt.Sprintf("%s.%s.svc:%s", svcName, c.Namespace, c.GetDiscoveryPort())
+}
+
+func (c *Istio) GetDiscoveryPort() string {
+	if util.PointerToBool(c.Spec.Istiod.Enabled) {
+		return "15012"
+	}
+	if c.Spec.ControlPlaneSecurityEnabled {
+		return "15011"
+	}
+	return "15010"
 }
 
 // IstioStatus defines the observed state of Istio
