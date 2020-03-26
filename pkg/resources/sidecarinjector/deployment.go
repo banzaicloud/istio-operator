@@ -220,16 +220,18 @@ func (r *Reconciler) volumes() []apiv1.Volume {
 		})
 	}
 
-	volumes = append(volumes, apiv1.Volume{
-		Name: "istiod-ca-cert",
-		VolumeSource: apiv1.VolumeSource{
-			ConfigMap: &apiv1.ConfigMapVolumeSource{
-				LocalObjectReference: apiv1.LocalObjectReference{
-					Name: "istio-ca-root-cert",
+	if util.PointerToBool(r.Config.Spec.Istiod.Enabled) && r.Config.Spec.Pilot.CertProvider == v1beta1.PilotCertProviderTypeIstiod {
+		volumes = append(volumes, apiv1.Volume{
+			Name: "istiod-ca-cert",
+			VolumeSource: apiv1.VolumeSource{
+				ConfigMap: &apiv1.ConfigMapVolumeSource{
+					LocalObjectReference: apiv1.LocalObjectReference{
+						Name: "istio-ca-root-cert",
+					},
 				},
 			},
-		},
-	})
+		})
+	}
 
 	if r.Config.Spec.JWTPolicy == v1beta1.JWTPolicyThirdPartyJWT {
 		volumes = append(volumes, apiv1.Volume{
