@@ -33,6 +33,10 @@ const CASecretName = "cacerts"
 func (c *Cluster) reconcileSignCert(remoteConfig *istiov1beta1.RemoteIstio, istio *istiov1beta1.Istio) error {
 	c.log.Info("reconciling sign cert")
 
+	if util.PointerToBool(istio.Spec.Istiod.Enabled) && util.PointerToBool(istio.Spec.Istiod.MultiClusterSupport) {
+		return nil
+	}
+
 	if remoteConfig.Spec.Citadel.CASecretName != "" {
 		return nil
 	}
