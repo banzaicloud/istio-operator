@@ -387,6 +387,10 @@ containers:
     value: "{{ .ProxyConfig.GetTracing.GetStackdriver.GetMaxNumberOfMessageEvents }}"
   {{- end }}
   {{- end }}
+{{- if .Values.global.proxy.envoyAccessLogService.enabled }}
+  - name: ISTIO_META_ALS_ENABLED
+    value: "true"
+{{- end }}
 ` + r.injectedAddtionalEnvVars() + `
   imagePullPolicy: {{ .Values.global.imagePullPolicy }}
   {{ if ne (annotation .ObjectMeta ` + "`" + `status.sidecar.istio.io/port` + "`" + ` (valueOrDefault .Values.global.proxy.statusPort 0 )) ` + "`" + `0` + "`" + ` }}
