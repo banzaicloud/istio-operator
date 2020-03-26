@@ -19,65 +19,71 @@ package remoteclusters
 import (
 	"context"
 
+	"github.com/goph/emperror"
 	corev1 "k8s.io/api/core/v1"
-	k8sapierrors "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
 	istiov1beta1 "github.com/banzaicloud/istio-operator/pkg/apis/istio/v1beta1"
+	"github.com/banzaicloud/istio-operator/pkg/k8sutil"
 	"github.com/banzaicloud/istio-operator/pkg/util"
 )
 
-const CARootConfigMapName = "istio-ca-root-cert"
+const (
+	caRootConfigMapName = "istio-ca-root-cert"
+	certKeyInConfigMap  = "root-cert.pem"
+)
 
-func (c *Cluster) reconcileCARoot(remoteConfig *istiov1beta1.RemoteIstio, istio *istiov1beta1.Istio) error {
-	c.log.Info("reconciling ca root configmap")
+func (c *Cluster) reconcileCARootToNamespaces(remoteConfig *istiov1beta1.RemoteIstio, istio *istiov1beta1.Istio) error {
+	desiredState := k8sutil.DesiredStatePresent
+	if !util.PointerToBool(istio.Spec.Istiod.Enabled) || istio.Spec.Pilot.CertProvider != istiov1beta1.PilotCertProviderTypeIstiod {
+		desiredState = k8sutil.DesiredStateAbsent
+	}
 
-	var configmap corev1.ConfigMap
-	err := c.ctrlRuntimeClient.Get(context.TODO(), client.ObjectKey{
-		Namespace: remoteConfig.Namespace,
-		Name:      CARootConfigMapName,
-	}, &configmap)
-	if err != nil && !k8sapierrors.IsNotFound(err) {
+	var namespaces corev1.NamespaceList
+
+	err := c.ctrlRuntimeClient.List(context.Background(), &client.ListOptions{}, &namespaces)
+	if err != nil {
 		return err
 	}
 
 	signCert := remoteConfig.Spec.GetSignCert()
 	configMapData := map[string]string{
-		"root-cert.pem": string(signCert.Root),
+		certKeyInConfigMap: string(signCert.Root),
 	}
 
-	if k8sapierrors.IsNotFound(err) {
-		configmap = corev1.ConfigMap{
-			ObjectMeta: metav1.ObjectMeta{
-				Name:      CARootConfigMapName,
-				Namespace: remoteConfig.Namespace,
-			},
-			Data: configMapData,
-		}
-		configmap.SetOwnerReferences([]metav1.OwnerReference{
-			{
-				Kind:               c.istioConfig.Kind,
-				APIVersion:         c.istioConfig.APIVersion,
-				Name:               c.istioConfig.Name,
-				UID:                c.istioConfig.GetUID(),
-				Controller:         util.BoolPointer(true),
-				BlockOwnerDeletion: util.BoolPointer(true),
-			},
-		})
-		err = c.ctrlRuntimeClient.Create(context.TODO(), &configmap)
+	for _, ns := range namespaces.Items {
+		err = c.reconcileCARootInNamespace(ns.Name, configMapData, desiredState)
 		if err != nil {
 			return err
 		}
-
-		return nil
 	}
 
-	configmap.Data = configMapData
-	err = c.ctrlRuntimeClient.Update(context.TODO(), &configmap)
+	return nil
+}
+
+func (c *Cluster) reconcileCARootInNamespace(namespace string, configMapData map[string]string, desiredState k8sutil.DesiredState) error {
+	c.log.Info("reconciling ca root configmap", "namespace", namespace)
+
+	configmap := corev1.ConfigMap{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      caRootConfigMapName,
+			Namespace: namespace,
+		},
+		Data: configMapData,
+	}
+	ownerRef, err := k8sutil.SetOwnerReferenceToObject(&configmap, c.istioConfig)
 	if err != nil {
 		return err
 	}
+	configmap.SetOwnerReferences(ownerRef)
+
+	err = k8sutil.Reconcile(c.log, c.ctrlRuntimeClient, &configmap, desiredState)
+	if err != nil {
+		return emperror.WrapWith(err, "failed to reconcile resource", "resource", configmap.GetObjectKind().GroupVersionKind())
+	}
+
+	c.log.Info("ca root configmap reconciled", "namespace", namespace)
 
 	return nil
 }

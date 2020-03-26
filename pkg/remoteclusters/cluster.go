@@ -22,12 +22,21 @@ import (
 
 	"github.com/go-logr/logr"
 	"github.com/goph/emperror"
+	"github.com/pkg/errors"
+	corev1 "k8s.io/api/core/v1"
 	k8serrors "k8s.io/apimachinery/pkg/api/errors"
+	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/client-go/dynamic"
 	"k8s.io/client-go/rest"
 	"k8s.io/client-go/tools/clientcmd"
 	"sigs.k8s.io/controller-runtime/pkg/client"
+	"sigs.k8s.io/controller-runtime/pkg/controller"
+	"sigs.k8s.io/controller-runtime/pkg/event"
+	"sigs.k8s.io/controller-runtime/pkg/handler"
 	"sigs.k8s.io/controller-runtime/pkg/manager"
+	"sigs.k8s.io/controller-runtime/pkg/predicate"
+	"sigs.k8s.io/controller-runtime/pkg/reconcile"
+	"sigs.k8s.io/controller-runtime/pkg/source"
 
 	istiov1beta1 "github.com/banzaicloud/istio-operator/pkg/apis/istio/v1beta1"
 	"github.com/banzaicloud/istio-operator/pkg/controller/meshgateway"
@@ -38,9 +47,10 @@ type Cluster struct {
 	config []byte
 	log    logr.Logger
 
-	stop       <-chan struct{}
-	stopper    chan<- struct{}
-	initClient sync.Once
+	stop          <-chan struct{}
+	stopper       chan<- struct{}
+	initClient    sync.Once
+	initInformers sync.Once
 
 	mgr manager.Manager
 
@@ -49,9 +59,10 @@ type Cluster struct {
 	dynamicClient     dynamic.Interface
 	istioConfig       *istiov1beta1.Istio
 	remoteConfig      *istiov1beta1.RemoteIstio
+	ctrl              controller.Controller
 }
 
-func NewCluster(name string, config []byte, log logr.Logger) (*Cluster, error) {
+func NewCluster(name string, ctrl controller.Controller, config []byte, log logr.Logger) (*Cluster, error) {
 	stop := make(chan struct{})
 
 	cluster := &Cluster{
@@ -60,6 +71,7 @@ func NewCluster(name string, config []byte, log logr.Logger) (*Cluster, error) {
 		log:     log.WithValues("cluster", name),
 		stop:    stop,
 		stopper: stop,
+		ctrl:    ctrl,
 	}
 
 	restConfig, err := cluster.getRestConfig(config)
@@ -73,6 +85,51 @@ func NewCluster(name string, config []byte, log logr.Logger) (*Cluster, error) {
 
 func (c *Cluster) GetName() string {
 	return c.name
+}
+
+func (c *Cluster) initK8sInformers() error {
+	if c.remoteConfig == nil {
+		return errors.New("remoteconfig must be set")
+	}
+
+	informer, err := c.mgr.GetCache().GetInformerForKind(corev1.SchemeGroupVersion.WithKind("Namespace"))
+	if err != nil {
+		return emperror.Wrap(err, "could not get informer for namespaces")
+	}
+
+	err = c.ctrl.Watch(&source.Informer{
+		Informer: informer,
+	}, &handler.EnqueueRequestsFromMapFunc{
+		ToRequests: handler.ToRequestsFunc(func(object handler.MapObject) []reconcile.Request {
+			return []reconcile.Request{
+				{
+					NamespacedName: types.NamespacedName{
+						Name:      c.remoteConfig.Name,
+						Namespace: c.remoteConfig.Namespace,
+					},
+				},
+			}
+		}),
+	}, predicate.Funcs{
+		CreateFunc: func(e event.CreateEvent) bool {
+			return true
+		},
+		DeleteFunc: func(e event.DeleteEvent) bool {
+			return false
+		},
+		GenericFunc: func(e event.GenericEvent) bool {
+			return false
+		},
+		UpdateFunc: func(e event.UpdateEvent) bool {
+			return false
+		},
+	})
+
+	if err != nil {
+		return emperror.Wrap(err, "could not set watcher for namespaces informer")
+	}
+
+	return nil
 }
 
 func (c *Cluster) initK8SClients() error {
@@ -105,6 +162,8 @@ func (c *Cluster) Reconcile(remoteConfig *istiov1beta1.RemoteIstio, istio *istio
 		return emperror.Wrapf(err, "could not reconcile")
 	}
 
+	c.remoteConfig = remoteConfig
+
 	// init k8s clients
 	c.initClient.Do(func() {
 		err = c.initK8SClients()
@@ -113,10 +172,18 @@ func (c *Cluster) Reconcile(remoteConfig *istiov1beta1.RemoteIstio, istio *istio
 		return emperror.Wrap(err, "could not init k8s clients")
 	}
 
+	// init k8s informers
+	c.initInformers.Do(func() {
+		err = c.initK8sInformers()
+	})
+	if err != nil {
+		return emperror.Wrap(err, "could not init k8s informers")
+	}
+
 	ReconcilerFuncs = append(ReconcilerFuncs,
 		c.reconcileConfig,
 		c.reconcileSignCert,
-		c.reconcileCARoot,
+		c.reconcileCARootToNamespaces,
 		c.reconcileEnabledServices,
 		c.ReconcileEnabledServiceEndpoints,
 		c.reconcileComponents,
@@ -127,8 +194,6 @@ func (c *Cluster) Reconcile(remoteConfig *istiov1beta1.RemoteIstio, istio *istio
 			return emperror.Wrapf(err, "could not reconcile")
 		}
 	}
-
-	c.remoteConfig = remoteConfig
 
 	return nil
 }

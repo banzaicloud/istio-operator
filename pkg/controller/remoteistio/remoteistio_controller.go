@@ -72,6 +72,12 @@ func add(mgr manager.Manager, r reconcile.Reconciler) error {
 		return err
 	}
 
+	if r, ok := r.(interface {
+		setController(ctrl controller.Controller)
+	}); ok {
+		r.setController(c)
+	}
+
 	// Watch for changes to RemoteConfig
 	err = c.Watch(&source.Kind{Type: &istiov1beta1.RemoteIstio{TypeMeta: metav1.TypeMeta{Kind: "RemoteIstio", APIVersion: "istio.banzaicloud.io/v1beta1"}}}, &handler.EnqueueRequestForObject{}, k8sutil.GetWatchPredicateForRemoteIstio())
 	if err != nil {
@@ -111,12 +117,17 @@ func add(mgr manager.Manager, r reconcile.Reconciler) error {
 	return nil
 }
 
+func (r *ReconcileRemoteConfig) setController(ctrl controller.Controller) {
+	r.ctrl = ctrl
+}
+
 var _ reconcile.Reconciler = &ReconcileRemoteConfig{}
 
 // ReconcileRemoteConfig reconciles a RemoteConfig object
 type ReconcileRemoteConfig struct {
 	client.Client
 	scheme *runtime.Scheme
+	ctrl   controller.Controller
 
 	remoteClustersMgr *remoteclusters.Manager
 }
@@ -468,7 +479,7 @@ func (r *ReconcileRemoteConfig) getRemoteCluster(remoteConfig *istiov1beta1.Remo
 
 	logger.Info("k8s config found")
 
-	cluster, err := remoteclusters.NewCluster(remoteConfig.Name, k8sconfig, logger)
+	cluster, err := remoteclusters.NewCluster(remoteConfig.Name, r.ctrl, k8sconfig, logger)
 	if err != nil {
 		return nil, err
 	}
