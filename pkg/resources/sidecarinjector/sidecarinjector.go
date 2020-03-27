@@ -98,7 +98,7 @@ func (r *Reconciler) Reconcile(log logr.Logger) error {
 		}
 	}
 
-	if util.PointerToBool(r.Config.Spec.SidecarInjector.Enabled) {
+	if util.PointerToBool(r.Config.Spec.SidecarInjector.Enabled) || util.PointerToBool(r.Config.Spec.Istiod.Enabled) {
 		err := r.reconcileAutoInjectionLabels(log)
 		if err != nil {
 			return emperror.WrapWith(err, "failed to label namespaces")
