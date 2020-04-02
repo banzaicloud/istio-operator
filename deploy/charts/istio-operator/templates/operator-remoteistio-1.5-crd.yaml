@@ -114,6 +114,9 @@ spec:
                   type: object
                 resources:
                   type: object
+                sdsEnabled:
+                  description: Whether SDS is enabled.
+                  type: boolean
                 tolerations:
                   items:
                     type: object
