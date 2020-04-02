@@ -65,6 +65,11 @@ spec:
                 based on the server side mTLS authentication policy and the availability
                 of sidecars.
               type: boolean
+            caAddress:
+              description: The customized CA address to retrieve certificates for
+                the pods in the cluster. CSR clients such as the Istio Agent and ingress
+                gateways can use this to specify the CA endpoint.
+              type: string
             certificates:
               description: 'Configures DNS certificates provisioned through Chiron
                 linked into Pilot. The DNS names in this file are all hard-coded;
@@ -139,6 +144,9 @@ spec:
                   type: object
                 resources:
                   type: object
+                sdsEnabled:
+                  description: Whether SDS is enabled.
+                  type: boolean
                 tolerations:
                   items:
                     type: object
@@ -388,6 +396,8 @@ spec:
               description: Istiod configuration
               properties:
                 enabled:
+                  type: boolean
+                multiClusterSupport:
                   type: boolean
               type: object
             jwtPolicy:
@@ -877,6 +887,12 @@ spec:
               properties:
                 image:
                   type: string
+              type: object
+            proxyWasm:
+              description: ProxyWasm configuration options
+              properties:
+                enabled:
+                  type: boolean
               type: object
             sds:
               description: If SDS is configured, mTLS certificates for the sidecars
