@@ -365,7 +365,7 @@ func (r *Reconciler) volumes() []apiv1.Volume {
 				Name: "cacerts",
 				VolumeSource: apiv1.VolumeSource{
 					Secret: &apiv1.SecretVolumeSource{
-						SecretName:  "cacerts",
+						SecretName:  r.Config.Spec.Citadel.CASecretName,
 						Optional:    util.BoolPointer(true),
 						DefaultMode: util.IntPointer(420),
 					},

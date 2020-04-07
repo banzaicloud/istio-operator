@@ -65,6 +65,7 @@ const (
 	defaultEnvoyAccessLogEncoding     = "TEXT"
 	defaultClusterName                = "Kubernetes"
 	defaultNetworkName                = "local-network"
+	defaultCASecretName               = "cacerts"
 )
 
 var defaultResources = &apiv1.ResourceRequirements{
@@ -196,6 +197,9 @@ func SetDefaults(config *Istio) {
 	}
 	if config.Spec.Citadel.EnableNamespacesByDefault == nil {
 		config.Spec.Citadel.EnableNamespacesByDefault = util.BoolPointer(true)
+	}
+	if config.Spec.Citadel.CASecretName == "" {
+		config.Spec.Citadel.CASecretName = defaultCASecretName
 	}
 	// Galley config
 	if config.Spec.Galley.Enabled == nil {
