@@ -58,6 +58,11 @@ func (r *Reconciler) getValues() string {
 		zipkinTLSSettingsJSON, _ = json.Marshal(r.Config.Spec.Tracing.Zipkin.TLSSettings)
 	}
 
+	proxyInitContainerName := "istio-init"
+	if util.PointerToBool(r.Config.Spec.SidecarInjector.InitCNIConfiguration.Enabled) {
+		proxyInitContainerName = "istio-validation"
+	}
+
 	values := map[string]interface{}{
 		"sidecarInjectorWebhook": map[string]interface{}{
 			"rewriteAppHTTPProbe": r.Config.Spec.SidecarInjector.RewriteAppHTTPProbe,
@@ -78,7 +83,9 @@ func (r *Reconciler) getValues() string {
 			"network":                     r.Config.Spec.NetworkName,
 			"podDNSSearchNamespaces":      podDNSSearchNamespaces,
 			"proxy_init": map[string]interface{}{
-				"image": r.Config.Spec.ProxyInit.Image,
+				"cniEnabled":    util.PointerToBool(r.Config.Spec.SidecarInjector.InitCNIConfiguration.Enabled),
+				"containerName": proxyInitContainerName,
+				"image":         r.Config.Spec.ProxyInit.Image,
 			},
 			"tracer": map[string]interface{}{
 				"lightstep": map[string]interface{}{
@@ -657,11 +664,7 @@ func (r *Reconciler) injectedAddtionalEnvVars() string {
 }
 
 func (r *Reconciler) proxyInitContainer() string {
-	if util.PointerToBool(r.Config.Spec.SidecarInjector.InitCNIConfiguration.Enabled) {
-		return ""
-	}
-
-	return `- name: istio-init
+	return `- name: {{ .Values.global.proxy_init.containerName }}
   image: "{{ .Values.global.proxy_init.image }}"
   command:
   - istio-iptables
@@ -689,18 +692,30 @@ func (r *Reconciler) proxyInitContainer() string {
   - "-k"
   - "{{ index .ObjectMeta.Annotations ` + "`" + `traffic.sidecar.istio.io/kubevirtInterfaces` + "`" + ` }}"
   {{ end -}}
+  {{ if .Values.global.proxy_init.cniEnabled -}}
+  - "--run-validation"
+  - "--skip-rule-apply"
+  {{ end -}}
   imagePullPolicy: "{{ valueOrDefault .Values.global.imagePullPolicy  ` + "`" + `Always ` + "`" + ` }}"
 ` + r.getFormattedResources(r.Config.Spec.SidecarInjector.Init.Resources, 2) + `
   securityContext:
+  {{- if not .Values.global.proxy_init.cniEnabled }}
     runAsUser: 0
     runAsGroup: 0
     runAsNonRoot: false
+  {{- else }}
+    runAsGroup: 1337
+    runAsUser: 1337
+    runAsNonRoot: true
+  {{- end }}
     allowPrivilegeEscalation: {{ .Values.global.proxy.privileged }}
     privileged: {{ .Values.global.proxy.privileged }}
     capabilities:
+      {{- if not .Values.global.proxy_init.cniEnabled }}
       add:
       - NET_ADMIN
       - NET_RAW
+      {{- end }}
       drop:
       - ALL
     readOnlyRootFilesystem: false
