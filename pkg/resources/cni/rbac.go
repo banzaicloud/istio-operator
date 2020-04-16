@@ -67,7 +67,7 @@ func (r *Reconciler) clusterRoleBinding() runtime.Object {
 		RoleRef: rbacv1.RoleRef{
 			Kind:     "ClusterRole",
 			APIGroup: "rbac.authorization.k8s.io",
-			Name:     clusterRoleRepairName,
+			Name:     clusterRoleName,
 		},
 		Subjects: []rbacv1.Subject{
 			{
@@ -85,7 +85,7 @@ func (r *Reconciler) clusterRoleBindingRepair() runtime.Object {
 		RoleRef: rbacv1.RoleRef{
 			Kind:     "ClusterRole",
 			APIGroup: "rbac.authorization.k8s.io",
-			Name:     clusterRoleName,
+			Name:     clusterRoleRepairName,
 		},
 		Subjects: []rbacv1.Subject{
 			{

@@ -24,6 +24,8 @@ rules:
   resources:
   - serviceaccounts
   - configmaps
+  - pods
+  - events
   verbs:
   - get
   - list
@@ -41,13 +43,6 @@ rules:
   - list
   - watch
   - update
-  - patch
-- apiGroups:
-  - ""
-  resources:
-  - events
-  verbs:
-  - create
   - patch
 - apiGroups:
   - ""

@@ -172,7 +172,7 @@ func (r *Reconciler) container() []apiv1.Container {
 					Value: strconv.FormatBool(util.PointerToBool(cniConfig.Repair.DeletePods)),
 				},
 				{
-					Name:  "REPAIR_RUN-AS-DAEMON-PODS",
+					Name:  "REPAIR_RUN-AS-DAEMON",
 					Value: "true",
 				},
 				{

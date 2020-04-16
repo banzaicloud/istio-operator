@@ -17,7 +17,6 @@ limitations under the License.
 package cni
 
 import (
-	"github.com/banzaicloud/istio-operator/pkg/util"
 	"github.com/go-logr/logr"
 	"github.com/goph/emperror"
 	"sigs.k8s.io/controller-runtime/pkg/client"
@@ -25,6 +24,7 @@ import (
 	istiov1beta1 "github.com/banzaicloud/istio-operator/pkg/apis/istio/v1beta1"
 	"github.com/banzaicloud/istio-operator/pkg/k8sutil"
 	"github.com/banzaicloud/istio-operator/pkg/resources"
+	"github.com/banzaicloud/istio-operator/pkg/util"
 )
 
 const (
