@@ -121,16 +121,16 @@ workflows:
       - build
 
       - docker/publish:
-          name: Publish master docker image
+          name: Publish dev docker image
           executor: docker/machine
           context: dockerhub
           image: banzaicloud/istio-operator
-          tag: master
+          tag: ${CIRCLE_BRANCH/release-/dev-}
           requires:
             - build
           filters:
             branches:
-              only: master
+              only: /release-[0-9]+\.[0-9]+/
 
       - docker/custom-publish:
           name: Publish tagged & latest docker image
