@@ -120,18 +120,6 @@ workflows:
     jobs:
       - build
 
-      - docker/publish:
-          name: Publish dev docker image
-          executor: docker/machine
-          context: dockerhub
-          image: banzaicloud/istio-operator
-          tag: ${CIRCLE_BRANCH/release-/dev-}
-          requires:
-            - build
-          filters:
-            branches:
-              only: /release-[0-9]+\.[0-9]+/
-
       - docker/custom-publish:
           name: Publish tagged & latest docker image
           executor: docker/machine
