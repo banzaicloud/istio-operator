@@ -1,6 +1,32 @@
 version: 2.1
 orbs:
   helm: banzaicloud/helm@0.0.3
+  docker: banzaicloud/docker@0.0.3
+
+commands:
+  publish-with-latests:
+    steps:
+      - docker/tag:
+          target-image: banzaicloud/istio-operator
+          target-tag: ${CIRCLE_TAG}
+      - docker/push:
+          image: banzaicloud/istio-operator
+          tag: ${CIRCLE_TAG}
+      - docker/version-check:
+          version: ${CIRCLE_TAG}
+          halt: true
+      - run:
+          name: Publish latest
+          command: |
+            minor="$(echo ${CIRCLE_TAG} | cut -d '.' -f2)"
+            docker tag "banzaicloud/istio-operator:${CIRCLE_TAG}" "banzaicloud/istio-operator:latest-1.${minor}"
+            docker push "banzaicloud/istio-operator:latest-1.${minor}"
+
+            latest="$(git tag | grep -E '^[0-9]+\.[0-9]+\.[0-9]+$' | cut -d '.' -f2 | sort -urn | head -n 1)"
+            if [ "${latest}" -eq "${minor}" ]; then
+              docker tag "banzaicloud/istio-operator:${CIRCLE_TAG}" "banzaicloud/istio-operator:latest"
+              docker push "banzaicloud/istio-operator:latest"
+            fi
 
 jobs:
   build:
@@ -93,6 +119,33 @@ workflows:
   ci:
     jobs:
       - build
+
+      - docker/publish:
+          name: Publish master docker image
+          executor: docker/machine
+          context: dockerhub
+          image: banzaicloud/istio-operator
+          tag: master
+          requires:
+            - build
+          filters:
+            branches:
+              only: master
+
+      - docker/custom-publish:
+          name: Publish tagged & latest docker image
+          executor: docker/machine
+          context: dockerhub
+          image: banzaicloud/istio-operator
+          login:
+            - docker/login
+          push:
+            - publish-with-latests
+          filters:
+            tags:
+              only: /^v?[0-9]+\.[0-9]+\.[0-9]+(?:-(?:dev|rc)\.[0-9]+)?$/
+            branches:
+              ignore: /.*/
 
   helm-chart:
     jobs:
