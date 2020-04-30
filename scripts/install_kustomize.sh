@@ -8,5 +8,5 @@ curl -O -L "https://github.com/kubernetes-sigs/kustomize/releases/download/v${ve
 
 # move to bin
 mkdir -p bin
-mv "kustomize_*_${opsys}_amd64" bin/kustomize
+mv "kustomize_${version}_${opsys}_amd64" bin/kustomize
 chmod u+x bin/kustomize
