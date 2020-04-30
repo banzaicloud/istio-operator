@@ -114,6 +114,9 @@ spec:
                 type: object
               type: array
             type:
+              enum:
+              - ingress
+              - egress
               type: string
           required:
           - ports

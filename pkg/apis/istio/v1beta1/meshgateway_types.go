@@ -33,7 +33,8 @@ type MeshGatewaySpec struct {
 	MeshGatewayConfiguration `json:",inline"`
 	// +kubebuilder:validation:MinItems=1
 	Ports []corev1.ServicePort `json:"ports"`
-	Type  GatewayType          `json:"type"`
+	// +kubebuilder:validation:Enum=ingress,egress
+	Type GatewayType `json:"type"`
 }
 
 type MeshGatewayConfiguration struct {
