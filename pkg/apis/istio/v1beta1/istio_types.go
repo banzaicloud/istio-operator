@@ -48,19 +48,25 @@ type BaseK8sResourceConfigurationWithImage struct {
 }
 
 type BaseK8sResourceConfigurationWithReplicas struct {
+	// +kubebuilder:validation:Minimum=0
 	ReplicaCount                          *int32 `json:"replicaCount,omitempty"`
 	BaseK8sResourceConfigurationWithImage `json:",inline"`
 }
 
 type BaseK8sResourceConfigurationWithHPA struct {
-	MinReplicas                              *int32 `json:"minReplicas,omitempty"`
+	// +kubebuilder:validation:Minimum=0
+	MinReplicas *int32 `json:"minReplicas,omitempty"`
+	// +kubebuilder:validation:Minimum=0
 	MaxReplicas                              *int32 `json:"maxReplicas,omitempty"`
 	BaseK8sResourceConfigurationWithReplicas `json:",inline"`
 }
 
 type BaseK8sResourceConfigurationWithHPAWithoutImage struct {
-	ReplicaCount                 *int32 `json:"replicaCount,omitempty"`
-	MinReplicas                  *int32 `json:"minReplicas,omitempty"`
+	// +kubebuilder:validation:Minimum=0
+	ReplicaCount *int32 `json:"replicaCount,omitempty"`
+	// +kubebuilder:validation:Minimum=0
+	MinReplicas *int32 `json:"minReplicas,omitempty"`
+	// +kubebuilder:validation:Minimum=0
 	MaxReplicas                  *int32 `json:"maxReplicas,omitempty"`
 	BaseK8sResourceConfiguration `json:",inline"`
 }

@@ -456,6 +456,7 @@ spec:
                   type: object
                 replicaCount:
                   format: int32
+                  minimum: 0
                   type: integer
                 resources:
                   type: object
