@@ -77,9 +77,11 @@ spec:
               type: string
             maxReplicas:
               format: int32
+              minimum: 0
               type: integer
             minReplicas:
               format: int32
+              minimum: 0
               type: integer
             nodeSelector:
               type: object
@@ -92,6 +94,7 @@ spec:
               type: array
             replicaCount:
               format: int32
+              minimum: 0
               type: integer
             requestedNetworkView:
               type: string
@@ -121,6 +124,9 @@ spec:
                 type: object
               type: array
             type:
+              enum:
+              - ingress
+              - egress
               type: string
           required:
           - ports

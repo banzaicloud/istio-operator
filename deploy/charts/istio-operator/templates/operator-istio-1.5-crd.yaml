@@ -219,6 +219,7 @@ spec:
                   type: object
                 replicaCount:
                   format: int32
+                  minimum: 0
                   type: integer
                 resources:
                   type: object
@@ -248,9 +249,11 @@ spec:
                       type: string
                     maxReplicas:
                       format: int32
+                      minimum: 0
                       type: integer
                     minReplicas:
                       format: int32
+                      minimum: 0
                       type: integer
                     nodeSelector:
                       type: object
@@ -262,6 +265,7 @@ spec:
                       type: array
                     replicaCount:
                       format: int32
+                      minimum: 0
                       type: integer
                     requestedNetworkView:
                       type: string
@@ -311,9 +315,11 @@ spec:
                       type: string
                     maxReplicas:
                       format: int32
+                      minimum: 0
                       type: integer
                     minReplicas:
                       format: int32
+                      minimum: 0
                       type: integer
                     nodeSelector:
                       type: object
@@ -325,6 +331,7 @@ spec:
                       type: array
                     replicaCount:
                       format: int32
+                      minimum: 0
                       type: integer
                     requestedNetworkView:
                       type: string
@@ -384,6 +391,7 @@ spec:
                   type: object
                 replicaCount:
                   format: int32
+                  minimum: 0
                   type: integer
                 resources:
                   type: object
@@ -505,9 +513,11 @@ spec:
                   type: string
                 maxReplicas:
                   format: int32
+                  minimum: 0
                   type: integer
                 minReplicas:
                   format: int32
+                  minimum: 0
                   type: integer
                 multiClusterSupport:
                   description: Turn it on if you use mixer that supports multi cluster
@@ -519,6 +529,7 @@ spec:
                   type: object
                 replicaCount:
                   format: int32
+                  minimum: 0
                   type: integer
                 reportBatchMaxEntries:
                   description: Set reportBatchMaxEntries to 0 to use the default batching
@@ -644,9 +655,11 @@ spec:
                   type: string
                 maxReplicas:
                   format: int32
+                  minimum: 0
                   type: integer
                 minReplicas:
                   format: int32
+                  minimum: 0
                   type: integer
                 nodeSelector:
                   type: object
@@ -654,6 +667,7 @@ spec:
                   type: object
                 replicaCount:
                   format: int32
+                  minimum: 0
                   type: integer
                 resources:
                   type: object
@@ -686,9 +700,11 @@ spec:
                   type: string
                 maxReplicas:
                   format: int32
+                  minimum: 0
                   type: integer
                 minReplicas:
                   format: int32
+                  minimum: 0
                   type: integer
                 nodeSelector:
                   type: object
@@ -696,6 +712,7 @@ spec:
                   type: object
                 replicaCount:
                   format: int32
+                  minimum: 0
                   type: integer
                 resources:
                   type: object
@@ -1047,6 +1064,7 @@ spec:
                   type: object
                 replicaCount:
                   format: int32
+                  minimum: 0
                   type: integer
                 resources:
                   type: object
@@ -1077,9 +1095,11 @@ spec:
                   type: string
                 maxReplicas:
                   format: int32
+                  minimum: 0
                   type: integer
                 minReplicas:
                   format: int32
+                  minimum: 0
                   type: integer
                 nodeSelector:
                   type: object
@@ -1087,6 +1107,7 @@ spec:
                   type: object
                 replicaCount:
                   format: int32
+                  minimum: 0
                   type: integer
                 reportBatchMaxEntries:
                   description: Set reportBatchMaxEntries to 0 to use the default batching
