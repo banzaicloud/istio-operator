@@ -36,8 +36,6 @@ const (
 	deploymentName         = "istio-citadel"
 	serviceName            = "istio-citadel"
 	pdbName                = "istio-citadel"
-
-	SelfSignedCASecretName = "istio-ca-secret"
 )
 
 var citadelLabels = map[string]string{

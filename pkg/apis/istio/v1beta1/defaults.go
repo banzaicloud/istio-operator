@@ -65,7 +65,7 @@ const (
 	defaultEnvoyAccessLogEncoding     = "TEXT"
 	defaultClusterName                = "Kubernetes"
 	defaultNetworkName                = "local-network"
-	defaultCASecretName               = "cacerts"
+	defaultCASecretName               = "istio-ca-secret"
 )
 
 var defaultResources = &apiv1.ResourceRequirements{
