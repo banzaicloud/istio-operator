@@ -40,7 +40,6 @@ import (
 	istiov1beta1 "github.com/banzaicloud/istio-operator/pkg/apis/istio/v1beta1"
 	"github.com/banzaicloud/istio-operator/pkg/k8sutil"
 	"github.com/banzaicloud/istio-operator/pkg/remoteclusters"
-	"github.com/banzaicloud/istio-operator/pkg/resources/citadel"
 	"github.com/banzaicloud/istio-operator/pkg/util"
 )
 
@@ -271,12 +270,7 @@ func (r *ReconcileRemoteConfig) reconcile(remoteConfig *istiov1beta1.RemoteIstio
 		}, nil
 	}
 
-	caSecretName := citadel.SelfSignedCASecretName
-	if istio.Spec.Citadel.CASecretName != "" {
-		caSecretName = istio.Spec.Citadel.CASecretName
-	}
-
-	remoteConfig, err = r.populateSignCerts(caSecretName, remoteConfig)
+	remoteConfig, err = r.populateSignCerts(istio.Spec.Citadel.CASecretName, remoteConfig)
 	if err != nil {
 		return reconcile.Result{}, emperror.Wrap(err, "could not populate sign certs")
 	}
