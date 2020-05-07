@@ -17,16 +17,18 @@ limitations under the License.
 package remoteclusters
 
 import (
+	"bytes"
 	"time"
 
+	"github.com/goph/emperror"
 	"github.com/pkg/errors"
 	apiextensionsv1beta1 "k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1beta1"
 	extensionsobj "k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1beta1"
 	apiextensionsclient "k8s.io/apiextensions-apiserver/pkg/client/clientset/clientset"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/apimachinery/pkg/runtime"
-	k8syaml "k8s.io/apimachinery/pkg/util/yaml"
+	"k8s.io/apimachinery/pkg/runtime/schema"
+	"k8s.io/apimachinery/pkg/runtime/serializer/json"
 
 	istiov1beta1 "github.com/banzaicloud/istio-operator/pkg/apis/istio/v1beta1"
 	"github.com/banzaicloud/istio-operator/pkg/crds"
@@ -36,9 +38,19 @@ import (
 func (c *Cluster) reconcileCRDs(remoteConfig *istiov1beta1.RemoteIstio, istio *istiov1beta1.Istio) error {
 	c.log.Info("reconciling CRDs")
 
+	istiocrd, err := c.istiocrd()
+	if err != nil {
+		return emperror.Wrap(err, "could not get istio CRD")
+	}
+
+	meshgatewaycrd, err := c.meshgatewaycrd()
+	if err != nil {
+		return emperror.Wrap(err, "could not get meshgateway CRD")
+	}
+
 	resources := []*extensionsobj.CustomResourceDefinition{
-		c.istiocrd(),
-		c.meshgatewaycrd(),
+		istiocrd,
+		meshgatewaycrd,
 	}
 
 	crdo, err := crds.New(c.restConfig, resources...)
@@ -94,38 +106,44 @@ func (c *Cluster) waitForCRD(crd *extensionsobj.CustomResourceDefinition) error 
 	return errors.Errorf("CRD '%s' is not established yet", crd.Name)
 }
 
-func (c *Cluster) istiocrd() *extensionsobj.CustomResourceDefinition {
+func (c *Cluster) istiocrd() (*extensionsobj.CustomResourceDefinition, error) {
 	return c.getCRD("istio_v1beta1_istio.yaml")
 }
 
-func (c *Cluster) meshgatewaycrd() *extensionsobj.CustomResourceDefinition {
+func (c *Cluster) meshgatewaycrd() (*extensionsobj.CustomResourceDefinition, error) {
 	return c.getCRD("istio_v1beta1_meshgateway.yaml")
 }
 
-func (c *Cluster) getCRD(name string) *extensionsobj.CustomResourceDefinition {
-	var resource apiextensionsv1beta1.CustomResourceDefinition
+func (c *Cluster) getCRD(name string) (*extensionsobj.CustomResourceDefinition, error) {
+	var resource *apiextensionsv1beta1.CustomResourceDefinition
 
 	f, err := generated.CRDs.Open("/" + name)
 	if err != nil {
-		return nil
+		return nil, err
+	}
+
+	yaml := new(bytes.Buffer)
+	_, err = yaml.ReadFrom(f)
+	if err != nil {
+		return nil, err
 	}
 
 	s := runtime.NewScheme()
 	apiextensionsv1beta1.AddToScheme(s)
 
-	decoder := k8syaml.NewYAMLOrJSONDecoder(f, 1024)
-	out := &unstructured.Unstructured{}
-	err = decoder.Decode(out)
+	serializer := json.NewYAMLSerializer(json.DefaultMetaFactory, s, s)
+	o, _, err := serializer.Decode(yaml.Bytes(), nil, nil)
 	if err != nil {
-		return nil
+		return nil, err
 	}
 
-	err = s.Convert(out, &resource, nil)
-	if err != nil {
-		return nil
+	var ok bool
+	if resource, ok = o.(*apiextensionsv1beta1.CustomResourceDefinition); !ok {
+		return nil, errors.New("invalid resource kind")
 	}
 
+	resource.SetGroupVersionKind(schema.GroupVersionKind{})
 	resource.Status = apiextensionsv1beta1.CustomResourceDefinitionStatus{}
 
-	return &resource
+	return resource, nil
 }

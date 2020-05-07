@@ -208,12 +208,20 @@ func (c *Cluster) RemoveRemoteIstioComponents() error {
 	}
 	c.log.Info("removing istio from remote cluster by removing installed CRDs")
 
-	err := c.ctrlRuntimeClient.Delete(context.TODO(), c.istiocrd())
+	istiocrd, err := c.istiocrd()
+	if err != nil {
+		return emperror.Wrap(err, "could not get istio CRD")
+	}
+	err = c.ctrlRuntimeClient.Delete(context.TODO(), istiocrd)
 	if err != nil && !k8serrors.IsNotFound(err) {
 		emperror.Wrap(err, "could not remove istio CRD from remote cluster")
 	}
 
-	err = c.ctrlRuntimeClient.Delete(context.TODO(), c.meshgatewaycrd())
+	meshgatewaycrd, err := c.meshgatewaycrd()
+	if err != nil {
+		return emperror.Wrap(err, "could not get meshgateway CRD")
+	}
+	err = c.ctrlRuntimeClient.Delete(context.TODO(), meshgatewaycrd)
 	if err != nil && k8serrors.IsNotFound(err) {
 		return emperror.Wrap(err, "could not remove mesh gateway CRD from remote cluster")
 	}
