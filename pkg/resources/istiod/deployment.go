@@ -267,15 +267,18 @@ func (r *Reconciler) volumeMounts() []apiv1.VolumeMount {
 			})
 		}
 
+		if r.Config.Spec.Citadel.CASecretName != "" {
+			vms = append(vms, apiv1.VolumeMount{
+				Name:      "cacerts",
+				MountPath: "/etc/cacerts",
+				ReadOnly:  true,
+			})
+		}
+
 		vms = append(vms, []apiv1.VolumeMount{
 			{
 				Name:      "local-certs",
 				MountPath: "/var/run/secrets/istio-dns",
-			},
-			{
-				Name:      "cacerts",
-				MountPath: "/etc/cacerts",
-				ReadOnly:  true,
 			},
 			{
 				Name:      "inject",
@@ -348,6 +351,19 @@ func (r *Reconciler) volumes() []apiv1.Volume {
 			})
 		}
 
+		if r.Config.Spec.Citadel.CASecretName != "" {
+			volumes = append(volumes, apiv1.Volume{
+				Name: "cacerts",
+				VolumeSource: apiv1.VolumeSource{
+					Secret: &apiv1.SecretVolumeSource{
+						SecretName:  r.Config.Spec.Citadel.CASecretName,
+						Optional:    util.BoolPointer(false),
+						DefaultMode: util.IntPointer(420),
+					},
+				},
+			})
+		}
+
 		volumes = append(volumes, []apiv1.Volume{
 			{
 				Name: "istiod",
@@ -356,16 +372,6 @@ func (r *Reconciler) volumes() []apiv1.Volume {
 						LocalObjectReference: apiv1.LocalObjectReference{
 							Name: "istiod",
 						},
-						Optional:    util.BoolPointer(true),
-						DefaultMode: util.IntPointer(420),
-					},
-				},
-			},
-			{
-				Name: "cacerts",
-				VolumeSource: apiv1.VolumeSource{
-					Secret: &apiv1.SecretVolumeSource{
-						SecretName:  r.Config.Spec.Citadel.CASecretName,
 						Optional:    util.BoolPointer(true),
 						DefaultMode: util.IntPointer(420),
 					},
