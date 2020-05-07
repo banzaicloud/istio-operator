@@ -1663,6 +1663,11 @@ func (in *SidecarInjectorConfiguration) DeepCopyInto(out *SidecarInjectorConfigu
 	in.BaseK8sResourceConfigurationWithReplicas.DeepCopyInto(&out.BaseK8sResourceConfigurationWithReplicas)
 	in.Init.DeepCopyInto(&out.Init)
 	in.InitCNIConfiguration.DeepCopyInto(&out.InitCNIConfiguration)
+	if in.RewriteAppHTTPProbe != nil {
+		in, out := &in.RewriteAppHTTPProbe, &out.RewriteAppHTTPProbe
+		*out = new(bool)
+		**out = **in
+	}
 	if in.AutoInjectionPolicyEnabled != nil {
 		in, out := &in.AutoInjectionPolicyEnabled, &out.AutoInjectionPolicyEnabled
 		*out = new(bool)

@@ -330,6 +330,9 @@ func SetDefaults(config *Istio) {
 	if config.Spec.SidecarInjector.InitCNIConfiguration.Chained == nil {
 		config.Spec.SidecarInjector.InitCNIConfiguration.Chained = util.BoolPointer(true)
 	}
+	if config.Spec.SidecarInjector.RewriteAppHTTPProbe == nil {
+		config.Spec.SidecarInjector.RewriteAppHTTPProbe = util.BoolPointer(true)
+	}
 	// Wasm Config
 	if config.Spec.ProxyWasm.Enabled == nil {
 		config.Spec.ProxyWasm.Enabled = util.BoolPointer(false)

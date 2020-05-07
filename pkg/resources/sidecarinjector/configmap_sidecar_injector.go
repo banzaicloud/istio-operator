@@ -65,7 +65,7 @@ func (r *Reconciler) getValues() string {
 
 	values := map[string]interface{}{
 		"sidecarInjectorWebhook": map[string]interface{}{
-			"rewriteAppHTTPProbe": r.Config.Spec.SidecarInjector.RewriteAppHTTPProbe,
+			"rewriteAppHTTPProbe": util.PointerToBool(r.Config.Spec.SidecarInjector.RewriteAppHTTPProbe),
 		},
 		"global": map[string]interface{}{
 			"mtls": map[string]interface{}{
