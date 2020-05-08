@@ -295,7 +295,7 @@ type SidecarInjectorConfiguration struct {
 	// If true, sidecar injector will rewrite PodSpec for liveness
 	// health check to redirect request to sidecar. This makes liveness check work
 	// even when mTLS is enabled.
-	RewriteAppHTTPProbe bool `json:"rewriteAppHTTPProbe,omitempty"`
+	RewriteAppHTTPProbe *bool `json:"rewriteAppHTTPProbe,omitempty"`
 	// This controls the 'policy' in the sidecar injector
 	AutoInjectionPolicyEnabled *bool `json:"autoInjectionPolicyEnabled,omitempty"`
 	// This controls whether the webhook looks for namespaces for injection enabled or disabled

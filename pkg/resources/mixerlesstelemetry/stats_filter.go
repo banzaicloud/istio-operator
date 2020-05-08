@@ -115,7 +115,8 @@ const (
             configuration: |
               {
                 "debug": "false",
-                "stat_prefix": "istio"
+                "stat_prefix": "istio",
+                "disable_host_header_fallback": true,
               }
             root_id: stats_outbound
             vm_config:

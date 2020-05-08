@@ -28,7 +28,7 @@ import (
 
 const (
 	defaultImageHub                   = "docker.io/istio"
-	defaultImageVersion               = "1.5.1"
+	defaultImageVersion               = "1.5.2"
 	defaultLogLevel                   = "default:info"
 	defaultMeshPolicy                 = PERMISSIVE
 	defaultPilotImage                 = defaultImageHub + "/" + "pilot" + ":" + defaultImageVersion
@@ -329,6 +329,9 @@ func SetDefaults(config *Istio) {
 	}
 	if config.Spec.SidecarInjector.InitCNIConfiguration.Chained == nil {
 		config.Spec.SidecarInjector.InitCNIConfiguration.Chained = util.BoolPointer(true)
+	}
+	if config.Spec.SidecarInjector.RewriteAppHTTPProbe == nil {
+		config.Spec.SidecarInjector.RewriteAppHTTPProbe = util.BoolPointer(true)
 	}
 	// Wasm Config
 	if config.Spec.ProxyWasm.Enabled == nil {
