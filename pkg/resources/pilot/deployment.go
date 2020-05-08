@@ -33,10 +33,6 @@ import (
 	"github.com/banzaicloud/istio-operator/pkg/util"
 )
 
-var appLabels = map[string]string{
-	"app": "pilot",
-}
-
 func (r *Reconciler) containerArgs() []string {
 	containerArgs := []string{
 		"discovery",
@@ -265,8 +261,9 @@ func (r *Reconciler) containers() []apiv1.Container {
 }
 
 func (r *Reconciler) deployment() runtime.Object {
+	labels := util.MergeStringMaps(pilotLabels, labelSelector)
 	deployment := &appsv1.Deployment{
-		ObjectMeta: templates.ObjectMeta(deploymentName, util.MergeStringMaps(pilotLabels, labelSelector), r.Config),
+		ObjectMeta: templates.ObjectMeta(deploymentName, labels, r.Config),
 		Spec: appsv1.DeploymentSpec{
 			Replicas: util.IntPointer(k8sutil.GetHPAReplicaCountOrDefault(r.Client, types.NamespacedName{
 				Name:      hpaName,
@@ -274,11 +271,11 @@ func (r *Reconciler) deployment() runtime.Object {
 			}, util.PointerToInt32(r.Config.Spec.Pilot.ReplicaCount))),
 			Strategy: templates.DefaultRollingUpdateStrategy(),
 			Selector: &metav1.LabelSelector{
-				MatchLabels: util.MergeStringMaps(appLabels, labelSelector),
+				MatchLabels: labels,
 			},
 			Template: apiv1.PodTemplateSpec{
 				ObjectMeta: metav1.ObjectMeta{
-					Labels:      util.MergeStringMaps(appLabels, labelSelector),
+					Labels:      labels,
 					Annotations: util.MergeStringMaps(templates.DefaultDeployAnnotations(), r.Config.Spec.Pilot.PodAnnotations),
 				},
 				Spec: apiv1.PodSpec{

@@ -3,7 +3,7 @@ ARG GO_VERSION=1.13.9
 # Build the manager binary
 FROM golang:${GO_VERSION}-alpine3.11 AS builder
 
-RUN apk add --update --no-cache ca-certificates=20191127-r1 make=4.2.1-r2 git=2.24.1-r0 curl=7.67.0-r0 mercurial=5.3.1-r0
+RUN apk add --update --no-cache ca-certificates=20191127-r1 make=4.2.1-r2 git=2.24.3-r0 curl=7.67.0-r0 mercurial=5.3.2-r0
 
 ARG PACKAGE=github.com/banzaicloud/istio-operator
 
