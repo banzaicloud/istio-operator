@@ -168,7 +168,7 @@ func (r *Reconciler) siConfig() string {
 }
 
 func (r *Reconciler) templateConfig() string {
-	return `rewriteAppHTTPProbe: {{ valueOrDefault .Values.sidecarInjectorWebhook.rewriteAppHTTPProbe false }}
+	return `rewriteAppHTTPProbe: {{ valueOrDefault .Values.sidecarInjectorWebhook.rewriteAppHTTPProbe true }}
 {{- if .Values.global.podDNSSearchNamespaces }}
 dnsConfig:
   searches:
@@ -325,6 +325,14 @@ containers:
         {{- end}}
       {{- end}}
       ]
+  - name: ISTIO_META_APP_CONTAINERS
+    value: |-
+      [
+        {{- range $index, $container := .Spec.Containers }}
+         {{- if ne $index 0}},{{- end}}
+          {{ $container.Name }}
+        {{- end}}
+      ]
   - name: ISTIO_META_CLUSTER_ID
     value: "{{ valueOrDefault .Values.global.multicluster.clusterName ` + "`" + `Kubernetes` + "`" + `}}"
 {{- if eq .Values.global.proxy.tracer "zipkin" }}
@@ -432,19 +440,30 @@ containers:
     runAsUser: 1337
     {{- end }}
   resources:
-  {{ if or (isset .ObjectMeta.Annotations ` + "`" + `sidecar.istio.io/proxyCPU` + "`" + `) (isset .ObjectMeta.Annotations ` + "`" + `sidecar.istio.io/proxyMemory` + "`" + `) -}}
-    requests:
-      {{ if (isset .ObjectMeta.Annotations ` + "`" + `sidecar.istio.io/proxyCPU` + "`" + `) -}}
-      cpu: "{{ index .ObjectMeta.Annotations ` + "`" + `sidecar.istio.io/proxyCPU` + "`" + ` }}"
-      {{ end}}
-      {{ if (isset .ObjectMeta.Annotations ` + "`" + `sidecar.istio.io/proxyMemory` + "`" + `) -}}
-      memory: "{{ index .ObjectMeta.Annotations ` + "`" + `sidecar.istio.io/proxyMemory` + "`" + ` }}"
-      {{ end }}
-  {{ else -}}
+  {{- if or (isset .ObjectMeta.Annotations  ` + "`" + `sidecar.istio.io/proxyCPU ` + "`" + `) (isset .ObjectMeta.Annotations  ` + "`" + `sidecar.istio.io/proxyMemory ` + "`" + `) (isset .ObjectMeta.Annotations  ` + "`" + `sidecar.istio.io/proxyCPULimit ` + "`" + `) (isset .ObjectMeta.Annotations  ` + "`" + `sidecar.istio.io/proxyMemoryLimit ` + "`" + `) }}
+    {{- if or (isset .ObjectMeta.Annotations   ` + "`" + `sidecar.istio.io/proxyCPU  ` + "`" + `) (isset .ObjectMeta.Annotations   ` + "`" + `sidecar.istio.io/proxyMemory  ` + "`" + `) }}
+      requests:
+        {{ if (isset .ObjectMeta.Annotations ` + "`" + `sidecar.istio.io/proxyCPU` + "`" + `) -}}
+        cpu: "{{ index .ObjectMeta.Annotations ` + "`" + `sidecar.istio.io/proxyCPU` + "`" + ` }}"
+        {{ end }}
+        {{ if (isset .ObjectMeta.Annotations ` + "`" + `sidecar.istio.io/proxyMemory` + "`" + `) -}}
+        memory: "{{ index .ObjectMeta.Annotations ` + "`" + `sidecar.istio.io/proxyMemory` + "`" + ` }}"
+        {{ end }}
+    {{- end }}
+    {{- if or (isset .ObjectMeta.Annotations  ` + "`" + `sidecar.istio.io/proxyCPULimit ` + "`" + `) (isset .ObjectMeta.Annotations  ` + "`" + `sidecar.istio.io/proxyMemoryLimit ` + "`" + `) }}
+      limits:
+        {{ if (isset .ObjectMeta.Annotations  ` + "`" + `sidecar.istio.io/proxyCPULimit ` + "`" + `) -}}
+        cpu: "{{ index .ObjectMeta.Annotations  ` + "`" + `sidecar.istio.io/proxyCPULimit ` + "`" + ` }}"
+        {{ end }}
+        {{ if (isset .ObjectMeta.Annotations  ` + "`" + `sidecar.istio.io/proxyMemoryLimit ` + "`" + `) -}}
+        memory: "{{ index .ObjectMeta.Annotations  ` + "`" + `sidecar.istio.io/proxyMemoryLimit ` + "`" + ` }}"
+        {{ end }}
+    {{- end }}
+  {{- else }}
 {{- if .Values.global.proxy.resources }}
     {{ toYaml .Values.global.proxy.resources | indent 4 }}
 {{- end }}
-  {{  end -}}
+  {{- end }}
   volumeMounts:
   {{- if .Values.global.istiod.enabled }}
   {{- if eq .Values.global.pilotCertProvider "istiod" }}
@@ -700,10 +719,12 @@ func (r *Reconciler) proxyInitContainer() string {
 ` + r.getFormattedResources(r.Config.Spec.SidecarInjector.Init.Resources, 2) + `
   securityContext:
   {{- if not .Values.global.proxy_init.cniEnabled }}
+    readOnlyRootFilesystem: false
     runAsUser: 0
     runAsGroup: 0
     runAsNonRoot: false
   {{- else }}
+    readOnlyRootFilesystem: true
     runAsGroup: 1337
     runAsUser: 1337
     runAsNonRoot: true
@@ -718,7 +739,6 @@ func (r *Reconciler) proxyInitContainer() string {
       {{- end }}
       drop:
       - ALL
-    readOnlyRootFilesystem: false
   restartPolicy: Always
   `
 }
