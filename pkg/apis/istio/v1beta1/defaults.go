@@ -96,16 +96,15 @@ var defaultInitResources = &apiv1.ResourceRequirements{
 }
 
 var defaultIngressGatewayPorts = []apiv1.ServicePort{
-	{Port: 15020, Protocol: apiv1.ProtocolTCP, TargetPort: intstr.FromInt(15020), Name: "status-port"},
-	{Port: 80, Protocol: apiv1.ProtocolTCP, TargetPort: intstr.FromInt(80), Name: "http2"},
-	{Port: 443, Protocol: apiv1.ProtocolTCP, TargetPort: intstr.FromInt(443), Name: "https"},
+	{Port: 15021, Protocol: apiv1.ProtocolTCP, TargetPort: intstr.FromInt(15021), Name: "status-port"},
+	{Port: 80, Protocol: apiv1.ProtocolTCP, TargetPort: intstr.FromInt(8080), Name: "http2"},
+	{Port: 443, Protocol: apiv1.ProtocolTCP, TargetPort: intstr.FromInt(8443), Name: "https"},
 	{Port: 15443, Protocol: apiv1.ProtocolTCP, TargetPort: intstr.FromInt(15443), Name: "tls"},
-	{Port: 31400, Protocol: apiv1.ProtocolTCP, TargetPort: intstr.FromInt(31400), Name: "tcp"},
 }
 
 var defaultEgressGatewayPorts = []apiv1.ServicePort{
-	{Port: 80, Name: "http2", Protocol: apiv1.ProtocolTCP, TargetPort: intstr.FromInt(80)},
-	{Port: 443, Name: "https", Protocol: apiv1.ProtocolTCP, TargetPort: intstr.FromInt(443)},
+	{Port: 80, Name: "http2", Protocol: apiv1.ProtocolTCP, TargetPort: intstr.FromInt(8080)},
+	{Port: 443, Name: "https", Protocol: apiv1.ProtocolTCP, TargetPort: intstr.FromInt(8443)},
 	{Port: 15443, Protocol: apiv1.ProtocolTCP, TargetPort: intstr.FromInt(15443), Name: "tls"},
 }
 

@@ -873,12 +873,8 @@ func (c *Istio) GetCAAddress() string {
 	return c.GetDiscoveryAddress()
 }
 
-func (c *Istio) GetDiscoveryAddress(svcNames ...string) string {
-	svcName := "istio-pilot"
-	if len(svcNames) == 1 {
-		svcName = svcNames[0]
-	}
-	return fmt.Sprintf("%s.%s.svc:%s", svcName, c.Namespace, c.GetDiscoveryPort())
+func (c *Istio) GetDiscoveryAddress() string {
+	return fmt.Sprintf("istiod.%s.svc:%s", c.Namespace, c.GetDiscoveryPort())
 }
 
 func (c *Istio) GetDiscoveryPort() string {

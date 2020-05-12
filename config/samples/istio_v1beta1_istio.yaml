@@ -58,14 +58,14 @@ spec:
       serviceAnnotations: {}
       serviceLabels: {}
       ports:
-        - port: 15020
-          targetPort: 15020
+        - port: 15021
+          targetPort: 15021
           name: status-port
         - port: 80
-          targetPort: 80
+          targetPort: 8080
           name: http2
         - port: 443
-          targetPort: 443
+          targetPort: 8443
           name: https
         - port: 15443
           targetPort: 15443
@@ -87,10 +87,10 @@ spec:
       serviceLabels: {}
       ports:
         - port: 80
-          targetPort: 80
+          targetPort: 8080
           name: http2
         - port: 443
-          targetPort: 443
+          targetPort: 8443
           name: https
         - port: 15443
           targetPort: 15443
@@ -102,6 +102,7 @@ spec:
         limits:
           cpu: 2000m
           memory: 256Mi
+      runAsRoot: true
     k8singress:
       enabled: false
   policy:

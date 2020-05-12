@@ -42,7 +42,7 @@ func (r *Reconciler) servicePorts(name string) []apiv1.ServicePort {
 		ports := r.gw.Spec.Ports
 		if util.PointerToBool(r.Config.Spec.MeshExpansion) {
 			ports = append(ports, apiv1.ServicePort{
-				Port: 853, Protocol: apiv1.ProtocolTCP, TargetPort: intstr.FromInt(853), Name: "tcp-dns-tls",
+				Port: 853, Protocol: apiv1.ProtocolTCP, TargetPort: intstr.FromInt(8853), Name: "tcp-dns-tls",
 			})
 
 			if util.PointerToBool(r.Config.Spec.Istiod.Enabled) {

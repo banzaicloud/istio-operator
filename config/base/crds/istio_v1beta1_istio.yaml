@@ -265,6 +265,9 @@ spec:
                       type: string
                     resources:
                       type: object
+                    runAsRoot:
+                      description: Whether to run the gateway in a privileged container
+                      type: boolean
                     sds:
                       properties:
                         enabled:
@@ -331,6 +334,9 @@ spec:
                       type: string
                     resources:
                       type: object
+                    runAsRoot:
+                      description: Whether to run the gateway in a privileged container
+                      type: boolean
                     sds:
                       properties:
                         enabled:

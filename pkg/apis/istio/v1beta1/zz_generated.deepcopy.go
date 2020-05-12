@@ -1007,6 +1007,11 @@ func (in *MeshGatewayConfiguration) DeepCopyInto(out *MeshGatewayConfiguration) 
 			(*in)[i].DeepCopyInto(&(*out)[i])
 		}
 	}
+	if in.RunAsRoot != nil {
+		in, out := &in.RunAsRoot, &out.RunAsRoot
+		*out = new(bool)
+		**out = **in
+	}
 	return
 }
 
