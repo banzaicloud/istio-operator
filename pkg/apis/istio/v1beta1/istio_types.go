@@ -28,7 +28,7 @@ import (
 	"github.com/banzaicloud/istio-operator/pkg/util"
 )
 
-const supportedIstioMinorVersionRegex = "^1.5"
+const supportedIstioMinorVersionRegex = "^1.6"
 
 // IstioVersion stores the intended Istio version
 type IstioVersion string
@@ -626,7 +626,7 @@ const (
 // IstioSpec defines the desired state of Istio
 type IstioSpec struct {
 	// Contains the intended Istio version
-	// +kubebuilder:validation:Pattern=^1.5
+	// +kubebuilder:validation:Pattern=^1.6
 	Version IstioVersion `json:"version"`
 
 	// Logging configurations
