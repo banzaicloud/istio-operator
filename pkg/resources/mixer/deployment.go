@@ -100,31 +100,33 @@ func (r *Reconciler) volumes(t string) []apiv1.Volume {
 		},
 	}
 
-	if util.PointerToBool(r.Config.Spec.Istiod.Enabled) {
-		volumes = append(volumes, []apiv1.Volume{
-			{
-				Name: "config-volume",
-				VolumeSource: apiv1.VolumeSource{
-					ConfigMap: &apiv1.ConfigMapVolumeSource{
-						LocalObjectReference: apiv1.LocalObjectReference{
-							Name: base.IstioConfigMapName,
-						},
-						DefaultMode: util.IntPointer(420),
+	if t == telemetryComponentName {
+		volumes = append(volumes, apiv1.Volume{
+			Name: "telemetry-envoy-config",
+			VolumeSource: apiv1.VolumeSource{
+				ConfigMap: &apiv1.ConfigMapVolumeSource{
+					LocalObjectReference: apiv1.LocalObjectReference{
+						Name: configMapNameEnvoy,
 					},
+					DefaultMode: util.IntPointer(420),
 				},
 			},
-			{
-				Name: "telemetry-envoy-config",
-				VolumeSource: apiv1.VolumeSource{
-					ConfigMap: &apiv1.ConfigMapVolumeSource{
-						LocalObjectReference: apiv1.LocalObjectReference{
-							Name: configMapNameEnvoy,
-						},
-						DefaultMode: util.IntPointer(420),
+		})
+	}
+
+	if r.Config.Spec.ControlPlaneSecurityEnabled {
+		volumes = append(volumes, apiv1.Volume{
+			Name: "config-volume",
+			VolumeSource: apiv1.VolumeSource{
+				ConfigMap: &apiv1.ConfigMapVolumeSource{
+					LocalObjectReference: apiv1.LocalObjectReference{
+						Name: base.IstioConfigMapName,
 					},
+					DefaultMode: util.IntPointer(420),
+					Optional:    util.BoolPointer(true),
 				},
 			},
-		}...)
+		})
 
 		if r.Config.Spec.Pilot.CertProvider == istiov1beta1.PilotCertProviderTypeIstiod {
 			volumes = append(volumes, apiv1.Volume{
@@ -133,6 +135,25 @@ func (r *Reconciler) volumes(t string) []apiv1.Volume {
 					ConfigMap: &apiv1.ConfigMapVolumeSource{
 						LocalObjectReference: apiv1.LocalObjectReference{
 							Name: "istio-ca-root-cert",
+						},
+					},
+				},
+			})
+		}
+
+		if r.Config.Spec.JWTPolicy == istiov1beta1.JWTPolicyThirdPartyJWT {
+			volumes = append(volumes, apiv1.Volume{
+				Name: "istio-token",
+				VolumeSource: apiv1.VolumeSource{
+					Projected: &apiv1.ProjectedVolumeSource{
+						Sources: []apiv1.VolumeProjection{
+							{
+								ServiceAccountToken: &apiv1.ServiceAccountTokenProjection{
+									Audience:          r.Config.Spec.SDS.TokenAudience,
+									ExpirationSeconds: util.Int64Pointer(43200),
+									Path:              "istio-token",
+								},
+							},
 						},
 					},
 				},
@@ -341,7 +362,7 @@ func (r *Reconciler) mixerContainer(t string, ns string) apiv1.Container {
 }
 
 func (r *Reconciler) istioProxyContainer(t string) apiv1.Container {
-	templateFile := fmt.Sprintf("/etc/istio/proxy/envoy_%s.yaml.tmpl", t)
+	templateFile := fmt.Sprintf("/var/lib/istio/envoy/envoy_%s.yaml.tmpl", t)
 	if t == telemetryComponentName && util.PointerToBool(r.Config.Spec.Istiod.Enabled) {
 		templateFile = "/var/lib/envoy/envoy.yaml.tmpl"
 	}
@@ -371,26 +392,22 @@ func (r *Reconciler) istioProxyContainer(t string) apiv1.Container {
 
 	vms := []apiv1.VolumeMount{
 		{
-			Name:      "istio-certs",
-			MountPath: "/etc/certs",
-			ReadOnly:  true,
-		},
-		{
 			Name:      "uds-socket",
 			MountPath: "/sock",
 		},
+	}
+
+	if t == telemetryComponentName {
+		vms = append(vms, apiv1.VolumeMount{
+			Name:      "telemetry-envoy-config",
+			MountPath: "/var/lib/envoy",
+		})
 	}
 
 	if util.PointerToBool(r.Config.Spec.Istiod.Enabled) {
 		vms = append(vms, apiv1.VolumeMount{
 			Name:      "config-volume",
 			MountPath: "/etc/istio/config",
-			ReadOnly:  true,
-		})
-
-		vms = append(vms, apiv1.VolumeMount{
-			Name:      "telemetry-envoy-config",
-			MountPath: "/var/lib/envoy",
 		})
 
 		if r.Config.Spec.Pilot.CertProvider == istiov1beta1.PilotCertProviderTypeIstiod {
