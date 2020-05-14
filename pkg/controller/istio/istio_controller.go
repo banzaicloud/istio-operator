@@ -200,7 +200,7 @@ func (r *ReconcileIstio) Reconcile(request reconcile.Request) (reconcile.Result,
 	// Set default values where not set
 	istiov1beta1.SetDefaults(config)
 
-	r.checkMeshPolicyConflict(config, logger)
+	r.checkMeshWidePolicyConflict(config, logger)
 
 	result, err := r.reconcile(logger, config)
 	if err != nil {
@@ -282,9 +282,9 @@ func (r *ReconcileIstio) reconcile(logger logr.Logger, config *istiov1beta1.Isti
 			Namespace: config.Namespace,
 			Name:      config.Name,
 		}
-		err = r.watchMeshPolicy(nn)
+		err = r.watchMeshWidePolicy(nn)
 		if err != nil {
-			logger.Error(err, "unable to watch MeshPolicy")
+			logger.Error(err, "unable to watch mesh wide policy")
 		}
 		err = r.watchCRDs(nn)
 		if err != nil {
@@ -301,7 +301,7 @@ func (r *ReconcileIstio) reconcile(logger logr.Logger, config *istiov1beta1.Isti
 	reconcilers := []resources.ComponentReconciler{
 		base.New(r.Client, config, false),
 		citadel.New(citadel.Configuration{
-			DeployMeshPolicy: true,
+			DeployMeshWidePolicy: true,
 		}, r.Client, r.dynamic, config),
 		galley.New(r.Client, config),
 		sidecarinjector.New(r.Client, config),
@@ -347,7 +347,7 @@ func (r *ReconcileIstio) reconcile(logger logr.Logger, config *istiov1beta1.Isti
 	return reconcile.Result{}, nil
 }
 
-func (r *ReconcileIstio) checkMeshPolicyConflict(config *istiov1beta1.Istio, logger logr.Logger) {
+func (r *ReconcileIstio) checkMeshWidePolicyConflict(config *istiov1beta1.Istio, logger logr.Logger) {
 	if config.Spec.MTLS != nil && config.Spec.MeshPolicy.MTLSMode != "" {
 		mTLS := util.PointerToBool(config.Spec.MTLS)
 		if (mTLS && config.Spec.MeshPolicy.MTLSMode != istiov1beta1.STRICT) ||
@@ -361,7 +361,7 @@ func (r *ReconcileIstio) checkMeshPolicyConflict(config *istiov1beta1.Istio, log
 			r.recorder.Event(
 				config,
 				"Warning",
-				"MeshPolicyConflict",
+				"MeshWidePolicyConflict",
 				warningMessage,
 			)
 		}

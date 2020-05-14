@@ -31,7 +31,7 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/reconcile"
 	"sigs.k8s.io/controller-runtime/pkg/source"
 
-	v1alpha1 "github.com/banzaicloud/istio-client-go/pkg/authentication/v1alpha1"
+	securityv1beta1 "github.com/banzaicloud/istio-client-go/pkg/security/v1beta1"
 	istiov1beta1 "github.com/banzaicloud/istio-operator/pkg/apis/istio/v1beta1"
 	"github.com/banzaicloud/istio-operator/pkg/crds"
 	"github.com/banzaicloud/istio-operator/pkg/k8sutil"
@@ -214,13 +214,13 @@ func (r *ReconcileIstio) watchCRDs(nn types.NamespacedName) error {
 	return err
 }
 
-func (r *ReconcileIstio) watchMeshPolicy(nn types.NamespacedName) error {
+func (r *ReconcileIstio) watchMeshWidePolicy(nn types.NamespacedName) error {
 	err := r.ctrl.Watch(
 		&source.Kind{
-			Type: &v1alpha1.MeshPolicy{
+			Type: &securityv1beta1.PeerAuthentication{
 				TypeMeta: metav1.TypeMeta{
-					Kind:       "MeshPolicy",
-					APIVersion: v1alpha1.SchemeGroupVersion.String(),
+					Kind:       "PeerAuthentication",
+					APIVersion: securityv1beta1.SchemeGroupVersion.String(),
 				},
 			},
 		},

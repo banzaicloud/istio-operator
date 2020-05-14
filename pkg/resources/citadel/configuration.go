@@ -17,5 +17,5 @@ limitations under the License.
 package citadel
 
 type Configuration struct {
-	DeployMeshPolicy bool `json:"deployMeshPolicy"`
+	DeployMeshWidePolicy bool `json:"deployMeshPolicy"`
 }

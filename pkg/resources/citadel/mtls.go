@@ -23,38 +23,39 @@ import (
 	"github.com/banzaicloud/istio-operator/pkg/k8sutil"
 )
 
-// spec returns a map to configure the default MeshPolicy
+// spec returns a map to configure the mesh-wide PeerAuthentication
 func (r *Reconciler) spec() map[string]interface{} {
 	if r.Config.Spec.MeshPolicy.MTLSMode == v1beta1.DISABLED {
-		return map[string]interface{}{}
+		return map[string]interface{}{
+			"mtls": map[string]interface{}{
+				"mode": "DISABLE",
+			},
+		}
 	}
 
 	return map[string]interface{}{
-		"peers": []map[string]interface{}{
-			{
-				"mtls": map[string]interface{}{
-					"mode": r.Config.Spec.MeshPolicy.MTLSMode,
-				},
-			},
+		"mtls": map[string]interface{}{
+			"mode": r.Config.Spec.MeshPolicy.MTLSMode,
 		},
 	}
 }
 
-// meshPolicy returns an authentication policy to either enable, allow or disable mutual TLS
+// peerAuthentication returns a peerAuthentication resource to either require, allow or disable mutual TLS
 // for all services (that have sidecar) in the mesh
 // https://istio.io/docs/tasks/security/authn-policy/
-func (r *Reconciler) meshPolicy() *k8sutil.DynamicObject {
+func (r *Reconciler) peerAuthentication() *k8sutil.DynamicObject {
 	return &k8sutil.DynamicObject{
 		Gvr: schema.GroupVersionResource{
-			Group:    "authentication.istio.io",
-			Version:  "v1alpha1",
-			Resource: "meshpolicies",
+			Group:    "security.istio.io",
+			Version:  "v1beta1",
+			Resource: "peerauthentications",
 		},
-		Kind:   "MeshPolicy",
-		Name:   "default",
-		Labels: citadelLabels,
-		Spec:   r.spec(),
-		Owner:  r.Config,
+		Kind:      "PeerAuthentication",
+		Name:      "default",
+		Namespace: r.Config.Namespace,
+		Labels:    citadelLabels,
+		Spec:      r.spec(),
+		Owner:     r.Config,
 	}
 }
 

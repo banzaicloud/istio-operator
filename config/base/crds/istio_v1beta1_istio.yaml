@@ -477,7 +477,8 @@ spec:
                 required to be globally/universally unique.
               type: string
             meshPolicy:
-              description: MeshPolicy configures the default MeshPolicy resource
+              description: MeshPolicy configures the mesh-wide PeerAuthentication
+                resource
               properties:
                 mtlsMode:
                   description: MTLSMode sets the mesh-wide mTLS policy

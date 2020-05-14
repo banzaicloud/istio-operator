@@ -594,7 +594,7 @@ type LoggingConfiguration struct {
 	Level *string `json:"level,omitempty"`
 }
 
-// MeshPolicyConfiguration configures the default MeshPolicy resource
+// MeshPolicyConfiguration configures the mesh-wide PeerAuthentication resource
 type MeshPolicyConfiguration struct {
 	// MTLSMode sets the mesh-wide mTLS policy
 	// +kubebuilder:validation:Enum=STRICT,PERMISSIVE,DISABLED
@@ -632,7 +632,7 @@ type IstioSpec struct {
 	// Logging configurations
 	Logging LoggingConfiguration `json:"logging,omitempty"`
 
-	// MeshPolicy configures the default MeshPolicy resource
+	// MeshPolicy configures the mesh-wide PeerAuthentication resource
 	MeshPolicy MeshPolicyConfiguration `json:"meshPolicy,omitempty"`
 
 	// DEPRECATED: Use meshPolicy instead.

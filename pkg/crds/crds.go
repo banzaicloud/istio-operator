@@ -133,16 +133,6 @@ func (r *CRDReconciler) load(f io.Reader) error {
 	return nil
 }
 
-func (r *CRDReconciler) MeshPolicy() *extensionsobj.CustomResourceDefinition {
-	for _, crd := range r.crds {
-		if crd.Name == "meshpolicies.authentication.istio.io" {
-			return crd
-		}
-	}
-
-	return nil
-}
-
 func (r *CRDReconciler) Reconcile(config *istiov1beta1.Istio, log logr.Logger) error {
 	log = log.WithValues("component", componentName)
 	apiExtensions, err := apiextensionsclient.NewForConfig(r.config)
