@@ -718,7 +718,7 @@ type IstioSpec struct {
 	// for more detail.
 	PriorityClassName string `json:"priorityClassName,omitempty"`
 
-	// Use the Mesh Control Protocol (MCP) for configuring Mixer and Pilot. Requires galley.
+	// Use the Mesh Control Protocol (MCP) for configuring Mixer and Pilot. Requires an MCP source.
 	UseMCP *bool `json:"useMCP,omitempty"`
 
 	// Set the default set of namespaces to which services, service entries, virtual services, destination rules should be exported to
@@ -790,10 +790,9 @@ type IstioSpec struct {
 	// in dnsNames are consistent with those of your services.
 	// Example:
 	// certificates:
-	//   - secretName: dns.istio-galley-service-account
-	//     dnsNames: [istio-galley.istio-system.svc, istio-galley.istio-system]
-	//   - secretName: dns.istio-sidecar-injector-service-account
-	//     dnsNames: [istio-sidecar-injector.istio-system.svc, istio-sidecar-injector.istio-system]
+	// certificates:
+	//   - secretName: dns.istiod-service-account
+	//     dnsNames: [istiod.istio-system.svc, istiod.istio-system]
 	// +k8s:deepcopy-gen:interfaces=Certificates
 	Certificates []CertificateConfig `json:"certificates,omitempty"`
 

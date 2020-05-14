@@ -68,10 +68,9 @@ spec:
               description: 'Configures DNS certificates provisioned through Chiron
                 linked into Pilot. The DNS names in this file are all hard-coded;
                 please ensure the namespaces in dnsNames are consistent with those
-                of your services. Example: certificates:   - secretName: dns.istio-galley-service-account     dnsNames:
-                [istio-galley.istio-system.svc, istio-galley.istio-system]   - secretName:
-                dns.istio-sidecar-injector-service-account     dnsNames: [istio-sidecar-injector.istio-system.svc,
-                istio-sidecar-injector.istio-system] +k8s:deepcopy-gen:interfaces=Certificates'
+                of your services. Example: certificates: certificates:   - secretName:
+                dns.istiod-service-account     dnsNames: [istiod.istio-system.svc,
+                istiod.istio-system] +k8s:deepcopy-gen:interfaces=Certificates'
               items:
                 properties:
                   dnsNames:
@@ -1243,7 +1242,7 @@ spec:
               type: array
             useMCP:
               description: Use the Mesh Control Protocol (MCP) for configuring Mixer
-                and Pilot. Requires galley.
+                and Pilot. Requires an MCP source.
               type: boolean
             version:
               description: Contains the intended Istio version
