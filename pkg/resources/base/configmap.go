@@ -45,15 +45,13 @@ func (r *Reconciler) configMap() runtime.Object {
 func (r *Reconciler) meshConfig() string {
 	defaultConfig := map[string]interface{}{
 		"connectTimeout":         "10s",
-		"configPath":             "/etc/istio/proxy",
+		"configPath":             "./etc/istio/proxy",
 		"binaryPath":             "/usr/local/bin/envoy",
 		"serviceCluster":         "istio-proxy",
 		"drainDuration":          "45s",
 		"parentShutdownDuration": "1m0s",
 		"proxyAdminPort":         15000,
 		"concurrency":            0,
-		"controlPlaneAuthPolicy": templates.ControlPlaneAuthPolicy(util.PointerToBool(r.Config.Spec.Istiod.Enabled), r.Config.Spec.ControlPlaneSecurityEnabled),
-		"discoveryAddress":       r.Config.GetDiscoveryAddress(),
 	}
 
 	if util.PointerToBool(r.Config.Spec.Proxy.EnvoyStatsD.Enabled) {
@@ -80,10 +78,6 @@ func (r *Reconciler) meshConfig() string {
 			lightStep := map[string]interface{}{
 				"address":     r.Config.Spec.Tracing.Lightstep.Address,
 				"accessToken": r.Config.Spec.Tracing.Lightstep.AccessToken,
-				"secure":      r.Config.Spec.Tracing.Lightstep.Secure,
-			}
-			if r.Config.Spec.Tracing.Lightstep.Secure {
-				lightStep["cacertPath"] = r.Config.Spec.Tracing.Lightstep.CacertPath
 			}
 			defaultConfig["tracing"] = map[string]interface{}{
 				"lightstep": lightStep,
@@ -125,16 +119,13 @@ func (r *Reconciler) meshConfig() string {
 		"enableEnvoyAccessLogService": util.PointerToBool(r.Config.Spec.Proxy.EnvoyAccessLogService.Enabled),
 		"protocolDetectionTimeout":    r.Config.Spec.Proxy.ProtocolDetectionTimeout,
 		"dnsRefreshRate":              r.Config.Spec.Proxy.DNSRefreshRate,
-		"certificates":                r.Config.Spec.Certificates,
 	}
 
-	if util.PointerToBool(r.Config.Spec.Istiod.Enabled) {
-		meshConfig["sdsUdsPath"] = "unix:/etc/istio/proxy/SDS"
-	} else {
-		meshConfig["sdsUdsPath"] = r.Config.Spec.SDS.UdsPath
-		meshConfig["enableSdsTokenMount"] = false
-		meshConfig["sdsUseK8sSaJwt"] = false
+	if len(r.Config.Spec.Certificates) != 0 {
+		meshConfig["certificates"] = r.Config.Spec.Certificates
 	}
+
+	meshConfig["sdsUdsPath"] = "unix:/etc/istio/proxy/SDS"
 
 	if util.PointerToBool(r.Config.Spec.Policy.Enabled) {
 		meshConfig["mixerCheckServer"] = r.mixerServer("policy")
@@ -147,12 +138,6 @@ func (r *Reconciler) meshConfig() string {
 
 		if util.PointerToBool(r.Config.Spec.Telemetry.SessionAffinityEnabled) {
 			meshConfig["sidecarToTelemetrySessionAffinity"] = util.PointerToBool(r.Config.Spec.Telemetry.SessionAffinityEnabled)
-		}
-	}
-
-	if util.PointerToBool(r.Config.Spec.UseMCP) {
-		meshConfig["configSources"] = []map[string]interface{}{
-			r.defaultConfigSource(),
 		}
 	}
 
@@ -191,16 +176,4 @@ func (r *Reconciler) mixerServer(mixerType string) string {
 		return fmt.Sprintf("istio-%s.%s.svc.%s:%s", mixerType, r.Config.Namespace, r.Config.Spec.Proxy.ClusterDomain, "15004")
 	}
 	return fmt.Sprintf("istio-%s.%s.svc.%s:%s", mixerType, r.Config.Namespace, r.Config.Spec.Proxy.ClusterDomain, "9091")
-}
-
-func (r *Reconciler) defaultConfigSource() map[string]interface{} {
-	cs := map[string]interface{}{
-		"address": fmt.Sprintf("istio-galley.%s.svc:9901", r.Config.Namespace),
-	}
-	if r.Config.Spec.ControlPlaneSecurityEnabled {
-		cs["tlsSettings"] = map[string]interface{}{
-			"mode": "ISTIO_MUTUAL",
-		}
-	}
-	return cs
 }

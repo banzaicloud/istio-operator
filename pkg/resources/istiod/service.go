@@ -31,15 +31,43 @@ func (r *Reconciler) service() runtime.Object {
 		Spec: apiv1.ServiceSpec{
 			Ports: []apiv1.ServicePort{
 				{
+					// plaintext
+					Name:       "grpc-xds",
+					Port:       15010,
+					TargetPort: intstr.FromInt(15010),
+					Protocol:   apiv1.ProtocolTCP,
+				},
+				// mTLS with k8s-signed cert
+				{
 					Name:       "https-dns",
 					Port:       15012,
 					TargetPort: intstr.FromInt(15012),
 					Protocol:   apiv1.ProtocolTCP,
 				},
+				// validation and injection
 				{
 					Name:       "https-webhook",
 					Port:       443,
 					TargetPort: intstr.FromInt(15017),
+					Protocol:   apiv1.ProtocolTCP,
+				},
+				// prometheus stats
+				{
+					Name:       "http-monitoring",
+					Port:       15014,
+					TargetPort: intstr.FromInt(15014),
+					Protocol:   apiv1.ProtocolTCP,
+				},
+				{
+					Name:       "dns",
+					Port:       53,
+					TargetPort: intstr.FromInt(15053),
+					Protocol:   apiv1.ProtocolUDP,
+				},
+				{
+					Name:       "dns-tls",
+					Port:       853,
+					TargetPort: intstr.FromInt(15053),
 					Protocol:   apiv1.ProtocolTCP,
 				},
 			},

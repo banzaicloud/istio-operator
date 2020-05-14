@@ -54,7 +54,7 @@ func (r *Reconciler) webhook() runtime.Object {
 						Rule: admissionv1beta1.Rule{
 							Resources:   []string{"pods"},
 							APIGroups:   []string{""},
-							APIVersions: []string{"*"},
+							APIVersions: []string{"v1"},
 						},
 					},
 				},

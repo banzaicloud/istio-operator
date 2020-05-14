@@ -69,14 +69,11 @@ func (r *Reconciler) Reconcile(log logr.Logger) error {
 
 	var pilotDesiredState k8sutil.DesiredState
 	var pdbDesiredState k8sutil.DesiredState
-	var serviceDesiredState k8sutil.DesiredState
 	if util.PointerToBool(r.Config.Spec.Istiod.Enabled) {
 		pilotDesiredState = k8sutil.DesiredStateAbsent
 		pdbDesiredState = k8sutil.DesiredStateAbsent
-		serviceDesiredState = k8sutil.DesiredStatePresent
 	} else if util.PointerToBool(r.Config.Spec.Pilot.Enabled) {
 		pilotDesiredState = k8sutil.DesiredStatePresent
-		serviceDesiredState = k8sutil.DesiredStatePresent
 		if util.PointerToBool(r.Config.Spec.DefaultPodDisruptionBudget.Enabled) {
 			pdbDesiredState = k8sutil.DesiredStatePresent
 		} else {
@@ -85,7 +82,6 @@ func (r *Reconciler) Reconcile(log logr.Logger) error {
 	} else {
 		pilotDesiredState = k8sutil.DesiredStateAbsent
 		pdbDesiredState = k8sutil.DesiredStateAbsent
-		serviceDesiredState = k8sutil.DesiredStateAbsent
 	}
 
 	for _, res := range []resources.ResourceWithDesiredState{
@@ -93,7 +89,7 @@ func (r *Reconciler) Reconcile(log logr.Logger) error {
 		{Resource: r.clusterRole, DesiredState: pilotDesiredState},
 		{Resource: r.clusterRoleBinding, DesiredState: pilotDesiredState},
 		{Resource: r.deployment, DesiredState: pilotDesiredState},
-		{Resource: r.service, DesiredState: serviceDesiredState},
+		{Resource: r.service, DesiredState: pilotDesiredState},
 		{Resource: r.horizontalPodAutoscaler, DesiredState: pilotDesiredState},
 		{Resource: r.podDisruptionBudget, DesiredState: pdbDesiredState},
 	} {
