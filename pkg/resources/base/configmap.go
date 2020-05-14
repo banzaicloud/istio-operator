@@ -52,6 +52,8 @@ func (r *Reconciler) meshConfig() string {
 		"parentShutdownDuration": "1m0s",
 		"proxyAdminPort":         15000,
 		"concurrency":            0,
+		"controlPlaneAuthPolicy": templates.ControlPlaneAuthPolicy(util.PointerToBool(r.Config.Spec.Istiod.Enabled), r.Config.Spec.ControlPlaneSecurityEnabled),
+		"discoveryAddress":       r.Config.GetDiscoveryAddress(),
 	}
 
 	if util.PointerToBool(r.Config.Spec.Proxy.EnvoyStatsD.Enabled) {
@@ -105,7 +107,7 @@ func (r *Reconciler) meshConfig() string {
 		"policyCheckFailOpen":     false,
 		"ingressService":          "istio-ingressgateway",
 		"ingressClass":            "istio",
-		"ingressControllerMode":   2,
+		"ingressControllerMode":   "STRICT",
 		"trustDomain":             r.Config.Spec.TrustDomain,
 		"trustDomainAliases":      r.Config.Spec.TrustDomainAliases,
 		"enableAutoMtls":          util.PointerToBool(r.Config.Spec.AutoMTLS),

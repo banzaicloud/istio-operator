@@ -87,11 +87,6 @@ func (r *Reconciler) getValues() string {
 				"containerName": proxyInitContainerName,
 				"image":         r.Config.Spec.ProxyInit.Image,
 			},
-			"tracer": map[string]interface{}{
-				"lightstep": map[string]interface{}{
-					"CACertPath": r.Config.Spec.Tracing.Lightstep.CacertPath,
-				},
-			},
 			"sds": map[string]interface{}{
 				"customTokenDirectory": r.Config.Spec.SDS.CustomTokenDirectory,
 				"enabled":              r.Config.Spec.SDS.Enabled,
@@ -199,7 +194,6 @@ containers:
   {{ else -}}
   - "{{ valueOrDefault .DeploymentMeta.Name ` + "`" + `istio-proxy` + "`" + ` }}.{{ valueOrDefault .DeploymentMeta.Namespace ` + "`" + `default` + "`" + ` }}"
   {{ end -}}
-` + r.tracingProxyArgs() + `
 {{- if .Values.global.proxy.logLevel }}
   - --proxyLogLevel={{ .Values.global.proxy.logLevel }}
 {{- end}}
@@ -561,29 +555,6 @@ podRedirectAnnot:
    traffic.sidecar.istio.io/excludeOutboundPorts: "{{ annotation .ObjectMeta ` + "`" + `traffic.sidecar.istio.io/excludeOutboundPorts` + "`" + ` .Values.global.proxy.excludeOutboundPorts }}"
 {{- end }}
    traffic.sidecar.istio.io/kubevirtInterfaces: "{{ index .ObjectMeta.Annotations ` + "`" + `traffic.sidecar.istio.io/kubevirtInterfaces` + "`" + ` }}"
-`
-}
-
-func (r *Reconciler) tracingProxyArgs() string {
-	if !util.PointerToBool(r.Config.Spec.Tracing.Enabled) {
-		return ""
-	}
-
-	return `{{- if eq .Values.global.proxy.tracer "lightstep" }}
-  - --lightstepAddress
-  - "{{ .ProxyConfig.GetTracing.GetLightstep.GetAddress }}"
-  - --lightstepAccessToken
-  - "{{ .ProxyConfig.GetTracing.GetLightstep.GetAccessToken }}"
-  - --lightstepSecure={{ .ProxyConfig.GetTracing.GetLightstep.GetSecure }}
-  - --lightstepCacertPath
-  - "{{ .ProxyConfig.GetTracing.GetLightstep.GetCacertPath }}"
-{{- else if eq .Values.global.proxy.tracer "zipkin" }}
-  - --zipkinAddress
-  - "{{ .ProxyConfig.GetTracing.GetZipkin.GetAddress }}"
-{{- else if eq .Values.global.proxy.tracer "datadog" }}
-  - --datadogAgentAddress
-  - "{{ .ProxyConfig.GetTracing.GetDatadog.GetAddress }}"
-{{- end }}
 `
 }
 

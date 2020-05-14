@@ -102,7 +102,7 @@ spec:
         limits:
           cpu: 2000m
           memory: 256Mi
-      runAsRoot: true
+      runAsRoot: false
     k8singress:
       enabled: false
   policy:

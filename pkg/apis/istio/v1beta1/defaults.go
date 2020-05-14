@@ -499,7 +499,7 @@ func SetDefaults(config *Istio) {
 
 	// Policy
 	if config.Spec.Policy.ChecksEnabled == nil {
-		config.Spec.Policy.ChecksEnabled = util.BoolPointer(true)
+		config.Spec.Policy.ChecksEnabled = util.BoolPointer(false)
 	}
 	if config.Spec.Policy.Enabled == nil {
 		config.Spec.Policy.Enabled = config.Spec.Mixer.Enabled
