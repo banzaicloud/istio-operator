@@ -1,5 +1,5 @@
 /*
-Copyright 2019 Banzai Cloud.
+Copyright 2020 Banzai Cloud.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -26,12 +26,7 @@ import (
 	"github.com/banzaicloud/istio-operator/pkg/k8sutil"
 )
 
-const (
-	statsWasmLocal   = "filename: /etc/istio/extensions/stats-filter.wasm"
-	statsNoWasmLocal = "inline_string: envoy.wasm.stats"
-)
-
-func (r *Reconciler) httpStatsFilter(version string, httpStatsFilterYAML string) *k8sutil.DynamicObject {
+func (r *Reconciler) tcpStatsFilter(version string, tcpStatsFilterYAML string) *k8sutil.DynamicObject {
 
 	wasmEnabled := util.PointerToBool(r.Config.Spec.ProxyWasm.Enabled)
 
@@ -43,7 +38,7 @@ func (r *Reconciler) httpStatsFilter(version string, httpStatsFilterYAML string)
 	}
 
 	var y []map[string]interface{}
-	yaml.Unmarshal([]byte(fmt.Sprintf(httpStatsFilterYAML, vmConfigLocal, vmConfigRuntime)), &y)
+	yaml.Unmarshal([]byte(fmt.Sprintf(tcpStatsFilterYAML, vmConfigLocal, vmConfigRuntime)), &y)
 
 	return &k8sutil.DynamicObject{
 		Gvr: schema.GroupVersionResource{
@@ -52,7 +47,7 @@ func (r *Reconciler) httpStatsFilter(version string, httpStatsFilterYAML string)
 			Resource: "envoyfilters",
 		},
 		Kind:      "EnvoyFilter",
-		Name:      fmt.Sprintf("%s-stats-filter-%s", componentName, version),
+		Name:      fmt.Sprintf("%s-tcp-stats-filter-%s", componentName, version),
 		Namespace: r.Config.Namespace,
 		Spec: map[string]interface{}{
 			"configPatches": y,
