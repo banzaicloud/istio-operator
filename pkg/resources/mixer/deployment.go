@@ -114,51 +114,49 @@ func (r *Reconciler) volumes(t string) []apiv1.Volume {
 		})
 	}
 
-	if r.Config.Spec.ControlPlaneSecurityEnabled {
+	volumes = append(volumes, apiv1.Volume{
+		Name: "config-volume",
+		VolumeSource: apiv1.VolumeSource{
+			ConfigMap: &apiv1.ConfigMapVolumeSource{
+				LocalObjectReference: apiv1.LocalObjectReference{
+					Name: base.IstioConfigMapName,
+				},
+				DefaultMode: util.IntPointer(420),
+				Optional:    util.BoolPointer(true),
+			},
+		},
+	})
+
+	if r.Config.Spec.Pilot.CertProvider == istiov1beta1.PilotCertProviderTypeIstiod {
 		volumes = append(volumes, apiv1.Volume{
-			Name: "config-volume",
+			Name: "istiod-ca-cert",
 			VolumeSource: apiv1.VolumeSource{
 				ConfigMap: &apiv1.ConfigMapVolumeSource{
 					LocalObjectReference: apiv1.LocalObjectReference{
-						Name: base.IstioConfigMapName,
+						Name: "istio-ca-root-cert",
 					},
-					DefaultMode: util.IntPointer(420),
-					Optional:    util.BoolPointer(true),
 				},
 			},
 		})
+	}
 
-		if r.Config.Spec.Pilot.CertProvider == istiov1beta1.PilotCertProviderTypeIstiod {
-			volumes = append(volumes, apiv1.Volume{
-				Name: "istiod-ca-cert",
-				VolumeSource: apiv1.VolumeSource{
-					ConfigMap: &apiv1.ConfigMapVolumeSource{
-						LocalObjectReference: apiv1.LocalObjectReference{
-							Name: "istio-ca-root-cert",
-						},
-					},
-				},
-			})
-		}
-
-		if r.Config.Spec.JWTPolicy == istiov1beta1.JWTPolicyThirdPartyJWT {
-			volumes = append(volumes, apiv1.Volume{
-				Name: "istio-token",
-				VolumeSource: apiv1.VolumeSource{
-					Projected: &apiv1.ProjectedVolumeSource{
-						Sources: []apiv1.VolumeProjection{
-							{
-								ServiceAccountToken: &apiv1.ServiceAccountTokenProjection{
-									Audience:          r.Config.Spec.SDS.TokenAudience,
-									ExpirationSeconds: util.Int64Pointer(43200),
-									Path:              "istio-token",
-								},
+	if r.Config.Spec.JWTPolicy == istiov1beta1.JWTPolicyThirdPartyJWT {
+		volumes = append(volumes, apiv1.Volume{
+			Name: "istio-token",
+			VolumeSource: apiv1.VolumeSource{
+				Projected: &apiv1.ProjectedVolumeSource{
+					Sources: []apiv1.VolumeProjection{
+						{
+							ServiceAccountToken: &apiv1.ServiceAccountTokenProjection{
+								Audience:          r.Config.Spec.SDS.TokenAudience,
+								ExpirationSeconds: util.Int64Pointer(43200),
+								Path:              "istio-token",
 							},
 						},
 					},
 				},
-			})
-		}
+			},
+		})
 	}
 
 	return volumes
