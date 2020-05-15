@@ -27,7 +27,7 @@ import (
 )
 
 func (r *Reconciler) webhooks() []admissionv1beta1.Webhook {
-	ignore := admissionv1beta1.Ignore
+	fail := admissionv1beta1.Fail
 	se := admissionv1beta1.SideEffectClassNone
 	return []admissionv1beta1.Webhook{
 		{
@@ -54,7 +54,7 @@ func (r *Reconciler) webhooks() []admissionv1beta1.Webhook {
 					},
 				},
 			},
-			FailurePolicy: &ignore,
+			FailurePolicy: &fail,
 			SideEffects:   &se,
 		},
 	}
