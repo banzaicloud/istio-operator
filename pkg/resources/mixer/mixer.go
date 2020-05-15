@@ -110,10 +110,10 @@ func (r *Reconciler) Reconcile(log logr.Logger) error {
 	}
 
 	rs := []resources.ResourceWithDesiredState{
-		{Resource: r.serviceAccount},
-		{Resource: r.clusterRole},
-		{Resource: r.clusterRoleBinding},
-		{Resource: r.configMapEnvoy},
+		{Resource: r.serviceAccount, DesiredState: mixerDesiredState},
+		{Resource: r.clusterRole, DesiredState: mixerDesiredState},
+		{Resource: r.clusterRoleBinding, DesiredState: mixerDesiredState},
+		{Resource: r.configMapEnvoy, DesiredState: mixerDesiredState},
 	}
 	rsv := []resources.ResourceVariationWithDesiredState{
 		{ResourceVariation: r.deployment},

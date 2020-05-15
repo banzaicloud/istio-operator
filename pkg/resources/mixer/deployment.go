@@ -102,7 +102,7 @@ func (r *Reconciler) volumes(t string) []apiv1.Volume {
 
 	if t == telemetryComponentName {
 		volumes = append(volumes, apiv1.Volume{
-			Name: "telemetry-envoy-config",
+			Name: configMapNameEnvoy,
 			VolumeSource: apiv1.VolumeSource{
 				ConfigMap: &apiv1.ConfigMapVolumeSource{
 					LocalObjectReference: apiv1.LocalObjectReference{
@@ -399,7 +399,7 @@ func (r *Reconciler) istioProxyContainer(t string) apiv1.Container {
 
 	if t == telemetryComponentName {
 		vms = append(vms, apiv1.VolumeMount{
-			Name:      "telemetry-envoy-config",
+			Name:      configMapNameEnvoy,
 			MountPath: "/var/lib/envoy",
 		})
 	}
