@@ -19,17 +19,17 @@ package istiod
 import (
 	"github.com/banzaicloud/istio-operator/pkg/resources/templates"
 	"github.com/banzaicloud/istio-operator/pkg/util"
-	autoscalev2beta1 "k8s.io/api/autoscaling/v2beta1"
+	autoscalev2beta2 "k8s.io/api/autoscaling/v2beta2"
 	"k8s.io/apimachinery/pkg/runtime"
 )
 
 func (r *Reconciler) horizontalPodAutoscaler() runtime.Object {
-	return &autoscalev2beta1.HorizontalPodAutoscaler{
+	return &autoscalev2beta2.HorizontalPodAutoscaler{
 		ObjectMeta: templates.ObjectMeta(hpaName, istiodLabels, r.Config),
-		Spec: autoscalev2beta1.HorizontalPodAutoscalerSpec{
+		Spec: autoscalev2beta2.HorizontalPodAutoscalerSpec{
 			MaxReplicas: util.PointerToInt32(r.Config.Spec.Pilot.MaxReplicas),
 			MinReplicas: r.Config.Spec.Pilot.MinReplicas,
-			ScaleTargetRef: autoscalev2beta1.CrossVersionObjectReference{
+			ScaleTargetRef: autoscalev2beta2.CrossVersionObjectReference{
 				Name:       deploymentName,
 				Kind:       "Deployment",
 				APIVersion: "apps/v1",

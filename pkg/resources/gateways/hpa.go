@@ -17,19 +17,19 @@ limitations under the License.
 package gateways
 
 import (
-	autoscalev2beta1 "k8s.io/api/autoscaling/v2beta1"
+	autoscalev2beta2 "k8s.io/api/autoscaling/v2beta2"
 	"k8s.io/apimachinery/pkg/runtime"
 
 	"github.com/banzaicloud/istio-operator/pkg/resources/templates"
 )
 
 func (r *Reconciler) horizontalPodAutoscaler() runtime.Object {
-	return &autoscalev2beta1.HorizontalPodAutoscaler{
+	return &autoscalev2beta2.HorizontalPodAutoscaler{
 		ObjectMeta: templates.ObjectMeta(r.hpaName(), r.labelSelector(), r.gw),
-		Spec: autoscalev2beta1.HorizontalPodAutoscalerSpec{
+		Spec: autoscalev2beta2.HorizontalPodAutoscalerSpec{
 			MaxReplicas: *r.gw.Spec.MaxReplicas,
 			MinReplicas: r.gw.Spec.MinReplicas,
-			ScaleTargetRef: autoscalev2beta1.CrossVersionObjectReference{
+			ScaleTargetRef: autoscalev2beta2.CrossVersionObjectReference{
 				Name:       r.gatewayName(),
 				Kind:       "Deployment",
 				APIVersion: "apps/v1",

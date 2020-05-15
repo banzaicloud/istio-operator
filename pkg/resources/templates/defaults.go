@@ -20,7 +20,7 @@ import (
 	"strconv"
 
 	appsv1 "k8s.io/api/apps/v1"
-	autoscalev2beta1 "k8s.io/api/autoscaling/v2beta1"
+	autoscalev2beta2 "k8s.io/api/autoscaling/v2beta2"
 	apiv1 "k8s.io/api/core/v1"
 
 	"github.com/banzaicloud/istio-operator/pkg/apis/istio/v1beta1"
@@ -52,13 +52,16 @@ func DefaultRollingUpdateStrategy() appsv1.DeploymentStrategy {
 	}
 }
 
-func TargetAvgCpuUtil80() []autoscalev2beta1.MetricSpec {
-	return []autoscalev2beta1.MetricSpec{
+func TargetAvgCpuUtil80() []autoscalev2beta2.MetricSpec {
+	return []autoscalev2beta2.MetricSpec{
 		{
-			Type: autoscalev2beta1.ResourceMetricSourceType,
-			Resource: &autoscalev2beta1.ResourceMetricSource{
-				Name:                     apiv1.ResourceCPU,
-				TargetAverageUtilization: util.IntPointer(80),
+			Type: autoscalev2beta2.ResourceMetricSourceType,
+			Resource: &autoscalev2beta2.ResourceMetricSource{
+				Name: apiv1.ResourceCPU,
+				Target: autoscalev2beta2.MetricTarget{
+					Type:               autoscalev2beta2.UtilizationMetricType,
+					AverageUtilization: util.IntPointer(80),
+				},
 			},
 		},
 	}
