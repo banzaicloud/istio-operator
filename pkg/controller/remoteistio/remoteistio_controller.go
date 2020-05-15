@@ -18,6 +18,7 @@ package remoteistio
 
 import (
 	"context"
+	"fmt"
 	"time"
 
 	"github.com/go-logr/logr"
@@ -297,7 +298,7 @@ func (r *ReconcileRemoteConfig) reconcile(remoteConfig *istiov1beta1.RemoteIstio
 	if err == nil {
 		err = cluster.SetIngressGatewayAddress(remoteConfig, istio)
 		if err != nil {
-			log.Error(err, "ingress gateway address pending")
+			log.Info(fmt.Sprintf("ingress gateway address pending: %s", err.Error()))
 			updateRemoteConfigStatus(r.Client, remoteConfig, istiov1beta1.ReconcileFailed, errors.Cause(err).Error(), logger)
 			return reconcile.Result{
 				RequeueAfter: time.Second * 30,

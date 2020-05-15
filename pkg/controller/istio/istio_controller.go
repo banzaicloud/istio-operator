@@ -330,7 +330,7 @@ func (r *ReconcileIstio) reconcile(logger logr.Logger, config *istiov1beta1.Isti
 			Namespace: config.Namespace,
 		})
 		if err != nil {
-			log.Error(err, "ingress gateway address pending")
+			log.Info(fmt.Sprintf("ingress gateway address pending: %s", err.Error()))
 			updateStatus(r.Client, config, istiov1beta1.ReconcileFailed, err.Error(), logger)
 			return reconcile.Result{
 				Requeue:      true,
