@@ -116,5 +116,5 @@ const (
 )
 
 func (r *Reconciler) tcpStatsFilter16() *k8sutil.DynamicObject {
-	return r.tcpStatsFilter(proxyVersion15, tcpStatsFilterYAML16)
+	return r.tcpStatsFilter(proxyVersion16, tcpStatsFilterYAML16)
 }
