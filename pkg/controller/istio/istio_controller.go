@@ -201,6 +201,16 @@ func (r *ReconcileIstio) Reconcile(request reconcile.Request) (reconcile.Result,
 		}, nil
 	}
 
+	// Temporary solution to make sure legacy components are not enabled
+	// TODO: delete this when legacy components are removed
+	err = r.validateLegacyIstioComponentsAreDisabled(config)
+	if err != nil {
+		logger.Error(err, "legacy Istio control plane components cannot be enabled starting from Istio 1.6, disable them first")
+		return reconcile.Result{
+			Requeue: false,
+		}, nil
+	}
+
 	// Set default values where not set
 	istiov1beta1.SetDefaults(config)
 
@@ -349,6 +359,26 @@ func (r *ReconcileIstio) reconcile(logger logr.Logger, config *istiov1beta1.Isti
 	}
 	logger.Info("reconcile finished")
 	return reconcile.Result{}, nil
+}
+
+func (r *ReconcileIstio) validateLegacyIstioComponentsAreDisabled(config *istiov1beta1.Istio) error {
+	if util.PointerToBool(config.Spec.Citadel.Enabled) {
+		return errors.New("Citadel cannot be enabled")
+	}
+
+	if util.PointerToBool(config.Spec.Galley.Enabled) {
+		return errors.New("Galley cannot be enabled")
+	}
+
+	if util.PointerToBool(config.Spec.SidecarInjector.Enabled) {
+		return errors.New("Sidecar injector cannot be enabled")
+	}
+
+	if util.PointerToBool(config.Spec.NodeAgent.Enabled) {
+		return errors.New("Node agent cannot be enabled")
+	}
+
+	return nil
 }
 
 func (r *ReconcileIstio) checkMeshWidePolicyConflict(config *istiov1beta1.Istio, logger logr.Logger) {
