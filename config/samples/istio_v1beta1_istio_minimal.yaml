@@ -13,30 +13,23 @@ spec:
   autoInjectionNamespaces:
   - "default"
   useMCP: false
-  sds:
-    enabled: false
+  istiod:
+    enabled: true
   pilot:
     enabled: true
     sidecar: false
-  citadel:
-    enabled: false
-  galley:
-    enabled: false
   gateways:
     enabled: false
     ingress:
       enabled: false
     egress:
       enabled: false
-    k8singress:
-      enabled: false
   policy:
     enabled: false
   telemetry:
     enabled: false
-  sidecarInjector:
-    enabled: false
-  nodeAgent:
-    enabled: false
   tracing:
     enabled: false
+  proxy:
+    image: "docker.io/istio/proxyv2:1.6.0-rc.2"
+  jwtPolicy: "first-party-jwt"

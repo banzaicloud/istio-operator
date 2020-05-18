@@ -13,6 +13,7 @@ spec:
   loadBalancerIP: ""
   serviceAnnotations: {}
   serviceLabels: {}
+  runAsRoot: false
   ports:
     - port: 15021
       targetPort: 15021
@@ -41,4 +42,3 @@ spec:
     limits:
       cpu: 2000m
       memory: 1024Mi
-  runAsRoot: false

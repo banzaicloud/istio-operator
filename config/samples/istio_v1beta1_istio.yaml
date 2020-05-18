@@ -21,8 +21,6 @@ spec:
       cpu: 10m
   mixerlessTelemetry:
     enabled: true
-  sds:
-    enabled: false
   istiod:
     enabled: true
   pilot:
@@ -37,15 +35,6 @@ spec:
         cpu: 500m
         memory: 2048Mi
     certProvider: "istiod"
-  citadel:
-    enabled: false
-    image: "docker.io/istio/citadel:1.6.0-rc.2"
-  galley:
-    enabled: false
-    image: "docker.io/istio/galley:1.6.0-rc.2"
-    replicaCount: 1
-    enableServiceDiscovery: false
-    enableAnalysis: false
   gateways:
     enabled: true
     ingress:
@@ -57,6 +46,7 @@ spec:
       loadBalancerIP: ""
       serviceAnnotations: {}
       serviceLabels: {}
+      runAsRoot: false
       ports:
         - port: 15021
           targetPort: 15021
@@ -85,6 +75,7 @@ spec:
       serviceType: "ClusterIP"
       serviceAnnotations: {}
       serviceLabels: {}
+      runAsRoot: false
       ports:
         - port: 80
           targetPort: 8080
@@ -102,7 +93,6 @@ spec:
         limits:
           cpu: 2000m
           memory: 256Mi
-      runAsRoot: false
     k8singress:
       enabled: false
   policy:
@@ -117,23 +107,6 @@ spec:
     replicaCount: 1
     minReplicas: 1
     maxReplicas: 5
-  sidecarInjector:
-    enabled: false
-    image: "docker.io/istio/sidecar_injector:1.6.0-rc.2"
-    replicaCount: 1
-    rewriteAppHTTPProbe: true
-    autoInjectionPolicyEnabled: true
-    init:
-      resources:
-        requests:
-          cpu: 10m
-          memory: 10Mi
-        limits:
-          cpu: 100m
-          memory: 50Mi
-  nodeAgent:
-    enabled: false
-    image: "docker.io/istio/node-agent-k8s:1.6.0-rc.2"
   proxy:
     image: "docker.io/istio/proxyv2:1.6.0-rc.2"
     accessLogFile: "/dev/stdout"
@@ -163,8 +136,6 @@ spec:
     lightstep:
         address: lightstep-satellite.lightstep:9292
         accessToken: <access-token>
-        secure: true
-        cacertPath: /etc/lightstep/cacert.pem
   localityLB:
     enabled: false
     # distribute:

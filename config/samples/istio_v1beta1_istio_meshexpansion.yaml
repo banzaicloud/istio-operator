@@ -13,3 +13,6 @@ spec:
     mtlsMode: STRICT
   meshExpansion: true
   controlPlaneSecurityEnabled: true
+  proxy:
+    image: "docker.io/istio/proxyv2:1.6.0-rc.2"
+  jwtPolicy: "first-party-jwt"
