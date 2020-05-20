@@ -87,6 +87,10 @@ func (r *Reconciler) containerEnvs() []apiv1.EnvVar {
 			Name:  "INJECTION_WEBHOOK_CONFIG_NAME",
 			Value: "istio-sidecar-injector",
 		},
+		{
+			Name:  "CENTRAL_ISTIOD",
+			Value: "true",
+		},
 	}
 
 	envs = append(envs, templates.IstioProxyEnv(r.Config)...)
