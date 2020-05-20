@@ -43,7 +43,15 @@ const (
             configuration: |
               {
                 "debug": "false",
-                "stat_prefix": "istio"
+                "stat_prefix": "istio",
+                "metrics": [
+                  {
+                    "dimensions": {
+                      "destination_cluster": "node.metadata['CLUSTER_ID']",
+                      "source_cluster": "downstream_peer.cluster_id"
+                    }
+                  }
+                ]
               }
             root_id: stats_inbound
             vm_config:
@@ -73,7 +81,15 @@ const (
             configuration: |
               {
                 "debug": "false",
-                "stat_prefix": "istio"
+                "stat_prefix": "istio",
+                "metrics": [
+                  {
+                    "dimensions": {
+                      "source_cluster": "node.metadata['CLUSTER_ID']",
+                      "destination_cluster": "upstream_peer.cluster_id"
+                    }
+                  }
+                ]
               }
             root_id: stats_outbound
             vm_config:
@@ -103,7 +119,15 @@ const (
             configuration: |
               {
                 "debug": "false",
-                "stat_prefix": "istio"
+                "stat_prefix": "istio",
+                "metrics": [
+                  {
+                    "dimensions": {
+                      "source_cluster": "node.metadata['CLUSTER_ID']",
+                      "destination_cluster": "upstream_peer.cluster_id"
+                    }
+                  }
+                ]
               }
             root_id: stats_outbound
             vm_config:
