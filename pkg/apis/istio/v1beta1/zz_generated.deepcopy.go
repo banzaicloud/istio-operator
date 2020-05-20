@@ -442,6 +442,11 @@ func (in *GatewayConfiguration) DeepCopyInto(out *GatewayConfiguration) {
 		*out = new(bool)
 		**out = **in
 	}
+	if in.CreateOnly != nil {
+		in, out := &in.CreateOnly, &out.CreateOnly
+		*out = new(bool)
+		**out = **in
+	}
 	return
 }
 

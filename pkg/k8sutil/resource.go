@@ -51,7 +51,7 @@ func Reconcile(log logr.Logger, client runtimeClient.Client, desired runtime.Obj
 		return emperror.WrapWith(err, "getting resource failed", "kind", desiredType, "name", key.Name)
 	}
 	if apierrors.IsNotFound(err) {
-		if desiredState == DesiredStatePresent {
+		if desiredState == DesiredStatePresent || desiredState == DesiredStateExists {
 			if err := patch.DefaultAnnotator.SetLastAppliedAnnotation(desired); err != nil {
 				log.Error(err, "Failed to set last applied annotation", "desired", desired)
 			}

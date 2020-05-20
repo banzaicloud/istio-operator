@@ -234,6 +234,10 @@ spec:
                       type: array
                     affinity:
                       type: object
+                    createOnly:
+                      description: Whether to fully reconcile the MGW resource or
+                        just take care that it exists
+                      type: boolean
                     enabled:
                       type: boolean
                     labels:
@@ -303,6 +307,10 @@ spec:
                       type: array
                     affinity:
                       type: object
+                    createOnly:
+                      description: Whether to fully reconcile the MGW resource or
+                        just take care that it exists
+                      type: boolean
                     enabled:
                       type: boolean
                     labels:

@@ -186,6 +186,8 @@ type GatewayConfiguration struct {
 	MeshGatewayConfiguration `json:",inline"`
 	Ports                    []corev1.ServicePort `json:"ports,omitempty"`
 	Enabled                  *bool                `json:"enabled,omitempty"`
+	// Whether to fully reconcile the MGW resource or just take care that it exists
+	CreateOnly *bool `json:"createOnly,omitempty"`
 }
 
 type K8sIngressConfiguration struct {

@@ -67,6 +67,9 @@ func (r *Reconciler) Reconcile(log logr.Logger) error {
 
 	if util.PointerToBool(r.Config.Spec.Gateways.Enabled) && util.PointerToBool(r.Config.Spec.Gateways.IngressConfig.Enabled) {
 		desiredState = k8sutil.DesiredStatePresent
+		if util.PointerToBool(r.Config.Spec.Gateways.IngressConfig.CreateOnly) {
+			desiredState = k8sutil.DesiredStateExists
+		}
 	} else {
 		desiredState = k8sutil.DesiredStateAbsent
 	}
