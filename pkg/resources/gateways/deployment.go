@@ -191,7 +191,7 @@ func (r *Reconciler) ports() []apiv1.ContainerPort {
 			portName = port.Name
 		}
 		ports = append(ports, apiv1.ContainerPort{
-			ContainerPort: portNumber, Protocol: port.Protocol, Name: portName,
+			ContainerPort: port.TargetPort.IntVal, Protocol: port.Protocol, Name: port.Name,
 		})
 	}
 	ports = append(ports, apiv1.ContainerPort{
