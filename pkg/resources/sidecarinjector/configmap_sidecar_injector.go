@@ -205,8 +205,8 @@ containers:
 {{- end }}
 {{- if .Values.global.istiod.enabled }}
   {{- if gt .ProxyConfig.Concurrency 0 }}
-    - --concurrency
-    - "{{ .ProxyConfig.Concurrency }}"
+  - --concurrency
+  - "{{ .ProxyConfig.Concurrency }}"
   {{- end -}}
 {{- end }}
 ` + r.injectedAddtionalContainerArgs() + `
