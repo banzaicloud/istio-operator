@@ -278,6 +278,16 @@ func (r *Reconciler) envVars() []apiv1.EnvVar {
 		})
 	}
 
+	meshConfig := base.MeshConfig(r.Config, false)
+	proxyConfig := meshConfig["defaultConfig"]
+	proxyConfigJSON, err := json.Marshal(proxyConfig)
+	if err == nil {
+		envVars = append(envVars, apiv1.EnvVar{
+			Name:  "PROXY_CONFIG",
+			Value: string(proxyConfigJSON),
+		})
+	}
+
 	if r.Config.Spec.NetworkName != "" {
 		envVars = append(envVars, apiv1.EnvVar{
 			Name:  "ISTIO_META_NETWORK",
