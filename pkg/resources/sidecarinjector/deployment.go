@@ -350,7 +350,7 @@ func (r *Reconciler) cfVolumeMounts() []apiv1.VolumeMount {
 			Name:      "istiod-ca-cert",
 			MountPath: "/var/run/secrets/istio",
 		},
-	})
+	}...)
 
 	if r.Config.Spec.JWTPolicy == v1beta1.JWTPolicyThirdPartyJWT {
 		vms = append(vms, apiv1.VolumeMount{
