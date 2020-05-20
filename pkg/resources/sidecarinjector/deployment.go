@@ -319,15 +319,37 @@ func (r *Reconciler) cfEnvVars() []apiv1.EnvVar {
 		Value: r.Config.GetCAAddress(),
 	})
 
+	if r.Config.Spec.ClusterName != "" {
+		envVars = append(envVars, apiv1.EnvVar{
+			Name:  "ISTIO_META_CLUSTER_ID",
+			Value: r.Config.Spec.ClusterName,
+		})
+	} else {
+		envVars = append(envVars, apiv1.EnvVar{
+			Name:  "ISTIO_META_CLUSTER_ID",
+			Value: "Kubernetes",
+		})
+	}
+
 	return envVars
 }
 
 func (r *Reconciler) cfVolumeMounts() []apiv1.VolumeMount {
 	vms := []apiv1.VolumeMount{}
 
-	vms = append(vms, apiv1.VolumeMount{
-		Name:      "certs",
-		MountPath: "/etc/certs",
+	vms = append(vms, []apiv1.VolumeMount{
+		{
+			Name:      "certs",
+			MountPath: "/etc/certs",
+		},
+		{
+			Name:      "config-volume",
+			MountPath: "/etc/istio/config",
+		},
+		{
+			Name:      "istiod-ca-cert",
+			MountPath: "/var/run/secrets/istio",
+		},
 	})
 
 	if r.Config.Spec.JWTPolicy == v1beta1.JWTPolicyThirdPartyJWT {
@@ -337,11 +359,6 @@ func (r *Reconciler) cfVolumeMounts() []apiv1.VolumeMount {
 			ReadOnly:  true,
 		})
 	}
-
-	vms = append(vms, apiv1.VolumeMount{
-		Name:      "istiod-ca-cert",
-		MountPath: "/var/run/secrets/istio",
-	})
 
 	return vms
 }
