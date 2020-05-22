@@ -20,13 +20,15 @@ import (
 	"fmt"
 
 	apiv1 "k8s.io/api/core/v1"
+	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
-	"k8s.io/apimachinery/pkg/util/intstr"
 
 	"github.com/banzaicloud/istio-operator/pkg/util"
 )
 
 const (
+	banzaiImageHub                    = "docker.io/banzaicloud"
+	banzaiImageVersion                = "1.6.0-bzc"
 	defaultImageHub                   = "docker.io/istio"
 	defaultImageVersion               = "1.6.0"
 	defaultLogLevel                   = "default:info"
@@ -95,17 +97,17 @@ var defaultInitResources = &apiv1.ResourceRequirements{
 	},
 }
 
-var defaultIngressGatewayPorts = []apiv1.ServicePort{
-	{Port: 15021, Protocol: apiv1.ProtocolTCP, TargetPort: intstr.FromInt(15021), Name: "status-port"},
-	{Port: 80, Protocol: apiv1.ProtocolTCP, TargetPort: intstr.FromInt(8080), Name: "http2"},
-	{Port: 443, Protocol: apiv1.ProtocolTCP, TargetPort: intstr.FromInt(8443), Name: "https"},
-	{Port: 15443, Protocol: apiv1.ProtocolTCP, TargetPort: intstr.FromInt(15443), Name: "tls"},
+var defaultIngressGatewayPorts = []ServicePort{
+	{ServicePort: corev1.ServicePort{Port: 15021, Protocol: apiv1.ProtocolTCP, Name: "status-port"}, TargetPort: 15021},
+	{ServicePort: corev1.ServicePort{Port: 80, Protocol: apiv1.ProtocolTCP, Name: "http2"}, TargetPort: 8080},
+	{ServicePort: corev1.ServicePort{Port: 443, Protocol: apiv1.ProtocolTCP, Name: "https"}, TargetPort: 8443},
+	{ServicePort: corev1.ServicePort{Port: 15443, Protocol: apiv1.ProtocolTCP, Name: "tls"}, TargetPort: 15443},
 }
 
-var defaultEgressGatewayPorts = []apiv1.ServicePort{
-	{Port: 80, Name: "http2", Protocol: apiv1.ProtocolTCP, TargetPort: intstr.FromInt(8080)},
-	{Port: 443, Name: "https", Protocol: apiv1.ProtocolTCP, TargetPort: intstr.FromInt(8443)},
-	{Port: 15443, Protocol: apiv1.ProtocolTCP, TargetPort: intstr.FromInt(15443), Name: "tls"},
+var defaultEgressGatewayPorts = []ServicePort{
+	{ServicePort: corev1.ServicePort{Port: 80, Protocol: apiv1.ProtocolTCP, Name: "http2"}, TargetPort: 80},
+	{ServicePort: corev1.ServicePort{Port: 443, Protocol: apiv1.ProtocolTCP, Name: "https"}, TargetPort: 8443},
+	{ServicePort: corev1.ServicePort{Port: 15443, Protocol: apiv1.ProtocolTCP, Name: "tls"}, TargetPort: 15443},
 }
 
 func SetDefaults(config *Istio) {

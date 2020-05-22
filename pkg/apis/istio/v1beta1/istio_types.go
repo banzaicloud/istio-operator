@@ -24,6 +24,7 @@ import (
 
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/util/intstr"
 
 	"github.com/banzaicloud/istio-operator/pkg/util"
 )
@@ -182,10 +183,32 @@ type GatewaySDSConfiguration struct {
 	Resources *corev1.ResourceRequirements `json:"resources,omitempty"`
 }
 
+type ServicePort struct {
+	corev1.ServicePort `json:",inline"`
+	TargetPort         int32 `json:"targetPort,omitempty"`
+}
+
+type ServicePorts []ServicePort
+
+func (ps ServicePorts) Convert() []corev1.ServicePort {
+	ports := make([]corev1.ServicePort, 0)
+	for _, po := range ps {
+		ports = append(ports, corev1.ServicePort{
+			Name:       po.Name,
+			Protocol:   po.Protocol,
+			Port:       po.Port,
+			TargetPort: intstr.FromInt(int(po.TargetPort)),
+			NodePort:   po.NodePort,
+		})
+	}
+
+	return ports
+}
+
 type GatewayConfiguration struct {
 	MeshGatewayConfiguration `json:",inline"`
-	Ports                    []corev1.ServicePort `json:"ports,omitempty"`
-	Enabled                  *bool                `json:"enabled,omitempty"`
+	Ports                    []ServicePort `json:"ports,omitempty"`
+	Enabled                  *bool         `json:"enabled,omitempty"`
 	// Whether to fully reconcile the MGW resource or just take care that it exists
 	CreateOnly *bool `json:"createOnly,omitempty"`
 }

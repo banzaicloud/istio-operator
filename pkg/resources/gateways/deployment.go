@@ -181,7 +181,7 @@ func (r *Reconciler) ports() []apiv1.ContainerPort {
 	var ports []apiv1.ContainerPort
 	for _, port := range r.gw.Spec.Ports {
 		ports = append(ports, apiv1.ContainerPort{
-			ContainerPort: int32(port.TargetPort.IntValue()), Protocol: port.Protocol, Name: port.Name,
+			ContainerPort: port.TargetPort, Protocol: port.Protocol, Name: port.Name,
 		})
 	}
 	ports = append(ports, apiv1.ContainerPort{

@@ -37,10 +37,12 @@ func TestStorageMeshGateway(t *testing.T) {
 			Namespace: "default",
 		},
 		Spec: MeshGatewaySpec{
-			Ports: []corev1.ServicePort{
+			Ports: []ServicePort{
 				{
-					Port:     80,
-					Protocol: corev1.ProtocolTCP,
+					ServicePort: corev1.ServicePort{
+						Port:     80,
+						Protocol: corev1.ProtocolTCP,
+					},
 				},
 			},
 			Type: GatewayTypeIngress,
