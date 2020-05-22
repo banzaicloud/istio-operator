@@ -105,7 +105,7 @@ var defaultIngressGatewayPorts = []ServicePort{
 }
 
 var defaultEgressGatewayPorts = []ServicePort{
-	{ServicePort: corev1.ServicePort{Port: 80, Protocol: apiv1.ProtocolTCP, Name: "http2"}, TargetPort: 80},
+	{ServicePort: corev1.ServicePort{Port: 80, Protocol: apiv1.ProtocolTCP, Name: "http2"}, TargetPort: 8080},
 	{ServicePort: corev1.ServicePort{Port: 443, Protocol: apiv1.ProtocolTCP, Name: "https"}, TargetPort: 8443},
 	{ServicePort: corev1.ServicePort{Port: 15443, Protocol: apiv1.ProtocolTCP, Name: "tls"}, TargetPort: 15443},
 }
