@@ -37,7 +37,7 @@ const (
 	defaultCitadelImage               = defaultImageHub + "/" + "citadel" + ":" + defaultImageVersion
 	defaultGalleyImage                = defaultImageHub + "/" + "galley" + ":" + defaultImageVersion
 	defaultMixerImage                 = defaultImageHub + "/" + "mixer" + ":" + defaultImageVersion
-	defaultSidecarInjectorImage       = defaultImageHub + "/" + "sidecar_injector" + ":" + defaultImageVersion
+	defaultSidecarInjectorImage       = banzaiImageHub + "/" + "istio-sidecar-injector" + ":" + banzaiImageVersion
 	defaultNodeAgentImage             = defaultImageHub + "/" + "node-agent-k8s" + ":" + defaultImageVersion
 	defaultSDSImage                   = defaultImageHub + "/" + "node-agent-k8s" + ":" + defaultImageVersion
 	defaultProxyImage                 = defaultImageHub + "/" + "proxyv2" + ":" + defaultImageVersion
