@@ -78,12 +78,12 @@ func (r *Reconciler) Reconcile(log logr.Logger) error {
 		{DynamicResource: r.httpStatsFilter16, DesiredState: statsFilterDesiredState},
 		{DynamicResource: r.tcpStatsFilter16, DesiredState: statsFilterDesiredState},
 
-		// delete old EnvoyFilters without version names
+		// delete deprecated 1.5 EnvoyFilters without version names
 		// these lines can be removed when upgrading to 1.7
-		{DynamicResource: r.metaExchangeEnvoyFilterOld, DesiredState: k8sutil.DesiredStateAbsent},
-		{DynamicResource: r.tcpMetaExchangeEnvoyFilterOld, DesiredState: k8sutil.DesiredStateAbsent},
-		{DynamicResource: r.httpStatsFilterOld, DesiredState: k8sutil.DesiredStateAbsent},
-		{DynamicResource: r.tcpStatsFilterOld, DesiredState: k8sutil.DesiredStateAbsent},
+		{DynamicResource: r.metaExchangeEnvoyFilter15Deprecated, DesiredState: k8sutil.DesiredStateAbsent},
+		{DynamicResource: r.tcpMetaExchangeEnvoyFilter15Deprecated, DesiredState: k8sutil.DesiredStateAbsent},
+		{DynamicResource: r.httpStatsFilter15Deprecated, DesiredState: k8sutil.DesiredStateAbsent},
+		{DynamicResource: r.tcpStatsFilter15Deprecated, DesiredState: k8sutil.DesiredStateAbsent},
 	}
 
 	for _, dr := range drs {

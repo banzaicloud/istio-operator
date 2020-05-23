@@ -24,7 +24,7 @@ import (
 	"github.com/banzaicloud/istio-operator/pkg/k8sutil"
 )
 
-func (r *Reconciler) tcpMetaExchangeEnvoyFilterOld() *k8sutil.DynamicObject {
+func (r *Reconciler) tcpMetaExchangeEnvoyFilter15Deprecated() *k8sutil.DynamicObject {
 	return &k8sutil.DynamicObject{
 		Gvr: schema.GroupVersionResource{
 			Group:    "networking.istio.io",

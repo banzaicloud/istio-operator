@@ -24,7 +24,7 @@ import (
 	"github.com/banzaicloud/istio-operator/pkg/k8sutil"
 )
 
-func (r *Reconciler) tcpStatsFilterOld() *k8sutil.DynamicObject {
+func (r *Reconciler) tcpStatsFilter15Deprecated() *k8sutil.DynamicObject {
 	return &k8sutil.DynamicObject{
 		Gvr: schema.GroupVersionResource{
 			Group:    "networking.istio.io",
