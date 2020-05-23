@@ -4,7 +4,7 @@ The steps are listed in this doc to perform an Istio version upgrade with the op
 
 ## Istio Control Plane Upgrade
 
-Let us suppose that we have a [Kubernetes](https://kubernetes.io/) cluster with Istio 1.4.5, and we would like to upgrade our Istio components to Istio version 1.5.2. Here are the steps we need to perform to accomplish this with the operator:
+Let us suppose that we have a [Kubernetes](https://kubernetes.io/) cluster with Istio 1.4.8, and we would like to upgrade our Istio components to Istio version 1.5.2. Here are the steps we need to perform to accomplish this with the operator:
 
 1. Deploy a version of the operator which supports Istio 1.5.x
 2. Apply a [Custom Resource](https://kubernetes.io/docs/concepts/extend-kubernetes/api-extension/custom-resources/) using Istio 1.5.2 components
@@ -22,7 +22,7 @@ What happens is that once the operator discerns that the Custom Resource it's wa
 
 If you already have Istio 1.4.x installed on your cluster you can skip the next section and can jump right to [Deploy sample BookInfo application](#deploy-sample-bookinfo-application).
 
-#### Install Istio 1.4.5
+#### Install Istio 1.4.8
 
 We install Istio with our operator, so first we need to check out the `release-1.4` branch of our operator (this branch supports Istio versions 1.4.x):
 
@@ -57,7 +57,7 @@ $ helm install --name=istio-operator --namespace=istio-system --set-string opera
 
 Once you've applied the Custom Resource to your cluster, the operator will start reconciling all of Istio's components.
 
-There are some sample Custom Resource configurations in the `config/samples` folder. To deploy Istio 1.4.5 with its default configuration options, use the following command:
+There are some sample Custom Resource configurations in the `config/samples` folder. To deploy Istio 1.4.8 with its default configuration options, use the following command:
 
 ```bash
 $ kubectl apply -n istio-system -f config/samples/istio_v1beta1_istio.yaml
@@ -79,21 +79,26 @@ istio-sidecar-injector-596f8dddbb-gvzk9   1/1       Running   0          1m
 istio-telemetry-7cbf75c5cf-wk4v8          2/2       Running   0          1m
 ```
 
-The `Istio` Custom Resource is showing `Available` in its status field and the Istio components are using `1.4.5` images :
+The `Istio` Custom Resource is showing `Available` in its status field and the Istio components are using `1.4.8` images :
 
 ```bash
-$ kubectl describe istio -n istio-system istio -o yaml | grep "image:"
-    image: docker.io/istio/citadel:1.4.5
-    image: docker.io/istio/galley:1.4.5
-    image: docker.io/istio-mixer:1.4.5
-    image: docker.io/istio-pilot:1.4.5
-    image: docker.io/istio/proxyv2:1.4.5
-    image: docker.io/istio/sidecar_injector:1.4.5
+$ kubectl describe istio -n istio-system istio | grep Image:
+    Image:                         docker.io/istio/citadel:1.4.8
+    Image:          docker.io/istio/galley:1.4.8
+    Image:    docker.io/istio/node-agent-k8s:1.4.8
+    Image:          coredns/coredns:1.6.2
+    Plugin Image:   docker.io/istio/coredns-plugin:0.2-istio-1.1
+    Image:          docker.io/istio/mixer:1.4.8
+    Image:          docker.io/istio/pilot:1.4.8
+    Image:             docker.io/istio/proxyv2:1.4.8
+    Image:                          docker.io/istio/sidecar_injector:1.4.8
+    Image:                 docker.io/istio/install-cni:1.4.8
+
 ```
 
 #### Deploy sample BookInfo application
 
-Let's make sure that Istio 1.4.5 is properly installed with Istio's BookInfo application:
+Let's make sure that Istio 1.4.8 is properly installed with Istio's BookInfo application:
 
 ```bash
 $ kubectl -n default apply -f https://raw.githubusercontent.com/istio/istio/release-1.4/samples/bookinfo/platform/kube/bookinfo.yaml
@@ -154,7 +159,7 @@ $ helm upgrade istio-operator --install --namespace=istio-system --set-string op
 
 **Use the new Custom Resource**
 
-> If you've installed Istio 1.4.5 or earlier with the Istio operator, and if you check the logs of the operator pod at this point, you will see the following error message: `intended Istio version is unsupported by this version of the operator`. We need to update the Istio Custom Resource with Istio 1.5's components for the operator to be reconciled with the Istio control plane.
+> If you've installed Istio 1.4.8 or earlier with the Istio operator, and if you check the logs of the operator pod at this point, you will see the following error message: `intended Istio version is unsupported by this version of the operator`. We need to update the Istio Custom Resource with Istio 1.5's components for the operator to be reconciled with the Istio control plane.
 
 To deploy Istio 1.5.2 with its default configuration options, use the following command:
 
