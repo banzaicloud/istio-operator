@@ -77,6 +77,13 @@ func (r *Reconciler) Reconcile(log logr.Logger) error {
 		{DynamicResource: r.tcpMetaExchangeEnvoyFilter16, DesiredState: exchangeFilterDesiredState},
 		{DynamicResource: r.httpStatsFilter16, DesiredState: statsFilterDesiredState},
 		{DynamicResource: r.tcpStatsFilter16, DesiredState: statsFilterDesiredState},
+
+		// delete old EnvoyFilters without version names
+		// these lines can be removed when upgrading to 1.7
+		{DynamicResource: r.metaExchangeEnvoyFilterOld, DesiredState: k8sutil.DesiredStateAbsent},
+		{DynamicResource: r.tcpMetaExchangeEnvoyFilterOld, DesiredState: k8sutil.DesiredStateAbsent},
+		{DynamicResource: r.httpStatsFilterOld, DesiredState: k8sutil.DesiredStateAbsent},
+		{DynamicResource: r.tcpStatsFilterOld, DesiredState: k8sutil.DesiredStateAbsent},
 	}
 
 	for _, dr := range drs {
