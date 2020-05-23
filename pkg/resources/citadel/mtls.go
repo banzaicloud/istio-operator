@@ -108,3 +108,17 @@ func (r *Reconciler) destinationRuleApiServerMtls() *k8sutil.DynamicObject {
 		Owner: r.Config,
 	}
 }
+
+// meshPolicy returns the old MeshPolicy object
+func (r *Reconciler) meshPolicy() *k8sutil.DynamicObject {
+	return &k8sutil.DynamicObject{
+		Gvr: schema.GroupVersionResource{
+			Group:    "authentication.istio.io",
+			Version:  "v1alpha1",
+			Resource: "meshpolicies",
+		},
+		Kind:  "MeshPolicy",
+		Name:  "default",
+		Owner: r.Config,
+	}
+}
