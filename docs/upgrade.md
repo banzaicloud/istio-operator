@@ -48,10 +48,10 @@ Alternatively, if you just can't let go of Helm completely, you can deploy the o
 
 ```bash
 $ helm repo add banzaicloud-stable https://kubernetes-charts.banzaicloud.com
-$ helm install --name=istio-operator --namespace=istio-system --set-string operator.image.tag=0.5.8 banzaicloud-stable/istio-operator
+$ helm install --name=istio-operator --namespace=istio-system --set-string operator.image.tag=0.6.0 banzaicloud-stable/istio-operator
 ```
 
-*Note: As of now, the `0.5.8` tag is the latest version of our operator to support Istio versions 1.5.x
+*Note: As of now, the `0.6.0` tag is the latest version of our operator to support Istio versions 1.5.x
 
 **Apply the Custom Resource**
 
