@@ -68,10 +68,9 @@ spec:
               description: 'Configures DNS certificates provisioned through Chiron
                 linked into Pilot. The DNS names in this file are all hard-coded;
                 please ensure the namespaces in dnsNames are consistent with those
-                of your services. Example: certificates:   - secretName: dns.istio-galley-service-account     dnsNames:
-                [istio-galley.istio-system.svc, istio-galley.istio-system]   - secretName:
-                dns.istio-sidecar-injector-service-account     dnsNames: [istio-sidecar-injector.istio-system.svc,
-                istio-sidecar-injector.istio-system] +k8s:deepcopy-gen:interfaces=Certificates'
+                of your services. Example: certificates: certificates:   - secretName:
+                dns.istiod-service-account     dnsNames: [istiod.istio-system.svc,
+                istiod.istio-system] +k8s:deepcopy-gen:interfaces=Certificates'
               items:
                 properties:
                   dnsNames:
@@ -235,6 +234,10 @@ spec:
                       type: array
                     affinity:
                       type: object
+                    createOnly:
+                      description: Whether to fully reconcile the MGW resource or
+                        just take care that it exists
+                      type: boolean
                     enabled:
                       type: boolean
                     labels:
@@ -255,6 +258,37 @@ spec:
                       type: object
                     ports:
                       items:
+                        properties:
+                          name:
+                            description: The name of this port within the service.
+                              This must be a DNS_LABEL. All ports within a ServiceSpec
+                              must have unique names. This maps to the 'Name' field
+                              in EndpointPort objects. Optional if only one ServicePort
+                              is defined on this service.
+                            type: string
+                          nodePort:
+                            description: 'The port on each node on which this service
+                              is exposed when type=NodePort or LoadBalancer. Usually
+                              assigned by the system. If specified, it will be allocated
+                              to the service if unused or else creation of the service
+                              will fail. Default is to auto-allocate a port if the
+                              ServiceType of this Service requires one. More info:
+                              https://kubernetes.io/docs/concepts/services-networking/service/#type-nodeport'
+                            format: int32
+                            type: integer
+                          port:
+                            description: The port that will be exposed by this service.
+                            format: int32
+                            type: integer
+                          protocol:
+                            description: The IP protocol for this port. Supports "TCP",
+                              "UDP", and "SCTP". Default is TCP.
+                            type: string
+                          targetPort:
+                            format: int32
+                            type: integer
+                        required:
+                        - port
                         type: object
                       type: array
                     replicaCount:
@@ -265,6 +299,9 @@ spec:
                       type: string
                     resources:
                       type: object
+                    runAsRoot:
+                      description: Whether to run the gateway in a privileged container
+                      type: boolean
                     sds:
                       properties:
                         enabled:
@@ -301,6 +338,10 @@ spec:
                       type: array
                     affinity:
                       type: object
+                    createOnly:
+                      description: Whether to fully reconcile the MGW resource or
+                        just take care that it exists
+                      type: boolean
                     enabled:
                       type: boolean
                     labels:
@@ -321,6 +362,37 @@ spec:
                       type: object
                     ports:
                       items:
+                        properties:
+                          name:
+                            description: The name of this port within the service.
+                              This must be a DNS_LABEL. All ports within a ServiceSpec
+                              must have unique names. This maps to the 'Name' field
+                              in EndpointPort objects. Optional if only one ServicePort
+                              is defined on this service.
+                            type: string
+                          nodePort:
+                            description: 'The port on each node on which this service
+                              is exposed when type=NodePort or LoadBalancer. Usually
+                              assigned by the system. If specified, it will be allocated
+                              to the service if unused or else creation of the service
+                              will fail. Default is to auto-allocate a port if the
+                              ServiceType of this Service requires one. More info:
+                              https://kubernetes.io/docs/concepts/services-networking/service/#type-nodeport'
+                            format: int32
+                            type: integer
+                          port:
+                            description: The port that will be exposed by this service.
+                            format: int32
+                            type: integer
+                          protocol:
+                            description: The IP protocol for this port. Supports "TCP",
+                              "UDP", and "SCTP". Default is TCP.
+                            type: string
+                          targetPort:
+                            format: int32
+                            type: integer
+                        required:
+                        - port
                         type: object
                       type: array
                     replicaCount:
@@ -331,6 +403,9 @@ spec:
                       type: string
                     resources:
                       type: object
+                    runAsRoot:
+                      description: Whether to run the gateway in a privileged container
+                      type: boolean
                     sds:
                       properties:
                         enabled:
@@ -472,7 +547,8 @@ spec:
                 required to be globally/universally unique.
               type: string
             meshPolicy:
-              description: MeshPolicy configures the default MeshPolicy resource
+              description: MeshPolicy configures the mesh-wide PeerAuthentication
+                resource
               properties:
                 mtlsMode:
                   description: MTLSMode sets the mesh-wide mTLS policy
@@ -1228,7 +1304,7 @@ spec:
               type: string
             trustDomainAliases:
               description: ' The trust domain aliases represent the aliases of trust_domain.  For
-                example, if we have  trustDomain: td1  trustDomainAliases: [“td2”,
+                example, if we have  trustDomain: td1  trustDomainAliases: ["td2",
                 "td3"]  Any service with the identity "td1/ns/foo/sa/a-service-account",
                 "td2/ns/foo/sa/a-service-account",  or "td3/ns/foo/sa/a-service-account"
                 will be treated the same in the Istio mesh.'
@@ -1237,11 +1313,11 @@ spec:
               type: array
             useMCP:
               description: Use the Mesh Control Protocol (MCP) for configuring Mixer
-                and Pilot. Requires galley.
+                and Pilot. Requires an MCP source.
               type: boolean
             version:
               description: Contains the intended Istio version
-              pattern: ^1.5
+              pattern: ^1.6
               type: string
             watchAdapterCRDs:
               description: Whether or not to establish watches for adapter-specific

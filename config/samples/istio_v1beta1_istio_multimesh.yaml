@@ -5,7 +5,7 @@ metadata:
     controller-tools.k8s.io: "1.0"
   name: multimesh
 spec:
-  version: "1.5.2"
+  version: "1.6.0"
   autoInjectionNamespaces:
   - "default"
   useMCP: false
@@ -17,3 +17,6 @@ spec:
     enabled: true
   citadel:
     caSecretName: "cacerts"
+  proxy:
+    image: "docker.io/istio/proxyv2:1.6.0"
+  jwtPolicy: "first-party-jwt"

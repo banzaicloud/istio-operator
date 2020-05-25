@@ -46,10 +46,12 @@ func TestReconcile(t *testing.T) {
 	instance := &istiov1beta1.MeshGateway{
 		ObjectMeta: metav1.ObjectMeta{Name: "foo", Namespace: "default"},
 		Spec: istiov1beta1.MeshGatewaySpec{
-			Ports: []corev1.ServicePort{
+			Ports: []istiov1beta1.ServicePort{
 				{
-					Port:     80,
-					Protocol: corev1.ProtocolTCP,
+					ServicePort: corev1.ServicePort{
+						Port:     80,
+						Protocol: corev1.ProtocolTCP,
+					},
 				},
 			},
 			Type: istiov1beta1.GatewayTypeIngress,

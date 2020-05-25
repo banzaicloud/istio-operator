@@ -37,6 +37,7 @@ type DesiredState string
 const (
 	DesiredStatePresent DesiredState = "present"
 	DesiredStateAbsent  DesiredState = "absent"
+	DesiredStateExists  DesiredState = "exists"
 )
 
 type DynamicObject struct {
@@ -61,7 +62,7 @@ func (d *DynamicObject) Reconcile(log logr.Logger, client dynamic.Interface, des
 		return emperror.WrapWith(err, "getting resource failed", "name", d.Name, "kind", desiredType)
 	}
 	if apierrors.IsNotFound(err) {
-		if desiredState == DesiredStatePresent {
+		if desiredState == DesiredStatePresent || desiredState == DesiredStateExists {
 			if err := patch.DefaultAnnotator.SetLastAppliedAnnotation(desired); err != nil {
 				log.Error(err, "Failed to set last applied annotation", "desired", desired)
 			}

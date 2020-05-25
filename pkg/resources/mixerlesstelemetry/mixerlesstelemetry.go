@@ -29,9 +29,11 @@ import (
 )
 
 const (
-	componentName = "mixerless-telemetry"
-	wasmRuntime   = "envoy.wasm.runtime.v8"
-	noWasmRuntime = "envoy.wasm.runtime.null"
+	componentName  = "mixerless-telemetry"
+	wasmRuntime    = "envoy.wasm.runtime.v8"
+	noWasmRuntime  = "envoy.wasm.runtime.null"
+	proxyVersion15 = "1.5"
+	proxyVersion16 = "1.6"
 )
 
 type Reconciler struct {
@@ -66,10 +68,22 @@ func (r *Reconciler) Reconcile(log logr.Logger) error {
 	}
 
 	drs := []resources.DynamicResourceWithDesiredState{
-		{DynamicResource: r.metaexchangeEnvoyFilter, DesiredState: exchangeFilterDesiredState},
-		{DynamicResource: r.TCPMetaexchangeEnvoyFilter, DesiredState: exchangeFilterDesiredState},
-		{DynamicResource: r.httpStatsFilter, DesiredState: statsFilterDesiredState},
-		{DynamicResource: r.tcpStatsFilter, DesiredState: statsFilterDesiredState},
+		{DynamicResource: r.metaExchangeEnvoyFilter15, DesiredState: exchangeFilterDesiredState},
+		{DynamicResource: r.tcpMetaExchangeEnvoyFilter15, DesiredState: exchangeFilterDesiredState},
+		{DynamicResource: r.httpStatsFilter15, DesiredState: statsFilterDesiredState},
+		{DynamicResource: r.tcpStatsFilter15, DesiredState: statsFilterDesiredState},
+
+		{DynamicResource: r.metaExchangeEnvoyFilter16, DesiredState: exchangeFilterDesiredState},
+		{DynamicResource: r.tcpMetaExchangeEnvoyFilter16, DesiredState: exchangeFilterDesiredState},
+		{DynamicResource: r.httpStatsFilter16, DesiredState: statsFilterDesiredState},
+		{DynamicResource: r.tcpStatsFilter16, DesiredState: statsFilterDesiredState},
+
+		// delete deprecated 1.5 EnvoyFilters without version names
+		// these lines can be removed when upgrading to 1.7
+		{DynamicResource: r.metaExchangeEnvoyFilter15Deprecated, DesiredState: k8sutil.DesiredStateAbsent},
+		{DynamicResource: r.tcpMetaExchangeEnvoyFilter15Deprecated, DesiredState: k8sutil.DesiredStateAbsent},
+		{DynamicResource: r.httpStatsFilter15Deprecated, DesiredState: k8sutil.DesiredStateAbsent},
+		{DynamicResource: r.tcpStatsFilter15Deprecated, DesiredState: k8sutil.DesiredStateAbsent},
 	}
 
 	for _, dr := range drs {

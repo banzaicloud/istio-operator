@@ -32,10 +32,10 @@ The following table lists the configurable parameters of the Banzaicloud Istio O
 Parameter | Description | Default
 --------- | ----------- | -------
 `operator.image.repository` | Operator container image repository | `banzaicloud/istio-operator`
-`operator.image.tag` | Operator container image tag | `0.5.8`
+`operator.image.tag` | Operator container image tag | `0.6.0`
 `operator.image.pullPolicy` | Operator container image pull policy | `IfNotPresent`
 `operator.resources` | CPU/Memory resource requests/limits (YAML) | Memory: `256Mi`, CPU: `200m`
-`istioVersion` | Supported Istio version | `1.5`
+`istioVersion` | Supported Istio version | `1.6`
 `prometheusMetrics.enabled` | If true, use direct access for Prometheus metrics | `false`
 `prometheusMetrics.authProxy.enabled` | If true, use auth proxy for Prometheus metrics | `true`
 `prometheusMetrics.authProxy.image.repository` | Auth proxy container image repository | `gcr.io/kubebuilder/kube-rbac-proxy`

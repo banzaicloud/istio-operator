@@ -17,12 +17,13 @@ limitations under the License.
 package istiod
 
 import (
+	"fmt"
+
 	apiv1 "k8s.io/api/core/v1"
 	rbacv1 "k8s.io/api/rbac/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 
 	"github.com/banzaicloud/istio-operator/pkg/resources/templates"
-	"github.com/banzaicloud/istio-operator/pkg/util"
 )
 
 func (r *Reconciler) serviceAccount() runtime.Object {
@@ -33,21 +34,38 @@ func (r *Reconciler) serviceAccount() runtime.Object {
 
 func (r *Reconciler) clusterRole() runtime.Object {
 	rules := []rbacv1.PolicyRule{
+		// sidecar injection controller
+		{
+			APIGroups: []string{"admissionregistration.k8s.io"},
+			Resources: []string{"mutatingwebhookconfigurations"},
+			Verbs:     []string{"get", "list", "watch", "patch"},
+		},
+		// configuration validation webhook controller
+		{
+			APIGroups: []string{"admissionregistration.k8s.io"},
+			Resources: []string{"validatingwebhookconfigurations"},
+			Verbs:     []string{"get", "list", "watch", "update"},
+		},
+		// permissions to verify the webhook is ready and rejecting
+		// invalid config. We use --server-dry-run so no config is persisted.
 		{
 			APIGroups: []string{"networking.istio.io"},
 			Resources: []string{"gateways"},
 			Verbs:     []string{"create"},
 		},
+		// istio configuration
 		{
 			APIGroups: []string{"config.istio.io", "rbac.istio.io", "security.istio.io", "networking.istio.io", "authentication.istio.io"},
 			Resources: []string{"*"},
 			Verbs:     []string{"get", "watch", "list"},
 		},
+		// auto-detect installed CRD definitions
 		{
 			APIGroups: []string{"apiextensions.k8s.io"},
 			Resources: []string{"customresourcedefinitions"},
 			Verbs:     []string{"get", "watch", "list"},
 		},
+		// discovery and routing
 		{
 			APIGroups: []string{"extensions", "apps"},
 			Resources: []string{"deployments"},
@@ -59,30 +77,40 @@ func (r *Reconciler) clusterRole() runtime.Object {
 			Verbs:     []string{"get", "list", "watch"},
 		},
 		{
-			APIGroups: []string{""},
-			Resources: []string{"endpoints", "pods", "services", "namespaces", "nodes"},
+			APIGroups: []string{"discovery.k8s.io"},
+			Resources: []string{"endpointslices"},
+			Verbs:     []string{"get", "list", "watch"},
+		},
+		// ingress controller
+		{
+			APIGroups: []string{"networking.k8s.io"},
+			Resources: []string{"ingresses", "ingressclasses"},
 			Verbs:     []string{"get", "list", "watch"},
 		},
 		{
-			APIGroups: []string{"extensions"},
-			Resources: []string{"ingresses"},
-			Verbs:     []string{"get", "watch", "list"},
-		},
-		{
-			APIGroups: []string{"extensions"},
+			APIGroups: []string{"networking.k8s.io"},
 			Resources: []string{"ingresses/status"},
 			Verbs:     []string{"*"},
 		},
+		// required for CA's namespace controller
 		{
 			APIGroups: []string{""},
 			Resources: []string{"configmaps"},
 			Verbs:     []string{"create", "get", "list", "watch", "update"},
 		},
+		// Istiod and bootstrap
 		{
 			APIGroups: []string{"certificates.k8s.io"},
 			Resources: []string{"certificatesigningrequests", "certificatesigningrequests/approval", "certificatesigningrequests/status"},
 			Verbs:     []string{"update", "create", "get", "delete", "watch"},
 		},
+		{
+			APIGroups:     []string{"certificates.k8s.io"},
+			Resources:     []string{"signers"},
+			ResourceNames: []string{"kubernetes.io/legacy-unknown"},
+			Verbs:         []string{"approve"},
+		},
+		// Used by Istiod to verify the JWT tokens
 		{
 			APIGroups: []string{"authentication.k8s.io"},
 			Resources: []string{"tokenreviews"},
@@ -98,18 +126,16 @@ func (r *Reconciler) clusterRole() runtime.Object {
 			Resources: []string{"serviceaccounts"},
 			Verbs:     []string{"get", "watch", "list"},
 		},
-	}
-
-	if util.PointerToBool(r.Config.Spec.Istiod.Enabled) {
-		rules = append(rules, rbacv1.PolicyRule{
-			APIGroups: []string{"admissionregistration.k8s.io"},
-			Resources: []string{"mutatingwebhookconfigurations", "validatingwebhookconfigurations"},
-			Verbs:     []string{"get", "list", "watch", "patch", "update"},
-		})
+		// Use for Kubernetes Service APIs
+		{
+			APIGroups: []string{"networking.x.k8s.io"},
+			Resources: []string{"*"},
+			Verbs:     []string{"get", "watch", "list"},
+		},
 	}
 
 	return &rbacv1.ClusterRole{
-		ObjectMeta: templates.ObjectMetaClusterScope(clusterRoleNameIstiod, istiodLabels, r.Config),
+		ObjectMeta: templates.ObjectMetaClusterScope(r.clusterRoleNameIstiodWithNamespace(), istiodLabels, r.Config),
 		Rules:      rules,
 	}
 }
@@ -120,7 +146,7 @@ func (r *Reconciler) clusterRoleBinding() runtime.Object {
 		RoleRef: rbacv1.RoleRef{
 			Kind:     "ClusterRole",
 			APIGroup: "rbac.authorization.k8s.io",
-			Name:     clusterRoleNameIstiod,
+			Name:     r.clusterRoleNameIstiodWithNamespace(),
 		},
 		Subjects: []rbacv1.Subject{
 			{
@@ -130,4 +156,8 @@ func (r *Reconciler) clusterRoleBinding() runtime.Object {
 			},
 		},
 	}
+}
+
+func (r *Reconciler) clusterRoleNameIstiodWithNamespace() string {
+	return fmt.Sprintf("%s-%s", clusterRoleNameIstiod, r.Config.Namespace)
 }

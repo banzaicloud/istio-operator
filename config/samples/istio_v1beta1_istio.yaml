@@ -5,7 +5,7 @@ metadata:
     controller-tools.k8s.io: "1.0"
   name: istio-sample
 spec:
-  version: "1.5.2"
+  version: "1.6.0"
   meshPolicy:
     mtlsMode: PERMISSIVE
   autoMtls: true
@@ -21,13 +21,11 @@ spec:
       cpu: 10m
   mixerlessTelemetry:
     enabled: true
-  sds:
-    enabled: false
   istiod:
     enabled: true
   pilot:
     enabled: true
-    image: "docker.io/istio/pilot:1.5.2"
+    image: "docker.io/istio/pilot:1.6.0"
     replicaCount: 1
     minReplicas: 1
     maxReplicas: 5
@@ -37,15 +35,6 @@ spec:
         cpu: 500m
         memory: 2048Mi
     certProvider: "istiod"
-  citadel:
-    enabled: false
-    image: "docker.io/istio/citadel:1.5.2"
-  galley:
-    enabled: false
-    image: "docker.io/istio/galley:1.5.2"
-    replicaCount: 1
-    enableServiceDiscovery: false
-    enableAnalysis: false
   gateways:
     enabled: true
     ingress:
@@ -57,15 +46,16 @@ spec:
       loadBalancerIP: ""
       serviceAnnotations: {}
       serviceLabels: {}
+      runAsRoot: false
       ports:
-        - port: 15020
-          targetPort: 15020
+        - port: 15021
+          targetPort: 15021
           name: status-port
         - port: 80
-          targetPort: 80
+          targetPort: 8080
           name: http2
         - port: 443
-          targetPort: 443
+          targetPort: 8443
           name: https
         - port: 15443
           targetPort: 15443
@@ -85,12 +75,13 @@ spec:
       serviceType: "ClusterIP"
       serviceAnnotations: {}
       serviceLabels: {}
+      runAsRoot: false
       ports:
         - port: 80
-          targetPort: 80
+          targetPort: 8080
           name: http2
         - port: 443
-          targetPort: 443
+          targetPort: 8443
           name: https
         - port: 15443
           targetPort: 15443
@@ -106,35 +97,18 @@ spec:
       enabled: false
   policy:
     enabled: false
-    image: "docker.io/istio/mixer:1.5.2"
+    image: "docker.io/istio/mixer:1.6.0"
     replicaCount: 1
     minReplicas: 1
     maxReplicas: 5
   telemetry:
     enabled: false
-    image: "docker.io/istio/mixer:1.5.2"
+    image: "docker.io/istio/mixer:1.6.0"
     replicaCount: 1
     minReplicas: 1
     maxReplicas: 5
-  sidecarInjector:
-    enabled: false
-    image: "docker.io/istio/sidecar_injector:1.5.2"
-    replicaCount: 1
-    rewriteAppHTTPProbe: true
-    autoInjectionPolicyEnabled: true
-    init:
-      resources:
-        requests:
-          cpu: 10m
-          memory: 10Mi
-        limits:
-          cpu: 100m
-          memory: 50Mi
-  nodeAgent:
-    enabled: false
-    image: "docker.io/istio/node-agent-k8s:1.5.2"
   proxy:
-    image: "docker.io/istio/proxyv2:1.5.2"
+    image: "docker.io/istio/proxyv2:1.6.0"
     accessLogFile: "/dev/stdout"
     accessLogFormat: ""
     accessLogEncoding: "TEXT"
@@ -147,7 +121,7 @@ spec:
         cpu: 2000m
         memory: 1024Mi
   proxyInit:
-    image: "docker.io/istio/proxyv2:1.5.2"
+    image: "docker.io/istio/proxyv2:1.6.0"
   defaultPodDisruptionBudget:
     enabled: true
   outboundTrafficPolicy:
@@ -162,8 +136,6 @@ spec:
     lightstep:
         address: lightstep-satellite.lightstep:9292
         accessToken: <access-token>
-        secure: true
-        cacertPath: /etc/lightstep/cacert.pem
   localityLB:
     enabled: false
     # distribute:

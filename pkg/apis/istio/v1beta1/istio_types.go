@@ -24,11 +24,12 @@ import (
 
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/util/intstr"
 
 	"github.com/banzaicloud/istio-operator/pkg/util"
 )
 
-const supportedIstioMinorVersionRegex = "^1.5"
+const supportedIstioMinorVersionRegex = "^1.6"
 
 // IstioVersion stores the intended Istio version
 type IstioVersion string
@@ -182,10 +183,34 @@ type GatewaySDSConfiguration struct {
 	Resources *corev1.ResourceRequirements `json:"resources,omitempty"`
 }
 
+type ServicePort struct {
+	corev1.ServicePort `json:",inline"`
+	TargetPort         int32 `json:"targetPort,omitempty"`
+}
+
+type ServicePorts []ServicePort
+
+func (ps ServicePorts) Convert() []corev1.ServicePort {
+	ports := make([]corev1.ServicePort, 0)
+	for _, po := range ps {
+		ports = append(ports, corev1.ServicePort{
+			Name:       po.Name,
+			Protocol:   po.Protocol,
+			Port:       po.Port,
+			TargetPort: intstr.FromInt(int(po.TargetPort)),
+			NodePort:   po.NodePort,
+		})
+	}
+
+	return ports
+}
+
 type GatewayConfiguration struct {
 	MeshGatewayConfiguration `json:",inline"`
-	Ports                    []corev1.ServicePort `json:"ports,omitempty"`
-	Enabled                  *bool                `json:"enabled,omitempty"`
+	Ports                    []ServicePort `json:"ports,omitempty"`
+	Enabled                  *bool         `json:"enabled,omitempty"`
+	// Whether to fully reconcile the MGW resource or just take care that it exists
+	CreateOnly *bool `json:"createOnly,omitempty"`
 }
 
 type K8sIngressConfiguration struct {
@@ -594,7 +619,7 @@ type LoggingConfiguration struct {
 	Level *string `json:"level,omitempty"`
 }
 
-// MeshPolicyConfiguration configures the default MeshPolicy resource
+// MeshPolicyConfiguration configures the mesh-wide PeerAuthentication resource
 type MeshPolicyConfiguration struct {
 	// MTLSMode sets the mesh-wide mTLS policy
 	// +kubebuilder:validation:Enum=STRICT,PERMISSIVE,DISABLED
@@ -626,13 +651,13 @@ const (
 // IstioSpec defines the desired state of Istio
 type IstioSpec struct {
 	// Contains the intended Istio version
-	// +kubebuilder:validation:Pattern=^1.5
+	// +kubebuilder:validation:Pattern=^1.6
 	Version IstioVersion `json:"version"`
 
 	// Logging configurations
 	Logging LoggingConfiguration `json:"logging,omitempty"`
 
-	// MeshPolicy configures the default MeshPolicy resource
+	// MeshPolicy configures the mesh-wide PeerAuthentication resource
 	MeshPolicy MeshPolicyConfiguration `json:"meshPolicy,omitempty"`
 
 	// DEPRECATED: Use meshPolicy instead.
@@ -718,7 +743,7 @@ type IstioSpec struct {
 	// for more detail.
 	PriorityClassName string `json:"priorityClassName,omitempty"`
 
-	// Use the Mesh Control Protocol (MCP) for configuring Mixer and Pilot. Requires galley.
+	// Use the Mesh Control Protocol (MCP) for configuring Mixer and Pilot. Requires an MCP source.
 	UseMCP *bool `json:"useMCP,omitempty"`
 
 	// Set the default set of namespaces to which services, service entries, virtual services, destination rules should be exported to
@@ -780,7 +805,7 @@ type IstioSpec struct {
 	//  The trust domain aliases represent the aliases of trust_domain.
 	//  For example, if we have
 	//  trustDomain: td1
-	//  trustDomainAliases: [“td2”, "td3"]
+	//  trustDomainAliases: ["td2", "td3"]
 	//  Any service with the identity "td1/ns/foo/sa/a-service-account", "td2/ns/foo/sa/a-service-account",
 	//  or "td3/ns/foo/sa/a-service-account" will be treated the same in the Istio mesh.
 	TrustDomainAliases []string `json:"trustDomainAliases,omitempty"`
@@ -790,10 +815,9 @@ type IstioSpec struct {
 	// in dnsNames are consistent with those of your services.
 	// Example:
 	// certificates:
-	//   - secretName: dns.istio-galley-service-account
-	//     dnsNames: [istio-galley.istio-system.svc, istio-galley.istio-system]
-	//   - secretName: dns.istio-sidecar-injector-service-account
-	//     dnsNames: [istio-sidecar-injector.istio-system.svc, istio-sidecar-injector.istio-system]
+	// certificates:
+	//   - secretName: dns.istiod-service-account
+	//     dnsNames: [istiod.istio-system.svc, istiod.istio-system]
 	// +k8s:deepcopy-gen:interfaces=Certificates
 	Certificates []CertificateConfig `json:"certificates,omitempty"`
 
@@ -873,12 +897,8 @@ func (c *Istio) GetCAAddress() string {
 	return c.GetDiscoveryAddress()
 }
 
-func (c *Istio) GetDiscoveryAddress(svcNames ...string) string {
-	svcName := "istio-pilot"
-	if len(svcNames) == 1 {
-		svcName = svcNames[0]
-	}
-	return fmt.Sprintf("%s.%s.svc:%s", svcName, c.Namespace, c.GetDiscoveryPort())
+func (c *Istio) GetDiscoveryAddress() string {
+	return fmt.Sprintf("istiod.%s.svc:%s", c.Namespace, c.GetDiscoveryPort())
 }
 
 func (c *Istio) GetDiscoveryPort() string {

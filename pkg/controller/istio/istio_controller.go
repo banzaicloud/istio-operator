@@ -163,6 +163,10 @@ type ReconcileComponent func(log logr.Logger, istio *istiov1beta1.Istio) error
 // +kubebuilder:rbac:groups="rbac.authorization.k8s.io",resources=clusterroles;clusterrolebindings;roles;rolebindings;,verbs=get;list;watch;create;update;patch;delete
 // +kubebuilder:rbac:groups="authentication.k8s.io",resources=tokenreviews,verbs=create
 // +kubebuilder:rbac:groups="certificates.k8s.io",resources=certificatesigningrequests;certificatesigningrequests/approval;certificatesigningrequests/status,verbs=update;create;get;delete;watch
+// +kubebuilder:rbac:groups="certificates.k8s.io",resources=signers,resourceNames=kubernetes.io/legacy-unknown,verbs=approve
+// +kubebuilder:rbac:groups="networking.k8s.io",resources=ingressclasses;ingresses,verbs=get;list;watch
+// +kubebuilder:rbac:groups="networking.k8s.io",resources=ingresses/status,verbs=*
+// +kubebuilder:rbac:groups="networking.x.k8s.io",resources=*,verbs=get;list;watch
 // +kubebuilder:rbac:groups="discovery.k8s.io",resources=endpointslices,verbs=get;list;watch
 
 // +kubebuilder:rbac:groups=istio.banzaicloud.io,resources=istios;istios/finalizers,verbs=get;list;watch;create;update;patch;delete
@@ -197,10 +201,20 @@ func (r *ReconcileIstio) Reconcile(request reconcile.Request) (reconcile.Result,
 		}, nil
 	}
 
+	// Temporary solution to make sure legacy components are not enabled
+	// TODO: delete this when legacy components are removed
+	err = r.validateLegacyIstioComponentsAreDisabled(config)
+	if err != nil {
+		logger.Error(err, "legacy Istio control plane components cannot be enabled starting from Istio 1.6, disable them first")
+		return reconcile.Result{
+			Requeue: false,
+		}, nil
+	}
+
 	// Set default values where not set
 	istiov1beta1.SetDefaults(config)
 
-	r.checkMeshPolicyConflict(config, logger)
+	r.checkMeshWidePolicyConflict(config, logger)
 
 	result, err := r.reconcile(logger, config)
 	if err != nil {
@@ -282,9 +296,9 @@ func (r *ReconcileIstio) reconcile(logger logr.Logger, config *istiov1beta1.Isti
 			Namespace: config.Namespace,
 			Name:      config.Name,
 		}
-		err = r.watchMeshPolicy(nn)
+		err = r.watchMeshWidePolicy(nn)
 		if err != nil {
-			logger.Error(err, "unable to watch MeshPolicy")
+			logger.Error(err, "unable to watch mesh wide policy")
 		}
 		err = r.watchCRDs(nn)
 		if err != nil {
@@ -301,7 +315,7 @@ func (r *ReconcileIstio) reconcile(logger logr.Logger, config *istiov1beta1.Isti
 	reconcilers := []resources.ComponentReconciler{
 		base.New(r.Client, config, false),
 		citadel.New(citadel.Configuration{
-			DeployMeshPolicy: true,
+			DeployMeshWidePolicy: true,
 		}, r.Client, r.dynamic, config),
 		galley.New(r.Client, config),
 		sidecarinjector.New(r.Client, config),
@@ -330,7 +344,7 @@ func (r *ReconcileIstio) reconcile(logger logr.Logger, config *istiov1beta1.Isti
 			Namespace: config.Namespace,
 		})
 		if err != nil {
-			log.Error(err, "ingress gateway address pending")
+			log.Info(fmt.Sprintf("ingress gateway address pending: %s", err.Error()))
 			updateStatus(r.Client, config, istiov1beta1.ReconcileFailed, err.Error(), logger)
 			return reconcile.Result{
 				Requeue:      true,
@@ -347,7 +361,27 @@ func (r *ReconcileIstio) reconcile(logger logr.Logger, config *istiov1beta1.Isti
 	return reconcile.Result{}, nil
 }
 
-func (r *ReconcileIstio) checkMeshPolicyConflict(config *istiov1beta1.Istio, logger logr.Logger) {
+func (r *ReconcileIstio) validateLegacyIstioComponentsAreDisabled(config *istiov1beta1.Istio) error {
+	if util.PointerToBool(config.Spec.Citadel.Enabled) {
+		return errors.New("Citadel cannot be enabled")
+	}
+
+	if util.PointerToBool(config.Spec.Galley.Enabled) {
+		return errors.New("Galley cannot be enabled")
+	}
+
+	if util.PointerToBool(config.Spec.SidecarInjector.Enabled) {
+		return errors.New("Sidecar injector cannot be enabled")
+	}
+
+	if util.PointerToBool(config.Spec.NodeAgent.Enabled) {
+		return errors.New("Node agent cannot be enabled")
+	}
+
+	return nil
+}
+
+func (r *ReconcileIstio) checkMeshWidePolicyConflict(config *istiov1beta1.Istio, logger logr.Logger) {
 	if config.Spec.MTLS != nil && config.Spec.MeshPolicy.MTLSMode != "" {
 		mTLS := util.PointerToBool(config.Spec.MTLS)
 		if (mTLS && config.Spec.MeshPolicy.MTLSMode != istiov1beta1.STRICT) ||
@@ -361,7 +395,7 @@ func (r *ReconcileIstio) checkMeshPolicyConflict(config *istiov1beta1.Istio, log
 			r.recorder.Event(
 				config,
 				"Warning",
-				"MeshPolicyConflict",
+				"MeshWidePolicyConflict",
 				warningMessage,
 			)
 		}

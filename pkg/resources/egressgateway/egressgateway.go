@@ -65,6 +65,9 @@ func (r *Reconciler) Reconcile(log logr.Logger) error {
 
 	if util.PointerToBool(r.Config.Spec.Gateways.Enabled) && util.PointerToBool(r.Config.Spec.Gateways.EgressConfig.Enabled) {
 		desiredState = k8sutil.DesiredStatePresent
+		if util.PointerToBool(r.Config.Spec.Gateways.EgressConfig.CreateOnly) {
+			desiredState = k8sutil.DesiredStateExists
+		}
 	} else {
 		desiredState = k8sutil.DesiredStateAbsent
 	}
@@ -88,6 +91,9 @@ func (r *Reconciler) Reconcile(log logr.Logger) error {
 	var multimeshEgressGatewayDesiredState k8sutil.DesiredState
 	if util.PointerToBool(r.Config.Spec.MultiMesh) && util.PointerToBool(r.Config.Spec.Gateways.EgressConfig.Enabled) {
 		multimeshEgressGatewayDesiredState = k8sutil.DesiredStatePresent
+		if util.PointerToBool(r.Config.Spec.Gateways.EgressConfig.CreateOnly) {
+			multimeshEgressGatewayDesiredState = k8sutil.DesiredStateExists
+		}
 	} else {
 		multimeshEgressGatewayDesiredState = k8sutil.DesiredStateAbsent
 	}

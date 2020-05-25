@@ -20,22 +20,24 @@ import (
 	"fmt"
 
 	apiv1 "k8s.io/api/core/v1"
+	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
-	"k8s.io/apimachinery/pkg/util/intstr"
 
 	"github.com/banzaicloud/istio-operator/pkg/util"
 )
 
 const (
+	banzaiImageHub                    = "docker.io/banzaicloud"
+	banzaiImageVersion                = "1.6.0-bzc"
 	defaultImageHub                   = "docker.io/istio"
-	defaultImageVersion               = "1.5.2"
+	defaultImageVersion               = "1.6.0"
 	defaultLogLevel                   = "default:info"
 	defaultMeshPolicy                 = PERMISSIVE
 	defaultPilotImage                 = defaultImageHub + "/" + "pilot" + ":" + defaultImageVersion
 	defaultCitadelImage               = defaultImageHub + "/" + "citadel" + ":" + defaultImageVersion
 	defaultGalleyImage                = defaultImageHub + "/" + "galley" + ":" + defaultImageVersion
 	defaultMixerImage                 = defaultImageHub + "/" + "mixer" + ":" + defaultImageVersion
-	defaultSidecarInjectorImage       = defaultImageHub + "/" + "sidecar_injector" + ":" + defaultImageVersion
+	defaultSidecarInjectorImage       = banzaiImageHub + "/" + "istio-sidecar-injector" + ":" + banzaiImageVersion
 	defaultNodeAgentImage             = defaultImageHub + "/" + "node-agent-k8s" + ":" + defaultImageVersion
 	defaultSDSImage                   = defaultImageHub + "/" + "node-agent-k8s" + ":" + defaultImageVersion
 	defaultProxyImage                 = defaultImageHub + "/" + "proxyv2" + ":" + defaultImageVersion
@@ -95,18 +97,17 @@ var defaultInitResources = &apiv1.ResourceRequirements{
 	},
 }
 
-var defaultIngressGatewayPorts = []apiv1.ServicePort{
-	{Port: 15020, Protocol: apiv1.ProtocolTCP, TargetPort: intstr.FromInt(15020), Name: "status-port"},
-	{Port: 80, Protocol: apiv1.ProtocolTCP, TargetPort: intstr.FromInt(80), Name: "http2"},
-	{Port: 443, Protocol: apiv1.ProtocolTCP, TargetPort: intstr.FromInt(443), Name: "https"},
-	{Port: 15443, Protocol: apiv1.ProtocolTCP, TargetPort: intstr.FromInt(15443), Name: "tls"},
-	{Port: 31400, Protocol: apiv1.ProtocolTCP, TargetPort: intstr.FromInt(31400), Name: "tcp"},
+var defaultIngressGatewayPorts = []ServicePort{
+	{ServicePort: corev1.ServicePort{Port: 15021, Protocol: apiv1.ProtocolTCP, Name: "status-port"}, TargetPort: 15021},
+	{ServicePort: corev1.ServicePort{Port: 80, Protocol: apiv1.ProtocolTCP, Name: "http2"}, TargetPort: 8080},
+	{ServicePort: corev1.ServicePort{Port: 443, Protocol: apiv1.ProtocolTCP, Name: "https"}, TargetPort: 8443},
+	{ServicePort: corev1.ServicePort{Port: 15443, Protocol: apiv1.ProtocolTCP, Name: "tls"}, TargetPort: 15443},
 }
 
-var defaultEgressGatewayPorts = []apiv1.ServicePort{
-	{Port: 80, Name: "http2", Protocol: apiv1.ProtocolTCP, TargetPort: intstr.FromInt(80)},
-	{Port: 443, Name: "https", Protocol: apiv1.ProtocolTCP, TargetPort: intstr.FromInt(443)},
-	{Port: 15443, Protocol: apiv1.ProtocolTCP, TargetPort: intstr.FromInt(15443), Name: "tls"},
+var defaultEgressGatewayPorts = []ServicePort{
+	{ServicePort: corev1.ServicePort{Port: 80, Protocol: apiv1.ProtocolTCP, Name: "http2"}, TargetPort: 8080},
+	{ServicePort: corev1.ServicePort{Port: 443, Protocol: apiv1.ProtocolTCP, Name: "https"}, TargetPort: 8443},
+	{ServicePort: corev1.ServicePort{Port: 15443, Protocol: apiv1.ProtocolTCP, Name: "tls"}, TargetPort: 15443},
 }
 
 func SetDefaults(config *Istio) {
@@ -182,7 +183,7 @@ func SetDefaults(config *Istio) {
 		config.Spec.Pilot.EnableProtocolSniffingOutbound = util.BoolPointer(true)
 	}
 	if config.Spec.Pilot.EnableProtocolSniffingInbound == nil {
-		config.Spec.Pilot.EnableProtocolSniffingInbound = util.BoolPointer(false)
+		config.Spec.Pilot.EnableProtocolSniffingInbound = util.BoolPointer(true)
 	}
 	if config.Spec.Pilot.CertProvider == "" {
 		config.Spec.Pilot.CertProvider = PilotCertProviderTypeIstiod

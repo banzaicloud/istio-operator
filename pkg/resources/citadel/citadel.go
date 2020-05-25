@@ -102,15 +102,15 @@ func (r *Reconciler) Reconcile(log logr.Logger) error {
 		}
 	}
 
-	if !r.configuration.DeployMeshPolicy {
+	if !r.configuration.DeployMeshWidePolicy {
 		return nil
 	}
 
-	var meshPolicyDesiredState k8sutil.DesiredState
+	var meshWidePolicyDesiredState k8sutil.DesiredState
 	var mTLSDesiredState k8sutil.DesiredState
 	if util.PointerToBool(r.Config.Spec.Istiod.Enabled) || util.PointerToBool(r.Config.Spec.Citadel.Enabled) {
 		if r.Config.Spec.MeshPolicy.MTLSMode == istiov1beta1.STRICT {
-			meshPolicyDesiredState = k8sutil.DesiredStatePresent
+			meshWidePolicyDesiredState = k8sutil.DesiredStatePresent
 
 			if !util.PointerToBool(r.Config.Spec.AutoMTLS) {
 				mTLSDesiredState = k8sutil.DesiredStatePresent
@@ -118,17 +118,20 @@ func (r *Reconciler) Reconcile(log logr.Logger) error {
 				mTLSDesiredState = k8sutil.DesiredStateAbsent
 			}
 		} else {
-			meshPolicyDesiredState = k8sutil.DesiredStatePresent
+			meshWidePolicyDesiredState = k8sutil.DesiredStatePresent
 			mTLSDesiredState = k8sutil.DesiredStateAbsent
 		}
 	} else {
-		meshPolicyDesiredState = k8sutil.DesiredStateAbsent
+		meshWidePolicyDesiredState = k8sutil.DesiredStateAbsent
 		mTLSDesiredState = k8sutil.DesiredStateAbsent
 	}
 	drs := []resources.DynamicResourceWithDesiredState{
-		{DynamicResource: r.meshPolicy, DesiredState: meshPolicyDesiredState},
+		{DynamicResource: r.peerAuthentication, DesiredState: meshWidePolicyDesiredState},
 		{DynamicResource: r.destinationRuleDefaultMtls, DesiredState: mTLSDesiredState},
 		{DynamicResource: r.destinationRuleApiServerMtls, DesiredState: mTLSDesiredState},
+
+		// delete the old MeshPolicy CR
+		{DynamicResource: r.meshPolicy, DesiredState: k8sutil.DesiredStateAbsent},
 	}
 
 	for _, dr := range drs {

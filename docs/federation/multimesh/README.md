@@ -15,7 +15,7 @@ For demonstrative purposes, create 2 clusters, a 2 node [Banzai Cloud PKE](https
 ```bash
 ❯ git clone https://github.com/banzaicloud/istio-operator.git
 ❯ cd istio-operator
-❯ git checkout release-1.5
+❯ git checkout release-1.6
 ```
 
 ## Create the clusters on the Banzai Cloud Pipeline platform

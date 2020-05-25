@@ -21,6 +21,7 @@ import (
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/util/intstr"
 
+	istiov1beta1 "github.com/banzaicloud/istio-operator/pkg/apis/istio/v1beta1"
 	"github.com/banzaicloud/istio-operator/pkg/resources/templates"
 	"github.com/banzaicloud/istio-operator/pkg/util"
 )
@@ -38,11 +39,12 @@ func (r *Reconciler) service() runtime.Object {
 }
 
 func (r *Reconciler) servicePorts(name string) []apiv1.ServicePort {
+	ports := istiov1beta1.ServicePorts(r.gw.Spec.Ports).Convert()
+
 	if name == defaultIngressgatewayName {
-		ports := r.gw.Spec.Ports
 		if util.PointerToBool(r.Config.Spec.MeshExpansion) {
 			ports = append(ports, apiv1.ServicePort{
-				Port: 853, Protocol: apiv1.ProtocolTCP, TargetPort: intstr.FromInt(853), Name: "tcp-dns-tls",
+				Port: 853, Protocol: apiv1.ProtocolTCP, TargetPort: intstr.FromInt(8853), Name: "tcp-dns-tls",
 			})
 
 			if util.PointerToBool(r.Config.Spec.Istiod.Enabled) {
@@ -68,5 +70,6 @@ func (r *Reconciler) servicePorts(name string) []apiv1.ServicePort {
 		}
 		return ports
 	}
-	return r.gw.Spec.Ports
+
+	return ports
 }

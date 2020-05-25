@@ -20,7 +20,7 @@ import (
 	"github.com/pkg/errors"
 	admissionregistrationv1beta1 "k8s.io/api/admissionregistration/v1beta1"
 	appsv1 "k8s.io/api/apps/v1"
-	autoscalingv2beta1 "k8s.io/api/autoscaling/v2beta1"
+	autoscalingv2beta2 "k8s.io/api/autoscaling/v2beta2"
 	corev1 "k8s.io/api/core/v1"
 	rbacv1 "k8s.io/api/rbac/v1"
 	extensionsobj "k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1beta1"
@@ -31,7 +31,7 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/reconcile"
 	"sigs.k8s.io/controller-runtime/pkg/source"
 
-	v1alpha1 "github.com/banzaicloud/istio-client-go/pkg/authentication/v1alpha1"
+	securityv1beta1 "github.com/banzaicloud/istio-client-go/pkg/security/v1beta1"
 	istiov1beta1 "github.com/banzaicloud/istio-operator/pkg/apis/istio/v1beta1"
 	"github.com/banzaicloud/istio-operator/pkg/crds"
 	"github.com/banzaicloud/istio-operator/pkg/k8sutil"
@@ -71,7 +71,7 @@ func (r *ReconcileIstio) initWatches(watchCreatedResourcesEvents bool) error {
 		&corev1.Service{TypeMeta: metav1.TypeMeta{Kind: "Service", APIVersion: corev1.SchemeGroupVersion.String()}},
 		&appsv1.Deployment{TypeMeta: metav1.TypeMeta{Kind: "Deployment", APIVersion: appsv1.SchemeGroupVersion.String()}},
 		&appsv1.DaemonSet{TypeMeta: metav1.TypeMeta{Kind: "DaemonSet", APIVersion: appsv1.SchemeGroupVersion.String()}},
-		&autoscalingv2beta1.HorizontalPodAutoscaler{TypeMeta: metav1.TypeMeta{Kind: "HorizontalPodAutoscaler", APIVersion: autoscalingv2beta1.SchemeGroupVersion.String()}},
+		&autoscalingv2beta2.HorizontalPodAutoscaler{TypeMeta: metav1.TypeMeta{Kind: "HorizontalPodAutoscaler", APIVersion: autoscalingv2beta2.SchemeGroupVersion.String()}},
 		&admissionregistrationv1beta1.MutatingWebhookConfiguration{TypeMeta: metav1.TypeMeta{Kind: "MutatingWebhookConfiguration", APIVersion: admissionregistrationv1beta1.SchemeGroupVersion.String()}},
 		&corev1.Namespace{TypeMeta: metav1.TypeMeta{Kind: "Namespace", APIVersion: corev1.SchemeGroupVersion.String()}},
 		&istiov1beta1.MeshGateway{TypeMeta: metav1.TypeMeta{Kind: "MeshGateway", APIVersion: istiov1beta1.SchemeGroupVersion.String()}},
@@ -214,13 +214,13 @@ func (r *ReconcileIstio) watchCRDs(nn types.NamespacedName) error {
 	return err
 }
 
-func (r *ReconcileIstio) watchMeshPolicy(nn types.NamespacedName) error {
+func (r *ReconcileIstio) watchMeshWidePolicy(nn types.NamespacedName) error {
 	err := r.ctrl.Watch(
 		&source.Kind{
-			Type: &v1alpha1.MeshPolicy{
+			Type: &securityv1beta1.PeerAuthentication{
 				TypeMeta: metav1.TypeMeta{
-					Kind:       "MeshPolicy",
-					APIVersion: v1alpha1.SchemeGroupVersion.String(),
+					Kind:       "PeerAuthentication",
+					APIVersion: securityv1beta1.SchemeGroupVersion.String(),
 				},
 			},
 		},

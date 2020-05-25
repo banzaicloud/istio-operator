@@ -19,17 +19,17 @@ package mixer
 import (
 	"github.com/banzaicloud/istio-operator/pkg/resources/templates"
 	"github.com/banzaicloud/istio-operator/pkg/util"
-	autoscalev2beta1 "k8s.io/api/autoscaling/v2beta1"
+	autoscalev2beta2 "k8s.io/api/autoscaling/v2beta2"
 	"k8s.io/apimachinery/pkg/runtime"
 )
 
 func (r *Reconciler) horizontalPodAutoscaler(t string) runtime.Object {
-	return &autoscalev2beta1.HorizontalPodAutoscaler{
+	return &autoscalev2beta2.HorizontalPodAutoscaler{
 		ObjectMeta: templates.ObjectMeta(hpaName(t), nil, r.Config),
-		Spec: autoscalev2beta1.HorizontalPodAutoscalerSpec{
+		Spec: autoscalev2beta2.HorizontalPodAutoscalerSpec{
 			MaxReplicas: util.PointerToInt32(r.k8sResourceConfig.MaxReplicas),
 			MinReplicas: r.k8sResourceConfig.MinReplicas,
-			ScaleTargetRef: autoscalev2beta1.CrossVersionObjectReference{
+			ScaleTargetRef: autoscalev2beta2.CrossVersionObjectReference{
 				Name:       deploymentName(t),
 				Kind:       "Deployment",
 				APIVersion: "apps/v1",

@@ -7,36 +7,29 @@ metadata:
     controller-tools.k8s.io: "1.0"
   name: istio-sample
 spec:
-  version: "1.5.2"
+  version: "1.6.0"
   meshPolicy:
     mtlsMode: PERMISSIVE
   autoInjectionNamespaces:
   - "default"
   useMCP: false
-  sds:
-    enabled: false
+  istiod:
+    enabled: true
   pilot:
     enabled: true
     sidecar: false
-  citadel:
-    enabled: false
-  galley:
-    enabled: false
   gateways:
     enabled: false
     ingress:
       enabled: false
     egress:
       enabled: false
-    k8singress:
-      enabled: false
   policy:
     enabled: false
   telemetry:
     enabled: false
-  sidecarInjector:
-    enabled: false
-  nodeAgent:
-    enabled: false
   tracing:
     enabled: false
+  proxy:
+    image: "docker.io/istio/proxyv2:1.6.0"
+  jwtPolicy: "first-party-jwt"

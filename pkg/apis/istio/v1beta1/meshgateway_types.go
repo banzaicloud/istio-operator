@@ -32,7 +32,7 @@ const (
 type MeshGatewaySpec struct {
 	MeshGatewayConfiguration `json:",inline"`
 	// +kubebuilder:validation:MinItems=1
-	Ports []corev1.ServicePort `json:"ports"`
+	Ports []ServicePort `json:"ports"`
 	// +kubebuilder:validation:Enum=ingress,egress
 	Type GatewayType `json:"type"`
 }
@@ -49,6 +49,8 @@ type MeshGatewayConfiguration struct {
 	RequestedNetworkView string                  `json:"requestedNetworkView,omitempty"`
 	// If present will be appended to the environment variables of the container
 	AdditionalEnvVars []corev1.EnvVar `json:"additionalEnvVars,omitempty"`
+	// Whether to run the gateway in a privileged container
+	RunAsRoot *bool `json:"runAsRoot,omitempty"`
 }
 
 // MeshGatewayStatus defines the observed state of MeshGateway

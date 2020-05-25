@@ -5,14 +5,14 @@
 operator:
   image:
     repository: banzaicloud/istio-operator
-    tag: 0.5.8
+    tag: 0.6.0
     pullPolicy: IfNotPresent
   resources:
     requests:
       cpu: 200m
       memory: 256Mi
 
-istioVersion: "1.5"
+istioVersion: "1.6"
 
 # If you want the operator to expose the /metrics
 prometheusMetrics:

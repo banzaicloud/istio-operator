@@ -10,16 +10,16 @@
   version = "v0.35.1"
 
 [[projects]]
-  digest = "1:6612bd7776ff595b51d6fc0f627a115587896b30c5685886729d2f9c36d3cacb"
+  digest = "1:f3ac89fc7f9a45a4c944efedb87bde2869cf85e7d243df34374e779e05e39336"
   name = "github.com/banzaicloud/istio-client-go"
   packages = [
-    "pkg/authentication",
-    "pkg/authentication/v1alpha1",
-    "pkg/common/v1alpha1",
+    "pkg/security",
+    "pkg/security/v1beta1",
+    "pkg/type/v1beta1",
   ]
   pruneopts = "T"
-  revision = "91a635b1ee1b542bdac1d33a3da3b0339ec6e7a7"
-  version = "0.0.3"
+  revision = "f42f933aa3906fd2393bc102e6f1499c33d27b19"
+  version = "0.0.8"
 
 [[projects]]
   digest = "1:b68a16f7fdeefda6c1a5370580bea53129ce63305e75ee25d604eeb692916ab9"
@@ -1008,7 +1008,7 @@
   analyzer-name = "dep"
   analyzer-version = 1
   input-imports = [
-    "github.com/banzaicloud/istio-client-go/pkg/authentication/v1alpha1",
+    "github.com/banzaicloud/istio-client-go/pkg/security/v1beta1",
     "github.com/banzaicloud/k8s-objectmatcher/patch",
     "github.com/coreos/go-semver/semver",
     "github.com/emicklei/go-restful",
@@ -1044,7 +1044,6 @@
     "k8s.io/apimachinery/pkg/types",
     "k8s.io/apimachinery/pkg/util/intstr",
     "k8s.io/apimachinery/pkg/util/runtime",
-    "k8s.io/apimachinery/pkg/util/yaml",
     "k8s.io/apimachinery/pkg/watch",
     "k8s.io/client-go/discovery",
     "k8s.io/client-go/discovery/fake",

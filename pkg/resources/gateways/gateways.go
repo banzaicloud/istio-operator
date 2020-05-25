@@ -69,13 +69,8 @@ func (r *Reconciler) Reconcile(log logr.Logger) error {
 		pdbDesiredState = k8sutil.DesiredStatePresent
 	}
 
-	sdsDesiredState := k8sutil.DesiredStateAbsent
-	if util.PointerToBool(r.gw.Spec.SDS.Enabled) || util.PointerToBool(r.Config.Spec.Istiod.Enabled) {
-		sdsDesiredState = k8sutil.DesiredStatePresent
-	}
-
 	hpaDesiredState := k8sutil.DesiredStateAbsent
-	if r.gw.Spec.MinReplicas != nil && r.gw.Spec.MaxReplicas != nil && *r.gw.Spec.MinReplicas > 1 && *r.gw.Spec.MinReplicas != *r.gw.Spec.MaxReplicas {
+	if r.gw.Spec.MinReplicas != nil && r.gw.Spec.MaxReplicas != nil && *r.gw.Spec.MaxReplicas > *r.gw.Spec.MinReplicas {
 		hpaDesiredState = k8sutil.DesiredStatePresent
 	}
 
@@ -87,8 +82,8 @@ func (r *Reconciler) Reconcile(log logr.Logger) error {
 		{Resource: r.service, DesiredState: k8sutil.DesiredStatePresent},
 		{Resource: r.horizontalPodAutoscaler, DesiredState: hpaDesiredState},
 		{Resource: r.podDisruptionBudget, DesiredState: pdbDesiredState},
-		{Resource: r.role, DesiredState: sdsDesiredState},
-		{Resource: r.roleBinding, DesiredState: sdsDesiredState},
+		{Resource: r.role, DesiredState: k8sutil.DesiredStatePresent},
+		{Resource: r.roleBinding, DesiredState: k8sutil.DesiredStatePresent},
 	} {
 		o := res.Resource()
 		err := k8sutil.Reconcile(log, r.Client, o, res.DesiredState)

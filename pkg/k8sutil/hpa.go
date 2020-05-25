@@ -19,14 +19,14 @@ package k8sutil
 import (
 	"context"
 
-	autoscalev2beta1 "k8s.io/api/autoscaling/v2beta1"
+	autoscalev2beta2 "k8s.io/api/autoscaling/v2beta2"
 	"k8s.io/apimachinery/pkg/types"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
 // GetHPAReplicaCountOrDefault get desired replica count from HPA if exists, returns the given default otherwise
 func GetHPAReplicaCountOrDefault(client client.Client, name types.NamespacedName, defaultReplicaCount int32) int32 {
-	var hpa autoscalev2beta1.HorizontalPodAutoscaler
+	var hpa autoscalev2beta2.HorizontalPodAutoscaler
 	err := client.Get(context.Background(), name, &hpa)
 	if err != nil {
 		return defaultReplicaCount
