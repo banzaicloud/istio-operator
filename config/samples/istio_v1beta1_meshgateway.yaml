@@ -13,7 +13,7 @@ spec:
   loadBalancerIP: ""
   serviceAnnotations: {}
   serviceLabels: {}
-  runAsRoot: false
+  runAsRoot: true
   ports:
     - port: 15021
       targetPort: 15021
