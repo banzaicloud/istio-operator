@@ -109,11 +109,16 @@ func (r *Reconciler) Reconcile(log logr.Logger) error {
 		mixerDesiredState = k8sutil.DesiredStateAbsent
 	}
 
+	commonDesiredState := k8sutil.DesiredStatePresent
+	if !util.PointerToBool(r.Config.Spec.Policy.Enabled) && !util.PointerToBool(r.Config.Spec.Telemetry.Enabled) {
+		commonDesiredState = k8sutil.DesiredStateAbsent
+	}
+
 	rs := []resources.ResourceWithDesiredState{
-		{Resource: r.serviceAccount},
-		{Resource: r.clusterRole},
-		{Resource: r.clusterRoleBinding},
-		{Resource: r.configMapEnvoy},
+		{Resource: r.serviceAccount, DesiredState: commonDesiredState},
+		{Resource: r.clusterRole, DesiredState: commonDesiredState},
+		{Resource: r.clusterRoleBinding, DesiredState: commonDesiredState},
+		{Resource: r.configMapEnvoy, DesiredState: commonDesiredState},
 	}
 	rsv := []resources.ResourceVariationWithDesiredState{
 		{ResourceVariation: r.deployment},
@@ -131,10 +136,6 @@ func (r *Reconciler) Reconcile(log logr.Logger) error {
 		}
 	}
 
-	commonDesiredState := k8sutil.DesiredStatePresent
-	if !util.PointerToBool(r.Config.Spec.Policy.Enabled) && !util.PointerToBool(r.Config.Spec.Telemetry.Enabled) {
-		commonDesiredState = k8sutil.DesiredStateAbsent
-	}
 	drs := []resources.DynamicResourceWithDesiredState{
 		{DynamicResource: r.istioProxyAttributeManifest, DesiredState: commonDesiredState},
 		{DynamicResource: r.kubernetesAttributeManifest, DesiredState: commonDesiredState},
