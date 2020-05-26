@@ -17,7 +17,7 @@ What happens is that once the operator discerns that the Custom Resource it's wa
 
 #### Requirements
 
-- Minikube v1.1.1+ or Kubernetes 1.13.0+
+- Minikube v1.1.1+ or Kubernetes 1.15.0+
 - `KUBECONFIG` set to an existing Kubernetes cluster
 
 If you already have Istio 1.4.x installed on your cluster you can skip the next section and can jump right to [Deploy sample BookInfo application](#deploy-sample-bookinfo-application).
@@ -172,15 +172,9 @@ After some time, you should see that new Istio pods are running:
 ```bash
 $ kubectl get pods -n istio-system --watch
 NAME                                      READY     STATUS    RESTARTS   AGE
-istio-citadel-7664c58768-l8zgb            1/1       Running   0          7m
-istio-egressgateway-8588c7c8d-wkpgk       1/1       Running   0          7m
-istio-galley-78b8467b4d-b5dqs             1/1       Running   0          7m
 istio-ingressgateway-5c48b96cb4-lnfsn     1/1       Running   0          7m
 istio-operator-controller-manager-0       2/2       Running   0          16m
-istio-pilot-84588fff4c-4lhq8              2/2       Running   0          7m
-istio-policy-75f84689f5-78dxr             2/2       Running   0          7m
-istio-sidecar-injector-66cd99d8c8-bp4j7   1/1       Running   0          7m
-istio-telemetry-7b667c5fbb-2lfdc          2/2       Running   0          7m
+istiod-84588fff4c-4lhq8                   2/2       Running   0          7m
 ```
 
 The `Istio` Custom Resource is showing `Available` in its status field, and the Istio components are now using `1.5.2` images:
@@ -200,7 +194,6 @@ $ kubectl describe istio -n istio-system istio | grep Image:
     Image:  docker.io/istio/proxyv2:1.5.2
     Image:                          docker.io/istio/sidecar_injector:1.5.2
       Image:                 docker.io/istio/install-cni:1.5.2
-
 ```
 
 At this point, your Istio control plane is upgraded to Istio 1.5.2 and your BookInfo application should still be available at:
