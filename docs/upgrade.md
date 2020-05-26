@@ -27,7 +27,7 @@ If you already have Istio 1.4.x installed on your cluster you can skip the next 
 We install Istio with our operator, so first we need to check out the `release-1.4` branch of our operator (this branch supports Istio versions 1.4.x):
 
 ```bash
-$ git clone git@github.com:banzaicloud/istio-operator.git
+$ git clone https://github.com/banzaicloud/istio-operator.git
 $ git checkout release-1.4
 ```
 
@@ -130,7 +130,7 @@ $ open http://$INGRESS_HOST/productpage
 To install Istio 1.5.2, first we need to check out the `release-1.5` branch of our operator (this branch supports the Istio 1.5.x versions):
 
 ```bash
-$ git clone git@github.com:banzaicloud/istio-operator.git
+$ git clone https://github.com/banzaicloud/istio-operator.git
 $ git checkout release-1.5
 ```
 
@@ -171,16 +171,10 @@ After some time, you should see that new Istio pods are running:
 
 ```bash
 $ kubectl get pods -n istio-system --watch
-NAME                                      READY     STATUS    RESTARTS   AGE
-istio-citadel-7664c58768-l8zgb            1/1       Running   0          7m
-istio-egressgateway-8588c7c8d-wkpgk       1/1       Running   0          7m
-istio-galley-78b8467b4d-b5dqs             1/1       Running   0          7m
-istio-ingressgateway-5c48b96cb4-lnfsn     1/1       Running   0          7m
-istio-operator-controller-manager-0       2/2       Running   0          16m
-istio-pilot-84588fff4c-4lhq8              2/2       Running   0          7m
-istio-policy-75f84689f5-78dxr             2/2       Running   0          7m
-istio-sidecar-injector-66cd99d8c8-bp4j7   1/1       Running   0          7m
-istio-telemetry-7b667c5fbb-2lfdc          2/2       Running   0          7m
+NAME                                    READY   STATUS    RESTARTS   AGE
+istio-ingressgateway-6f5b465849-v4ggt   1/1     Running   0          53m
+istio-operator-controller-manager-0     2/2     Running   0          55m
+istiod-79c677c5c4-rw4zk                 1/1     Running   0          53m
 ```
 
 The `Istio` Custom Resource is showing `Available` in its status field, and the Istio components are now using `1.5.2` images:
@@ -202,6 +196,8 @@ $ kubectl describe istio -n istio-system istio | grep Image:
       Image:                 docker.io/istio/install-cni:1.5.2
 
 ```
+
+In the end you have an istiod pod instead of the four components(Citadel、Galley、Pilot and the Sidecar Injector). Please see this [istiod](https://banzaicloud.com/blog/istio-operator-1.5/) 、[Mixerless telemetry or Telemetry V2](https://banzaicloud.com/blog/istio-mixerless-telemetry/) and [istio-multiple-gateways](https://banzaicloud.com/blog/istio-multiple-gateways/) if you are interested in this.
 
 At this point, your Istio control plane is upgraded to Istio 1.5.2 and your BookInfo application should still be available at:
 ```bash
