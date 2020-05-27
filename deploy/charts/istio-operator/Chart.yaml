@@ -1,8 +1,8 @@
 apiVersion: v1
 name: istio-operator
-version: 0.0.49
+version: 0.0.50
 description: istio-operator manages Istio deployments on Kubernetes
 sources:
   - https://github.com/banzaicloud/istio-operator
-appVersion: 0.6.0
+appVersion: 0.6.1
 icon: https://istio.io/img/istio-logo-social-blue-background.svg

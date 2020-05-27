@@ -17,7 +17,7 @@ What happens is that once the operator discerns that the Custom Resource it's wa
 
 #### Requirements
 
-- Minikube v1.1.1+ or Kubernetes 1.13.0+
+- Minikube v1.1.1+ or Kubernetes 1.15.0+
 - `KUBECONFIG` set to an existing Kubernetes cluster
 
 If you already have Istio 1.5.x installed on your cluster you can skip the next section and can jump right to [Deploy sample BookInfo application](#deploy-sample-bookinfo-application).
@@ -48,10 +48,10 @@ Alternatively, if you just can't let go of Helm completely, you can deploy the o
 
 ```bash
 $ helm repo add banzaicloud-stable https://kubernetes-charts.banzaicloud.com
-$ helm install --name=istio-operator --namespace=istio-system --set-string operator.image.tag=0.6.0 banzaicloud-stable/istio-operator
+$ helm install --name=istio-operator --namespace=istio-system --set-string operator.image.tag=0.5.8 banzaicloud-stable/istio-operator
 ```
 
-*Note: As of now, the `0.6.0` tag is the latest version of our operator to support Istio versions 1.5.x
+*Note: As of now, the `0.5.8` tag is the latest version of our operator to support Istio versions 1.5.x
 
 **Apply the Custom Resource**
 
@@ -68,15 +68,9 @@ After some time, you should see that the Istio pods are running:
 ```bash
 $ kubectl get pods -n istio-system --watch
 NAME                                      READY     STATUS    RESTARTS   AGE
-istio-citadel-5b69bd4749-h24xk            1/1       Running   0          1m
-istio-egressgateway-bb8b48cf8-w65hm       1/1       Running   0          1m
-istio-galley-5ddd798686-jpdlm             1/1       Running   0          1m
 istio-ingressgateway-678ff4cc87-gkdzt     1/1       Running   0          1m
 istio-operator-controller-manager-0       2/2       Running   0          9m
-istio-pilot-fc664fcbd-kgl2k               2/2       Running   0          1m
-istio-policy-5cf55ff648-xfhf7             2/2       Running   0          1m
-istio-sidecar-injector-596f8dddbb-gvzk9   1/1       Running   0          1m
-istio-telemetry-7cbf75c5cf-wk4v8          2/2       Running   0          1m
+istiod-fc664fcbd-kgl2k                    2/2       Running   0          1m
 ```
 
 The `Istio` Custom Resource is showing `Available` in its status field and the Istio components are using `1.5.2` images :
@@ -147,10 +141,10 @@ Alternatively, you can deploy the operator using a [Helm chart](https://github.c
 
 ```bash
 $ helm repo add banzaicloud-stable https://kubernetes-charts.banzaicloud.com
-$ helm upgrade istio-operator --install --namespace=istio-system --set-string operator.image.tag=0.6.0 banzaicloud-stable/istio-operator
+$ helm upgrade istio-operator --install --namespace=istio-system --set-string operator.image.tag=0.6.1 banzaicloud-stable/istio-operator
 ```
 
-*Note: As of now, the `0.6.0` tag is the latest version of our operator to support Istio versions 1.6.x*
+*Note: As of now, the `0.6.1` tag is the latest version of our operator to support Istio versions 1.6.x*
 
 **Use the new Custom Resource**
 
@@ -167,15 +161,9 @@ After some time, you should see that new Istio pods are running:
 ```bash
 $ kubectl get pods -n istio-system --watch
 NAME                                      READY     STATUS    RESTARTS   AGE
-istio-citadel-7664c58768-l8zgb            1/1       Running   0          7m
-istio-egressgateway-8588c7c8d-wkpgk       1/1       Running   0          7m
-istio-galley-78b8467b4d-b5dqs             1/1       Running   0          7m
 istio-ingressgateway-5c48b96cb4-lnfsn     1/1       Running   0          7m
 istio-operator-controller-manager-0       2/2       Running   0          16m
-istio-pilot-84588fff4c-4lhq8              2/2       Running   0          7m
-istio-policy-75f84689f5-78dxr             2/2       Running   0          7m
-istio-sidecar-injector-66cd99d8c8-bp4j7   1/1       Running   0          7m
-istio-telemetry-7b667c5fbb-2lfdc          2/2       Running   0          7m
+istiod-84588fff4c-4lhq8                   2/2       Running   0          7m
 ```
 
 The `Istio` Custom Resource is showing `Available` in its status field, and the Istio components are now using `1.6.0` images:
@@ -195,7 +183,6 @@ $ kubectl describe istio -n istio-system istio | grep Image:
     Image:  docker.io/istio/proxyv2:1.6.0
     Image:                          docker.io/istio/sidecar_injector:1.6.0
       Image:                 docker.io/istio/install-cni:1.6.0
-
 ```
 
 At this point, your Istio control plane is upgraded to Istio 1.6.0 and your BookInfo application should still be available at:
