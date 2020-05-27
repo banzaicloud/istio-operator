@@ -4,10 +4,10 @@ The steps are listed in this doc to perform an Istio version upgrade with the op
 
 ## Istio Control Plane Upgrade
 
-Let us suppose that we have a [Kubernetes](https://kubernetes.io/) cluster with Istio 1.4.8, and we would like to upgrade our Istio components to Istio version 1.5.2. Here are the steps we need to perform to accomplish this with the operator:
+Let us suppose that we have a [Kubernetes](https://kubernetes.io/) cluster with Istio 1.4.8, and we would like to upgrade our Istio components to Istio version 1.5.4. Here are the steps we need to perform to accomplish this with the operator:
 
 1. Deploy a version of the operator which supports Istio 1.5.x
-2. Apply a [Custom Resource](https://kubernetes.io/docs/concepts/extend-kubernetes/api-extension/custom-resources/) using Istio 1.5.2 components
+2. Apply a [Custom Resource](https://kubernetes.io/docs/concepts/extend-kubernetes/api-extension/custom-resources/) using Istio 1.5.4 components
 
 What happens is that once the operator discerns that the Custom Resource it's watching has changed, it reconciles all Istio-related components in order to perform a control plane upgrade.
 
@@ -17,7 +17,7 @@ What happens is that once the operator discerns that the Custom Resource it's wa
 
 #### Requirements
 
-- Minikube v1.1.1+ or Kubernetes 1.13.0+
+- Minikube v1.1.1+ or Kubernetes 1.15.0+
 - `KUBECONFIG` set to an existing Kubernetes cluster
 
 If you already have Istio 1.4.x installed on your cluster you can skip the next section and can jump right to [Deploy sample BookInfo application](#deploy-sample-bookinfo-application).
@@ -125,9 +125,9 @@ $ INGRESS_HOST=$(kubectl -n istio-system get service istio-ingressgateway -o jso
 $ open http://$INGRESS_HOST/productpage
 ```
 
-#### Install Istio 1.5.2
+#### Install Istio 1.5.4
 
-To install Istio 1.5.2, first we need to check out the `release-1.5` branch of our operator (this branch supports the Istio 1.5.x versions):
+To install Istio 1.5.4, first we need to check out the `release-1.5` branch of our operator (this branch supports the Istio 1.5.x versions):
 
 ```bash
 $ git clone git@github.com:banzaicloud/istio-operator.git
@@ -152,16 +152,16 @@ Alternatively, you can deploy the operator using a [Helm chart](https://github.c
 
 ```bash
 $ helm repo add banzaicloud-stable https://kubernetes-charts.banzaicloud.com
-$ helm upgrade istio-operator --install --namespace=istio-system --set-string operator.image.tag=0.5.8 banzaicloud-stable/istio-operator
+$ helm upgrade istio-operator --install --namespace=istio-system --set-string operator.image.tag=0.5.9 banzaicloud-stable/istio-operator
 ```
 
-*Note: As of now, the `0.5.8` tag is the latest version of our operator to support Istio versions 1.5.x*
+*Note: As of now, the `0.5.9` tag is the latest version of our operator to support Istio versions 1.5.x*
 
 **Use the new Custom Resource**
 
 > If you've installed Istio 1.4.8 or earlier with the Istio operator, and if you check the logs of the operator pod at this point, you will see the following error message: `intended Istio version is unsupported by this version of the operator`. We need to update the Istio Custom Resource with Istio 1.5's components for the operator to be reconciled with the Istio control plane.
 
-To deploy Istio 1.5.2 with its default configuration options, use the following command:
+To deploy Istio 1.5.4 with its default configuration options, use the following command:
 
 ```bash
 $ kubectl replace -n istio-system -f config/samples/istio_v1beta1_istio.yaml
@@ -172,38 +172,33 @@ After some time, you should see that new Istio pods are running:
 ```bash
 $ kubectl get pods -n istio-system --watch
 NAME                                      READY     STATUS    RESTARTS   AGE
-istio-citadel-7664c58768-l8zgb            1/1       Running   0          7m
-istio-egressgateway-8588c7c8d-wkpgk       1/1       Running   0          7m
-istio-galley-78b8467b4d-b5dqs             1/1       Running   0          7m
 istio-ingressgateway-5c48b96cb4-lnfsn     1/1       Running   0          7m
 istio-operator-controller-manager-0       2/2       Running   0          16m
-istio-pilot-84588fff4c-4lhq8              2/2       Running   0          7m
-istio-policy-75f84689f5-78dxr             2/2       Running   0          7m
-istio-sidecar-injector-66cd99d8c8-bp4j7   1/1       Running   0          7m
-istio-telemetry-7b667c5fbb-2lfdc          2/2       Running   0          7m
+istiod-84588fff4c-4lhq8                   2/2       Running   0          7m
 ```
 
-The `Istio` Custom Resource is showing `Available` in its status field, and the Istio components are now using `1.5.2` images:
+Please note that you'll have an istiod pod running instead of the four legacy Istio control plane components (Citadel, Galley, Pilot and the Sidecar Injector), because that's the default option starting from Istio 1.5.
+
+The `Istio` Custom Resource is showing `Available` in its status field, and the Istio components are now using `1.5.4` images:
 
 ```bash
 $ kubectl describe istio -n istio-system istio | grep Image:
-    Image:                         docker.io/istio/citadel:1.5.2
-    Image:          docker.io/istio/galley:1.5.2
-    Image:    docker.io/istio/node-agent-k8s:1.5.2
-        Image:    docker.io/istio/node-agent-k8s:1.5.2
+    Image:                         docker.io/istio/citadel:1.5.4
+    Image:          docker.io/istio/galley:1.5.4
+    Image:    docker.io/istio/node-agent-k8s:1.5.4
+        Image:    docker.io/istio/node-agent-k8s:1.5.4
     Image:          coredns/coredns:1.6.2
     Plugin Image:   docker.io/istio/coredns-plugin:0.2-istio-1.1
-    Image:          docker.io/istio/mixer:1.5.2
-    Image:    docker.io/istio/node-agent-k8s:1.5.2
-    Image:          docker.io/istio/pilot:1.5.2
-    Image:             docker.io/istio/proxyv2:1.5.2
-    Image:  docker.io/istio/proxyv2:1.5.2
-    Image:                          docker.io/istio/sidecar_injector:1.5.2
-      Image:                 docker.io/istio/install-cni:1.5.2
-
+    Image:          docker.io/istio/mixer:1.5.4
+    Image:    docker.io/istio/node-agent-k8s:1.5.4
+    Image:          docker.io/istio/pilot:1.5.4
+    Image:             docker.io/istio/proxyv2:1.5.4
+    Image:  docker.io/istio/proxyv2:1.5.4
+    Image:                          docker.io/istio/sidecar_injector:1.5.4
+      Image:                 docker.io/istio/install-cni:1.5.4
 ```
 
-At this point, your Istio control plane is upgraded to Istio 1.5.2 and your BookInfo application should still be available at:
+At this point, your Istio control plane is upgraded to Istio 1.5.4 and your BookInfo application should still be available at:
 ```bash
 $ open http://$INGRESS_HOST/productpage
 ```

@@ -156,7 +156,7 @@ const (
                 local:
                   %[1]s
               runtime: %[2]s
-              vm_id: stats_inbound
+              vm_id: tcp_stats_inbound
 - applyTo: NETWORK_FILTER
   match:
     context: SIDECAR_OUTBOUND
@@ -186,7 +186,7 @@ const (
                 local:
                   %[1]s
               runtime: %[2]s
-              vm_id: stats_outbound
+              vm_id: tcp_stats_outbound
 - applyTo: NETWORK_FILTER
   match:
     context: GATEWAY
@@ -216,7 +216,7 @@ const (
                 local:
                   %[1]s
               runtime: %[2]s
-              vm_id: stats_outbound
+              vm_id: tcp_stats_outbound
 `
 	statsWasmLocal   = "filename: /etc/istio/extensions/stats-filter.wasm"
 	statsNoWasmLocal = "inline_string: envoy.wasm.stats"

@@ -18,6 +18,7 @@ package meshgateway
 
 import (
 	"context"
+	"fmt"
 	"time"
 
 	"github.com/go-logr/logr"
@@ -153,7 +154,7 @@ func (r *ReconcileMeshGateway) Reconcile(request reconcile.Request) (reconcile.R
 	if err == nil {
 		instance.Status.GatewayAddress, err = reconciler.GetGatewayAddress()
 		if err != nil {
-			log.Error(err, "gateway address pending")
+			log.Info(fmt.Sprintf("gateway address pending: %s", err.Error()))
 			return reconcile.Result{
 				RequeueAfter: time.Second * 30,
 			}, nil

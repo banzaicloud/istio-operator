@@ -75,7 +75,7 @@ func (r *Reconciler) Reconcile(log logr.Logger) error {
 	}
 
 	hpaDesiredState := k8sutil.DesiredStateAbsent
-	if r.gw.Spec.MinReplicas != nil && r.gw.Spec.MaxReplicas != nil && *r.gw.Spec.MinReplicas > 1 && *r.gw.Spec.MinReplicas != *r.gw.Spec.MaxReplicas {
+	if r.gw.Spec.MinReplicas != nil && r.gw.Spec.MaxReplicas != nil && *r.gw.Spec.MaxReplicas > *r.gw.Spec.MinReplicas {
 		hpaDesiredState = k8sutil.DesiredStatePresent
 	}
 
