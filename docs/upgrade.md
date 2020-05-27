@@ -177,6 +177,8 @@ istio-operator-controller-manager-0       2/2       Running   0          16m
 istiod-84588fff4c-4lhq8                   2/2       Running   0          7m
 ```
 
+Please note that you'll have an istiod pod running instead of the four legacy Istio control plane components (Citadel, Galley, Pilot and the Sidecar Injector), because that's the default option starting from Istio 1.5.
+
 The `Istio` Custom Resource is showing `Available` in its status field, and the Istio components are now using `1.5.4` images:
 
 ```bash
