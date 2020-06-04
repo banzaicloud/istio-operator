@@ -112,7 +112,7 @@ spec:
                 required:
                 - port
                 type: object
-              minItems: 1
+              minItems: 0
               type: array
             replicaCount:
               format: int32

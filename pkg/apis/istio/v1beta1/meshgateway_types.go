@@ -31,7 +31,7 @@ const (
 // MeshGatewaySpec defines the desired state of MeshGateway
 type MeshGatewaySpec struct {
 	MeshGatewayConfiguration `json:",inline"`
-	// +kubebuilder:validation:MinItems=1
+	// +kubebuilder:validation:MinItems=0
 	Ports []ServicePort `json:"ports"`
 	// +kubebuilder:validation:Enum=ingress,egress
 	Type GatewayType `json:"type"`

@@ -17,9 +17,12 @@ limitations under the License.
 package gateways
 
 import (
+	"strings"
+
 	apiv1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/util/intstr"
+	"k8s.io/apimachinery/pkg/util/sets"
 
 	istiov1beta1 "github.com/banzaicloud/istio-operator/pkg/apis/istio/v1beta1"
 	"github.com/banzaicloud/istio-operator/pkg/resources/templates"
@@ -71,5 +74,53 @@ func (r *Reconciler) servicePorts(name string) []apiv1.ServicePort {
 		return ports
 	}
 
+	ports = ensureHealthProbePort(ports)
+
 	return ports
+}
+
+const healthProbePort = 15021
+
+func ensureHealthProbePort(ports []apiv1.ServicePort) []apiv1.ServicePort {
+	healthProbeTargetPort := intstr.FromInt(healthProbePort)
+
+	protocols := sets.NewString()
+	portName := "status-port"
+	portNameTaken := false
+	portNumber := int32(healthProbePort)
+	portNumberTaken := false
+	for _, port := range ports {
+		if port.Protocol == apiv1.ProtocolTCP && port.Port == healthProbePort && port.TargetPort == healthProbeTargetPort {
+			// health probe port is included with proper protocol and target port. Nothing to do
+			return ports
+		}
+
+		protocols.Insert(string(port.Protocol))
+		if strings.ToLower(port.Name) == strings.ToLower(portName) {
+			portNameTaken = true
+		}
+		if port.Protocol == apiv1.ProtocolTCP && port.Port == portNumber {
+			portNumberTaken = true
+		}
+	}
+
+	if protocols.Len() > 1 || (protocols.Len() == 1 && !protocols.Has(string(apiv1.ProtocolTCP))) {
+		// mixed protocol types are not supported for LoadBalancer type services until
+		// https://github.com/kubernetes/enhancements/pull/1438 is implemented. Health probe port cannot be included.
+		// TODO check if type is LoadBalancer
+		return ports
+	}
+
+	if portNameTaken || portNumberTaken {
+		// random port name and number could be generated, but the reconciliation does not play nice in that case
+		// (it's reconciling indefinitely), so let's just leave out the status port for now
+		return ports
+	}
+
+	return append(ports, apiv1.ServicePort{
+		Name:       portName,
+		Protocol:   apiv1.ProtocolTCP,
+		Port:       portNumber,
+		TargetPort: healthProbeTargetPort,
+	})
 }
