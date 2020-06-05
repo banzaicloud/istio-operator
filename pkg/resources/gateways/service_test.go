@@ -58,6 +58,12 @@ func TestEnsureHealthProbePort_HappyPath(t *testing.T) {
 
 	expectedPorts := []apiv1.ServicePort{
 		{
+			Name:       "status-port",
+			Protocol:   "TCP",
+			Port:       healthProbePort,
+			TargetPort: intstr.FromInt(healthProbePort),
+		},
+		{
 			Name:       "http",
 			Protocol:   "TCP",
 			Port:       80,
@@ -68,12 +74,6 @@ func TestEnsureHealthProbePort_HappyPath(t *testing.T) {
 			Protocol:   "TCP",
 			Port:       443,
 			TargetPort: intstr.FromInt(4430),
-		},
-		{
-			Name:       "status-port",
-			Protocol:   "TCP",
-			Port:       healthProbePort,
-			TargetPort: intstr.FromInt(healthProbePort),
 		},
 	}
 	require.Equal(t, expectedPorts, ports)
@@ -127,15 +127,15 @@ func TestEnsureHealthProbePort_PortMismatch(t *testing.T) {
 
 	expectedPorts := []apiv1.ServicePort{
 		{
-			Name:       "foo",
-			Protocol:   "TCP",
-			Port:       1234,
-			TargetPort: intstr.FromInt(healthProbePort),
-		},
-		{
 			Name:       "status-port",
 			Protocol:   "TCP",
 			Port:       healthProbePort,
+			TargetPort: intstr.FromInt(healthProbePort),
+		},
+		{
+			Name:       "foo",
+			Protocol:   "TCP",
+			Port:       1234,
 			TargetPort: intstr.FromInt(healthProbePort),
 		},
 	}

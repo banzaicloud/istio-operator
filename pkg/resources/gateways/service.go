@@ -117,10 +117,11 @@ func ensureHealthProbePort(ports []apiv1.ServicePort) []apiv1.ServicePort {
 		return ports
 	}
 
-	return append(ports, apiv1.ServicePort{
+	// status port should come first because of load balancer health checks
+	return append([]apiv1.ServicePort{{
 		Name:       portName,
 		Protocol:   apiv1.ProtocolTCP,
 		Port:       portNumber,
 		TargetPort: healthProbeTargetPort,
-	})
+	}}, ports...)
 }
