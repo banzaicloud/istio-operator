@@ -28,7 +28,7 @@ import (
 
 func (r *Reconciler) webhook() runtime.Object {
 	fail := admissionv1beta1.Fail
-	unknownSideEffects := admissionv1beta1.SideEffectClassUnknown
+	noneSideEffects := admissionv1beta1.SideEffectClassNone
 	service := serviceName
 	if !util.PointerToBool(r.Config.Spec.SidecarInjector.Enabled) && util.PointerToBool(r.Config.Spec.Istiod.Enabled) {
 		service = istiod.ServiceNameIstiod
@@ -64,7 +64,7 @@ func (r *Reconciler) webhook() runtime.Object {
 						"istio-injection": "enabled",
 					},
 				},
-				SideEffects: &unknownSideEffects,
+				SideEffects: &noneSideEffects,
 			},
 		},
 	}
