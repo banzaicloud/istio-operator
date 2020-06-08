@@ -26,9 +26,9 @@ import (
 	istiov1beta1 "github.com/banzaicloud/istio-operator/pkg/apis/istio/v1beta1"
 )
 
-func TestEnsureHealthProbePort_Empty(t *testing.T) {
+func TestEnsureStatusPort_Empty(t *testing.T) {
 	var ports []apiv1.ServicePort
-	ports = ensureHealthProbePort(ports)
+	ports = ensureStatusPort(ports)
 
 	expectedPorts := []apiv1.ServicePort{
 		{
@@ -41,7 +41,7 @@ func TestEnsureHealthProbePort_Empty(t *testing.T) {
 	require.Equal(t, expectedPorts, ports)
 }
 
-func TestEnsureHealthProbePort_HappyPath(t *testing.T) {
+func TestEnsureStatusPort_HappyPath(t *testing.T) {
 	ports := []apiv1.ServicePort{
 		{
 			Name:       "http",
@@ -56,7 +56,7 @@ func TestEnsureHealthProbePort_HappyPath(t *testing.T) {
 			TargetPort: intstr.FromInt(4430),
 		},
 	}
-	ports = ensureHealthProbePort(ports)
+	ports = ensureStatusPort(ports)
 
 	expectedPorts := []apiv1.ServicePort{
 		{
@@ -81,8 +81,8 @@ func TestEnsureHealthProbePort_HappyPath(t *testing.T) {
 	require.Equal(t, expectedPorts, ports)
 }
 
-func TestEnsureHealthProbePort_MixedProtocol(t *testing.T) {
-	// when service type is LoadBalancer, protocols cannot be mixed. See ensureHealthProbePort() for more info
+func TestEnsureStatusPort_MixedProtocol(t *testing.T) {
+	// when service type is LoadBalancer, protocols cannot be mixed. See ensureStatusPort() for more info
 	ports := []apiv1.ServicePort{
 		{
 			Name:       "udp",
@@ -97,7 +97,7 @@ func TestEnsureHealthProbePort_MixedProtocol(t *testing.T) {
 			TargetPort: intstr.FromInt(istiov1beta1.PortStatusPortNumber),
 		},
 	}
-	ports = ensureHealthProbePort(ports)
+	ports = ensureStatusPort(ports)
 
 	expectedPorts := []apiv1.ServicePort{
 		{
@@ -116,7 +116,7 @@ func TestEnsureHealthProbePort_MixedProtocol(t *testing.T) {
 	require.Equal(t, expectedPorts, ports)
 }
 
-func TestEnsureHealthProbePort_PortMismatch(t *testing.T) {
+func TestEnsureStatusPort_PortMismatch(t *testing.T) {
 	ports := []apiv1.ServicePort{
 		{
 			Name:       "foo",
@@ -125,7 +125,7 @@ func TestEnsureHealthProbePort_PortMismatch(t *testing.T) {
 			TargetPort: intstr.FromInt(istiov1beta1.PortStatusPortNumber),
 		},
 	}
-	ports = ensureHealthProbePort(ports)
+	ports = ensureStatusPort(ports)
 
 	expectedPorts := []apiv1.ServicePort{
 		{
@@ -144,7 +144,7 @@ func TestEnsureHealthProbePort_PortMismatch(t *testing.T) {
 	require.Equal(t, expectedPorts, ports)
 }
 
-func TestEnsureHealthProbePort_TargetPortMismatch(t *testing.T) {
+func TestEnsureStatusPort_TargetPortMismatch(t *testing.T) {
 	originalPorts := []apiv1.ServicePort{
 		{
 			Name:       "foo",
@@ -153,7 +153,7 @@ func TestEnsureHealthProbePort_TargetPortMismatch(t *testing.T) {
 			TargetPort: intstr.FromInt(1234),
 		},
 	}
-	ports := ensureHealthProbePort(append([]apiv1.ServicePort{}, originalPorts...))
+	ports := ensureStatusPort(append([]apiv1.ServicePort{}, originalPorts...))
 
 	expectedPorts := []apiv1.ServicePort{
 		{
@@ -166,7 +166,7 @@ func TestEnsureHealthProbePort_TargetPortMismatch(t *testing.T) {
 	require.Equal(t, expectedPorts, ports)
 }
 
-func TestEnsureHealthProbePort_PortNameTaken(t *testing.T) {
+func TestEnsureStatusPort_PortNameTaken(t *testing.T) {
 	originalPorts := []apiv1.ServicePort{
 		{
 			Name:       "sTaTuS-pOrT",
@@ -175,7 +175,7 @@ func TestEnsureHealthProbePort_PortNameTaken(t *testing.T) {
 			TargetPort: intstr.FromInt(8080),
 		},
 	}
-	ports := ensureHealthProbePort(append([]apiv1.ServicePort{}, originalPorts...))
+	ports := ensureStatusPort(append([]apiv1.ServicePort{}, originalPorts...))
 
 	expectedPorts := []apiv1.ServicePort{
 		{
@@ -188,7 +188,7 @@ func TestEnsureHealthProbePort_PortNameTaken(t *testing.T) {
 	require.Equal(t, expectedPorts, ports)
 }
 
-func TestEnsureHealthProbePort_PortNameAndTargetPort(t *testing.T) {
+func TestEnsureStatusPort_PortNameAndTargetPort(t *testing.T) {
 	originalPorts := []apiv1.ServicePort{
 		{
 			Name:       "sTaTuS-pOrT",
@@ -203,7 +203,7 @@ func TestEnsureHealthProbePort_PortNameAndTargetPort(t *testing.T) {
 			TargetPort: intstr.FromInt(1234),
 		},
 	}
-	ports := ensureHealthProbePort(append([]apiv1.ServicePort{}, originalPorts...))
+	ports := ensureStatusPort(append([]apiv1.ServicePort{}, originalPorts...))
 
 	expectedPorts := []apiv1.ServicePort{
 		{

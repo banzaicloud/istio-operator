@@ -74,13 +74,13 @@ func (r *Reconciler) servicePorts(name string) []apiv1.ServicePort {
 		return ports
 	}
 
-	ports = ensureHealthProbePort(ports)
+	ports = ensureStatusPort(ports)
 
 	return ports
 }
 
-func ensureHealthProbePort(ports []apiv1.ServicePort) []apiv1.ServicePort {
-	healthProbeTargetPort := intstr.FromInt(istiov1beta1.PortStatusPortNumber)
+func ensureStatusPort(ports []apiv1.ServicePort) []apiv1.ServicePort {
+	targetPort := intstr.FromInt(istiov1beta1.PortStatusPortNumber)
 
 	protocols := sets.NewString()
 	portName := istiov1beta1.PortStatusPortName
@@ -88,7 +88,7 @@ func ensureHealthProbePort(ports []apiv1.ServicePort) []apiv1.ServicePort {
 	portNumber := int32(istiov1beta1.PortStatusPortNumber)
 	portNumberTaken := false
 	for _, port := range ports {
-		if port.Protocol == apiv1.ProtocolTCP && port.Port == portNumber && port.TargetPort == healthProbeTargetPort {
+		if port.Protocol == apiv1.ProtocolTCP && port.Port == portNumber && port.TargetPort == targetPort {
 			// health probe port is included with proper protocol and target port. Nothing to do
 			return ports
 		}
@@ -120,6 +120,6 @@ func ensureHealthProbePort(ports []apiv1.ServicePort) []apiv1.ServicePort {
 		Name:       portName,
 		Protocol:   apiv1.ProtocolTCP,
 		Port:       portNumber,
-		TargetPort: healthProbeTargetPort,
+		TargetPort: targetPort,
 	}}, ports...)
 }
