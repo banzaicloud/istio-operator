@@ -72,7 +72,7 @@ func (r *Reconciler) deployment() runtime.Object {
 			Handler: apiv1.Handler{
 				HTTPGet: &apiv1.HTTPGetAction{
 					Path:   "/healthz/ready",
-					Port:   intstr.FromInt(15021),
+					Port:   intstr.FromInt(istiov1beta1.PortStatusPortNumber),
 					Scheme: apiv1.URISchemeHTTP,
 				},
 			},

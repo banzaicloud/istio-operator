@@ -97,8 +97,11 @@ var defaultInitResources = &apiv1.ResourceRequirements{
 	},
 }
 
+const PortStatusPortNumber = 15021
+const PortStatusPortName = "status-port"
+
 var defaultIngressGatewayPorts = []ServicePort{
-	{ServicePort: corev1.ServicePort{Port: 15021, Protocol: apiv1.ProtocolTCP, Name: "status-port"}, TargetPort: 15021},
+	{ServicePort: corev1.ServicePort{Port: PortStatusPortNumber, Protocol: apiv1.ProtocolTCP, Name: PortStatusPortName}, TargetPort: PortStatusPortNumber},
 	{ServicePort: corev1.ServicePort{Port: 80, Protocol: apiv1.ProtocolTCP, Name: "http2"}, TargetPort: 8080},
 	{ServicePort: corev1.ServicePort{Port: 443, Protocol: apiv1.ProtocolTCP, Name: "https"}, TargetPort: 8443},
 	{ServicePort: corev1.ServicePort{Port: 15443, Protocol: apiv1.ProtocolTCP, Name: "tls"}, TargetPort: 15443},

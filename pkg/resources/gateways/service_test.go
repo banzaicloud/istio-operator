@@ -22,6 +22,8 @@ import (
 	"github.com/stretchr/testify/require"
 	apiv1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/util/intstr"
+
+	istiov1beta1 "github.com/banzaicloud/istio-operator/pkg/apis/istio/v1beta1"
 )
 
 func TestEnsureHealthProbePort_Empty(t *testing.T) {
@@ -30,10 +32,10 @@ func TestEnsureHealthProbePort_Empty(t *testing.T) {
 
 	expectedPorts := []apiv1.ServicePort{
 		{
-			Name:       "status-port",
+			Name:       istiov1beta1.PortStatusPortName,
 			Protocol:   "TCP",
-			Port:       healthProbePort,
-			TargetPort: intstr.FromInt(healthProbePort),
+			Port:       istiov1beta1.PortStatusPortNumber,
+			TargetPort: intstr.FromInt(istiov1beta1.PortStatusPortNumber),
 		},
 	}
 	require.Equal(t, expectedPorts, ports)
@@ -58,10 +60,10 @@ func TestEnsureHealthProbePort_HappyPath(t *testing.T) {
 
 	expectedPorts := []apiv1.ServicePort{
 		{
-			Name:       "status-port",
+			Name:       istiov1beta1.PortStatusPortName,
 			Protocol:   "TCP",
-			Port:       healthProbePort,
-			TargetPort: intstr.FromInt(healthProbePort),
+			Port:       istiov1beta1.PortStatusPortNumber,
+			TargetPort: intstr.FromInt(istiov1beta1.PortStatusPortNumber),
 		},
 		{
 			Name:       "http",
@@ -85,14 +87,14 @@ func TestEnsureHealthProbePort_MixedProtocol(t *testing.T) {
 		{
 			Name:       "udp",
 			Protocol:   "UDP",
-			Port:       healthProbePort,
-			TargetPort: intstr.FromInt(healthProbePort),
+			Port:       istiov1beta1.PortStatusPortNumber,
+			TargetPort: intstr.FromInt(istiov1beta1.PortStatusPortNumber),
 		},
 		{
 			Name:       "sctp",
 			Protocol:   "SCTP",
-			Port:       healthProbePort,
-			TargetPort: intstr.FromInt(healthProbePort),
+			Port:       istiov1beta1.PortStatusPortNumber,
+			TargetPort: intstr.FromInt(istiov1beta1.PortStatusPortNumber),
 		},
 	}
 	ports = ensureHealthProbePort(ports)
@@ -101,14 +103,14 @@ func TestEnsureHealthProbePort_MixedProtocol(t *testing.T) {
 		{
 			Name:       "udp",
 			Protocol:   "UDP",
-			Port:       healthProbePort,
-			TargetPort: intstr.FromInt(healthProbePort),
+			Port:       istiov1beta1.PortStatusPortNumber,
+			TargetPort: intstr.FromInt(istiov1beta1.PortStatusPortNumber),
 		},
 		{
 			Name:       "sctp",
 			Protocol:   "SCTP",
-			Port:       healthProbePort,
-			TargetPort: intstr.FromInt(healthProbePort),
+			Port:       istiov1beta1.PortStatusPortNumber,
+			TargetPort: intstr.FromInt(istiov1beta1.PortStatusPortNumber),
 		},
 	}
 	require.Equal(t, expectedPorts, ports)
@@ -120,23 +122,23 @@ func TestEnsureHealthProbePort_PortMismatch(t *testing.T) {
 			Name:       "foo",
 			Protocol:   "TCP",
 			Port:       1234,
-			TargetPort: intstr.FromInt(healthProbePort),
+			TargetPort: intstr.FromInt(istiov1beta1.PortStatusPortNumber),
 		},
 	}
 	ports = ensureHealthProbePort(ports)
 
 	expectedPorts := []apiv1.ServicePort{
 		{
-			Name:       "status-port",
+			Name:       istiov1beta1.PortStatusPortName,
 			Protocol:   "TCP",
-			Port:       healthProbePort,
-			TargetPort: intstr.FromInt(healthProbePort),
+			Port:       istiov1beta1.PortStatusPortNumber,
+			TargetPort: intstr.FromInt(istiov1beta1.PortStatusPortNumber),
 		},
 		{
 			Name:       "foo",
 			Protocol:   "TCP",
 			Port:       1234,
-			TargetPort: intstr.FromInt(healthProbePort),
+			TargetPort: intstr.FromInt(istiov1beta1.PortStatusPortNumber),
 		},
 	}
 	require.Equal(t, expectedPorts, ports)
@@ -147,7 +149,7 @@ func TestEnsureHealthProbePort_TargetPortMismatch(t *testing.T) {
 		{
 			Name:       "foo",
 			Protocol:   "TCP",
-			Port:       healthProbePort,
+			Port:       istiov1beta1.PortStatusPortNumber,
 			TargetPort: intstr.FromInt(1234),
 		},
 	}
@@ -157,7 +159,7 @@ func TestEnsureHealthProbePort_TargetPortMismatch(t *testing.T) {
 		{
 			Name:       "foo",
 			Protocol:   "TCP",
-			Port:       healthProbePort,
+			Port:       istiov1beta1.PortStatusPortNumber,
 			TargetPort: intstr.FromInt(1234),
 		},
 	}
@@ -197,7 +199,7 @@ func TestEnsureHealthProbePort_PortNameAndTargetPort(t *testing.T) {
 		{
 			Name:       "foo",
 			Protocol:   "TCP",
-			Port:       healthProbePort,
+			Port:       istiov1beta1.PortStatusPortNumber,
 			TargetPort: intstr.FromInt(1234),
 		},
 	}
@@ -213,7 +215,7 @@ func TestEnsureHealthProbePort_PortNameAndTargetPort(t *testing.T) {
 		{
 			Name:       "foo",
 			Protocol:   "TCP",
-			Port:       healthProbePort,
+			Port:       istiov1beta1.PortStatusPortNumber,
 			TargetPort: intstr.FromInt(1234),
 		},
 	}
