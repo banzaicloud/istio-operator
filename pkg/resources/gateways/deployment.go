@@ -47,7 +47,6 @@ func (r *Reconciler) deployment() runtime.Object {
 		"--log_output_level", "info",
 		"--serviceCluster", r.gw.Name,
 		"--trust-domain", r.Config.Spec.TrustDomain,
-		"--configPath", "/tmp",
 	}
 
 	if r.Config.Spec.Proxy.LogLevel != "" {
@@ -88,8 +87,7 @@ func (r *Reconciler) deployment() runtime.Object {
 			r.gw.Spec.Resources,
 			r.Config.Spec.Proxy.Resources,
 		),
-		SecurityContext: r.securityContext(),
-		// gw.spec.securityContext
+		SecurityContext:          r.gw.Spec.SecurityContext,
 		VolumeMounts:             r.volumeMounts(),
 		TerminationMessagePath:   apiv1.TerminationMessagePathDefault,
 		TerminationMessagePolicy: apiv1.TerminationMessageReadFile,
@@ -119,43 +117,10 @@ func (r *Reconciler) deployment() runtime.Object {
 					NodeSelector:       r.gw.Spec.NodeSelector,
 					Tolerations:        r.gw.Spec.Tolerations,
 					PriorityClassName:  r.Config.Spec.PriorityClassName,
-					SecurityContext:    util.GetPSPFromSecurityContext(r.gw.Spec.SecurityContext),
-					// r.podSecurityContext()
+					SecurityContext:    util.GetPodSecurityContextFromSecurityContext(r.gw.Spec.SecurityContext),
 				},
 			},
 		},
-	}
-}
-
-func (r *Reconciler) podSecurityContext() *apiv1.PodSecurityContext {
-	if util.PointerToBool(r.gw.Spec.RunAsRoot) {
-		return &apiv1.PodSecurityContext{}
-	}
-
-	return &apiv1.PodSecurityContext{
-		RunAsUser:    util.Int64Pointer(1337),
-		RunAsGroup:   util.Int64Pointer(1337),
-		RunAsNonRoot: util.BoolPointer(true),
-		FSGroup:      util.Int64Pointer(1337),
-	}
-}
-
-func (r *Reconciler) securityContext() *apiv1.SecurityContext {
-	if util.PointerToBool(r.gw.Spec.RunAsRoot) {
-		return &apiv1.SecurityContext{}
-	}
-
-	return &apiv1.SecurityContext{
-		RunAsUser:    util.Int64Pointer(1337),
-		RunAsGroup:   util.Int64Pointer(1337),
-		RunAsNonRoot: util.BoolPointer(true),
-		Capabilities: &apiv1.Capabilities{
-			Drop: []apiv1.Capability{
-				"ALL",
-			},
-		},
-		Privileged:             util.BoolPointer(false),
-		ReadOnlyRootFilesystem: util.BoolPointer(true),
 	}
 }
 

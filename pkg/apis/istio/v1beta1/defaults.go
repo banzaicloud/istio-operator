@@ -87,19 +87,8 @@ var defaultProxyResources = &apiv1.ResourceRequirements{
 }
 
 var defaultSecurityContext = &apiv1.SecurityContext{
-	RunAsUser:                util.Int64Pointer(int64(1)),
-	RunAsGroup:               util.Int64Pointer(int64(1)),
-	RunAsNonRoot:             util.BoolPointer(true),
-	Privileged:               util.BoolPointer(false),
-	AllowPrivilegeEscalation: util.BoolPointer(false),
-	Capabilities: &apiv1.Capabilities{
-		Drop: []apiv1.Capability{"ALL"},
-	},
-}
-
-var defaultProxySecurityContext = &apiv1.SecurityContext{
-	RunAsUser:                util.Int64Pointer(int64(1337)),
-	RunAsGroup:               util.Int64Pointer(int64(1337)),
+	RunAsUser:                util.Int64Pointer(1337),
+	RunAsGroup:               util.Int64Pointer(1337),
 	RunAsNonRoot:             util.BoolPointer(true),
 	Privileged:               util.BoolPointer(false),
 	AllowPrivilegeEscalation: util.BoolPointer(false),
@@ -226,9 +215,6 @@ func SetDefaults(config *Istio) {
 	if config.Spec.Citadel.EnableNamespacesByDefault == nil {
 		config.Spec.Citadel.EnableNamespacesByDefault = util.BoolPointer(true)
 	}
-	if config.Spec.Citadel.SecurityContext == nil {
-		config.Spec.Citadel.SecurityContext = defaultSecurityContext
-	}
 	// Galley config
 	if config.Spec.Galley.Enabled == nil {
 		config.Spec.Galley.Enabled = util.BoolPointer(false)
@@ -247,9 +233,6 @@ func SetDefaults(config *Istio) {
 	}
 	if config.Spec.Galley.EnableAnalysis == nil {
 		config.Spec.Galley.EnableAnalysis = util.BoolPointer(false)
-	}
-	if config.Spec.Galley.SecurityContext == nil {
-		config.Spec.Galley.SecurityContext = defaultSecurityContext
 	}
 	// Gateways config
 	if config.Spec.Gateways.Enabled == nil {
@@ -423,9 +406,6 @@ func SetDefaults(config *Istio) {
 	if config.Spec.NodeAgent.Image == nil {
 		config.Spec.NodeAgent.Image = util.StrPointer(defaultNodeAgentImage)
 	}
-	if config.Spec.NodeAgent.SecurityContext == nil {
-		config.Spec.NodeAgent.SecurityContext = defaultSecurityContext
-	}
 
 	if config.Spec.Gateways.IngressConfig.SDS.Image == "" {
 		config.Spec.Gateways.IngressConfig.SDS.Image = defaultSDSImage
@@ -505,7 +485,7 @@ func SetDefaults(config *Istio) {
 		config.Spec.Proxy.CoreDumpImage = defaultProxyCoreDumpImage
 	}
 	if config.Spec.Proxy.SecurityContext == nil {
-		config.Spec.Proxy.SecurityContext = defaultProxySecurityContext
+		config.Spec.Proxy.SecurityContext = defaultSecurityContext
 	}
 
 	// PDB config

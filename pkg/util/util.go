@@ -123,10 +123,14 @@ func RemoveString(slice []string, s string) (result []string) {
 	return
 }
 
-func GetPSPFromSecurityContext(sc *corev1.SecurityContext) *corev1.PodSecurityContext {
+func GetPodSecurityContextFromSecurityContext(sc *corev1.SecurityContext) *corev1.PodSecurityContext {
+	if sc == nil || *sc == (corev1.SecurityContext{}) {
+		return &corev1.PodSecurityContext{}
+	}
 	return &corev1.PodSecurityContext{
 		RunAsGroup:   sc.RunAsGroup,
 		RunAsNonRoot: sc.RunAsNonRoot,
 		RunAsUser:    sc.RunAsUser,
+		FSGroup:      sc.RunAsGroup,
 	}
 }
