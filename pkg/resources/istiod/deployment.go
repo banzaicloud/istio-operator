@@ -149,16 +149,7 @@ func (r *Reconciler) containers() []apiv1.Container {
 			r.Config.Spec.Pilot.Resources,
 			r.Config.Spec.DefaultResources,
 		),
-		SecurityContext: &apiv1.SecurityContext{
-			RunAsUser:    util.Int64Pointer(1337),
-			RunAsGroup:   util.Int64Pointer(1337),
-			RunAsNonRoot: util.BoolPointer(true),
-			Capabilities: &apiv1.Capabilities{
-				Drop: []apiv1.Capability{
-					"ALL",
-				},
-			},
-		},
+		SecurityContext:          r.Config.Spec.Pilot.SecurityContext,
 		VolumeMounts:             r.volumeMounts(),
 		TerminationMessagePath:   apiv1.TerminationMessagePathDefault,
 		TerminationMessagePolicy: apiv1.TerminationMessageReadFile,
@@ -305,14 +296,12 @@ func (r *Reconciler) deployment() runtime.Object {
 				},
 				Spec: apiv1.PodSpec{
 					ServiceAccountName: serviceAccountName,
-					SecurityContext: &apiv1.PodSecurityContext{
-						FSGroup: util.Int64Pointer(1337),
-					},
-					Containers:   r.containers(),
-					Volumes:      r.volumes(),
-					Affinity:     r.Config.Spec.Pilot.Affinity,
-					NodeSelector: r.Config.Spec.Pilot.NodeSelector,
-					Tolerations:  r.Config.Spec.Pilot.Tolerations,
+					SecurityContext:    util.GetPodSecurityContextFromSecurityContext(r.Config.Spec.Pilot.SecurityContext),
+					Containers:         r.containers(),
+					Volumes:            r.volumes(),
+					Affinity:           r.Config.Spec.Pilot.Affinity,
+					NodeSelector:       r.Config.Spec.Pilot.NodeSelector,
+					Tolerations:        r.Config.Spec.Pilot.Tolerations,
 				},
 			},
 		},

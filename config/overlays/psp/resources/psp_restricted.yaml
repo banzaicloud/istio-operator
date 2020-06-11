@@ -1,7 +1,6 @@
 apiVersion: policy/v1beta1
 kind: PodSecurityPolicy
 metadata:
-  kubernetes.io/description: "This policy requires pods to run with a non-root UID, and prevents pods from accessing the host."
   name: psp-restricted
 spec:
   allowPrivilegeEscalation: false

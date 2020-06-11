@@ -16,7 +16,11 @@ limitations under the License.
 
 package v1beta1
 
-import "github.com/banzaicloud/istio-operator/pkg/util"
+import (
+	apiv1 "k8s.io/api/core/v1"
+
+	"github.com/banzaicloud/istio-operator/pkg/util"
+)
 
 func (gw *MeshGateway) SetDefaults() {
 	if gw.Spec.ReplicaCount == nil {
@@ -51,6 +55,10 @@ func (gw *MeshGateway) SetDefaults() {
 		gw.Spec.RunAsRoot = util.BoolPointer(true)
 	}
 	if gw.Spec.SecurityContext == nil {
-		gw.Spec.SecurityContext = defaultProxySecurityContext
+		if util.PointerToBool(gw.Spec.RunAsRoot) {
+			gw.Spec.SecurityContext = &apiv1.SecurityContext{}
+		} else {
+			gw.Spec.SecurityContext = defaultSecurityContext
+		}
 	}
 }

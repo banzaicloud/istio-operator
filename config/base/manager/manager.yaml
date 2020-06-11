@@ -12,6 +12,7 @@ spec:
     controller-tools.k8s.io: "1.0"
   ports:
   - port: 443
+    targetPort: 9443
 ---
 apiVersion: apps/v1
 kind: StatefulSet
@@ -34,7 +35,7 @@ spec:
         controller-tools.k8s.io: "1.0"
     spec:
       securityContext:
-        runAsUser: 1000
+        fsGroup: 1337
       containers:
       - command:
         - /manager
@@ -53,6 +54,13 @@ spec:
           requests:
             cpu: 100m
             memory: 20Mi
+        securityContext:
+          runAsUser: 1337
+          runAsGroup: 1337
+          runAsNonRoot: true
+          capabilities:
+            drop:
+            - ALL
         ports:
         - containerPort: 9876
           name: webhook-server

@@ -42,7 +42,6 @@ func (r *Reconciler) containerArgs() []string {
 		"--healthCheckInterval=2s",
 		"--healthCheckFile=/tmp/health",
 		"--reconcileWebhookConfig=true",
-		"--port=9443",
 	}
 
 	if len(r.Config.Spec.SidecarInjector.AdditionalContainerArgs) != 0 {
@@ -82,11 +81,7 @@ func (r *Reconciler) deployment() runtime.Object {
 							Image:           util.PointerToString(r.Config.Spec.SidecarInjector.Image),
 							ImagePullPolicy: r.Config.Spec.ImagePullPolicy,
 							Args:            r.containerArgs(),
-							SecurityContext: &apiv1.SecurityContext{
-								RunAsUser:    util.Int64Pointer(1337),
-								RunAsGroup:   util.Int64Pointer(1337),
-								RunAsNonRoot: util.BoolPointer(true),
-							},
+							SecurityContext: r.Config.Spec.SidecarInjector.SecurityContext,
 							VolumeMounts: []apiv1.VolumeMount{
 								{
 									Name:      "config-volume",
@@ -120,7 +115,7 @@ func (r *Reconciler) deployment() runtime.Object {
 					NodeSelector:      r.Config.Spec.SidecarInjector.NodeSelector,
 					Tolerations:       r.Config.Spec.SidecarInjector.Tolerations,
 					PriorityClassName: r.Config.Spec.PriorityClassName,
-					SecurityContext:   util.GetPSPFromSecurityContext(r.Config.Spec.SidecarInjector.SecurityContext),
+					SecurityContext:   util.GetPodSecurityContextFromSecurityContext(r.Config.Spec.SidecarInjector.SecurityContext),
 				},
 			},
 		},

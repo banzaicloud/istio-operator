@@ -61,7 +61,7 @@ func (r *Reconciler) deployment(t string) runtime.Object {
 						r.istioProxyContainer(t),
 					},
 					PriorityClassName: r.Config.Spec.PriorityClassName,
-					SecurityContext:   util.GetPSPFromSecurityContext(r.Config.Spec.Mixer.SecurityContext),
+					SecurityContext:   util.GetPodSecurityContextFromSecurityContext(r.Config.Spec.Mixer.SecurityContext),
 				},
 			},
 		},
@@ -366,7 +366,6 @@ func (r *Reconciler) istioProxyContainer(t string) apiv1.Container {
 		fmt.Sprintf("$(POD_NAMESPACE).svc.%s", r.Config.Spec.Proxy.ClusterDomain),
 		"--trust-domain",
 		r.Config.Spec.TrustDomain,
-		"--configPath", "/tmp",
 	}
 	if r.Config.Spec.Proxy.LogLevel != "" {
 		args = append(args, fmt.Sprintf("--proxyLogLevel=%s", r.Config.Spec.Proxy.LogLevel))
