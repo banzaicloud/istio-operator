@@ -112,16 +112,16 @@ const PortStatusPortNumber = 15021
 const PortStatusPortName = "status-port"
 
 var defaultIngressGatewayPorts = []ServicePort{
-	{ServicePort: corev1.ServicePort{Port: PortStatusPortNumber, Protocol: apiv1.ProtocolTCP, Name: PortStatusPortName}, TargetPort: PortStatusPortNumber},
-	{ServicePort: corev1.ServicePort{Port: 80, Protocol: apiv1.ProtocolTCP, Name: "http2"}, TargetPort: 8080},
-	{ServicePort: corev1.ServicePort{Port: 443, Protocol: apiv1.ProtocolTCP, Name: "https"}, TargetPort: 8443},
-	{ServicePort: corev1.ServicePort{Port: 15443, Protocol: apiv1.ProtocolTCP, Name: "tls"}, TargetPort: 15443},
+	{ServicePort: corev1.ServicePort{Port: PortStatusPortNumber, Protocol: apiv1.ProtocolTCP, Name: PortStatusPortName}, TargetPort: util.IntPointer(PortStatusPortNumber)},
+	{ServicePort: corev1.ServicePort{Port: 80, Protocol: apiv1.ProtocolTCP, Name: "http2"}, TargetPort: util.IntPointer(8080)},
+	{ServicePort: corev1.ServicePort{Port: 443, Protocol: apiv1.ProtocolTCP, Name: "https"}, TargetPort: util.IntPointer(8443)},
+	{ServicePort: corev1.ServicePort{Port: 15443, Protocol: apiv1.ProtocolTCP, Name: "tls"}, TargetPort: util.IntPointer(15443)},
 }
 
 var defaultEgressGatewayPorts = []ServicePort{
-	{ServicePort: corev1.ServicePort{Port: 80, Protocol: apiv1.ProtocolTCP, Name: "http2"}, TargetPort: 8080},
-	{ServicePort: corev1.ServicePort{Port: 443, Protocol: apiv1.ProtocolTCP, Name: "https"}, TargetPort: 8443},
-	{ServicePort: corev1.ServicePort{Port: 15443, Protocol: apiv1.ProtocolTCP, Name: "tls"}, TargetPort: 15443},
+	{ServicePort: corev1.ServicePort{Port: 80, Protocol: apiv1.ProtocolTCP, Name: "http2"}, TargetPort: util.IntPointer(8080)},
+	{ServicePort: corev1.ServicePort{Port: 443, Protocol: apiv1.ProtocolTCP, Name: "https"}, TargetPort: util.IntPointer(8443)},
+	{ServicePort: corev1.ServicePort{Port: 15443, Protocol: apiv1.ProtocolTCP, Name: "tls"}, TargetPort: util.IntPointer(15443)},
 }
 
 func SetDefaults(config *Istio) {

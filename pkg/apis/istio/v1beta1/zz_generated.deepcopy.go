@@ -440,7 +440,9 @@ func (in *GatewayConfiguration) DeepCopyInto(out *GatewayConfiguration) {
 	if in.Ports != nil {
 		in, out := &in.Ports, &out.Ports
 		*out = make([]ServicePort, len(*in))
-		copy(*out, *in)
+		for i := range *in {
+			(*in)[i].DeepCopyInto(&(*out)[i])
+		}
 	}
 	if in.Enabled != nil {
 		in, out := &in.Enabled, &out.Enabled
@@ -1075,7 +1077,9 @@ func (in *MeshGatewaySpec) DeepCopyInto(out *MeshGatewaySpec) {
 	if in.Ports != nil {
 		in, out := &in.Ports, &out.Ports
 		*out = make([]ServicePort, len(*in))
-		copy(*out, *in)
+		for i := range *in {
+			(*in)[i].DeepCopyInto(&(*out)[i])
+		}
 	}
 	return
 }
@@ -1676,6 +1680,11 @@ func (in *SDSConfiguration) DeepCopy() *SDSConfiguration {
 func (in *ServicePort) DeepCopyInto(out *ServicePort) {
 	*out = *in
 	out.ServicePort = in.ServicePort
+	if in.TargetPort != nil {
+		in, out := &in.TargetPort, &out.TargetPort
+		*out = new(int32)
+		**out = **in
+	}
 	return
 }
 
@@ -1694,7 +1703,9 @@ func (in ServicePorts) DeepCopyInto(out *ServicePorts) {
 	{
 		in := &in
 		*out = make(ServicePorts, len(*in))
-		copy(*out, *in)
+		for i := range *in {
+			(*in)[i].DeepCopyInto(&(*out)[i])
+		}
 		return
 	}
 }

@@ -148,8 +148,12 @@ func (r *Reconciler) getEnvoyServiceConfigurationJSON(config istiov1beta1.EnvoyS
 func (r *Reconciler) ports() []apiv1.ContainerPort {
 	var ports []apiv1.ContainerPort
 	for _, port := range r.gw.Spec.Ports {
+		tp := port.Port
+		if port.TargetPort != nil {
+			tp = *port.TargetPort
+		}
 		ports = append(ports, apiv1.ContainerPort{
-			ContainerPort: port.TargetPort, Protocol: port.Protocol, Name: port.Name,
+			ContainerPort: tp, Protocol: port.Protocol, Name: port.Name,
 		})
 	}
 	ports = append(ports, apiv1.ContainerPort{
