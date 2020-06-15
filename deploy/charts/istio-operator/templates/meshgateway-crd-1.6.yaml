@@ -141,6 +141,8 @@ spec:
                 resources:
                   type: object
               type: object
+            securityContext:
+              type: object
             serviceAnnotations:
               type: object
             serviceLabels:
