@@ -10,6 +10,9 @@ spec:
     mtlsMode: PERMISSIVE
   autoInjectionNamespaces:
   - "default"
+  gateways:
+    ingress:
+      runAsRoot: false
   sidecarInjector:
     initCNIConfiguration:
       enabled: true

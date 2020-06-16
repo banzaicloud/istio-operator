@@ -1,0 +1,20 @@
+apiVersion: policy/v1beta1
+kind: PodSecurityPolicy
+metadata:
+  name: psp-host
+spec:
+  allowPrivilegeEscalation: true
+  fsGroup:
+      rule: RunAsAny
+  hostNetwork: true
+  runAsUser:
+      rule: RunAsAny
+  seLinux:
+      rule: RunAsAny
+  supplementalGroups:
+      rule: RunAsAny
+  volumes:
+  - secret
+  - configMap
+  - emptyDir
+  - hostPath
