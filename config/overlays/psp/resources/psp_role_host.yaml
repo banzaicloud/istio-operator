@@ -1,0 +1,13 @@
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: psp-host
+rules:
+- apiGroups:
+  - policy
+  resourceNames:
+  - istio-operator-psp-host
+  resources:
+  - podsecuritypolicies
+  verbs:
+  - use

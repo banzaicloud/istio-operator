@@ -7,5 +7,9 @@ namePrefix: istio-operator-
 
 resources:
 - resources/psp_restricted.yaml
-- resources/psp_role.yaml
-- resources/psp_role_binding.yaml
+- resources/psp_role_restricted.yaml
+- resources/psp_role_binding_restricted.yaml
+
+- resources/psp_host.yaml
+- resources/psp_role_host.yaml
+- resources/psp_role_binding_host.yaml
