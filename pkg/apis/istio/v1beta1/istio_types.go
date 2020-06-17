@@ -186,7 +186,7 @@ type GatewaySDSConfiguration struct {
 
 type ServicePort struct {
 	corev1.ServicePort `json:",inline"`
-	TargetPort         int32 `json:"targetPort,omitempty"`
+	TargetPort         *int32 `json:"targetPort,omitempty"`
 }
 
 type ServicePorts []ServicePort
@@ -194,13 +194,16 @@ type ServicePorts []ServicePort
 func (ps ServicePorts) Convert() []corev1.ServicePort {
 	ports := make([]corev1.ServicePort, 0)
 	for _, po := range ps {
-		ports = append(ports, corev1.ServicePort{
-			Name:       po.Name,
-			Protocol:   po.Protocol,
-			Port:       po.Port,
-			TargetPort: intstr.FromInt(int(po.TargetPort)),
-			NodePort:   po.NodePort,
-		})
+		port := corev1.ServicePort{
+			Name:     po.Name,
+			Protocol: po.Protocol,
+			Port:     po.Port,
+			NodePort: po.NodePort,
+		}
+		if po.TargetPort != nil {
+			port.TargetPort = intstr.FromInt(int(util.PointerToInt32(po.TargetPort)))
+		}
+		ports = append(ports, port)
 	}
 
 	return ports
