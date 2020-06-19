@@ -63,7 +63,7 @@ If you are willing to kickstart your Istio experience using Pipeline, check out 
 ## Istio operator vs [Backyards](https://banzaicloud.com/products/backyards/)
 
 [Backyards](https://banzaicloud.com/products/backyards/) is Banzai Cloud's **production ready Istio distribution**.
-The Banzai Cloud Istio operator is a core part of Backyards, which helps with installing, upgrading and managing an Istio mesh, but Backyards provides a lot of other components to conveniently, secure, operate and observe Istio as well.
+The Banzai Cloud Istio operator is a core part of Backyards, which helps with installing, upgrading and managing an Istio mesh, but Backyards provides a lot of other components to conveniently secure, operate and observe Istio as well.
 
 The differences are presented in this table:
 
