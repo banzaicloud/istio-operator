@@ -42,7 +42,7 @@ While we were comfortably operating Istio using the standard Helm deployments on
 This required lots of configurations, manual interventions during scaling or removing clusters from the mesh and become an operational burden.
 [Pipeline](https://github.com/banzaicloud/pipeline) automates the whole Kubernetes experience (from creating clusters, centralized logging, federated monitoring, multi-dimensional autoscaling, disaster recovery, security scans, etc) and we needed a way to `automagically` operate Istio across multiple clouds and on-premise hybrid-cloud environments.
 
-At the same time there was a huge interest in the Istio community for an [operator](https://github.com/istio/istio/issues/9333), but due to resource constraints and the need of supporting Helm, building one it was discarded. There were several initiatives to simplify Istio:
+At the same time there was a huge interest in the Istio community for an [operator](https://github.com/istio/istio/issues/9333), but due to resource constraints and the need of supporting Helm, the idea of building one was discarded. There were several initiatives to simplify Istio:
 
 - [Istio Operator for Kubernetes](https://github.com/istio/istio/issues/9333)
 - [Operator](https://github.com/istio/istio/pull/10015)
