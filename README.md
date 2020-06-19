@@ -59,7 +59,42 @@ If you are willing to kickstart your Istio experience using Pipeline, check out 
   </a>
 </p>
 
-## Installation
+
+## Istio operator vs [Backyards](https://banzaicloud.com/products/backyards/)
+
+[Backyards](https://banzaicloud.com/products/backyards/) is Banzai Cloud's **production ready Istio distribution**.
+The Banzai Cloud Istio operator is a core part of Backyards, which helps with installing, upgrading and managing an Istio mesh, but Backyards provides a lot of other components to conveniently, secure, operate and observe Istio as well.
+
+The differences are presented in this table:
+
+|                           |   Istio operator   |      Backyards     |
+|:-------------------------:|:------------------:|:------------------:|
+|       Install Istio       | :heavy_check_mark: | :heavy_check_mark: |
+|        Manage Istio       | :heavy_check_mark: | :heavy_check_mark: |
+|       Upgrade Istio       | :heavy_check_mark: | :heavy_check_mark: |
+|      Uninstall Istio      | :heavy_check_mark: | :heavy_check_mark: |
+|   Multi cluster support   | :heavy_check_mark: | :heavy_check_mark: |
+| Multiple gateways support | :heavy_check_mark: | :heavy_check_mark: |
+|         Prometheus        |                    | :heavy_check_mark: |
+|          Grafana          |                    | :heavy_check_mark: |
+|           Jaeger          |                    | :heavy_check_mark: |
+|        Cert manager       |                    | :heavy_check_mark: |
+|         Dashboard         |                    | :heavy_check_mark: |
+|            CLI            |                    | :heavy_check_mark: |
+|   Enhanced observability  |                    | :heavy_check_mark: |
+|       Topology graph      |                    | :heavy_check_mark: |
+|      Live access logs     |                    | :heavy_check_mark: |
+|      mTLS management      |                    | :heavy_check_mark: |
+|     Gateway management    |                    | :heavy_check_mark: |
+|     Sidecar management    |                    | :heavy_check_mark: |
+|          Routing          |                    | :heavy_check_mark: |
+|      Circuit Breaking     |                    | :heavy_check_mark: |
+|      Fault Injection      |                    | :heavy_check_mark: |
+|         Mirroring         |                    | :heavy_check_mark: |
+|      Canary releases      |                    | :heavy_check_mark: |
+|         Validations       |                    | :heavy_check_mark: |
+
+## Istio operator installation
 
 The operator (`release-1.6` branch) installs the 1.6.2 version of Istio, and can run on Minikube v1.1.1+ and Kubernetes 1.15.0+.
 
