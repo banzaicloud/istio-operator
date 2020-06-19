@@ -35,35 +35,10 @@ The goal of the **Istio-operator** is to automate and simplify these and enable 
 
 ![Istio Operator](/docs/img/operator.png)
 
-### Motivation
-
-At [Banzai Cloud](https://banzaicloud.com) we are building a Kubernetes distribution, [PKE](https://github.com/banzaicloud/pke) and platform, [Pipeline](https://github.com/banzaicloud/pipeline) and operate managed Istio clusters for our customers.
-While we were comfortably operating Istio using the standard Helm deployments on 6 cloud providers and on-premise with [Pipeline](https://github.com/banzaicloud/pipeline), our customers were asking for multi-cloud and hybrid-cloud service mesh deployments.
-This required lots of configurations, manual interventions during scaling or removing clusters from the mesh and become an operational burden.
-[Pipeline](https://github.com/banzaicloud/pipeline) automates the whole Kubernetes experience (from creating clusters, centralized logging, federated monitoring, multi-dimensional autoscaling, disaster recovery, security scans, etc) and we needed a way to `automagically` operate Istio across multiple clouds and on-premise hybrid-cloud environments.
-
-At the same time there was a huge interest in the Istio community for an [operator](https://github.com/istio/istio/issues/9333), but due to resource constraints and the need of supporting Helm, the idea of building one was discarded. There were several initiatives to simplify Istio:
-
-- [Istio Operator for Kubernetes](https://github.com/istio/istio/issues/9333)
-- [Operator](https://github.com/istio/istio/pull/10015)
-- [Initial implementation of Galley registers the CRDs](https://github.com/istio/istio/pull/10120)
-- [Handle upgrades with an istio-init chart](https://github.com/istio/istio/pull/10562)
-
-however, none of these gave a full solution to **automate** the Istio experience and make it consumable for the wider audience.
-Our motivation is to build an open source solution and a community which drives the innovation and features of this operator.
-
-If you are willing to kickstart your Istio experience using Pipeline, check out the free developer beta:
-<p align="center">
-  <a href="https://beta.banzaicloud.io">
-  <img src="https://camo.githubusercontent.com/a487fb3128bcd1ef9fc1bf97ead8d6d6a442049a/68747470733a2f2f62616e7a6169636c6f75642e636f6d2f696d672f7472795f706970656c696e655f627574746f6e2e737667">
-  </a>
-</p>
-
-
 ## Istio operator vs [Backyards](https://banzaicloud.com/products/backyards/)
 
 [Backyards](https://banzaicloud.com/products/backyards/) is Banzai Cloud's **production ready Istio distribution**.
-The Banzai Cloud Istio operator is a core part of Backyards, which helps with installing, upgrading and managing an Istio mesh, but Backyards provides a lot of other components to conveniently secure, operate and observe Istio as well.
+The Banzai Cloud Istio operator is a core part of Backyards, which helps with installing, upgrading and managing an Istio mesh, but [Backyards](https://banzaicloud.com/products/backyards/) provides many other components to conveniently secure, operate and observe Istio as well.
 
 The differences are presented in this table:
 
@@ -94,6 +69,8 @@ The differences are presented in this table:
 |      Canary releases      |                    | :heavy_check_mark: |
 |         Validations       |                    | :heavy_check_mark: |
 
+For a complete list of [Backyards](https://banzaicloud.com/products/backyards/) features please check out the [features](https://banzaicloud.com/docs/backyards/overview/) page.
+
 ## Istio operator installation
 
 The operator (`release-1.6` branch) installs the 1.6.2 version of Istio, and can run on Minikube v1.1.1+ and Kubernetes 1.15.0+.
@@ -106,6 +83,14 @@ As a pre-requisite it needs a Kubernetes cluster (you can create one using [Pipe
 
 ```bash
 kubectl create -n istio-system -f config/samples/istio_v1beta1_istio.yaml
+```
+
+### Installation with [Backyards](https://banzaicloud.com/products/backyards/)
+
+Go grab and install Istio with the [Backyards CLI](https://github.com/banzaicloud/backyards-cli) tool.
+
+```bash
+curl https://getbackyards.sh | sh && backyards istio install
 ```
 
 ### Installation with Helm
@@ -125,14 +110,6 @@ You can also have your own `kustomization.yaml` file with a reference to Istio o
 bases:
   - github.com/banzaicloud/istio-operator/config?ref=release-1.6
   - github.com/banzaicloud/istio-operator/config/overlays/auth-proxy-enabled?ref=release-1.6
-```
-
-### Installation with [Backyards](https://banzaicloud.com/products/backyards/)
-
-Go grab and install Istio with the [Backyards CLI](https://github.com/banzaicloud/backyards-cli) tool.
-
-```bash
-curl https://getbackyards.sh | sh && backyards istio install
 ```
 
 ## Istio upgrade
