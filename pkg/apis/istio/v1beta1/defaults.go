@@ -28,9 +28,9 @@ import (
 
 const (
 	banzaiImageHub                    = "docker.io/banzaicloud"
-	banzaiImageVersion                = "1.6.2-bzc"
+	banzaiImageVersion                = "1.6.3-bzc"
 	defaultImageHub                   = "docker.io/istio"
-	defaultImageVersion               = "1.6.2"
+	defaultImageVersion               = "1.6.3"
 	defaultLogLevel                   = "default:info"
 	defaultMeshPolicy                 = PERMISSIVE
 	defaultPilotImage                 = defaultImageHub + "/" + "pilot" + ":" + defaultImageVersion
@@ -44,7 +44,7 @@ const (
 	defaultProxyInitImage             = defaultImageHub + "/" + "proxyv2" + ":" + defaultImageVersion
 	defaultProxyCoreDumpImage         = "busybox"
 	defaultInitCNIImage               = defaultImageHub + "/" + "install-cni:" + defaultImageVersion
-	defaultCoreDNSImage               = "coredns/coredns:1.6.2"
+	defaultCoreDNSImage               = "coredns/coredns:1.6.3"
 	defaultCoreDNSPluginImage         = defaultImageHub + "/coredns-plugin:0.2-istio-1.1"
 	defaultIncludeIPRanges            = "*"
 	defaultReplicaCount               = 1
