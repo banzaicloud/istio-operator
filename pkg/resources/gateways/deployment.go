@@ -419,6 +419,11 @@ func (r *Reconciler) volumeMounts() []apiv1.VolumeMount {
 		})
 	}
 
+	vms = append(vms, apiv1.VolumeMount{
+		Name:      "istio-data",
+		MountPath: "/var/lib/istio/data",
+	})
+
 	if (util.PointerToBool(r.Config.Spec.Istiod.Enabled) && r.Config.Spec.JWTPolicy == istiov1beta1.JWTPolicyThirdPartyJWT) ||
 		(!util.PointerToBool(r.Config.Spec.Istiod.Enabled) && util.PointerToBool(r.Config.Spec.SDS.Enabled)) {
 		vms = append(vms, apiv1.VolumeMount{
@@ -496,6 +501,13 @@ func (r *Reconciler) volumes() []apiv1.Volume {
 			},
 		})
 	}
+
+	volumes = append(volumes, apiv1.Volume{
+		Name: "istio-data",
+		VolumeSource: apiv1.VolumeSource{
+			EmptyDir: &apiv1.EmptyDirVolumeSource{},
+		},
+	})
 
 	volumes = append(volumes, apiv1.Volume{
 		Name: "podinfo",
@@ -590,7 +602,7 @@ func GetCoreDumpContainer(config *istiov1beta1.Istio) apiv1.Container {
 		},
 		Args: []string{
 			"-c",
-			"sysctl -w kernel.core_pattern=/var/lib/istio/core.proxy && ulimit -c unlimited",
+			"sysctl -w kernel.core_pattern=/var/lib/istio/data/core.proxy && ulimit -c unlimited",
 		},
 		Resources: templates.GetResourcesRequirementsOrDefault(config.Spec.SidecarInjector.Init.Resources, config.Spec.DefaultResources),
 		SecurityContext: &apiv1.SecurityContext{
