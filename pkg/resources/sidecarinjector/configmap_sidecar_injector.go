@@ -89,6 +89,7 @@ func (r *Reconciler) getValues() string {
 			"podDNSSearchNamespaces":      podDNSSearchNamespaces,
 			"proxy_init": map[string]interface{}{
 				"cniEnabled":    util.PointerToBool(r.Config.Spec.SidecarInjector.InitCNIConfiguration.Enabled),
+				"cniChained":    util.PointerToBool(r.Config.Spec.SidecarInjector.InitCNIConfiguration.Chained),
 				"containerName": proxyInitContainerName,
 				"image":         r.Config.Spec.ProxyInit.Image,
 			},
@@ -555,6 +556,13 @@ volumes:
     secretName: lightstep.cacert
 {{- end }}
 podRedirectAnnot:
+{{- if and (.Values.global.proxy_init.cniEnabled) (not .Values.global.proxy_init.cniChained) }}
+{{ if isset .ObjectMeta.Annotations ` + "`" + `k8s.v1.cni.cncf.io/networks` + "`" + ` }}
+  k8s.v1.cni.cncf.io/networks: "{{ index .ObjectMeta.Annotations ` + "`" + `k8s.v1.cni.cncf.io/networks` + "`" + `}}, istio-cni"
+{{- else }}
+  k8s.v1.cni.cncf.io/networks: "istio-cni"
+{{- end }}
+{{- end }}
    sidecar.istio.io/interceptionMode: "{{ annotation .ObjectMeta ` + "`" + `sidecar.istio.io/interceptionMode` + "`" + ` .ProxyConfig.InterceptionMode }}"
    traffic.sidecar.istio.io/includeOutboundIPRanges: "{{ annotation .ObjectMeta ` + "`" + `traffic.sidecar.istio.io/includeOutboundIPRanges` + "`" + ` .Values.global.proxy.includeIPRanges }}"
    traffic.sidecar.istio.io/excludeOutboundIPRanges: "{{ annotation .ObjectMeta ` + "`" + `traffic.sidecar.istio.io/excludeOutboundIPRanges` + "`" + ` .Values.global.proxy.excludeIPRanges }}"
