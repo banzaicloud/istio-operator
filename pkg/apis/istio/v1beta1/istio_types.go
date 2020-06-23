@@ -653,6 +653,12 @@ const (
 	JWTPolicyFirstPartyJWT JWTPolicyType = "first-party-jwt"
 )
 
+type HTTPProxyEnvs struct {
+	HTTPProxy  string `json:"httpProxy,omitemtpy"`
+	HTTPSProxy string `json:"httpsProxy,omitempty"`
+	NoProxy    string `json:"noProxy,omitempty"`
+}
+
 // IstioSpec defines the desired state of Istio
 type IstioSpec struct {
 	// Contains the intended Istio version
@@ -834,6 +840,9 @@ type IstioSpec struct {
 	// The customized CA address to retrieve certificates for the pods in the cluster.
 	//CSR clients such as the Istio Agent and ingress gateways can use this to specify the CA endpoint.
 	CAAddress string `json:"caAddress,omitempty"`
+
+	// Upstream HTTP proxy properties to be injected as environment variables to the pod containers
+	HTTPProxyEnvs HTTPProxyEnvs `json:"httpProxyEnvs,omitempty"`
 }
 
 type MixerlessTelemetryConfiguration struct {
