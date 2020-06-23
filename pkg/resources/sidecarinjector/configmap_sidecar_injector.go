@@ -66,6 +66,11 @@ func (r *Reconciler) getValues() string {
 	values := map[string]interface{}{
 		"sidecarInjectorWebhook": map[string]interface{}{
 			"rewriteAppHTTPProbe": util.PointerToBool(r.Config.Spec.SidecarInjector.RewriteAppHTTPProbe),
+			"httpProxyEnvs": map[string]interface{}{
+				"httpProxy":  r.Config.Spec.HTTPProxyEnvs.HTTPProxy,
+				"httpsProxy": r.Config.Spec.HTTPProxyEnvs.HTTPSProxy,
+				"noProxy":    r.Config.Spec.HTTPProxyEnvs.NoProxy,
+			},
 		},
 		"global": map[string]interface{}{
 			"mtls": map[string]interface{}{
@@ -171,6 +176,10 @@ dnsConfig:
     - {{ render . }}
     {{- end }}
 {{- end }}
+httpProxyEnvs:
+  httpProxy: {{ .Values.sidecarInjectorWebhook.httpProxyEnvs.httpProxy }}
+  httpsProxy: {{ .Values.sidecarInjectorWebhook.httpProxyEnvs.httpsProxy }}
+  noProxy: {{ .Values.sidecarInjectorWebhook.httpProxyEnvs.noProxy }}
 initContainers:
 {{ if ne (annotation .ObjectMeta ` + "`" + `sidecar.istio.io/interceptionMode` + "`" + ` .ProxyConfig.InterceptionMode) "NONE" }}
 ` + r.proxyInitContainer() + `

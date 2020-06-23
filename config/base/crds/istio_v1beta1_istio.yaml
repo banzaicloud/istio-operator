@@ -439,6 +439,19 @@ spec:
                       type: array
                   type: object
               type: object
+            httpProxyEnvs:
+              description: Upstream HTTP proxy properties to be injected as environment
+                variables to the pod containers
+              properties:
+                httpProxy:
+                  type: string
+                httpsProxy:
+                  type: string
+                noProxy:
+                  type: string
+              required:
+              - httpProxy
+              type: object
             imagePullPolicy:
               description: ImagePullPolicy describes a policy for if/when to pull
                 a container image
