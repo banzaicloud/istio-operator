@@ -5,7 +5,7 @@
 operator:
   image:
     repository: banzaicloud/istio-operator
-    tag: 0.5.10
+    tag: 0.5.11
     pullPolicy: IfNotPresent
   resources:
     requests:
