@@ -73,7 +73,7 @@ For a complete list of [Backyards](https://banzaicloud.com/products/backyards/) 
 
 ## Istio operator installation
 
-The operator (`release-1.6` branch) installs the 1.6.2 version of Istio, and can run on Minikube v1.1.1+ and Kubernetes 1.15.0+.
+The operator (`release-1.6` branch) installs the 1.6.3 version of Istio, and can run on Minikube v1.1.1+ and Kubernetes 1.15.0+.
 
 As a pre-requisite it needs a Kubernetes cluster (you can create one using [Pipeline](https://github.com/banzaicloud/pipeline)).
 
