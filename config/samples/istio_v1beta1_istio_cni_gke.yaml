@@ -5,7 +5,7 @@ metadata:
     controller-tools.k8s.io: "1.0"
   name: istio-sample
 spec:
-  version: "1.4.9"
+  version: "1.4.10"
   meshPolicy:
     mtlsMode: PERMISSIVE
   autoInjectionNamespaces:
