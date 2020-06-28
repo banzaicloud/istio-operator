@@ -85,11 +85,19 @@ func (r *Reconciler) containerEnvs() []apiv1.EnvVar {
 		},
 		{
 			Name:  "INJECTION_WEBHOOK_CONFIG_NAME",
-			Value: "istio-sidecar-injector",
+			Value: r.Config.WithNamespacedName("istio-sidecar-injector"),
 		},
 		{
 			Name:  "CENTRAL_ISTIOD",
 			Value: "true",
+		},
+		{
+			Name:  "REVISION",
+			Value: r.Config.Name,
+		},
+		{
+			Name:  "ISTIOD_CUSTOM_HOST",
+			Value: fmt.Sprintf("%s.%s.svc", r.Config.WithName(ServiceNameIstiod), r.Config.Namespace),
 		},
 	}
 
@@ -210,7 +218,7 @@ func (r *Reconciler) volumes() []apiv1.Volume {
 			VolumeSource: apiv1.VolumeSource{
 				ConfigMap: &apiv1.ConfigMapVolumeSource{
 					LocalObjectReference: apiv1.LocalObjectReference{
-						Name: base.IstioConfigMapName,
+						Name: r.Config.WithName(base.IstioConfigMapName),
 					},
 					DefaultMode: util.IntPointer(420),
 				},
@@ -265,7 +273,7 @@ func (r *Reconciler) volumes() []apiv1.Volume {
 			VolumeSource: apiv1.VolumeSource{
 				ConfigMap: &apiv1.ConfigMapVolumeSource{
 					LocalObjectReference: apiv1.LocalObjectReference{
-						Name: "istio-sidecar-injector",
+						Name: r.Config.WithName("istio-sidecar-injector"),
 					},
 					Optional:    util.BoolPointer(true),
 					DefaultMode: util.IntPointer(420),
@@ -279,7 +287,7 @@ func (r *Reconciler) volumes() []apiv1.Volume {
 
 func (r *Reconciler) deployment() runtime.Object {
 	deployment := &appsv1.Deployment{
-		ObjectMeta: templates.ObjectMeta(deploymentName, util.MergeStringMaps(istiodLabels, pilotLabelSelector), r.Config),
+		ObjectMeta: templates.ObjectMetaWithRevision(deploymentName, util.MergeStringMaps(istiodLabels, pilotLabelSelector), r.Config),
 		Spec: appsv1.DeploymentSpec{
 			Replicas: util.IntPointer(k8sutil.GetHPAReplicaCountOrDefault(r.Client, types.NamespacedName{
 				Name:      hpaName,
@@ -287,15 +295,15 @@ func (r *Reconciler) deployment() runtime.Object {
 			}, util.PointerToInt32(r.Config.Spec.Pilot.ReplicaCount))),
 			Strategy: templates.DefaultRollingUpdateStrategy(),
 			Selector: &metav1.LabelSelector{
-				MatchLabels: pilotLabelSelector,
+				MatchLabels: util.MergeStringMaps(pilotLabelSelector, r.Config.RevisionLabels()),
 			},
 			Template: apiv1.PodTemplateSpec{
 				ObjectMeta: metav1.ObjectMeta{
-					Labels:      util.MergeStringMaps(istiodLabels, pilotLabelSelector),
+					Labels:      util.MergeMultipleStringMaps(istiodLabels, pilotLabelSelector, r.Config.RevisionLabels()),
 					Annotations: util.MergeStringMaps(templates.DefaultDeployAnnotations(), r.Config.Spec.Pilot.PodAnnotations),
 				},
 				Spec: apiv1.PodSpec{
-					ServiceAccountName: serviceAccountName,
+					ServiceAccountName: r.Config.WithName(serviceAccountName),
 					SecurityContext:    util.GetPodSecurityContextFromSecurityContext(r.Config.Spec.Pilot.SecurityContext),
 					Containers:         r.containers(),
 					Volumes:            r.volumes(),

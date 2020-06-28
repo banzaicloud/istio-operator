@@ -27,7 +27,7 @@ import (
 
 func (r *Reconciler) service() runtime.Object {
 	return &apiv1.Service{
-		ObjectMeta: templates.ObjectMeta(ServiceNameIstiod, istiodLabels, r.Config),
+		ObjectMeta: templates.ObjectMetaWithRevision(ServiceNameIstiod, istiodLabels, r.Config),
 		Spec: apiv1.ServiceSpec{
 			Ports: []apiv1.ServicePort{
 				{
@@ -65,7 +65,7 @@ func (r *Reconciler) service() runtime.Object {
 					Protocol:   apiv1.ProtocolTCP,
 				},
 			},
-			Selector: util.MergeStringMaps(istiodLabels, pilotLabelSelector),
+			Selector: util.MergeMultipleStringMaps(istiodLabels, pilotLabelSelector, r.Config.RevisionLabels()),
 		},
 	}
 }
