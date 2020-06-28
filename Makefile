@@ -82,8 +82,8 @@ deploy: install-kustomize
 
 # Generate manifests e.g. CRD, RBAC etc.
 manifests:
-	go run vendor/sigs.k8s.io/controller-tools/cmd/controller-gen/main.go rbac --output-dir config/base/rbac
-	go run vendor/sigs.k8s.io/controller-tools/cmd/controller-gen/main.go crd --output-dir config/base/crds
+	bin/controller-gen rbac --output-dir config/base/rbac
+	bin/controller-gen crd --output-dir config/base/crds
 	find config/base/crds -exec touch -t 201901010101 {} +
 
 # Run go fmt against code
@@ -94,18 +94,18 @@ fmt:
 vet:
 	go vet ./pkg/... ./cmd/...
 
+download-deps:
+	./scripts/download-deps.sh
+
 # Generate code
-generate:
-ifndef GOPATH
-	$(error GOPATH not defined, please define GOPATH. Run "go help gopath" to learn more about GOPATH)
-endif
+generate: download-deps
 	find config/base/crds -exec touch -t 201901010101 {} +
 	find pkg/manifests/istio-crds -exec touch -t 201901010101 {} +
 	go generate ./pkg/... ./cmd/...
 	./hack/update-codegen.sh
 
 # Verify codegen
-verify-codegen:
+verify-codegen: download-deps
 	./hack/verify-codegen.sh
 
 # Build the docker image
