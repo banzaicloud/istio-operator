@@ -7,7 +7,6 @@ RELEASE_MSG ?= "operator release"
 
 REL_TAG = $(shell ./scripts/increment_version.sh -${RELEASE_TYPE} ${TAG})
 
-DEP_VERSION = 0.5.1
 GOLANGCI_VERSION = 1.23.8
 LICENSEI_VERSION = 0.1.0
 
@@ -67,16 +66,9 @@ install-kubebuilder: bin/kubebuilder/bin/kubebuilder
 bin/kubebuilder/bin/kubebuilder:
 	scripts/install_kubebuilder.sh
 
-bin/dep: bin/dep-${DEP_VERSION}
-	@ln -sf dep-${DEP_VERSION} bin/dep
-bin/dep-${DEP_VERSION}:
-	@mkdir -p bin
-	curl https://raw.githubusercontent.com/golang/dep/master/install.sh | INSTALL_DIRECTORY=bin DEP_RELEASE_TAG=v${DEP_VERSION} sh
-	@mv bin/dep $@
-
 .PHONY: vendor
-vendor: bin/dep ## Install dependencies
-	bin/dep ensure -v -vendor-only
+vendor:
+	go mod vendor
 
 # Install CRDs into a cluster
 install: manifests
