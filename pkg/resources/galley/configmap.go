@@ -33,7 +33,7 @@ var cmLabels = map[string]string{
 
 func (r *Reconciler) configMap() runtime.Object {
 	configmap := &apiv1.ConfigMap{
-		ObjectMeta: templates.ObjectMeta(configMapName, util.MergeStringMaps(galleyLabels, cmLabels), r.Config),
+		ObjectMeta: templates.ObjectMetaWithRevision(configMapName, util.MergeStringMaps(galleyLabels, cmLabels), r.Config),
 		Data:       make(map[string]string),
 	}
 
