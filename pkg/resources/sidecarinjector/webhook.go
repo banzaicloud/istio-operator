@@ -34,13 +34,13 @@ func (r *Reconciler) webhook() runtime.Object {
 		service = istiod.ServiceNameIstiod
 	}
 	webhook := &admissionv1beta1.MutatingWebhookConfiguration{
-		ObjectMeta: templates.ObjectMetaClusterScope(webhookName, sidecarInjectorLabels, r.Config),
+		ObjectMeta: templates.ObjectMetaClusterScopeWithRevision(webhookName, sidecarInjectorLabels, r.Config),
 		Webhooks: []admissionv1beta1.Webhook{
 			{
 				Name: "sidecar-injector.istio.io",
 				ClientConfig: admissionv1beta1.WebhookClientConfig{
 					Service: &admissionv1beta1.ServiceReference{
-						Name:      service,
+						Name:      r.Config.WithName(service),
 						Namespace: r.Config.Namespace,
 						Path:      util.StrPointer("/inject"),
 					},
@@ -84,17 +84,31 @@ func (r *Reconciler) webhook() runtime.Object {
 				},
 			},
 		}
-	}
-
-	if util.PointerToBool(r.Config.Spec.Istiod.Enabled) {
+		if util.PointerToBool(r.Config.Spec.Istiod.Enabled) {
+			webhook.Webhooks[0].NamespaceSelector.MatchExpressions = append(webhook.Webhooks[0].NamespaceSelector.MatchExpressions, []metav1.LabelSelectorRequirement{
+				{
+					Key:      "istio-env",
+					Operator: metav1.LabelSelectorOpDoesNotExist,
+				},
+				{
+					Key:      "istio.io/rev",
+					Operator: metav1.LabelSelectorOpDoesNotExist,
+				},
+			}...)
+		}
+	} else if util.PointerToBool(r.Config.Spec.Istiod.Enabled) {
+		webhook.Webhooks[0].NamespaceSelector.MatchLabels = nil
 		webhook.Webhooks[0].NamespaceSelector.MatchExpressions = append(webhook.Webhooks[0].NamespaceSelector.MatchExpressions, []metav1.LabelSelectorRequirement{
 			{
-				Key:      "istio-env",
+				Key:      "istio-injection",
 				Operator: metav1.LabelSelectorOpDoesNotExist,
 			},
 			{
 				Key:      "istio.io/rev",
-				Operator: metav1.LabelSelectorOpDoesNotExist,
+				Operator: metav1.LabelSelectorOpIn,
+				Values: []string{
+					r.Config.Name,
+				},
 			},
 		}...)
 	}

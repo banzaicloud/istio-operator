@@ -36,7 +36,7 @@ func (r *Reconciler) configMapInjector() runtime.Object {
 		labels = nil
 	}
 	return &apiv1.ConfigMap{
-		ObjectMeta: templates.ObjectMeta(configMapNameInjector, labels, r.Config),
+		ObjectMeta: templates.ObjectMetaWithRevision(configMapNameInjector, labels, r.Config),
 		Data: map[string]string{
 			"config": r.siConfig(),
 			"values": r.getValues(),

@@ -61,20 +61,20 @@ func (r *Reconciler) containerEnvs() []apiv1.EnvVar {
 
 func (r *Reconciler) deployment() runtime.Object {
 	deployment := &appsv1.Deployment{
-		ObjectMeta: templates.ObjectMeta(deploymentName, util.MergeStringMaps(sidecarInjectorLabels, labelSelector), r.Config),
+		ObjectMeta: templates.ObjectMetaWithRevision(deploymentName, util.MergeStringMaps(sidecarInjectorLabels, labelSelector), r.Config),
 		Spec: appsv1.DeploymentSpec{
 			Replicas: r.Config.Spec.SidecarInjector.ReplicaCount,
 			Strategy: templates.DefaultRollingUpdateStrategy(),
 			Selector: &metav1.LabelSelector{
-				MatchLabels: util.MergeStringMaps(sidecarInjectorLabels, labelSelector),
+				MatchLabels: util.MergeMultipleStringMaps(sidecarInjectorLabels, labelSelector, r.Config.RevisionLabels()),
 			},
 			Template: apiv1.PodTemplateSpec{
 				ObjectMeta: metav1.ObjectMeta{
-					Labels:      util.MergeStringMaps(sidecarInjectorLabels, labelSelector),
+					Labels:      util.MergeMultipleStringMaps(sidecarInjectorLabels, labelSelector, r.Config.RevisionLabels()),
 					Annotations: util.MergeStringMaps(templates.DefaultDeployAnnotations(), r.Config.Spec.SidecarInjector.PodAnnotations),
 				},
 				Spec: apiv1.PodSpec{
-					ServiceAccountName: serviceAccountName,
+					ServiceAccountName: r.Config.WithName(serviceAccountName),
 					Containers: []apiv1.Container{
 						{
 							Name:            "sidecar-injector-webhook",
@@ -157,7 +157,7 @@ func (r *Reconciler) volumes() []apiv1.Volume {
 			VolumeSource: apiv1.VolumeSource{
 				ConfigMap: &apiv1.ConfigMapVolumeSource{
 					LocalObjectReference: apiv1.LocalObjectReference{
-						Name: base.IstioConfigMapName,
+						Name: r.Config.WithName(base.IstioConfigMapName),
 					},
 					DefaultMode: util.IntPointer(420),
 				},
@@ -168,7 +168,7 @@ func (r *Reconciler) volumes() []apiv1.Volume {
 			VolumeSource: apiv1.VolumeSource{
 				ConfigMap: &apiv1.ConfigMapVolumeSource{
 					LocalObjectReference: apiv1.LocalObjectReference{
-						Name: configMapNameInjector,
+						Name: r.Config.WithName(configMapNameInjector),
 					},
 					Items: []apiv1.KeyToPath{
 						{
