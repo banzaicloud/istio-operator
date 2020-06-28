@@ -17,8 +17,6 @@ limitations under the License.
 package istiod
 
 import (
-	"fmt"
-
 	admissionv1beta1 "k8s.io/api/admissionregistration/v1beta1"
 	"k8s.io/apimachinery/pkg/runtime"
 
@@ -61,11 +59,7 @@ func (r *Reconciler) webhooks() []admissionv1beta1.Webhook {
 
 func (r *Reconciler) validatingWebhook() runtime.Object {
 	return &admissionv1beta1.ValidatingWebhookConfiguration{
-		ObjectMeta: templates.ObjectMetaClusterScope(r.validatingWebhookNameWithNamespace(), util.MergeStringMaps(istiodLabels, istiodLabelSelector), r.Config),
+		ObjectMeta: templates.ObjectMetaClusterScopeWithRevision(validatingWebhookName, util.MergeMultipleStringMaps(istiodLabels, istiodLabelSelector, r.Config.RevisionLabels()), r.Config),
 		Webhooks:   r.webhooks(),
 	}
-}
-
-func (r *Reconciler) validatingWebhookNameWithNamespace() string {
-	return fmt.Sprintf("%s-%s", validatingWebhookName, r.Config.Namespace)
 }

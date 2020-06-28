@@ -17,8 +17,6 @@ limitations under the License.
 package istiod
 
 import (
-	"fmt"
-
 	apiv1 "k8s.io/api/core/v1"
 	rbacv1 "k8s.io/api/rbac/v1"
 	"k8s.io/apimachinery/pkg/runtime"
@@ -28,7 +26,7 @@ import (
 
 func (r *Reconciler) serviceAccount() runtime.Object {
 	return &apiv1.ServiceAccount{
-		ObjectMeta: templates.ObjectMeta(serviceAccountName, istiodLabels, r.Config),
+		ObjectMeta: templates.ObjectMetaWithRevision(serviceAccountName, istiodLabels, r.Config),
 	}
 }
 
@@ -145,29 +143,25 @@ func (r *Reconciler) clusterRole() runtime.Object {
 	}
 
 	return &rbacv1.ClusterRole{
-		ObjectMeta: templates.ObjectMetaClusterScope(r.clusterRoleNameIstiodWithNamespace(), istiodLabels, r.Config),
+		ObjectMeta: templates.ObjectMetaClusterScopeWithRevision(clusterRoleNameIstiod, istiodLabels, r.Config),
 		Rules:      rules,
 	}
 }
 
 func (r *Reconciler) clusterRoleBinding() runtime.Object {
 	return &rbacv1.ClusterRoleBinding{
-		ObjectMeta: templates.ObjectMetaClusterScope(clusterRoleBindingNameIstiod, istiodLabels, r.Config),
+		ObjectMeta: templates.ObjectMetaClusterScopeWithRevision(clusterRoleBindingNameIstiod, istiodLabels, r.Config),
 		RoleRef: rbacv1.RoleRef{
 			Kind:     "ClusterRole",
 			APIGroup: "rbac.authorization.k8s.io",
-			Name:     r.clusterRoleNameIstiodWithNamespace(),
+			Name:     r.Config.WithNamespacedName(clusterRoleNameIstiod),
 		},
 		Subjects: []rbacv1.Subject{
 			{
 				Kind:      "ServiceAccount",
-				Name:      serviceAccountName,
+				Name:      r.Config.WithName(serviceAccountName),
 				Namespace: r.Config.Namespace,
 			},
 		},
 	}
-}
-
-func (r *Reconciler) clusterRoleNameIstiodWithNamespace() string {
-	return fmt.Sprintf("%s-%s", clusterRoleNameIstiod, r.Config.Namespace)
 }

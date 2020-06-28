@@ -25,12 +25,12 @@ import (
 
 func (r *Reconciler) horizontalPodAutoscaler() runtime.Object {
 	return &autoscalev2beta2.HorizontalPodAutoscaler{
-		ObjectMeta: templates.ObjectMeta(hpaName, istiodLabels, r.Config),
+		ObjectMeta: templates.ObjectMetaWithRevision(hpaName, istiodLabels, r.Config),
 		Spec: autoscalev2beta2.HorizontalPodAutoscalerSpec{
 			MaxReplicas: util.PointerToInt32(r.Config.Spec.Pilot.MaxReplicas),
 			MinReplicas: r.Config.Spec.Pilot.MinReplicas,
 			ScaleTargetRef: autoscalev2beta2.CrossVersionObjectReference{
-				Name:       deploymentName,
+				Name:       r.Config.WithName(deploymentName),
 				Kind:       "Deployment",
 				APIVersion: "apps/v1",
 			},
