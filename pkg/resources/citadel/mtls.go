@@ -21,6 +21,7 @@ import (
 
 	"github.com/banzaicloud/istio-operator/pkg/apis/istio/v1beta1"
 	"github.com/banzaicloud/istio-operator/pkg/k8sutil"
+	"github.com/banzaicloud/istio-operator/pkg/util"
 )
 
 // spec returns a map to configure the mesh-wide PeerAuthentication
@@ -51,9 +52,9 @@ func (r *Reconciler) peerAuthentication() *k8sutil.DynamicObject {
 			Resource: "peerauthentications",
 		},
 		Kind:      "PeerAuthentication",
-		Name:      "default",
+		Name:      util.CombinedName("default", r.Config.Name),
 		Namespace: r.Config.Namespace,
-		Labels:    citadelLabels,
+		Labels:    util.MergeStringMaps(citadelLabels, r.Config.RevisionLabels()),
 		Spec:      r.spec(),
 		Owner:     r.Config,
 	}
@@ -69,9 +70,9 @@ func (r *Reconciler) destinationRuleDefaultMtls() *k8sutil.DynamicObject {
 			Resource: "destinationrules",
 		},
 		Kind:      "DestinationRule",
-		Name:      "default",
+		Name:      util.CombinedName("default", r.Config.Name),
 		Namespace: r.Config.Namespace,
-		Labels:    citadelLabels,
+		Labels:    util.MergeStringMaps(citadelLabels, r.Config.RevisionLabels()),
 		Spec: map[string]interface{}{
 			"host": "*.local",
 			"trafficPolicy": map[string]interface{}{
@@ -94,9 +95,9 @@ func (r *Reconciler) destinationRuleApiServerMtls() *k8sutil.DynamicObject {
 			Resource: "destinationrules",
 		},
 		Kind:      "DestinationRule",
-		Name:      "api-server",
+		Name:      util.CombinedName("api-server", r.Config.Name),
 		Namespace: r.Config.Namespace,
-		Labels:    citadelLabels,
+		Labels:    util.MergeStringMaps(citadelLabels, r.Config.RevisionLabels()),
 		Spec: map[string]interface{}{
 			"host": "kubernetes.default.svc." + r.Config.Spec.Proxy.ClusterDomain,
 			"trafficPolicy": map[string]interface{}{

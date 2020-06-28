@@ -211,7 +211,7 @@ func (r *Reconciler) deployment() runtime.Object {
 	}
 
 	var deployment = &appsv1.Deployment{
-		ObjectMeta: templates.ObjectMeta(deploymentName, util.MergeStringMaps(citadelLabels, labelSelector), r.Config),
+		ObjectMeta: templates.ObjectMetaWithRevision(deploymentName, util.MergeStringMaps(citadelLabels, labelSelector), r.Config),
 		Spec: appsv1.DeploymentSpec{
 			Replicas: util.IntPointer(1),
 			Strategy: templates.DefaultRollingUpdateStrategy(),
@@ -220,7 +220,7 @@ func (r *Reconciler) deployment() runtime.Object {
 			},
 			Template: apiv1.PodTemplateSpec{
 				ObjectMeta: metav1.ObjectMeta{
-					Labels:      util.MergeStringMaps(citadelLabels, labelSelector),
+					Labels:      util.MergeMultipleStringMaps(citadelLabels, labelSelector, r.Config.RevisionLabels()),
 					Annotations: util.MergeStringMaps(templates.DefaultDeployAnnotations(), r.Config.Spec.Citadel.PodAnnotations),
 				},
 				Spec: podSpec,
