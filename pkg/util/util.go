@@ -17,6 +17,8 @@ limitations under the License.
 package util
 
 import (
+	"strings"
+
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/util/intstr"
 )
@@ -64,6 +66,10 @@ func PointerToInt32(i *int32) int32 {
 func IntstrPointer(i int) *intstr.IntOrString {
 	is := intstr.FromInt(i)
 	return &is
+}
+
+func CombinedName(s ...string) string {
+	return strings.Join(s, "-")
 }
 
 func MergeStringMaps(l map[string]string, l2 map[string]string) map[string]string {
