@@ -27,7 +27,7 @@ import (
 
 func (r *Reconciler) service() runtime.Object {
 	svc := &apiv1.Service{
-		ObjectMeta: templates.ObjectMeta(serviceName, util.MergeStringMaps(citadelLabels, labelSelector), r.Config),
+		ObjectMeta: templates.ObjectMetaWithRevision(serviceName, util.MergeStringMaps(citadelLabels, labelSelector), r.Config),
 		Spec: apiv1.ServiceSpec{
 			Ports: []apiv1.ServicePort{
 				{
