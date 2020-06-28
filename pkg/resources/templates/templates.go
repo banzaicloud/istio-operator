@@ -21,6 +21,7 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 
+	"github.com/banzaicloud/istio-operator/pkg/apis/istio/v1beta1"
 	"github.com/banzaicloud/istio-operator/pkg/util"
 )
 
@@ -44,6 +45,14 @@ func ObjectMeta(name string, labels map[string]string, config runtime.Object) me
 			},
 		},
 	}
+}
+
+func ObjectMetaWithRevision(name string, labels map[string]string, config *v1beta1.Istio) metav1.ObjectMeta {
+	return ObjectMeta(util.CombinedName(name, config.GetName()), util.MergeStringMaps(labels, config.RevisionLabels()), config)
+}
+
+func ObjectMetaClusterScopeWithRevision(name string, labels map[string]string, config *v1beta1.Istio) metav1.ObjectMeta {
+	return ObjectMetaClusterScope(util.CombinedName(name, config.GetName(), config.GetNamespace()), util.MergeStringMaps(labels, config.RevisionLabels()), config)
 }
 
 func ObjectMetaWithAnnotations(name string, labels map[string]string, annotations map[string]string, config runtime.Object) metav1.ObjectMeta {

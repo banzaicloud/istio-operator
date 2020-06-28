@@ -37,7 +37,7 @@ func (r *Reconciler) configMap() runtime.Object {
 	marshaledConfig, _ := yaml.Marshal(meshConfig)
 
 	return &apiv1.ConfigMap{
-		ObjectMeta: templates.ObjectMeta(IstioConfigMapName, cmLabels, r.Config),
+		ObjectMeta: templates.ObjectMetaWithRevision(IstioConfigMapName, cmLabels, r.Config),
 		Data: map[string]string{
 			"mesh":         string(marshaledConfig),
 			"meshNetworks": meshNetworks(r.Config),
