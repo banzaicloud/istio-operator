@@ -27,7 +27,7 @@ import (
 
 func (r *Reconciler) serviceAccount() runtime.Object {
 	return &apiv1.ServiceAccount{
-		ObjectMeta: templates.ObjectMeta(serviceAccountName, galleyLabels, r.Config),
+		ObjectMeta: templates.ObjectMetaWithRevision(serviceAccountName, galleyLabels, r.Config),
 	}
 }
 
@@ -98,23 +98,23 @@ func (r *Reconciler) rules() []rbacv1.PolicyRule {
 
 func (r *Reconciler) clusterRole() runtime.Object {
 	return &rbacv1.ClusterRole{
-		ObjectMeta: templates.ObjectMetaClusterScope(clusterRoleName, galleyLabels, r.Config),
+		ObjectMeta: templates.ObjectMetaClusterScopeWithRevision(clusterRoleName, galleyLabels, r.Config),
 		Rules:      r.rules(),
 	}
 }
 
 func (r *Reconciler) clusterRoleBinding() runtime.Object {
 	return &rbacv1.ClusterRoleBinding{
-		ObjectMeta: templates.ObjectMetaClusterScope(clusterRoleBindingName, galleyLabels, r.Config),
+		ObjectMeta: templates.ObjectMetaClusterScopeWithRevision(clusterRoleBindingName, galleyLabels, r.Config),
 		RoleRef: rbacv1.RoleRef{
 			Kind:     "ClusterRole",
 			APIGroup: "rbac.authorization.k8s.io",
-			Name:     clusterRoleName,
+			Name:     util.CombinedName(clusterRoleName, r.Config.Name, r.Config.Namespace),
 		},
 		Subjects: []rbacv1.Subject{
 			{
 				Kind:      "ServiceAccount",
-				Name:      serviceAccountName,
+				Name:      util.CombinedName(serviceAccountName, r.Config.Name),
 				Namespace: r.Config.Namespace,
 			},
 		},

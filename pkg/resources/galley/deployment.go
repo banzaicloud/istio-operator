@@ -32,7 +32,7 @@ import (
 
 func (r *Reconciler) deployment() runtime.Object {
 	return &appsv1.Deployment{
-		ObjectMeta: templates.ObjectMeta(deploymentName, util.MergeStringMaps(galleyLabels, labelSelector), r.Config),
+		ObjectMeta: templates.ObjectMetaWithRevision(deploymentName, util.MergeStringMaps(galleyLabels, labelSelector), r.Config),
 		Spec: appsv1.DeploymentSpec{
 			Replicas: r.Config.Spec.Galley.ReplicaCount,
 			Strategy: appsv1.DeploymentStrategy{
@@ -42,11 +42,11 @@ func (r *Reconciler) deployment() runtime.Object {
 				},
 			},
 			Selector: &metav1.LabelSelector{
-				MatchLabels: util.MergeStringMaps(galleyLabels, labelSelector),
+				MatchLabels: util.MergeMultipleStringMaps(galleyLabels, labelSelector, r.Config.RevisionLabels()),
 			},
 			Template: apiv1.PodTemplateSpec{
 				ObjectMeta: metav1.ObjectMeta{
-					Labels:      util.MergeStringMaps(galleyLabels, labelSelector),
+					Labels:      util.MergeMultipleStringMaps(galleyLabels, labelSelector, r.Config.RevisionLabels()),
 					Annotations: util.MergeStringMaps(templates.DefaultDeployAnnotations(), r.Config.Spec.Galley.PodAnnotations),
 				},
 				Spec: apiv1.PodSpec{

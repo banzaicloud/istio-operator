@@ -96,7 +96,6 @@ func (r *Reconciler) Reconcile(log logr.Logger) error {
 			return emperror.WrapWith(err, "failed to reconcile resource", "resource", o.GetObjectKind().GroupVersionKind())
 		}
 	}
-	// TODO: wait for deployment to be available?
 
 	log.Info("Reconciled")
 

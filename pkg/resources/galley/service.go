@@ -22,6 +22,7 @@ import (
 	"k8s.io/apimachinery/pkg/util/intstr"
 
 	"github.com/banzaicloud/istio-operator/pkg/resources/templates"
+	"github.com/banzaicloud/istio-operator/pkg/util"
 )
 
 var serviceLabels = map[string]string{
@@ -30,7 +31,7 @@ var serviceLabels = map[string]string{
 
 func (r *Reconciler) service() runtime.Object {
 	return &apiv1.Service{
-		ObjectMeta: templates.ObjectMeta(serviceName, serviceLabels, r.Config),
+		ObjectMeta: templates.ObjectMetaWithRevision(serviceName, serviceLabels, r.Config),
 		Spec: apiv1.ServiceSpec{
 			Ports: []apiv1.ServicePort{
 				{
@@ -52,7 +53,7 @@ func (r *Reconciler) service() runtime.Object {
 					Protocol:   apiv1.ProtocolTCP,
 				},
 			},
-			Selector: labelSelector,
+			Selector: util.MergeStringMaps(labelSelector, r.Config.RevisionLabels()),
 		},
 	}
 }
