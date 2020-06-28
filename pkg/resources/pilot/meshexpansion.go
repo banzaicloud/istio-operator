@@ -20,6 +20,7 @@ import (
 	"k8s.io/apimachinery/pkg/runtime/schema"
 
 	"github.com/banzaicloud/istio-operator/pkg/k8sutil"
+	"github.com/banzaicloud/istio-operator/pkg/util"
 )
 
 func (r *Reconciler) meshExpansionVirtualService() *k8sutil.DynamicObject {
@@ -30,12 +31,12 @@ func (r *Reconciler) meshExpansionVirtualService() *k8sutil.DynamicObject {
 			Resource: "virtualservices",
 		},
 		Kind:      "VirtualService",
-		Name:      "meshexpansion-vs-pilot",
+		Name:      r.Config.WithName("meshexpansion-vs-pilot"),
 		Namespace: r.Config.Namespace,
-		Labels:    pilotLabels,
+		Labels:    util.MergeStringMaps(pilotLabels, r.Config.RevisionLabels()),
 		Spec: map[string]interface{}{
 			"hosts": []string{
-				"istio-pilot." + r.Config.Namespace + ".svc." + r.Config.Spec.Proxy.ClusterDomain,
+				r.Config.GetDiscoveryHost(),
 			},
 			"gateways": []string{
 				"meshexpansion-gateway",
@@ -44,15 +45,15 @@ func (r *Reconciler) meshExpansionVirtualService() *k8sutil.DynamicObject {
 				{
 					"match": []map[string]interface{}{
 						{
-							"port": 15011,
+							"port": r.Config.GetDiscoveryPort(),
 						},
 					},
 					"route": []map[string]interface{}{
 						{
 							"destination": map[string]interface{}{
-								"host": "istio-pilot." + r.Config.Namespace + ".svc." + r.Config.Spec.Proxy.ClusterDomain,
+								"host": r.Config.GetDiscoveryHost(),
 								"port": map[string]interface{}{
-									"number": 15011,
+									"number": r.Config.GetDiscoveryPort(),
 								},
 							},
 						},
@@ -72,16 +73,16 @@ func (r *Reconciler) meshExpansionDestinationRule() *k8sutil.DynamicObject {
 			Resource: "destinationrules",
 		},
 		Kind:      "DestinationRule",
-		Name:      "meshexpansion-dr-pilot",
+		Name:      r.Config.WithName("meshexpansion-dr-pilot"),
 		Namespace: r.Config.Namespace,
-		Labels:    pilotLabels,
+		Labels:    util.MergeStringMaps(pilotLabels, r.Config.RevisionLabels()),
 		Spec: map[string]interface{}{
-			"host": "istio-pilot." + r.Config.Namespace + ".svc." + r.Config.Spec.Proxy.ClusterDomain,
+			"host": r.Config.GetDiscoveryHost(),
 			"trafficPolicy": map[string]interface{}{
 				"portLevelSettings": []map[string]interface{}{
 					{
 						"port": map[string]interface{}{
-							"number": 15011,
+							"number": r.Config.GetDiscoveryPort(),
 						},
 						"tls": map[string]interface{}{
 							"mode": "DISABLE",
