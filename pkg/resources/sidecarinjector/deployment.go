@@ -187,14 +187,24 @@ func (r *Reconciler) volumes() []apiv1.Volume {
 	}
 
 	if util.PointerToBool(r.Config.Spec.Istiod.Enabled) && util.PointerToBool(r.Config.Spec.Istiod.MultiClusterSupport) {
-		volumes = append(volumes, apiv1.Volume{
-			Name: "certs",
-			VolumeSource: apiv1.VolumeSource{
-				EmptyDir: &apiv1.EmptyDirVolumeSource{
-					Medium: apiv1.StorageMediumMemory,
+		volumes = append(volumes, []apiv1.Volume{
+			{
+				Name: "certs",
+				VolumeSource: apiv1.VolumeSource{
+					EmptyDir: &apiv1.EmptyDirVolumeSource{
+						Medium: apiv1.StorageMediumMemory,
+					},
 				},
 			},
-		})
+			{
+				Name: "istio-envoy",
+				VolumeSource: apiv1.VolumeSource{
+					EmptyDir: &apiv1.EmptyDirVolumeSource{
+						Medium: apiv1.StorageMediumMemory,
+					},
+				},
+			},
+		}...)
 	} else {
 		var secretPrefix string
 		if len(r.Config.Spec.Certificates) != 0 {
@@ -343,6 +353,10 @@ func (r *Reconciler) cfVolumeMounts() []apiv1.VolumeMount {
 		{
 			Name:      "istiod-ca-cert",
 			MountPath: "/var/run/secrets/istio",
+		},
+		{
+			Name:      "istio-envoy",
+			MountPath: "/etc/istio/proxy",
 		},
 	}...)
 
