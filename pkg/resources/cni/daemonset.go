@@ -34,10 +34,10 @@ func (r *Reconciler) daemonSet() runtime.Object {
 	labels := util.MergeStringMaps(cniLabels, labelSelector)
 	hostPathType := apiv1.HostPathUnset
 	return &appsv1.DaemonSet{
-		ObjectMeta: templates.ObjectMeta(daemonSetName, labels, r.Config),
+		ObjectMeta: templates.ObjectMetaWithRevision(daemonSetName, labels, r.Config),
 		Spec: appsv1.DaemonSetSpec{
 			Selector: &metav1.LabelSelector{
-				MatchLabels: labels,
+				MatchLabels: util.MergeStringMaps(labels, r.Config.RevisionLabels()),
 			},
 			UpdateStrategy: appsv1.DaemonSetUpdateStrategy{
 				RollingUpdate: &appsv1.RollingUpdateDaemonSet{
@@ -46,7 +46,7 @@ func (r *Reconciler) daemonSet() runtime.Object {
 			},
 			Template: apiv1.PodTemplateSpec{
 				ObjectMeta: metav1.ObjectMeta{
-					Labels:      labels,
+					Labels:      util.MergeStringMaps(labels, r.Config.RevisionLabels()),
 					Annotations: templates.DefaultDeployAnnotations(),
 				},
 				Spec: apiv1.PodSpec{
@@ -69,7 +69,7 @@ func (r *Reconciler) daemonSet() runtime.Object {
 						},
 					},
 					TerminationGracePeriodSeconds: util.Int64Pointer(5),
-					ServiceAccountName:            serviceAccountName,
+					ServiceAccountName:            r.Config.WithName(serviceAccountName),
 					Containers:                    r.container(),
 					Volumes: []apiv1.Volume{
 						{
@@ -123,7 +123,7 @@ func (r *Reconciler) container() []apiv1.Container {
 					ValueFrom: &apiv1.EnvVarSource{
 						ConfigMapKeyRef: &apiv1.ConfigMapKeySelector{
 							LocalObjectReference: apiv1.LocalObjectReference{
-								Name: "istio-cni-config",
+								Name: r.Config.WithName(configMapName),
 							},
 							Key: "cni_network_config",
 						},

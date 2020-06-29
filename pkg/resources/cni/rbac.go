@@ -26,17 +26,17 @@ import (
 
 func (r *Reconciler) serviceAccount() runtime.Object {
 	return &apiv1.ServiceAccount{
-		ObjectMeta: templates.ObjectMeta(serviceAccountName, nil, r.Config),
+		ObjectMeta: templates.ObjectMetaWithRevision(serviceAccountName, nil, r.Config),
 	}
 }
 
 func (r *Reconciler) clusterRole() runtime.Object {
 	return &rbacv1.ClusterRole{
-		ObjectMeta: templates.ObjectMetaClusterScope(clusterRoleName, nil, r.Config),
+		ObjectMeta: templates.ObjectMetaClusterScopeWithRevision(clusterRoleName, nil, r.Config),
 		Rules: []rbacv1.PolicyRule{
 			{
 				APIGroups: []string{""},
-				Resources: []string{"pods", "nodes"},
+				Resources: []string{"pods", "nodes", "namespaces"},
 				Verbs:     []string{"get"},
 			},
 		},
@@ -45,7 +45,7 @@ func (r *Reconciler) clusterRole() runtime.Object {
 
 func (r *Reconciler) clusterRoleRepair() runtime.Object {
 	return &rbacv1.ClusterRole{
-		ObjectMeta: templates.ObjectMetaClusterScope(clusterRoleRepairName, nil, r.Config),
+		ObjectMeta: templates.ObjectMetaClusterScopeWithRevision(clusterRoleRepairName, nil, r.Config),
 		Rules: []rbacv1.PolicyRule{
 			{
 				APIGroups: []string{""},
@@ -63,16 +63,16 @@ func (r *Reconciler) clusterRoleRepair() runtime.Object {
 
 func (r *Reconciler) clusterRoleBinding() runtime.Object {
 	return &rbacv1.ClusterRoleBinding{
-		ObjectMeta: templates.ObjectMetaClusterScope(clusterRoleBindingName, cniRepairLabels, r.Config),
+		ObjectMeta: templates.ObjectMetaClusterScopeWithRevision(clusterRoleBindingName, cniRepairLabels, r.Config),
 		RoleRef: rbacv1.RoleRef{
 			Kind:     "ClusterRole",
 			APIGroup: "rbac.authorization.k8s.io",
-			Name:     clusterRoleName,
+			Name:     r.Config.WithNamespacedName(clusterRoleName),
 		},
 		Subjects: []rbacv1.Subject{
 			{
 				Kind:      "ServiceAccount",
-				Name:      serviceAccountName,
+				Name:      r.Config.WithName(serviceAccountName),
 				Namespace: r.Config.Namespace,
 			},
 		},
@@ -81,16 +81,16 @@ func (r *Reconciler) clusterRoleBinding() runtime.Object {
 
 func (r *Reconciler) clusterRoleBindingRepair() runtime.Object {
 	return &rbacv1.ClusterRoleBinding{
-		ObjectMeta: templates.ObjectMetaClusterScope(clusterRoleBindingRepairName, nil, r.Config),
+		ObjectMeta: templates.ObjectMetaClusterScopeWithRevision(clusterRoleBindingRepairName, nil, r.Config),
 		RoleRef: rbacv1.RoleRef{
 			Kind:     "ClusterRole",
 			APIGroup: "rbac.authorization.k8s.io",
-			Name:     clusterRoleRepairName,
+			Name:     r.Config.WithNamespacedName(clusterRoleRepairName),
 		},
 		Subjects: []rbacv1.Subject{
 			{
 				Kind:      "ServiceAccount",
-				Name:      serviceAccountName,
+				Name:      r.Config.WithName(serviceAccountName),
 				Namespace: r.Config.Namespace,
 			},
 		},
