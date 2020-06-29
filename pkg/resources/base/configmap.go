@@ -133,11 +133,11 @@ func MeshConfig(config *istiov1beta1.Istio, remote bool) map[string]interface{} 
 	meshConfig["sdsUdsPath"] = "unix:/etc/istio/proxy/SDS"
 
 	if util.PointerToBool(config.Spec.Policy.Enabled) {
-		meshConfig["mixerCheckServer"] = mixerServer(config, "policy", remote)
+		meshConfig["mixerCheckServer"] = mixerServerWithRevision(config, "policy", remote)
 	}
 
 	if util.PointerToBool(config.Spec.Telemetry.Enabled) {
-		meshConfig["mixerReportServer"] = mixerServer(config, "telemetry", remote)
+		meshConfig["mixerReportServer"] = mixerServerWithRevision(config, "telemetry", remote)
 		meshConfig["reportBatchMaxEntries"] = config.Spec.Telemetry.ReportBatchMaxEntries
 		meshConfig["reportBatchMaxTime"] = config.Spec.Telemetry.ReportBatchMaxTime
 
@@ -169,6 +169,10 @@ func getLocalityLBConfiguration(config *istiov1beta1.Istio) *istiov1beta1.Locali
 func meshNetworks(config *istiov1beta1.Istio) string {
 	marshaledConfig, _ := yaml.Marshal(config.Spec.GetMeshNetworks())
 	return string(marshaledConfig)
+}
+
+func mixerServerWithRevision(config *istiov1beta1.Istio, mixerType string, remote bool) string {
+	return mixerServer(config, config.WithName(mixerType), remote)
 }
 
 func mixerServer(config *istiov1beta1.Istio, mixerType string, remote bool) string {

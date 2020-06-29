@@ -31,8 +31,9 @@ func (r *Reconciler) stdioHandler() *k8sutil.DynamicObject {
 			Resource: "handlers",
 		},
 		Kind:      "handler",
-		Name:      "stdio",
+		Name:      r.Config.WithName("stdio"),
 		Namespace: r.Config.Namespace,
+		Labels:    r.Config.RevisionLabels(),
 		Spec: map[string]interface{}{
 			"params": map[string]interface{}{
 				"outputAsJson": true,
@@ -51,8 +52,9 @@ func (r *Reconciler) accessLogLogentry() *k8sutil.DynamicObject {
 			Resource: "instances",
 		},
 		Kind:      "instance",
-		Name:      "accesslog",
+		Name:      r.Config.WithName("accesslog"),
 		Namespace: r.Config.Namespace,
+		Labels:    r.Config.RevisionLabels(),
 		Spec: map[string]interface{}{
 			"compiledTemplate": "logentry",
 			"params": map[string]interface{}{
@@ -116,8 +118,9 @@ func (r *Reconciler) tcpAccessLogLogentry() *k8sutil.DynamicObject {
 			Resource: "instances",
 		},
 		Kind:      "instance",
-		Name:      "tcpaccesslog",
+		Name:      r.Config.WithName("tcpaccesslog"),
 		Namespace: r.Config.Namespace,
+		Labels:    r.Config.RevisionLabels(),
 		Spec: map[string]interface{}{
 			"compiledTemplate": "logentry",
 			"params": map[string]interface{}{
@@ -166,12 +169,13 @@ func (r *Reconciler) stdioRule() *k8sutil.DynamicObject {
 			Resource: "rules",
 		},
 		Kind:      "rule",
-		Name:      "stdio",
+		Name:      r.Config.WithName("stdio"),
 		Namespace: r.Config.Namespace,
+		Labels:    r.Config.RevisionLabels(),
 		Spec: map[string]interface{}{
 			"actions": []interface{}{
 				map[string]interface{}{
-					"handler":   "stdio",
+					"handler":   r.Config.WithName("stdio"),
 					"instances": util.EmptyTypedStrSlice("accesslog"),
 				},
 			},
@@ -189,12 +193,13 @@ func (r *Reconciler) stdioTcpRule() *k8sutil.DynamicObject {
 			Resource: "rules",
 		},
 		Kind:      "rule",
-		Name:      "stdiotcp",
+		Name:      r.Config.WithName("stdiotcp"),
 		Namespace: r.Config.Namespace,
+		Labels:    r.Config.RevisionLabels(),
 		Spec: map[string]interface{}{
 			"actions": []interface{}{
 				map[string]interface{}{
-					"handler":   "stdio",
+					"handler":   r.Config.WithName("stdio"),
 					"instances": util.EmptyTypedStrSlice("tcpaccesslog"),
 				},
 			},

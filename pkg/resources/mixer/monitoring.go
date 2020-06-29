@@ -32,21 +32,22 @@ func (r *Reconciler) prometheusHandler() *k8sutil.DynamicObject {
 			Resource: "handlers",
 		},
 		Kind:      "handler",
-		Name:      "prometheus",
+		Name:      r.Config.WithName("prometheus"),
 		Namespace: r.Config.Namespace,
+		Labels:    r.Config.RevisionLabels(),
 		Spec: map[string]interface{}{
 			"compiledAdapter": "prometheus",
 			"params": map[string]interface{}{
 				"metrics": []map[string]interface{}{
 					{
 						"name":          "requests_total",
-						"instance_name": "requestcount.instance." + r.Config.Namespace,
+						"instance_name": r.Config.WithName("requestcount") + ".instance." + r.Config.Namespace,
 						"kind":          "COUNTER",
 						"label_names":   metricLabels(multiClusterEnabled),
 					},
 					{
 						"name":          "request_duration_seconds",
-						"instance_name": "requestduration.instance." + r.Config.Namespace,
+						"instance_name": r.Config.WithName("requestduration") + ".instance." + r.Config.Namespace,
 						"kind":          "DISTRIBUTION",
 						"label_names":   metricLabels(multiClusterEnabled),
 						"buckets": map[string]interface{}{
@@ -57,7 +58,7 @@ func (r *Reconciler) prometheusHandler() *k8sutil.DynamicObject {
 					},
 					{
 						"name":          "request_bytes",
-						"instance_name": "requestsize.instance." + r.Config.Namespace,
+						"instance_name": r.Config.WithName("requestsize") + ".instance." + r.Config.Namespace,
 						"kind":          "DISTRIBUTION",
 						"label_names":   metricLabels(multiClusterEnabled),
 						"buckets": map[string]interface{}{
@@ -70,7 +71,7 @@ func (r *Reconciler) prometheusHandler() *k8sutil.DynamicObject {
 					},
 					{
 						"name":          "response_bytes",
-						"instance_name": "responsesize.instance." + r.Config.Namespace,
+						"instance_name": r.Config.WithName("responsesize") + ".instance." + r.Config.Namespace,
 						"kind":          "DISTRIBUTION",
 						"label_names":   metricLabels(multiClusterEnabled),
 						"buckets": map[string]interface{}{
@@ -83,25 +84,25 @@ func (r *Reconciler) prometheusHandler() *k8sutil.DynamicObject {
 					},
 					{
 						"name":          "tcp_sent_bytes_total",
-						"instance_name": "tcpbytesent.instance." + r.Config.Namespace,
+						"instance_name": r.Config.WithName("tcpbytesent") + ".instance." + r.Config.Namespace,
 						"kind":          "COUNTER",
 						"label_names":   tcpMetricLabels(multiClusterEnabled),
 					},
 					{
 						"name":          "tcp_received_bytes_total",
-						"instance_name": "tcpbytereceived.instance." + r.Config.Namespace,
+						"instance_name": r.Config.WithName("tcpbytereceived") + ".instance." + r.Config.Namespace,
 						"kind":          "COUNTER",
 						"label_names":   tcpMetricLabels(multiClusterEnabled),
 					},
 					{
 						"name":          "tcp_connections_opened_total",
-						"instance_name": "tcpconnectionsopened.instance." + r.Config.Namespace,
+						"instance_name": r.Config.WithName("tcpconnectionsopened") + ".instance." + r.Config.Namespace,
 						"kind":          "COUNTER",
 						"label_names":   tcpMetricLabels(multiClusterEnabled),
 					},
 					{
 						"name":          "tcp_connections_closed_total",
-						"instance_name": "tcpconnectionsclosed.instance." + r.Config.Namespace,
+						"instance_name": r.Config.WithName("tcpconnectionsclosed") + ".instance." + r.Config.Namespace,
 						"kind":          "COUNTER",
 						"label_names":   tcpMetricLabels(multiClusterEnabled),
 					},
@@ -121,8 +122,9 @@ func (r *Reconciler) requestCountMetric() *k8sutil.DynamicObject {
 			Resource: "instances",
 		},
 		Kind:      "instance",
-		Name:      "requestcount",
+		Name:      r.Config.WithName("requestcount"),
 		Namespace: r.Config.Namespace,
+		Labels:    r.Config.RevisionLabels(),
 		Spec: map[string]interface{}{
 			"compiledTemplate": "metric",
 			"params": map[string]interface{}{
@@ -144,8 +146,9 @@ func (r *Reconciler) requestDurationMetric() *k8sutil.DynamicObject {
 			Resource: "instances",
 		},
 		Kind:      "instance",
-		Name:      "requestduration",
+		Name:      r.Config.WithName("requestduration"),
 		Namespace: r.Config.Namespace,
+		Labels:    r.Config.RevisionLabels(),
 		Spec: map[string]interface{}{
 			"compiledTemplate": "metric",
 			"params": map[string]interface{}{
@@ -167,8 +170,9 @@ func (r *Reconciler) requestSizeMetric() *k8sutil.DynamicObject {
 			Resource: "instances",
 		},
 		Kind:      "instance",
-		Name:      "requestsize",
+		Name:      r.Config.WithName("requestsize"),
 		Namespace: r.Config.Namespace,
+		Labels:    r.Config.RevisionLabels(),
 		Spec: map[string]interface{}{
 			"compiledTemplate": "metric",
 			"params": map[string]interface{}{
@@ -190,8 +194,9 @@ func (r *Reconciler) responseSizeMetric() *k8sutil.DynamicObject {
 			Resource: "instances",
 		},
 		Kind:      "instance",
-		Name:      "responsesize",
+		Name:      r.Config.WithName("responsesize"),
 		Namespace: r.Config.Namespace,
+		Labels:    r.Config.RevisionLabels(),
 		Spec: map[string]interface{}{
 			"compiledTemplate": "metric",
 			"params": map[string]interface{}{
@@ -213,8 +218,9 @@ func (r *Reconciler) tcpByteSentMetric() *k8sutil.DynamicObject {
 			Resource: "instances",
 		},
 		Kind:      "instance",
-		Name:      "tcpbytesent",
+		Name:      r.Config.WithName("tcpbytesent"),
 		Namespace: r.Config.Namespace,
+		Labels:    r.Config.RevisionLabels(),
 		Spec: map[string]interface{}{
 			"compiledTemplate": "metric",
 			"params": map[string]interface{}{
@@ -236,8 +242,9 @@ func (r *Reconciler) tcpByteReceivedMetric() *k8sutil.DynamicObject {
 			Resource: "instances",
 		},
 		Kind:      "instance",
-		Name:      "tcpbytereceived",
+		Name:      r.Config.WithName("tcpbytereceived"),
 		Namespace: r.Config.Namespace,
+		Labels:    r.Config.RevisionLabels(),
 		Spec: map[string]interface{}{
 			"compiledTemplate": "metric",
 			"params": map[string]interface{}{
@@ -259,8 +266,9 @@ func (r *Reconciler) tcpConnectionsOpenedMetric() *k8sutil.DynamicObject {
 			Resource: "instances",
 		},
 		Kind:      "instance",
-		Name:      "tcpconnectionsopened",
+		Name:      r.Config.WithName("tcpconnectionsopened"),
 		Namespace: r.Config.Namespace,
+		Labels:    r.Config.RevisionLabels(),
 		Spec: map[string]interface{}{
 			"compiledTemplate": "metric",
 			"params": map[string]interface{}{
@@ -282,8 +290,9 @@ func (r *Reconciler) tcpConnectionsClosedMetric() *k8sutil.DynamicObject {
 			Resource: "instances",
 		},
 		Kind:      "instance",
-		Name:      "tcpconnectionsclosed",
+		Name:      r.Config.WithName("tcpconnectionsclosed"),
 		Namespace: r.Config.Namespace,
+		Labels:    r.Config.RevisionLabels(),
 		Spec: map[string]interface{}{
 			"compiledTemplate": "metric",
 			"params": map[string]interface{}{
@@ -304,13 +313,14 @@ func (r *Reconciler) promHttpRule() *k8sutil.DynamicObject {
 			Resource: "rules",
 		},
 		Kind:      "rule",
-		Name:      "promhttp",
+		Name:      r.Config.WithName("promhttp"),
 		Namespace: r.Config.Namespace,
+		Labels:    r.Config.RevisionLabels(),
 		Spec: map[string]interface{}{
 			"actions": []interface{}{
 				map[string]interface{}{
-					"handler":   "prometheus",
-					"instances": util.EmptyTypedStrSlice("requestcount", "requestduration", "requestsize", "responsesize"),
+					"handler":   r.Config.WithName("prometheus"),
+					"instances": util.EmptyTypedStrSlice(r.Config.WithName("requestcount"), r.Config.WithName("requestduration"), r.Config.WithName("requestsize"), r.Config.WithName("responsesize")),
 				},
 			},
 			"match": `(context.protocol == "http" || context.protocol == "grpc") && (match((request.useragent | "-"), "kube-probe*") == false)  && (match((request.useragent | "-"), "Prometheus*") == false)`,
@@ -327,13 +337,14 @@ func (r *Reconciler) promTcpRule() *k8sutil.DynamicObject {
 			Resource: "rules",
 		},
 		Kind:      "rule",
-		Name:      "promtcp",
+		Name:      r.Config.WithName("promtcp"),
 		Namespace: r.Config.Namespace,
+		Labels:    r.Config.RevisionLabels(),
 		Spec: map[string]interface{}{
 			"actions": []interface{}{
 				map[string]interface{}{
-					"handler":   "prometheus",
-					"instances": util.EmptyTypedStrSlice("tcpbytesent", "tcpbytereceived"),
+					"handler":   r.Config.WithName("prometheus"),
+					"instances": util.EmptyTypedStrSlice(r.Config.WithName("tcpbytesent"), r.Config.WithName("tcpbytereceived")),
 				},
 			},
 			"match": `context.protocol == "tcp"`,
@@ -350,13 +361,14 @@ func (r *Reconciler) promTcpConnectionOpenRule() *k8sutil.DynamicObject {
 			Resource: "rules",
 		},
 		Kind:      "rule",
-		Name:      "promtcpconnectionopen",
+		Name:      r.Config.WithName("promtcpconnectionopen"),
 		Namespace: r.Config.Namespace,
+		Labels:    r.Config.RevisionLabels(),
 		Spec: map[string]interface{}{
 			"actions": []interface{}{
 				map[string]interface{}{
-					"handler":   "prometheus",
-					"instances": util.EmptyTypedStrSlice("tcpconnectionsopened"),
+					"handler":   r.Config.WithName("prometheus"),
+					"instances": util.EmptyTypedStrSlice(r.Config.WithName("tcpconnectionsopened")),
 				},
 			},
 			"match": `context.protocol == "tcp" && ((connection.event | "na") == "open")`,
@@ -373,13 +385,14 @@ func (r *Reconciler) promTcpConnectionClosedRule() *k8sutil.DynamicObject {
 			Resource: "rules",
 		},
 		Kind:      "rule",
-		Name:      "promtcpconnectionclosed",
+		Name:      r.Config.WithName("promtcpconnectionclosed"),
 		Namespace: r.Config.Namespace,
+		Labels:    r.Config.RevisionLabels(),
 		Spec: map[string]interface{}{
 			"actions": []interface{}{
 				map[string]interface{}{
-					"handler":   "prometheus",
-					"instances": util.EmptyTypedStrSlice("tcpconnectionsclosed"),
+					"handler":   r.Config.WithName("prometheus"),
+					"instances": util.EmptyTypedStrSlice(r.Config.WithName("tcpconnectionsclosed")),
 				},
 			},
 			"match": `context.protocol == "tcp" && ((connection.event | "na") == "close")`,

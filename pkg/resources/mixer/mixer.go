@@ -26,6 +26,7 @@ import (
 
 	"github.com/banzaicloud/istio-operator/pkg/util"
 
+	"github.com/banzaicloud/istio-operator/pkg/apis/istio/v1beta1"
 	istiov1beta1 "github.com/banzaicloud/istio-operator/pkg/apis/istio/v1beta1"
 	"github.com/banzaicloud/istio-operator/pkg/k8sutil"
 	"github.com/banzaicloud/istio-operator/pkg/resources"
@@ -206,6 +207,14 @@ func deploymentName(t string) string {
 
 func serviceName(t string) string {
 	return fmt.Sprintf("istio-%s", t)
+}
+
+func serviceNameWithRevision(config *v1beta1.Istio, t string) string {
+	return fmt.Sprintf("istio-%s", config.WithName(t))
+}
+
+func serviceHostWithRevision(config *v1beta1.Istio, t string) string {
+	return fmt.Sprintf("istio-%s.%s.svc.%s", config.WithName(t), config.Namespace, config.Spec.Proxy.ClusterDomain)
 }
 
 func hpaName(t string) string {

@@ -25,7 +25,7 @@ import (
 
 func (r *Reconciler) configMapEnvoy() runtime.Object {
 	return &apiv1.ConfigMap{
-		ObjectMeta: templates.ObjectMeta(configMapNameEnvoy, nil, r.Config),
+		ObjectMeta: templates.ObjectMetaWithRevision(configMapNameEnvoy, nil, r.Config),
 		Data: map[string]string{
 			"envoy.yaml.tmpl": r.envoyConfig(),
 		},
@@ -163,9 +163,9 @@ func (r *Reconciler) envoyConfig() string {
               generate_request_id: true
               http_filters:
               - config:
-                  default_destination_service: istio-telemetry.` + r.Config.Namespace + `.svc.` + r.Config.Spec.TrustDomain + `
+                  default_destination_service: ` + serviceHostWithRevision(r.Config, telemetryComponentName) + `
                   service_configs:
-                    istio-telemetry.` + r.Config.Namespace + `.svc.` + r.Config.Spec.TrustDomain + `:
+                    ` + serviceHostWithRevision(r.Config, telemetryComponentName) + `:
                       disable_check_calls: true
     {{- if .DisableReportCalls }}
                       disable_report_calls: true
@@ -173,11 +173,11 @@ func (r *Reconciler) envoyConfig() string {
                       mixer_attributes:
                         attributes:
                           destination.service.host:
-                            string_value: istio-telemetry.` + r.Config.Namespace + `.svc.` + r.Config.Spec.TrustDomain + `
+                            string_value: ` + serviceHostWithRevision(r.Config, telemetryComponentName) + `
                           destination.service.uid:
-                            string_value: istio://` + r.Config.Namespace + `/services/istio-telemetry
+                            string_value: istio://` + r.Config.Namespace + `/services/` + serviceNameWithRevision(r.Config, telemetryComponentName) + `
                           destination.service.name:
-                            string_value: istio-telemetry
+                            string_value: ` + serviceNameWithRevision(r.Config, telemetryComponentName) + `
                           destination.service.namespace:
                             string_value: ` + r.Config.Namespace + `
                           destination.uid:
@@ -202,7 +202,7 @@ func (r *Reconciler) envoyConfig() string {
                 virtual_hosts:
                 - domains:
                   - '*'
-                  name: istio-telemetry.` + r.Config.Namespace + `.svc.` + r.Config.Spec.TrustDomain + `
+                  name: ` + serviceHostWithRevision(r.Config, telemetryComponentName) + `
                   routes:
                   - decorator:
                       operation: Report
@@ -256,9 +256,9 @@ func (r *Reconciler) envoyConfig() string {
               generate_request_id: true
               http_filters:
               - config:
-                  default_destination_service: istio-telemetry.` + r.Config.Namespace + `.svc.` + r.Config.Spec.TrustDomain + `
+                  default_destination_service: ` + serviceHostWithRevision(r.Config, telemetryComponentName) + `
                   service_configs:
-                    istio-telemetry.` + r.Config.Namespace + `.svc.` + r.Config.Spec.TrustDomain + `:
+                    ` + serviceHostWithRevision(r.Config, telemetryComponentName) + `:
                       disable_check_calls: true
     {{- if .DisableReportCalls }}
                       disable_report_calls: true
@@ -266,11 +266,11 @@ func (r *Reconciler) envoyConfig() string {
                       mixer_attributes:
                         attributes:
                           destination.service.host:
-                            string_value: istio-telemetry.` + r.Config.Namespace + `.svc.` + r.Config.Spec.TrustDomain + `
+                            string_value: ` + serviceHostWithRevision(r.Config, telemetryComponentName) + `
                           destination.service.uid:
-                            string_value: istio://` + r.Config.Namespace + `/services/istio-telemetry
+                            string_value: istio://` + r.Config.Namespace + `/services/` + serviceNameWithRevision(r.Config, telemetryComponentName) + `
                           destination.service.name:
-                            string_value: istio-telemetry
+                            string_value: ` + serviceNameWithRevision(r.Config, telemetryComponentName) + `
                           destination.service.namespace:
                             string_value: ` + r.Config.Namespace + `
                           destination.uid:
@@ -295,7 +295,7 @@ func (r *Reconciler) envoyConfig() string {
                 virtual_hosts:
                 - domains:
                   - '*'
-                  name: istio-telemetry.` + r.Config.Namespace + `.svc.` + r.Config.Spec.TrustDomain + `
+                  name: ` + serviceHostWithRevision(r.Config, telemetryComponentName) + `
                   routes:
                   - decorator:
                       operation: Report

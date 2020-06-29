@@ -27,10 +27,10 @@ import (
 
 func (r *Reconciler) service(t string) runtime.Object {
 	svc := &apiv1.Service{
-		ObjectMeta: templates.ObjectMeta(serviceName(t), labelSelector, r.Config),
+		ObjectMeta: templates.ObjectMetaWithRevision(serviceName(t), labelSelector, r.Config),
 		Spec: apiv1.ServiceSpec{
 			Ports:    r.servicePorts(t),
-			Selector: util.MergeStringMaps(labelSelector, mixerTypeLabel(t)),
+			Selector: util.MergeMultipleStringMaps(labelSelector, mixerTypeLabel(t), r.Config.RevisionLabels()),
 		},
 	}
 	return svc

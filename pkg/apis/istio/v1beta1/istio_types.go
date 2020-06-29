@@ -21,6 +21,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"regexp"
+	"strings"
 
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -911,18 +912,40 @@ func (c *Istio) GetCAAddress() string {
 	return c.GetDiscoveryAddress()
 }
 
-func (c *Istio) GetDiscoveryAddress() string {
-	return fmt.Sprintf("istiod.%s.svc:%s", c.Namespace, c.GetDiscoveryPort())
+func (c *Istio) GetDiscoveryHost() string {
+	svcName := "istio-pilot"
+	if util.PointerToBool(c.Spec.Istiod.Enabled) {
+		svcName = "istiod"
+	}
+	return fmt.Sprintf("%s-%s.%s.svc.%s", svcName, c.Name, c.Namespace, c.Spec.Proxy.ClusterDomain)
 }
 
-func (c *Istio) GetDiscoveryPort() string {
+func (c *Istio) GetDiscoveryAddress() string {
+	return fmt.Sprintf("%s:%d", c.GetDiscoveryHost(), c.GetDiscoveryPort())
+}
+
+func (c *Istio) GetDiscoveryPort() int {
 	if util.PointerToBool(c.Spec.Istiod.Enabled) {
-		return "15012"
+		return 15012
 	}
 	if c.Spec.ControlPlaneSecurityEnabled {
-		return "15011"
+		return 15011
 	}
-	return "15010"
+	return 15010
+}
+
+func (c *Istio) RevisionLabels() map[string]string {
+	return map[string]string{
+		"istio.io/rev": c.Name,
+	}
+}
+
+func (c *Istio) WithName(s string) string {
+	return strings.Join([]string{s, c.Name}, "-")
+}
+
+func (c *Istio) WithNamespacedName(s string) string {
+	return strings.Join([]string{s, c.Name, c.Namespace}, "-")
 }
 
 // IstioStatus defines the observed state of Istio
