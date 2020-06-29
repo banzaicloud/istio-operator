@@ -95,13 +95,8 @@ jobs:
             make generate
 
       - run:
-          name: Run linter
-          command: make lint
-
-      - run:
-          name: Run unit tests
-          command: make test
-          when: always
+          name: Run unit tests, linter, etc.
+          command: make check
 
       - save_cache:
           name: Save build dependencies
