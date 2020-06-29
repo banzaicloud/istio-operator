@@ -17,8 +17,6 @@ limitations under the License.
 package mixer
 
 import (
-	"fmt"
-
 	"k8s.io/apimachinery/pkg/runtime/schema"
 
 	"github.com/banzaicloud/istio-operator/pkg/k8sutil"
@@ -32,11 +30,12 @@ func (r *Reconciler) policyDestinationRule() *k8sutil.DynamicObject {
 			Resource: "destinationrules",
 		},
 		Kind:      "DestinationRule",
-		Name:      "istio-policy",
+		Name:      r.Config.WithName("istio-policy"),
 		Namespace: r.Config.Namespace,
+		Labels:    r.Config.RevisionLabels(),
 		Spec: map[string]interface{}{
 			"traffic_policy": r.trafficPolicy(),
-			"host":           fmt.Sprintf("istio-policy.%s.svc.%s", r.Config.Namespace, r.Config.Spec.Proxy.ClusterDomain),
+			"host":           serviceHostWithRevision(r.Config, policyComponentName),
 		},
 		Owner: r.Config,
 	}
@@ -57,11 +56,12 @@ func (r *Reconciler) telemetryDestinationRule() *k8sutil.DynamicObject {
 			Resource: "destinationrules",
 		},
 		Kind:      "DestinationRule",
-		Name:      "istio-telemetry",
+		Name:      r.Config.WithName("istio-telemetry"),
 		Namespace: r.Config.Namespace,
+		Labels:    r.Config.RevisionLabels(),
 		Spec: map[string]interface{}{
 			"traffic_policy": r.trafficPolicy(),
-			"host":           fmt.Sprintf("istio-telemetry.%s.svc.%s", r.Config.Namespace, r.Config.Spec.Proxy.ClusterDomain),
+			"host":           serviceHostWithRevision(r.Config, telemetryComponentName),
 		},
 		Owner: r.Config,
 	}

@@ -27,11 +27,11 @@ import (
 
 func (r *Reconciler) podDisruptionBudget(t string) runtime.Object {
 	return &policyv1beta1.PodDisruptionBudget{
-		ObjectMeta: templates.ObjectMeta(serviceName(t), labelSelector, r.Config),
+		ObjectMeta: templates.ObjectMetaWithRevision(serviceName(t), labelSelector, r.Config),
 		Spec: policyv1beta1.PodDisruptionBudgetSpec{
 			MinAvailable: util.IntstrPointer(1),
 			Selector: &metav1.LabelSelector{
-				MatchLabels: util.MergeStringMaps(labelSelector, util.MergeStringMaps(appLabel(t), mixerTypeLabel(t))),
+				MatchLabels: util.MergeMultipleStringMaps(labelSelector, util.MergeStringMaps(appLabel(t), mixerTypeLabel(t)), r.Config.RevisionLabels()),
 			},
 		},
 	}

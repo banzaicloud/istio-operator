@@ -30,8 +30,9 @@ func (r *Reconciler) istioProxyAttributeManifest() *k8sutil.DynamicObject {
 			Resource: "attributemanifests",
 		},
 		Kind:      "attributemanifest",
-		Name:      "istioproxy",
+		Name:      r.Config.WithName("istioproxy"),
 		Namespace: r.Config.Namespace,
+		Labels:    r.Config.RevisionLabels(),
 		Spec: map[string]interface{}{
 			"attributes": map[string]interface{}{
 				"origin.ip":                           map[string]interface{}{"valueType": "IP_ADDRESS"},
@@ -112,8 +113,9 @@ func (r *Reconciler) kubernetesAttributeManifest() *k8sutil.DynamicObject {
 			Resource: "attributemanifests",
 		},
 		Kind:      "attributemanifest",
-		Name:      "kubernetes",
+		Name:      r.Config.WithName("kubernetes"),
 		Namespace: r.Config.Namespace,
+		Labels:    r.Config.RevisionLabels(),
 		Spec: map[string]interface{}{
 			"attributes": map[string]interface{}{
 				"source.ip":                      map[string]interface{}{"valueType": "IP_ADDRESS"},
