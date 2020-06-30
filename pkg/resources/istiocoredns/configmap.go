@@ -62,7 +62,7 @@ func (r *Reconciler) data() map[string]string {
 
 func (r *Reconciler) configMap() runtime.Object {
 	return &apiv1.ConfigMap{
-		ObjectMeta: templates.ObjectMeta(configMapName, labels, r.Config),
+		ObjectMeta: templates.ObjectMetaWithRevision(configMapName, labels, r.Config),
 		Data:       r.data(),
 	}
 }

@@ -26,13 +26,13 @@ import (
 
 func (r *Reconciler) serviceAccount() runtime.Object {
 	return &apiv1.ServiceAccount{
-		ObjectMeta: templates.ObjectMeta(serviceAccountName, labels, r.Config),
+		ObjectMeta: templates.ObjectMetaWithRevision(serviceAccountName, labels, r.Config),
 	}
 }
 
 func (r *Reconciler) clusterRole() runtime.Object {
 	return &rbacv1.ClusterRole{
-		ObjectMeta: templates.ObjectMetaClusterScope(clusterRoleName, labels, r.Config),
+		ObjectMeta: templates.ObjectMetaClusterScopeWithRevision(clusterRoleName, labels, r.Config),
 		Rules: []rbacv1.PolicyRule{
 			{
 				APIGroups: []string{"networking.istio.io"},
@@ -45,16 +45,16 @@ func (r *Reconciler) clusterRole() runtime.Object {
 
 func (r *Reconciler) clusterRoleBinding() runtime.Object {
 	return &rbacv1.ClusterRoleBinding{
-		ObjectMeta: templates.ObjectMetaClusterScope(clusterRoleBindingName+"-"+r.Config.Namespace, labels, r.Config),
+		ObjectMeta: templates.ObjectMetaClusterScopeWithRevision(clusterRoleBindingName+"-"+r.Config.Namespace, labels, r.Config),
 		RoleRef: rbacv1.RoleRef{
 			Kind:     "ClusterRole",
 			APIGroup: "rbac.authorization.k8s.io",
-			Name:     clusterRoleName,
+			Name:     r.Config.WithNamespacedName(clusterRoleName),
 		},
 		Subjects: []rbacv1.Subject{
 			{
 				Kind:      "ServiceAccount",
-				Name:      serviceAccountName,
+				Name:      r.Config.WithName(serviceAccountName),
 				Namespace: r.Config.Namespace,
 			},
 		},

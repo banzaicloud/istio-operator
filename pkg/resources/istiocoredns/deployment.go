@@ -109,7 +109,7 @@ func (r *Reconciler) coreDNSPluginContainer() apiv1.Container {
 
 func (r *Reconciler) deployment() runtime.Object {
 	return &appsv1.Deployment{
-		ObjectMeta: templates.ObjectMeta(deploymentName, util.MergeStringMaps(labels, labelSelector), r.Config),
+		ObjectMeta: templates.ObjectMetaWithRevision(deploymentName, util.MergeStringMaps(labels, labelSelector), r.Config),
 		Spec: appsv1.DeploymentSpec{
 			Replicas: r.Config.Spec.IstioCoreDNS.ReplicaCount,
 			Strategy: appsv1.DeploymentStrategy{
@@ -119,15 +119,15 @@ func (r *Reconciler) deployment() runtime.Object {
 				},
 			},
 			Selector: &metav1.LabelSelector{
-				MatchLabels: util.MergeStringMaps(labels, labelSelector),
+				MatchLabels: util.MergeMultipleStringMaps(labels, labelSelector, r.Config.RevisionLabels()),
 			},
 			Template: apiv1.PodTemplateSpec{
 				ObjectMeta: metav1.ObjectMeta{
-					Labels:      util.MergeStringMaps(labels, labelSelector),
+					Labels:      util.MergeMultipleStringMaps(labels, labelSelector, r.Config.RevisionLabels()),
 					Annotations: util.MergeStringMaps(templates.DefaultDeployAnnotations(), r.Config.Spec.IstioCoreDNS.PodAnnotations),
 				},
 				Spec: apiv1.PodSpec{
-					ServiceAccountName: serviceAccountName,
+					ServiceAccountName: r.Config.WithName(serviceAccountName),
 					Containers: []apiv1.Container{
 						r.coreDNSContainer(),
 						r.coreDNSPluginContainer(),
@@ -139,7 +139,7 @@ func (r *Reconciler) deployment() runtime.Object {
 							VolumeSource: apiv1.VolumeSource{
 								ConfigMap: &apiv1.ConfigMapVolumeSource{
 									LocalObjectReference: apiv1.LocalObjectReference{
-										Name: configMapName,
+										Name: r.Config.WithName(configMapName),
 									},
 									Items: []apiv1.KeyToPath{
 										{
