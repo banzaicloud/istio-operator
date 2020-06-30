@@ -27,12 +27,14 @@ import (
 )
 
 func (r *Reconciler) daemonSet() runtime.Object {
-	labels := util.MergeStringMaps(nodeAgentLabels, labelSelector)
+	labels := util.MergeMultipleStringMaps(nodeAgentLabels, labelSelector, r.Config.RevisionLabels())
 	hostPathType := apiv1.HostPathUnset
+	om := templates.ObjectMetaWithRevision(daemonSetName, labels, r.Config)
+	om.Annotations = map[string]string{
+		"sidecar.istio.io/inject": "false",
+	}
 	return &appsv1.DaemonSet{
-		ObjectMeta: templates.ObjectMetaWithAnnotations(daemonSetName, labels, map[string]string{
-			"sidecar.istio.io/inject": "false",
-		}, r.Config),
+		ObjectMeta: om,
 		Spec: appsv1.DaemonSetSpec{
 			Selector: &metav1.LabelSelector{
 				MatchLabels: labels,
