@@ -27,6 +27,8 @@ const (
     context: ANY # inbound, outbound, and gateway
     proxy:
       proxyVersion: '^1\.6.*'
+      metadata:
+        REVISION: %[3]s
     listener:
       filterChain:
         filter:
@@ -45,8 +47,8 @@ const (
             vm_config:
               code:
                 local:
-                  %s
-              runtime: %s
+                  %[1]s
+              runtime: %[2]s
 `
 )
 

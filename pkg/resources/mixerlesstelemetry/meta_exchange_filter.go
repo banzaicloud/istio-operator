@@ -42,7 +42,7 @@ func (r *Reconciler) metaExchangeEnvoyFilter(version string, metadataExchangeFil
 	}
 
 	var y []map[string]interface{}
-	yaml.Unmarshal([]byte(fmt.Sprintf(metadataExchangeFilterYAML, vmConfigLocal, vmConfigRuntime)), &y)
+	yaml.Unmarshal([]byte(fmt.Sprintf(metadataExchangeFilterYAML, vmConfigLocal, vmConfigRuntime, r.Config.Name)), &y)
 
 	return &k8sutil.DynamicObject{
 		Gvr: schema.GroupVersionResource{
@@ -51,8 +51,9 @@ func (r *Reconciler) metaExchangeEnvoyFilter(version string, metadataExchangeFil
 			Resource: "envoyfilters",
 		},
 		Kind:      "EnvoyFilter",
-		Name:      fmt.Sprintf("%s-metadata-exchange-%s", componentName, version),
+		Name:      r.Config.WithName(fmt.Sprintf("%s-metadata-exchange-%s", componentName, version)),
 		Namespace: r.Config.Namespace,
+		Labels:    r.Config.RevisionLabels(),
 		Spec: map[string]interface{}{
 			"configPatches": y,
 		},
