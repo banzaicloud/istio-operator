@@ -137,6 +137,14 @@ func (r *Reconciler) container() []apiv1.Container {
 					Name:  "CHAINED_CNI_PLUGIN",
 					Value: strconv.FormatBool(util.PointerToBool(cniConfig.Chained)),
 				},
+				{
+					Name:  "KUBECFG_FILE_NAME",
+					Value: r.Config.WithName("ZZZ-istio-cni-kubeconfig"),
+				},
+				{
+					Name:  "CNI_CONFIG_NAME",
+					Value: r.Config.WithName("istio-cni"),
+				},
 			},
 			TerminationMessagePath:   apiv1.TerminationMessagePathDefault,
 			TerminationMessagePolicy: apiv1.TerminationMessageReadFile,
