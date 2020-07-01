@@ -43,7 +43,7 @@ func (r *Reconciler) httpStatsFilter(version string, httpStatsFilterYAML string)
 	}
 
 	var y []map[string]interface{}
-	yaml.Unmarshal([]byte(fmt.Sprintf(httpStatsFilterYAML, vmConfigLocal, vmConfigRuntime)), &y)
+	yaml.Unmarshal([]byte(fmt.Sprintf(httpStatsFilterYAML, vmConfigLocal, vmConfigRuntime, r.Config.Name)), &y)
 
 	return &k8sutil.DynamicObject{
 		Gvr: schema.GroupVersionResource{
@@ -52,8 +52,9 @@ func (r *Reconciler) httpStatsFilter(version string, httpStatsFilterYAML string)
 			Resource: "envoyfilters",
 		},
 		Kind:      "EnvoyFilter",
-		Name:      fmt.Sprintf("%s-stats-filter-%s", componentName, version),
+		Name:      r.Config.WithName(fmt.Sprintf("%s-stats-filter-%s", componentName, version)),
 		Namespace: r.Config.Namespace,
+		Labels:    r.Config.RevisionLabels(),
 		Spec: map[string]interface{}{
 			"configPatches": y,
 		},
