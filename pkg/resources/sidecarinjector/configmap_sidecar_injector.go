@@ -73,6 +73,7 @@ func (r *Reconciler) getValues() string {
 			},
 		},
 		"global": map[string]interface{}{
+			"revision": r.Config.Name,
 			"mtls": map[string]interface{}{
 				"auto": util.PointerToBool(r.Config.Spec.AutoMTLS),
 			},
@@ -329,6 +330,8 @@ containers:
   - name: ISTIO_META_OWNER
     value: kubernetes://apis/{{ .TypeMeta.APIVersion }}/namespaces/{{ valueOrDefault .DeploymentMeta.Namespace ` + "`" + `default` + "`" + ` }}/{{ toLower .TypeMeta.Kind}}s/{{ .DeploymentMeta.Name }}
    {{- end}}
+  - name: ISTIO_META_REVISION
+    value: "{{ .Values.global.revision }}"
   {{- if (isset .ObjectMeta.Annotations ` + "`" + `sidecar.istio.io/bootstrapOverride` + "`" + `) }}
   - name: ISTIO_BOOTSTRAP_OVERRIDE
     value: "/etc/istio/custom-bootstrap/custom_bootstrap.json"
