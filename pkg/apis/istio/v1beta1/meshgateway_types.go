@@ -35,6 +35,14 @@ type MeshGatewaySpec struct {
 	Ports []ServicePort `json:"ports"`
 	// +kubebuilder:validation:Enum=ingress,egress
 	Type GatewayType `json:"type"`
+	// Istio CR to which this gateway belongs to
+	IstioControlPlane *NamespacedName `json:"istioControlPlane,omitempty"`
+}
+
+// NamespacedName contains reference to a resource
+type NamespacedName struct {
+	Namespace string `json:"namespace,omitempty"`
+	Name      string `json:"name,omitempty"`
 }
 
 type MeshGatewayConfiguration struct {

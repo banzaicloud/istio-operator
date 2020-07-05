@@ -20,6 +20,7 @@ import (
 	"context"
 	"fmt"
 	"reflect"
+	"sort"
 	"time"
 
 	"github.com/go-logr/logr"
@@ -145,17 +146,12 @@ func (r *ReconcileMeshGateway) Reconcile(request reconcile.Request) (reconcile.R
 		return reconcile.Result{}, errors.WithStack(err)
 	}
 
-	var configs istiov1beta1.IstioList
-	err = r.Client.List(context.TODO(), &client.ListOptions{}, &configs)
+	istio, err := r.getRelatedIstioCR(instance)
 	if err != nil {
-		return reconcile.Result{}, emperror.Wrap(err, "could not list istio resources")
+		return reconcile.Result{}, errors.WithStack(err)
 	}
-	if len(configs.Items) != 1 {
-		return reconcile.Result{}, emperror.Wrap(err, "could not found istio resource")
-	}
-	istio := configs.Items[0]
 
-	reconciler := gateways.New(r.Client, r.dynamic, &istio, instance)
+	reconciler := gateways.New(r.Client, r.dynamic, istio, instance)
 
 	err = reconciler.Reconcile(log)
 	if err == nil {
@@ -197,6 +193,37 @@ func (r *ReconcileMeshGateway) setDefaultLabels(instance *istiov1beta1.MeshGatew
 	}
 
 	return nil
+}
+
+func (r *ReconcileMeshGateway) getRelatedIstioCR(instance *istiov1beta1.MeshGateway) (*istiov1beta1.Istio, error) {
+	istio := &istiov1beta1.Istio{}
+
+	// try to get specified Istio CR
+	if instance.Spec.IstioControlPlane != nil {
+		err := r.Client.Get(context.Background(), client.ObjectKey{
+			Name:      instance.Spec.IstioControlPlane.Name,
+			Namespace: instance.Spec.IstioControlPlane.Namespace,
+		}, istio)
+		if err != nil && !k8serrors.IsNotFound(err) {
+			return nil, emperror.Wrap(err, "could not get related Istio CR")
+		}
+
+		return istio, nil
+	}
+
+	// get the oldest otherwise for backward compatibility
+	var configs istiov1beta1.IstioList
+	err := r.Client.List(context.TODO(), &client.ListOptions{}, &configs)
+	if err != nil {
+		return nil, emperror.Wrap(err, "could not list istio resources")
+	}
+	if len(configs.Items) == 0 {
+		return nil, errors.New("no Istio CRs were found")
+	}
+
+	sort.Sort(istiov1beta1.SortableIstioItems(configs.Items))
+
+	return &configs.Items[0], nil
 }
 
 func updateStatus(c client.Client, instance *istiov1beta1.MeshGateway, status istiov1beta1.ConfigState, errorMessage string, logger logr.Logger) error {

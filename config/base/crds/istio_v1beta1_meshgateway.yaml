@@ -64,6 +64,14 @@ spec:
               type: array
             affinity:
               type: object
+            istioControlPlane:
+              description: Istio CR to which this gateway belongs to
+              properties:
+                name:
+                  type: string
+                namespace:
+                  type: string
+              type: object
             labels:
               type: object
             loadBalancerIP:
