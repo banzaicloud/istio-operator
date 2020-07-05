@@ -19,6 +19,7 @@ package crds
 import (
 	"bufio"
 	"bytes"
+	"fmt"
 	"io"
 	"strings"
 
@@ -36,6 +37,7 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/predicate"
 
 	istiov1beta1 "github.com/banzaicloud/istio-operator/pkg/apis/istio/v1beta1"
+	"github.com/banzaicloud/istio-operator/pkg/k8sutil"
 	istio_crds "github.com/banzaicloud/istio-operator/pkg/manifests/istio-crds/generated"
 	"github.com/banzaicloud/k8s-objectmatcher/patch"
 )
@@ -47,14 +49,16 @@ const (
 )
 
 type CRDReconciler struct {
-	crds   []*extensionsobj.CustomResourceDefinition
-	config *rest.Config
+	crds     []*extensionsobj.CustomResourceDefinition
+	config   *rest.Config
+	revision string
 }
 
-func New(cfg *rest.Config, crds ...*extensionsobj.CustomResourceDefinition) (*CRDReconciler, error) {
+func New(cfg *rest.Config, revision string, crds ...*extensionsobj.CustomResourceDefinition) (*CRDReconciler, error) {
 	r := &CRDReconciler{
-		crds:   crds,
-		config: cfg,
+		crds:     crds,
+		config:   cfg,
+		revision: revision,
 	}
 
 	return r, nil
@@ -142,6 +146,10 @@ func (r *CRDReconciler) Reconcile(config *istiov1beta1.Istio, log logr.Logger) e
 	crdClient := apiExtensions.ApiextensionsV1beta1().CustomResourceDefinitions()
 	for _, obj := range r.crds {
 		crd := obj.DeepCopy()
+		err = k8sutil.SetResourceRevision(crd, r.revision)
+		if err != nil {
+			return emperror.Wrap(err, "could not set resource revision")
+		}
 		log := log.WithValues("kind", crd.Spec.Names.Kind)
 		current, err := crdClient.Get(crd.Name, metav1.GetOptions{})
 		if err != nil && !apierrors.IsNotFound(err) {
@@ -156,6 +164,14 @@ func (r *CRDReconciler) Reconcile(config *istiov1beta1.Istio, log logr.Logger) e
 			}
 			log.Info("CRD created")
 		} else {
+			if ok, err := k8sutil.CheckResourceRevision(current, fmt.Sprintf("<=%s", r.revision)); !ok {
+				if err != nil {
+					log.Error(err, "could not check resource revision")
+				} else {
+					log.V(1).Info("CRD is too new for us")
+				}
+				continue
+			}
 			crd.ResourceVersion = current.ResourceVersion
 			patchResult, err := patch.DefaultPatchMaker.Calculate(current, crd, patch.IgnoreStatusFields())
 			if err != nil {

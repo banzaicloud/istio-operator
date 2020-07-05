@@ -30,7 +30,14 @@ import (
 	"github.com/banzaicloud/istio-operator/pkg/util"
 )
 
-const supportedIstioMinorVersionRegex = "^1.6"
+const (
+	supportedIstioMinorVersionRegex = "^1.6"
+)
+
+var (
+	SupportedIstioVersion = "1.6.3"
+	Version               = "0.6.4"
+)
 
 // IstioVersion stores the intended Istio version
 type IstioVersion string
@@ -292,6 +299,8 @@ type InitCNIConfiguration struct {
 	ConfDir string `json:"confDir,omitempty"`
 	// List of namespaces to exclude from Istio pod check
 	ExcludeNamespaces []string `json:"excludeNamespaces,omitempty"`
+	// List of namespaces to include for Istio pod check
+	IncludeNamespaces []string `json:"includeNamespaces,omitempty"`
 	// Logging level for CNI binary
 	LogLevel string                 `json:"logLevel,omitempty"`
 	Affinity *corev1.Affinity       `json:"affinity,omitempty"`

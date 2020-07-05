@@ -11,6 +11,7 @@ GOLANGCI_VERSION = 1.23.8
 LICENSEI_VERSION = 0.1.0
 KUBEBUILDER_VERSION = 1.0.8
 KUSTOMIZE_VERSION = 2.0.3
+ISTIO_VERSION = 1.6.5
 
 KUSTOMIZE_BASE = config/overlays/specific-manager-version
 
@@ -51,8 +52,11 @@ test: install-kubebuilder generate fmt vet manifests
 	KUBEBUILDER_ASSETS="$${PWD}/bin/kubebuilder/bin" go test ./pkg/... ./cmd/... -coverprofile cover.out
 
 # Build manager binary
-manager: generate fmt vet
-	go build -o bin/manager github.com/banzaicloud/istio-operator/cmd/manager
+manager: generate fmt vet build
+
+# Build manager binary
+build:
+	go build -o bin/manager -ldflags="-X github.com/banzaicloud/istio-operator/pkg/apis/istio/v1beta1.SupportedIstioVersion=${ISTIO_VERSION} -X github.com/banzaicloud/istio-operator/pkg/apis/istio/v1beta1.Version=${TAG}" github.com/banzaicloud/istio-operator/cmd/manager
 
 # Run against the configured Kubernetes cluster in ~/.kube/config
 run: generate fmt vet
