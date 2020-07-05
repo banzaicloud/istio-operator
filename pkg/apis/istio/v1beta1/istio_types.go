@@ -957,6 +957,20 @@ func (c *Istio) WithNamespacedName(s string) string {
 	return strings.Join([]string{s, c.Name, c.Namespace}, "-")
 }
 
+type SortableIstioItems []Istio
+
+func (list SortableIstioItems) Len() int {
+	return len(list)
+}
+
+func (list SortableIstioItems) Swap(i, j int) {
+	list[i], list[j] = list[j], list[i]
+}
+
+func (list SortableIstioItems) Less(i, j int) bool {
+	return list[i].CreationTimestamp.Time.Before(list[j].CreationTimestamp.Time)
+}
+
 // IstioStatus defines the observed state of Istio
 type IstioStatus struct {
 	Status         ConfigState `json:"Status,omitempty"`

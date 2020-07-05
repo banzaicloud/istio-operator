@@ -35,8 +35,9 @@ func (r *Reconciler) multimeshIngressGateway() *k8sutil.DynamicObject {
 			Resource: "gateways",
 		},
 		Kind:      "Gateway",
-		Name:      multimeshResourceNamePrefix + "-ingressgateway",
+		Name:      r.Config.WithName(multimeshResourceNamePrefix + "-ingressgateway"),
 		Namespace: r.Config.Namespace,
+		Labels:    r.Config.RevisionLabels(),
 		Spec: map[string]interface{}{
 			"servers": []map[string]interface{}{
 				{
@@ -65,8 +66,9 @@ func (r *Reconciler) multimeshEnvoyFilter() *k8sutil.DynamicObject {
 			Resource: "envoyfilters",
 		},
 		Kind:      "EnvoyFilter",
-		Name:      multimeshResourceNamePrefix + "-ingressgateway",
+		Name:      r.Config.WithName(multimeshResourceNamePrefix + "-ingressgateway"),
 		Namespace: r.Config.Namespace,
+		Labels:    r.Config.RevisionLabels(),
 		Spec: map[string]interface{}{
 			"workloadSelector": map[string]interface{}{
 				"labels": resourceLabels,
@@ -110,8 +112,9 @@ func (r *Reconciler) multimeshDestinationRule() *k8sutil.DynamicObject {
 			Resource: "destinationrules",
 		},
 		Kind:      "DestinationRule",
-		Name:      multimeshResourceNamePrefix + "-destinationrule",
+		Name:      r.Config.WithName(multimeshResourceNamePrefix + "-destinationrule"),
 		Namespace: r.Config.Namespace,
+		Labels:    r.Config.RevisionLabels(),
 		Spec: map[string]interface{}{
 			"host": "*.global",
 			"trafficPolicy": map[string]interface{}{

@@ -79,9 +79,13 @@ func (r *Reconciler) Reconcile(log logr.Logger) error {
 		Ports:                    r.Config.Spec.Gateways.IngressConfig.Ports,
 		Type:                     istiov1beta1.GatewayTypeIngress,
 	}
+	spec.IstioControlPlane = &istiov1beta1.NamespacedName{
+		Name:      r.Config.Name,
+		Namespace: r.Config.Namespace,
+	}
 	spec.Labels = r.labels()
 	object := &istiov1beta1.MeshGateway{
-		ObjectMeta: templates.ObjectMeta(ResourceName, spec.Labels, r.Config),
+		ObjectMeta: templates.ObjectMetaWithRevision(ResourceName, spec.Labels, r.Config),
 		Spec:       spec,
 	}
 	object.SetDefaultLabels()
@@ -101,14 +105,14 @@ func (r *Reconciler) Reconcile(log logr.Logger) error {
 	}
 
 	var meshExpansionDesiredState k8sutil.DesiredState
-	if util.PointerToBool(r.Config.Spec.MeshExpansion) {
+	if desiredState == k8sutil.DesiredStatePresent && util.PointerToBool(r.Config.Spec.MeshExpansion) {
 		meshExpansionDesiredState = k8sutil.DesiredStatePresent
 	} else {
 		meshExpansionDesiredState = k8sutil.DesiredStateAbsent
 	}
 
 	var multimeshDesiredState k8sutil.DesiredState
-	if util.PointerToBool(r.Config.Spec.MultiMesh) {
+	if desiredState == k8sutil.DesiredStatePresent && util.PointerToBool(r.Config.Spec.MultiMesh) {
 		multimeshDesiredState = k8sutil.DesiredStatePresent
 	} else {
 		multimeshDesiredState = k8sutil.DesiredStateAbsent
@@ -141,5 +145,5 @@ func (r *Reconciler) Reconcile(log logr.Logger) error {
 }
 
 func (r *Reconciler) labels() map[string]string {
-	return util.MergeStringMaps(resourceLabels, r.Config.Spec.Gateways.IngressConfig.MeshGatewayConfiguration.Labels)
+	return util.MergeMultipleStringMaps(resourceLabels, r.Config.Spec.Gateways.IngressConfig.MeshGatewayConfiguration.Labels, r.Config.RevisionLabels())
 }
