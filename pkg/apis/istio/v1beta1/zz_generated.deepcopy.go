@@ -546,6 +546,11 @@ func (in *InitCNIConfiguration) DeepCopyInto(out *InitCNIConfiguration) {
 		*out = make([]string, len(*in))
 		copy(*out, *in)
 	}
+	if in.IncludeNamespaces != nil {
+		in, out := &in.IncludeNamespaces, &out.IncludeNamespaces
+		*out = make([]string, len(*in))
+		copy(*out, *in)
+	}
 	if in.Affinity != nil {
 		in, out := &in.Affinity, &out.Affinity
 		*out = new(v1.Affinity)
