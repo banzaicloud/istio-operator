@@ -77,9 +77,13 @@ func (r *Reconciler) Reconcile(log logr.Logger) error {
 		Ports:                    r.Config.Spec.Gateways.EgressConfig.Ports,
 		Type:                     istiov1beta1.GatewayTypeEgress,
 	}
+	spec.IstioControlPlane = &istiov1beta1.NamespacedName{
+		Name:      r.Config.Name,
+		Namespace: r.Config.Namespace,
+	}
 	spec.Labels = r.labels()
 	object := &istiov1beta1.MeshGateway{
-		ObjectMeta: templates.ObjectMeta(resourceName, spec.Labels, r.Config),
+		ObjectMeta: templates.ObjectMetaWithRevision(resourceName, spec.Labels, r.Config),
 		Spec:       spec,
 	}
 	object.SetDefaultLabels()
@@ -90,7 +94,7 @@ func (r *Reconciler) Reconcile(log logr.Logger) error {
 	}
 
 	var multimeshEgressGatewayDesiredState k8sutil.DesiredState
-	if util.PointerToBool(r.Config.Spec.MultiMesh) && util.PointerToBool(r.Config.Spec.Gateways.EgressConfig.Enabled) {
+	if desiredState == k8sutil.DesiredStatePresent && util.PointerToBool(r.Config.Spec.MultiMesh) && util.PointerToBool(r.Config.Spec.Gateways.EgressConfig.Enabled) {
 		multimeshEgressGatewayDesiredState = k8sutil.DesiredStatePresent
 		if util.PointerToBool(r.Config.Spec.Gateways.EgressConfig.CreateOnly) {
 			multimeshEgressGatewayDesiredState = k8sutil.DesiredStateExists
@@ -121,5 +125,5 @@ func (r *Reconciler) Reconcile(log logr.Logger) error {
 }
 
 func (r *Reconciler) labels() map[string]string {
-	return util.MergeStringMaps(resourceLabels, r.Config.Spec.Gateways.EgressConfig.MeshGatewayConfiguration.Labels)
+	return util.MergeMultipleStringMaps(resourceLabels, r.Config.Spec.Gateways.EgressConfig.MeshGatewayConfiguration.Labels, r.Config.RevisionLabels())
 }
