@@ -179,6 +179,22 @@ rules:
   verbs:
   - approve
 - apiGroups:
+  - extensions
+  - networking.k8s.io
+  resources:
+  - ingresses
+  verbs:
+  - get
+  - list
+  - watch
+- apiGroups:
+  - extensions
+  - networking.k8s.io
+  resources:
+  - ingresses/status
+  verbs:
+  - '*'
+- apiGroups:
   - networking.k8s.io
   resources:
   - ingressclasses
