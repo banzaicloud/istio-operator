@@ -35,6 +35,9 @@ spec:
         cpu: 500m
         memory: 2048Mi
     certProvider: "istiod"
+    additionalEnvVars:
+      - name: PILOT_ENABLE_STATUS
+        value: "true"
   gateways:
     enabled: true
     ingress:

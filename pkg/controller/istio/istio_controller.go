@@ -164,6 +164,8 @@ type ReconcileComponent func(log logr.Logger, istio *istiov1beta1.Istio) error
 // +kubebuilder:rbac:groups="authentication.k8s.io",resources=tokenreviews,verbs=create
 // +kubebuilder:rbac:groups="certificates.k8s.io",resources=certificatesigningrequests;certificatesigningrequests/approval;certificatesigningrequests/status,verbs=update;create;get;delete;watch
 // +kubebuilder:rbac:groups="certificates.k8s.io",resources=signers,resourceNames=kubernetes.io/legacy-unknown,verbs=approve
+// +kubebuilder:rbac:groups="extensions;networking.k8s.io",resources=ingresses,verbs=get;list;watch
+// +kubebuilder:rbac:groups="extensions;networking.k8s.io",resources=ingresses/status,verbs=*
 // +kubebuilder:rbac:groups="networking.k8s.io",resources=ingressclasses;ingresses,verbs=get;list;watch
 // +kubebuilder:rbac:groups="networking.k8s.io",resources=ingresses/status,verbs=*
 // +kubebuilder:rbac:groups="networking.x.k8s.io",resources=*,verbs=get;list;watch

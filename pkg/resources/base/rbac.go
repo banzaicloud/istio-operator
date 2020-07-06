@@ -45,7 +45,7 @@ func (r *Reconciler) clusterRole() runtime.Object {
 			{
 				APIGroups: []string{"config.istio.io", "rbac.istio.io", "security.istio.io", "networking.istio.io", "authentication.istio.io"},
 				Resources: []string{"*"},
-				Verbs:     []string{"get", "watch", "list"},
+				Verbs:     []string{"get", "watch", "list", "update"},
 			},
 			{
 				APIGroups: []string{""},

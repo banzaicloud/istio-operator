@@ -57,7 +57,7 @@ func (r *Reconciler) clusterRole() runtime.Object {
 		{
 			APIGroups: []string{"config.istio.io", "rbac.istio.io", "security.istio.io", "networking.istio.io", "authentication.istio.io"},
 			Resources: []string{"*"},
-			Verbs:     []string{"get", "watch", "list"},
+			Verbs:     []string{"get", "watch", "list", "update"},
 		},
 		// auto-detect installed CRD definitions
 		{
@@ -82,6 +82,16 @@ func (r *Reconciler) clusterRole() runtime.Object {
 			Verbs:     []string{"get", "list", "watch"},
 		},
 		// ingress controller
+		{
+			APIGroups: []string{"extensions", "networking.k8s.io"},
+			Resources: []string{"ingresses"},
+			Verbs:     []string{"get", "list", "watch"},
+		},
+		{
+			APIGroups: []string{"extensions", "networking.k8s.io"},
+			Resources: []string{"ingresses/status"},
+			Verbs:     []string{"*"},
+		},
 		{
 			APIGroups: []string{"networking.k8s.io"},
 			Resources: []string{"ingresses", "ingressclasses"},
