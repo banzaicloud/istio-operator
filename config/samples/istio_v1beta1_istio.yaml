@@ -38,6 +38,8 @@ spec:
     additionalEnvVars:
       - name: PILOT_ENABLE_STATUS
         value: "true"
+      - name: PILOT_ENABLE_ANALYSIS
+        value: "true"
   gateways:
     enabled: true
     ingress:
