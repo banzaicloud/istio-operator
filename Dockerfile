@@ -12,7 +12,7 @@ WORKDIR /go/src/${PACKAGE}
 
 COPY pkg/    pkg/
 COPY cmd/    cmd/
-COPY Makefile Gopkg.* /go/src/${PACKAGE}/
+COPY Makefile go.* /go/src/${PACKAGE}/
 RUN make vendor
 
 # Build
