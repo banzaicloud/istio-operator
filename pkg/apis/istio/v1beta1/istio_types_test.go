@@ -36,7 +36,7 @@ func TestStorageIstio(t *testing.T) {
 			Namespace: "default",
 		},
 		Spec: IstioSpec{
-			Version: "1.6.3",
+			Version: "1.6.4",
 		},
 	}
 	g := gomega.NewGomegaWithT(t)
