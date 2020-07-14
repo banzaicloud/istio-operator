@@ -73,6 +73,9 @@ type RemoteIstioSpec struct {
 	// Proxy Init configuration options
 	ProxyInit ProxyInitConfiguration `json:"proxyInit,omitempty"`
 
+	// Istio CR to which this gateway belongs to
+	IstioControlPlane *NamespacedName `json:"istioControlPlane,omitempty"`
+
 	signCert SignCert
 }
 

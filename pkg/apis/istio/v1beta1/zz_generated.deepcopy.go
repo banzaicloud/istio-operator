@@ -1663,6 +1663,11 @@ func (in *RemoteIstioSpec) DeepCopyInto(out *RemoteIstioSpec) {
 	in.SidecarInjector.DeepCopyInto(&out.SidecarInjector)
 	in.Proxy.DeepCopyInto(&out.Proxy)
 	out.ProxyInit = in.ProxyInit
+	if in.IstioControlPlane != nil {
+		in, out := &in.IstioControlPlane, &out.IstioControlPlane
+		*out = new(NamespacedName)
+		**out = **in
+	}
 	in.signCert.DeepCopyInto(&out.signCert)
 	return
 }

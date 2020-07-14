@@ -78,7 +78,8 @@ func (r *Reconciler) getValues() string {
 				"auto": util.PointerToBool(r.Config.Spec.AutoMTLS),
 			},
 			"istiod": map[string]interface{}{
-				"enabled": util.PointerToBool(r.Config.Spec.Istiod.Enabled),
+				"enabled":          util.PointerToBool(r.Config.Spec.Istiod.Enabled),
+				"caRootConfigName": r.Config.WithName("istio-ca-root-cert"),
 			},
 			"caAddress":                   r.Config.GetCAAddress(),
 			"controlPlaneSecurityEnabled": r.Config.Spec.ControlPlaneSecurityEnabled,
@@ -505,7 +506,7 @@ volumes:
 {{- if eq .Values.global.pilotCertProvider "istiod" }}
 - name: istiod-ca-cert
   configMap:
-    name: istio-ca-root-cert
+    name: {{ .Values.global.istiod.caRootConfigName }}
 {{- end }}
 {{- if .Values.global.mountMtlsCerts }}
 # Use the key and cert mounted to /etc/certs/ for the in-cluster mTLS communications.
