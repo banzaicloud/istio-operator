@@ -39,8 +39,8 @@ func (c *Cluster) reconcileComponents(remoteConfig *istiov1beta1.RemoteIstio, is
 		nodeagent.New(c.ctrlRuntimeClient, c.istioConfig),
 		cni.New(c.ctrlRuntimeClient, c.istioConfig),
 		sidecarinjector.New(c.ctrlRuntimeClient, c.istioConfig),
-		ingressgateway.New(c.ctrlRuntimeClient, c.dynamicClient, c.istioConfig),
-		egressgateway.New(c.ctrlRuntimeClient, c.dynamicClient, c.istioConfig),
+		ingressgateway.New(c.ctrlRuntimeClient, c.dynamicClient, c.istioConfig, true),
+		egressgateway.New(c.ctrlRuntimeClient, c.dynamicClient, c.istioConfig, true),
 	}
 
 	for _, rec := range reconcilers {

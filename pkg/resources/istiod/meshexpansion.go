@@ -39,7 +39,7 @@ func (r *Reconciler) meshExpansionVirtualService() *k8sutil.DynamicObject {
 				r.Config.GetDiscoveryHost(),
 			},
 			"gateways": []string{
-				"meshexpansion-gateway",
+				r.Config.WithName("meshexpansion-gateway"),
 			},
 			"tcp": []map[string]interface{}{
 				{

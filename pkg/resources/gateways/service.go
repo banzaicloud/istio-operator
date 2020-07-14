@@ -44,7 +44,7 @@ func (r *Reconciler) service() runtime.Object {
 func (r *Reconciler) servicePorts(name string) []apiv1.ServicePort {
 	ports := istiov1beta1.ServicePorts(r.gw.Spec.Ports).Convert()
 
-	if name == defaultIngressgatewayName {
+	if name == r.Config.WithName(defaultIngressgatewayName) {
 		if util.PointerToBool(r.Config.Spec.MeshExpansion) {
 			ports = append(ports, apiv1.ServicePort{
 				Port: 853, Protocol: apiv1.ProtocolTCP, TargetPort: intstr.FromInt(8853), Name: "tcp-dns-tls",

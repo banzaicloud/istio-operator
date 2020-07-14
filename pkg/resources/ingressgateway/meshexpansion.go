@@ -26,7 +26,7 @@ import (
 func (r *Reconciler) meshExpansionGateway() *k8sutil.DynamicObject {
 	servers := make([]map[string]interface{}, 0)
 
-	if util.PointerToBool(r.Config.Spec.Pilot.Enabled) {
+	if util.PointerToBool(r.Config.Spec.Pilot.Enabled) && !util.PointerToBool(r.Config.Spec.Istiod.Enabled) {
 		servers = append(servers, map[string]interface{}{
 			"port": map[string]interface{}{
 				"name":     "tcp-pilot",

@@ -97,7 +97,7 @@ func (r *Reconciler) deployment() runtime.Object {
 		ObjectMeta: templates.ObjectMeta(r.gatewayName(), r.labels(), r.gw),
 		Spec: appsv1.DeploymentSpec{
 			Replicas: util.IntPointer(k8sutil.GetHPAReplicaCountOrDefault(r.Client, types.NamespacedName{
-				Name:      r.hpaName(),
+				Name:      r.Config.WithName(r.hpaName()),
 				Namespace: r.Config.Namespace,
 			}, *r.gw.Spec.ReplicaCount)),
 			Selector: &metav1.LabelSelector{
@@ -370,7 +370,7 @@ func (r *Reconciler) volumes() []apiv1.Volume {
 			VolumeSource: apiv1.VolumeSource{
 				ConfigMap: &apiv1.ConfigMapVolumeSource{
 					LocalObjectReference: apiv1.LocalObjectReference{
-						Name: "istio-ca-root-cert",
+						Name: r.Config.WithName("istio-ca-root-cert"),
 					},
 				},
 			},

@@ -46,15 +46,17 @@ var (
 type Reconciler struct {
 	resources.Reconciler
 	dynamic dynamic.Interface
+	remote  bool
 }
 
-func New(client client.Client, dc dynamic.Interface, config *istiov1beta1.Istio) *Reconciler {
+func New(client client.Client, dc dynamic.Interface, config *istiov1beta1.Istio, remote bool) *Reconciler {
 	return &Reconciler{
 		Reconciler: resources.Reconciler{
 			Client: client,
 			Config: config,
 		},
 		dynamic: dc,
+		remote:  remote,
 	}
 }
 
@@ -118,7 +120,7 @@ func (r *Reconciler) Reconcile(log logr.Logger) error {
 		multimeshDesiredState = k8sutil.DesiredStateAbsent
 	}
 
-	if r.Config.Name == "istio-config" {
+	if r.remote {
 		log.Info("Reconciled")
 		return nil
 	}
