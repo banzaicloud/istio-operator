@@ -42,6 +42,7 @@ func (r *Reconciler) containerArgs() []string {
 		"--healthCheckInterval=2s",
 		"--healthCheckFile=/tmp/health",
 		"--reconcileWebhookConfig=true",
+		fmt.Sprintf("--webhookConfigName=%s", r.Config.WithNamespacedName(configMapNameInjector)),
 	}
 
 	if len(r.Config.Spec.SidecarInjector.AdditionalContainerArgs) != 0 {
@@ -217,7 +218,7 @@ func (r *Reconciler) volumes() []apiv1.Volume {
 			Name: "certs",
 			VolumeSource: apiv1.VolumeSource{
 				Secret: &apiv1.SecretVolumeSource{
-					SecretName:  secretName,
+					SecretName:  r.Config.WithName(secretName),
 					DefaultMode: util.IntPointer(420),
 				},
 			},
@@ -230,7 +231,7 @@ func (r *Reconciler) volumes() []apiv1.Volume {
 			VolumeSource: apiv1.VolumeSource{
 				ConfigMap: &apiv1.ConfigMapVolumeSource{
 					LocalObjectReference: apiv1.LocalObjectReference{
-						Name: "istio-ca-root-cert",
+						Name: r.Config.WithName("istio-ca-root-cert"),
 					},
 				},
 			},

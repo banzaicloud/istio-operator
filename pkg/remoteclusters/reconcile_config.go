@@ -28,14 +28,12 @@ import (
 	"github.com/banzaicloud/istio-operator/pkg/util"
 )
 
-const ConfigName = "istio-config"
-
 func (c *Cluster) reconcileConfig(remoteConfig *istiov1beta1.RemoteIstio, istio *istiov1beta1.Istio) error {
 	c.log.Info("reconciling config")
 
 	var istioConfig istiov1beta1.Istio
 	err := c.ctrlRuntimeClient.Get(context.TODO(), types.NamespacedName{
-		Name:      ConfigName,
+		Name:      istio.Name,
 		Namespace: remoteConfig.Namespace,
 	}, &istioConfig)
 	if err != nil && !k8sapierrors.IsNotFound(err) {
@@ -92,7 +90,7 @@ func (c *Cluster) reconcileConfig(remoteConfig *istiov1beta1.RemoteIstio, istio 
 	istioConfig.Spec.ClusterName = remoteConfig.Name
 
 	if k8sapierrors.IsNotFound(err) {
-		istioConfig.Name = ConfigName
+		istioConfig.Name = istio.Name
 		istioConfig.Namespace = remoteConfig.Namespace
 
 		err = c.ctrlRuntimeClient.Create(context.TODO(), &istioConfig)

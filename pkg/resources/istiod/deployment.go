@@ -96,8 +96,28 @@ func (r *Reconciler) containerEnvs() []apiv1.EnvVar {
 			Value: r.Config.Name,
 		},
 		{
+			Name:  "NAMESPACE_LE_NAME",
+			Value: r.Config.WithName("istio-namespace-controller-election"),
+		},
+		{
+			Name:  "VALIDATION_LE_NAME",
+			Value: r.Config.WithName("istio-validation-controller-election"),
+		},
+		{
+			Name:  "INGRESS_LE_NAME",
+			Value: r.Config.WithName("istio-leader"),
+		},
+		{
+			Name:  "CACERT_CONFIG_NAME",
+			Value: r.Config.WithName("istio-ca-root-cert"),
+		},
+		{
 			Name:  "ISTIOD_CUSTOM_HOST",
 			Value: fmt.Sprintf("%s.%s.svc", r.Config.WithName(ServiceNameIstiod), r.Config.Namespace),
+		},
+		{
+			Name:  "VALIDATION_WEBHOOK_CONFIG_NAME",
+			Value: r.Config.WithNamespacedName("istiod"),
 		},
 	}
 
@@ -290,7 +310,7 @@ func (r *Reconciler) deployment() runtime.Object {
 		ObjectMeta: templates.ObjectMetaWithRevision(deploymentName, util.MergeStringMaps(istiodLabels, pilotLabelSelector), r.Config),
 		Spec: appsv1.DeploymentSpec{
 			Replicas: util.IntPointer(k8sutil.GetHPAReplicaCountOrDefault(r.Client, types.NamespacedName{
-				Name:      hpaName,
+				Name:      r.Config.WithName(hpaName),
 				Namespace: r.Config.Namespace,
 			}, util.PointerToInt32(r.Config.Spec.Pilot.ReplicaCount))),
 			Strategy: templates.DefaultRollingUpdateStrategy(),

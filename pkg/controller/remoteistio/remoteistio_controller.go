@@ -19,6 +19,7 @@ package remoteistio
 import (
 	"context"
 	"fmt"
+	"sort"
 	"time"
 
 	"github.com/go-logr/logr"
@@ -204,7 +205,7 @@ func (r *ReconcileRemoteConfig) Reconcile(request reconcile.Request) (reconcile.
 		return reconcile.Result{}, nil
 	}
 
-	istio, err := r.getIstio()
+	istio, err := r.getRelatedIstioCR(remoteConfig)
 	if err != nil {
 		return reconcile.Result{}, err
 	}
@@ -215,6 +216,11 @@ func (r *ReconcileRemoteConfig) Reconcile(request reconcile.Request) (reconcile.
 		return reconcile.Result{
 			Requeue: false,
 		}, nil
+	}
+
+	remoteConfig.Spec.IstioControlPlane = &istiov1beta1.NamespacedName{
+		Name:      istio.Name,
+		Namespace: istio.Namespace,
 	}
 
 	refs, err := k8sutil.SetOwnerReferenceToObject(remoteConfig, istio)
@@ -531,25 +537,40 @@ func (r *ReconcileRemoteConfig) labelSecret(secretName client.ObjectKey, label, 
 	return nil
 }
 
-func (r *ReconcileRemoteConfig) getIstio() (*istiov1beta1.Istio, error) {
-	var istios istiov1beta1.IstioList
-	err := r.List(context.TODO(), &client.ListOptions{}, &istios)
+func (r *ReconcileRemoteConfig) getRelatedIstioCR(instance *istiov1beta1.RemoteIstio) (*istiov1beta1.Istio, error) {
+	istio := &istiov1beta1.Istio{}
+
+	// try to get specified Istio CR
+	if instance.Spec.IstioControlPlane != nil {
+		err := r.Client.Get(context.Background(), client.ObjectKey{
+			Name:      instance.Spec.IstioControlPlane.Name,
+			Namespace: instance.Spec.IstioControlPlane.Namespace,
+		}, istio)
+		if err != nil {
+			return nil, emperror.Wrap(err, "could not get related Istio CR")
+		}
+
+		return istio, nil
+	}
+
+	// get the oldest otherwise for backward compatibility
+	var configs istiov1beta1.IstioList
+	err := r.Client.List(context.TODO(), &client.ListOptions{}, &configs)
 	if err != nil {
-		return nil, err
+		return nil, emperror.Wrap(err, "could not list istio resources")
+	}
+	if len(configs.Items) == 0 {
+		return nil, errors.New("no Istio CRs were found")
 	}
 
-	if len(istios.Items) != 1 {
-		return nil, errors.New("istio resource not found")
-	}
+	sort.Sort(istiov1beta1.SortableIstioItems(configs.Items))
 
-	config := istios.Items[0]
+	config := configs.Items[0]
 	gvk := config.GroupVersionKind()
 	gvk.Version = istiov1beta1.SchemeGroupVersion.Version
 	gvk.Group = istiov1beta1.SchemeGroupVersion.Group
 	gvk.Kind = "Istio"
 	config.SetGroupVersionKind(gvk)
-
-	istiov1beta1.SetDefaults(&config)
 
 	return &config, nil
 }

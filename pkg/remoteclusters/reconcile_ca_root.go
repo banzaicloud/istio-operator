@@ -53,7 +53,7 @@ func (c *Cluster) reconcileCARootToNamespaces(remoteConfig *istiov1beta1.RemoteI
 	}
 
 	for _, ns := range namespaces.Items {
-		err = c.reconcileCARootInNamespace(ns.Name, configMapData, desiredState)
+		err = c.reconcileCARootInNamespace(istio.WithName(caRootConfigMapName), ns.Name, configMapData, desiredState)
 		if err != nil {
 			return err
 		}
@@ -62,12 +62,12 @@ func (c *Cluster) reconcileCARootToNamespaces(remoteConfig *istiov1beta1.RemoteI
 	return nil
 }
 
-func (c *Cluster) reconcileCARootInNamespace(namespace string, configMapData map[string]string, desiredState k8sutil.DesiredState) error {
+func (c *Cluster) reconcileCARootInNamespace(name, namespace string, configMapData map[string]string, desiredState k8sutil.DesiredState) error {
 	c.log.Info("reconciling ca root configmap", "namespace", namespace)
 
 	configmap := corev1.ConfigMap{
 		ObjectMeta: metav1.ObjectMeta{
-			Name:      caRootConfigMapName,
+			Name:      name,
 			Namespace: namespace,
 		},
 		Data: configMapData,
