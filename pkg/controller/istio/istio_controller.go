@@ -329,8 +329,8 @@ func (r *ReconcileIstio) reconcile(logger logr.Logger, config *istiov1beta1.Isti
 		nodeagent.New(r.Client, config),
 		istiocoredns.New(r.Client, config),
 		mixerlesstelemetry.New(r.Client, r.dynamic, config),
-		ingressgateway.New(r.Client, r.dynamic, config),
-		egressgateway.New(r.Client, r.dynamic, config),
+		ingressgateway.New(r.Client, r.dynamic, config, false),
+		egressgateway.New(r.Client, r.dynamic, config, false),
 	}
 
 	for _, rec := range reconcilers {
