@@ -249,7 +249,7 @@ func (r *Reconciler) deployment() runtime.Object {
 		ObjectMeta: templates.ObjectMeta(deploymentName, labels, r.Config),
 		Spec: appsv1.DeploymentSpec{
 			Replicas: util.IntPointer(k8sutil.GetHPAReplicaCountOrDefault(r.Client, types.NamespacedName{
-				Name:      hpaName,
+				Name:      r.Config.WithName(hpaName),
 				Namespace: r.Config.Namespace,
 			}, util.PointerToInt32(r.Config.Spec.Pilot.ReplicaCount))),
 			Strategy: templates.DefaultRollingUpdateStrategy(),
