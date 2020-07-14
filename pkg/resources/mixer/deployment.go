@@ -38,7 +38,7 @@ func (r *Reconciler) deployment(t string) runtime.Object {
 		ObjectMeta: templates.ObjectMetaWithRevision(deploymentName(t), labelSelector, r.Config),
 		Spec: appsv1.DeploymentSpec{
 			Replicas: util.IntPointer(k8sutil.GetHPAReplicaCountOrDefault(r.Client, types.NamespacedName{
-				Name:      hpaName(t),
+				Name:      r.Config.WithName(hpaName(t)),
 				Namespace: r.Config.Namespace,
 			}, util.PointerToInt32(r.k8sResourceConfig.ReplicaCount))),
 			Strategy: templates.DefaultRollingUpdateStrategy(),
@@ -139,7 +139,7 @@ func (r *Reconciler) volumes(t string) []apiv1.Volume {
 			VolumeSource: apiv1.VolumeSource{
 				ConfigMap: &apiv1.ConfigMapVolumeSource{
 					LocalObjectReference: apiv1.LocalObjectReference{
-						Name: "istio-ca-root-cert",
+						Name: r.Config.WithName("istio-ca-root-cert"),
 					},
 				},
 			},
