@@ -27,8 +27,7 @@ const (
         context: SIDECAR_INBOUND
         proxy:
           proxyVersion: '^1\.6.*'
-          metadata:
-            REVISION: %[1]s
+          %[1]s
         listener: {}
       patch:
         operation: INSERT_BEFORE
@@ -44,8 +43,7 @@ const (
         context: SIDECAR_OUTBOUND
         proxy:
           proxyVersion: '^1\.6.*'
-          metadata:
-            REVISION: %[1]s
+          %[1]s
         cluster: {}
       patch:
         operation: MERGE
@@ -62,8 +60,7 @@ const (
         context: GATEWAY
         proxy:
           proxyVersion: '^1\.6.*'
-          metadata:
-            REVISION: %[1]s
+          %[1]s
         cluster: {}
       patch:
         operation: MERGE
