@@ -80,6 +80,7 @@ type MeshGatewayStatus struct {
 // +kubebuilder:printcolumn:name="Ingress IPs",type="string",JSONPath=".status.GatewayAddress",description="Ingress gateway addresses of the resource"
 // +kubebuilder:printcolumn:name="Error",type="string",JSONPath=".status.ErrorMessage",description="Error message"
 // +kubebuilder:printcolumn:name="Age",type="date",JSONPath=".metadata.creationTimestamp"
+// +kubebuilder:printcolumn:name="ControlPlane",type="string",JSONPath=".spec.istioControlPlane"
 // +kubebuilder:resource:path=meshgateways,shortName=mgw
 type MeshGateway struct {
 	metav1.TypeMeta   `json:",inline"`
