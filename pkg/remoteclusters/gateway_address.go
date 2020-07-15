@@ -32,7 +32,7 @@ func (c *Cluster) SetIngressGatewayAddress(remoteIstio *istiov1beta1.RemoteIstio
 
 	var err error
 	remoteIstio.Status.GatewayAddress, err = k8sutil.GetMeshGatewayAddress(c.ctrlRuntimeClient, client.ObjectKey{
-		Name:      istio.WithName(ingressgateway.ResourceName),
+		Name:      istio.WithRevision(ingressgateway.ResourceName),
 		Namespace: remoteIstio.Namespace,
 	})
 

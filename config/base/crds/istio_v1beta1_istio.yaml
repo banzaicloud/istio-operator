@@ -1357,6 +1357,8 @@ spec:
               description: Use the Mesh Control Protocol (MCP) for configuring Mixer
                 and Pilot. Requires an MCP source.
               type: boolean
+            useRevision:
+              type: boolean
             version:
               description: Contains the intended Istio version
               pattern: ^1.6

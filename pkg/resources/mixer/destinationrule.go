@@ -30,7 +30,7 @@ func (r *Reconciler) policyDestinationRule() *k8sutil.DynamicObject {
 			Resource: "destinationrules",
 		},
 		Kind:      "DestinationRule",
-		Name:      r.Config.WithName("istio-policy"),
+		Name:      r.Config.WithRevision("istio-policy"),
 		Namespace: r.Config.Namespace,
 		Labels:    r.Config.RevisionLabels(),
 		Spec: map[string]interface{}{
@@ -56,7 +56,7 @@ func (r *Reconciler) telemetryDestinationRule() *k8sutil.DynamicObject {
 			Resource: "destinationrules",
 		},
 		Kind:      "DestinationRule",
-		Name:      r.Config.WithName("istio-telemetry"),
+		Name:      r.Config.WithRevision("istio-telemetry"),
 		Namespace: r.Config.Namespace,
 		Labels:    r.Config.RevisionLabels(),
 		Spec: map[string]interface{}{

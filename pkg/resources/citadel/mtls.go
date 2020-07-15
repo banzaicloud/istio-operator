@@ -52,7 +52,7 @@ func (r *Reconciler) peerAuthentication() *k8sutil.DynamicObject {
 			Resource: "peerauthentications",
 		},
 		Kind:      "PeerAuthentication",
-		Name:      util.CombinedName("default", r.Config.Name),
+		Name:      r.Config.WithRevision("default"),
 		Namespace: r.Config.Namespace,
 		Labels:    util.MergeStringMaps(citadelLabels, r.Config.RevisionLabels()),
 		Spec:      r.spec(),
@@ -70,7 +70,7 @@ func (r *Reconciler) destinationRuleDefaultMtls() *k8sutil.DynamicObject {
 			Resource: "destinationrules",
 		},
 		Kind:      "DestinationRule",
-		Name:      util.CombinedName("default", r.Config.Name),
+		Name:      r.Config.WithRevision("default"),
 		Namespace: r.Config.Namespace,
 		Labels:    util.MergeStringMaps(citadelLabels, r.Config.RevisionLabels()),
 		Spec: map[string]interface{}{
@@ -95,7 +95,7 @@ func (r *Reconciler) destinationRuleApiServerMtls() *k8sutil.DynamicObject {
 			Resource: "destinationrules",
 		},
 		Kind:      "DestinationRule",
-		Name:      util.CombinedName("api-server", r.Config.Name),
+		Name:      r.Config.WithRevision("api-server"),
 		Namespace: r.Config.Namespace,
 		Labels:    util.MergeStringMaps(citadelLabels, r.Config.RevisionLabels()),
 		Spec: map[string]interface{}{

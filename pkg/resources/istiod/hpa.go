@@ -30,7 +30,7 @@ func (r *Reconciler) horizontalPodAutoscaler() runtime.Object {
 			MaxReplicas: util.PointerToInt32(r.Config.Spec.Pilot.MaxReplicas),
 			MinReplicas: r.Config.Spec.Pilot.MinReplicas,
 			ScaleTargetRef: autoscalev2beta2.CrossVersionObjectReference{
-				Name:       r.Config.WithName(deploymentName),
+				Name:       r.Config.WithRevision(deploymentName),
 				Kind:       "Deployment",
 				APIVersion: "apps/v1",
 			},

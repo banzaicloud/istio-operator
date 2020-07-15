@@ -31,12 +31,12 @@ func (r *Reconciler) meshExpansionVirtualService() *k8sutil.DynamicObject {
 			Resource: "virtualservices",
 		},
 		Kind:      "VirtualService",
-		Name:      r.Config.WithName("meshexpansion-vs-pilot"),
+		Name:      r.Config.WithRevision("meshexpansion-vs-pilot"),
 		Namespace: r.Config.Namespace,
 		Labels:    util.MergeStringMaps(pilotLabels, r.Config.RevisionLabels()),
 		Spec: map[string]interface{}{
 			"hosts": []string{
-				r.Config.GetDiscoveryHost(),
+				r.Config.GetDiscoveryHost(true),
 			},
 			"gateways": []string{
 				"meshexpansion-gateway",
@@ -51,7 +51,7 @@ func (r *Reconciler) meshExpansionVirtualService() *k8sutil.DynamicObject {
 					"route": []map[string]interface{}{
 						{
 							"destination": map[string]interface{}{
-								"host": r.Config.GetDiscoveryHost(),
+								"host": r.Config.GetDiscoveryHost(true),
 								"port": map[string]interface{}{
 									"number": r.Config.GetDiscoveryPort(),
 								},
@@ -73,11 +73,11 @@ func (r *Reconciler) meshExpansionDestinationRule() *k8sutil.DynamicObject {
 			Resource: "destinationrules",
 		},
 		Kind:      "DestinationRule",
-		Name:      r.Config.WithName("meshexpansion-dr-pilot"),
+		Name:      r.Config.WithRevision("meshexpansion-dr-pilot"),
 		Namespace: r.Config.Namespace,
 		Labels:    util.MergeStringMaps(pilotLabels, r.Config.RevisionLabels()),
 		Spec: map[string]interface{}{
-			"host": r.Config.GetDiscoveryHost(),
+			"host": r.Config.GetDiscoveryHost(true),
 			"trafficPolicy": map[string]interface{}{
 				"portLevelSettings": []map[string]interface{}{
 					{

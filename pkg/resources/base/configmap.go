@@ -172,7 +172,7 @@ func meshNetworks(config *istiov1beta1.Istio) string {
 }
 
 func mixerServerWithRevision(config *istiov1beta1.Istio, mixerType string, remote bool) string {
-	return mixerServer(config, config.WithName(mixerType), remote)
+	return mixerServer(config, config.WithRevision(mixerType), remote)
 }
 
 func mixerServer(config *istiov1beta1.Istio, mixerType string, remote bool) string {

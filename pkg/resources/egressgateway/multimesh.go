@@ -35,7 +35,7 @@ func (r *Reconciler) multimeshEgressGateway() *k8sutil.DynamicObject {
 			Resource: "gateways",
 		},
 		Kind:      "Gateway",
-		Name:      r.Config.WithName(multimeshResourceNamePrefix + "-egressgateway"),
+		Name:      r.Config.WithRevision(multimeshResourceNamePrefix + "-egressgateway"),
 		Namespace: r.Config.Namespace,
 		Labels:    r.Config.RevisionLabels(),
 		Spec: map[string]interface{}{

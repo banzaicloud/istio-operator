@@ -18,7 +18,6 @@ package base
 
 import (
 	"github.com/banzaicloud/istio-operator/pkg/resources/templates"
-	"github.com/banzaicloud/istio-operator/pkg/util"
 	apiv1 "k8s.io/api/core/v1"
 	rbacv1 "k8s.io/api/rbac/v1"
 	"k8s.io/apimachinery/pkg/runtime"
@@ -59,12 +58,12 @@ func (r *Reconciler) clusterRoleBinding() runtime.Object {
 		RoleRef: rbacv1.RoleRef{
 			Kind:     "ClusterRole",
 			APIGroup: "rbac.authorization.k8s.io",
-			Name:     util.CombinedName(istioReaderName, r.Config.Namespace),
+			Name:     r.Config.WithNamespacedRevision(istioReaderName),
 		},
 		Subjects: []rbacv1.Subject{
 			{
 				Kind:      "ServiceAccount",
-				Name:      istioReaderServiceAccountName,
+				Name:      r.Config.WithRevision(istioReaderServiceAccountName),
 				Namespace: r.Config.Namespace,
 			},
 		},

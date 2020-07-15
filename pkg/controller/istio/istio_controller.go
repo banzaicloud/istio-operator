@@ -342,7 +342,7 @@ func (r *ReconcileIstio) reconcile(logger logr.Logger, config *istiov1beta1.Isti
 
 	if util.PointerToBool(config.Spec.Gateways.Enabled) && util.PointerToBool(config.Spec.Gateways.IngressConfig.Enabled) {
 		config.Status.GatewayAddress, err = k8sutil.GetMeshGatewayAddress(r.Client, client.ObjectKey{
-			Name:      config.WithName(ingressgateway.ResourceName),
+			Name:      config.WithRevision(ingressgateway.ResourceName),
 			Namespace: config.Namespace,
 		})
 		if err != nil {

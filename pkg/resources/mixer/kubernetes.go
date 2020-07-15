@@ -31,7 +31,7 @@ func (r *Reconciler) kubernetesEnvHandler() *k8sutil.DynamicObject {
 			Resource: "handlers",
 		},
 		Kind:      "handler",
-		Name:      r.Config.WithName("kubernetesenv"),
+		Name:      r.Config.WithRevision("kubernetesenv"),
 		Namespace: r.Config.Namespace,
 		Labels:    r.Config.RevisionLabels(),
 		Spec: map[string]interface{}{
@@ -50,7 +50,7 @@ func (r *Reconciler) attributesKubernetes() *k8sutil.DynamicObject {
 			Resource: "instances",
 		},
 		Kind:      "instance",
-		Name:      r.Config.WithName("attributes"),
+		Name:      r.Config.WithRevision("attributes"),
 		Namespace: r.Config.Namespace,
 		Labels:    r.Config.RevisionLabels(),
 		Spec: map[string]interface{}{
@@ -109,14 +109,14 @@ func (r *Reconciler) kubeAttrRule() *k8sutil.DynamicObject {
 			Resource: "rules",
 		},
 		Kind:      "rule",
-		Name:      r.Config.WithName("kubeattrgenrulerule"),
+		Name:      r.Config.WithRevision("kubeattrgenrulerule"),
 		Namespace: r.Config.Namespace,
 		Labels:    r.Config.RevisionLabels(),
 		Spec: map[string]interface{}{
 			"actions": []interface{}{
 				map[string]interface{}{
-					"handler":   r.Config.WithName("kubernetesenv"),
-					"instances": util.EmptyTypedStrSlice(r.Config.WithName("attributes")),
+					"handler":   r.Config.WithRevision("kubernetesenv"),
+					"instances": util.EmptyTypedStrSlice(r.Config.WithRevision("attributes")),
 				},
 			},
 		},
@@ -132,14 +132,14 @@ func (r *Reconciler) tcpKubeAttrRule() *k8sutil.DynamicObject {
 			Resource: "rules",
 		},
 		Kind:      "rule",
-		Name:      r.Config.WithName("tcpkubeattrgenrulerule"),
+		Name:      r.Config.WithRevision("tcpkubeattrgenrulerule"),
 		Namespace: r.Config.Namespace,
 		Labels:    r.Config.RevisionLabels(),
 		Spec: map[string]interface{}{
 			"actions": []interface{}{
 				map[string]interface{}{
-					"handler":   r.Config.WithName("kubernetesenv"),
-					"instances": util.EmptyTypedStrSlice(r.Config.WithName("attributes")),
+					"handler":   r.Config.WithRevision("kubernetesenv"),
+					"instances": util.EmptyTypedStrSlice(r.Config.WithRevision("attributes")),
 				},
 			},
 			"match": `context.protocol == "tcp"`,

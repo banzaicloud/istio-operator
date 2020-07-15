@@ -79,7 +79,7 @@ func (r *Reconciler) getValues() string {
 			},
 			"istiod": map[string]interface{}{
 				"enabled":          util.PointerToBool(r.Config.Spec.Istiod.Enabled),
-				"caRootConfigName": r.Config.WithName("istio-ca-root-cert"),
+				"caRootConfigName": r.Config.WithRevision("istio-ca-root-cert"),
 			},
 			"caAddress":                   r.Config.GetCAAddress(),
 			"controlPlaneSecurityEnabled": r.Config.Spec.ControlPlaneSecurityEnabled,

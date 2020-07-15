@@ -107,14 +107,14 @@ func (r *Reconciler) Reconcile(log logr.Logger) error {
 	}
 
 	var meshExpansionDesiredState k8sutil.DesiredState
-	if desiredState == k8sutil.DesiredStatePresent && util.PointerToBool(r.Config.Spec.MeshExpansion) {
+	if desiredState != k8sutil.DesiredStateAbsent && util.PointerToBool(r.Config.Spec.MeshExpansion) {
 		meshExpansionDesiredState = k8sutil.DesiredStatePresent
 	} else {
 		meshExpansionDesiredState = k8sutil.DesiredStateAbsent
 	}
 
 	var multimeshDesiredState k8sutil.DesiredState
-	if desiredState == k8sutil.DesiredStatePresent && util.PointerToBool(r.Config.Spec.MultiMesh) {
+	if desiredState != k8sutil.DesiredStateAbsent && util.PointerToBool(r.Config.Spec.MultiMesh) {
 		multimeshDesiredState = k8sutil.DesiredStatePresent
 	} else {
 		multimeshDesiredState = k8sutil.DesiredStateAbsent

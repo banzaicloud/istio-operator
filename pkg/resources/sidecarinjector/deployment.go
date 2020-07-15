@@ -42,7 +42,7 @@ func (r *Reconciler) containerArgs() []string {
 		"--healthCheckInterval=2s",
 		"--healthCheckFile=/tmp/health",
 		"--reconcileWebhookConfig=true",
-		fmt.Sprintf("--webhookConfigName=%s", r.Config.WithNamespacedName(configMapNameInjector)),
+		fmt.Sprintf("--webhookConfigName=%s", r.Config.WithNamespacedRevision(configMapNameInjector)),
 	}
 
 	if len(r.Config.Spec.SidecarInjector.AdditionalContainerArgs) != 0 {
@@ -75,7 +75,7 @@ func (r *Reconciler) deployment() runtime.Object {
 					Annotations: util.MergeStringMaps(templates.DefaultDeployAnnotations(), r.Config.Spec.SidecarInjector.PodAnnotations),
 				},
 				Spec: apiv1.PodSpec{
-					ServiceAccountName: r.Config.WithName(serviceAccountName),
+					ServiceAccountName: r.Config.WithRevision(serviceAccountName),
 					Containers: []apiv1.Container{
 						{
 							Name:            "sidecar-injector-webhook",
@@ -158,7 +158,7 @@ func (r *Reconciler) volumes() []apiv1.Volume {
 			VolumeSource: apiv1.VolumeSource{
 				ConfigMap: &apiv1.ConfigMapVolumeSource{
 					LocalObjectReference: apiv1.LocalObjectReference{
-						Name: r.Config.WithName(base.IstioConfigMapName),
+						Name: r.Config.WithRevision(base.IstioConfigMapName),
 					},
 					DefaultMode: util.IntPointer(420),
 				},
@@ -169,7 +169,7 @@ func (r *Reconciler) volumes() []apiv1.Volume {
 			VolumeSource: apiv1.VolumeSource{
 				ConfigMap: &apiv1.ConfigMapVolumeSource{
 					LocalObjectReference: apiv1.LocalObjectReference{
-						Name: r.Config.WithName(configMapNameInjector),
+						Name: r.Config.WithRevision(configMapNameInjector),
 					},
 					Items: []apiv1.KeyToPath{
 						{
@@ -218,7 +218,7 @@ func (r *Reconciler) volumes() []apiv1.Volume {
 			Name: "certs",
 			VolumeSource: apiv1.VolumeSource{
 				Secret: &apiv1.SecretVolumeSource{
-					SecretName:  r.Config.WithName(secretName),
+					SecretName:  r.Config.WithRevision(secretName),
 					DefaultMode: util.IntPointer(420),
 				},
 			},
@@ -231,7 +231,7 @@ func (r *Reconciler) volumes() []apiv1.Volume {
 			VolumeSource: apiv1.VolumeSource{
 				ConfigMap: &apiv1.ConfigMapVolumeSource{
 					LocalObjectReference: apiv1.LocalObjectReference{
-						Name: r.Config.WithName("istio-ca-root-cert"),
+						Name: r.Config.WithRevision("istio-ca-root-cert"),
 					},
 				},
 			},

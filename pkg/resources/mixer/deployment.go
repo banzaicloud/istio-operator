@@ -38,7 +38,7 @@ func (r *Reconciler) deployment(t string) runtime.Object {
 		ObjectMeta: templates.ObjectMetaWithRevision(deploymentName(t), labelSelector, r.Config),
 		Spec: appsv1.DeploymentSpec{
 			Replicas: util.IntPointer(k8sutil.GetHPAReplicaCountOrDefault(r.Client, types.NamespacedName{
-				Name:      r.Config.WithName(hpaName(t)),
+				Name:      r.Config.WithRevision(hpaName(t)),
 				Namespace: r.Config.Namespace,
 			}, util.PointerToInt32(r.k8sResourceConfig.ReplicaCount))),
 			Strategy: templates.DefaultRollingUpdateStrategy(),
@@ -51,7 +51,7 @@ func (r *Reconciler) deployment(t string) runtime.Object {
 					Annotations: templates.DefaultDeployAnnotations(),
 				},
 				Spec: apiv1.PodSpec{
-					ServiceAccountName: r.Config.WithName(serviceAccountName),
+					ServiceAccountName: r.Config.WithRevision(serviceAccountName),
 					Volumes:            r.volumes(t),
 					Affinity:           r.k8sResourceConfig.Affinity,
 					NodeSelector:       r.k8sResourceConfig.NodeSelector,
@@ -74,7 +74,7 @@ func (r *Reconciler) volumes(t string) []apiv1.Volume {
 			Name: "istio-certs",
 			VolumeSource: apiv1.VolumeSource{
 				Secret: &apiv1.SecretVolumeSource{
-					SecretName:  fmt.Sprintf("istio.%s", r.Config.WithName(serviceAccountName)),
+					SecretName:  fmt.Sprintf("istio.%s", r.Config.WithRevision(serviceAccountName)),
 					Optional:    util.BoolPointer(true),
 					DefaultMode: util.IntPointer(420),
 				},
@@ -108,11 +108,11 @@ func (r *Reconciler) volumes(t string) []apiv1.Volume {
 
 	if t == telemetryComponentName {
 		volumes = append(volumes, apiv1.Volume{
-			Name: r.Config.WithName(configMapNameEnvoy),
+			Name: r.Config.WithRevision(configMapNameEnvoy),
 			VolumeSource: apiv1.VolumeSource{
 				ConfigMap: &apiv1.ConfigMapVolumeSource{
 					LocalObjectReference: apiv1.LocalObjectReference{
-						Name: r.Config.WithName(configMapNameEnvoy),
+						Name: r.Config.WithRevision(configMapNameEnvoy),
 					},
 					DefaultMode: util.IntPointer(420),
 				},
@@ -125,7 +125,7 @@ func (r *Reconciler) volumes(t string) []apiv1.Volume {
 		VolumeSource: apiv1.VolumeSource{
 			ConfigMap: &apiv1.ConfigMapVolumeSource{
 				LocalObjectReference: apiv1.LocalObjectReference{
-					Name: r.Config.WithName(base.IstioConfigMapName),
+					Name: r.Config.WithRevision(base.IstioConfigMapName),
 				},
 				DefaultMode: util.IntPointer(420),
 				Optional:    util.BoolPointer(true),
@@ -139,7 +139,7 @@ func (r *Reconciler) volumes(t string) []apiv1.Volume {
 			VolumeSource: apiv1.VolumeSource{
 				ConfigMap: &apiv1.ConfigMapVolumeSource{
 					LocalObjectReference: apiv1.LocalObjectReference{
-						Name: r.Config.WithName("istio-ca-root-cert"),
+						Name: r.Config.WithRevision("istio-ca-root-cert"),
 					},
 				},
 			},
@@ -398,7 +398,7 @@ func (r *Reconciler) istioProxyContainer(t string) apiv1.Container {
 
 	if t == telemetryComponentName {
 		vms = append(vms, apiv1.VolumeMount{
-			Name:      r.Config.WithName(configMapNameEnvoy),
+			Name:      r.Config.WithRevision(configMapNameEnvoy),
 			MountPath: "/var/lib/envoy",
 		})
 	}

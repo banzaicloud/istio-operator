@@ -85,7 +85,7 @@ func (r *Reconciler) containerEnvs() []apiv1.EnvVar {
 		},
 		{
 			Name:  "INJECTION_WEBHOOK_CONFIG_NAME",
-			Value: r.Config.WithNamespacedName("istio-sidecar-injector"),
+			Value: r.Config.WithNamespacedRevision("istio-sidecar-injector"),
 		},
 		{
 			Name:  "CENTRAL_ISTIOD",
@@ -97,27 +97,27 @@ func (r *Reconciler) containerEnvs() []apiv1.EnvVar {
 		},
 		{
 			Name:  "NAMESPACE_LE_NAME",
-			Value: r.Config.WithName("istio-namespace-controller-election"),
+			Value: r.Config.WithRevision("istio-namespace-controller-election"),
 		},
 		{
 			Name:  "VALIDATION_LE_NAME",
-			Value: r.Config.WithName("istio-validation-controller-election"),
+			Value: r.Config.WithRevision("istio-validation-controller-election"),
 		},
 		{
 			Name:  "INGRESS_LE_NAME",
-			Value: r.Config.WithName("istio-leader"),
+			Value: r.Config.WithRevision("istio-leader"),
 		},
 		{
 			Name:  "CACERT_CONFIG_NAME",
-			Value: r.Config.WithName("istio-ca-root-cert"),
+			Value: r.Config.WithRevision("istio-ca-root-cert"),
 		},
 		{
 			Name:  "ISTIOD_CUSTOM_HOST",
-			Value: fmt.Sprintf("%s.%s.svc", r.Config.WithName(ServiceNameIstiod), r.Config.Namespace),
+			Value: fmt.Sprintf("%s.%s.svc", r.Config.WithRevision(ServiceNameIstiod), r.Config.Namespace),
 		},
 		{
 			Name:  "VALIDATION_WEBHOOK_CONFIG_NAME",
-			Value: r.Config.WithNamespacedName("istiod"),
+			Value: r.Config.WithNamespacedRevision("istiod"),
 		},
 	}
 
@@ -238,7 +238,7 @@ func (r *Reconciler) volumes() []apiv1.Volume {
 			VolumeSource: apiv1.VolumeSource{
 				ConfigMap: &apiv1.ConfigMapVolumeSource{
 					LocalObjectReference: apiv1.LocalObjectReference{
-						Name: r.Config.WithName(base.IstioConfigMapName),
+						Name: r.Config.WithRevision(base.IstioConfigMapName),
 					},
 					DefaultMode: util.IntPointer(420),
 				},
@@ -293,7 +293,7 @@ func (r *Reconciler) volumes() []apiv1.Volume {
 			VolumeSource: apiv1.VolumeSource{
 				ConfigMap: &apiv1.ConfigMapVolumeSource{
 					LocalObjectReference: apiv1.LocalObjectReference{
-						Name: r.Config.WithName("istio-sidecar-injector"),
+						Name: r.Config.WithRevision("istio-sidecar-injector"),
 					},
 					Optional:    util.BoolPointer(true),
 					DefaultMode: util.IntPointer(420),
@@ -310,7 +310,7 @@ func (r *Reconciler) deployment() runtime.Object {
 		ObjectMeta: templates.ObjectMetaWithRevision(deploymentName, util.MergeStringMaps(istiodLabels, pilotLabelSelector), r.Config),
 		Spec: appsv1.DeploymentSpec{
 			Replicas: util.IntPointer(k8sutil.GetHPAReplicaCountOrDefault(r.Client, types.NamespacedName{
-				Name:      r.Config.WithName(hpaName),
+				Name:      r.Config.WithRevision(hpaName),
 				Namespace: r.Config.Namespace,
 			}, util.PointerToInt32(r.Config.Spec.Pilot.ReplicaCount))),
 			Strategy: templates.DefaultRollingUpdateStrategy(),
@@ -323,7 +323,7 @@ func (r *Reconciler) deployment() runtime.Object {
 					Annotations: util.MergeStringMaps(templates.DefaultDeployAnnotations(), r.Config.Spec.Pilot.PodAnnotations),
 				},
 				Spec: apiv1.PodSpec{
-					ServiceAccountName: r.Config.WithName(serviceAccountName),
+					ServiceAccountName: r.Config.WithRevision(serviceAccountName),
 					SecurityContext:    util.GetPodSecurityContextFromSecurityContext(r.Config.Spec.Pilot.SecurityContext),
 					Containers:         r.containers(),
 					Volumes:            r.volumes(),

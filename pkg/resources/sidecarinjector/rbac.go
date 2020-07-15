@@ -54,12 +54,12 @@ func (r *Reconciler) clusterRoleBinding() runtime.Object {
 		RoleRef: rbacv1.RoleRef{
 			Kind:     "ClusterRole",
 			APIGroup: "rbac.authorization.k8s.io",
-			Name:     r.Config.WithNamespacedName(clusterRoleName),
+			Name:     r.Config.WithNamespacedRevision(clusterRoleName),
 		},
 		Subjects: []rbacv1.Subject{
 			{
 				Kind:      "ServiceAccount",
-				Name:      r.Config.WithName(serviceAccountName),
+				Name:      r.Config.WithRevision(serviceAccountName),
 				Namespace: r.Config.Namespace,
 			},
 		},

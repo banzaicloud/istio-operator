@@ -55,7 +55,7 @@ func (r *Reconciler) reconcileKubeDNSConfigMap(log logr.Logger, desiredState k8s
 	if desiredState == k8sutil.DesiredStatePresent {
 		var svc apiv1.Service
 		err = r.Client.Get(context.Background(), types.NamespacedName{
-			Name:      r.Config.WithName(serviceName),
+			Name:      r.Config.WithRevision(serviceName),
 			Namespace: r.Config.Namespace,
 		}, &svc)
 		if err != nil {

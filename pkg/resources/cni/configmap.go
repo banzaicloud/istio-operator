@@ -37,7 +37,7 @@ func (r *Reconciler) configMap() runtime.Object {
 func (r *Reconciler) networkConfig() string {
 	config := map[string]interface{}{
 		"cniVersion": "0.3.1",
-		"name":       r.Config.WithName("istio-cni"),
+		"name":       r.Config.WithRevision("istio-cni"),
 		"type":       "istio-cni",
 		"log_level":  r.Config.Spec.SidecarInjector.InitCNIConfiguration.LogLevel,
 		"kubernetes": map[string]interface{}{
