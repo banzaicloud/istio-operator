@@ -163,7 +163,7 @@ func (r *ReconcileRemoteConfig) Reconcile(request reconcile.Request) (reconcile.
 			}
 			// we return here and do the reconciling when this update arrives
 			return reconcile.Result{
-				Requeue: true,
+				RequeueAfter: time.Second * 1,
 			}, nil
 		}
 	} else {
