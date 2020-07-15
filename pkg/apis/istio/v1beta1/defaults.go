@@ -256,6 +256,9 @@ func SetDefaults(config *Istio) {
 	if len(config.Spec.Gateways.IngressConfig.Ports) == 0 {
 		config.Spec.Gateways.IngressConfig.Ports = defaultIngressGatewayPorts
 	}
+	if config.Spec.Gateways.IngressConfig.CreateOnly == nil {
+		config.Spec.Gateways.IngressConfig.CreateOnly = util.BoolPointer(true)
+	}
 	if config.Spec.Gateways.EgressConfig.Enabled == nil {
 		config.Spec.Gateways.EgressConfig.Enabled = util.BoolPointer(false)
 	}
@@ -279,6 +282,9 @@ func SetDefaults(config *Istio) {
 	}
 	if len(config.Spec.Gateways.EgressConfig.Ports) == 0 {
 		config.Spec.Gateways.EgressConfig.Ports = defaultEgressGatewayPorts
+	}
+	if config.Spec.Gateways.EgressConfig.CreateOnly == nil {
+		config.Spec.Gateways.EgressConfig.CreateOnly = util.BoolPointer(true)
 	}
 	if config.Spec.Gateways.K8sIngress.Enabled == nil {
 		config.Spec.Gateways.K8sIngress.Enabled = util.BoolPointer(false)
