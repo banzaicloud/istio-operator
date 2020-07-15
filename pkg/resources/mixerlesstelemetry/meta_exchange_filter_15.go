@@ -27,8 +27,7 @@ const (
     context: ANY # inbound, outbound, and gateway
     proxy:
       proxyVersion: '^1\.5.*'
-      metadata:
-        REVISION: %[3]s
+      %[3]s
     listener:
       filterChain:
         filter:

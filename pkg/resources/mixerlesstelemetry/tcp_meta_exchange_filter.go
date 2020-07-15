@@ -27,7 +27,7 @@ import (
 
 func (r *Reconciler) tcpMetaExchangeEnvoyFilter(version string, tcpMetadataExchangeFilterYAML string) *k8sutil.DynamicObject {
 	var y []map[string]interface{}
-	yaml.Unmarshal([]byte(fmt.Sprintf(tcpMetadataExchangeFilterYAML, r.Config.Name)), &y)
+	yaml.Unmarshal([]byte(fmt.Sprintf(tcpMetadataExchangeFilterYAML, r.metadataMatch(12))), &y)
 
 	return &k8sutil.DynamicObject{
 		Gvr: schema.GroupVersionResource{
@@ -36,7 +36,7 @@ func (r *Reconciler) tcpMetaExchangeEnvoyFilter(version string, tcpMetadataExcha
 			Resource: "envoyfilters",
 		},
 		Kind:      "EnvoyFilter",
-		Name:      r.Config.WithName(fmt.Sprintf("%s-tcp-metadata-exchange-%s", componentName, version)),
+		Name:      r.Config.WithRevision(fmt.Sprintf("%s-tcp-metadata-exchange-%s", componentName, version)),
 		Namespace: r.Config.Namespace,
 		Labels:    r.Config.RevisionLabels(),
 		Spec: map[string]interface{}{

@@ -18,6 +18,7 @@ package mixerlesstelemetry
 
 import (
 	"fmt"
+	"strings"
 
 	"github.com/banzaicloud/istio-operator/pkg/util"
 	"github.com/ghodss/yaml"
@@ -31,6 +32,15 @@ const (
 	metaExchangeNoWasmLocal = "inline_string: envoy.wasm.metadata_exchange"
 )
 
+func (r *Reconciler) metadataMatch(padCount int) string {
+	metadataMatch := ""
+	if r.Config.IsRevisionUsed() {
+		metadataMatch = fmt.Sprintf("metadata:\n%sREVISION: %s", strings.Repeat(" ", padCount), r.Config.Revision())
+	}
+
+	return metadataMatch
+}
+
 func (r *Reconciler) metaExchangeEnvoyFilter(version string, metadataExchangeFilterYAML string) *k8sutil.DynamicObject {
 	wasmEnabled := util.PointerToBool(r.Config.Spec.ProxyWasm.Enabled)
 
@@ -42,7 +52,7 @@ func (r *Reconciler) metaExchangeEnvoyFilter(version string, metadataExchangeFil
 	}
 
 	var y []map[string]interface{}
-	yaml.Unmarshal([]byte(fmt.Sprintf(metadataExchangeFilterYAML, vmConfigLocal, vmConfigRuntime, r.Config.Name)), &y)
+	yaml.Unmarshal([]byte(fmt.Sprintf(metadataExchangeFilterYAML, vmConfigLocal, vmConfigRuntime, r.metadataMatch(8))), &y)
 
 	return &k8sutil.DynamicObject{
 		Gvr: schema.GroupVersionResource{
@@ -51,7 +61,7 @@ func (r *Reconciler) metaExchangeEnvoyFilter(version string, metadataExchangeFil
 			Resource: "envoyfilters",
 		},
 		Kind:      "EnvoyFilter",
-		Name:      r.Config.WithName(fmt.Sprintf("%s-metadata-exchange-%s", componentName, version)),
+		Name:      r.Config.WithRevision(fmt.Sprintf("%s-metadata-exchange-%s", componentName, version)),
 		Namespace: r.Config.Namespace,
 		Labels:    r.Config.RevisionLabels(),
 		Spec: map[string]interface{}{

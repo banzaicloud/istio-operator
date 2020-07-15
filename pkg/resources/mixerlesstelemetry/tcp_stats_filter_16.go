@@ -31,8 +31,7 @@ const (
           name: envoy.tcp_proxy
     proxy:
       proxyVersion: ^1\.6.*
-      metadata:
-        REVISION: %[3]s
+      %[3]s
   patch:
     operation: INSERT_BEFORE
     value:
@@ -71,8 +70,7 @@ const (
           name: envoy.tcp_proxy
     proxy:
       proxyVersion: ^1\.6.*
-      metadata:
-        REVISION: %[3]s
+      %[3]s
   patch:
     operation: INSERT_BEFORE
     value:
@@ -111,8 +109,7 @@ const (
           name: envoy.tcp_proxy
     proxy:
       proxyVersion: ^1\.6.*
-      metadata:
-        REVISION: %[3]s
+      %[3]s
   patch:
     operation: INSERT_BEFORE
     value:
