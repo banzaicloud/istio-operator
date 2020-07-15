@@ -219,9 +219,6 @@ func (r *CRDReconciler) Reconcile(config *istiov1beta1.Istio, log logr.Logger) e
 func GetWatchPredicateForCRDs() predicate.Funcs {
 	return predicate.Funcs{
 		CreateFunc: func(e event.CreateEvent) bool {
-			if e.Meta.GetLabels()[createdByLabel] == createdBy {
-				return true
-			}
 			return false
 		},
 		DeleteFunc: func(e event.DeleteEvent) bool {

@@ -251,7 +251,7 @@ func (r *ReconcileIstio) reconcile(logger logr.Logger, config *istiov1beta1.Isti
 				return reconcile.Result{}, emperror.Wrap(err, "could not add finalizer to config")
 			}
 			return reconcile.Result{
-				Requeue: true,
+				RequeueAfter: time.Second * 1,
 			}, nil
 		}
 	} else {
