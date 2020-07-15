@@ -31,7 +31,7 @@ func (r *Reconciler) webhooks() []admissionv1beta1.Webhook {
 			Name: "validation.istio.io",
 			ClientConfig: admissionv1beta1.WebhookClientConfig{
 				Service: &admissionv1beta1.ServiceReference{
-					Name:      r.Config.WithName(ServiceNameIstiod),
+					Name:      r.Config.WithRevision(ServiceNameIstiod),
 					Namespace: r.Config.Namespace,
 					Path:      util.StrPointer("/validate"),
 				},

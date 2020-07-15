@@ -40,7 +40,7 @@ func (r *Reconciler) webhook() runtime.Object {
 				Name: "sidecar-injector.istio.io",
 				ClientConfig: admissionv1beta1.WebhookClientConfig{
 					Service: &admissionv1beta1.ServiceReference{
-						Name:      r.Config.WithName(service),
+						Name:      r.Config.WithRevision(service),
 						Namespace: r.Config.Namespace,
 						Path:      util.StrPointer("/inject"),
 					},
@@ -96,7 +96,7 @@ func (r *Reconciler) webhook() runtime.Object {
 				},
 			}...)
 		}
-	} else if util.PointerToBool(r.Config.Spec.Istiod.Enabled) {
+	} else if util.PointerToBool(r.Config.Spec.Istiod.Enabled) && r.Config.IsRevisionUsed() {
 		webhook.Webhooks[0].NamespaceSelector.MatchLabels = nil
 		webhook.Webhooks[0].NamespaceSelector.MatchExpressions = append(webhook.Webhooks[0].NamespaceSelector.MatchExpressions, []metav1.LabelSelectorRequirement{
 			{
@@ -107,7 +107,7 @@ func (r *Reconciler) webhook() runtime.Object {
 				Key:      "istio.io/rev",
 				Operator: metav1.LabelSelectorOpIn,
 				Values: []string{
-					r.Config.Name,
+					r.Config.Revision(),
 				},
 			},
 		}...)

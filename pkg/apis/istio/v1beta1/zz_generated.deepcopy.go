@@ -775,6 +775,11 @@ func (in *IstioSpec) DeepCopyInto(out *IstioSpec) {
 		}
 	}
 	out.HTTPProxyEnvs = in.HTTPProxyEnvs
+	if in.UseRevision != nil {
+		in, out := &in.UseRevision, &out.UseRevision
+		*out = new(bool)
+		**out = **in
+	}
 	return
 }
 

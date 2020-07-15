@@ -31,7 +31,7 @@ func (r *Reconciler) stdioHandler() *k8sutil.DynamicObject {
 			Resource: "handlers",
 		},
 		Kind:      "handler",
-		Name:      r.Config.WithName("stdio"),
+		Name:      r.Config.WithRevision("stdio"),
 		Namespace: r.Config.Namespace,
 		Labels:    r.Config.RevisionLabels(),
 		Spec: map[string]interface{}{
@@ -52,7 +52,7 @@ func (r *Reconciler) accessLogLogentry() *k8sutil.DynamicObject {
 			Resource: "instances",
 		},
 		Kind:      "instance",
-		Name:      r.Config.WithName("accesslog"),
+		Name:      r.Config.WithRevision("accesslog"),
 		Namespace: r.Config.Namespace,
 		Labels:    r.Config.RevisionLabels(),
 		Spec: map[string]interface{}{
@@ -118,7 +118,7 @@ func (r *Reconciler) tcpAccessLogLogentry() *k8sutil.DynamicObject {
 			Resource: "instances",
 		},
 		Kind:      "instance",
-		Name:      r.Config.WithName("tcpaccesslog"),
+		Name:      r.Config.WithRevision("tcpaccesslog"),
 		Namespace: r.Config.Namespace,
 		Labels:    r.Config.RevisionLabels(),
 		Spec: map[string]interface{}{
@@ -169,13 +169,13 @@ func (r *Reconciler) stdioRule() *k8sutil.DynamicObject {
 			Resource: "rules",
 		},
 		Kind:      "rule",
-		Name:      r.Config.WithName("stdio"),
+		Name:      r.Config.WithRevision("stdio"),
 		Namespace: r.Config.Namespace,
 		Labels:    r.Config.RevisionLabels(),
 		Spec: map[string]interface{}{
 			"actions": []interface{}{
 				map[string]interface{}{
-					"handler":   r.Config.WithName("stdio"),
+					"handler":   r.Config.WithRevision("stdio"),
 					"instances": util.EmptyTypedStrSlice("accesslog"),
 				},
 			},
@@ -193,13 +193,13 @@ func (r *Reconciler) stdioTcpRule() *k8sutil.DynamicObject {
 			Resource: "rules",
 		},
 		Kind:      "rule",
-		Name:      r.Config.WithName("stdiotcp"),
+		Name:      r.Config.WithRevision("stdiotcp"),
 		Namespace: r.Config.Namespace,
 		Labels:    r.Config.RevisionLabels(),
 		Spec: map[string]interface{}{
 			"actions": []interface{}{
 				map[string]interface{}{
-					"handler":   r.Config.WithName("stdio"),
+					"handler":   r.Config.WithRevision("stdio"),
 					"instances": util.EmptyTypedStrSlice("tcpaccesslog"),
 				},
 			},

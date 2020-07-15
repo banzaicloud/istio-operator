@@ -80,7 +80,7 @@ func (r *Reconciler) meshExpansionGateway() *k8sutil.DynamicObject {
 			Resource: "gateways",
 		},
 		Kind:      "Gateway",
-		Name:      r.Config.WithName("meshexpansion-gateway"),
+		Name:      r.Config.WithRevision("meshexpansion-gateway"),
 		Namespace: r.Config.Namespace,
 		Labels:    r.Config.RevisionLabels(),
 		Spec: map[string]interface{}{
@@ -99,7 +99,7 @@ func (r *Reconciler) clusterAwareGateway() *k8sutil.DynamicObject {
 			Resource: "gateways",
 		},
 		Kind:      "Gateway",
-		Name:      r.Config.WithName("cluster-aware-gateway"),
+		Name:      r.Config.WithRevision("cluster-aware-gateway"),
 		Namespace: r.Config.Namespace,
 		Labels:    r.Config.RevisionLabels(),
 		Spec: map[string]interface{}{

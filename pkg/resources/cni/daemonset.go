@@ -69,7 +69,7 @@ func (r *Reconciler) daemonSet() runtime.Object {
 						},
 					},
 					TerminationGracePeriodSeconds: util.Int64Pointer(5),
-					ServiceAccountName:            r.Config.WithName(serviceAccountName),
+					ServiceAccountName:            r.Config.WithRevision(serviceAccountName),
 					Containers:                    r.container(),
 					Volumes: []apiv1.Volume{
 						{
@@ -123,7 +123,7 @@ func (r *Reconciler) container() []apiv1.Container {
 					ValueFrom: &apiv1.EnvVarSource{
 						ConfigMapKeyRef: &apiv1.ConfigMapKeySelector{
 							LocalObjectReference: apiv1.LocalObjectReference{
-								Name: r.Config.WithName(configMapName),
+								Name: r.Config.WithRevision(configMapName),
 							},
 							Key: "cni_network_config",
 						},
@@ -139,11 +139,11 @@ func (r *Reconciler) container() []apiv1.Container {
 				},
 				{
 					Name:  "KUBECFG_FILE_NAME",
-					Value: r.Config.WithName("ZZZ-istio-cni-kubeconfig"),
+					Value: r.Config.WithRevision("ZZZ-istio-cni-kubeconfig"),
 				},
 				{
 					Name:  "CNI_CONFIG_NAME",
-					Value: r.Config.WithName("istio-cni"),
+					Value: r.Config.WithRevision("istio-cni"),
 				},
 			},
 			TerminationMessagePath:   apiv1.TerminationMessagePathDefault,

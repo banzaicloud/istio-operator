@@ -53,7 +53,7 @@ func (c *Cluster) reconcileCARootToNamespaces(remoteConfig *istiov1beta1.RemoteI
 	}
 
 	for _, ns := range namespaces.Items {
-		err = c.reconcileCARootInNamespace(istio.WithName(caRootConfigMapName), ns.Name, configMapData, desiredState)
+		err = c.reconcileCARootInNamespace(istio.WithRevision(caRootConfigMapName), ns.Name, configMapData, desiredState)
 		if err != nil {
 			return err
 		}

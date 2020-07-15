@@ -61,7 +61,7 @@ func (r *Reconciler) k8sIngressGateway() *k8sutil.DynamicObject {
 			Resource: "gateways",
 		},
 		Kind:      "Gateway",
-		Name:      r.Config.WithName(k8sIngressGatewayName),
+		Name:      r.Config.WithRevision(k8sIngressGatewayName),
 		Namespace: r.Config.Namespace,
 		Labels:    r.Config.RevisionLabels(),
 		Spec:      spec,

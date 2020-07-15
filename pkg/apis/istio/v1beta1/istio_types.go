@@ -853,6 +853,8 @@ type IstioSpec struct {
 
 	// Upstream HTTP proxy properties to be injected as environment variables to the pod containers
 	HTTPProxyEnvs HTTPProxyEnvs `json:"httpProxyEnvs,omitempty"`
+
+	UseRevision *bool `json:"useRevision,omitempty"`
 }
 
 type MixerlessTelemetryConfiguration struct {
@@ -921,16 +923,19 @@ func (c *Istio) GetCAAddress() string {
 	return c.GetDiscoveryAddress()
 }
 
-func (c *Istio) GetDiscoveryHost() string {
+func (c *Istio) GetDiscoveryHost(withClusterDomain bool) string {
 	svcName := "istio-pilot"
 	if util.PointerToBool(c.Spec.Istiod.Enabled) {
 		svcName = "istiod"
 	}
-	return fmt.Sprintf("%s-%s.%s.svc.%s", svcName, c.Name, c.Namespace, c.Spec.Proxy.ClusterDomain)
+	if withClusterDomain {
+		return fmt.Sprintf("%s.%s.svc.%s", c.WithRevision(svcName), c.Namespace, c.Spec.Proxy.ClusterDomain)
+	}
+	return fmt.Sprintf("%s.%s.svc", c.WithRevision(svcName), c.Namespace)
 }
 
 func (c *Istio) GetDiscoveryAddress() string {
-	return fmt.Sprintf("%s:%d", c.GetDiscoveryHost(), c.GetDiscoveryPort())
+	return fmt.Sprintf("%s:%d", c.GetDiscoveryHost(false), c.GetDiscoveryPort())
 }
 
 func (c *Istio) GetDiscoveryPort() int {
@@ -943,18 +948,33 @@ func (c *Istio) GetDiscoveryPort() int {
 	return 15010
 }
 
+func (c *Istio) IsRevisionUsed() bool {
+	return util.PointerToBool(c.Spec.UseRevision)
+}
+
+func (c *Istio) Revision() string {
+	return c.Name
+}
+
 func (c *Istio) RevisionLabels() map[string]string {
 	return map[string]string{
-		"istio.io/rev": c.Name,
+		"istio.io/rev": c.Revision(),
 	}
 }
 
-func (c *Istio) WithName(s string) string {
-	return strings.Join([]string{s, c.Name}, "-")
+func (c *Istio) WithRevision(s string) string {
+	if !c.IsRevisionUsed() {
+		return s
+	}
+
+	return strings.Join([]string{s, c.Revision()}, "-")
 }
 
-func (c *Istio) WithNamespacedName(s string) string {
-	return strings.Join([]string{s, c.Name, c.Namespace}, "-")
+func (c *Istio) WithNamespacedRevision(s string) string {
+	if !c.IsRevisionUsed() {
+		return s
+	}
+	return strings.Join([]string{c.WithRevision(s), c.Namespace}, "-")
 }
 
 type SortableIstioItems []Istio

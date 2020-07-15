@@ -210,11 +210,11 @@ func serviceName(t string) string {
 }
 
 func serviceNameWithRevision(config *v1beta1.Istio, t string) string {
-	return fmt.Sprintf("istio-%s", config.WithName(t))
+	return fmt.Sprintf("istio-%s", config.WithRevision(t))
 }
 
 func serviceHostWithRevision(config *v1beta1.Istio, t string) string {
-	return fmt.Sprintf("istio-%s.%s.svc.%s", config.WithName(t), config.Namespace, config.Spec.Proxy.ClusterDomain)
+	return fmt.Sprintf("istio-%s.%s.svc.%s", config.WithRevision(t), config.Namespace, config.Spec.Proxy.ClusterDomain)
 }
 
 func hpaName(t string) string {

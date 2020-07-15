@@ -127,7 +127,7 @@ func (r *Reconciler) deployment() runtime.Object {
 					Annotations: util.MergeStringMaps(templates.DefaultDeployAnnotations(), r.Config.Spec.IstioCoreDNS.PodAnnotations),
 				},
 				Spec: apiv1.PodSpec{
-					ServiceAccountName: r.Config.WithName(serviceAccountName),
+					ServiceAccountName: r.Config.WithRevision(serviceAccountName),
 					Containers: []apiv1.Container{
 						r.coreDNSContainer(),
 						r.coreDNSPluginContainer(),
@@ -139,7 +139,7 @@ func (r *Reconciler) deployment() runtime.Object {
 							VolumeSource: apiv1.VolumeSource{
 								ConfigMap: &apiv1.ConfigMapVolumeSource{
 									LocalObjectReference: apiv1.LocalObjectReference{
-										Name: r.Config.WithName(configMapName),
+										Name: r.Config.WithRevision(configMapName),
 									},
 									Items: []apiv1.KeyToPath{
 										{

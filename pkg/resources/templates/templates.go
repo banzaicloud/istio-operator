@@ -48,11 +48,11 @@ func ObjectMeta(name string, labels map[string]string, config runtime.Object) me
 }
 
 func ObjectMetaWithRevision(name string, labels map[string]string, config *v1beta1.Istio) metav1.ObjectMeta {
-	return ObjectMeta(util.CombinedName(name, config.GetName()), util.MergeStringMaps(labels, config.RevisionLabels()), config)
+	return ObjectMeta(config.WithRevision(name), util.MergeStringMaps(labels, config.RevisionLabels()), config)
 }
 
 func ObjectMetaClusterScopeWithRevision(name string, labels map[string]string, config *v1beta1.Istio) metav1.ObjectMeta {
-	return ObjectMetaClusterScope(util.CombinedName(name, config.GetName(), config.GetNamespace()), util.MergeStringMaps(labels, config.RevisionLabels()), config)
+	return ObjectMetaClusterScope(config.WithNamespacedRevision(name), util.MergeStringMaps(labels, config.RevisionLabels()), config)
 }
 
 func ObjectMetaWithAnnotations(name string, labels map[string]string, annotations map[string]string, config runtime.Object) metav1.ObjectMeta {
