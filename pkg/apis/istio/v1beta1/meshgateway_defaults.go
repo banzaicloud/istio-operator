@@ -61,4 +61,11 @@ func (gw *MeshGateway) SetDefaults() {
 			gw.Spec.SecurityContext = defaultSecurityContext
 		}
 	}
+
+	if gw.Spec.Labels == nil {
+		gw.Spec.Labels = make(map[string]string)
+	}
+
+	gw.Spec.Labels["gateway-name"] = gw.Name
+	gw.Spec.Labels["gateway-type"] = string(gw.Spec.Type)
 }

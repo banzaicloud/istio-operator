@@ -173,7 +173,51 @@ func (r *ReconcileMeshGateway) Reconcile(request reconcile.Request) (reconcile.R
 		return reconcile.Result{}, errors.WithStack(err)
 	}
 
+	err = forceUpdateLabels(r.Client, instance)
+	if err != nil {
+		return reconcile.Result{}, errors.WithStack(err)
+	}
+
 	return reconcile.Result{}, nil
+}
+
+func upsertGatewayLabel(instance *istiov1beta1.MeshGateway, key string, desiredValue string) bool {
+	currentValue, keyExists := instance.Spec.Labels[key]
+	if !keyExists {
+		log.Info(fmt.Sprintf("missing label %s, adding value %s", key, desiredValue))
+		instance.Spec.Labels[key] = desiredValue
+		return true
+	} else if currentValue != desiredValue {
+		instance.Spec.Labels[key] = desiredValue
+		log.Info(fmt.Sprintf("label %s, has invalud value %s, setting to %s", key, currentValue, desiredValue))
+		return true
+	} else {
+		return false
+	}
+}
+
+func forceUpdateLabels(c client.Client, instance *istiov1beta1.MeshGateway) error {
+	var actualInstance istiov1beta1.MeshGateway
+	err := c.Get(context.TODO(), types.NamespacedName{
+		Namespace: instance.Namespace,
+		Name:      instance.Name,
+	}, &actualInstance)
+	if err != nil {
+		return emperror.Wrap(err, "could not get resource for updating status")
+	}
+
+	if actualInstance.Spec.Labels == nil {
+		actualInstance.Spec.Labels = make(map[string]string)
+	}
+
+	if upsertGatewayLabel(&actualInstance, "gateway-name", actualInstance.Name) ||
+		upsertGatewayLabel(&actualInstance, "gateway-type", string(actualInstance.Spec.Type)) {
+		err := c.Update(context.TODO(), &actualInstance)
+		if err != nil {
+			return emperror.Wrap(err, "could not update gateway with the new label fields")
+		}
+	}
+	return nil
 }
 
 func updateStatus(c client.Client, instance *istiov1beta1.MeshGateway, status istiov1beta1.ConfigState, errorMessage string, logger logr.Logger) error {
