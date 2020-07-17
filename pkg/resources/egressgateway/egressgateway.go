@@ -82,6 +82,7 @@ func (r *Reconciler) Reconcile(log logr.Logger) error {
 		ObjectMeta: templates.ObjectMeta(resourceName, spec.Labels, r.Config),
 		Spec:       spec,
 	}
+	object.SetDefaultLabels()
 
 	err := k8sutil.Reconcile(log, r.Client, object, desiredState)
 	if err != nil {

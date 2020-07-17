@@ -62,10 +62,16 @@ func (gw *MeshGateway) SetDefaults() {
 		}
 	}
 
-	if gw.Spec.Labels == nil {
-		gw.Spec.Labels = make(map[string]string)
-	}
+	gw.SetDefaultLabels()
+}
 
-	gw.Spec.Labels["gateway-name"] = gw.Name
-	gw.Spec.Labels["gateway-type"] = string(gw.Spec.Type)
+func (gw *MeshGateway) SetDefaultLabels() {
+	gw.Spec.Labels = util.MergeStringMaps(gw.GetDefaultLabels(), gw.Spec.Labels)
+}
+
+func (gw *MeshGateway) GetDefaultLabels() map[string]string {
+	return map[string]string{
+		"gateway-name": gw.Name,
+		"gateway-type": string(gw.Spec.Type),
+	}
 }
