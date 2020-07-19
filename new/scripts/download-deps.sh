@@ -13,7 +13,7 @@ for name in ${cmds}; do
 done
 
 if [[ ! -f $binpath/controller-gen ]]; then
-    GOBIN=$binpath go get sigs.k8s.io/controller-tools/cmd/controller-gen@v0.3.0
+    GOBIN=$binpath go get sigs.k8s.io/controller-tools/cmd/controller-gen@v0.2.9
 fi
 
 go mod vendor
