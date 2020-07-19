@@ -48,15 +48,15 @@ license-cache: bin/licensei ## Generate license cache
 
 # Run tests
 test: install-kubebuilder generate fmt vet manifests
-	KUBEBUILDER_ASSETS="$${PWD}/bin/kubebuilder/bin" go test ./pkg/... ./cmd/... -coverprofile cover.out
+	KUBEBUILDER_ASSETS="$${PWD}/bin/kubebuilder/bin" go test ./... -coverprofile cover.out
 
 # Build manager binary
 manager: generate fmt vet
-	go build -o bin/manager github.com/banzaicloud/istio-operator/cmd/manager
+	go build -o bin/manager github.com/banzaicloud/istio-operator
 
 # Run against the configured Kubernetes cluster in ~/.kube/config
 run: generate fmt vet manifests
-	go run ./cmd/manager/main.go
+	go run ./main.go
 
 # Install kustomize
 install-kustomize:
@@ -90,18 +90,18 @@ manifests: download-deps
 
 # Run go fmt against code
 fmt:
-	go fmt ./pkg/... ./cmd/...
+	go fmt ./...
 
 # Run go vet against code
 vet:
-	go vet ./pkg/... ./cmd/...
+	go vet ./...
 
 download-deps:
 	./scripts/download-deps.sh
 
 # Generate code
 generate: download-deps
-	go generate ./pkg/... ./cmd/...
+	go generate ./...
 	bin/controller-gen object:headerFile="hack/boilerplate.go.txt" paths="./..."
 
 # Verify codegen
