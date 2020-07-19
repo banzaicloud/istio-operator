@@ -1,3 +1,7 @@
 domain: banzaicloud.io
 repo: github.com/banzaicloud/istio-operator
+resources:
+- group: istio
+  kind: Istio
+  version: v1beta1
 version: "2"

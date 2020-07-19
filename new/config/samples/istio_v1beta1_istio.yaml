@@ -1,0 +1,7 @@
+apiVersion: istio.banzaicloud.io/v1beta1
+kind: Istio
+metadata:
+  name: istio-sample
+spec:
+  # Add fields here
+  foo: bar

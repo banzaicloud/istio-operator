@@ -1,0 +1,20 @@
+# permissions for end users to view istios.
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: istio-viewer-role
+rules:
+- apiGroups:
+  - istio.banzaicloud.io
+  resources:
+  - istios
+  verbs:
+  - get
+  - list
+  - watch
+- apiGroups:
+  - istio.banzaicloud.io
+  resources:
+  - istios/status
+  verbs:
+  - get
