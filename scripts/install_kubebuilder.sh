@@ -1,15 +1,30 @@
 #!/usr/bin/env bash
 
-version=1.0.8 # latest stable version
-arch=amd64
-opsys=$(uname -s | awk '{print tolower($0)}')
+set -euo pipefail
 
-# download the release
-curl -L -O "https://github.com/kubernetes-sigs/kubebuilder/releases/download/v${version}/kubebuilder_${version}_${opsys}_${arch}.tar.gz"
+[ -z "${1:-}" ] && { echo "Usage: $0 <version>"; exit 1; }
 
-# extract the archive
-tar -zxvf "kubebuilder_${version}_${opsys}_${arch}.tar.gz"
-mv "kubebuilder_${version}_${opsys}_${arch}" kubebuilder && mkdir -p bin && mv kubebuilder bin/
+version=$1
 
-# delete tar file
-rm "kubebuilder_${version}_${opsys}_${arch}.tar.gz"
+target_dir_name=kubebuilder-${version}
+link_path=bin/kubebuilder
+
+if [ -e ${link_path} ] && [ ! -L ${link_path} ]; then
+    echo "Please move ${link_path} out of the way"
+    exit 1
+fi
+
+mkdir -p bin
+rm -f ${link_path}
+ln -s "${target_dir_name}" ${link_path}
+
+if [ ! -e bin/"${target_dir_name}" ]; then
+    os=$(go env GOOS)
+    arch=$(go env GOARCH)
+
+    # download kubebuilder and extract it to tmp
+    curl -L "https://go.kubebuilder.io/dl/${version}/${os}/${arch}" | tar -xz -C /tmp/
+
+    # extract the archive
+    mv "/tmp/kubebuilder_${version}_${os}_${arch}" bin/"${target_dir_name}"
+fi
