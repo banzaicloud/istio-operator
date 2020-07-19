@@ -18,10 +18,14 @@ package server
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/go-logr/logr"
+	"github.com/goph/emperror"
 	admissionregistrationv1beta1 "k8s.io/api/admissionregistration/v1beta1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/runtime"
+	"k8s.io/apimachinery/pkg/runtime/serializer/json"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/manager"
 	"sigs.k8s.io/controller-runtime/pkg/runtime/inject"
@@ -30,6 +34,7 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/webhook/admission/types"
 
 	istiov1beta1 "github.com/banzaicloud/istio-operator/pkg/apis/istio/v1beta1"
+	"github.com/banzaicloud/istio-operator/pkg/controller/istio"
 )
 
 func init() {
@@ -37,9 +42,8 @@ func init() {
 }
 
 const (
-	configValidationWebhookName               = "istio.validation.banzaicloud.io"
-	configValidationWebhookPath               = "/validate-istio-config"
-	configValidationWebhookAlreadyExistsError = "istio config resource already exists"
+	configValidationWebhookName = "istio.validation.banzaicloud.io"
+	configValidationWebhookPath = "/validate-istio-config"
 )
 
 // NewConfigValidationWebhook initializes an Istio config resource validator webhook configuration
@@ -71,17 +75,27 @@ var _ admission.Handler = &istioConfigValidator{}
 // +kubebuilder:rbac:groups=admissionregistration.k8s.io,resources=validatingwebhookconfigurations,verbs=get;list;watch;create;update;patch;delete
 // +kubebuilder:rbac:groups=istio.banzaicloud.io,resources=istios,verbs=get;list;watch
 func (wh *istioConfigValidator) Handle(ctx context.Context, req types.Request) types.Response {
-	var configs istiov1beta1.IstioList
-
-	err := wh.client.List(context.TODO(), &client.ListOptions{}, &configs)
+	sc := runtime.NewScheme()
+	istiov1beta1.AddToScheme(sc)
+	s := json.NewSerializer(json.DefaultMetaFactory, sc, sc, false)
+	obj, _, err := s.Decode([]byte(req.AdmissionRequest.Object.Raw), nil, nil)
 	if err != nil {
-		wh.logger.Error(err, "could not list istio config objects")
+		return admission.ValidationResponse(false, emperror.Wrap(err, "could not decode object").Error())
 	}
-	if len(configs.Items) == 0 {
+
+	if config, ok := obj.(*istiov1beta1.Istio); ok {
+		yes, err := istio.IsControlPlaneShouldBeRevisioned(wh.client, config)
+		if err != nil {
+			return admission.ValidationResponse(false, emperror.Wrap(err, "could not check control plane revisions").Error())
+		}
+		if yes && !config.IsRevisionUsed() {
+			return admission.ValidationResponse(false, fmt.Sprintf("'useRevision' must be set to true. A main Istio control plane is already exists in the '%s' namespace", config.Namespace))
+		}
+
 		return admission.ValidationResponse(true, "")
 	}
 
-	return admission.ValidationResponse(false, configValidationWebhookAlreadyExistsError)
+	return admission.ValidationResponse(false, "could not check control plane revision")
 }
 
 // istioConfigValidator implements inject.Client.
