@@ -132,7 +132,7 @@ shellcheck-makefile: bin/shellcheck ## Check each makefile recipe using shellche
 
 .PHONY: shellcheck
 shellcheck: bin/shellcheck ## Check shell scripts
-	bin/shellcheck scripts/*.sh hack/*.sh docs/federation/gateway/cluster-add/*.sh docs/federation/flat/*.sh
+	bin/shellcheck scripts/*.sh
 
 bin/shellcheck:
 	scripts/install_shellcheck.sh
