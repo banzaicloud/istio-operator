@@ -4,4 +4,7 @@ resources:
 - group: istio
   kind: Istio
   version: v1beta1
+- group: istio
+  kind: MeshGateway
+  version: v1beta1
 version: "2"
