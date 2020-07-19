@@ -1,6 +1,6 @@
 module github.com/banzaicloud/istio-operator
 
-go 1.13
+go 1.14
 
 require (
 	k8s.io/apimachinery v0.17.2
