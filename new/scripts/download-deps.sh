@@ -1,5 +1,6 @@
 #!/usr/bin/env bash
-set +x
+
+set -euo pipefail
 
 binpath=${PWD}/$(dirname "$0")/../bin
 version="v0.18.6"
