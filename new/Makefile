@@ -55,7 +55,7 @@ manager: generate fmt vet
 	go build -o bin/manager github.com/banzaicloud/istio-operator/cmd/manager
 
 # Run against the configured Kubernetes cluster in ~/.kube/config
-run: generate fmt vet manifest
+run: generate fmt vet manifests
 	go run ./cmd/manager/main.go
 
 # Install kustomize
