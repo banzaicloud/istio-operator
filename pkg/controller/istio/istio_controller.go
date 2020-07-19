@@ -20,6 +20,7 @@ import (
 	"context"
 	"flag"
 	"fmt"
+	"sort"
 	"strings"
 	"sync"
 	"time"
@@ -210,6 +211,19 @@ func (r *ReconcileIstio) Reconcile(request reconcile.Request) (reconcile.Result,
 		logger.Error(err, "legacy Istio control plane components cannot be enabled starting from Istio 1.6, disable them first")
 		return reconcile.Result{
 			Requeue: false,
+		}, nil
+	}
+
+	err = r.autoSetIstioRevisions(config)
+	if err != nil {
+		updateErr := updateStatus(r.Client, config, istiov1beta1.ReconcileFailed, err.Error(), logger)
+		if updateErr != nil {
+			logger.Error(updateErr, "failed to update state")
+			return reconcile.Result{}, errors.WithStack(err)
+		}
+		logger.Error(err, "")
+		return reconcile.Result{
+			RequeueAfter: time.Minute * 5,
 		}, nil
 	}
 
@@ -505,6 +519,64 @@ func (r *ReconcileIstio) deleteRemoteIstios(config *istiov1beta1.Istio, logger l
 			logger.Error(err, "could not delete remote istio resource", "name", remoteIstio.Name)
 		}
 	}
+}
+
+// autoSetIstioRevisions takes care of having only one unrevisioned control plane in each namespace
+func (r *ReconcileIstio) autoSetIstioRevisions(config *istiov1beta1.Istio) error {
+	yes, err := IsControlPlaneShouldBeRevisioned(r.Client, config)
+	if err != nil {
+		return err
+	}
+
+	if yes {
+		if config.Spec.UseRevision != nil && *config.Spec.UseRevision == false {
+			return errors.New("there is already an another unrevisioned control plane")
+		}
+		config.Spec.UseRevision = util.BoolPointer(true)
+	}
+
+	return nil
+}
+
+func IsControlPlaneShouldBeRevisioned(c client.Client, config *istiov1beta1.Istio) (bool, error) {
+	// revision turned on
+	if config.IsRevisionUsed() {
+		return true, nil
+	}
+
+	cps := &istiov1beta1.IstioList{}
+	err := c.List(context.Background(), &client.ListOptions{
+		Namespace: config.Namespace,
+	}, cps)
+	if err != nil {
+		return false, emperror.Wrap(err, "could not list istio resources")
+	}
+
+	sort.Sort(istiov1beta1.SortableIstioItems(cps.Items))
+
+	// // no other crs - leave it unrevisioned
+	// if len(cps.Items) <= 1 {
+	// 	return false, nil
+	// }
+
+	var oldest *istiov1beta1.Istio
+
+	// collect unrevisioned
+	unrevisioned := 0
+	for _, cp := range cps.Items {
+		if !cp.IsRevisionUsed() {
+			if oldest == nil {
+				oldest = cp.DeepCopy()
+			}
+			unrevisioned++
+		}
+	}
+
+	if unrevisioned > 0 && config.Name != oldest.Name {
+		return true, nil
+	}
+
+	return false, nil
 }
 
 func updateStatus(c client.Client, config *istiov1beta1.Istio, status istiov1beta1.ConfigState, errorMessage string, logger logr.Logger) error {
