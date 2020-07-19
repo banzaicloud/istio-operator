@@ -9,13 +9,9 @@ version=$1
 target_dir_name=kubebuilder-${version}
 link_path=bin/kubebuilder
 
-if [ -e ${link_path} ] && [ ! -L ${link_path} ]; then
-    echo "Please move ${link_path} out of the way"
-    exit 1
-fi
+[ -e ${link_path} ] && rm -r ${link_path}
 
 mkdir -p bin
-rm -f ${link_path}
 ln -s "${target_dir_name}" ${link_path}
 
 if [ ! -e bin/"${target_dir_name}" ]; then

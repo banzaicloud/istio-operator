@@ -9,13 +9,9 @@ version=$1
 target_name=kustomize-${version}
 link_path=bin/kustomize
 
-if [ -e ${link_path} ] && [ ! -L ${link_path} ]; then
-    echo "Please move ${link_path} out of the way"
-    exit 1
-fi
+[ -e ${link_path} ] && rm -r ${link_path}
 
 mkdir -p bin
-rm -f ${link_path}
 ln -s "${target_name}" ${link_path}
 
 if [ ! -e bin/"${target_name}" ]; then
