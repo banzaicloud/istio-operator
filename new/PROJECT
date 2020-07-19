@@ -1,0 +1,3 @@
+domain: banzaicloud.io
+repo: github.com/banzaicloud/istio-operator
+version: "2"
