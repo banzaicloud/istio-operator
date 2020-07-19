@@ -1,0 +1,7 @@
+apiVersion: istio.banzaicloud.io/v1beta1
+kind: RemoteIstio
+metadata:
+  name: remoteistio-sample
+spec:
+  # Add fields here
+  foo: bar

@@ -7,4 +7,7 @@ resources:
 - group: istio
   kind: MeshGateway
   version: v1beta1
+- group: istio
+  kind: RemoteIstio
+  version: v1beta1
 version: "2"

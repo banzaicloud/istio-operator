@@ -82,6 +82,14 @@ func main() {
 		setupLog.Error(err, "unable to create controller", "controller", "MeshGateway")
 		os.Exit(1)
 	}
+	if err = (&controllers.RemoteIstioReconciler{
+		Client: mgr.GetClient(),
+		Log:    ctrl.Log.WithName("controllers").WithName("RemoteIstio"),
+		Scheme: mgr.GetScheme(),
+	}).SetupWithManager(mgr); err != nil {
+		setupLog.Error(err, "unable to create controller", "controller", "RemoteIstio")
+		os.Exit(1)
+	}
 	// +kubebuilder:scaffold:builder
 
 	setupLog.Info("starting manager")

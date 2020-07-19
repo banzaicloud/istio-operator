@@ -46,3 +46,23 @@ rules:
   - get
   - patch
   - update
+- apiGroups:
+  - istio.banzaicloud.io
+  resources:
+  - remoteistios
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
+- apiGroups:
+  - istio.banzaicloud.io
+  resources:
+  - remoteistios/status
+  verbs:
+  - get
+  - patch
+  - update
