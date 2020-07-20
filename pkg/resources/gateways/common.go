@@ -18,8 +18,6 @@ package gateways
 
 import (
 	"fmt"
-
-	"github.com/banzaicloud/istio-operator/pkg/util"
 )
 
 func (r *Reconciler) gatewayName() string {
@@ -31,10 +29,7 @@ func (r *Reconciler) serviceAccountName() string {
 }
 
 func (r *Reconciler) labels() map[string]string {
-	return util.MergeStringMaps(map[string]string{
-		"gateway-name": r.gatewayName(),
-		"gateway-type": string(r.gw.Spec.Type),
-	}, r.gw.Spec.Labels)
+	return r.gw.Spec.Labels
 }
 
 func (r *Reconciler) clusterRoleName() string {
