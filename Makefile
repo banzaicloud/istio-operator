@@ -9,6 +9,8 @@ REL_TAG = $(shell ./scripts/increment_version.sh -${RELEASE_TYPE} ${TAG})
 
 GOLANGCI_VERSION = 1.23.8
 LICENSEI_VERSION = 0.1.0
+KUBEBUILDER_VERSION = 1.0.8
+KUSTOMIZE_VERSION = 2.0.3
 
 KUSTOMIZE_BASE = config/overlays/specific-manager-version
 
@@ -57,14 +59,12 @@ run: generate fmt vet
 	go run ./cmd/manager/main.go
 
 # Install kustomize
-install-kustomize: bin/kustomize
-bin/kustomize:
-	scripts/install_kustomize.sh
+install-kustomize:
+	scripts/install_kustomize.sh ${KUSTOMIZE_VERSION}
 
 # Install kubebuilder
-install-kubebuilder: bin/kubebuilder/bin/kubebuilder
-bin/kubebuilder/bin/kubebuilder:
-	scripts/install_kubebuilder.sh
+install-kubebuilder:
+	scripts/install_kubebuilder.sh ${KUBEBUILDER_VERSION}
 
 .PHONY: vendor
 vendor:
