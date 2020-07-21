@@ -19,6 +19,7 @@ package meshgateway
 import (
 	"context"
 	"fmt"
+	"reflect"
 	"time"
 
 	"github.com/go-logr/logr"
@@ -131,6 +132,12 @@ func (r *ReconcileMeshGateway) Reconcile(request reconcile.Request) (reconcile.R
 		// Error reading the object - requeue the request.
 		return reconcile.Result{}, err
 	}
+
+	err = r.setDefaultLabels(instance)
+	if err != nil {
+		return reconcile.Result{}, errors.WithStack(err)
+	}
+
 	instance.SetDefaults()
 
 	err = updateStatus(r.Client, instance, istiov1beta1.Reconciling, "", logger)
@@ -174,6 +181,22 @@ func (r *ReconcileMeshGateway) Reconcile(request reconcile.Request) (reconcile.R
 	}
 
 	return reconcile.Result{}, nil
+}
+
+func (r *ReconcileMeshGateway) setDefaultLabels(instance *istiov1beta1.MeshGateway) error {
+	i := instance.DeepCopy()
+	i.SetDefaultLabels()
+	if !reflect.DeepEqual(i.Spec.Labels, instance.Spec.Labels) {
+		gvk := instance.DeepCopy().GetObjectKind().GroupVersionKind()
+		instance.Spec.Labels = i.Spec.Labels
+		err := r.Update(context.Background(), instance)
+		if err != nil {
+			return errors.WithStack(err)
+		}
+		instance.SetGroupVersionKind(gvk)
+	}
+
+	return nil
 }
 
 func updateStatus(c client.Client, instance *istiov1beta1.MeshGateway, status istiov1beta1.ConfigState, errorMessage string, logger logr.Logger) error {
