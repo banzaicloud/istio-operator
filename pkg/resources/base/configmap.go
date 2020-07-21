@@ -158,7 +158,6 @@ func getLocalityLBConfiguration(config *istiov1beta1.Istio) *istiov1beta1.Locali
 
 	if config.Spec.LocalityLB != nil {
 		localityLbConfiguration = config.Spec.LocalityLB.DeepCopy()
-		localityLbConfiguration.Enabled = nil
 		if localityLbConfiguration.Distribute != nil && localityLbConfiguration.Failover != nil {
 			localityLbConfiguration.Failover = nil
 		}
