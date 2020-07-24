@@ -86,9 +86,10 @@ func (c *Cluster) reconcileConfig(remoteConfig *istiov1beta1.RemoteIstio, istio 
 
 	if util.PointerToBool(istioConfig.Spec.MeshExpansion) {
 		istioConfig.Spec.Gateways.IngressConfig.Enabled = util.BoolPointer(true)
-		istioConfig.Spec.NetworkName = remoteConfig.Name
-		istioConfig.Spec.ClusterName = remoteConfig.Name
 	}
+
+	istioConfig.Spec.NetworkName = remoteConfig.Name
+	istioConfig.Spec.ClusterName = remoteConfig.Name
 
 	if k8sapierrors.IsNotFound(err) {
 		istioConfig.Name = ConfigName
