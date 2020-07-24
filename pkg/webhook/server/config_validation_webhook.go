@@ -18,7 +18,6 @@ package server
 
 import (
 	"context"
-	"fmt"
 
 	"github.com/go-logr/logr"
 	"github.com/goph/emperror"
@@ -89,7 +88,7 @@ func (wh *istioConfigValidator) Handle(ctx context.Context, req types.Request) t
 			return admission.ValidationResponse(false, emperror.Wrap(err, "could not check control plane revisions").Error())
 		}
 		if yes && !config.IsRevisionUsed() {
-			return admission.ValidationResponse(false, fmt.Sprintf("'useRevision' must be set to true. A main Istio control plane is already exists in the '%s' namespace", config.Namespace))
+			return admission.ValidationResponse(false, "'global' property must be set to false. A global Istio control plane is already exists.")
 		}
 
 		return admission.ValidationResponse(true, "")

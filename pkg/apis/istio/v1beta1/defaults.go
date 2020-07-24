@@ -125,6 +125,9 @@ var defaultEgressGatewayPorts = []ServicePort{
 }
 
 func SetDefaults(config *Istio) {
+	if config.Spec.Global == nil {
+		config.Spec.Global = util.BoolPointer(true)
+	}
 	// MeshPolicy config
 	if config.Spec.MeshPolicy.MTLSMode == "" {
 		if util.PointerToBool(config.Spec.MTLS) {

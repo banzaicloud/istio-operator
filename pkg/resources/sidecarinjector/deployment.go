@@ -231,7 +231,7 @@ func (r *Reconciler) volumes() []apiv1.Volume {
 			VolumeSource: apiv1.VolumeSource{
 				ConfigMap: &apiv1.ConfigMapVolumeSource{
 					LocalObjectReference: apiv1.LocalObjectReference{
-						Name: r.Config.WithRevision("istio-ca-root-cert"),
+						Name: r.Config.WithRevisionIf("istio-ca-root-cert", util.PointerToBool(r.Config.Spec.Istiod.MultiControlPlaneSupport)),
 					},
 				},
 			},
