@@ -353,6 +353,8 @@ func (r *ReconcileIstio) reconcile(logger logr.Logger, config *istiov1beta1.Isti
 				RequeueAfter: time.Duration(30) * time.Second,
 			}, nil
 		}
+	} else {
+		config.Status.GatewayAddress = nil
 	}
 
 	err = updateStatus(r.Client, config, istiov1beta1.Available, "", logger)
@@ -436,8 +438,6 @@ func (r *ReconcileIstio) getMeshNetworks(config *istiov1beta1.Istio, logger logr
 					Address: address, Port: 443,
 				})
 			}
-		} else {
-			continue
 		}
 
 		meshNetworks[remoteIstio.Name] = istiov1beta1.MeshNetwork{
