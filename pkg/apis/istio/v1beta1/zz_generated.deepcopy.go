@@ -775,8 +775,8 @@ func (in *IstioSpec) DeepCopyInto(out *IstioSpec) {
 		}
 	}
 	out.HTTPProxyEnvs = in.HTTPProxyEnvs
-	if in.UseRevision != nil {
-		in, out := &in.UseRevision, &out.UseRevision
+	if in.Global != nil {
+		in, out := &in.Global, &out.Global
 		*out = new(bool)
 		**out = **in
 	}
@@ -824,6 +824,11 @@ func (in *IstiodConfiguration) DeepCopyInto(out *IstiodConfiguration) {
 	}
 	if in.MultiClusterSupport != nil {
 		in, out := &in.MultiClusterSupport, &out.MultiClusterSupport
+		*out = new(bool)
+		**out = **in
+	}
+	if in.MultiControlPlaneSupport != nil {
+		in, out := &in.MultiControlPlaneSupport, &out.MultiControlPlaneSupport
 		*out = new(bool)
 		**out = **in
 	}

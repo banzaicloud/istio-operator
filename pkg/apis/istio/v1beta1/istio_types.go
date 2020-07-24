@@ -99,8 +99,9 @@ type SDSConfiguration struct {
 
 // IstiodConfiguration defines config options for Istiod
 type IstiodConfiguration struct {
-	Enabled             *bool `json:"enabled,omitempty"`
-	MultiClusterSupport *bool `json:"multiClusterSupport,omitempty"`
+	Enabled                  *bool `json:"enabled,omitempty"`
+	MultiClusterSupport      *bool `json:"multiClusterSupport,omitempty"`
+	MultiControlPlaneSupport *bool `json:"multiControlPlaneSupport,omitempty"`
 }
 
 // PilotConfiguration defines config options for Pilot
@@ -854,7 +855,8 @@ type IstioSpec struct {
 	// Upstream HTTP proxy properties to be injected as environment variables to the pod containers
 	HTTPProxyEnvs HTTPProxyEnvs `json:"httpProxyEnvs,omitempty"`
 
-	UseRevision *bool `json:"useRevision,omitempty"`
+	// Specifies whether the control plane is a global one or revisioned. There must be only one global control plane.
+	Global *bool `json:"global,omitempty"`
 }
 
 type MixerlessTelemetryConfiguration struct {
@@ -949,7 +951,7 @@ func (c *Istio) GetDiscoveryPort() int {
 }
 
 func (c *Istio) IsRevisionUsed() bool {
-	return util.PointerToBool(c.Spec.UseRevision)
+	return !util.PointerToBool(c.Spec.Global)
 }
 
 func (c *Istio) Revision() string {
@@ -968,6 +970,14 @@ func (c *Istio) WithRevision(s string) string {
 	}
 
 	return strings.Join([]string{s, c.Revision()}, "-")
+}
+
+func (c *Istio) WithRevisionIf(s string, condition bool) string {
+	if !condition {
+		return s
+	}
+
+	return c.WithRevision(s)
 }
 
 func (c *Istio) WithNamespacedRevision(s string) string {

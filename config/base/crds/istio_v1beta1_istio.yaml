@@ -439,6 +439,10 @@ spec:
                       type: array
                   type: object
               type: object
+            global:
+              description: Specifies whether the control plane is a global one or
+                revisioned. There must be only one global control plane.
+              type: boolean
             httpProxyEnvs:
               description: Upstream HTTP proxy properties to be injected as environment
                 variables to the pod containers
@@ -498,6 +502,8 @@ spec:
                 enabled:
                   type: boolean
                 multiClusterSupport:
+                  type: boolean
+                multiControlPlaneSupport:
                   type: boolean
               type: object
             jwtPolicy:
@@ -1356,8 +1362,6 @@ spec:
             useMCP:
               description: Use the Mesh Control Protocol (MCP) for configuring Mixer
                 and Pilot. Requires an MCP source.
-              type: boolean
-            useRevision:
               type: boolean
             version:
               description: Contains the intended Istio version

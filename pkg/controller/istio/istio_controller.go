@@ -529,16 +529,20 @@ func (r *ReconcileIstio) autoSetIstioRevisions(config *istiov1beta1.Istio) error
 	}
 
 	if yes {
-		if config.Spec.UseRevision != nil && *config.Spec.UseRevision == false {
+		if config.Spec.Global != nil && *config.Spec.Global == true {
 			return errors.New("there is already an another unrevisioned control plane")
 		}
-		config.Spec.UseRevision = util.BoolPointer(true)
+		config.Spec.Global = util.BoolPointer(false)
 	}
 
 	return nil
 }
 
 func IsControlPlaneShouldBeRevisioned(c client.Client, config *istiov1beta1.Istio) (bool, error) {
+	if config.Spec.Global == nil {
+		config.Spec.Global = util.BoolPointer(true)
+	}
+
 	// revision turned on
 	if config.IsRevisionUsed() {
 		return true, nil
@@ -553,11 +557,6 @@ func IsControlPlaneShouldBeRevisioned(c client.Client, config *istiov1beta1.Isti
 	}
 
 	sort.Sort(istiov1beta1.SortableIstioItems(cps.Items))
-
-	// // no other crs - leave it unrevisioned
-	// if len(cps.Items) <= 1 {
-	// 	return false, nil
-	// }
 
 	var oldest *istiov1beta1.Istio
 
