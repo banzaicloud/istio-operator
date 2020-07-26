@@ -55,6 +55,13 @@ func main() {
 	flag.DurationVar(&shutdownWaitDuration, "shutdown-wait-duration", time.Duration(30)*time.Second, "Wait duration before shutting down")
 	var waitBeforeExitDuration time.Duration
 	flag.DurationVar(&waitBeforeExitDuration, "wait-before-exit-duration", time.Duration(3)*time.Second, "Wait for workers to finish before exiting and removing finalizers")
+	var leaderElectionEnabled bool
+	flag.BoolVar(&leaderElectionEnabled, "leader-election-enabled", true, "Enable leader election for controller manager. "+
+		"Enabling this will ensure there is only one active controller manager.")
+	var leaderElectionNamespace string
+	flag.StringVar(&leaderElectionNamespace, "leader-election-namespace", "istio-system", "LeaderElectionNamespace determines the namespace in which the leader election configmap will be created.")
+	var leaderElectionName string
+	flag.StringVar(&leaderElectionName, "leader-election-name", "istio-operator-leader-election", "LeaderElectionName determines the name of the leader election configmap.")
 	flag.Parse()
 	logf.SetLogger(logf.ZapLogger(developmentMode))
 	log := logf.Log.WithName("entrypoint")
@@ -81,9 +88,12 @@ func main() {
 	// Create a new Cmd to provide shared dependencies and start components
 	log.Info("setting up manager")
 	mgr, err := manager.New(cfg, manager.Options{
-		MetricsBindAddress: metricsAddr,
-		Namespace:          namespace,
-		MapperProvider:     k8sutil.NewCachedRESTMapper,
+		MetricsBindAddress:      metricsAddr,
+		Namespace:               namespace,
+		MapperProvider:          k8sutil.NewCachedRESTMapper,
+		LeaderElection:          leaderElectionEnabled,
+		LeaderElectionNamespace: leaderElectionNamespace,
+		LeaderElectionID:        leaderElectionName,
 	})
 	if err != nil {
 		log.Error(err, "unable to set up overall controller manager")
