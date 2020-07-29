@@ -951,7 +951,11 @@ func (c *Istio) GetDiscoveryPort() int {
 }
 
 func (c *Istio) IsRevisionUsed() bool {
-	return !util.PointerToBool(c.Spec.Global)
+	if c.Spec.Global == nil {
+		return false
+	}
+
+	return !*c.Spec.Global
 }
 
 func (c *Istio) Revision() string {
