@@ -44,7 +44,7 @@ const (
 	defaultProxyInitImage             = defaultImageHub + "/" + "proxyv2" + ":" + defaultImageVersion
 	defaultProxyCoreDumpImage         = "busybox"
 	defaultInitCNIImage               = defaultImageHub + "/" + "install-cni:" + defaultImageVersion
-	defaultCoreDNSImage               = "coredns/coredns:1.6.6"
+	defaultCoreDNSImage               = "coredns/coredns:1.6.2"
 	defaultCoreDNSPluginImage         = defaultImageHub + "/coredns-plugin:0.2-istio-1.1"
 	defaultIncludeIPRanges            = "*"
 	defaultReplicaCount               = 1
