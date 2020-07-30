@@ -221,7 +221,7 @@ func (r *Reconciler) envVars() []apiv1.EnvVar {
 		},
 	}
 
-	if r.gw.Spec.Type == istiov1beta1.GatewayTypeIngress && util.PointerToBool(r.Config.Spec.Istiod.Enabled) {
+	if util.PointerToBool(r.Config.Spec.Istiod.Enabled) {
 		envVars = append(envVars, apiv1.EnvVar{
 			Name:  "CA_ADDR",
 			Value: r.Config.GetCAAddress(),

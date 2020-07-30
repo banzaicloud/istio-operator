@@ -59,12 +59,6 @@ func (r *Reconciler) service() runtime.Object {
 					Protocol:   apiv1.ProtocolTCP,
 				},
 				{
-					Name:       "dns",
-					Port:       53,
-					TargetPort: intstr.FromInt(15053),
-					Protocol:   apiv1.ProtocolUDP,
-				},
-				{
 					Name:       "dns-tls",
 					Port:       853,
 					TargetPort: intstr.FromInt(15053),
