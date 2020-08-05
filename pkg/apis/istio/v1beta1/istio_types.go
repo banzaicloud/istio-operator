@@ -673,7 +673,7 @@ type HTTPProxyEnvs struct {
 // IstioSpec defines the desired state of Istio
 type IstioSpec struct {
 	// Contains the intended Istio version
-	// +kubebuilder:validation:Pattern=^1.6
+	// +kubebuilder:validation:Pattern=^1.
 	Version IstioVersion `json:"version"`
 
 	// Logging configurations

@@ -1365,7 +1365,7 @@ spec:
               type: boolean
             version:
               description: Contains the intended Istio version
-              pattern: ^1.6
+              pattern: ^1.
               type: string
             watchAdapterCRDs:
               description: Whether or not to establish watches for adapter-specific

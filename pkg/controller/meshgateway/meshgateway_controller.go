@@ -47,6 +47,7 @@ import (
 	istiov1beta1 "github.com/banzaicloud/istio-operator/pkg/apis/istio/v1beta1"
 	"github.com/banzaicloud/istio-operator/pkg/k8sutil"
 	"github.com/banzaicloud/istio-operator/pkg/resources/gateways"
+	"github.com/banzaicloud/istio-operator/pkg/util"
 )
 
 var log = logf.Log.WithName("controller")
@@ -141,12 +142,18 @@ func (r *ReconcileMeshGateway) Reconcile(request reconcile.Request) (reconcile.R
 
 	instance.SetDefaults()
 
-	err = updateStatus(r.Client, instance, istiov1beta1.Reconciling, "", logger)
+	istio, err := r.getRelatedIstioCR(instance)
 	if err != nil {
 		return reconcile.Result{}, errors.WithStack(err)
 	}
 
-	istio, err := r.getRelatedIstioCR(instance)
+	if !istio.Spec.Version.IsSupported() {
+		return reconcile.Result{}, nil
+	}
+
+	instance.Spec.Labels = util.MergeStringMaps(instance.Spec.Labels, istio.RevisionLabels())
+
+	err = updateStatus(r.Client, instance, istiov1beta1.Reconciling, "", logger)
 	if err != nil {
 		return reconcile.Result{}, errors.WithStack(err)
 	}
