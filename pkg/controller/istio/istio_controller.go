@@ -539,10 +539,6 @@ func (r *ReconcileIstio) autoSetIstioRevisions(config *istiov1beta1.Istio) error
 }
 
 func IsControlPlaneShouldBeRevisioned(c client.Client, config *istiov1beta1.Istio) (bool, error) {
-	if config.Spec.Global == nil {
-		config.Spec.Global = util.BoolPointer(true)
-	}
-
 	// revision turned on
 	if config.IsRevisionUsed() {
 		return true, nil
