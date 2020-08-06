@@ -18,6 +18,7 @@ package base
 
 import (
 	"github.com/banzaicloud/istio-operator/pkg/resources/templates"
+	"github.com/banzaicloud/istio-operator/pkg/util"
 	apiv1 "k8s.io/api/core/v1"
 	rbacv1 "k8s.io/api/rbac/v1"
 	"k8s.io/apimachinery/pkg/runtime"
@@ -57,105 +58,114 @@ func (r *Reconciler) role() runtime.Object {
 }
 
 func (r *Reconciler) clusterRole() runtime.Object {
-	return &rbacv1.ClusterRole{
-		ObjectMeta: templates.ObjectMetaClusterScopeWithRevision(istiodName, istiodLabel, r.Config),
-		Rules: []rbacv1.PolicyRule{
-			// sidecar injection controller
+	rules := []rbacv1.PolicyRule{
+		// sidecar injection controller
+		{
+			APIGroups: []string{"admissionregistration.k8s.io"},
+			Resources: []string{"mutatingwebhookconfigurations"},
+			Verbs:     []string{"get", "list", "watch", "patch"},
+		},
+		// configuration validation webhook controller
+		{
+			APIGroups: []string{"admissionregistration.k8s.io"},
+			Resources: []string{"validatingwebhookconfigurations"},
+			Verbs:     []string{"get", "list", "watch", "update"},
+		},
+		// auto-detect installed CRD definitions
+		{
+			APIGroups: []string{"apiextensions.k8s.io"},
+			Resources: []string{"customresourcedefinitions"},
+			Verbs:     []string{"get", "list", "watch"},
+		},
+		// discovery and routing
+		{
+			APIGroups: []string{""},
+			Resources: []string{"pods", "nodes", "services", "namespaces", "endpoints"},
+			Verbs:     []string{"get", "list", "watch"},
+		},
+		{
+			APIGroups: []string{"discovery.k8s.io"},
+			Resources: []string{"endpointslices"},
+			Verbs:     []string{"get", "list", "watch"},
+		},
+		// ingress controller
+		{
+			APIGroups: []string{"networking.k8s.io"},
+			Resources: []string{"ingresses", "ingressclasses"},
+			Verbs:     []string{"get", "list", "watch"},
+		},
+		{
+			APIGroups: []string{"networking.k8s.io"},
+			Resources: []string{"ingresses/status"},
+			Verbs:     []string{"*"},
+		},
+		// required for CA's namespace controller
+		{
+			APIGroups: []string{""},
+			Resources: []string{"configmaps"},
+			Verbs:     []string{"create", "get", "list", "watch", "update"},
+		},
+		// Istiod and bootstrap
+		{
+			APIGroups: []string{"certificates.k8s.io"},
+			Resources: []string{"certificatesigningrequests", "certificatesigningrequests/approval", "certificatesigningrequests/status"},
+			Verbs:     []string{"update", "create", "get", "delete", "watch"},
+		},
+		{
+			APIGroups:     []string{"certificates.k8s.io"},
+			Resources:     []string{"signers"},
+			ResourceNames: []string{"kubernetes.io/legacy-unknown"},
+			Verbs:         []string{"approve"},
+		},
+		// Used by Istiod to verify the JWT tokens
+		{
+			APIGroups: []string{"authentication.k8s.io"},
+			Resources: []string{"tokenreviews"},
+			Verbs:     []string{"create"},
+		},
+		// Use for Kubernetes Service APIs
+		{
+			APIGroups: []string{"networking.x-k8s.io"},
+			Resources: []string{"*"},
+			Verbs:     []string{"get", "watch", "list"},
+		},
+		// Needed for multicluster secret reading, possibly ingress certs in the future
+		{
+			APIGroups: []string{""},
+			Resources: []string{"secrets"},
+			Verbs:     []string{"get", "watch", "list"},
+		},
+	}
+
+	if util.PointerToBool(r.Config.Spec.Istiod.EnableAnalysis) {
+		rules = append(rules, []rbacv1.PolicyRule{
 			{
-				APIGroups: []string{"admissionregistration.k8s.io"},
-				Resources: []string{"mutatingwebhookconfigurations"},
-				Verbs:     []string{"get", "list", "watch", "patch"},
-			},
-			// configuration validation webhook controller
-			{
-				APIGroups: []string{"admissionregistration.k8s.io"},
-				Resources: []string{"validatingwebhookconfigurations"},
-				Verbs:     []string{"get", "list", "watch", "update"},
-			},
-			// istio configuration
-			{
-				APIGroups: []string{"config.istio.io", "security.istio.io", "networking.istio.io", "authentication.istio.io"},
-				Resources: []string{"*"},
-				// TODO: "update" should only be enabled if there is a istiod.enableAnalysis field and it is set to true (controls the "PILOT_ENABLE_ANALYSIS" env var)
-				Verbs: []string{"get", "watch", "list", "update"},
-			},
-			// auto-detect installed CRD definitions
-			{
-				APIGroups: []string{"apiextensions.k8s.io"},
-				Resources: []string{"customresourcedefinitions"},
-				Verbs:     []string{"get", "list", "watch"},
-			},
-			// discovery and routing
-			{
-				APIGroups: []string{""},
-				Resources: []string{"pods", "nodes", "services", "namespaces", "endpoints"},
-				Verbs:     []string{"get", "list", "watch"},
-			},
-			{
-				APIGroups: []string{"discovery.k8s.io"},
-				Resources: []string{"endpointslices"},
-				Verbs:     []string{"get", "list", "watch"},
-			},
-			// ingress controller
-			{
-				// TODO: should only be enabled if there is a istiod.enableAnalysis field and it is set to true (controls the "PILOT_ENABLE_ANALYSIS" env var)
 				APIGroups: []string{"extensions", "networking.k8s.io"},
 				Resources: []string{"ingresses"},
 				Verbs:     []string{"get", "list", "watch"},
 			},
 			{
-				// TODO: should only be enabled if there is a istiod.enableAnalysis field and it is set to true (controls the "PILOT_ENABLE_ANALYSIS" env var)
 				APIGroups: []string{"extensions", "networking.k8s.io"},
 				Resources: []string{"ingresses/status"},
 				Verbs:     []string{"*"},
 			},
-			{
-				APIGroups: []string{"networking.k8s.io"},
-				Resources: []string{"ingresses", "ingressclasses"},
-				Verbs:     []string{"get", "list", "watch"},
-			},
-			{
-				APIGroups: []string{"networking.k8s.io"},
-				Resources: []string{"ingresses/status"},
-				Verbs:     []string{"*"},
-			},
-			// required for CA's namespace controller
-			{
-				APIGroups: []string{""},
-				Resources: []string{"configmaps"},
-				Verbs:     []string{"create", "get", "list", "watch", "update"},
-			},
-			// Istiod and bootstrap
-			{
-				APIGroups: []string{"certificates.k8s.io"},
-				Resources: []string{"certificatesigningrequests", "certificatesigningrequests/approval", "certificatesigningrequests/status"},
-				Verbs:     []string{"update", "create", "get", "delete", "watch"},
-			},
-			{
-				APIGroups:     []string{"certificates.k8s.io"},
-				Resources:     []string{"signers"},
-				ResourceNames: []string{"kubernetes.io/legacy-unknown"},
-				Verbs:         []string{"approve"},
-			},
-			// Used by Istiod to verify the JWT tokens
-			{
-				APIGroups: []string{"authentication.k8s.io"},
-				Resources: []string{"tokenreviews"},
-				Verbs:     []string{"create"},
-			},
-			// Use for Kubernetes Service APIs
-			{
-				APIGroups: []string{"networking.x-k8s.io"},
-				Resources: []string{"*"},
-				Verbs:     []string{"get", "watch", "list"},
-			},
-			// Needed for multicluster secret reading, possibly ingress certs in the future
-			{
-				APIGroups: []string{""},
-				Resources: []string{"secrets"},
-				Verbs:     []string{"get", "watch", "list"},
-			},
-		},
+		}...)
+	}
+
+	verbs := []string{"get", "watch", "list"}
+	if util.PointerToBool(r.Config.Spec.Istiod.EnableAnalysis) {
+		verbs = append(verbs, "update")
+	}
+	rules = append(rules, rbacv1.PolicyRule{
+		// istio configuration
+		APIGroups: []string{"config.istio.io", "security.istio.io", "networking.istio.io", "authentication.istio.io"},
+		Resources: []string{"*"},
+		Verbs:     verbs,
+	})
+
+	return &rbacv1.ClusterRole{
+		ObjectMeta: templates.ObjectMetaClusterScopeWithRevision(istiodName, istiodLabel, r.Config),
+		Rules:      rules,
 	}
 }
 
