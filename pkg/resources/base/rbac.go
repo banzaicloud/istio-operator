@@ -17,11 +17,12 @@ limitations under the License.
 package base
 
 import (
-	"github.com/banzaicloud/istio-operator/pkg/resources/templates"
-	"github.com/banzaicloud/istio-operator/pkg/util"
 	apiv1 "k8s.io/api/core/v1"
 	rbacv1 "k8s.io/api/rbac/v1"
 	"k8s.io/apimachinery/pkg/runtime"
+
+	"github.com/banzaicloud/istio-operator/pkg/resources/templates"
+	"github.com/banzaicloud/istio-operator/pkg/util"
 )
 
 func (r *Reconciler) serviceAccountReader() runtime.Object {
