@@ -81,17 +81,6 @@ func (r *Reconciler) validatingWebhookConfig() string {
 							admissionv1beta1.Update,
 						},
 						Rule: admissionv1beta1.Rule{
-							APIGroups:   []string{"rbac.istio.io"},
-							APIVersions: []string{"*"},
-							Resources:   []string{"*"},
-						},
-					},
-					{
-						Operations: []admissionv1beta1.OperationType{
-							admissionv1beta1.Create,
-							admissionv1beta1.Update,
-						},
-						Rule: admissionv1beta1.Rule{
 							APIGroups:   []string{"security.istio.io"},
 							APIVersions: []string{"*"},
 							Resources:   []string{"*"},
