@@ -99,7 +99,11 @@ type SDSConfiguration struct {
 
 // IstiodConfiguration defines config options for Istiod
 type IstiodConfiguration struct {
-	Enabled                  *bool `json:"enabled,omitempty"`
+	Enabled *bool `json:"enabled,omitempty"`
+	// If enabled, pilot will run Istio analyzers and write analysis errors to the Status field of any Istio Resources
+	EnableAnalysis *bool `json:"enableAnalysis,omitempty"`
+	// If enabled, pilot will update the CRD Status field of all Istio resources with reconciliation status
+	EnableStatus             *bool `json:"enableStatus,omitempty"`
 	MultiClusterSupport      *bool `json:"multiClusterSupport,omitempty"`
 	MultiControlPlaneSupport *bool `json:"multiControlPlaneSupport,omitempty"`
 }

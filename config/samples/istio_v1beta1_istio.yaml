@@ -23,6 +23,8 @@ spec:
     enabled: true
   istiod:
     enabled: true
+    enableAnalysis: true
+    enableStatus: true
   pilot:
     enabled: true
     image: "docker.io/istio/pilot:1.7.0-beta.1"
@@ -35,11 +37,6 @@ spec:
         cpu: 500m
         memory: 2048Mi
     certProvider: "istiod"
-    additionalEnvVars:
-      - name: PILOT_ENABLE_STATUS
-        value: "true"
-      - name: PILOT_ENABLE_ANALYSIS
-        value: "true"
   gateways:
     enabled: true
     ingress:

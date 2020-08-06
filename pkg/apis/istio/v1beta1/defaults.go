@@ -170,6 +170,12 @@ func SetDefaults(config *Istio) {
 	if config.Spec.Istiod.Enabled == nil {
 		config.Spec.Istiod.Enabled = util.BoolPointer(true)
 	}
+	if config.Spec.Istiod.EnableAnalysis == nil {
+		config.Spec.Istiod.EnableAnalysis = util.BoolPointer(false)
+	}
+	if config.Spec.Istiod.EnableStatus == nil {
+		config.Spec.Istiod.EnableStatus = util.BoolPointer(false)
+	}
 
 	// Pilot config
 	if config.Spec.Pilot.Enabled == nil {
