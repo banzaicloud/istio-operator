@@ -7,7 +7,7 @@ metadata:
     controller-tools.k8s.io: "1.0"
   name: istio-sample
 spec:
-  version: "1.6.8"
+  version: "1.7.0-beta.1"
   meshPolicy:
     mtlsMode: PERMISSIVE
   autoInjectionNamespaces:
@@ -31,5 +31,5 @@ spec:
   tracing:
     enabled: false
   proxy:
-    image: "docker.io/istio/proxyv2:1.6.8"
+    image: "docker.io/istio/proxyv2:1.7.0-beta.1"
   jwtPolicy: "first-party-jwt"
