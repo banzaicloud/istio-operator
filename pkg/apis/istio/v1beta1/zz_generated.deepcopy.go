@@ -822,6 +822,16 @@ func (in *IstiodConfiguration) DeepCopyInto(out *IstiodConfiguration) {
 		*out = new(bool)
 		**out = **in
 	}
+	if in.EnableAnalysis != nil {
+		in, out := &in.EnableAnalysis, &out.EnableAnalysis
+		*out = new(bool)
+		**out = **in
+	}
+	if in.EnableStatus != nil {
+		in, out := &in.EnableStatus, &out.EnableStatus
+		*out = new(bool)
+		**out = **in
+	}
 	if in.MultiClusterSupport != nil {
 		in, out := &in.MultiClusterSupport, &out.MultiClusterSupport
 		*out = new(bool)

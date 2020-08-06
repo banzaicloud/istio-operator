@@ -103,6 +103,14 @@ func (r *Reconciler) containerEnvs() []apiv1.EnvVar {
 			Name:  "VALIDATION_WEBHOOK_CONFIG_NAME",
 			Value: r.Config.WithNamespacedRevision("istiod"),
 		},
+		{
+			Name:  "PILOT_ENABLE_ANALYSIS",
+			Value: strconv.FormatBool(util.PointerToBool(r.Config.Spec.Istiod.EnableAnalysis)),
+		},
+		{
+			Name:  "PILOT_ENABLE_STATUS",
+			Value: strconv.FormatBool(util.PointerToBool(r.Config.Spec.Istiod.EnableStatus)),
+		},
 	}
 
 	if util.PointerToBool(r.Config.Spec.Istiod.MultiControlPlaneSupport) {
