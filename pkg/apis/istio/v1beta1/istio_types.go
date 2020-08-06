@@ -31,11 +31,11 @@ import (
 )
 
 const (
-	supportedIstioMinorVersionRegex = "^1.6"
+	supportedIstioMinorVersionRegex = "^1.7"
 )
 
 var (
-	SupportedIstioVersion = "1.6.7"
+	SupportedIstioVersion = "1.7.0-beta.1"
 	Version               = "0.6.7"
 )
 

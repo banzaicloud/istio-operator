@@ -73,7 +73,7 @@ For a complete list of [Backyards](https://banzaicloud.com/products/backyards/) 
 
 ## Istio operator installation
 
-The operator (`release-1.6` branch) installs the 1.6.7 version of Istio, and can run on Minikube v1.1.1+ and Kubernetes 1.15.0+.
+The operator (`release-1.7` branch) installs the 1.7.0-beta.1 version of Istio, and can run on Minikube v1.1.1+ and Kubernetes 1.15.0+.
 
 As a pre-requisite it needs a Kubernetes cluster (you can create one using [Pipeline](https://github.com/banzaicloud/pipeline)).
 
@@ -108,8 +108,8 @@ You can also have your own `kustomization.yaml` file with a reference to Istio o
 
 ```bash
 bases:
-  - github.com/banzaicloud/istio-operator/config?ref=release-1.6
-  - github.com/banzaicloud/istio-operator/config/overlays/auth-proxy-enabled?ref=release-1.6
+  - github.com/banzaicloud/istio-operator/config?ref=release-1.7
+  - github.com/banzaicloud/istio-operator/config/overlays/auth-proxy-enabled?ref=release-1.7
 ```
 
 ## Istio upgrade

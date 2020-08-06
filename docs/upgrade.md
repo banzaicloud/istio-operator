@@ -4,10 +4,10 @@ The steps are listed in this doc to perform an Istio version upgrade with the op
 
 ## Istio Control Plane Upgrade
 
-Let us suppose that we have a [Kubernetes](https://kubernetes.io/) cluster with Istio 1.5.4, and we would like to upgrade our Istio components to Istio version 1.6.7. Here are the steps we need to perform to accomplish this with the operator:
+Let us suppose that we have a [Kubernetes](https://kubernetes.io/) cluster with Istio 1.6.7, and we would like to upgrade our Istio components to Istio version 1.7.0-beta.1. Here are the steps we need to perform to accomplish this with the operator:
 
-1. Deploy a version of the operator which supports Istio 1.6.x
-2. Apply a [Custom Resource](https://kubernetes.io/docs/concepts/extend-kubernetes/api-extension/custom-resources/) using Istio 1.6.7 components
+1. Deploy a version of the operator which supports Istio 1.7.x
+2. Apply a [Custom Resource](https://kubernetes.io/docs/concepts/extend-kubernetes/api-extension/custom-resources/) using Istio 1.7.0-beta.1 components
 
 What happens is that once the operator discerns that the Custom Resource it's watching has changed, it reconciles all Istio-related components in order to perform a control plane upgrade.
 
@@ -20,15 +20,15 @@ What happens is that once the operator discerns that the Custom Resource it's wa
 - Minikube v1.1.1+ or Kubernetes 1.15.0+
 - `KUBECONFIG` set to an existing Kubernetes cluster
 
-If you already have Istio 1.5.x installed on your cluster you can skip the next section and can jump right to [Deploy sample BookInfo application](#deploy-sample-bookinfo-application).
+If you already have Istio 1.6.x installed on your cluster you can skip the next section and can jump right to [Deploy sample BookInfo application](#deploy-sample-bookinfo-application).
 
-#### Install Istio 1.5.4
+#### Install Istio 1.6.7
 
-We install Istio with our operator, so first we need to check out the `1.5.x` branch of our operator (this branch supports Istio versions 1.5.x):
+We install Istio with our operator, so first we need to check out the `1.6.x` branch of our operator (this branch supports Istio versions 1.6.x):
 
 ```bash
 $ git clone git@github.com:banzaicloud/istio-operator.git
-$ git checkout 1.5.x
+$ git checkout 1.6.x
 ```
 
 **Install Istio Operator with make**
@@ -48,16 +48,16 @@ Alternatively, if you just can't let go of Helm completely, you can deploy the o
 
 ```bash
 $ helm repo add banzaicloud-stable https://kubernetes-charts.banzaicloud.com
-$ helm install --name=istio-operator --namespace=istio-system --set-string operator.image.tag=0.5.9 banzaicloud-stable/istio-operator
+$ helm install --name=istio-operator --namespace=istio-system --set-string operator.image.tag=0.6.7 banzaicloud-stable/istio-operator
 ```
 
-*Note: As of now, the `0.5.9` tag is the latest version of our operator to support Istio versions 1.5.x
+*Note: As of now, the `0.6.7` tag is the latest version of our operator to support Istio versions 1.6.x
 
 **Apply the Custom Resource**
 
 Once you've applied the Custom Resource to your cluster, the operator will start reconciling all of Istio's components.
 
-There are some sample Custom Resource configurations in the `config/samples` folder. To deploy Istio 1.5.4 with its default configuration options, use the following command:
+There are some sample Custom Resource configurations in the `config/samples` folder. To deploy Istio 1.6.7 with its default configuration options, use the following command:
 
 ```bash
 $ kubectl apply -n istio-system -f config/samples/istio_v1beta1_istio.yaml
@@ -73,24 +73,24 @@ istio-operator-controller-manager-0       2/2       Running   0          9m
 istiod-fc664fcbd-kgl2k                    2/2       Running   0          1m
 ```
 
-The `Istio` Custom Resource is showing `Available` in its status field and the Istio components are using `1.5.4` images :
+The `Istio` Custom Resource is showing `Available` in its status field and the Istio components are using `1.6.7` images :
 
 ```bash
 $ kubectl describe istio -n istio-system istio -o yaml | grep "image:"
-    image: docker.io/istio/citadel:1.5.4
-    image: docker.io/istio/galley:1.5.4
-    image: docker.io/istio-mixer:1.5.4
-    image: docker.io/istio-pilot:1.5.4
-    image: docker.io/istio/proxyv2:1.5.4
-    image: docker.io/istio/sidecar_injector:1.5.4
+    image: docker.io/istio/citadel:1.6.7
+    image: docker.io/istio/galley:1.6.7
+    image: docker.io/istio-mixer:1.6.7
+    image: docker.io/istio-pilot:1.6.7
+    image: docker.io/istio/proxyv2:1.6.7
+    image: docker.io/istio/sidecar_injector:1.6.7
 ```
 
 #### Deploy sample BookInfo application
 
-Let's make sure that Istio 1.5.4 is properly installed with Istio's BookInfo application:
+Let's make sure that Istio 1.6.7 is properly installed with Istio's BookInfo application:
 
 ```bash
-$ kubectl -n default apply -f https://raw.githubusercontent.com/istio/istio/1.5.x/samples/bookinfo/platform/kube/bookinfo.yaml
+$ kubectl -n default apply -f https://raw.githubusercontent.com/istio/istio/1.6.x/samples/bookinfo/platform/kube/bookinfo.yaml
 service "details" created
 deployment.extensions "details-v1" created
 service "ratings" created
@@ -102,7 +102,7 @@ deployment.extensions "reviews-v3" created
 service "productpage" created
 deployment.extensions "productpage-v1" created
 
-$ kubectl -n default apply -f https://raw.githubusercontent.com/istio/istio/1.5.x/samples/bookinfo/networking/bookinfo-gateway.yaml
+$ kubectl -n default apply -f https://raw.githubusercontent.com/istio/istio/1.6.x/samples/bookinfo/networking/bookinfo-gateway.yaml
 gateway.networking.istio.io "bookinfo-gateway" created
 virtualservice.networking.istio.io "bookinfo" created
 ```
@@ -114,13 +114,13 @@ $ INGRESS_HOST=$(kubectl -n istio-system get service istio-ingressgateway -o jso
 $ open http://$INGRESS_HOST/productpage
 ```
 
-#### Install Istio 1.6.7
+#### Install Istio 1.7.0-beta.1
 
-To install Istio 1.6.7, first we need to check out the `release-1.6` branch of our operator (this branch supports the Istio 1.6.x versions):
+To install Istio 1.7.0-beta.1, first we need to check out the `release-1.7` branch of our operator (this branch supports the Istio 1.7.x versions):
 
 ```bash
 $ git clone git@github.com:banzaicloud/istio-operator.git
-$ git checkout release-1.6
+$ git checkout release-1.7
 ```
 
 > If you installed Istio operator with `make` in the previous section go to to `Install Istio Operator with make`, if you installed it with `helm` go to `Install Istio Operator with helm`. If you haven't installed Istio operator so far you can choose whichever install option you like.
@@ -141,16 +141,16 @@ Alternatively, you can deploy the operator using a [Helm chart](https://github.c
 
 ```bash
 $ helm repo add banzaicloud-stable https://kubernetes-charts.banzaicloud.com
-$ helm upgrade istio-operator --install --namespace=istio-system --set-string operator.image.tag=0.6.7 banzaicloud-stable/istio-operator
+$ helm upgrade istio-operator --install --namespace=istio-system --set-string operator.image.tag=0.7.0 banzaicloud-stable/istio-operator
 ```
 
-*Note: As of now, the `0.6.7` tag is the latest version of our operator to support Istio versions 1.6.x*
+*Note: As of now, the `0.7.0` tag is the latest version of our operator to support Istio versions 1.7.x*
 
 **Use the new Custom Resource**
 
-> If you've installed Istio 1.5.4 or earlier with the Istio operator, and if you check the logs of the operator pod at this point, you will see the following error message: `intended Istio version is unsupported by this version of the operator`. We need to update the Istio Custom Resource with Istio 1.6's components for the operator to be reconciled with the Istio control plane.
+> If you've installed Istio 1.6.7 or earlier with the Istio operator, and if you check the logs of the operator pod at this point, you will see the following error message: `intended Istio version is unsupported by this version of the operator`. We need to update the Istio Custom Resource with Istio 1.7's components for the operator to be reconciled with the Istio control plane.
 
-To deploy Istio 1.6.7 with its default configuration options, use the following command:
+To deploy Istio 1.7.0-beta.1 with its default configuration options, use the following command:
 
 ```bash
 $ kubectl replace -n istio-system -f config/samples/istio_v1beta1_istio.yaml
@@ -166,26 +166,26 @@ istio-operator-controller-manager-0       2/2       Running   0          16m
 istiod-84588fff4c-4lhq8                   2/2       Running   0          7m
 ```
 
-The `Istio` Custom Resource is showing `Available` in its status field, and the Istio components are now using `1.6.7` images:
+The `Istio` Custom Resource is showing `Available` in its status field, and the Istio components are now using `1.7.0-beta.1` images:
 
 ```bash
 $ kubectl describe istio -n istio-system istio | grep Image:
-    Image:                         docker.io/istio/citadel:1.6.7
-    Image:          docker.io/istio/galley:1.6.7
-    Image:    docker.io/istio/node-agent-k8s:1.6.7
-        Image:    docker.io/istio/node-agent-k8s:1.6.7
-    Image:          coredns/coredns:1.6.7
+    Image:                         docker.io/istio/citadel:1.7.0-beta.1
+    Image:          docker.io/istio/galley:1.7.0-beta.1
+    Image:    docker.io/istio/node-agent-k8s:1.7.0-beta.1
+        Image:    docker.io/istio/node-agent-k8s:1.7.0-beta.1
+    Image:          coredns/coredns:1.7.0-beta.1
     Plugin Image:   docker.io/istio/coredns-plugin:0.2-istio-1.1
-    Image:          docker.io/istio/mixer:1.6.7
-    Image:    docker.io/istio/node-agent-k8s:1.6.7
-    Image:          docker.io/istio/pilot:1.6.7
-    Image:             docker.io/istio/proxyv2:1.6.7
-    Image:  docker.io/istio/proxyv2:1.6.7
-    Image:                          docker.io/istio/sidecar_injector:1.6.7
-      Image:                 docker.io/istio/install-cni:1.6.7
+    Image:          docker.io/istio/mixer:1.7.0-beta.1
+    Image:    docker.io/istio/node-agent-k8s:1.7.0-beta.1
+    Image:          docker.io/istio/pilot:1.7.0-beta.1
+    Image:             docker.io/istio/proxyv2:1.7.0-beta.1
+    Image:  docker.io/istio/proxyv2:1.7.0-beta.1
+    Image:                          docker.io/istio/sidecar_injector:1.7.0-beta.1
+      Image:                 docker.io/istio/install-cni:1.7.0-beta.1
 ```
 
-At this point, your Istio control plane is upgraded to Istio 1.6.7 and your BookInfo application should still be available at:
+At this point, your Istio control plane is upgraded to Istio 1.7.0-beta.1 and your BookInfo application should still be available at:
 ```bash
 $ open http://$INGRESS_HOST/productpage
 ```

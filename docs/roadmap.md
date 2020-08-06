@@ -14,3 +14,6 @@ Released:
 - [x] - Support multiple ingress gateways
 - [x] - Istio 1.5.x support
 - [x] - Istio 1.6.x support
+- [x] - Canary upgrade support
+- [x] - Multi control plane support
+- [x] - Istio 1.7.x support
