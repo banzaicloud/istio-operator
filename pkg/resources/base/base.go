@@ -28,10 +28,21 @@ import (
 
 const (
 	componentName                 = "common"
+	istiodName                    = "istiod"
+	istiodPilotName               = "istiod-pilot"
 	istioReaderName               = "istio-reader"
 	istioReaderServiceAccountName = "istio-reader-service-account"
+	istiodServiceAccountName      = "istiod-service-account"
 	IstioConfigMapName            = "istio"
 )
+
+var istiodLabel = map[string]string{
+	"app": istiodName,
+}
+
+var pilotLabel = map[string]string{
+	"app": "pilot",
+}
 
 var istioReaderLabel = map[string]string{
 	"app": istioReaderName,
@@ -58,9 +69,14 @@ func (r *Reconciler) Reconcile(log logr.Logger) error {
 	log.Info("Reconciling")
 
 	for _, res := range []resources.Resource{
+		r.serviceAccountReader,
 		r.serviceAccount,
+		r.role,
 		r.clusterRole,
+		r.clusterRoleReader,
+		r.clusterRoleBindingReader,
 		r.clusterRoleBinding,
+		r.roleBinding,
 		r.configMap,
 	} {
 		o := res()
