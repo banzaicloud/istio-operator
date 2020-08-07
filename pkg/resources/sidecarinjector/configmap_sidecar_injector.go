@@ -225,6 +225,13 @@ containers:
 {{- if .Values.global.proxy.lifecycle }}
   lifecycle:
     {{ toYaml .Values.global.proxy.lifecycle | indent 4 }}
+{{- else if .Values.global.proxy.holdApplicationUntilProxyStarts}}
+  lifecycle:
+    postStart:
+      exec:
+        command:
+        - pilot-agent
+        - wait
 {{- end }}
   env:
 {{- if .Values.global.istiod.enabled }}
@@ -292,13 +299,7 @@ containers:
       {{- end}}
       ]
   - name: ISTIO_META_APP_CONTAINERS
-    value: |-
-      [
-        {{- range $index, $container := .Spec.Containers }}
-         {{- if ne $index 0}},{{- end}}
-          {{ $container.Name }}
-        {{- end}}
-      ]
+    value: "{{- range $index, $container := .Spec.Containers }}{{- if ne $index 0}},{{- end}}{{ $container.Name }}{{- end}}"
   - name: ISTIO_META_CLUSTER_ID
     value: "{{ valueOrDefault .Values.global.multicluster.clusterName ` + "`" + `Kubernetes` + "`" + `}}"
 {{- if eq .Values.global.proxy.tracer "zipkin" }}
@@ -472,6 +473,12 @@ containers:
     {{ toYaml $value | indent 4 }}
     {{ end }}
     {{- end }}
+  {{- if .ProxyConfig.ProxyMetadata.ISTIO_META_DNS_CAPTURE }}
+  dnsConfig:
+    options:
+    - name: "ndots"
+      value: "4"
+  {{- end }}
 volumes:
 {{- if (isset .ObjectMeta.Annotations ` + "`" + `sidecar.istio.io/bootstrapOverride` + "`" + `) }}
 - name: custom-bootstrap-volume
@@ -572,6 +579,9 @@ podRedirectAnnot:
    traffic.sidecar.istio.io/excludeOutboundIPRanges: "{{ annotation .ObjectMeta ` + "`" + `traffic.sidecar.istio.io/excludeOutboundIPRanges` + "`" + ` .Values.global.proxy.excludeIPRanges }}"
    traffic.sidecar.istio.io/includeInboundPorts: "{{ annotation .ObjectMeta ` + "`" + `traffic.sidecar.istio.io/includeInboundPorts` + "`" + ` (includeInboundPorts .Spec.Containers) }}"
    traffic.sidecar.istio.io/excludeInboundPorts: "{{ excludeInboundPort (annotation .ObjectMeta ` + "`" + `status.sidecar.istio.io/port` + "`" + ` .Values.global.proxy.statusPort) (annotation .ObjectMeta ` + "`" + `traffic.sidecar.istio.io/excludeInboundPorts` + "`" + ` .Values.global.proxy.excludeInboundPorts) }}"
+{{ if or (isset .ObjectMeta.Annotations  ` + "`" + `traffic.sidecar.istio.io/includeOutboundPorts ` + "`" + `) (ne (valueOrDefault .Values.global.proxy.includeOutboundPorts "") "") }}
+    traffic.sidecar.istio.io/includeOutboundPorts: "{{ annotation .ObjectMeta  ` + "`" + `traffic.sidecar.istio.io/includeOutboundPorts ` + "`" + ` .Values.global.proxy.includeOutboundPorts }}"
+{{- end }}
 {{ if or (isset .ObjectMeta.Annotations ` + "`" + `traffic.sidecar.istio.io/excludeOutboundPorts` + "`" + `) (ne .Values.global.proxy.excludeOutboundPorts "") }}
    traffic.sidecar.istio.io/excludeOutboundPorts: "{{ annotation .ObjectMeta ` + "`" + `traffic.sidecar.istio.io/excludeOutboundPorts` + "`" + ` .Values.global.proxy.excludeOutboundPorts }}"
 {{- end }}
@@ -645,6 +655,10 @@ func (r *Reconciler) proxyInitContainer() string {
   {{- else }}
   - "15090,15021"
   {{- end }}
+  {{ if or (isset .ObjectMeta.Annotations ` + "`" + `traffic.sidecar.istio.io/includeOutboundPorts` + "`" + `) (ne (valueOrDefault .Values.global.proxy.includeOutboundPorts "") "") -}}
+  - "-q"
+  - "{{ annotation .ObjectMeta ` + "`" + `traffic.sidecar.istio.io/includeOutboundPorts` + "`" + ` .Values.global.proxy.includeOutboundPorts }}"
+  {{ end -}}
   {{ if or (isset .ObjectMeta.Annotations ` + "`" + `traffic.sidecar.istio.io/excludeOutboundPorts` + "`" + `) (ne (valueOrDefault .Values.global.proxy.excludeOutboundPorts "") "") -}}
   - "-o"
   - "{{ annotation .ObjectMeta ` + "`" + `traffic.sidecar.istio.io/excludeOutboundPorts` + "`" + ` .Values.global.proxy.excludeOutboundPorts }}"
@@ -658,10 +672,12 @@ func (r *Reconciler) proxyInitContainer() string {
   - "--skip-rule-apply"
   {{ end -}}
   imagePullPolicy: "{{ valueOrDefault .Values.global.imagePullPolicy  ` + "`" + `Always ` + "`" + ` }}"
+  {{- if .ProxyConfig.ProxyMetadata }}
   env:
   {{- range $key, $value := .ProxyConfig.ProxyMetadata }}
   - name: {{ $key }}
     value: "{{ $value }}"
+  {{- end }}
   {{- end }}
 ` + r.getFormattedResources(r.Config.Spec.SidecarInjector.Init.Resources, 2) + `
   securityContext:

@@ -179,8 +179,8 @@ func (r *Reconciler) containers() []apiv1.Container {
 					Scheme: apiv1.URISchemeHTTP,
 				},
 			},
-			InitialDelaySeconds: 5,
-			PeriodSeconds:       5,
+			InitialDelaySeconds: 1,
+			PeriodSeconds:       3,
 			TimeoutSeconds:      5,
 			FailureThreshold:    3,
 			SuccessThreshold:    1,
@@ -308,7 +308,6 @@ func (r *Reconciler) volumes() []apiv1.Volume {
 					LocalObjectReference: apiv1.LocalObjectReference{
 						Name: r.Config.WithRevision("istio-sidecar-injector"),
 					},
-					Optional:    util.BoolPointer(true),
 					DefaultMode: util.IntPointer(420),
 				},
 			},
