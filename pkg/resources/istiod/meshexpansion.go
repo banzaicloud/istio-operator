@@ -59,6 +59,23 @@ func (r *Reconciler) meshExpansionVirtualService() *k8sutil.DynamicObject {
 						},
 					},
 				},
+				{
+					"match": []map[string]interface{}{
+						{
+							"port": r.Config.GetWebhookPort(),
+						},
+					},
+					"route": []map[string]interface{}{
+						{
+							"destination": map[string]interface{}{
+								"host": r.Config.GetDiscoveryHost(true),
+								"port": map[string]interface{}{
+									"number": 443,
+								},
+							},
+						},
+					},
+				},
 			},
 		},
 		Owner: r.Config,
@@ -83,6 +100,14 @@ func (r *Reconciler) meshExpansionDestinationRule() *k8sutil.DynamicObject {
 					{
 						"port": map[string]interface{}{
 							"number": r.Config.GetDiscoveryPort(),
+						},
+						"tls": map[string]interface{}{
+							"mode": "DISABLE",
+						},
+					},
+					{
+						"port": map[string]interface{}{
+							"number": r.Config.GetWebhookPort(),
 						},
 						"tls": map[string]interface{}{
 							"mode": "DISABLE",

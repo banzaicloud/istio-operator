@@ -954,6 +954,10 @@ func (c *Istio) GetDiscoveryPort() int {
 	return 15010
 }
 
+func (c *Istio) GetWebhookPort() int {
+	return 15017
+}
+
 func (c *Istio) IsRevisionUsed() bool {
 	if c.Spec.Global == nil {
 		return false

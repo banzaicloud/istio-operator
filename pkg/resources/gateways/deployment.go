@@ -317,9 +317,9 @@ func (r *Reconciler) volumeMounts() []apiv1.VolumeMount {
 		})
 	}
 
-	if r.gw.Spec.Type == istiov1beta1.GatewayTypeIngress && util.PointerToBool(r.Config.Spec.Istiod.Enabled) {
+	if util.PointerToBool(r.Config.Spec.Istiod.Enabled) {
 		vms = append(vms, apiv1.VolumeMount{
-			Name:      "ingressgatewaysdsudspath",
+			Name:      "gatewaysdsudspath",
 			MountPath: "/var/run/ingress_gateway",
 		})
 	}
@@ -409,9 +409,9 @@ func (r *Reconciler) volumes() []apiv1.Volume {
 		},
 	})
 
-	if r.gw.Spec.Type == istiov1beta1.GatewayTypeIngress && (util.PointerToBool(r.Config.Spec.Istiod.Enabled)) {
+	if util.PointerToBool(r.Config.Spec.Istiod.Enabled) {
 		volumes = append(volumes, apiv1.Volume{
-			Name: "ingressgatewaysdsudspath",
+			Name: "gatewaysdsudspath",
 			VolumeSource: apiv1.VolumeSource{
 				EmptyDir: &apiv1.EmptyDirVolumeSource{},
 			},
