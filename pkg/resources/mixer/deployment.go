@@ -194,10 +194,6 @@ func (r *Reconciler) containerEnvs(t string) []apiv1.EnvVar {
 			Name:  "PILOT_CERT_PROVIDER",
 			Value: string(r.Config.Spec.Pilot.CertProvider),
 		},
-		{
-			Name:  "ISTIO_META_USER_SDS",
-			Value: "true",
-		},
 	}...)
 
 	if util.PointerToBool(r.Config.Spec.Istiod.Enabled) {
