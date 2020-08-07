@@ -52,7 +52,7 @@ func (gw *MeshGateway) SetDefaults() {
 		gw.Spec.SDS.Enabled = util.BoolPointer(false)
 	}
 	if gw.Spec.RunAsRoot == nil {
-		gw.Spec.RunAsRoot = util.BoolPointer(true)
+		gw.Spec.RunAsRoot = util.BoolPointer(false)
 	}
 	if gw.Spec.SecurityContext == nil {
 		if util.PointerToBool(gw.Spec.RunAsRoot) {

@@ -48,7 +48,7 @@ spec:
       loadBalancerIP: ""
       serviceAnnotations: {}
       serviceLabels: {}
-      runAsRoot: true
+      runAsRoot: false
       ports:
         - port: 15021
           targetPort: 15021
@@ -77,7 +77,7 @@ spec:
       serviceType: "ClusterIP"
       serviceAnnotations: {}
       serviceLabels: {}
-      runAsRoot: true
+      runAsRoot: false
       ports:
         - port: 80
           targetPort: 8080
