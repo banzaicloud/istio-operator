@@ -51,7 +51,7 @@ func (r *Reconciler) daemonSet() runtime.Object {
 				},
 				Spec: apiv1.PodSpec{
 					NodeSelector: map[string]string{
-						"beta.kubernetes.io/os": "linux",
+						"kubernetes.io/os": "linux",
 					},
 					HostNetwork: true,
 					Tolerations: []apiv1.Toleration{
@@ -116,7 +116,7 @@ func (r *Reconciler) container() []apiv1.Container {
 					MountPath: "/host/etc/cni/net.d",
 				},
 			},
-			Command: []string{"/install-cni.sh"},
+			Command: []string{"install-cni"},
 			Env: []apiv1.EnvVar{
 				{
 					Name: "CNI_NETWORK_CONFIG",
