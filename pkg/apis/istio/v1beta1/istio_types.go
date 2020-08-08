@@ -572,9 +572,9 @@ type TracingConfiguration struct {
 }
 
 type IstioCoreDNS struct {
-	Enabled                                  *bool `json:"enabled,omitempty"`
-	BaseK8sResourceConfigurationWithReplicas `json:",inline"`
-	PluginImage                              string `json:"pluginImage,omitempty"`
+	Enabled                             *bool `json:"enabled,omitempty"`
+	BaseK8sResourceConfigurationWithHPA `json:",inline"`
+	PluginImage                         string `json:"pluginImage,omitempty"`
 }
 
 // Describes how traffic originating in the 'from' zone is

@@ -21,8 +21,10 @@ import (
 	apiv1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
+	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/apimachinery/pkg/util/intstr"
 
+	"github.com/banzaicloud/istio-operator/pkg/k8sutil"
 	"github.com/banzaicloud/istio-operator/pkg/resources/templates"
 	"github.com/banzaicloud/istio-operator/pkg/util"
 )
@@ -111,7 +113,10 @@ func (r *Reconciler) deployment() runtime.Object {
 	return &appsv1.Deployment{
 		ObjectMeta: templates.ObjectMetaWithRevision(deploymentName, util.MergeStringMaps(labels, labelSelector), r.Config),
 		Spec: appsv1.DeploymentSpec{
-			Replicas: r.Config.Spec.IstioCoreDNS.ReplicaCount,
+			Replicas: util.IntPointer(k8sutil.GetHPAReplicaCountOrDefault(r.Client, types.NamespacedName{
+				Name:      r.Config.WithRevision(hpaName),
+				Namespace: r.Config.Namespace,
+			}, util.PointerToInt32(r.Config.Spec.IstioCoreDNS.ReplicaCount))),
 			Strategy: appsv1.DeploymentStrategy{
 				RollingUpdate: &appsv1.RollingUpdateDeployment{
 					MaxSurge:       util.IntstrPointer(1),

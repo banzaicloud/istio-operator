@@ -35,6 +35,8 @@ const (
 	clusterRoleName        = "istiocoredns"
 	clusterRoleBindingName = "istio-istiocoredns-cluster-role-binding"
 	serviceName            = "istiocoredns"
+	hpaName                = "istiocoredns-autoscaler"
+	pdbName                = "istiocoredns"
 )
 
 var labels = map[string]string{
@@ -77,6 +79,8 @@ func (r *Reconciler) Reconcile(log logr.Logger) error {
 		r.clusterRoleBinding,
 		r.configMap,
 		r.service,
+		r.horizontalPodAutoscaler,
+		r.podDisruptionBudget,
 		r.deployment,
 	} {
 		o := res()
