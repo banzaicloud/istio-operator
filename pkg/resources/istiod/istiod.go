@@ -32,7 +32,9 @@ const (
 	componentName                = "istiod"
 	serviceAccountName           = "istiod-service-account"
 	clusterRoleNameIstiod        = "istiod-cluster-role"
+	roleNameIstiod               = "istiod-role"
 	clusterRoleBindingNameIstiod = "istiod-cluster-role-binding"
+	roleBindingNameIstiod        = "istiod-role-binding"
 	deploymentName               = "istiod"
 	ServiceNameIstiod            = "istiod"
 	hpaName                      = "istiod-autoscaler"
@@ -89,7 +91,9 @@ func (r *Reconciler) Reconcile(log logr.Logger) error {
 	for _, res := range []resources.ResourceWithDesiredState{
 		{Resource: r.serviceAccount, DesiredState: istiodDesiredState},
 		{Resource: r.clusterRole, DesiredState: istiodDesiredState},
+		{Resource: r.role, DesiredState: istiodDesiredState},
 		{Resource: r.clusterRoleBinding, DesiredState: istiodDesiredState},
+		{Resource: r.roleBinding, DesiredState: istiodDesiredState},
 		{Resource: r.deployment, DesiredState: istiodDesiredState},
 		{Resource: r.service, DesiredState: istiodDesiredState},
 		{Resource: r.horizontalPodAutoscaler, DesiredState: istiodDesiredState},

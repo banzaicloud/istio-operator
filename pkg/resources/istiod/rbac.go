@@ -22,11 +22,33 @@ import (
 	"k8s.io/apimachinery/pkg/runtime"
 
 	"github.com/banzaicloud/istio-operator/pkg/resources/templates"
+	"github.com/banzaicloud/istio-operator/pkg/util"
 )
 
 func (r *Reconciler) serviceAccount() runtime.Object {
 	return &apiv1.ServiceAccount{
 		ObjectMeta: templates.ObjectMetaWithRevision(serviceAccountName, istiodLabels, r.Config),
+	}
+}
+
+func (r *Reconciler) role() runtime.Object {
+	return &rbacv1.Role{
+		ObjectMeta: templates.ObjectMetaWithRevision(roleNameIstiod, istiodLabels, r.Config),
+		Rules: []rbacv1.PolicyRule{
+			{
+				// permissions to verify the webhook is ready and rejecting
+				// invalid config. We use --server-dry-run so no config is persisted.
+				APIGroups: []string{"networking.istio.io"},
+				Resources: []string{"gateways"},
+				Verbs:     []string{"create"},
+			},
+			{
+				// For storing CA secret
+				APIGroups: []string{""},
+				Resources: []string{"secrets"},
+				Verbs:     []string{"create", "get", "watch", "list", "update", "delete"},
+			},
+		},
 	}
 }
 
@@ -44,34 +66,16 @@ func (r *Reconciler) clusterRole() runtime.Object {
 			Resources: []string{"validatingwebhookconfigurations"},
 			Verbs:     []string{"get", "list", "watch", "update"},
 		},
-		// permissions to verify the webhook is ready and rejecting
-		// invalid config. We use --server-dry-run so no config is persisted.
-		{
-			APIGroups: []string{"networking.istio.io"},
-			Resources: []string{"gateways"},
-			Verbs:     []string{"create"},
-		},
-		// istio configuration
-		{
-			APIGroups: []string{"config.istio.io", "rbac.istio.io", "security.istio.io", "networking.istio.io", "authentication.istio.io"},
-			Resources: []string{"*"},
-			Verbs:     []string{"get", "watch", "list", "update"},
-		},
 		// auto-detect installed CRD definitions
 		{
 			APIGroups: []string{"apiextensions.k8s.io"},
 			Resources: []string{"customresourcedefinitions"},
-			Verbs:     []string{"get", "watch", "list"},
+			Verbs:     []string{"get", "list", "watch"},
 		},
 		// discovery and routing
 		{
-			APIGroups: []string{"extensions", "apps"},
-			Resources: []string{"deployments"},
-			Verbs:     []string{"get", "list", "watch"},
-		},
-		{
 			APIGroups: []string{""},
-			Resources: []string{"endpoints", "pods", "services", "namespaces", "nodes"},
+			Resources: []string{"pods", "nodes", "services", "namespaces", "endpoints"},
 			Verbs:     []string{"get", "list", "watch"},
 		},
 		{
@@ -80,16 +84,6 @@ func (r *Reconciler) clusterRole() runtime.Object {
 			Verbs:     []string{"get", "list", "watch"},
 		},
 		// ingress controller
-		{
-			APIGroups: []string{"extensions", "networking.k8s.io"},
-			Resources: []string{"ingresses"},
-			Verbs:     []string{"get", "list", "watch"},
-		},
-		{
-			APIGroups: []string{"extensions", "networking.k8s.io"},
-			Resources: []string{"ingresses/status"},
-			Verbs:     []string{"*"},
-		},
 		{
 			APIGroups: []string{"networking.k8s.io"},
 			Resources: []string{"ingresses", "ingressclasses"},
@@ -124,23 +118,45 @@ func (r *Reconciler) clusterRole() runtime.Object {
 			Resources: []string{"tokenreviews"},
 			Verbs:     []string{"create"},
 		},
-		{
-			APIGroups: []string{""},
-			Resources: []string{"secrets"},
-			Verbs:     []string{"create", "get", "watch", "list", "update", "delete"},
-		},
-		{
-			APIGroups: []string{""},
-			Resources: []string{"serviceaccounts"},
-			Verbs:     []string{"get", "watch", "list"},
-		},
 		// Use for Kubernetes Service APIs
 		{
-			APIGroups: []string{"networking.x.k8s.io"},
+			APIGroups: []string{"networking.x-k8s.io"},
 			Resources: []string{"*"},
 			Verbs:     []string{"get", "watch", "list"},
 		},
+		// Needed for multicluster secret reading, possibly ingress certs in the future
+		{
+			APIGroups: []string{""},
+			Resources: []string{"secrets"},
+			Verbs:     []string{"get", "watch", "list"},
+		},
 	}
+
+	if util.PointerToBool(r.Config.Spec.Istiod.EnableAnalysis) {
+		rules = append(rules, []rbacv1.PolicyRule{
+			{
+				APIGroups: []string{"extensions", "networking.k8s.io"},
+				Resources: []string{"ingresses"},
+				Verbs:     []string{"get", "list", "watch"},
+			},
+			{
+				APIGroups: []string{"extensions", "networking.k8s.io"},
+				Resources: []string{"ingresses/status"},
+				Verbs:     []string{"*"},
+			},
+		}...)
+	}
+
+	verbs := []string{"get", "watch", "list"}
+	if util.PointerToBool(r.Config.Spec.Istiod.EnableAnalysis) {
+		verbs = append(verbs, "update")
+	}
+	rules = append(rules, rbacv1.PolicyRule{
+		// istio configuration
+		APIGroups: []string{"config.istio.io", "security.istio.io", "networking.istio.io", "authentication.istio.io"},
+		Resources: []string{"*"},
+		Verbs:     verbs,
+	})
 
 	return &rbacv1.ClusterRole{
 		ObjectMeta: templates.ObjectMetaClusterScopeWithRevision(clusterRoleNameIstiod, istiodLabels, r.Config),
@@ -155,6 +171,24 @@ func (r *Reconciler) clusterRoleBinding() runtime.Object {
 			Kind:     "ClusterRole",
 			APIGroup: "rbac.authorization.k8s.io",
 			Name:     r.Config.WithNamespacedRevision(clusterRoleNameIstiod),
+		},
+		Subjects: []rbacv1.Subject{
+			{
+				Kind:      "ServiceAccount",
+				Name:      r.Config.WithRevision(serviceAccountName),
+				Namespace: r.Config.Namespace,
+			},
+		},
+	}
+}
+
+func (r *Reconciler) roleBinding() runtime.Object {
+	return &rbacv1.RoleBinding{
+		ObjectMeta: templates.ObjectMetaWithRevision(roleBindingNameIstiod, istiodLabels, r.Config),
+		RoleRef: rbacv1.RoleRef{
+			Kind:     "Role",
+			APIGroup: "rbac.authorization.k8s.io",
+			Name:     r.Config.WithNamespacedRevision(roleNameIstiod),
 		},
 		Subjects: []rbacv1.Subject{
 			{
