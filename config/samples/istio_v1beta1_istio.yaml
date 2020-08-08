@@ -131,6 +131,7 @@ spec:
     accessLogFormat: ""
     accessLogEncoding: "TEXT"
     enableCoreDump: false
+    holdApplicationUntilProxyStarts: false
     resources:
       requests:
         cpu: 100m

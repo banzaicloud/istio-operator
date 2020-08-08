@@ -451,6 +451,9 @@ func SetDefaults(config *Istio) {
 	if config.Spec.Proxy.DNSRefreshRate == "" {
 		config.Spec.Proxy.DNSRefreshRate = "300s"
 	}
+	if config.Spec.Proxy.HoldApplicationUntilProxyStarts == nil {
+		config.Spec.Proxy.HoldApplicationUntilProxyStarts = util.BoolPointer(false)
+	}
 	if config.Spec.Proxy.EnvoyStatsD.Enabled == nil {
 		config.Spec.Proxy.EnvoyStatsD.Enabled = util.BoolPointer(false)
 	}
