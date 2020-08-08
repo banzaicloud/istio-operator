@@ -129,9 +129,6 @@ func (r *Reconciler) Reconcile(log logr.Logger) error {
 		{DynamicResource: r.peerAuthentication, DesiredState: meshWidePolicyDesiredState},
 		{DynamicResource: r.destinationRuleDefaultMtls, DesiredState: mTLSDesiredState},
 		{DynamicResource: r.destinationRuleApiServerMtls, DesiredState: mTLSDesiredState},
-
-		// delete the old MeshPolicy CR
-		{DynamicResource: r.meshPolicy, DesiredState: k8sutil.DesiredStateAbsent},
 	}
 
 	for _, dr := range drs {
