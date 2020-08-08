@@ -477,6 +477,14 @@ spec:
                   type: boolean
                 image:
                   type: string
+                maxReplicas:
+                  format: int32
+                  minimum: 0
+                  type: integer
+                minReplicas:
+                  format: int32
+                  minimum: 0
+                  type: integer
                 nodeSelector:
                   type: object
                 pluginImage:

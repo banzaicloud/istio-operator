@@ -631,6 +631,12 @@ func SetDefaults(config *Istio) {
 	if config.Spec.IstioCoreDNS.ReplicaCount == nil {
 		config.Spec.IstioCoreDNS.ReplicaCount = util.IntPointer(defaultReplicaCount)
 	}
+	if config.Spec.IstioCoreDNS.MinReplicas == nil {
+		config.Spec.IstioCoreDNS.MinReplicas = util.IntPointer(defaultMinReplicas)
+	}
+	if config.Spec.IstioCoreDNS.MaxReplicas == nil {
+		config.Spec.IstioCoreDNS.MaxReplicas = util.IntPointer(defaultMaxReplicas)
+	}
 	if config.Spec.IstioCoreDNS.SecurityContext == nil {
 		config.Spec.IstioCoreDNS.SecurityContext = defaultSecurityContext
 	}

@@ -611,7 +611,7 @@ func (in *IstioCoreDNS) DeepCopyInto(out *IstioCoreDNS) {
 		*out = new(bool)
 		**out = **in
 	}
-	in.BaseK8sResourceConfigurationWithReplicas.DeepCopyInto(&out.BaseK8sResourceConfigurationWithReplicas)
+	in.BaseK8sResourceConfigurationWithHPA.DeepCopyInto(&out.BaseK8sResourceConfigurationWithHPA)
 	return
 }
 
