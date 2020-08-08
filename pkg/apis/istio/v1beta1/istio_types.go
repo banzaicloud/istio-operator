@@ -482,6 +482,8 @@ type ProxyConfiguration struct {
 	DNSRefreshRate string `json:"dnsRefreshRate,omitempty"`
 	// cluster domain. Default value is "cluster.local"
 	ClusterDomain string `json:"clusterDomain,omitempty"`
+	// Controls if sidecar is injected at the front of the container list and blocks the start of the other containers until the proxy is ready
+	HoldApplicationUntilProxyStarts *bool `json:"holdApplicationUntilProxyStarts,omitempty"`
 
 	EnvoyStatsD               EnvoyStatsD                     `json:"envoyStatsD,omitempty"`
 	EnvoyMetricsService       EnvoyServiceCommonConfiguration `json:"envoyMetricsService,omitempty"`

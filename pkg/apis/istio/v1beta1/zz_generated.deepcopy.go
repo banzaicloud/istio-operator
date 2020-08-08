@@ -1524,6 +1524,11 @@ func (in *ProxyConfiguration) DeepCopyInto(out *ProxyConfiguration) {
 		*out = new(bool)
 		**out = **in
 	}
+	if in.HoldApplicationUntilProxyStarts != nil {
+		in, out := &in.HoldApplicationUntilProxyStarts, &out.HoldApplicationUntilProxyStarts
+		*out = new(bool)
+		**out = **in
+	}
 	in.EnvoyStatsD.DeepCopyInto(&out.EnvoyStatsD)
 	in.EnvoyMetricsService.DeepCopyInto(&out.EnvoyMetricsService)
 	in.EnvoyAccessLogService.DeepCopyInto(&out.EnvoyAccessLogService)

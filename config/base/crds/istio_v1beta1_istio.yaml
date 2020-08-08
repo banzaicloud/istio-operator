@@ -995,6 +995,11 @@ spec:
                       format: int32
                       type: integer
                   type: object
+                holdApplicationUntilProxyStarts:
+                  description: Controls if sidecar is injected at the front of the
+                    container list and blocks the start of the other containers until
+                    the proxy is ready
+                  type: boolean
                 image:
                   type: string
                 lifecycle:
