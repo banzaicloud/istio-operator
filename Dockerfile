@@ -10,6 +10,9 @@ ARG PACKAGE=github.com/banzaicloud/istio-operator
 RUN mkdir -p /go/src/${PACKAGE}
 WORKDIR /go/src/${PACKAGE}
 
+COPY go.mod go.sum ./
+RUN go mod download
+
 COPY pkg/    pkg/
 COPY cmd/    cmd/
 COPY Makefile go.* /go/src/${PACKAGE}/
