@@ -47,7 +47,6 @@ func (r *Reconciler) configMap() runtime.Object {
 
 func MeshConfig(config *istiov1beta1.Istio, remote bool) map[string]interface{} {
 	defaultConfig := map[string]interface{}{
-		"connectTimeout":         "10s",
 		"configPath":             "./etc/istio/proxy",
 		"binaryPath":             "/usr/local/bin/envoy",
 		"serviceCluster":         "istio-proxy",
