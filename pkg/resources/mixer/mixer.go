@@ -232,3 +232,15 @@ func mixerTypeLabel(t string) map[string]string {
 		"istio-mixer-type": t,
 	}
 }
+
+func ServiceName(t string) string {
+	return serviceName(t)
+}
+
+func PolicyComponentName() string {
+	return policyComponentName
+}
+
+func TelemetryComponentName() string {
+	return telemetryComponentName
+}

@@ -42,6 +42,9 @@ import (
 	istiov1beta1 "github.com/banzaicloud/istio-operator/pkg/apis/istio/v1beta1"
 	"github.com/banzaicloud/istio-operator/pkg/k8sutil"
 	"github.com/banzaicloud/istio-operator/pkg/remoteclusters"
+	"github.com/banzaicloud/istio-operator/pkg/resources/istiod"
+	"github.com/banzaicloud/istio-operator/pkg/resources/mixer"
+	"github.com/banzaicloud/istio-operator/pkg/resources/pilot"
 	"github.com/banzaicloud/istio-operator/pkg/util"
 )
 
@@ -267,6 +270,8 @@ func (r *ReconcileRemoteConfig) reconcile(remoteConfig *istiov1beta1.RemoteIstio
 
 	logger.Info("begin reconciling remote istio")
 
+	r.setEnabledServices(remoteConfig, istio)
+
 	remoteConfig, err = r.populateEnabledServiceEndpoints(remoteConfig, istio, logger)
 	if err != nil {
 		err = emperror.Wrap(err, "could not populate service endpoints")
@@ -368,6 +373,40 @@ func updateRemoteConfigStatus(c client.Client, remoteConfig *istiov1beta1.Remote
 	logger.Info("remoteconfig status updated", "status", status)
 
 	return nil
+}
+
+func (r *ReconcileRemoteConfig) setEnabledServices(remoteIstio *istiov1beta1.RemoteIstio, istio *istiov1beta1.Istio) {
+	if util.PointerToBool(istio.Spec.Pilot.Enabled) || util.PointerToBool(istio.Spec.Istiod.Enabled) {
+		pilotSvc := istiov1beta1.IstioService{
+			Name:  istio.WithRevision(pilot.ServiceName()),
+			Ports: []corev1.ServicePort{{Port: 65000, Protocol: corev1.ProtocolTCP}},
+		}
+		remoteIstio.Spec.EnabledServices = append(remoteIstio.Spec.EnabledServices, pilotSvc)
+	}
+
+	if util.PointerToBool(istio.Spec.Istiod.Enabled) {
+		istiodSvc := istiov1beta1.IstioService{
+			Name:  istio.WithRevision(istiod.ServiceName()),
+			Ports: []corev1.ServicePort{{Port: 65000, Protocol: corev1.ProtocolTCP}},
+		}
+		remoteIstio.Spec.EnabledServices = append(remoteIstio.Spec.EnabledServices, istiodSvc)
+	}
+
+	if util.PointerToBool(istio.Spec.Telemetry.Enabled) {
+		telemetrySvc := istiov1beta1.IstioService{
+			Name:  istio.WithRevision(mixer.ServiceName(mixer.TelemetryComponentName())),
+			Ports: []corev1.ServicePort{{Port: 65000, Protocol: corev1.ProtocolTCP}},
+		}
+		remoteIstio.Spec.EnabledServices = append(remoteIstio.Spec.EnabledServices, telemetrySvc)
+	}
+
+	if util.PointerToBool(istio.Spec.Policy.Enabled) {
+		policySvc := istiov1beta1.IstioService{
+			Name:  istio.WithRevision(mixer.ServiceName(mixer.PolicyComponentName())),
+			Ports: []corev1.ServicePort{{Port: 65000, Protocol: corev1.ProtocolTCP}},
+		}
+		remoteIstio.Spec.EnabledServices = append(remoteIstio.Spec.EnabledServices, policySvc)
+	}
 }
 
 func (r *ReconcileRemoteConfig) populateSignCerts(caSecretName string, remoteConfig *istiov1beta1.RemoteIstio) (*istiov1beta1.RemoteIstio, error) {
