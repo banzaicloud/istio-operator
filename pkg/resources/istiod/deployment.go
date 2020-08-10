@@ -93,23 +93,7 @@ func (r *Reconciler) containerEnvs() []apiv1.EnvVar {
 		},
 		{
 			Name:  "REVISION",
-			Value: r.Config.Name,
-		},
-		{
-			Name:  "NAMESPACE_LE_NAME",
-			Value: r.Config.WithRevision("istio-namespace-controller-election"),
-		},
-		{
-			Name:  "VALIDATION_LE_NAME",
-			Value: r.Config.WithRevision("istio-validation-controller-election"),
-		},
-		{
-			Name:  "INGRESS_LE_NAME",
-			Value: r.Config.WithRevision("istio-leader"),
-		},
-		{
-			Name:  "CACERT_CONFIG_NAME",
-			Value: r.Config.WithRevision("istio-ca-root-cert"),
+			Value: r.Config.NamespacedRevision(),
 		},
 		{
 			Name:  "ISTIOD_CUSTOM_HOST",
@@ -119,6 +103,27 @@ func (r *Reconciler) containerEnvs() []apiv1.EnvVar {
 			Name:  "VALIDATION_WEBHOOK_CONFIG_NAME",
 			Value: r.Config.WithNamespacedRevision("istiod"),
 		},
+	}
+
+	if util.PointerToBool(r.Config.Spec.Istiod.MultiControlPlaneSupport) {
+		envs = append(envs, []apiv1.EnvVar{
+			{
+				Name:  "NAMESPACE_LE_NAME",
+				Value: r.Config.WithRevision("istio-namespace-controller-election"),
+			},
+			{
+				Name:  "VALIDATION_LE_NAME",
+				Value: r.Config.WithRevision("istio-validation-controller-election"),
+			},
+			{
+				Name:  "INGRESS_LE_NAME",
+				Value: r.Config.WithRevision("istio-leader"),
+			},
+			{
+				Name:  "CACERT_CONFIG_NAME",
+				Value: r.Config.WithRevision("istio-ca-root-cert"),
+			},
+		}...)
 	}
 
 	envs = append(envs, templates.IstioProxyEnv(r.Config)...)
