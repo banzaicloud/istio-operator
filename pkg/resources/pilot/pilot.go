@@ -110,3 +110,7 @@ func (r *Reconciler) Reconcile(log logr.Logger) error {
 
 	return nil
 }
+
+func ServiceName() string {
+	return serviceName
+}
