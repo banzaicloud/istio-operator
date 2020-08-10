@@ -55,6 +55,11 @@ func (r *Reconciler) containerArgs() []string {
 func (r *Reconciler) containerEnvs() []apiv1.EnvVar {
 	envs := make([]apiv1.EnvVar, 0)
 
+	envs = append(envs, apiv1.EnvVar{
+		Name:  "REVISION",
+		Value: r.Config.NamespacedRevision(),
+	})
+
 	envs = k8sutil.MergeEnvVars(envs, r.Config.Spec.SidecarInjector.AdditionalEnvVars)
 
 	return envs
@@ -296,9 +301,9 @@ func (r *Reconciler) certFetcherContainer() apiv1.Container {
 
 func (r *Reconciler) cfEnvVars() []apiv1.EnvVar {
 	serviceHostnames := []string{
-		fmt.Sprintf("%s.%s", serviceName, r.Config.Namespace),
-		fmt.Sprintf("%s.%s.svc", serviceName, r.Config.Namespace),
-		fmt.Sprintf("%s.%s.svc.%s", serviceName, r.Config.Namespace, r.Config.Spec.Proxy.ClusterDomain),
+		fmt.Sprintf("%s.%s", r.Config.WithRevision(serviceName), r.Config.Namespace),
+		fmt.Sprintf("%s.%s.svc", r.Config.WithRevision(serviceName), r.Config.Namespace),
+		fmt.Sprintf("%s.%s.svc.%s", r.Config.WithRevision(serviceName), r.Config.Namespace, r.Config.Spec.Proxy.ClusterDomain),
 	}
 	envVars := []apiv1.EnvVar{
 		{
