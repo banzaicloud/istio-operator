@@ -5,11 +5,7 @@ metadata:
     controller-tools.k8s.io: "1.0"
   name: istio-sample
 spec:
-<<<<<<< HEAD
-  version: "1.6.8"
-=======
-  version: "1.7.0-beta.1"
->>>>>>> Bump default Istio version to 1.7.0-beta.1
+  version: "1.7.0-beta.2"
   meshPolicy:
     mtlsMode: PERMISSIVE
   autoMtls: true
@@ -31,7 +27,7 @@ spec:
     enableStatus: true
   pilot:
     enabled: true
-    image: "docker.io/istio/pilot:1.6.8"
+    image: "docker.io/istio/pilot:1.7.0-beta.2"
     replicaCount: 1
     minReplicas: 1
     maxReplicas: 5
@@ -103,30 +99,18 @@ spec:
       enabled: false
   policy:
     enabled: false
-<<<<<<< HEAD
-    image: "docker.io/istio/mixer:1.6.8"
-=======
-    image: "docker.io/istio/mixer:1.7.0-beta.1"
->>>>>>> Bump default Istio version to 1.7.0-beta.1
+    image: "docker.io/istio/mixer:1.7.0-beta.2"
     replicaCount: 1
     minReplicas: 1
     maxReplicas: 5
   telemetry:
     enabled: false
-<<<<<<< HEAD
-    image: "docker.io/istio/mixer:1.6.8"
-=======
-    image: "docker.io/istio/mixer:1.7.0-beta.1"
->>>>>>> Bump default Istio version to 1.7.0-beta.1
+    image: "docker.io/istio/mixer:1.7.0-beta.2"
     replicaCount: 1
     minReplicas: 1
     maxReplicas: 5
   proxy:
-<<<<<<< HEAD
-    image: "docker.io/istio/proxyv2:1.6.8"
-=======
-    image: "docker.io/istio/proxyv2:1.7.0-beta.1"
->>>>>>> Bump default Istio version to 1.7.0-beta.1
+    image: "docker.io/istio/proxyv2:1.7.0-beta.2"
     accessLogFile: "/dev/stdout"
     accessLogFormat: ""
     accessLogEncoding: "TEXT"
@@ -140,11 +124,7 @@ spec:
         cpu: 2000m
         memory: 1024Mi
   proxyInit:
-<<<<<<< HEAD
-    image: "docker.io/istio/proxyv2:1.6.8"
-=======
-    image: "docker.io/istio/proxyv2:1.7.0-beta.1"
->>>>>>> Bump default Istio version to 1.7.0-beta.1
+    image: "docker.io/istio/proxyv2:1.7.0-beta.2"
   defaultPodDisruptionBudget:
     enabled: true
   outboundTrafficPolicy:
