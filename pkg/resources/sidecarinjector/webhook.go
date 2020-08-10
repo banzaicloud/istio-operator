@@ -33,85 +33,105 @@ func (r *Reconciler) webhook() runtime.Object {
 	if !util.PointerToBool(r.Config.Spec.SidecarInjector.Enabled) && util.PointerToBool(r.Config.Spec.Istiod.Enabled) {
 		service = istiod.ServiceNameIstiod
 	}
-	webhook := &admissionv1beta1.MutatingWebhookConfiguration{
-		ObjectMeta: templates.ObjectMetaClusterScopeWithRevision(webhookName, sidecarInjectorLabels, r.Config),
-		Webhooks: []admissionv1beta1.Webhook{
-			{
-				Name: "sidecar-injector.istio.io",
-				ClientConfig: admissionv1beta1.WebhookClientConfig{
-					Service: &admissionv1beta1.ServiceReference{
-						Name:      r.Config.WithRevision(service),
-						Namespace: r.Config.Namespace,
-						Path:      util.StrPointer("/inject"),
-					},
-					CABundle: nil,
-				},
-				Rules: []admissionv1beta1.RuleWithOperations{
-					{
-						Operations: []admissionv1beta1.OperationType{
-							admissionv1beta1.Create,
-						},
-						Rule: admissionv1beta1.Rule{
-							Resources:   []string{"pods"},
-							APIGroups:   []string{""},
-							APIVersions: []string{"v1"},
-						},
-					},
-				},
-				FailurePolicy: &fail,
-				NamespaceSelector: &metav1.LabelSelector{
-					MatchLabels: map[string]string{
-						"istio-injection": "enabled",
-					},
-				},
-				SideEffects: &noneSideEffects,
+
+	globalMatchExpression := []metav1.LabelSelectorRequirement{
+		{
+			Key:      "istio-injection",
+			Operator: metav1.LabelSelectorOpIn,
+			Values:   []string{"enabled"},
+		},
+	}
+
+	defaultAllowAnyMatchExpression := []metav1.LabelSelectorRequirement{
+		{
+			Key:      "name",
+			Operator: metav1.LabelSelectorOpNotIn,
+			Values:   []string{r.Config.Namespace},
+		},
+		{
+			Key:      "istio-injection",
+			Operator: metav1.LabelSelectorOpNotIn,
+			Values:   []string{"disabled"},
+		},
+	}
+
+	noRevisionLabelsMatchExpression := []metav1.LabelSelectorRequirement{
+		{
+			Key:      "istio-env",
+			Operator: metav1.LabelSelectorOpDoesNotExist,
+		},
+		{
+			Key:      "istio.io/rev",
+			Operator: metav1.LabelSelectorOpDoesNotExist,
+		},
+	}
+
+	revisionLabelMatchExpression := []metav1.LabelSelectorRequirement{
+		{
+			Key:      "istio-injection",
+			Operator: metav1.LabelSelectorOpDoesNotExist,
+		},
+		{
+			Key:      "istio.io/rev",
+			Operator: metav1.LabelSelectorOpIn,
+			Values: []string{
+				r.Config.NamespacedRevision(),
 			},
 		},
 	}
 
-	if util.PointerToBool(r.Config.Spec.SidecarInjector.EnableNamespacesByDefault) {
-		webhook.Webhooks[0].NamespaceSelector = &metav1.LabelSelector{
-			MatchExpressions: []metav1.LabelSelectorRequirement{
-				{
-					Key:      "name",
-					Operator: metav1.LabelSelectorOpNotIn,
-					Values:   []string{r.Config.Namespace},
-				},
-				{
-					Key:      "istio-injection",
-					Operator: metav1.LabelSelectorOpNotIn,
-					Values:   []string{"disabled"},
-				},
-			},
-		}
-		if util.PointerToBool(r.Config.Spec.Istiod.Enabled) {
-			webhook.Webhooks[0].NamespaceSelector.MatchExpressions = append(webhook.Webhooks[0].NamespaceSelector.MatchExpressions, []metav1.LabelSelectorRequirement{
-				{
-					Key:      "istio-env",
-					Operator: metav1.LabelSelectorOpDoesNotExist,
-				},
-				{
-					Key:      "istio.io/rev",
-					Operator: metav1.LabelSelectorOpDoesNotExist,
-				},
-			}...)
-		}
-	} else if util.PointerToBool(r.Config.Spec.Istiod.Enabled) && r.Config.IsRevisionUsed() {
-		webhook.Webhooks[0].NamespaceSelector.MatchLabels = nil
-		webhook.Webhooks[0].NamespaceSelector.MatchExpressions = append(webhook.Webhooks[0].NamespaceSelector.MatchExpressions, []metav1.LabelSelectorRequirement{
-			{
-				Key:      "istio-injection",
-				Operator: metav1.LabelSelectorOpDoesNotExist,
-			},
-			{
-				Key:      "istio.io/rev",
-				Operator: metav1.LabelSelectorOpIn,
-				Values: []string{
-					r.Config.Revision(),
-				},
-			},
-		}...)
+	webhookConfiguration := &admissionv1beta1.MutatingWebhookConfiguration{
+		ObjectMeta: templates.ObjectMetaClusterScopeWithRevision(webhookName, sidecarInjectorLabels, r.Config),
+		Webhooks:   []admissionv1beta1.Webhook{},
 	}
 
-	return webhook
+	webhook := &admissionv1beta1.Webhook{
+		Name: "sidecar-injector.istio.io",
+		ClientConfig: admissionv1beta1.WebhookClientConfig{
+			Service: &admissionv1beta1.ServiceReference{
+				Name:      r.Config.WithRevision(service),
+				Namespace: r.Config.Namespace,
+				Path:      util.StrPointer("/inject"),
+			},
+			CABundle: nil,
+		},
+		Rules: []admissionv1beta1.RuleWithOperations{
+			{
+				Operations: []admissionv1beta1.OperationType{
+					admissionv1beta1.Create,
+				},
+				Rule: admissionv1beta1.Rule{
+					Resources:   []string{"pods"},
+					APIGroups:   []string{""},
+					APIVersions: []string{"v1"},
+				},
+			},
+		},
+		FailurePolicy:     &fail,
+		NamespaceSelector: &metav1.LabelSelector{},
+		SideEffects:       &noneSideEffects,
+	}
+
+	matchExpression := make([]metav1.LabelSelectorRequirement, 0)
+
+	if util.PointerToBool(r.Config.Spec.SidecarInjector.EnableNamespacesByDefault) {
+		matchExpression = append(matchExpression, defaultAllowAnyMatchExpression...)
+		if util.PointerToBool(r.Config.Spec.Istiod.Enabled) {
+			matchExpression = append(matchExpression, noRevisionLabelsMatchExpression...)
+		}
+	} else if util.PointerToBool(r.Config.Spec.Istiod.Enabled) {
+		if r.Config.IsRevisionUsed() {
+			matchExpression = append(matchExpression, revisionLabelMatchExpression...)
+		} else {
+			matchExpression = append(matchExpression, globalMatchExpression...)
+			wh := webhook.DeepCopy()
+			wh.NamespaceSelector.MatchExpressions = revisionLabelMatchExpression
+			webhookConfiguration.Webhooks = append(webhookConfiguration.Webhooks, *wh)
+		}
+	}
+
+	webhook.NamespaceSelector.MatchExpressions = matchExpression
+	webhookConfiguration.Webhooks = append(webhookConfiguration.Webhooks, *webhook)
+
+	return webhookConfiguration
 }
