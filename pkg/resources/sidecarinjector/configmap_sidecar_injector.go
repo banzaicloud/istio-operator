@@ -73,7 +73,7 @@ func (r *Reconciler) getValues() string {
 			},
 		},
 		"global": map[string]interface{}{
-			"revision": r.Config.Name,
+			"revision": r.Config.NamespacedRevision(),
 			"mtls": map[string]interface{}{
 				"auto": util.PointerToBool(r.Config.Spec.AutoMTLS),
 			},

@@ -35,7 +35,7 @@ const (
 func (r *Reconciler) metadataMatch(padCount int) string {
 	metadataMatch := ""
 	if r.Config.IsRevisionUsed() {
-		metadataMatch = fmt.Sprintf("metadata:\n%sREVISION: %s", strings.Repeat(" ", padCount), r.Config.Revision())
+		metadataMatch = fmt.Sprintf("metadata:\n%sREVISION: %s", strings.Repeat(" ", padCount), r.Config.NamespacedRevision())
 	}
 
 	return metadataMatch

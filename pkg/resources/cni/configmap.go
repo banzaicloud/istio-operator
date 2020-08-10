@@ -45,7 +45,7 @@ func (r *Reconciler) networkConfig() string {
 			"cni_bin_dir":        r.Config.Spec.SidecarInjector.InitCNIConfiguration.BinDir,
 			"exclude_namespaces": r.Config.Spec.SidecarInjector.InitCNIConfiguration.ExcludeNamespaces,
 			"include_namespaces": r.Config.Spec.SidecarInjector.InitCNIConfiguration.IncludeNamespaces,
-			"revision":           r.Config.Name,
+			"revision":           r.Config.NamespacedRevision(),
 		},
 	}
 
