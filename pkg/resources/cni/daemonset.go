@@ -227,7 +227,7 @@ func (r *Reconciler) repairImage() string {
 func (r *Reconciler) repairTag() string {
 	repairConfig := r.Config.Spec.SidecarInjector.InitCNIConfiguration.Repair
 	if util.PointerToString(repairConfig.Tag) == "" {
-		return "1.7.0-beta.1"
+		return "1.7.0-beta.2"
 	}
 
 	return util.PointerToString(repairConfig.Tag)
