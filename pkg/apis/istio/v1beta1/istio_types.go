@@ -958,13 +958,21 @@ func (c *Istio) IsRevisionUsed() bool {
 	return !*c.Spec.Global
 }
 
+func NamespacedRevision(revision, namespace string) string {
+	return fmt.Sprintf("%s.%s", revision, namespace)
+}
+
 func (c *Istio) Revision() string {
-	return c.Name
+	return strings.Replace(c.Name, ".", "-", -1)
+}
+
+func (c *Istio) NamespacedRevision() string {
+	return NamespacedRevision(c.Revision(), c.Namespace)
 }
 
 func (c *Istio) RevisionLabels() map[string]string {
 	return map[string]string{
-		"istio.io/rev": c.Revision(),
+		"istio.io/rev": c.NamespacedRevision(),
 	}
 }
 
