@@ -161,6 +161,14 @@ spec:
             includeIPRanges:
               description: IncludeIPRanges the range where to capture egress traffic
               type: string
+            istioControlPlane:
+              description: Istio CR to which this gateway belongs to
+              properties:
+                name:
+                  type: string
+                namespace:
+                  type: string
+              type: object
             proxy:
               description: Proxy configuration options
               properties:
@@ -404,6 +412,11 @@ spec:
                       type: array
                     image:
                       type: string
+                    includeNamespaces:
+                      description: List of namespaces to include for Istio pod check
+                      items:
+                        type: string
+                      type: array
                     logLevel:
                       description: Logging level for CNI binary
                       type: string
