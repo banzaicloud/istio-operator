@@ -37,6 +37,9 @@ spec:
   - JSONPath: .metadata.creationTimestamp
     name: Age
     type: date
+  - JSONPath: .spec.istioControlPlane
+    name: Control Plane
+    type: string
   group: istio.banzaicloud.io
   names:
     kind: MeshGateway
@@ -70,6 +73,14 @@ spec:
                 type: object
               type: array
             affinity:
+              type: object
+            istioControlPlane:
+              description: Istio CR to which this gateway belongs to
+              properties:
+                name:
+                  type: string
+                namespace:
+                  type: string
               type: object
             labels:
               type: object

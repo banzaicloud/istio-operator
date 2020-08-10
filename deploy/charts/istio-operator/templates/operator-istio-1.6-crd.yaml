@@ -445,6 +445,10 @@ spec:
                       type: array
                   type: object
               type: object
+            global:
+              description: Specifies whether the control plane is a global one or
+                revisioned. There must be only one global control plane.
+              type: boolean
             httpProxyEnvs:
               description: Upstream HTTP proxy properties to be injected as environment
                 variables to the pod containers
@@ -504,6 +508,8 @@ spec:
                 enabled:
                   type: boolean
                 multiClusterSupport:
+                  type: boolean
+                multiControlPlaneSupport:
                   type: boolean
               type: object
             jwtPolicy:
@@ -1111,6 +1117,11 @@ spec:
                       type: array
                     image:
                       type: string
+                    includeNamespaces:
+                      description: List of namespaces to include for Istio pod check
+                      items:
+                        type: string
+                      type: array
                     logLevel:
                       description: Logging level for CNI binary
                       type: string
@@ -1360,7 +1371,7 @@ spec:
               type: boolean
             version:
               description: Contains the intended Istio version
-              pattern: ^1.6
+              pattern: ^1.
               type: string
             watchAdapterCRDs:
               description: Whether or not to establish watches for adapter-specific
