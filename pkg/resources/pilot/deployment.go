@@ -49,7 +49,7 @@ func (r *Reconciler) containerArgs() []string {
 		containerArgs = append(containerArgs, fmt.Sprintf("--log_output_level=%s", util.PointerToString(r.Config.Spec.Logging.Level)))
 	}
 
-	if r.Config.Spec.ControlPlaneSecurityEnabled && !util.PointerToBool(r.Config.Spec.Pilot.Sidecar) {
+	if !util.PointerToBool(r.Config.Spec.Pilot.Sidecar) {
 		containerArgs = append(containerArgs, "--secureGrpcAddr", ":15011")
 	} else {
 		containerArgs = append(containerArgs, "--secureGrpcAddr", "")
@@ -186,7 +186,7 @@ func (r *Reconciler) containers() []apiv1.Container {
 		"--templateFile",
 		"/etc/istio/proxy/envoy_pilot.yaml.tmpl",
 		"--controlPlaneAuthPolicy",
-		templates.ControlPlaneAuthPolicy(false, r.Config.Spec.ControlPlaneSecurityEnabled),
+		templates.ControlPlaneAuthPolicy(false),
 		"--domain",
 		r.Config.Namespace + ".svc." + r.Config.Spec.Proxy.ClusterDomain,
 		"--trust-domain",

@@ -158,10 +158,6 @@ spec:
                 will run in. This is required for sidecar injection to properly label
                 proxies
               type: string
-            controlPlaneSecurityEnabled:
-              description: ControlPlaneSecurityEnabled control plane services are
-                communicating through mTLS
-              type: boolean
             defaultConfigVisibility:
               description: Set the default set of namespaces to which services, service
                 entries, virtual services, destination rules should be exported to

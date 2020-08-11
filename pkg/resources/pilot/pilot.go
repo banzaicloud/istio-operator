@@ -87,9 +87,7 @@ func (r *Reconciler) Reconcile(log logr.Logger) error {
 	var meshExpansionDestinationRuleDesiredState k8sutil.DesiredState
 	if !util.PointerToBool(r.Config.Spec.Istiod.Enabled) && util.PointerToBool(r.Config.Spec.Pilot.Enabled) && util.PointerToBool(r.Config.Spec.MeshExpansion) {
 		meshExpansionDesiredState = k8sutil.DesiredStatePresent
-		if r.Config.Spec.ControlPlaneSecurityEnabled {
-			meshExpansionDestinationRuleDesiredState = k8sutil.DesiredStatePresent
-		}
+		meshExpansionDestinationRuleDesiredState = k8sutil.DesiredStatePresent
 	} else {
 		meshExpansionDesiredState = k8sutil.DesiredStateAbsent
 		meshExpansionDestinationRuleDesiredState = k8sutil.DesiredStateAbsent

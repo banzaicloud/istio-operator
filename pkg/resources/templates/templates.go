@@ -82,8 +82,8 @@ func ObjectMetaClusterScope(name string, labels map[string]string, config runtim
 	}
 }
 
-func ControlPlaneAuthPolicy(istiodEnabled, controlPlaneSecurityEnabled bool) string {
-	if !istiodEnabled && controlPlaneSecurityEnabled {
+func ControlPlaneAuthPolicy(istiodEnabled bool) string {
+	if !istiodEnabled {
 		return "MUTUAL_TLS"
 	}
 	return "NONE"

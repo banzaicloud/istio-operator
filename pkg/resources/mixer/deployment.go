@@ -235,15 +235,11 @@ func (r *Reconciler) containerArgs(t string, ns string) []string {
 	}
 
 	if util.PointerToBool(r.Config.Spec.UseMCP) {
-		if r.Config.Spec.ControlPlaneSecurityEnabled {
-			containerArgs = append(containerArgs, "--configStoreURL", "mcps://istio-galley."+r.Config.Namespace+".svc:9901")
-			if t == telemetryComponentName {
-				containerArgs = append(containerArgs, "--certFile", "/etc/certs/cert-chain.pem")
-				containerArgs = append(containerArgs, "--keyFile", "/etc/certs/key.pem")
-				containerArgs = append(containerArgs, "--caCertFile", "/etc/certs/root-cert.pem")
-			}
-		} else {
-			containerArgs = append(containerArgs, "--configStoreURL", "mcp://istio-galley."+r.Config.Namespace+".svc:9901")
+		containerArgs = append(containerArgs, "--configStoreURL", "mcps://istio-galley."+r.Config.Namespace+".svc:9901")
+		if t == telemetryComponentName {
+			containerArgs = append(containerArgs, "--certFile", "/etc/certs/cert-chain.pem")
+			containerArgs = append(containerArgs, "--keyFile", "/etc/certs/key.pem")
+			containerArgs = append(containerArgs, "--caCertFile", "/etc/certs/root-cert.pem")
 		}
 	} else {
 		containerArgs = append(containerArgs, "--configStoreURL", "k8s://")
@@ -365,7 +361,7 @@ func (r *Reconciler) istioProxyContainer(t string) apiv1.Container {
 		"--templateFile",
 		templateFile,
 		"--controlPlaneAuthPolicy",
-		templates.ControlPlaneAuthPolicy(util.PointerToBool(r.Config.Spec.Istiod.Enabled), r.Config.Spec.ControlPlaneSecurityEnabled),
+		templates.ControlPlaneAuthPolicy(util.PointerToBool(r.Config.Spec.Istiod.Enabled)),
 		"--domain",
 		fmt.Sprintf("$(POD_NAMESPACE).svc.%s", r.Config.Spec.Proxy.ClusterDomain),
 		"--trust-domain",

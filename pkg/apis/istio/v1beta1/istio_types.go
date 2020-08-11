@@ -707,9 +707,6 @@ type IstioSpec struct {
 	// List of namespaces to label with sidecar auto injection enabled
 	AutoInjectionNamespaces []string `json:"autoInjectionNamespaces,omitempty"`
 
-	// ControlPlaneSecurityEnabled control plane services are communicating through mTLS
-	ControlPlaneSecurityEnabled bool `json:"controlPlaneSecurityEnabled,omitempty"`
-
 	// Use the user-specified, secret volume mounted key and certs for Pilot and workloads.
 	MountMtlsCerts *bool `json:"mountMtlsCerts,omitempty"`
 
@@ -950,10 +947,7 @@ func (c *Istio) GetDiscoveryPort() int {
 	if util.PointerToBool(c.Spec.Istiod.Enabled) {
 		return 15012
 	}
-	if c.Spec.ControlPlaneSecurityEnabled {
-		return 15011
-	}
-	return 15010
+	return 15011
 }
 
 func (c *Istio) GetWebhookPort() int {

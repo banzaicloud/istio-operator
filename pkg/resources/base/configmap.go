@@ -54,7 +54,7 @@ func MeshConfig(config *istiov1beta1.Istio, remote bool) map[string]interface{} 
 		"parentShutdownDuration": "1m0s",
 		"proxyAdminPort":         15000,
 		"concurrency":            0,
-		"controlPlaneAuthPolicy": templates.ControlPlaneAuthPolicy(util.PointerToBool(config.Spec.Istiod.Enabled), config.Spec.ControlPlaneSecurityEnabled),
+		"controlPlaneAuthPolicy": templates.ControlPlaneAuthPolicy(util.PointerToBool(config.Spec.Istiod.Enabled)),
 		"discoveryAddress":       config.GetDiscoveryAddress(),
 	}
 
@@ -178,8 +178,5 @@ func mixerServer(config *istiov1beta1.Istio, mixerType string, remote bool) stri
 	if remote {
 		return fmt.Sprintf("istio-%s.%s:%s", mixerType, config.Namespace, "15004")
 	}
-	if config.Spec.ControlPlaneSecurityEnabled {
-		return fmt.Sprintf("istio-%s.%s.svc.%s:%s", mixerType, config.Namespace, config.Spec.Proxy.ClusterDomain, "15004")
-	}
-	return fmt.Sprintf("istio-%s.%s.svc.%s:%s", mixerType, config.Namespace, config.Spec.Proxy.ClusterDomain, "9091")
+	return fmt.Sprintf("istio-%s.%s.svc.%s:%s", mixerType, config.Namespace, config.Spec.Proxy.ClusterDomain, "15004")
 }
