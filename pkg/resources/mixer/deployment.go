@@ -361,7 +361,7 @@ func (r *Reconciler) istioProxyContainer(t string) apiv1.Container {
 		"--templateFile",
 		templateFile,
 		"--controlPlaneAuthPolicy",
-		templates.ControlPlaneAuthPolicy(util.PointerToBool(r.Config.Spec.Istiod.Enabled)),
+		string(r.Config.Spec.ControlPlaneAuthPolicy),
 		"--domain",
 		fmt.Sprintf("$(POD_NAMESPACE).svc.%s", r.Config.Spec.Proxy.ClusterDomain),
 		"--trust-domain",

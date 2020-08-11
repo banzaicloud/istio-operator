@@ -54,7 +54,7 @@ func MeshConfig(config *istiov1beta1.Istio, remote bool) map[string]interface{} 
 		"parentShutdownDuration": "1m0s",
 		"proxyAdminPort":         15000,
 		"concurrency":            0,
-		"controlPlaneAuthPolicy": templates.ControlPlaneAuthPolicy(util.PointerToBool(config.Spec.Istiod.Enabled)),
+		"controlPlaneAuthPolicy": config.Spec.ControlPlaneAuthPolicy,
 		"discoveryAddress":       config.GetDiscoveryAddress(),
 	}
 

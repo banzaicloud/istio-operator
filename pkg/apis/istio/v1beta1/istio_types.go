@@ -670,6 +670,13 @@ const (
 	JWTPolicyFirstPartyJWT JWTPolicyType = "first-party-jwt"
 )
 
+type ControlPlaneAuthPolicyType string
+
+const (
+	ControlPlaneAuthPolicyMTLS ControlPlaneAuthPolicyType = "MUTUAL_TLS"
+	ControlPlaneAuthPolicyNone ControlPlaneAuthPolicyType = "NONE"
+)
+
 type HTTPProxyEnvs struct {
 	HTTPProxy  string `json:"httpProxy,omitemtpy"`
 	HTTPSProxy string `json:"httpsProxy,omitempty"`
@@ -706,6 +713,10 @@ type IstioSpec struct {
 
 	// List of namespaces to label with sidecar auto injection enabled
 	AutoInjectionNamespaces []string `json:"autoInjectionNamespaces,omitempty"`
+
+	// ControlPlaneAuthPolicy defines how the proxy is authenticated when it connects to the control plane
+	// +kubebuilder:validation:Enum=MUTUAL_TLS,NONE
+	ControlPlaneAuthPolicy ControlPlaneAuthPolicyType `json:"controlPlaneAuthPolicy,omitempty"`
 
 	// Use the user-specified, secret volume mounted key and certs for Pilot and workloads.
 	MountMtlsCerts *bool `json:"mountMtlsCerts,omitempty"`
