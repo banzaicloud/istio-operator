@@ -13,7 +13,6 @@ spec:
   excludeIPRanges: ""
   autoInjectionNamespaces:
   - "default"
-  controlPlaneSecurityEnabled: false
   mountMtlsCerts: false
   # priorityClassName: system-cluster-critical
   defaultResources:

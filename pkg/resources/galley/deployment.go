@@ -139,11 +139,7 @@ func (r *Reconciler) containerArgs() []string {
 		containerArgs = append(containerArgs, "--enable-validation=false")
 	}
 
-	if r.Config.Spec.ControlPlaneSecurityEnabled {
-		containerArgs = append(containerArgs, "--insecure=false")
-	} else {
-		containerArgs = append(containerArgs, "--insecure=true")
-	}
+	containerArgs = append(containerArgs, "--insecure=false")
 
 	if util.PointerToBool(r.Config.Spec.Galley.EnableServiceDiscovery) {
 		containerArgs = append(containerArgs, "--enableServiceDiscovery=true")
@@ -247,7 +243,7 @@ func (r *Reconciler) volumes() []apiv1.Volume {
 		},
 	}
 
-	if r.Config.Spec.ControlPlaneSecurityEnabled || (util.PointerToBool(r.Config.Spec.Galley.ConfigValidation) && !util.PointerToBool(r.Config.Spec.Istiod.Enabled)) {
+	if util.PointerToBool(r.Config.Spec.Galley.ConfigValidation) && !util.PointerToBool(r.Config.Spec.Istiod.Enabled) {
 		volumes = append(volumes, apiv1.Volume{
 			Name: "istio-certs",
 			VolumeSource: apiv1.VolumeSource{

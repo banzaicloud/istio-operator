@@ -10,7 +10,6 @@ spec:
     mtlsMode: STRICT
   useMCP: false
   meshExpansion: true
-  controlPlaneSecurityEnabled: true
   imagePullPolicy: Always
   pilot:
     maxReplicas: 1

@@ -12,7 +12,6 @@ spec:
   meshPolicy:
     mtlsMode: STRICT
   multiMesh: true
-  controlPlaneSecurityEnabled: true
   istioCoreDNS:
     enabled: true
   citadel:

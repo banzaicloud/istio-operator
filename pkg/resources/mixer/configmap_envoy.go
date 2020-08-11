@@ -215,8 +215,7 @@ func (r *Reconciler) envoyConfig() string {
             name: envoy.http_connection_manager
 `
 
-	if r.Config.Spec.ControlPlaneSecurityEnabled {
-		yaml += `
+	yaml += `
           tls_context:
             require_client_certificate: true
             common_tls_context:
@@ -239,7 +238,6 @@ func (r *Reconciler) envoyConfig() string {
                     - envoy_grpc:
                         cluster_name: sds-grpc
 `
-	}
 
 	yaml += `
       - name: "9091"
