@@ -272,7 +272,7 @@ func (r *Reconciler) certFetcherContainer() apiv1.Container {
 		"--serviceCluster",
 		"istio-si-cert-fetcher",
 		"--controlPlaneAuthPolicy",
-		templates.ControlPlaneAuthPolicy(util.PointerToBool(r.Config.Spec.Istiod.Enabled)),
+		string(r.Config.Spec.ControlPlaneAuthPolicy),
 		"--domain",
 		r.Config.Namespace + ".svc." + r.Config.Spec.Proxy.ClusterDomain,
 		"--discoveryAddress", r.Config.GetDiscoveryAddress(),

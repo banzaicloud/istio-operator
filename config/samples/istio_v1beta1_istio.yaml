@@ -13,6 +13,7 @@ spec:
   excludeIPRanges: ""
   autoInjectionNamespaces:
   - "default"
+  controlPlaneAuthPolicy: "MUTUAL_TLS"
   mountMtlsCerts: false
   # priorityClassName: system-cluster-critical
   defaultResources:

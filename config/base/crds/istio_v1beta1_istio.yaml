@@ -158,6 +158,13 @@ spec:
                 will run in. This is required for sidecar injection to properly label
                 proxies
               type: string
+            controlPlaneAuthPolicy:
+              description: ControlPlaneAuthPolicy defines how the proxy is authenticated
+                when it connects to the control plane
+              enum:
+              - MUTUAL_TLS
+              - NONE
+              type: string
             defaultConfigVisibility:
               description: Set the default set of namespaces to which services, service
                 entries, virtual services, destination rules should be exported to

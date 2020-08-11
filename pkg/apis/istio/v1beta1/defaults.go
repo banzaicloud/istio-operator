@@ -673,6 +673,10 @@ func SetDefaults(config *Istio) {
 	if config.Spec.JWTPolicy == "" {
 		config.Spec.JWTPolicy = JWTPolicyFirstPartyJWT
 	}
+
+	if config.Spec.ControlPlaneAuthPolicy == "" {
+		config.Spec.ControlPlaneAuthPolicy = ControlPlaneAuthPolicyMTLS
+	}
 }
 
 func SetRemoteIstioDefaults(remoteconfig *RemoteIstio) {
