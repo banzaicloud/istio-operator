@@ -132,7 +132,7 @@ func (r *Reconciler) clusterRole() runtime.Object {
 		},
 	}
 
-	if util.PointerToBool(r.Config.Spec.Istiod.EnableAnalysis) {
+	if util.PointerToBool(r.Config.Spec.Istiod.EnableAnalysis) || util.PointerToBool(r.Config.Spec.Istiod.EnableStatus) {
 		rules = append(rules, []rbacv1.PolicyRule{
 			{
 				APIGroups: []string{"extensions", "networking.k8s.io"},
@@ -148,7 +148,7 @@ func (r *Reconciler) clusterRole() runtime.Object {
 	}
 
 	verbs := []string{"get", "watch", "list"}
-	if util.PointerToBool(r.Config.Spec.Istiod.EnableAnalysis) {
+	if util.PointerToBool(r.Config.Spec.Istiod.EnableAnalysis) || util.PointerToBool(r.Config.Spec.Istiod.EnableStatus) {
 		verbs = append(verbs, "update")
 	}
 	rules = append(rules, rbacv1.PolicyRule{
