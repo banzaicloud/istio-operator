@@ -124,14 +124,17 @@ func (r *Reconciler) webhook() runtime.Object {
 			matchExpression = append(matchExpression, revisionLabelMatchExpression...)
 		} else {
 			matchExpression = append(matchExpression, globalMatchExpression...)
-			wh := webhook.DeepCopy()
-			wh.NamespaceSelector.MatchExpressions = revisionLabelMatchExpression
-			webhookConfiguration.Webhooks = append(webhookConfiguration.Webhooks, *wh)
 		}
 	}
 
 	webhook.NamespaceSelector.MatchExpressions = matchExpression
 	webhookConfiguration.Webhooks = append(webhookConfiguration.Webhooks, *webhook)
+
+	if !util.PointerToBool(r.Config.Spec.SidecarInjector.EnableNamespacesByDefault) && util.PointerToBool(r.Config.Spec.Istiod.Enabled) && !r.Config.IsRevisionUsed() {
+		wh := webhook.DeepCopy()
+		wh.NamespaceSelector.MatchExpressions = revisionLabelMatchExpression
+		webhookConfiguration.Webhooks = append(webhookConfiguration.Webhooks, *wh)
+	}
 
 	return webhookConfiguration
 }
