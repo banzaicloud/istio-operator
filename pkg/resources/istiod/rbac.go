@@ -188,7 +188,7 @@ func (r *Reconciler) roleBinding() runtime.Object {
 		RoleRef: rbacv1.RoleRef{
 			Kind:     "Role",
 			APIGroup: "rbac.authorization.k8s.io",
-			Name:     r.Config.WithNamespacedRevision(roleNameIstiod),
+			Name:     r.Config.WithRevision(roleNameIstiod),
 		},
 		Subjects: []rbacv1.Subject{
 			{
