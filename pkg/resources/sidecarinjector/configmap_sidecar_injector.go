@@ -216,9 +216,9 @@ containers:
   - --trust-domain={{ .Values.global.trustDomain }}
 {{- end }}
 {{- if .Values.global.istiod.enabled }}
-  {{- if gt .ProxyConfig.Concurrency 0 }}
+  {{- if gt .ProxyConfig.Concurrency.GetValue 0 }}
   - --concurrency
-  - "{{ .ProxyConfig.Concurrency }}"
+  - "{{ .ProxyConfig.Concurrency.GetValue }}"
   {{- end -}}
 {{- end }}
 ` + r.injectedAddtionalContainerArgs() + `
