@@ -18,7 +18,7 @@ KUSTOMIZE_BASE = config/overlays/specific-manager-version
 all: test manager
 
 .PHONY: check
-check: test lint shellcheck-makefile shellcheck ## Run tests and linters
+check: test lint shellcheck-makefile shellcheck check-diff ## Run tests and linters
 
 bin/golangci-lint: bin/golangci-lint-${GOLANGCI_VERSION}
 	@ln -sf golangci-lint-${GOLANGCI_VERSION} bin/golangci-lint
@@ -48,6 +48,7 @@ license-cache: bin/licensei ## Generate license cache
 	bin/licensei cache
 
 # Run tests
+.PHONY: test
 test: install-kubebuilder generate fmt vet manifests
 	KUBEBUILDER_ASSETS="$${PWD}/bin/kubebuilder/bin" go test ./pkg/... ./cmd/... -coverprofile cover.out
 
@@ -107,6 +108,7 @@ generate: download-deps
 	find pkg/manifests/istio-crds -exec touch -t 201901010101 {} +
 	go generate ./pkg/... ./cmd/...
 	./hack/update-codegen.sh
+	go run static/generate.go
 
 # Verify codegen
 verify-codegen: download-deps
@@ -122,6 +124,10 @@ docker-push:
 
 check_release:
 	@echo "A new tag (${REL_TAG}) will be pushed to Github, and a new Docker image will be released. Are you sure? [y/N] " && read -r ans && [ "$${ans:-N}" = y ]
+
+.PHONY: check-diff
+check-diff:
+	@git --no-pager diff --name-only --exit-code -- 'static/*' || (echo "Please commit any changes to the generated code" && false)
 
 release: check_release
 	git tag -a ${REL_TAG} -m ${RELEASE_MSG}
