@@ -124,6 +124,11 @@ var defaultEgressGatewayPorts = []ServicePort{
 	{ServicePort: corev1.ServicePort{Port: 15443, Protocol: apiv1.ProtocolTCP, Name: "tls"}, TargetPort: util.IntPointer(15443)},
 }
 
+// SetDefaults used to support generic defaulter interface
+func (config *Istio) SetDefaults() {
+	SetDefaults(config)
+}
+
 func SetDefaults(config *Istio) {
 	// MeshPolicy config
 	if config.Spec.MeshPolicy.MTLSMode == "" {
