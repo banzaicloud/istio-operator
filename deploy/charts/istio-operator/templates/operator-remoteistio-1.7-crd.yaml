@@ -1,0 +1,524 @@
+{{ if eq .Values.istioVersion "1.7" }}
+apiVersion: apiextensions.k8s.io/v1beta1
+kind: CustomResourceDefinition
+metadata:
+  name: remoteistios.istio.banzaicloud.io
+  labels:
+    controller-tools.k8s.io: "1.0"
+    app.kubernetes.io/name: {{ include "istio-operator.name" . }}
+    helm.sh/chart: {{ include "istio-operator.chart" . }}
+    app.kubernetes.io/instance: {{ .Release.Name }}
+    app.kubernetes.io/managed-by: {{ .Release.Service }}
+    app.kubernetes.io/version: {{ .Chart.AppVersion }}
+    app.kubernetes.io/component: operator
+spec:
+  additionalPrinterColumns:
+  - JSONPath: .status.Status
+    description: Status of the resource
+    name: Status
+    type: string
+  - JSONPath: .status.ErrorMessage
+    description: Error message
+    name: Error
+    type: string
+  - JSONPath: .status.GatewayAddress
+    description: Ingress gateway addresses of the resource
+    name: Ingress IPs
+    type: string
+  - JSONPath: .metadata.creationTimestamp
+    name: Age
+    type: date
+  group: istio.banzaicloud.io
+  names:
+    kind: RemoteIstio
+    plural: remoteistios
+  scope: Namespaced
+  subresources:
+    status: {}
+  validation:
+    openAPIV3Schema:
+      properties:
+        apiVersion:
+          description: 'APIVersion defines the versioned schema of this representation
+            of an object. Servers should convert recognized schemas to the latest
+            internal value, and may reject unrecognized values. More info: https://git.k8s.io/community/contributors/devel/api-conventions.md#resources'
+          type: string
+        kind:
+          description: 'Kind is a string value representing the REST resource this
+            object represents. Servers may infer this from the endpoint the client
+            submits requests to. Cannot be updated. In CamelCase. More info: https://git.k8s.io/community/contributors/devel/api-conventions.md#types-kinds'
+          type: string
+        metadata:
+          type: object
+        spec:
+          properties:
+            autoInjectionNamespaces:
+              description: List of namespaces to label with sidecar auto injection
+                enabled
+              items:
+                type: string
+              type: array
+            citadel:
+              description: Citadel configuration options
+              properties:
+                additionalContainerArgs:
+                  description: If present will be appended at the end of the initial/preconfigured
+                    container arguments
+                  items:
+                    type: string
+                  type: array
+                additionalEnvVars:
+                  description: If present will be appended to the environment variables
+                    of the container
+                  items:
+                    type: object
+                  type: array
+                affinity:
+                  type: object
+                caSecretName:
+                  type: string
+                enableNamespacesByDefault:
+                  description: 'Determines Citadel default behavior if the ca.istio.io/env
+                    or ca.istio.io/override labels are not found on a given namespace.  For
+                    example: consider a namespace called "target", which has neither
+                    the "ca.istio.io/env" nor the "ca.istio.io/override" namespace
+                    labels. To decide whether or not to generate secrets for service
+                    accounts created in this "target" namespace, Citadel will defer
+                    to this option. If the value of this option is "true" in this
+                    case, secrets will be generated for the "target" namespace. If
+                    the value of this option is "false" Citadel will not generate
+                    secrets upon service account creation.'
+                  type: boolean
+                enabled:
+                  type: boolean
+                healthCheck:
+                  description: Enable health checking on the Citadel CSR signing API.
+                    https://istio.io/docs/tasks/security/health-check/
+                  type: boolean
+                image:
+                  type: string
+                listenedNamespaces:
+                  description: Select the namespaces for the Citadel to listen to,
+                    separated by comma. If set to empty, Citadel listens to all namespaces.
+                  type: string
+                maxWorkloadCertTTL:
+                  description: Citadel uses a flag max-workload-cert-ttl to control
+                    the maximum lifetime for Istio certificates issued to workloads.
+                    The default value is 90 days. If workload-cert-ttl on Citadel
+                    or node agent is greater than max-workload-cert-ttl, Citadel will
+                    fail issuing the certificate.
+                  type: string
+                nodeSelector:
+                  type: object
+                podAnnotations:
+                  type: object
+                resources:
+                  type: object
+                sdsEnabled:
+                  description: Whether SDS is enabled.
+                  type: boolean
+                securityContext:
+                  type: object
+                tolerations:
+                  items:
+                    type: object
+                  type: array
+                workloadCertTTL:
+                  description: For the workloads running in Kubernetes, the lifetime
+                    of their Istio certificates is controlled by the workload-cert-ttl
+                    flag on Citadel. The default value is 90 days. This value should
+                    be no greater than max-workload-cert-ttl of Citadel.
+                  type: string
+              type: object
+            defaultResources:
+              description: DefaultResources are applied for all Istio components by
+                default, can be overridden for each component
+              type: object
+            enabledServices:
+              description: EnabledServices the Istio component services replicated
+                to remote side
+              items:
+                properties:
+                  labelSelector:
+                    type: string
+                  name:
+                    type: string
+                  podIPs:
+                    items:
+                      type: string
+                    type: array
+                  ports:
+                    items:
+                      type: object
+                    type: array
+                required:
+                - name
+                type: object
+              type: array
+            excludeIPRanges:
+              description: ExcludeIPRanges the range where not to capture egress traffic
+              type: string
+            includeIPRanges:
+              description: IncludeIPRanges the range where to capture egress traffic
+              type: string
+            istioControlPlane:
+              description: Istio CR to which this gateway belongs to
+              properties:
+                name:
+                  type: string
+                namespace:
+                  type: string
+              type: object
+            proxy:
+              description: Proxy configuration options
+              properties:
+                accessLogEncoding:
+                  description: Configure the access log for sidecar to JSON or TEXT.
+                  enum:
+                  - JSON
+                  - TEXT
+                  type: string
+                accessLogFile:
+                  description: 'Configures the access log for each sidecar. Options:   ""
+                    - disables access log   "/dev/stdout" - enables access log'
+                  enum:
+                  - ""
+                  - /dev/stdout
+                  type: string
+                accessLogFormat:
+                  description: 'Configure how and what fields are displayed in sidecar
+                    access log. Setting to empty string will result in default log
+                    format. If accessLogEncoding is TEXT, value will be used directly
+                    as the log format example: "[%START_TIME%] %REQ(:METHOD)% %REQ(X-ENVOY-ORIGINAL-PATH?:PATH)%
+                    %PROTOCOL%\n" If AccessLogEncoding is JSON, value will be parsed
+                    as map[string]string example: ''{"start_time": "%START_TIME%",
+                    "req_method": "%REQ(:METHOD)%"}'''
+                  type: string
+                clusterDomain:
+                  description: cluster domain. Default value is "cluster.local"
+                  type: string
+                componentLogLevel:
+                  description: Per Component log level for proxy, applies to gateways
+                    and sidecars. If a component level is not set, then the "LogLevel"
+                    will be used. If left empty, "misc:error" is used.
+                  type: string
+                coreDumpImage:
+                  description: Image used to enable core dumps. This is only used,
+                    when "EnableCoreDump" is set to true.
+                  type: string
+                dnsRefreshRate:
+                  description: Configure the DNS refresh rate for Envoy cluster of
+                    type STRICT_DNS This must be given it terms of seconds. For example,
+                    300s is valid but 5m is invalid.
+                  pattern: ^[0-9]{1,5}s$
+                  type: string
+                enableCoreDump:
+                  description: If set, newly injected sidecars will have core dumps
+                    enabled.
+                  type: boolean
+                envoyAccessLogService:
+                  properties:
+                    enabled:
+                      type: boolean
+                    host:
+                      type: string
+                    port:
+                      format: int32
+                      type: integer
+                    tcpKeepalive:
+                      properties:
+                        interval:
+                          type: string
+                        probes:
+                          format: int32
+                          type: integer
+                        time:
+                          type: string
+                      type: object
+                    tlsSettings:
+                      properties:
+                        caCertificates:
+                          type: string
+                        clientCertificate:
+                          type: string
+                        mode:
+                          enum:
+                          - DISABLE
+                          - SIMPLE
+                          - MUTUAL
+                          - ISTIO_MUTUAL
+                          type: string
+                        privateKey:
+                          type: string
+                        sni:
+                          type: string
+                        subjectAltNames:
+                          items:
+                            type: string
+                          type: array
+                      type: object
+                  type: object
+                envoyMetricsService:
+                  properties:
+                    enabled:
+                      type: boolean
+                    host:
+                      type: string
+                    port:
+                      format: int32
+                      type: integer
+                    tcpKeepalive:
+                      properties:
+                        interval:
+                          type: string
+                        probes:
+                          format: int32
+                          type: integer
+                        time:
+                          type: string
+                      type: object
+                    tlsSettings:
+                      properties:
+                        caCertificates:
+                          type: string
+                        clientCertificate:
+                          type: string
+                        mode:
+                          enum:
+                          - DISABLE
+                          - SIMPLE
+                          - MUTUAL
+                          - ISTIO_MUTUAL
+                          type: string
+                        privateKey:
+                          type: string
+                        sni:
+                          type: string
+                        subjectAltNames:
+                          items:
+                            type: string
+                          type: array
+                      type: object
+                  type: object
+                envoyStatsD:
+                  properties:
+                    enabled:
+                      type: boolean
+                    host:
+                      type: string
+                    port:
+                      format: int32
+                      type: integer
+                  type: object
+                holdApplicationUntilProxyStarts:
+                  description: Controls if sidecar is injected at the front of the
+                    container list and blocks the start of the other containers until
+                    the proxy is ready
+                  type: boolean
+                image:
+                  type: string
+                lifecycle:
+                  type: object
+                logLevel:
+                  description: 'Log level for proxy, applies to gateways and sidecars.
+                    If left empty, "warning" is used. Expected values are: trace|debug|info|warning|error|critical|off'
+                  enum:
+                  - trace
+                  - debug
+                  - info
+                  - warning
+                  - error
+                  - critical
+                  - "off"
+                  type: string
+                privileged:
+                  description: If set to true, istio-proxy container will have privileged
+                    securityContext
+                  type: boolean
+                protocolDetectionTimeout:
+                  type: string
+                resources:
+                  type: object
+                securityContext:
+                  type: object
+                useMetadataExchangeFilter:
+                  type: boolean
+              type: object
+            proxyInit:
+              description: Proxy Init configuration options
+              properties:
+                image:
+                  type: string
+              type: object
+            sidecarInjector:
+              description: SidecarInjector configuration options
+              properties:
+                additionalContainerArgs:
+                  description: If present will be appended at the end of the initial/preconfigured
+                    container arguments
+                  items:
+                    type: string
+                  type: array
+                additionalEnvVars:
+                  description: If present will be appended to the environment variables
+                    of the container
+                  items:
+                    type: object
+                  type: array
+                affinity:
+                  type: object
+                alwaysInjectSelector:
+                  description: 'AlwaysInjectSelector: Forces the injection on pods
+                    whose labels match this selector. It''s an array of label selectors,
+                    that will be OR''ed, meaning we will iterate over it and stop
+                    at the first match'
+                  items:
+                    type: object
+                  type: array
+                autoInjectionPolicyEnabled:
+                  description: This controls the 'policy' in the sidecar injector
+                  type: boolean
+                enableNamespacesByDefault:
+                  description: This controls whether the webhook looks for namespaces
+                    for injection enabled or disabled
+                  type: boolean
+                enabled:
+                  type: boolean
+                image:
+                  type: string
+                init:
+                  properties:
+                    resources:
+                      type: object
+                  type: object
+                initCNIConfiguration:
+                  properties:
+                    affinity:
+                      type: object
+                    binDir:
+                      description: Must be the same as the environment’s --cni-bin-dir
+                        setting (kubelet parameter)
+                      type: string
+                    chained:
+                      type: boolean
+                    confDir:
+                      description: Must be the same as the environment’s --cni-conf-dir
+                        setting (kubelet parameter)
+                      type: string
+                    enabled:
+                      description: If true, the privileged initContainer istio-init
+                        is not needed to perform the traffic redirect settings for
+                        the istio-proxy
+                      type: boolean
+                    excludeNamespaces:
+                      description: List of namespaces to exclude from Istio pod check
+                      items:
+                        type: string
+                      type: array
+                    image:
+                      type: string
+                    includeNamespaces:
+                      description: List of namespaces to include for Istio pod check
+                      items:
+                        type: string
+                      type: array
+                    logLevel:
+                      description: Logging level for CNI binary
+                      type: string
+                    repair:
+                      properties:
+                        brokenPodLabelKey:
+                          type: string
+                        brokenPodLabelValue:
+                          type: string
+                        deletePods:
+                          type: boolean
+                        enabled:
+                          type: boolean
+                        hub:
+                          type: string
+                        initContainerName:
+                          type: string
+                        labelPods:
+                          type: boolean
+                        tag:
+                          type: string
+                      type: object
+                  type: object
+                injectedAnnotations:
+                  description: 'injectedAnnotations are additional annotations that
+                    will be added to the pod spec after injection This is primarily
+                    to support PSP annotations. For example, if you defined a PSP
+                    with the annotations:  annotations:   apparmor.security.beta.kubernetes.io/allowedProfileNames:
+                    runtime/default   apparmor.security.beta.kubernetes.io/defaultProfileName:
+                    runtime/default  The PSP controller would add corresponding annotations
+                    to the pod spec for each container. However, this happens before
+                    the inject adds additional containers, so we must specify them
+                    explicitly here. With the above example, we could specify: injectedAnnotations:   container.apparmor.security.beta.kubernetes.io/istio-init:
+                    runtime/default   container.apparmor.security.beta.kubernetes.io/istio-proxy:
+                    runtime/default'
+                  type: object
+                injectedContainerAdditionalArgs:
+                  description: If present will be appended at the end of the initial/preconfigured
+                    container arguments
+                  items:
+                    type: string
+                  type: array
+                injectedContainerAdditionalEnvVars:
+                  description: If present will be appended to the environment variables
+                    of the container
+                  items:
+                    type: object
+                  type: array
+                neverInjectSelector:
+                  description: 'NeverInjectSelector: Refuses the injection on pods
+                    whose labels match this selector. It''s an array of label selectors,
+                    that will be OR''ed, meaning we will iterate over it and stop
+                    at the first match Takes precedence over AlwaysInjectSelector.'
+                  items:
+                    type: object
+                  type: array
+                nodeSelector:
+                  type: object
+                podAnnotations:
+                  type: object
+                replicaCount:
+                  format: int32
+                  minimum: 0
+                  type: integer
+                resources:
+                  type: object
+                rewriteAppHTTPProbe:
+                  description: If true, sidecar injector will rewrite PodSpec for
+                    liveness health check to redirect request to sidecar. This makes
+                    liveness check work even when mTLS is enabled.
+                  type: boolean
+                securityContext:
+                  type: object
+                tolerations:
+                  items:
+                    type: object
+                  type: array
+              type: object
+          required:
+          - enabledServices
+          type: object
+        status:
+          properties:
+            ErrorMessage:
+              type: string
+            GatewayAddress:
+              items:
+                type: string
+              type: array
+            Status:
+              type: string
+          type: object
+  version: v1beta1
+status:
+  acceptedNames:
+    kind: ""
+    plural: ""
+  conditions: []
+  storedVersions: []
+{{- end }}

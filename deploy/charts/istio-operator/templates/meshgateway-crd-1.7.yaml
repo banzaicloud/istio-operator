@@ -1,0 +1,198 @@
+{{ if eq .Values.istioVersion "1.7" }}
+apiVersion: apiextensions.k8s.io/v1beta1
+kind: CustomResourceDefinition
+metadata:
+  creationTimestamp: null
+  labels:
+    controller-tools.k8s.io: "1.0"
+    app.kubernetes.io/name: {{ include "istio-operator.name" . }}
+    helm.sh/chart: {{ include "istio-operator.chart" . }}
+    app.kubernetes.io/instance: {{ .Release.Name }}
+    app.kubernetes.io/managed-by: {{ .Release.Service }}
+    app.kubernetes.io/version: {{ .Chart.AppVersion }}
+    app.kubernetes.io/component: operator
+  name: meshgateways.istio.banzaicloud.io
+spec:
+  additionalPrinterColumns:
+  - JSONPath: .spec.type
+    description: Type of the gateway
+    name: Type
+    type: string
+  - JSONPath: .spec.serviceType
+    description: Type of the service
+    name: Service Type
+    type: string
+  - JSONPath: .status.Status
+    description: Status of the resource
+    name: Status
+    type: string
+  - JSONPath: .status.GatewayAddress
+    description: Ingress gateway addresses of the resource
+    name: Ingress IPs
+    type: string
+  - JSONPath: .status.ErrorMessage
+    description: Error message
+    name: Error
+    type: string
+  - JSONPath: .metadata.creationTimestamp
+    name: Age
+    type: date
+  - JSONPath: .spec.istioControlPlane
+    name: Control Plane
+    type: string
+  group: istio.banzaicloud.io
+  names:
+    kind: MeshGateway
+    plural: meshgateways
+    shortNames:
+    - mgw
+  scope: Namespaced
+  subresources:
+    status: {}
+  validation:
+    openAPIV3Schema:
+      properties:
+        apiVersion:
+          description: 'APIVersion defines the versioned schema of this representation
+            of an object. Servers should convert recognized schemas to the latest
+            internal value, and may reject unrecognized values. More info: https://git.k8s.io/community/contributors/devel/api-conventions.md#resources'
+          type: string
+        kind:
+          description: 'Kind is a string value representing the REST resource this
+            object represents. Servers may infer this from the endpoint the client
+            submits requests to. Cannot be updated. In CamelCase. More info: https://git.k8s.io/community/contributors/devel/api-conventions.md#types-kinds'
+          type: string
+        metadata:
+          type: object
+        spec:
+          properties:
+            additionalEnvVars:
+              description: If present will be appended to the environment variables
+                of the container
+              items:
+                type: object
+              type: array
+            affinity:
+              type: object
+            istioControlPlane:
+              description: Istio CR to which this gateway belongs to
+              properties:
+                name:
+                  type: string
+                namespace:
+                  type: string
+              type: object
+            labels:
+              type: object
+            loadBalancerIP:
+              type: string
+            maxReplicas:
+              format: int32
+              minimum: 0
+              type: integer
+            minReplicas:
+              format: int32
+              minimum: 0
+              type: integer
+            nodeSelector:
+              type: object
+            podAnnotations:
+              type: object
+            ports:
+              items:
+                properties:
+                  name:
+                    description: The name of this port within the service. This must
+                      be a DNS_LABEL. All ports within a ServiceSpec must have unique
+                      names. This maps to the 'Name' field in EndpointPort objects.
+                      Optional if only one ServicePort is defined on this service.
+                    type: string
+                  nodePort:
+                    description: 'The port on each node on which this service is exposed
+                      when type=NodePort or LoadBalancer. Usually assigned by the
+                      system. If specified, it will be allocated to the service if
+                      unused or else creation of the service will fail. Default is
+                      to auto-allocate a port if the ServiceType of this Service requires
+                      one. More info: https://kubernetes.io/docs/concepts/services-networking/service/#type-nodeport'
+                    format: int32
+                    type: integer
+                  port:
+                    description: The port that will be exposed by this service.
+                    format: int32
+                    type: integer
+                  protocol:
+                    description: The IP protocol for this port. Supports "TCP", "UDP",
+                      and "SCTP". Default is TCP.
+                    type: string
+                  targetPort:
+                    format: int32
+                    type: integer
+                required:
+                - port
+                type: object
+              minItems: 0
+              type: array
+            replicaCount:
+              format: int32
+              minimum: 0
+              type: integer
+            requestedNetworkView:
+              type: string
+            resources:
+              type: object
+            runAsRoot:
+              description: Whether to run the gateway in a privileged container
+              type: boolean
+            sds:
+              properties:
+                enabled:
+                  type: boolean
+                image:
+                  type: string
+                resources:
+                  type: object
+              type: object
+            securityContext:
+              type: object
+            serviceAnnotations:
+              type: object
+            serviceLabels:
+              type: object
+            serviceType:
+              enum:
+              - ClusterIP
+              - NodePort
+              - LoadBalancer
+              type: string
+            tolerations:
+              items:
+                type: object
+              type: array
+            type:
+              enum:
+              - ingress
+              - egress
+              type: string
+          required:
+          - ports
+          - type
+          type: object
+        status:
+          properties:
+            ErrorMessage:
+              type: string
+            GatewayAddress:
+              items:
+                type: string
+              type: array
+            Status:
+              type: string
+          type: object
+  version: v1beta1
+status:
+  acceptedNames:
+    kind: ""
+    plural: ""
+  conditions: []
+  storedVersions: []
+{{- end }}
