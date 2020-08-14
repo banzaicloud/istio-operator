@@ -60,7 +60,15 @@ spec:
           - "--metrics-addr=127.0.0.1:8080"
           {{- end }}
           - "--watch-created-resources-events=true"
+          {{- if .Values.leaderElection.enabled }}
+          - "--leader-election-enabled"
+          {{- if .Values.leaderElection.nameOverride }}
+          - "--leader-election-name={{ .Values.leaderElection.nameOverride }}"
+          {{- else }}
           - "--leader-election-name={{ include "istio-operator.fullname" . }}{{ .Values.operatorComponentSuffix }}-leader"
+          {{- end }}
+          - "--leader-election-namespace={{ .Values.leaderElection.namespace }}"
+          {{- end }}
         env:
           - name: POD_NAMESPACE
             valueFrom:

@@ -45,3 +45,8 @@ tolerations: []
 affinity: {}
 
 operatorComponentSuffix: ""
+
+leaderElection:
+  enabled: true
+  namespace: "istio-system"
+  nameOverride: ""
