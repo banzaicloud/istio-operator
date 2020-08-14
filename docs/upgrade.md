@@ -4,10 +4,10 @@ The steps are listed in this doc to perform an Istio version upgrade with the op
 
 ## Istio Control Plane Upgrade
 
-Let us suppose that we have a [Kubernetes](https://kubernetes.io/) cluster with Istio 1.4.8, and we would like to upgrade our Istio components to Istio version 1.5.8. Here are the steps we need to perform to accomplish this with the operator:
+Let us suppose that we have a [Kubernetes](https://kubernetes.io/) cluster with Istio 1.4.8, and we would like to upgrade our Istio components to Istio version 1.5.9. Here are the steps we need to perform to accomplish this with the operator:
 
 1. Deploy a version of the operator which supports Istio 1.5.x
-2. Apply a [Custom Resource](https://kubernetes.io/docs/concepts/extend-kubernetes/api-extension/custom-resources/) using Istio 1.5.8 components
+2. Apply a [Custom Resource](https://kubernetes.io/docs/concepts/extend-kubernetes/api-extension/custom-resources/) using Istio 1.5.9 components
 
 What happens is that once the operator discerns that the Custom Resource it's watching has changed, it reconciles all Istio-related components in order to perform a control plane upgrade.
 
@@ -125,9 +125,9 @@ $ INGRESS_HOST=$(kubectl -n istio-system get service istio-ingressgateway -o jso
 $ open http://$INGRESS_HOST/productpage
 ```
 
-#### Install Istio 1.5.8
+#### Install Istio 1.5.9
 
-To install Istio 1.5.8, first we need to check out the `release-1.5` branch of our operator (this branch supports the Istio 1.5.x versions):
+To install Istio 1.5.9, first we need to check out the `release-1.5` branch of our operator (this branch supports the Istio 1.5.x versions):
 
 ```bash
 $ git clone git@github.com:banzaicloud/istio-operator.git
@@ -152,16 +152,16 @@ Alternatively, you can deploy the operator using a [Helm chart](https://github.c
 
 ```bash
 $ helm repo add banzaicloud-stable https://kubernetes-charts.banzaicloud.com
-$ helm upgrade istio-operator --install --namespace=istio-system --set-string operator.image.tag=0.5.13 banzaicloud-stable/istio-operator
+$ helm upgrade istio-operator --install --namespace=istio-system --set-string operator.image.tag=0.5.14 banzaicloud-stable/istio-operator
 ```
 
-*Note: As of now, the `0.5.13` tag is the latest version of our operator to support Istio versions 1.5.x*
+*Note: As of now, the `0.5.14` tag is the latest version of our operator to support Istio versions 1.5.x*
 
 **Use the new Custom Resource**
 
 > If you've installed Istio 1.4.8 or earlier with the Istio operator, and if you check the logs of the operator pod at this point, you will see the following error message: `intended Istio version is unsupported by this version of the operator`. We need to update the Istio Custom Resource with Istio 1.5's components for the operator to be reconciled with the Istio control plane.
 
-To deploy Istio 1.5.8 with its default configuration options, use the following command:
+To deploy Istio 1.5.9 with its default configuration options, use the following command:
 
 ```bash
 $ kubectl replace -n istio-system -f config/samples/istio_v1beta1_istio.yaml
@@ -179,26 +179,26 @@ istiod-84588fff4c-4lhq8                   2/2       Running   0          7m
 
 Please note that you'll have an istiod pod running instead of the four legacy Istio control plane components (Citadel, Galley, Pilot and the Sidecar Injector), because that's the default option starting from Istio 1.5.
 
-The `Istio` Custom Resource is showing `Available` in its status field, and the Istio components are now using `1.5.8` images:
+The `Istio` Custom Resource is showing `Available` in its status field, and the Istio components are now using `1.5.9` images:
 
 ```bash
 $ kubectl describe istio -n istio-system istio | grep Image:
-    Image:                         docker.io/istio/citadel:1.5.8
-    Image:          docker.io/istio/galley:1.5.8
-    Image:    docker.io/istio/node-agent-k8s:1.5.8
-        Image:    docker.io/istio/node-agent-k8s:1.5.8
+    Image:                         docker.io/istio/citadel:1.5.9
+    Image:          docker.io/istio/galley:1.5.9
+    Image:    docker.io/istio/node-agent-k8s:1.5.9
+        Image:    docker.io/istio/node-agent-k8s:1.5.9
     Image:          coredns/coredns:1.6.2
     Plugin Image:   docker.io/istio/coredns-plugin:0.2-istio-1.1
-    Image:          docker.io/istio/mixer:1.5.8
-    Image:    docker.io/istio/node-agent-k8s:1.5.8
-    Image:          docker.io/istio/pilot:1.5.8
-    Image:             docker.io/istio/proxyv2:1.5.8
-    Image:  docker.io/istio/proxyv2:1.5.8
-    Image:                          docker.io/istio/sidecar_injector:1.5.8
-      Image:                 docker.io/istio/install-cni:1.5.8
+    Image:          docker.io/istio/mixer:1.5.9
+    Image:    docker.io/istio/node-agent-k8s:1.5.9
+    Image:          docker.io/istio/pilot:1.5.9
+    Image:             docker.io/istio/proxyv2:1.5.9
+    Image:  docker.io/istio/proxyv2:1.5.9
+    Image:                          docker.io/istio/sidecar_injector:1.5.9
+      Image:                 docker.io/istio/install-cni:1.5.9
 ```
 
-At this point, your Istio control plane is upgraded to Istio 1.5.8 and your BookInfo application should still be available at:
+At this point, your Istio control plane is upgraded to Istio 1.5.9 and your BookInfo application should still be available at:
 ```bash
 $ open http://$INGRESS_HOST/productpage
 ```
