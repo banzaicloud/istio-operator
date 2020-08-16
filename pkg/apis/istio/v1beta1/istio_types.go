@@ -521,6 +521,14 @@ type ZipkinConfiguration struct {
 	TLSSettings *TLSSettings `json:"tlsSettings,omitempty"`
 }
 
+func (c ZipkinConfiguration) GetData() map[string]interface{} {
+	data := map[string]interface{}{
+		"address": c.Address,
+	}
+
+	return data
+}
+
 // Configuration for Envoy to send trace data to Lightstep
 type LightstepConfiguration struct {
 	// the <host>:<port> of the satellite pool

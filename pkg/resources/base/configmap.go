@@ -74,9 +74,10 @@ func MeshConfig(config *istiov1beta1.Istio, remote bool) map[string]interface{} 
 		switch config.Spec.Tracing.Tracer {
 		case istiov1beta1.TracerTypeZipkin:
 			defaultConfig["tracing"] = map[string]interface{}{
-				"zipkin": map[string]interface{}{
-					"address": config.Spec.Tracing.Zipkin.Address,
-				},
+				"zipkin": config.Spec.Tracing.Zipkin.GetData(),
+			}
+			if config.Spec.Tracing.Zipkin.TLSSettings != nil {
+				defaultConfig["tracing"].(map[string]interface{})["tlsSettings"] = config.Spec.Tracing.Zipkin.TLSSettings
 			}
 		case istiov1beta1.TracerTypeLightstep:
 			lightStep := map[string]interface{}{

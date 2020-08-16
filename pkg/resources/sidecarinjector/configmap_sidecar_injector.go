@@ -53,11 +53,6 @@ func (r *Reconciler) getValues() string {
 		}...)
 	}
 
-	var zipkinTLSSettingsJSON []byte
-	if r.Config.Spec.Tracing.Tracer == v1beta1.TracerTypeZipkin && r.Config.Spec.Tracing.Zipkin.TLSSettings != nil {
-		zipkinTLSSettingsJSON, _ = json.Marshal(r.Config.Spec.Tracing.Zipkin.TLSSettings)
-	}
-
 	proxyInitContainerName := "istio-init"
 	if util.PointerToBool(r.Config.Spec.SidecarInjector.InitCNIConfiguration.Enabled) {
 		proxyInitContainerName = "istio-validation"
@@ -133,8 +128,7 @@ func (r *Reconciler) getValues() string {
 				"envoyStatsd": map[string]interface{}{
 					"enabled": r.Config.Spec.Proxy.EnvoyStatsD.Enabled,
 				},
-				"lifecycle":             r.Config.Spec.Proxy.Lifecycle,
-				"zipkinTLSSettingsJSON": string(zipkinTLSSettingsJSON),
+				"lifecycle": r.Config.Spec.Proxy.Lifecycle,
 			},
 		},
 	}
@@ -302,10 +296,6 @@ containers:
     value: "{{- range $index, $container := .Spec.Containers }}{{- if ne $index 0}},{{- end}}{{ $container.Name }}{{- end}}"
   - name: ISTIO_META_CLUSTER_ID
     value: "{{ valueOrDefault .Values.global.multicluster.clusterName ` + "`" + `Kubernetes` + "`" + `}}"
-{{- if eq .Values.global.proxy.tracer "zipkin" }}
-  - name: ISTIO_META_ZIPKIN_TLS_SETTINGS_JSON
-    value: '{{ .Values.global.proxy.zipkinTLSSettingsJSON }}'
-{{- end }}
   - name: ISTIO_META_INTERCEPTION_MODE
     value: "{{ or (index .ObjectMeta.Annotations ` + "`" + `sidecar.istio.io/interceptionMode` + "`" + `) .ProxyConfig.InterceptionMode.String }}"
   {{- if .Values.global.network }}
