@@ -91,8 +91,8 @@ const (
                   "metrics": [
                     {
                       "dimensions": {
-                        "destination_cluster": "node.metadata['CLUSTER_ID']",
-                        "source_cluster": "downstream_peer.cluster_id"
+                        "source_cluster": "node.metadata['CLUSTER_ID']",
+                        "destination_cluster": "upstream_peer.cluster_id"
                      }
                     }
                   ]
@@ -132,8 +132,8 @@ const (
                   "metrics": [
                     {
                       "dimensions": {
-                        "destination_cluster": "node.metadata['CLUSTER_ID']",
-                        "source_cluster": "downstream_peer.cluster_id"
+                        "source_cluster": "node.metadata['CLUSTER_ID']",
+                        "destination_cluster": "upstream_peer.cluster_id"
                      }
                     }
                   ]
