@@ -169,7 +169,7 @@ type ReconcileComponent func(log logr.Logger, istio *istiov1beta1.Istio) error
 // +kubebuilder:rbac:groups="extensions;networking.k8s.io",resources=ingresses/status,verbs=*
 // +kubebuilder:rbac:groups="networking.k8s.io",resources=ingressclasses;ingresses,verbs=get;list;watch
 // +kubebuilder:rbac:groups="networking.k8s.io",resources=ingresses/status,verbs=*
-// +kubebuilder:rbac:groups="networking.x.k8s.io",resources=*,verbs=get;list;watch
+// +kubebuilder:rbac:groups="networking.x-k8s.io",resources=*,verbs=get;list;watch
 // +kubebuilder:rbac:groups="discovery.k8s.io",resources=endpointslices,verbs=get;list;watch
 
 // +kubebuilder:rbac:groups=istio.banzaicloud.io,resources=istios;istios/finalizers,verbs=get;list;watch;create;update;patch;delete

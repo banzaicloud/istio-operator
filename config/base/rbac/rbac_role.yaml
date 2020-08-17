@@ -210,7 +210,7 @@ rules:
   verbs:
   - '*'
 - apiGroups:
-  - networking.x.k8s.io
+  - networking.x-k8s.io
   resources:
   - '*'
   verbs:
