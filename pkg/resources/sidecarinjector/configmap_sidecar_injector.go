@@ -105,7 +105,8 @@ func (r *Reconciler) getValues() string {
 			"multicluster": map[string]interface{}{
 				"clusterName": r.Config.Spec.ClusterName,
 			},
-			"meshID": r.Config.Spec.MeshID,
+			"mountMtlsCerts": util.PointerToBool(r.Config.Spec.MountMtlsCerts),
+			"meshID":         r.Config.Spec.MeshID,
 			"proxy": map[string]interface{}{
 				"image":                        r.Config.Spec.Proxy.Image,
 				"statusPort":                   v1beta1.PortStatusPortNumber,
