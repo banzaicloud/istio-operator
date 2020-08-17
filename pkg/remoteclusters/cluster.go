@@ -25,6 +25,7 @@ import (
 	"github.com/pkg/errors"
 	corev1 "k8s.io/api/core/v1"
 	k8serrors "k8s.io/apimachinery/pkg/api/errors"
+	"k8s.io/apimachinery/pkg/labels"
 	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/client-go/dynamic"
 	"k8s.io/client-go/rest"
@@ -88,17 +89,31 @@ func (c *Cluster) GetName() string {
 }
 
 func (c *Cluster) initK8sInformers() error {
+	err := c.namespaceInformer()
+	if err != nil {
+		return err
+	}
+
+	err = c.configmapInformer()
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (c *Cluster) namespaceInformer() error {
 	if c.remoteConfig == nil {
 		return errors.New("remoteconfig must be set")
 	}
 
-	informer, err := c.mgr.GetCache().GetInformerForKind(corev1.SchemeGroupVersion.WithKind("Namespace"))
+	namespaceInformer, err := c.mgr.GetCache().GetInformerForKind(corev1.SchemeGroupVersion.WithKind("Namespace"))
 	if err != nil {
 		return emperror.Wrap(err, "could not get informer for namespaces")
 	}
 
 	err = c.ctrl.Watch(&source.Informer{
-		Informer: informer,
+		Informer: namespaceInformer,
 	}, &handler.EnqueueRequestsFromMapFunc{
 		ToRequests: handler.ToRequestsFunc(func(object handler.MapObject) []reconcile.Request {
 			return []reconcile.Request{
@@ -126,7 +141,57 @@ func (c *Cluster) initK8sInformers() error {
 	})
 
 	if err != nil {
-		return emperror.Wrap(err, "could not set watcher for namespaces informer")
+		return emperror.Wrap(err, "could not set informer for namespaces")
+	}
+
+	return nil
+}
+
+func (c *Cluster) configmapInformer() error {
+	if c.remoteConfig == nil {
+		return errors.New("remoteconfig must be set")
+	}
+
+	configmapInformer, err := c.mgr.GetCache().GetInformerForKind(corev1.SchemeGroupVersion.WithKind("ConfigMap"))
+	if err != nil {
+		return emperror.Wrap(err, "could not get informer for namespaces")
+	}
+
+	err = c.ctrl.Watch(&source.Informer{
+		Informer: configmapInformer,
+	}, &handler.EnqueueRequestsFromMapFunc{
+		ToRequests: handler.ToRequestsFunc(func(object handler.MapObject) []reconcile.Request {
+			return []reconcile.Request{
+				{
+					NamespacedName: types.NamespacedName{
+						Name:      c.remoteConfig.Name,
+						Namespace: c.remoteConfig.Namespace,
+					},
+				},
+			}
+		}),
+	}, predicate.Funcs{
+		CreateFunc: func(e event.CreateEvent) bool {
+			return false
+		},
+		DeleteFunc: func(e event.DeleteEvent) bool {
+			if labels.SelectorFromValidatedSet(caRootConfigMapLabels).Matches(labels.Set(e.Meta.GetLabels())) {
+				return true
+			}
+
+			return false
+		},
+		UpdateFunc: func(e event.UpdateEvent) bool {
+			if labels.SelectorFromValidatedSet(caRootConfigMapLabels).Matches(labels.Set(e.MetaOld.GetLabels())) {
+				return true
+			}
+
+			return false
+		},
+	})
+
+	if err != nil {
+		return emperror.Wrap(err, "could not set informer for configmaps")
 	}
 
 	return nil

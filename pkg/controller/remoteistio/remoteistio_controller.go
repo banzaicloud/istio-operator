@@ -282,11 +282,14 @@ func (r *ReconcileRemoteConfig) reconcile(remoteConfig *istiov1beta1.RemoteIstio
 		}, nil
 	}
 
+	signCertSecretName := "istio-ca-secret"
 	if istio.Spec.Citadel.CASecretName != "" {
-		remoteConfig, err = r.populateSignCerts(istio.Spec.Citadel.CASecretName, remoteConfig)
-		if err != nil {
-			return reconcile.Result{}, emperror.Wrap(err, "could not populate sign certs")
-		}
+		signCertSecretName = istio.Spec.Citadel.CASecretName
+	}
+
+	remoteConfig, err = r.populateSignCerts(signCertSecretName, remoteConfig)
+	if err != nil {
+		return reconcile.Result{}, emperror.Wrap(err, "could not populate sign certs")
 	}
 
 	cluster, _ := r.remoteClustersMgr.Get(remoteConfig.Name)

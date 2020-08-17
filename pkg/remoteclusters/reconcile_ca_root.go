@@ -34,6 +34,12 @@ const (
 	certKeyInConfigMap  = "root-cert.pem"
 )
 
+var (
+	caRootConfigMapLabels = map[string]string{
+		"banzaicloud.io/managed-by": "istio-operator",
+	}
+)
+
 func (c *Cluster) reconcileCARootToNamespaces(remoteConfig *istiov1beta1.RemoteIstio, istio *istiov1beta1.Istio) error {
 	desiredState := k8sutil.DesiredStatePresent
 	if !util.PointerToBool(istio.Spec.Istiod.Enabled) || istio.Spec.Pilot.CertProvider != istiov1beta1.PilotCertProviderTypeIstiod {
@@ -48,6 +54,10 @@ func (c *Cluster) reconcileCARootToNamespaces(remoteConfig *istiov1beta1.RemoteI
 	}
 
 	signCert := remoteConfig.Spec.GetSignCert()
+	if len(signCert.Root) == 0 {
+		c.log.Info("signed CA cert is nil")
+		return nil
+	}
 	configMapData := map[string]string{
 		certKeyInConfigMap: string(signCert.Root),
 	}
@@ -69,6 +79,7 @@ func (c *Cluster) reconcileCARootInNamespace(name, namespace string, configMapDa
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      name,
 			Namespace: namespace,
+			Labels:    caRootConfigMapLabels,
 		},
 		Data: configMapData,
 	}
