@@ -136,7 +136,7 @@ func (r *Reconciler) clusterRole() runtime.Object {
 		},
 		// Use for Kubernetes Service APIs
 		{
-			APIGroups: []string{"networking.x.k8s.io"},
+			APIGroups: []string{"networking.x-k8s.io"},
 			Resources: []string{"*"},
 			Verbs:     []string{"get", "watch", "list"},
 		},
