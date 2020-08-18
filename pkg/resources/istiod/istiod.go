@@ -19,6 +19,7 @@ package istiod
 import (
 	"github.com/go-logr/logr"
 	"github.com/goph/emperror"
+	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/client-go/dynamic"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
@@ -57,15 +58,17 @@ var pilotLabelSelector = map[string]string{
 type Reconciler struct {
 	resources.Reconciler
 	dynamic dynamic.Interface
+	scheme  *runtime.Scheme
 }
 
-func New(client client.Client, dc dynamic.Interface, config *istiov1beta1.Istio) *Reconciler {
+func New(client client.Client, dc dynamic.Interface, config *istiov1beta1.Istio, scheme *runtime.Scheme) *Reconciler {
 	return &Reconciler{
 		Reconciler: resources.Reconciler{
 			Client: client,
 			Config: config,
 		},
 		dynamic: dc,
+		scheme:  scheme,
 	}
 }
 
@@ -88,13 +91,19 @@ func (r *Reconciler) Reconcile(log logr.Logger) error {
 		pdbDesiredState = k8sutil.DesiredStateAbsent
 	}
 
+	deploymentDesiredState := istiodDesiredState
+	// add specific desired state to support re-creation
+	if deploymentDesiredState == k8sutil.DesiredStatePresent {
+		deploymentDesiredState = k8sutil.DeploymentDesiredStateWithReCreateHandling(r.Client, r.scheme, log, util.MergeStringMaps(pilotLabelSelector, r.Config.RevisionLabels()))
+	}
+
 	for _, res := range []resources.ResourceWithDesiredState{
 		{Resource: r.serviceAccount, DesiredState: istiodDesiredState},
 		{Resource: r.clusterRole, DesiredState: istiodDesiredState},
 		{Resource: r.role, DesiredState: istiodDesiredState},
 		{Resource: r.clusterRoleBinding, DesiredState: istiodDesiredState},
 		{Resource: r.roleBinding, DesiredState: istiodDesiredState},
-		{Resource: r.deployment, DesiredState: istiodDesiredState},
+		{Resource: r.deployment, DesiredState: deploymentDesiredState},
 		{Resource: r.service, DesiredState: istiodDesiredState},
 		{Resource: r.horizontalPodAutoscaler, DesiredState: istiodDesiredState},
 		{Resource: r.podDisruptionBudget, DesiredState: pdbDesiredState},
