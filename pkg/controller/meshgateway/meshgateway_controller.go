@@ -144,7 +144,14 @@ func (r *ReconcileMeshGateway) Reconcile(request reconcile.Request) (reconcile.R
 
 	istio, err := r.getRelatedIstioCR(instance)
 	if err != nil {
-		return reconcile.Result{}, errors.WithStack(err)
+		updateErr := updateStatus(r.Client, instance, istiov1beta1.ReconcileFailed, err.Error(), logger)
+		if updateErr != nil {
+			logger.Error(updateErr, "failed to update state")
+			return reconcile.Result{}, errors.WithStack(err)
+		}
+		return reconcile.Result{
+			Requeue: false,
+		}, errors.WithStack(err)
 	}
 
 	if !istio.Spec.Version.IsSupported() {
@@ -211,7 +218,7 @@ func (r *ReconcileMeshGateway) getRelatedIstioCR(instance *istiov1beta1.MeshGate
 			Name:      instance.Spec.IstioControlPlane.Name,
 			Namespace: instance.Spec.IstioControlPlane.Namespace,
 		}, istio)
-		if err != nil && !k8serrors.IsNotFound(err) {
+		if err != nil {
 			return nil, emperror.Wrap(err, "could not get related Istio CR")
 		}
 
