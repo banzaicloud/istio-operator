@@ -197,8 +197,10 @@ func (r *ReconcileIstio) Reconcile(request reconcile.Request) (reconcile.Result,
 	logger.Info("Reconciling Istio")
 
 	if !config.Spec.Version.IsSupported() {
-		err = errors.New("intended Istio version is unsupported by this version of the operator")
-		logger.Error(err, "", "version", config.Spec.Version)
+		if config.Status.Status == istiov1beta1.Created || config.Status.Status == istiov1beta1.Unmanaged {
+			err = errors.New("intended Istio version is unsupported by this version of the operator")
+			logger.Error(err, "", "version", config.Spec.Version)
+		}
 		return reconcile.Result{
 			Requeue: false,
 		}, nil
@@ -338,7 +340,7 @@ func (r *ReconcileIstio) reconcile(logger logr.Logger, config *istiov1beta1.Isti
 		mixer.NewPolicyReconciler(r.Client, r.dynamic, config),
 		mixer.NewTelemetryReconciler(r.Client, r.dynamic, config),
 		pilot.New(r.Client, r.dynamic, config),
-		istiod.New(r.Client, r.dynamic, config),
+		istiod.New(r.Client, r.dynamic, config, r.mgr.GetScheme()),
 		cni.New(r.Client, config),
 		nodeagent.New(r.Client, config),
 		istiocoredns.New(r.Client, config),

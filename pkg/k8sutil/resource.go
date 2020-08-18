@@ -33,7 +33,7 @@ import (
 )
 
 func Reconcile(log logr.Logger, client runtimeClient.Client, desired runtime.Object, desiredState DesiredState) error {
-	if desiredState == "" {
+	if desiredState == nil {
 		desiredState = DesiredStatePresent
 	}
 
@@ -51,7 +51,7 @@ func Reconcile(log logr.Logger, client runtimeClient.Client, desired runtime.Obj
 		return emperror.WrapWith(err, "getting resource failed", "kind", desiredType, "name", key.Name)
 	}
 	if apierrors.IsNotFound(err) {
-		if desiredState == DesiredStatePresent || desiredState == DesiredStateExists {
+		if desiredState != DesiredStateAbsent {
 			if err := patch.DefaultAnnotator.SetLastAppliedAnnotation(desired); err != nil {
 				log.Error(err, "Failed to set last applied annotation", "desired", desired)
 			}
@@ -61,7 +61,7 @@ func Reconcile(log logr.Logger, client runtimeClient.Client, desired runtime.Obj
 			log.Info("resource created")
 		}
 	} else {
-		if desiredState == DesiredStatePresent {
+		if desiredState != DesiredStateAbsent && desiredState != DesiredStateExists {
 			patchResult, err := patch.DefaultPatchMaker.Calculate(current, desired, patch.IgnoreStatusFields())
 			if err != nil {
 				log.Error(err, "could not match objects", "kind", desiredType, "name", key.Name)
@@ -93,6 +93,9 @@ func Reconcile(log logr.Logger, client runtimeClient.Client, desired runtime.Obj
 			if err := client.Update(context.TODO(), desired); err != nil {
 				if apierrors.IsConflict(err) || apierrors.IsInvalid(err) {
 					log.Info("resource needs to be re-created", "error", err)
+					if err := desiredState.BeforeRecreate(current, desiredCopy); err != nil {
+						return emperror.WrapWith(err, "could not execute BeforeRecreate func")
+					}
 					err := client.Delete(context.TODO(), current)
 					if err != nil {
 						return emperror.WrapWith(err, "could not delete resource", "kind", desiredType, "name", key.Name)
@@ -102,6 +105,9 @@ func Reconcile(log logr.Logger, client runtimeClient.Client, desired runtime.Obj
 						return emperror.WrapWith(err, "creating resource failed", "kind", desiredType, "name", key.Name)
 					}
 					log.Info("resource created")
+					if err := desiredState.AfterRecreate(current, desiredCopy); err != nil {
+						return emperror.WrapWith(err, "could not execute AfterRecreate func")
+					}
 					return nil
 				}
 

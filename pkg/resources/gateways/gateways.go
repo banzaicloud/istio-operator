@@ -23,6 +23,7 @@ import (
 	"github.com/goph/emperror"
 	"github.com/pkg/errors"
 	v1 "k8s.io/api/core/v1"
+	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/client-go/dynamic"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
@@ -41,9 +42,10 @@ type Reconciler struct {
 	resources.Reconciler
 	gw      *istiov1beta1.MeshGateway
 	dynamic dynamic.Interface
+	scheme  *runtime.Scheme
 }
 
-func New(client client.Client, dc dynamic.Interface, config *istiov1beta1.Istio, gw *istiov1beta1.MeshGateway) *Reconciler {
+func New(client client.Client, dc dynamic.Interface, config *istiov1beta1.Istio, gw *istiov1beta1.MeshGateway, scheme *runtime.Scheme) *Reconciler {
 	return &Reconciler{
 		Reconciler: resources.Reconciler{
 			Client: client,
@@ -51,6 +53,7 @@ func New(client client.Client, dc dynamic.Interface, config *istiov1beta1.Istio,
 		},
 		gw:      gw,
 		dynamic: dc,
+		scheme:  scheme,
 	}
 }
 
@@ -74,11 +77,18 @@ func (r *Reconciler) Reconcile(log logr.Logger) error {
 		hpaDesiredState = k8sutil.DesiredStatePresent
 	}
 
+	var deploymentDesiredState k8sutil.DesiredState
+	deploymentDesiredState = k8sutil.DesiredStatePresent
+	// add specific desired state to support re-creation
+	if deploymentDesiredState == k8sutil.DesiredStatePresent {
+		deploymentDesiredState = k8sutil.DeploymentDesiredStateWithReCreateHandling(r.Client, r.scheme, log, r.labels())
+	}
+
 	for _, res := range []resources.ResourceWithDesiredState{
 		{Resource: r.serviceAccount, DesiredState: k8sutil.DesiredStatePresent},
 		{Resource: r.clusterRole, DesiredState: k8sutil.DesiredStatePresent},
 		{Resource: r.clusterRoleBinding, DesiredState: k8sutil.DesiredStatePresent},
-		{Resource: r.deployment, DesiredState: k8sutil.DesiredStatePresent},
+		{Resource: r.deployment, DesiredState: deploymentDesiredState},
 		{Resource: r.service, DesiredState: k8sutil.DesiredStatePresent},
 		{Resource: r.horizontalPodAutoscaler, DesiredState: hpaDesiredState},
 		{Resource: r.podDisruptionBudget, DesiredState: pdbDesiredState},

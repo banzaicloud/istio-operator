@@ -32,14 +32,6 @@ import (
 	"github.com/banzaicloud/istio-operator/pkg/util"
 )
 
-type DesiredState string
-
-const (
-	DesiredStatePresent DesiredState = "present"
-	DesiredStateAbsent  DesiredState = "absent"
-	DesiredStateExists  DesiredState = "exists"
-)
-
 type DynamicObject struct {
 	Name      string
 	Namespace string
@@ -51,7 +43,7 @@ type DynamicObject struct {
 }
 
 func (d *DynamicObject) Reconcile(log logr.Logger, client dynamic.Interface, desiredState DesiredState) error {
-	if desiredState == "" {
+	if desiredState == nil {
 		desiredState = DesiredStatePresent
 	}
 	desired := d.unstructured()

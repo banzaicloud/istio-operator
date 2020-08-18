@@ -158,7 +158,7 @@ func (r *ReconcileMeshGateway) Reconcile(request reconcile.Request) (reconcile.R
 		return reconcile.Result{}, errors.WithStack(err)
 	}
 
-	reconciler := gateways.New(r.Client, r.dynamic, istio, instance)
+	reconciler := gateways.New(r.Client, r.dynamic, istio, instance, r.scheme)
 
 	err = reconciler.Reconcile(log)
 	if err == nil {
