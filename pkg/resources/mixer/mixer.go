@@ -187,7 +187,7 @@ func (r *Reconciler) Reconcile(log logr.Logger) error {
 
 	for _, dr := range drs {
 		o := dr.DynamicResource()
-		if dr.DesiredState == "" {
+		if dr.DesiredState == nil {
 			dr.DesiredState = mixerDesiredState
 		}
 		err := o.Reconcile(log, r.dynamic, dr.DesiredState)
