@@ -28,9 +28,9 @@ import (
 
 const (
 	banzaiImageHub                    = "docker.io/banzaicloud"
-	banzaiImageVersion                = "1.7.0-rc.1-bzc"
+	banzaiImageVersion                = "1.7.0-rc.2-bzc"
 	defaultImageHub                   = "docker.io/istio"
-	defaultImageVersion               = "1.7.0-rc.1"
+	defaultImageVersion               = "1.7.0-rc.2"
 	defaultLogLevel                   = "default:info"
 	defaultMeshPolicy                 = PERMISSIVE
 	defaultPilotImage                 = defaultImageHub + "/" + "pilot" + ":" + defaultImageVersion
