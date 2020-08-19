@@ -1,16 +1,18 @@
-// Copyright © 2019 Banzai Cloud
-//
-// Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-// You may obtain a copy of the License at
-//
-//     http://www.apache.org/licenses/LICENSE-2.0
-//
-// Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS IS" BASIS,
-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// See the License for the specific language governing permissions and
-// limitations under the License.
+/*
+Copyright 2019 Banzai Cloud.
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+*/
 
 package k8sutil
 
@@ -41,10 +43,12 @@ func DetachPodsFromDeployment(c client.Client, deployment *appsv1.Deployment, lo
 
 	for _, pod := range pods.Items {
 		if len(pod.OwnerReferences) != 1 {
+			log.V(1).Info("evaluting pod for detaching", "action", "skip", "deploymentName", deployment.Name, "name", pod.Name, "reason", "noOwnerReferences")
 			continue
 		}
 		ownerRef := pod.OwnerReferences[0]
 		if ownerRef.Kind != "ReplicaSet" {
+			log.V(1).Info("evaluting pod for detaching", "action", "skip", "deploymentName", deployment.Name, "name", pod.Name, "reason", "ownerIsNotReplicaSet")
 			continue
 		}
 		rs := &appsv1.ReplicaSet{}
@@ -57,14 +61,16 @@ func DetachPodsFromDeployment(c client.Client, deployment *appsv1.Deployment, lo
 		}
 
 		if len(rs.OwnerReferences) != 1 {
+			log.V(1).Info("evaluting pod for detaching", "action", "skip", "deploymentName", deployment.Name, "name", pod.Name, "reason", "replicaSetHasMultipleOwners")
 			continue
 		}
 
 		if rs.OwnerReferences[0].UID != deployment.UID {
+			log.V(1).Info("evaluting pod for detaching", "action", "skip", "deploymentName", deployment.Name, "name", pod.Name, "reason", "replicaSetOwnerMismatch")
 			continue
 		}
 
-		log.V(1).Info("detaching pod", "deploymentName", deployment.Name, "name", pod.Name)
+		log.V(1).Info("evaluting pod for detaching", "action", "detach", "deploymentName", deployment.Name, "name", pod.Name)
 
 		p := pod.DeepCopy()
 		p.OwnerReferences = nil
