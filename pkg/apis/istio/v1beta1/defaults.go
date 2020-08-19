@@ -108,6 +108,7 @@ var defaultInitResources = &apiv1.ResourceRequirements{
 	},
 }
 
+const ProxyStatusPort = 15020
 const PortStatusPortNumber = 15021
 const PortStatusPortName = "status-port"
 
