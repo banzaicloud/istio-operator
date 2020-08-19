@@ -43,7 +43,7 @@ func DetachPodsFromDeployment(c client.Client, deployment *appsv1.Deployment, lo
 
 	for _, pod := range pods.Items {
 		if len(pod.OwnerReferences) != 1 {
-			log.V(1).Info("evaluting pod for detaching", "action", "skip", "deploymentName", deployment.Name, "name", pod.Name, "reason", "notExactlyOneOwnerReference")
+			log.V(1).Info("evaluting pod for detaching", "action", "skip", "deploymentName", deployment.Name, "name", pod.Name, "reason", "notExactlyOneOwnerReferenceForPod")
 			continue
 		}
 		ownerRef := pod.OwnerReferences[0]
@@ -61,7 +61,7 @@ func DetachPodsFromDeployment(c client.Client, deployment *appsv1.Deployment, lo
 		}
 
 		if len(rs.OwnerReferences) != 1 {
-			log.V(1).Info("evaluting pod for detaching", "action", "skip", "deploymentName", deployment.Name, "name", pod.Name, "reason", "replicaSetHasMultipleOwners")
+			log.V(1).Info("evaluting pod for detaching", "action", "skip", "deploymentName", deployment.Name, "name", pod.Name, "reason", "notExactlyOneOwnerReferenceForReplicaSet")
 			continue
 		}
 
