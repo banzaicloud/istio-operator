@@ -77,12 +77,8 @@ func (r *Reconciler) Reconcile(log logr.Logger) error {
 		hpaDesiredState = k8sutil.DesiredStatePresent
 	}
 
-	var deploymentDesiredState k8sutil.DesiredState
-	deploymentDesiredState = k8sutil.DesiredStatePresent
 	// add specific desired state to support re-creation
-	if deploymentDesiredState == k8sutil.DesiredStatePresent {
-		deploymentDesiredState = k8sutil.DeploymentDesiredStateWithReCreateHandling(r.Client, r.scheme, log, r.labels())
-	}
+	deploymentDesiredState := k8sutil.DeploymentDesiredStateWithReCreateHandling(r.Client, r.scheme, log, r.labels())
 
 	for _, res := range []resources.ResourceWithDesiredState{
 		{Resource: r.serviceAccount, DesiredState: k8sutil.DesiredStatePresent},
