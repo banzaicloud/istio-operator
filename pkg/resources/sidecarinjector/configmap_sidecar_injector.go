@@ -99,7 +99,8 @@ func (r *Reconciler) getValues() string {
 			"multicluster": map[string]interface{}{
 				"clusterName": r.Config.Spec.ClusterName,
 			},
-			"meshID": r.Config.Spec.MeshID,
+			"mountMtlsCerts": util.PointerToBool(r.Config.Spec.MountMtlsCerts),
+			"meshID":         r.Config.Spec.MeshID,
 			"proxy": map[string]interface{}{
 				"image":                           r.Config.Spec.Proxy.Image,
 				"statusPort":                      v1beta1.PortStatusPortNumber,
@@ -346,6 +347,10 @@ containers:
 {{- if .Values.global.proxy.envoyAccessLogService.enabled }}
   - name: ISTIO_META_ALS_ENABLED
     value: "true"
+{{- end }}
+{{- range $key, $value := .ProxyConfig.ProxyMetadata }}
+  - name: {{ $key }}
+    value: "{{ $value }}"
 {{- end }}
 ` + r.injectedAddtionalEnvVars() + `
   imagePullPolicy: {{ .Values.global.imagePullPolicy }}

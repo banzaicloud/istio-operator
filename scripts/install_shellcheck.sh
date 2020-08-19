@@ -11,7 +11,7 @@ BIN_DIR=${SCRIPT_DIR}/../bin
 mkdir -p "${BIN_DIR}"
 
 # download the release
-curl -L -O "https://shellcheck.storage.googleapis.com/shellcheck-v${version}.${opsys}.${arch}.tar.xz"
+curl -L -O "https://github.com/koalaman/shellcheck/releases/download/v${version}/shellcheck-v${version}.${opsys}.${arch}.tar.xz"
 
 # extract the archive
 tar -Jxvf "shellcheck-v${version}.${opsys}.${arch}.tar.xz" shellcheck-v${version}/shellcheck
