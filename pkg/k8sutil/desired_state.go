@@ -41,11 +41,11 @@ type DesiredState interface {
 
 type StaticDesiredState string
 
-func (s StaticDesiredState) AfterRecreate(current, desired runtime.Object) error {
+func (s StaticDesiredState) AfterRecreate(_, _ runtime.Object) error {
 	return nil
 }
 
-func (s StaticDesiredState) BeforeRecreate(current, desired runtime.Object) error {
+func (s StaticDesiredState) BeforeRecreate(_, _ runtime.Object) error {
 	return nil
 }
 
