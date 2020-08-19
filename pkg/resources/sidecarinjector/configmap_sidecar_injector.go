@@ -103,7 +103,7 @@ func (r *Reconciler) getValues() string {
 			"meshID":         r.Config.Spec.MeshID,
 			"proxy": map[string]interface{}{
 				"image":                           r.Config.Spec.Proxy.Image,
-				"statusPort":                      v1beta1.PortStatusPortNumber,
+				"statusPort":                      v1beta1.ProxyStatusPort,
 				"tracer":                          r.Config.Spec.Tracing.Tracer,
 				"clusterDomain":                   r.Config.Spec.Proxy.ClusterDomain,
 				"logLevel":                        r.Config.Spec.Proxy.LogLevel,
