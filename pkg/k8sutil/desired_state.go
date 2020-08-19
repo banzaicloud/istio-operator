@@ -30,6 +30,10 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
+const (
+	detachedPodLabel = "istio.banzaicloud.io/detached-pod"
+)
+
 type DesiredState interface {
 	AfterRecreate(current, desired runtime.Object) error
 	BeforeRecreate(current, desired runtime.Object) error
@@ -73,7 +77,7 @@ func (s RecreateAwareDesiredState) BeforeRecreate(current, desired runtime.Objec
 
 func DeploymentDesiredStateWithReCreateHandling(c client.Client, scheme *runtime.Scheme, log logr.Logger, podLabels map[string]string) RecreateAwareDesiredState {
 	podLabels = util.MergeMultipleStringMaps(map[string]string{
-		"detached": "true",
+		detachedPodLabel: "true",
 	}, podLabels)
 
 	return NewRecreateAwareDesiredState(
