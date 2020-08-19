@@ -59,6 +59,7 @@ func (r *Reconciler) attributesKubernetes() *k8sutil.DynamicObject {
 				"source_uid":       `source.uid | ""`,
 				"source_ip":        `source.ip | ip("0.0.0.0")`,
 				"destination_uid":  `destination.uid | ""`,
+				"destination_ip":   `destination.ip | ip("0.0.0.0")`,
 				"destination_port": `destination.port | 0`,
 			},
 			"attributeBindings": map[string]string{
