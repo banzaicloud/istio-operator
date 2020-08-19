@@ -357,6 +357,10 @@ containers:
   - name: ISTIO_META_ALS_ENABLED
     value: "true"
 {{- end }}
+{{- range $key, $value := .ProxyConfig.ProxyMetadata }}
+  - name: {{ $key }}
+    value: "{{ $value }}"
+{{- end }}
 ` + r.injectedAddtionalEnvVars() + `
   imagePullPolicy: {{ .Values.global.imagePullPolicy }}
   {{ if ne (annotation .ObjectMeta ` + "`" + `status.sidecar.istio.io/port` + "`" + ` (valueOrDefault .Values.global.proxy.statusPort 0 )) ` + "`" + `0` + "`" + ` }}
