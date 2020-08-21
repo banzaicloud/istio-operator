@@ -37,6 +37,12 @@ const (
 type DesiredState interface {
 	AfterRecreate(current, desired runtime.Object) error
 	BeforeRecreate(current, desired runtime.Object) error
+	AfterCreate(desired runtime.Object) error
+	BeforeCreate(desired runtime.Object) error
+	AfterUpdate(current, desired runtime.Object, inSync bool) error
+	BeforeUpdate(current, desired runtime.Object) error
+	AfterDelete(current runtime.Object) error
+	BeforeDelete(current runtime.Object) error
 }
 
 type StaticDesiredState string
@@ -49,89 +55,121 @@ func (s StaticDesiredState) BeforeRecreate(_, _ runtime.Object) error {
 	return nil
 }
 
+func (s StaticDesiredState) AfterCreate(_ runtime.Object) error {
+	return nil
+}
+
+func (s StaticDesiredState) BeforeCreate(_ runtime.Object) error {
+	return nil
+}
+
+func (s StaticDesiredState) AfterUpdate(_, _ runtime.Object, _ bool) error {
+	return nil
+}
+
+func (s StaticDesiredState) BeforeUpdate(_, _ runtime.Object) error {
+	return nil
+}
+
+func (s StaticDesiredState) AfterDelete(_ runtime.Object) error {
+	return nil
+}
+
+func (s StaticDesiredState) BeforeDelete(_ runtime.Object) error {
+	return nil
+}
+
 const (
 	DesiredStatePresent StaticDesiredState = "present"
 	DesiredStateAbsent  StaticDesiredState = "absent"
 	DesiredStateExists  StaticDesiredState = "exists"
 )
 
-type RecreateAwareDesiredState struct {
-	afterCreateFunc  func(current, desired runtime.Object) error
-	beforeCreateFunc func(current, desired runtime.Object) error
+type RecreateAwareDeploymentDesiredState struct {
+	StaticDesiredState
+
+	client    client.Client
+	scheme    *runtime.Scheme
+	log       logr.Logger
+	podLabels map[string]string
 }
 
-func NewRecreateAwareDesiredState(afterCreateFunc, beforeCreateFunc func(current, desired runtime.Object) error) RecreateAwareDesiredState {
-	return RecreateAwareDesiredState{
-		afterCreateFunc:  afterCreateFunc,
-		beforeCreateFunc: beforeCreateFunc,
-	}
-}
-
-func (s RecreateAwareDesiredState) AfterRecreate(current, desired runtime.Object) error {
-	return s.afterCreateFunc(current, desired)
-}
-
-func (s RecreateAwareDesiredState) BeforeRecreate(current, desired runtime.Object) error {
-	return s.beforeCreateFunc(current, desired)
-}
-
-func DeploymentDesiredStateWithReCreateHandling(c client.Client, scheme *runtime.Scheme, log logr.Logger, podLabels map[string]string) RecreateAwareDesiredState {
+func NewRecreateAwareDeploymentDesiredState(c client.Client, scheme *runtime.Scheme, log logr.Logger, podLabels map[string]string) RecreateAwareDeploymentDesiredState {
 	podLabels = util.MergeMultipleStringMaps(map[string]string{
 		detachedPodLabel: "true",
 	}, podLabels)
 
-	return NewRecreateAwareDesiredState(
-		// after re-create
-		func(current, desired runtime.Object) error {
-			var deployment *appsv1.Deployment
-			var ok bool
-			if deployment, ok = desired.(*appsv1.Deployment); !ok {
-				return nil
-			}
+	return RecreateAwareDeploymentDesiredState{
+		client:    c,
+		scheme:    scheme,
+		log:       log,
+		podLabels: podLabels,
+	}
+}
 
-			rcc := wait.NewResourceConditionChecks(c, wait.Backoff{
-				Duration: time.Second * 5,
-				Factor:   1,
-				Jitter:   0,
-				Steps:    12,
-			}, log.WithName("wait"), scheme)
+func (r RecreateAwareDeploymentDesiredState) AfterRecreate(current, desired runtime.Object) error {
+	var deployment *appsv1.Deployment
+	var ok bool
+	if deployment, ok = desired.(*appsv1.Deployment); !ok {
+		return nil
+	}
 
-			err := rcc.WaitForResources("readiness", []runtime.Object{deployment}, wait.ExistsConditionCheck, wait.ReadyReplicasConditionCheck)
-			if err != nil {
-				return err
-			}
+	return r.waitForDeplomentAndRemoveDetached(deployment)
+}
 
-			pods := &corev1.PodList{}
-			err = c.List(context.Background(), &client.ListOptions{
-				Namespace:     deployment.GetNamespace(),
-				LabelSelector: labels.Set(podLabels).AsSelector(),
-			}, pods)
-			if err != nil {
-				return err
-			}
-			for _, pod := range pods.Items {
-				log.Info("removing detached pods")
-				err = c.Delete(context.Background(), &pod)
-				if err != nil {
-					return err
-				}
-			}
+func (r RecreateAwareDeploymentDesiredState) AfterUpdate(current, desired runtime.Object, inSync bool) error {
+	var deployment *appsv1.Deployment
+	var ok bool
+	if deployment, ok = desired.(*appsv1.Deployment); !ok {
+		return nil
+	}
 
-			return nil
-		},
-		// before re-create
-		func(current, desired runtime.Object) error {
-			var deployment *appsv1.Deployment
-			var ok bool
-			if deployment, ok = current.(*appsv1.Deployment); !ok {
-				return nil
-			}
+	return r.waitForDeplomentAndRemoveDetached(deployment)
+}
 
-			err := DetachPodsFromDeployment(c, deployment, log, podLabels)
-			if err != nil {
-				return err
-			}
+func (r RecreateAwareDeploymentDesiredState) BeforeRecreate(current, desired runtime.Object) error {
+	var deployment *appsv1.Deployment
+	var ok bool
+	if deployment, ok = current.(*appsv1.Deployment); !ok {
+		return nil
+	}
 
-			return nil
-		})
+	err := DetachPodsFromDeployment(r.client, deployment, r.log, r.podLabels)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (r RecreateAwareDeploymentDesiredState) waitForDeplomentAndRemoveDetached(deployment *appsv1.Deployment) error {
+	rcc := wait.NewResourceConditionChecks(r.client, wait.Backoff{
+		Duration: time.Second * 5,
+		Factor:   1,
+		Jitter:   0,
+		Steps:    12,
+	}, r.log.WithName("wait"), r.scheme)
+
+	err := rcc.WaitForResources("readiness", []runtime.Object{deployment}, wait.ExistsConditionCheck, wait.ReadyReplicasConditionCheck)
+	if err != nil {
+		return err
+	}
+
+	pods := &corev1.PodList{}
+	err = r.client.List(context.Background(), &client.ListOptions{
+		Namespace:     deployment.GetNamespace(),
+		LabelSelector: labels.Set(r.podLabels).AsSelector(),
+	}, pods)
+	if err != nil {
+		return err
+	}
+	for _, pod := range pods.Items {
+		r.log.Info("removing detached pods")
+		err = r.client.Delete(context.Background(), &pod)
+		if err != nil {
+			return err
+		}
+	}
+
+	return nil
 }
