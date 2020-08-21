@@ -17,7 +17,6 @@ require (
 	github.com/google/btree v1.0.0 // indirect
 	github.com/goph/emperror v0.17.2
 	github.com/hashicorp/golang-lru v0.5.0 // indirect
-	github.com/markbates/inflect v1.0.4 // indirect
 	github.com/mattbaird/jsonpatch v0.0.0-20171005235357-81af80346b1a // indirect
 	github.com/mholt/caddy v1.0.0
 	github.com/onsi/gomega v1.5.0
@@ -27,7 +26,6 @@ require (
 	github.com/prometheus/client_golang v0.9.3 // indirect
 	github.com/shurcooL/httpfs v0.0.0-20190707220628-8d4bc4ba7749 // indirect
 	github.com/shurcooL/vfsgen v0.0.0-20200627165143-92b8a710ab6c
-	github.com/spf13/cobra v1.0.0 // indirect
 	github.com/spf13/pflag v1.0.5 // indirect
 	github.com/stretchr/testify v1.6.0
 	go.uber.org/atomic v1.4.0 // indirect
@@ -37,18 +35,14 @@ require (
 	golang.org/x/net v0.0.0-20191004110552-13f9640d40b9
 	golang.org/x/time v0.0.0-20190308202827-9d24e82272b4
 	golang.org/x/tools v0.0.0-20191119224855-298f0cb1881e // indirect
-	gopkg.in/check.v1 v1.0.0-20180628173108-788fd7840127 // indirect
 	gopkg.in/yaml.v2 v2.2.8 // indirect
 	gopkg.in/yaml.v3 v3.0.0-20200603094226-e3079894b1e8 // indirect
 	k8s.io/api v0.17.4
 	k8s.io/apiextensions-apiserver v0.17.4
 	k8s.io/apimachinery v0.17.4
 	k8s.io/client-go v0.17.4
-	k8s.io/code-generator v0.0.0-20180823001027-3dcf91f64f63 // indirect
-	k8s.io/klog v1.0.0 // indirect
 	k8s.io/kube-openapi v0.0.0-20200410145947-61e04a5be9a6 // indirect
 	sigs.k8s.io/controller-runtime v0.6.0
-	sigs.k8s.io/controller-tools v0.1.9 // indirect
 	sigs.k8s.io/testing_frameworks v0.1.1 // indirect
 )
 
