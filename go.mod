@@ -6,7 +6,7 @@ require (
 	cloud.google.com/go v0.35.1 // indirect
 	github.com/Masterminds/semver/v3 v3.1.0
 	github.com/banzaicloud/istio-client-go v0.0.0-20200421090622-98a770729d7b
-	github.com/banzaicloud/k8s-objectmatcher v1.2.0
+	github.com/banzaicloud/k8s-objectmatcher v1.4.0
 	github.com/coreos/go-semver v0.3.0
 	github.com/ghodss/yaml v1.0.0
 	github.com/go-logr/logr v0.1.0
@@ -17,7 +17,6 @@ require (
 	github.com/google/btree v1.0.0 // indirect
 	github.com/goph/emperror v0.17.2
 	github.com/hashicorp/golang-lru v0.5.0 // indirect
-	github.com/json-iterator/go v1.1.8 // indirect
 	github.com/mattbaird/jsonpatch v0.0.0-20171005235357-81af80346b1a // indirect
 	github.com/mholt/caddy v1.0.0
 	github.com/onsi/gomega v1.5.0
@@ -36,13 +35,12 @@ require (
 	golang.org/x/net v0.0.0-20191004110552-13f9640d40b9
 	golang.org/x/time v0.0.0-20190308202827-9d24e82272b4
 	golang.org/x/tools v0.0.0-20191119224855-298f0cb1881e // indirect
-	gopkg.in/check.v1 v1.0.0-20180628173108-788fd7840127 // indirect
 	gopkg.in/yaml.v2 v2.2.8 // indirect
 	gopkg.in/yaml.v3 v3.0.0-20200603094226-e3079894b1e8 // indirect
-	k8s.io/api v0.15.7
-	k8s.io/apiextensions-apiserver v0.15.7
-	k8s.io/apimachinery v0.15.7
-	k8s.io/client-go v0.15.7
+	k8s.io/api v0.17.4
+	k8s.io/apiextensions-apiserver v0.17.4
+	k8s.io/apimachinery v0.17.4
+	k8s.io/client-go v0.17.4
 	k8s.io/kube-openapi v0.0.0-20200410145947-61e04a5be9a6 // indirect
 	sigs.k8s.io/controller-runtime v0.6.0
 	sigs.k8s.io/testing_frameworks v0.1.1 // indirect
