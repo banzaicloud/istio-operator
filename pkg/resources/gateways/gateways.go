@@ -78,7 +78,7 @@ func (r *Reconciler) Reconcile(log logr.Logger) error {
 	}
 
 	// add specific desired state to support re-creation
-	deploymentDesiredState := k8sutil.DeploymentDesiredStateWithReCreateHandling(r.Client, r.scheme, log, r.labels())
+	deploymentDesiredState := k8sutil.NewRecreateAwareDeploymentDesiredState(r.Client, r.scheme, log, r.labels())
 
 	for _, res := range []resources.ResourceWithDesiredState{
 		{Resource: r.serviceAccount, DesiredState: k8sutil.DesiredStatePresent},
