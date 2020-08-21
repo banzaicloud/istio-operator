@@ -237,7 +237,14 @@ func (r *ReconcileMeshGateway) getRelatedIstioCR(instance *istiov1beta1.MeshGate
 
 	sort.Sort(istiov1beta1.SortableIstioItems(configs.Items))
 
-	return &configs.Items[0], nil
+	config := configs.Items[0]
+	gvk := config.GroupVersionKind()
+	gvk.Version = istiov1beta1.SchemeGroupVersion.Version
+	gvk.Group = istiov1beta1.SchemeGroupVersion.Group
+	gvk.Kind = "Istio"
+	config.SetGroupVersionKind(gvk)
+
+	return &config, nil
 }
 
 func updateStatus(c client.Client, instance *istiov1beta1.MeshGateway, status istiov1beta1.ConfigState, errorMessage string, logger logr.Logger) error {

@@ -194,8 +194,6 @@ func (r *ReconcileIstio) Reconcile(request reconcile.Request) (reconcile.Result,
 		return reconcile.Result{}, err
 	}
 
-	logger.Info("Reconciling Istio")
-
 	if !config.Spec.Version.IsSupported() {
 		if config.Status.Status == istiov1beta1.Created || config.Status.Status == istiov1beta1.Unmanaged {
 			err = errors.New("intended Istio version is unsupported by this version of the operator")
@@ -205,6 +203,8 @@ func (r *ReconcileIstio) Reconcile(request reconcile.Request) (reconcile.Result,
 			Requeue: false,
 		}, nil
 	}
+
+	logger.Info("Reconciling Istio")
 
 	// Temporary solution to make sure legacy components are not enabled
 	// TODO: delete this when legacy components are removed

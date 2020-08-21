@@ -71,7 +71,7 @@ func newReconciler(mgr manager.Manager, cm *remoteclusters.Manager) reconcile.Re
 // add adds a new Controller to mgr with r as the reconcile.Reconciler
 func add(mgr manager.Manager, r reconcile.Reconciler) error {
 	// Create a new controller
-	c, err := controller.New("remoteconfig-controller", mgr, controller.Options{Reconciler: r})
+	c, err := controller.New("remoteistio-controller", mgr, controller.Options{Reconciler: r})
 	if err != nil {
 		return err
 	}
@@ -214,8 +214,10 @@ func (r *ReconcileRemoteConfig) Reconcile(request reconcile.Request) (reconcile.
 	}
 
 	if !istio.Spec.Version.IsSupported() {
-		err = errors.New("intended Istio version is unsupported by this version of the operator")
-		logger.Error(err, "", "version", istio.Spec.Version)
+		if istio.Status.Status == istiov1beta1.Created || istio.Status.Status == istiov1beta1.Unmanaged {
+			err = errors.New("intended Istio version is unsupported by this version of the operator")
+			logger.Error(err, "", "version", istio.Spec.Version)
+		}
 		return reconcile.Result{
 			Requeue: false,
 		}, nil
