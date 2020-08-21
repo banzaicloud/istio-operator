@@ -52,21 +52,34 @@ func Reconcile(log logr.Logger, client runtimeClient.Client, desired runtime.Obj
 	}
 	if apierrors.IsNotFound(err) {
 		if desiredState != DesiredStateAbsent {
+			if err := desiredState.BeforeCreate(desired); err != nil {
+				return emperror.WrapWith(err, "could not execute BeforeCreate func")
+			}
 			if err := patch.DefaultAnnotator.SetLastAppliedAnnotation(desired); err != nil {
 				log.Error(err, "Failed to set last applied annotation", "desired", desired)
 			}
 			if err := client.Create(context.TODO(), desired); err != nil {
 				return emperror.WrapWith(err, "creating resource failed", "kind", desiredType, "name", key.Name)
 			}
+			if err := desiredState.AfterCreate(desired); err != nil {
+				return emperror.WrapWith(err, "could not execute AfterCreate func")
+			}
 			log.Info("resource created")
 		}
 	} else {
 		if desiredState != DesiredStateAbsent && desiredState != DesiredStateExists {
+			if err := desiredState.BeforeUpdate(current, desiredCopy); err != nil {
+				return emperror.WrapWith(err, "could not execute BeforeUpdate func")
+			}
+
 			patchResult, err := patch.DefaultPatchMaker.Calculate(current, desired, patch.IgnoreStatusFields())
 			if err != nil {
 				log.Error(err, "could not match objects", "kind", desiredType, "name", key.Name)
 			} else if patchResult.IsEmpty() {
 				log.V(1).Info("resource is in sync")
+				if err := desiredState.AfterUpdate(current, desiredCopy, true); err != nil {
+					return emperror.WrapWith(err, "could not execute AfterUpdate func")
+				}
 				return nil
 			} else {
 				log.V(1).Info("resource diffs",
@@ -113,10 +126,19 @@ func Reconcile(log logr.Logger, client runtimeClient.Client, desired runtime.Obj
 
 				return emperror.WrapWith(err, "updating resource failed", "kind", desiredType, "name", key.Name)
 			}
+			if err := desiredState.AfterUpdate(current, desiredCopy, false); err != nil {
+				return emperror.WrapWith(err, "could not execute AfterUpdate func")
+			}
 			log.Info("resource updated")
 		} else if desiredState == DesiredStateAbsent {
+			if err := desiredState.BeforeDelete(current); err != nil {
+				return emperror.WrapWith(err, "could not execute BeforeDelete func")
+			}
 			if err := client.Delete(context.TODO(), current); err != nil {
 				return emperror.WrapWith(err, "deleting resource failed", "kind", desiredType, "name", key.Name)
+			}
+			if err := desiredState.AfterDelete(current); err != nil {
+				return emperror.WrapWith(err, "could not execute AfterDelete func")
 			}
 			log.Info("resource deleted")
 		}

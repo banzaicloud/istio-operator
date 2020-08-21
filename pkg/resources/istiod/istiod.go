@@ -92,7 +92,7 @@ func (r *Reconciler) Reconcile(log logr.Logger) error {
 	deploymentDesiredState := istiodDesiredState
 	// add specific desired state to support re-creation
 	if deploymentDesiredState == k8sutil.DesiredStatePresent {
-		deploymentDesiredState = k8sutil.DeploymentDesiredStateWithReCreateHandling(r.Client, r.scheme, log, util.MergeStringMaps(pilotLabelSelector, r.Config.RevisionLabels()))
+		deploymentDesiredState = k8sutil.NewRecreateAwareDeploymentDesiredState(r.Client, r.scheme, log, util.MergeStringMaps(pilotLabelSelector, r.Config.RevisionLabels()))
 	}
 
 	for _, res := range []resources.ResourceWithDesiredState{
