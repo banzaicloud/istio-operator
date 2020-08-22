@@ -5,7 +5,7 @@ metadata:
     controller-tools.k8s.io: "1.0"
   name: istio-sample
 spec:
-  version: "1.7.0-rc.2"
+  version: "1.7.0"
   meshPolicy:
     mtlsMode: PERMISSIVE
   autoMtls: true
@@ -27,7 +27,7 @@ spec:
     enableStatus: true
   pilot:
     enabled: true
-    image: "docker.io/istio/pilot:1.7.0-rc.2"
+    image: "docker.io/istio/pilot:1.7.0"
     replicaCount: 1
     minReplicas: 1
     maxReplicas: 5
@@ -99,18 +99,18 @@ spec:
       enabled: false
   policy:
     enabled: false
-    image: "docker.io/istio/mixer:1.7.0-rc.2"
+    image: "docker.io/istio/mixer:1.7.0"
     replicaCount: 1
     minReplicas: 1
     maxReplicas: 5
   telemetry:
     enabled: false
-    image: "docker.io/istio/mixer:1.7.0-rc.2"
+    image: "docker.io/istio/mixer:1.7.0"
     replicaCount: 1
     minReplicas: 1
     maxReplicas: 5
   proxy:
-    image: "docker.io/istio/proxyv2:1.7.0-rc.2"
+    image: "docker.io/istio/proxyv2:1.7.0"
     accessLogFile: "/dev/stdout"
     accessLogFormat: ""
     accessLogEncoding: "TEXT"
@@ -124,7 +124,7 @@ spec:
         cpu: 2000m
         memory: 1024Mi
   proxyInit:
-    image: "docker.io/istio/proxyv2:1.7.0-rc.2"
+    image: "docker.io/istio/proxyv2:1.7.0"
   defaultPodDisruptionBudget:
     enabled: true
   outboundTrafficPolicy:
