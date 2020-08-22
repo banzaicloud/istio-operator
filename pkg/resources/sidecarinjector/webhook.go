@@ -132,6 +132,7 @@ func (r *Reconciler) webhook() runtime.Object {
 
 	if !util.PointerToBool(r.Config.Spec.SidecarInjector.EnableNamespacesByDefault) && util.PointerToBool(r.Config.Spec.Istiod.Enabled) && !r.Config.IsRevisionUsed() {
 		wh := webhook.DeepCopy()
+		wh.Name = "secondary." + wh.Name
 		wh.NamespaceSelector.MatchExpressions = revisionLabelMatchExpression
 		webhookConfiguration.Webhooks = append(webhookConfiguration.Webhooks, *wh)
 	}
