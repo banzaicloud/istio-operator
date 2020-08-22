@@ -192,7 +192,7 @@ func (r *ReconcileRemoteConfig) Reconcile(request reconcile.Request) (reconcile.
 			err = r.labelSecret(client.ObjectKey{
 				Name:      remoteConfig.GetName(),
 				Namespace: remoteConfig.GetNamespace(),
-			}, istioSecretLabel, "")
+			}, map[string]string{istioSecretLabel: ""})
 			if err != nil {
 				return reconcile.Result{}, emperror.Wrap(err, "could not remove remote config to remote istio")
 			}
@@ -302,7 +302,7 @@ func (r *ReconcileRemoteConfig) reconcile(remoteConfig *istiov1beta1.RemoteIstio
 	err = r.labelSecret(client.ObjectKey{
 		Name:      remoteConfig.GetName(),
 		Namespace: remoteConfig.GetNamespace(),
-	}, istioSecretLabel, "true")
+	}, util.MergeStringMaps(map[string]string{istioSecretLabel: "true"}, istio.RevisionLabels()))
 	if err != nil {
 		return reconcile.Result{}, emperror.Wrap(err, "could not reconcile remote istio")
 	}
@@ -552,23 +552,14 @@ func (r *ReconcileRemoteConfig) getK8SConfigForCluster(namespace string, name st
 	return nil, errors.New("could not found k8s config")
 }
 
-func (r *ReconcileRemoteConfig) labelSecret(secretName client.ObjectKey, label, value string) error {
+func (r *ReconcileRemoteConfig) labelSecret(secretName client.ObjectKey, labels map[string]string) error {
 	var secret corev1.Secret
 	err := r.Get(context.TODO(), secretName, &secret)
 	if err != nil {
 		return err
 	}
 
-	labels := secret.GetLabels()
-	if labels == nil {
-		labels = make(map[string]string)
-	}
-	if value != "" {
-		labels[label] = value
-	} else {
-		delete(labels, label)
-	}
-	secret.SetLabels(labels)
+	secret.SetLabels(util.MergeStringMaps(secret.GetLabels(), labels))
 
 	err = r.Update(context.TODO(), &secret)
 	if err != nil {
