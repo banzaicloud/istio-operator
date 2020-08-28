@@ -30,7 +30,7 @@ import (
 )
 
 func (r *Reconciler) service() runtime.Object {
-	return &apiv1.Service{
+	service := &apiv1.Service{
 		ObjectMeta: templates.ObjectMetaWithAnnotations(r.gatewayName(), util.MergeStringMaps(r.gw.Spec.ServiceLabels, r.labels()), r.gw.Spec.ServiceAnnotations, r.gw),
 		Spec: apiv1.ServiceSpec{
 			LoadBalancerIP: r.gw.Spec.LoadBalancerIP,
@@ -39,6 +39,13 @@ func (r *Reconciler) service() runtime.Object {
 			Selector:       r.labelSelector(),
 		},
 	}
+
+	externalTrafficPolicy := r.gw.Spec.ServiceExternalTrafficPolicy
+	if externalTrafficPolicy != "" {
+		service.Spec.ExternalTrafficPolicy = externalTrafficPolicy
+	}
+
+	return service
 }
 
 func (r *Reconciler) servicePorts(name string) []apiv1.ServicePort {

@@ -84,12 +84,12 @@ func (r *Reconciler) Reconcile(log logr.Logger) error {
 		{Resource: r.serviceAccount, DesiredState: k8sutil.DesiredStatePresent},
 		{Resource: r.clusterRole, DesiredState: k8sutil.DesiredStatePresent},
 		{Resource: r.clusterRoleBinding, DesiredState: k8sutil.DesiredStatePresent},
+		{Resource: r.role, DesiredState: k8sutil.DesiredStatePresent},
+		{Resource: r.roleBinding, DesiredState: k8sutil.DesiredStatePresent},
 		{Resource: r.deployment, DesiredState: deploymentDesiredState},
 		{Resource: r.service, DesiredState: k8sutil.DesiredStatePresent},
 		{Resource: r.horizontalPodAutoscaler, DesiredState: hpaDesiredState},
 		{Resource: r.podDisruptionBudget, DesiredState: pdbDesiredState},
-		{Resource: r.role, DesiredState: k8sutil.DesiredStatePresent},
-		{Resource: r.roleBinding, DesiredState: k8sutil.DesiredStatePresent},
 	} {
 		o := res.Resource()
 		err := k8sutil.Reconcile(log, r.Client, o, res.DesiredState)
