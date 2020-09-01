@@ -49,12 +49,14 @@ type MeshGatewayConfiguration struct {
 	BaseK8sResourceConfigurationWithHPAWithoutImage `json:",inline"`
 	Labels                                          map[string]string `json:"labels,omitempty"`
 	// +kubebuilder:validation:Enum=ClusterIP,NodePort,LoadBalancer
-	ServiceType          corev1.ServiceType      `json:"serviceType,omitempty"`
-	LoadBalancerIP       string                  `json:"loadBalancerIP,omitempty"`
-	ServiceAnnotations   map[string]string       `json:"serviceAnnotations,omitempty"`
-	ServiceLabels        map[string]string       `json:"serviceLabels,omitempty"`
-	SDS                  GatewaySDSConfiguration `json:"sds,omitempty"`
-	RequestedNetworkView string                  `json:"requestedNetworkView,omitempty"`
+	ServiceType        corev1.ServiceType `json:"serviceType,omitempty"`
+	LoadBalancerIP     string             `json:"loadBalancerIP,omitempty"`
+	ServiceAnnotations map[string]string  `json:"serviceAnnotations,omitempty"`
+	ServiceLabels      map[string]string  `json:"serviceLabels,omitempty"`
+	// +kubebuilder:validation:Enum=Local,Cluster
+	ServiceExternalTrafficPolicy corev1.ServiceExternalTrafficPolicyType `json:"serviceExternalTrafficPolicy,omitempty"`
+	SDS                          GatewaySDSConfiguration                 `json:"sds,omitempty"`
+	RequestedNetworkView         string                                  `json:"requestedNetworkView,omitempty"`
 	// If present will be appended to the environment variables of the container
 	AdditionalEnvVars []corev1.EnvVar `json:"additionalEnvVars,omitempty"`
 	// Whether to run the gateway in a privileged container

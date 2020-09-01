@@ -48,6 +48,7 @@ spec:
       loadBalancerIP: ""
       serviceAnnotations: {}
       serviceLabels: {}
+      serviceExternalTrafficPolicy: "Cluster"
       runAsRoot: false
       ports:
         - port: 15021

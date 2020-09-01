@@ -322,6 +322,11 @@ spec:
                       type: object
                     serviceAnnotations:
                       type: object
+                    serviceExternalTrafficPolicy:
+                      enum:
+                      - Local
+                      - Cluster
+                      type: string
                     serviceLabels:
                       type: object
                     serviceType:
@@ -428,6 +433,11 @@ spec:
                       type: object
                     serviceAnnotations:
                       type: object
+                    serviceExternalTrafficPolicy:
+                      enum:
+                      - Local
+                      - Cluster
+                      type: string
                     serviceLabels:
                       type: object
                     serviceType:
