@@ -1,15 +1,13 @@
-{{ if eq .Values.istioVersion "1.7" }}
 apiVersion: apiextensions.k8s.io/v1beta1
 kind: CustomResourceDefinition
 metadata:
   name: istios.istio.banzaicloud.io
   labels:
     controller-tools.k8s.io: "1.0"
-    app.kubernetes.io/name: {{ include "istio-operator.name" . }}
-    helm.sh/chart: {{ include "istio-operator.chart" . }}
-    app.kubernetes.io/instance: {{ .Release.Name }}
-    app.kubernetes.io/managed-by: {{ .Release.Service }}
-    app.kubernetes.io/version: {{ .Chart.AppVersion }}
+    app.kubernetes.io/name: "istio-operator"
+    helm.sh/chart: "istio-operator-0.0.61"
+    app.kubernetes.io/managed-by: "Helm"
+    app.kubernetes.io/version: "0.7.1"
     app.kubernetes.io/component: operator
 spec:
   additionalPrinterColumns:
@@ -1436,4 +1434,3 @@ status:
     plural: ""
   conditions: []
   storedVersions: []
-{{- end }}
