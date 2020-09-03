@@ -1,16 +1,10 @@
-{{ if eq .Values.istioVersion "1.3" }}
 apiVersion: apiextensions.k8s.io/v1beta1
 kind: CustomResourceDefinition
 metadata:
   name: istios.istio.banzaicloud.io
   labels:
     controller-tools.k8s.io: "1.0"
-    app.kubernetes.io/name: {{ include "istio-operator.name" . }}
-    helm.sh/chart: {{ include "istio-operator.chart" . }}
-    app.kubernetes.io/instance: {{ .Release.Name }}
-    app.kubernetes.io/managed-by: {{ .Release.Service }}
-    app.kubernetes.io/version: {{ .Chart.AppVersion }}
-    app.kubernetes.io/component: operator
+    app.kubernetes.io/name: "istio-operator"
 spec:
   additionalPrinterColumns:
   - JSONPath: .status.Status
@@ -22,8 +16,8 @@ spec:
     name: Error
     type: string
   - JSONPath: .status.GatewayAddress
-    description: Ingress gateways of the resource
-    name: Gateways
+    description: Ingress gateway addresses of the resource
+    name: Ingress IPs
     type: string
   - JSONPath: .metadata.creationTimestamp
     name: Age
@@ -58,9 +52,50 @@ spec:
               items:
                 type: string
               type: array
+            autoMtls:
+              description: If set to true, and a given service does not have a corresponding
+                DestinationRule configured, or its DestinationRule does not have TLSSettings
+                specified, Istio configures client side TLS configuration automatically,
+                based on the server side mTLS authentication policy and the availability
+                of sidecars.
+              type: boolean
+            caAddress:
+              description: The customized CA address to retrieve certificates for
+                the pods in the cluster. CSR clients such as the Istio Agent and ingress
+                gateways can use this to specify the CA endpoint.
+              type: string
+            certificates:
+              description: 'Configures DNS certificates provisioned through Chiron
+                linked into Pilot. The DNS names in this file are all hard-coded;
+                please ensure the namespaces in dnsNames are consistent with those
+                of your services. Example: certificates: certificates:   - secretName:
+                dns.istiod-service-account     dnsNames: [istiod.istio-system.svc,
+                istiod.istio-system] +k8s:deepcopy-gen:interfaces=Certificates'
+              items:
+                properties:
+                  dnsNames:
+                    items:
+                      type: string
+                    type: array
+                  secretName:
+                    type: string
+                type: object
+              type: array
             citadel:
               description: Citadel configuration options
               properties:
+                additionalContainerArgs:
+                  description: If present will be appended at the end of the initial/preconfigured
+                    container arguments
+                  items:
+                    type: string
+                  type: array
+                additionalEnvVars:
+                  description: If present will be appended to the environment variables
+                    of the container
+                  items:
+                    type: object
+                  type: array
                 affinity:
                   type: object
                 caSecretName:
@@ -85,6 +120,10 @@ spec:
                   type: boolean
                 image:
                   type: string
+                listenedNamespaces:
+                  description: Select the namespaces for the Citadel to listen to,
+                    separated by comma. If set to empty, Citadel listens to all namespaces.
+                  type: string
                 maxWorkloadCertTTL:
                   description: Citadel uses a flag max-workload-cert-ttl to control
                     the maximum lifetime for Istio certificates issued to workloads.
@@ -94,7 +133,14 @@ spec:
                   type: string
                 nodeSelector:
                   type: object
+                podAnnotations:
+                  type: object
                 resources:
+                  type: object
+                sdsEnabled:
+                  description: Whether SDS is enabled.
+                  type: boolean
+                securityContext:
                   type: object
                 tolerations:
                   items:
@@ -112,10 +158,13 @@ spec:
                 will run in. This is required for sidecar injection to properly label
                 proxies
               type: string
-            controlPlaneSecurityEnabled:
-              description: ControlPlaneSecurityEnabled control plane services are
-                communicating through mTLS
-              type: boolean
+            controlPlaneAuthPolicy:
+              description: ControlPlaneAuthPolicy defines how the proxy is authenticated
+                when it connects to the control plane
+              enum:
+              - MUTUAL_TLS
+              - NONE
+              type: string
             defaultConfigVisibility:
               description: Set the default set of namespaces to which services, service
                 entries, virtual services, destination rules should be exported to
@@ -138,9 +187,25 @@ spec:
             galley:
               description: Galley configuration options
               properties:
+                additionalContainerArgs:
+                  description: If present will be appended at the end of the initial/preconfigured
+                    container arguments
+                  items:
+                    type: string
+                  type: array
+                additionalEnvVars:
+                  description: If present will be appended to the environment variables
+                    of the container
+                  items:
+                    type: object
+                  type: array
                 affinity:
                   type: object
                 configValidation:
+                  type: boolean
+                enableAnalysis:
+                  type: boolean
+                enableServiceDiscovery:
                   type: boolean
                 enabled:
                   type: boolean
@@ -148,10 +213,15 @@ spec:
                   type: string
                 nodeSelector:
                   type: object
+                podAnnotations:
+                  type: object
                 replicaCount:
                   format: int32
+                  minimum: 0
                   type: integer
                 resources:
+                  type: object
+                securityContext:
                   type: object
                 tolerations:
                   items:
@@ -163,33 +233,82 @@ spec:
               properties:
                 egress:
                   properties:
+                    additionalEnvVars:
+                      description: If present will be appended to the environment
+                        variables of the container
+                      items:
+                        type: object
+                      type: array
                     affinity:
                       type: object
-                    applicationPorts:
-                      type: string
+                    createOnly:
+                      description: Whether to fully reconcile the MGW resource or
+                        just take care that it exists
+                      type: boolean
                     enabled:
                       type: boolean
+                    labels:
+                      type: object
                     loadBalancerIP:
                       type: string
                     maxReplicas:
                       format: int32
+                      minimum: 0
                       type: integer
                     minReplicas:
                       format: int32
+                      minimum: 0
                       type: integer
                     nodeSelector:
                       type: object
+                    podAnnotations:
+                      type: object
                     ports:
                       items:
+                        properties:
+                          name:
+                            description: The name of this port within the service.
+                              This must be a DNS_LABEL. All ports within a ServiceSpec
+                              must have unique names. This maps to the 'Name' field
+                              in EndpointPort objects. Optional if only one ServicePort
+                              is defined on this service.
+                            type: string
+                          nodePort:
+                            description: 'The port on each node on which this service
+                              is exposed when type=NodePort or LoadBalancer. Usually
+                              assigned by the system. If specified, it will be allocated
+                              to the service if unused or else creation of the service
+                              will fail. Default is to auto-allocate a port if the
+                              ServiceType of this Service requires one. More info:
+                              https://kubernetes.io/docs/concepts/services-networking/service/#type-nodeport'
+                            format: int32
+                            type: integer
+                          port:
+                            description: The port that will be exposed by this service.
+                            format: int32
+                            type: integer
+                          protocol:
+                            description: The IP protocol for this port. Supports "TCP",
+                              "UDP", and "SCTP". Default is TCP.
+                            type: string
+                          targetPort:
+                            format: int32
+                            type: integer
+                        required:
+                        - port
                         type: object
                       type: array
                     replicaCount:
                       format: int32
+                      minimum: 0
                       type: integer
                     requestedNetworkView:
                       type: string
                     resources:
                       type: object
+                    runAsRoot:
+                      description: Whether to run the gateway in a privileged container
+                      type: boolean
                     sds:
                       properties:
                         enabled:
@@ -199,8 +318,15 @@ spec:
                         resources:
                           type: object
                       type: object
+                    securityContext:
+                      type: object
                     serviceAnnotations:
                       type: object
+                    serviceExternalTrafficPolicy:
+                      enum:
+                      - Local
+                      - Cluster
+                      type: string
                     serviceLabels:
                       type: object
                     serviceType:
@@ -218,33 +344,82 @@ spec:
                   type: boolean
                 ingress:
                   properties:
+                    additionalEnvVars:
+                      description: If present will be appended to the environment
+                        variables of the container
+                      items:
+                        type: object
+                      type: array
                     affinity:
                       type: object
-                    applicationPorts:
-                      type: string
+                    createOnly:
+                      description: Whether to fully reconcile the MGW resource or
+                        just take care that it exists
+                      type: boolean
                     enabled:
                       type: boolean
+                    labels:
+                      type: object
                     loadBalancerIP:
                       type: string
                     maxReplicas:
                       format: int32
+                      minimum: 0
                       type: integer
                     minReplicas:
                       format: int32
+                      minimum: 0
                       type: integer
                     nodeSelector:
                       type: object
+                    podAnnotations:
+                      type: object
                     ports:
                       items:
+                        properties:
+                          name:
+                            description: The name of this port within the service.
+                              This must be a DNS_LABEL. All ports within a ServiceSpec
+                              must have unique names. This maps to the 'Name' field
+                              in EndpointPort objects. Optional if only one ServicePort
+                              is defined on this service.
+                            type: string
+                          nodePort:
+                            description: 'The port on each node on which this service
+                              is exposed when type=NodePort or LoadBalancer. Usually
+                              assigned by the system. If specified, it will be allocated
+                              to the service if unused or else creation of the service
+                              will fail. Default is to auto-allocate a port if the
+                              ServiceType of this Service requires one. More info:
+                              https://kubernetes.io/docs/concepts/services-networking/service/#type-nodeport'
+                            format: int32
+                            type: integer
+                          port:
+                            description: The port that will be exposed by this service.
+                            format: int32
+                            type: integer
+                          protocol:
+                            description: The IP protocol for this port. Supports "TCP",
+                              "UDP", and "SCTP". Default is TCP.
+                            type: string
+                          targetPort:
+                            format: int32
+                            type: integer
+                        required:
+                        - port
                         type: object
                       type: array
                     replicaCount:
                       format: int32
+                      minimum: 0
                       type: integer
                     requestedNetworkView:
                       type: string
                     resources:
                       type: object
+                    runAsRoot:
+                      description: Whether to run the gateway in a privileged container
+                      type: boolean
                     sds:
                       properties:
                         enabled:
@@ -254,8 +429,15 @@ spec:
                         resources:
                           type: object
                       type: object
+                    securityContext:
+                      type: object
                     serviceAnnotations:
                       type: object
+                    serviceExternalTrafficPolicy:
+                      enum:
+                      - Local
+                      - Cluster
+                      type: string
                     serviceLabels:
                       type: object
                     serviceType:
@@ -269,6 +451,23 @@ spec:
                         type: object
                       type: array
                   type: object
+              type: object
+            global:
+              description: Specifies whether the control plane is a global one or
+                revisioned. There must be only one global control plane.
+              type: boolean
+            httpProxyEnvs:
+              description: Upstream HTTP proxy properties to be injected as environment
+                variables to the pod containers
+              properties:
+                httpProxy:
+                  type: string
+                httpsProxy:
+                  type: string
+                noProxy:
+                  type: string
+              required:
+              - httpProxy
               type: object
             imagePullPolicy:
               description: ImagePullPolicy describes a policy for if/when to pull
@@ -291,20 +490,58 @@ spec:
                   type: boolean
                 image:
                   type: string
+                maxReplicas:
+                  format: int32
+                  minimum: 0
+                  type: integer
+                minReplicas:
+                  format: int32
+                  minimum: 0
+                  type: integer
                 nodeSelector:
                   type: object
                 pluginImage:
                   type: string
+                podAnnotations:
+                  type: object
                 replicaCount:
                   format: int32
+                  minimum: 0
                   type: integer
                 resources:
+                  type: object
+                securityContext:
                   type: object
                 tolerations:
                   items:
                     type: object
                   type: array
               type: object
+            istiod:
+              description: Istiod configuration
+              properties:
+                enableAnalysis:
+                  description: If enabled, pilot will run Istio analyzers and write
+                    analysis errors to the Status field of any Istio Resources
+                  type: boolean
+                enableStatus:
+                  description: If enabled, pilot will update the CRD Status field
+                    of all Istio resources with reconciliation status
+                  type: boolean
+                enabled:
+                  type: boolean
+                multiClusterSupport:
+                  type: boolean
+                multiControlPlaneSupport:
+                  type: boolean
+              type: object
+            jwtPolicy:
+              description: 'Configure the policy for validating JWT. Currently, two
+                options are supported: "third-party-jwt" and "first-party-jwt".'
+              enum:
+              - third-party-jwt
+              - first-party-jwt
+              type: string
             localityLB:
               description: Locality based load balancing distribution or failover
                 settings.
@@ -350,6 +587,13 @@ spec:
                     type: object
                   type: array
               type: object
+            logging:
+              description: Logging configurations
+              properties:
+                level:
+                  pattern: ^([a-zA-Z]+:[a-zA-Z]+,?)+$
+                  type: string
+              type: object
             meshExpansion:
               description: If set to true, the pilot and citadel mtls will be exposed
                 on the ingress gateway also the remote istios will be connected through
@@ -360,12 +604,33 @@ spec:
                 the scope where meshes will interact with each other, but it is not
                 required to be globally/universally unique.
               type: string
-            trustDomain:
-              description: The domain serves to identify the system with SPIFFE. (default "cluster.local")
-              type: string
+            meshPolicy:
+              description: MeshPolicy configures the mesh-wide PeerAuthentication
+                resource
+              properties:
+                mtlsMode:
+                  description: MTLSMode sets the mesh-wide mTLS policy
+                  enum:
+                  - STRICT
+                  - PERMISSIVE
+                  - DISABLED
+                  type: string
+              type: object
             mixer:
               description: Mixer configuration options
               properties:
+                additionalContainerArgs:
+                  description: If present will be appended at the end of the initial/preconfigured
+                    container arguments
+                  items:
+                    type: string
+                  type: array
+                additionalEnvVars:
+                  description: If present will be appended to the environment variables
+                    of the container
+                  items:
+                    type: object
+                  type: array
                 affinity:
                   type: object
                 checksEnabled:
@@ -376,9 +641,11 @@ spec:
                   type: string
                 maxReplicas:
                   format: int32
+                  minimum: 0
                   type: integer
                 minReplicas:
                   format: int32
+                  minimum: 0
                   type: integer
                 multiClusterSupport:
                   description: Turn it on if you use mixer that supports multi cluster
@@ -386,8 +653,11 @@ spec:
                   type: boolean
                 nodeSelector:
                   type: object
+                podAnnotations:
+                  type: object
                 replicaCount:
                   format: int32
+                  minimum: 0
                   type: integer
                 reportBatchMaxEntries:
                   description: Set reportBatchMaxEntries to 0 to use the default batching
@@ -403,6 +673,8 @@ spec:
                     be batched before being sent to the mixer server
                   type: string
                 resources:
+                  type: object
+                securityContext:
                   type: object
                 sessionAffinityEnabled:
                   description: Set whether to create a STRICT_DNS type cluster for
@@ -425,8 +697,13 @@ spec:
                     will be enabled
                   type: boolean
               type: object
+            mountMtlsCerts:
+              description: Use the user-specified, secret volume mounted key and certs
+                for Pilot and workloads.
+              type: boolean
             mtls:
-              description: MTLS enables or disables global mTLS
+              description: 'DEPRECATED: Use meshPolicy instead. MTLS enables or disables
+                global mTLS'
               type: boolean
             multiMesh:
               description: Set to true to connect two or more meshes via their respective
@@ -434,6 +711,10 @@ spec:
                 talk to one another. All meshes should be using Istio mTLS and must
                 have a shared root CA for this model to work.
               type: boolean
+            networkName:
+              description: Network defines the network this cluster belong to. This
+                name corresponds to the networks in the map of mesh networks.
+              type: string
             nodeAgent:
               description: NodeAgent configuration options
               properties:
@@ -445,7 +726,11 @@ spec:
                   type: string
                 nodeSelector:
                   type: object
+                podAnnotations:
+                  type: object
                 resources:
+                  type: object
+                securityContext:
                   type: object
                 tolerations:
                   items:
@@ -465,9 +750,36 @@ spec:
             pilot:
               description: Pilot configuration options
               properties:
+                additionalContainerArgs:
+                  description: If present will be appended at the end of the initial/preconfigured
+                    container arguments
+                  items:
+                    type: string
+                  type: array
+                additionalEnvVars:
+                  description: If present will be appended to the environment variables
+                    of the container
+                  items:
+                    type: object
+                  type: array
                 affinity:
                   type: object
-                enableProtocolSniffing:
+                certProvider:
+                  description: 'Configure the certificate provider for control plane
+                    communication. Currently, two providers are supported: "kubernetes"
+                    and "istiod". As some platforms may not have kubernetes signing
+                    APIs, Istiod is the default'
+                  enum:
+                  - kubernetes
+                  - istiod
+                  type: string
+                enableProtocolSniffingInbound:
+                  description: If enabled, protocol sniffing will be used for inbound
+                    listeners whose port protocol is not specified or unsupported
+                  type: boolean
+                enableProtocolSniffingOutbound:
+                  description: If enabled, protocol sniffing will be used for outbound
+                    listeners whose port protocol is not specified or unsupported
                   type: boolean
                 enabled:
                   type: boolean
@@ -475,16 +787,23 @@ spec:
                   type: string
                 maxReplicas:
                   format: int32
+                  minimum: 0
                   type: integer
                 minReplicas:
                   format: int32
+                  minimum: 0
                   type: integer
                 nodeSelector:
                   type: object
+                podAnnotations:
+                  type: object
                 replicaCount:
                   format: int32
+                  minimum: 0
                   type: integer
                 resources:
+                  type: object
+                securityContext:
                   type: object
                 sidecar:
                   type: boolean
@@ -499,6 +818,12 @@ spec:
             policy:
               description: Policy configuration options
               properties:
+                additionalEnvVars:
+                  description: If present will be appended to the environment variables
+                    of the container
+                  items:
+                    type: object
+                  type: array
                 affinity:
                   type: object
                 checksEnabled:
@@ -509,26 +834,39 @@ spec:
                   type: string
                 maxReplicas:
                   format: int32
+                  minimum: 0
                   type: integer
                 minReplicas:
                   format: int32
+                  minimum: 0
                   type: integer
                 nodeSelector:
                   type: object
+                podAnnotations:
+                  type: object
                 replicaCount:
                   format: int32
+                  minimum: 0
                   type: integer
                 resources:
                   type: object
-                sessionAffinityEnabled:
-                  description: Set whether to create a STRICT_DNS type cluster for
-                    istio-telemetry.
-                  type: boolean
+                securityContext:
+                  type: object
                 tolerations:
                   items:
                     type: object
                   type: array
               type: object
+            priorityClassName:
+              description: Prior to Kubernetes v1.17.0 it was not allowed to use the
+                system-cluster-critical and system-node-critical PriorityClass outside
+                of the kube-system namespace, so it is advised to create your own
+                PriorityClass and use its name here On Kubernetes >=v1.17.0 it is
+                possible to configure system-cluster-critical and system-node-critical
+                PriorityClass in order to make sure your Istio pods will not be killed
+                because of low priority class. Refer to https://kubernetes.io/docs/concepts/configuration/pod-priority-preemption/#priorityclass
+                for more detail.
+              type: string
             proxy:
               description: Proxy configuration options
               properties:
@@ -553,6 +891,9 @@ spec:
                     %PROTOCOL%\n" If AccessLogEncoding is JSON, value will be parsed
                     as map[string]string example: ''{"start_time": "%START_TIME%",
                     "req_method": "%REQ(:METHOD)%"}'''
+                  type: string
+                clusterDomain:
+                  description: cluster domain. Default value is "cluster.local"
                   type: string
                 componentLogLevel:
                   description: Per Component log level for proxy, applies to gateways
@@ -599,6 +940,11 @@ spec:
                         clientCertificate:
                           type: string
                         mode:
+                          enum:
+                          - DISABLE
+                          - SIMPLE
+                          - MUTUAL
+                          - ISTIO_MUTUAL
                           type: string
                         privateKey:
                           type: string
@@ -619,6 +965,38 @@ spec:
                     port:
                       format: int32
                       type: integer
+                    tcpKeepalive:
+                      properties:
+                        interval:
+                          type: string
+                        probes:
+                          format: int32
+                          type: integer
+                        time:
+                          type: string
+                      type: object
+                    tlsSettings:
+                      properties:
+                        caCertificates:
+                          type: string
+                        clientCertificate:
+                          type: string
+                        mode:
+                          enum:
+                          - DISABLE
+                          - SIMPLE
+                          - MUTUAL
+                          - ISTIO_MUTUAL
+                          type: string
+                        privateKey:
+                          type: string
+                        sni:
+                          type: string
+                        subjectAltNames:
+                          items:
+                            type: string
+                          type: array
+                      type: object
                   type: object
                 envoyStatsD:
                   properties:
@@ -630,8 +1008,15 @@ spec:
                       format: int32
                       type: integer
                   type: object
+                holdApplicationUntilProxyStarts:
+                  description: Controls if sidecar is injected at the front of the
+                    container list and blocks the start of the other containers until
+                    the proxy is ready
+                  type: boolean
                 image:
                   type: string
+                lifecycle:
+                  type: object
                 logLevel:
                   description: 'Log level for proxy, applies to gateways and sidecars.
                     If left empty, "warning" is used. Expected values are: trace|debug|info|warning|error|critical|off'
@@ -652,12 +1037,22 @@ spec:
                   type: string
                 resources:
                   type: object
+                securityContext:
+                  type: object
+                useMetadataExchangeFilter:
+                  type: boolean
               type: object
             proxyInit:
               description: Proxy Init configuration options
               properties:
                 image:
                   type: string
+              type: object
+            proxyWasm:
+              description: ProxyWasm configuration options
+              properties:
+                enabled:
+                  type: boolean
               type: object
             sds:
               description: If SDS is configured, mTLS certificates for the sidecars
@@ -686,6 +1081,18 @@ spec:
             sidecarInjector:
               description: SidecarInjector configuration options
               properties:
+                additionalContainerArgs:
+                  description: If present will be appended at the end of the initial/preconfigured
+                    container arguments
+                  items:
+                    type: string
+                  type: array
+                additionalEnvVars:
+                  description: If present will be appended to the environment variables
+                    of the container
+                  items:
+                    type: object
+                  type: array
                 affinity:
                   type: object
                 alwaysInjectSelector:
@@ -720,6 +1127,8 @@ spec:
                       description: Must be the same as the environment’s --cni-bin-dir
                         setting (kubelet parameter)
                       type: string
+                    chained:
+                      type: boolean
                     confDir:
                       description: Must be the same as the environment’s --cni-conf-dir
                         setting (kubelet parameter)
@@ -736,10 +1145,59 @@ spec:
                       type: array
                     image:
                       type: string
+                    includeNamespaces:
+                      description: List of namespaces to include for Istio pod check
+                      items:
+                        type: string
+                      type: array
                     logLevel:
                       description: Logging level for CNI binary
                       type: string
+                    repair:
+                      properties:
+                        brokenPodLabelKey:
+                          type: string
+                        brokenPodLabelValue:
+                          type: string
+                        deletePods:
+                          type: boolean
+                        enabled:
+                          type: boolean
+                        hub:
+                          type: string
+                        initContainerName:
+                          type: string
+                        labelPods:
+                          type: boolean
+                        tag:
+                          type: string
+                      type: object
                   type: object
+                injectedAnnotations:
+                  description: 'injectedAnnotations are additional annotations that
+                    will be added to the pod spec after injection This is primarily
+                    to support PSP annotations. For example, if you defined a PSP
+                    with the annotations:  annotations:   apparmor.security.beta.kubernetes.io/allowedProfileNames:
+                    runtime/default   apparmor.security.beta.kubernetes.io/defaultProfileName:
+                    runtime/default  The PSP controller would add corresponding annotations
+                    to the pod spec for each container. However, this happens before
+                    the inject adds additional containers, so we must specify them
+                    explicitly here. With the above example, we could specify: injectedAnnotations:   container.apparmor.security.beta.kubernetes.io/istio-init:
+                    runtime/default   container.apparmor.security.beta.kubernetes.io/istio-proxy:
+                    runtime/default'
+                  type: object
+                injectedContainerAdditionalArgs:
+                  description: If present will be appended at the end of the initial/preconfigured
+                    container arguments
+                  items:
+                    type: string
+                  type: array
+                injectedContainerAdditionalEnvVars:
+                  description: If present will be appended to the environment variables
+                    of the container
+                  items:
+                    type: object
+                  type: array
                 neverInjectSelector:
                   description: 'NeverInjectSelector: Refuses the injection on pods
                     whose labels match this selector. It''s an array of label selectors,
@@ -750,8 +1208,11 @@ spec:
                   type: array
                 nodeSelector:
                   type: object
+                podAnnotations:
+                  type: object
                 replicaCount:
                   format: int32
+                  minimum: 0
                   type: integer
                 resources:
                   type: object
@@ -760,6 +1221,8 @@ spec:
                     liveness health check to redirect request to sidecar. This makes
                     liveness check work even when mTLS is enabled.
                   type: boolean
+                securityContext:
+                  type: object
                 tolerations:
                   items:
                     type: object
@@ -768,6 +1231,12 @@ spec:
             telemetry:
               description: Telemetry configuration options
               properties:
+                additionalEnvVars:
+                  description: If present will be appended to the environment variables
+                    of the container
+                  items:
+                    type: object
+                  type: array
                 affinity:
                   type: object
                 enabled:
@@ -776,14 +1245,19 @@ spec:
                   type: string
                 maxReplicas:
                   format: int32
+                  minimum: 0
                   type: integer
                 minReplicas:
                   format: int32
+                  minimum: 0
                   type: integer
                 nodeSelector:
                   type: object
+                podAnnotations:
+                  type: object
                 replicaCount:
                   format: int32
+                  minimum: 0
                   type: integer
                 reportBatchMaxEntries:
                   description: Set reportBatchMaxEntries to 0 to use the default batching
@@ -800,6 +1274,12 @@ spec:
                   type: string
                 resources:
                   type: object
+                securityContext:
+                  type: object
+                sessionAffinityEnabled:
+                  description: Set whether to create a STRICT_DNS type cluster for
+                    istio-telemetry.
+                  type: boolean
                 tolerations:
                   items:
                     type: object
@@ -840,12 +1320,32 @@ spec:
                       type: boolean
                   type: object
                 stackdriver:
+                  properties:
+                    debug:
+                      description: enables trace output to stdout.
+                      type: boolean
+                    maxNumberOfAnnotations:
+                      description: The global default max number of annotation events
+                        per span.
+                      format: int32
+                      type: integer
+                    maxNumberOfAttributes:
+                      description: The global default max number of attributes per
+                        span.
+                      format: int32
+                      type: integer
+                    maxNumberOfMessageEvents:
+                      description: The global default max number of message events
+                        per span.
+                      format: int32
+                      type: integer
                   type: object
                 tracer:
                   enum:
                   - zipkin
                   - lightstep
                   - datadog
+                  - stackdriver
                   type: string
                 zipkin:
                   properties:
@@ -855,15 +1355,51 @@ spec:
                         in the same namespace as the other istio components.
                       pattern: ^[^\:]+:[0-9]{1,5}$
                       type: string
+                    tlsSettings:
+                      description: TLS setting for Zipkin endpoint.
+                      properties:
+                        caCertificates:
+                          type: string
+                        clientCertificate:
+                          type: string
+                        mode:
+                          enum:
+                          - DISABLE
+                          - SIMPLE
+                          - MUTUAL
+                          - ISTIO_MUTUAL
+                          type: string
+                        privateKey:
+                          type: string
+                        sni:
+                          type: string
+                        subjectAltNames:
+                          items:
+                            type: string
+                          type: array
+                      type: object
                   type: object
               type: object
+            trustDomain:
+              description: The domain serves to identify the system with SPIFFE. (default
+                "cluster.local")
+              type: string
+            trustDomainAliases:
+              description: ' The trust domain aliases represent the aliases of trust_domain.  For
+                example, if we have  trustDomain: td1  trustDomainAliases: ["td2",
+                "td3"]  Any service with the identity "td1/ns/foo/sa/a-service-account",
+                "td2/ns/foo/sa/a-service-account",  or "td3/ns/foo/sa/a-service-account"
+                will be treated the same in the Istio mesh.'
+              items:
+                type: string
+              type: array
             useMCP:
               description: Use the Mesh Control Protocol (MCP) for configuring Mixer
-                and Pilot. Requires galley.
+                and Pilot. Requires an MCP source.
               type: boolean
             version:
               description: Contains the intended Istio version
-              pattern: ^1.3
+              pattern: ^1.
               type: string
             watchAdapterCRDs:
               description: Whether or not to establish watches for adapter-specific
@@ -875,9 +1411,17 @@ spec:
               type: boolean
           required:
           - version
-          - mtls
           type: object
         status:
+          properties:
+            ErrorMessage:
+              type: string
+            GatewayAddress:
+              items:
+                type: string
+              type: array
+            Status:
+              type: string
           type: object
   version: v1beta1
 status:
@@ -886,4 +1430,3 @@ status:
     plural: ""
   conditions: []
   storedVersions: []
-{{- end }}
