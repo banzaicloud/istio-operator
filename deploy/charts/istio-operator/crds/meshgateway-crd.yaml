@@ -5,7 +5,7 @@ metadata:
   labels:
     controller-tools.k8s.io: "1.0"
     app.kubernetes.io/name: "istio-operator"
-    helm.sh/chart: "istio-operator-0.0.61"
+    helm.sh/chart: "istio-operator-0.0.62"
     app.kubernetes.io/version: "0.7.1"
   name: meshgateways.istio.banzaicloud.io
 spec:
