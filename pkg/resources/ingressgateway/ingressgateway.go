@@ -65,17 +65,6 @@ func (r *Reconciler) Reconcile(log logr.Logger) error {
 
 	log.Info("Reconciling")
 
-	var desiredState k8sutil.DesiredState
-
-	if util.PointerToBool(r.Config.Spec.Gateways.Enabled) && util.PointerToBool(r.Config.Spec.Gateways.IngressConfig.Enabled) {
-		desiredState = k8sutil.DesiredStatePresent
-		if util.PointerToBool(r.Config.Spec.Gateways.IngressConfig.CreateOnly) {
-			desiredState = k8sutil.DesiredStateExists
-		}
-	} else {
-		desiredState = k8sutil.DesiredStateAbsent
-	}
-
 	spec := istiov1beta1.MeshGatewaySpec{
 		MeshGatewayConfiguration: r.Config.Spec.Gateways.IngressConfig.MeshGatewayConfiguration,
 		Ports:                    r.Config.Spec.Gateways.IngressConfig.Ports,
@@ -86,8 +75,22 @@ func (r *Reconciler) Reconcile(log logr.Logger) error {
 		Namespace: r.Config.Namespace,
 	}
 	spec.Labels = r.labels()
+	objectMeta := templates.ObjectMetaWithRevision(ResourceName, spec.Labels, r.Config)
+
+	var desiredState k8sutil.DesiredState
+
+	if util.PointerToBool(r.Config.Spec.Gateways.Enabled) && util.PointerToBool(r.Config.Spec.Gateways.IngressConfig.Enabled) {
+		desiredState = k8sutil.DesiredStatePresent
+		if util.PointerToBool(r.Config.Spec.Gateways.IngressConfig.CreateOnly) {
+			objectMeta.OwnerReferences = nil
+			desiredState = k8sutil.MeshGatewayCreateOnlyDesiredState{}
+		}
+	} else {
+		desiredState = k8sutil.DesiredStateAbsent
+	}
+
 	object := &istiov1beta1.MeshGateway{
-		ObjectMeta: templates.ObjectMetaWithRevision(ResourceName, spec.Labels, r.Config),
+		ObjectMeta: objectMeta,
 		Spec:       spec,
 	}
 	object.SetDefaultLabels()
