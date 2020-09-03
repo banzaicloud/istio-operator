@@ -39,6 +39,11 @@ func (r *Reconciler) reconcileAutoInjectionLabels(log logr.Logger) error {
 		managedAutoInjectionLabelKey: "enabled",
 	}
 
+	// this feature is only available for a global control plane
+	if r.Config.IsRevisionUsed() {
+		return nil
+	}
+
 	managedNamespaces := make(map[string]bool)
 	for _, ns := range r.Config.Spec.AutoInjectionNamespaces {
 		managedNamespaces[ns] = true
