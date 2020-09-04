@@ -5,9 +5,10 @@ kind: Istio
 metadata:
   labels:
     controller-tools.k8s.io: "1.0"
-  name: istio-sample
+  name: istio-sample-v17x
 spec:
   version: "1.7.0"
+  global: false
   meshPolicy:
     mtlsMode: PERMISSIVE
   autoInjectionNamespaces:
