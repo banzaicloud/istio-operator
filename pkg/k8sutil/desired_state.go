@@ -23,8 +23,10 @@ import (
 	"github.com/banzaicloud/istio-operator/pkg/k8sutil/wait"
 	"github.com/banzaicloud/istio-operator/pkg/util"
 	"github.com/go-logr/logr"
+	"github.com/goph/emperror"
 	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
+	"k8s.io/apimachinery/pkg/api/meta"
 	"k8s.io/apimachinery/pkg/labels"
 	"k8s.io/apimachinery/pkg/runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
@@ -37,12 +39,16 @@ const (
 type DesiredState interface {
 	AfterRecreate(current, desired runtime.Object) error
 	BeforeRecreate(current, desired runtime.Object) error
+	ShouldRecreate(current, desired runtime.Object) (bool, error)
 	AfterCreate(desired runtime.Object) error
 	BeforeCreate(desired runtime.Object) error
+	ShouldCreate(desired runtime.Object) (bool, error)
 	AfterUpdate(current, desired runtime.Object, inSync bool) error
 	BeforeUpdate(current, desired runtime.Object) error
+	ShouldUpdate(current, desired runtime.Object) (bool, error)
 	AfterDelete(current runtime.Object) error
 	BeforeDelete(current runtime.Object) error
+	ShouldDelete(current runtime.Object) (bool, error)
 }
 
 type StaticDesiredState string
@@ -55,12 +61,20 @@ func (s StaticDesiredState) BeforeRecreate(_, _ runtime.Object) error {
 	return nil
 }
 
+func (s StaticDesiredState) ShouldRecreate(_, _ runtime.Object) (bool, error) {
+	return true, nil
+}
+
 func (s StaticDesiredState) AfterCreate(_ runtime.Object) error {
 	return nil
 }
 
 func (s StaticDesiredState) BeforeCreate(_ runtime.Object) error {
 	return nil
+}
+
+func (s StaticDesiredState) ShouldCreate(_ runtime.Object) (bool, error) {
+	return true, nil
 }
 
 func (s StaticDesiredState) AfterUpdate(_, _ runtime.Object, _ bool) error {
@@ -71,6 +85,10 @@ func (s StaticDesiredState) BeforeUpdate(_, _ runtime.Object) error {
 	return nil
 }
 
+func (s StaticDesiredState) ShouldUpdate(_, _ runtime.Object) (bool, error) {
+	return true, nil
+}
+
 func (s StaticDesiredState) AfterDelete(_ runtime.Object) error {
 	return nil
 }
@@ -79,11 +97,31 @@ func (s StaticDesiredState) BeforeDelete(_ runtime.Object) error {
 	return nil
 }
 
+func (s StaticDesiredState) ShouldDelete(_ runtime.Object) (bool, error) {
+	return true, nil
+}
+
 const (
 	DesiredStatePresent StaticDesiredState = "present"
 	DesiredStateAbsent  StaticDesiredState = "absent"
 	DesiredStateExists  StaticDesiredState = "exists"
 )
+
+type MeshGatewayCreateOnlyDesiredState struct {
+	StaticDesiredState
+}
+
+func (MeshGatewayCreateOnlyDesiredState) ShouldUpdate(current, desired runtime.Object) (bool, error) {
+	currentMeta, err := meta.Accessor(current)
+	if err != nil {
+		return false, emperror.WrapWith(err, "could not get desired object metadata")
+	}
+	if len(currentMeta.GetOwnerReferences()) > 0 {
+		return true, nil
+	}
+
+	return false, nil
+}
 
 type RecreateAwareDeploymentDesiredState struct {
 	StaticDesiredState
