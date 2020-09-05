@@ -3,9 +3,10 @@ kind: Istio
 metadata:
   labels:
     controller-tools.k8s.io: "1.0"
-  name: istio-sample
+  name: istio-sample-v17x
 spec:
   version: "1.7.0"
+  global: false
   meshPolicy:
     mtlsMode: PERMISSIVE
   autoMtls: true
@@ -40,7 +41,7 @@ spec:
   gateways:
     enabled: true
     ingress:
-      enabled: true
+      enabled: false
       replicaCount: 1
       minReplicas: 1
       maxReplicas: 5

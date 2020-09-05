@@ -3,9 +3,10 @@ kind: Istio
 metadata:
   labels:
     controller-tools.k8s.io: "1.0"
-  name: multimesh
+  name: multimesh-v17x
 spec:
   version: "1.7.0"
+  global: false
   autoInjectionNamespaces:
   - "default"
   useMCP: false
