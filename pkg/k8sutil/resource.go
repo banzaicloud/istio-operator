@@ -123,7 +123,7 @@ func Reconcile(log logr.Logger, client runtimeClient.Client, desired runtime.Obj
 				if apierrors.IsConflict(err) || apierrors.IsInvalid(err) {
 					should, err := desiredState.ShouldRecreate(current, desiredCopy)
 					if err != nil {
-						return emperror.WrapWith(err, "could not execute ShoudCreate func")
+						return emperror.WrapWith(err, "could not execute ShoudReCreate func")
 					}
 					if !should {
 						log.V(1).Info("resource should not be re-created")
