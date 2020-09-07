@@ -34,7 +34,7 @@ So our starting point is a running Istio operator and Istio 1.6 control plane, w
 
 1. Migrate data plane applications
 
-   It is recommended that you perform this migration gradually.
+   It is recommended that for safety reasons you perform this migration gradually.
    It's important to keep in mind during the data plane migration that the two Istio control planes share trust (because they use the same certificates for encrypted communication). Therefore, when an application pod that still uses Istio's 1.6 control plane calls another pod that already uses Istio's 1.7 control plane, the encrypted communication will succeed because of that shared trust.
    That's why this migration can be performed on a namespace by namespace basis and the communication of the pods won't be affected.
 
