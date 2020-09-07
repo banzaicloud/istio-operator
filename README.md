@@ -114,7 +114,7 @@ bases:
 
 ## Istio upgrade
 
-Check out the [upgrade docs](docs/upgrade.md) to see how to upgrade between minor or major Istio versions.
+Check out the [upgrade docs](docs/upgrade/README.md) to see how to upgrade between minor or major Istio versions.
 
 ## Multi-cluster federation
 
