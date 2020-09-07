@@ -386,8 +386,8 @@ containers:
     runAsUser: 1337
     {{- end }}
   resources:
-  {{- if or (isset .ObjectMeta.Annotations  ` + "`" + `sidecar.istio.io/proxyCPU ` + "`" + `) (isset .ObjectMeta.Annotations  ` + "`" + `sidecar.istio.io/proxyMemory ` + "`" + `) (isset .ObjectMeta.Annotations  ` + "`" + `sidecar.istio.io/proxyCPULimit ` + "`" + `) (isset .ObjectMeta.Annotations  ` + "`" + `sidecar.istio.io/proxyMemoryLimit ` + "`" + `) }}
-    {{- if or (isset .ObjectMeta.Annotations   ` + "`" + `sidecar.istio.io/proxyCPU  ` + "`" + `) (isset .ObjectMeta.Annotations   ` + "`" + `sidecar.istio.io/proxyMemory  ` + "`" + `) }}
+  {{- if or (isset .ObjectMeta.Annotations ` + "`" + `sidecar.istio.io/proxyCPU` + "`" + `) (isset .ObjectMeta.Annotations ` + "`" + `sidecar.istio.io/proxyMemory` + "`" + `) (isset .ObjectMeta.Annotations ` + "`" + `sidecar.istio.io/proxyCPULimit` + "`" + `) (isset .ObjectMeta.Annotations ` + "`" + `sidecar.istio.io/proxyMemoryLimit` + "`" + `) }}
+    {{- if or (isset .ObjectMeta.Annotations ` + "`" + `sidecar.istio.io/proxyCPU` + "`" + `) (isset .ObjectMeta.Annotations ` + "`" + `sidecar.istio.io/proxyMemory` + "`" + `) }}
       requests:
         {{ if (isset .ObjectMeta.Annotations ` + "`" + `sidecar.istio.io/proxyCPU` + "`" + `) -}}
         cpu: "{{ index .ObjectMeta.Annotations ` + "`" + `sidecar.istio.io/proxyCPU` + "`" + ` }}"
@@ -396,13 +396,13 @@ containers:
         memory: "{{ index .ObjectMeta.Annotations ` + "`" + `sidecar.istio.io/proxyMemory` + "`" + ` }}"
         {{ end }}
     {{- end }}
-    {{- if or (isset .ObjectMeta.Annotations  ` + "`" + `sidecar.istio.io/proxyCPULimit ` + "`" + `) (isset .ObjectMeta.Annotations  ` + "`" + `sidecar.istio.io/proxyMemoryLimit ` + "`" + `) }}
+    {{- if or (isset .ObjectMeta.Annotations ` + "`" + `sidecar.istio.io/proxyCPULimit` + "`" + `) (isset .ObjectMeta.Annotations ` + "`" + `sidecar.istio.io/proxyMemoryLimit` + "`" + `) }}
       limits:
-        {{ if (isset .ObjectMeta.Annotations  ` + "`" + `sidecar.istio.io/proxyCPULimit ` + "`" + `) -}}
-        cpu: "{{ index .ObjectMeta.Annotations  ` + "`" + `sidecar.istio.io/proxyCPULimit ` + "`" + ` }}"
+        {{ if (isset .ObjectMeta.Annotations ` + "`" + `sidecar.istio.io/proxyCPULimit` + "`" + `) -}}
+        cpu: "{{ index .ObjectMeta.Annotations ` + "`" + `sidecar.istio.io/proxyCPULimit` + "`" + ` }}"
         {{ end }}
-        {{ if (isset .ObjectMeta.Annotations  ` + "`" + `sidecar.istio.io/proxyMemoryLimit ` + "`" + `) -}}
-        memory: "{{ index .ObjectMeta.Annotations  ` + "`" + `sidecar.istio.io/proxyMemoryLimit ` + "`" + ` }}"
+        {{ if (isset .ObjectMeta.Annotations ` + "`" + `sidecar.istio.io/proxyMemoryLimit` + "`" + `) -}}
+        memory: "{{ index .ObjectMeta.Annotations ` + "`" + `sidecar.istio.io/proxyMemoryLimit` + "`" + ` }}"
         {{ end }}
     {{- end }}
   {{- else }}

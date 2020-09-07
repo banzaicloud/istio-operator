@@ -2,7 +2,7 @@
 
 set -euo pipefail
 
-version=0.7.1
+version=0.7.2
 arch=$(uname -m)
 opsys=$(uname -s | awk '{print tolower($0)}')
 
