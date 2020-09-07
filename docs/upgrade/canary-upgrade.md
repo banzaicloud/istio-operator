@@ -202,7 +202,7 @@ When the data plane migration is finished, we'll delete the Istio 1.6 control pl
    $ APP_B_POD_NAME=$(kubectl get pods -n demo-b -l k8s-app=app-b -o=jsonpath='{.items[0].metadata.name}')
    ```
 
-1. Test to make sure that app-a can access app-b.
+1. Test if app-a can access app-b.
 
    ```bash
    $ kubectl exec -n=demo-a -ti -c echo-service $APP_A_POD_NAME -- curl -Ls -o /dev/null -w "%{http_code}" app-b.demo-b.svc.cluster.local
