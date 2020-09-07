@@ -254,7 +254,7 @@ When the data plane migration is finished, we'll delete the Istio 1.6 control pl
 
 #### Migrate first namespace
 
-1. Label the first namespace for the new control plane.
+1. Label the first namespace so that all workloads there utilize the new control plane.
 
    ```bash
    $ kubectl label ns demo-a istio-injection- istio.io/rev=istio-sample-v17x.istio-system
