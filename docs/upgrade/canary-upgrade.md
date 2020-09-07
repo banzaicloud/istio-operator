@@ -40,7 +40,7 @@ So our starting point is a running Istio operator and Istio 1.6 control plane, w
 
 1. Delete the Istio 1.6 control plane
 
-   Once the migration is finished, and we've made sure that our applications are working properly in conjunction with the new control plane, the older Istio 1.6 control plane can be safely deleted.
+   Once the migration is finished, and you've made sure that your applications are working properly in conjunction with the new control plane, the older Istio 1.6 control plane can be safely deleted.
    It's recommended that you take some time to make sure that everything is working on the new control plane before turning off the old one; it's only an `istiod` deployment running with practically no data plane pods attached.
 
    > In the traditional sense, a canary upgrade flow ends with a rolling update of the old application into the new one.
