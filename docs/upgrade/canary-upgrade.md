@@ -260,7 +260,7 @@ When the data plane migration is finished, we'll delete the Istio 1.6 control pl
    $ kubectl label ns demo-a istio-injection- istio.io/rev=istio-sample-v17x.istio-system
    ```
 
-   The new `istio.io/rev` label needs to be used for the new revisioned control planes to be able to perform sidecar injection.
+   The new `istio.io/rev` label needs to be used for the new revisioned control planes to indicate that it should perform sidecar injection.
    The `istio-injection` label must be removed because it takes precedence over the `istio.io/rev` label for backward compatibility.
 
 1. Make sure that the labeling is correct.
