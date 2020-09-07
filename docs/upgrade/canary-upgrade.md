@@ -308,7 +308,7 @@ Remember that the pod(s) in the `demo-a` namespace are already on the Istio 1.7 
    200
    ```
 
-1. Test to make sure that app-b can access app-a.
+1. Test if app-b can access app-a.
 
    ```bash
    $ kubectl exec -n=demo-b -ti -c echo-service $APP_B_POD_NAME -- curl -Ls -o /dev/null -w "%{http_code}" app-a.demo-a.svc.cluster.local
