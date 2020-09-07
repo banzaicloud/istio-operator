@@ -246,7 +246,7 @@ When the data plane migration is finished, we'll delete the Istio 1.6 control pl
 
 #### Migrate ingress
 
-1. Move the ingress gateway so as to utilize the new Istio 1.7 control plane.
+1. Change the ingress gateway so that it utilizes the new Istio 1.7 control plane.
 
    ```bash
    $ kubectl patch mgw -n istio-system istio-ingressgateway --type=json -p='[{"op": "replace", "path": "/spec/istioControlPlane/name", "value": "istio-sample-v17x"}]'
