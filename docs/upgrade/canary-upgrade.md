@@ -292,7 +292,7 @@ When the data plane migration is finished, we'll delete the Istio 1.6 control pl
 
 Let's make sure that encrypted communication still works between pods that use different control planes.
 The reason why the data plane migration can be done gradually is that the communication works even between pods on different control planes. In this step please it will be verified that the communication works in such a way, making the upgrade flow a safe one.
-Remember that the pod in the `demo-a` namespace are already on Istio 1.7 control plane, but the pod in `demo-b` is still on Istio 1.6.
+Remember that the pod(s) in the `demo-a` namespace are already on the Istio 1.7 control plane, but the pod in `demo-b` is still using the Istio 1.6 version.
 
 1. Save the application pod names for easier access.
 
