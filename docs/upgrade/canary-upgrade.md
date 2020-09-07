@@ -41,7 +41,7 @@ So our starting point is a running Istio operator and Istio 1.6 control plane, w
 1. Delete the Istio 1.6 control plane
 
    Once the migration is finished, and you've made sure that your applications are working properly in conjunction with the new control plane, the older Istio 1.6 control plane can be safely deleted.
-   It's recommended that you take some time to make sure that everything is working on the new control plane before turning off the old one. The overhead of doing so is minimal as it's only an `istiod` deployment running with practically no data plane pods attached.
+   It's recommended that you take some time to make sure that everything is working on the new control plane before turning off the old one. The overhead of doing so is minimal as it's only an `istiod` deployment running.
 
    > In the traditional sense, a canary upgrade flow ends with a rolling update of the old application into the new one.
    > That's not what's happening here.
@@ -291,7 +291,7 @@ When the data plane migration is finished, we'll delete the Istio 1.6 control pl
 #### Test communication
 
 Let's make sure that encrypted communication still works between pods that use different control planes.
-The reason why the data plane migration can be done gradually is that the communication works even between pods on different control planes. In this step please it will be verified that the communication works in such a way, making the upgrade flow a safe one.
+The reason why the data plane migration can be done gradually is that the communication works even between pods on different control planes. In this step it will be verified that the communication works in such a way, making the upgrade flow a safe one.
 Remember that the pod(s) in the `demo-a` namespace are already on the Istio 1.7 control plane, but the pod in `demo-b` is still using the Istio 1.6 version.
 
 1. Save the application pod names for easier access.
@@ -317,7 +317,7 @@ Remember that the pod(s) in the `demo-a` namespace are already on the Istio 1.7 
 
 #### Migrate second namespace
 
-1. Label the second namespace for the new control plane.
+1. Label the second namespace so that all workloads there utilize the new control plane.
 
    ```bash
    $ kubectl label ns demo-b istio-injection- istio.io/rev=istio-sample-v17x.istio-system
