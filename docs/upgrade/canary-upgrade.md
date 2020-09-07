@@ -350,7 +350,7 @@ Remember that the pod(s) in the `demo-a` namespace are already on the Istio 1.7 
 
 ### Uninstall the Istio 1.6 control plane
 
-When the data plane is fully migrated and we made sure it works as expected, we can delete the "old" Istio 1.6 control plane now.
+When the data plane is fully migrated to the 1.7 version and you made sure that it works as expected, we can delete the "old" Istio 1.6 control plane.
 
 1. Delete the 1.6 `Istio` Custom Resource to delete the Istio 1.6 control plane.
 
