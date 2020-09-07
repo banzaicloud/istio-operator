@@ -12,7 +12,7 @@ To make sure that we are limiting the potential blast radius of the upgrade, we 
 ![Istio control plane canary upgrade](istio-cp-canary-upgrade.gif)
 
 This canary upgrade model is much safer than the in-place upgrade workflow, mainly because it can be done gradually, at your own pace.
-If issues arise they will probably only affect a small portion of your applications, initially, and, if that does happen, it should be much easier to rollback only a part of your application for use with the original control plane.
+If issues arise they will only affect a small portion of your applications, that you have selected as the initial scope for the upgrade. If that does happen, it will be much easier to rollback only a part of your application for use with the original control plane.
 
 This upgrade flow gives us more flexibility and confidence when making Istio upgrades, dramatically reducing the potential for service disruptions.
 
