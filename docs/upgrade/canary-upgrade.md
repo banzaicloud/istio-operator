@@ -100,7 +100,7 @@ When the data plane migration is finished, we'll delete the Istio 1.6 control pl
    $ kubectl patch istio -n istio-system istio-sample --type=json -p='[{"op": "replace", "path": "/spec/autoInjectionNamespaces", "value": ["demo-a", "demo-b"]}]'
    ```
 
-1. Make sure that the namespaces are labeled for sidecar injection (if not, wait a few seconds).
+1. Make sure that the namespaces are labeled for sidecar injection (if not, wait a few seconds, then please re-check the namespaces).
 
    ```bash
    $ kubectl get ns demo-a demo-b -L istio-injection
