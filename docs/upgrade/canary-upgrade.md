@@ -277,7 +277,7 @@ When the data plane migration is finished, we'll delete the Istio 1.6 control pl
    $ kubectl rollout restart deployment -n demo-a
    ```
 
-1. Make sure that now the new 1.7 sidecar proxy is used for the new pod.
+1. Make sure that the new 1.7 sidecar proxy is used for the new pod.
 
    ```bash
    $ APP_A_POD_NAME=$(kubectl get pods -n demo-a -l k8s-app=app-a -o=jsonpath='{.items[0].metadata.name}')
