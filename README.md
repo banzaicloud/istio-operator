@@ -69,7 +69,7 @@ The differences are presented in this table:
 |      Canary releases      |                    | :heavy_check_mark: |
 |         Validations       |                    | :heavy_check_mark: |
 
-For a complete list of [Backyards](https://banzaicloud.com/products/backyards/) features please check out the [features](https://banzaicloud.com/docs/backyards/overview/) page.
+For a complete list of [Backyards](https://banzaicloud.com/products/backyards/) features please check out the [features](https://banzaicloud.com/docs/backyards/overview#key-features) page.
 
 ## Istio operator installation
 
@@ -99,7 +99,7 @@ Alternatively, if you just can’t let go of Helm completely, you can deploy the
 
 ```bash
 helm repo add banzaicloud-stable https://kubernetes-charts.banzaicloud.com/
-helm install --name=istio-operator --namespace=istio-system banzaicloud-stable/istio-operator
+helm install istio-operator-v17x --create-namespace --namespace=istio-system banzaicloud-stable/istio-operator
 ```
 
 ### Installation with Kustomize
@@ -114,7 +114,7 @@ bases:
 
 ## Istio upgrade
 
-Check out the [upgrade docs](docs/upgrade.md) to see how to upgrade between minor or major Istio versions.
+Check out the [upgrade docs](docs/upgrade/README.md) to see how to upgrade between minor or major Istio versions.
 
 ## Multi-cluster federation
 
