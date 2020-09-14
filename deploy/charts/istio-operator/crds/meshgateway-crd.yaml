@@ -3,8 +3,7 @@ kind: CustomResourceDefinition
 metadata:
   creationTimestamp: null
   labels:
-    controller-tools.k8s.io: "1.0"
-    app.kubernetes.io/name: "istio-operator"
+    resource.alpha.banzaicloud.io/revision: 1.7.0
   name: meshgateways.istio.banzaicloud.io
 spec:
   additionalPrinterColumns:

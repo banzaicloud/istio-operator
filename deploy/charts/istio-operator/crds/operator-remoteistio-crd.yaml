@@ -3,8 +3,7 @@ kind: CustomResourceDefinition
 metadata:
   name: remoteistios.istio.banzaicloud.io
   labels:
-    controller-tools.k8s.io: "1.0"
-    app.kubernetes.io/name: "istio-operator"
+    resource.alpha.banzaicloud.io/revision: 1.7.0
 spec:
   additionalPrinterColumns:
   - JSONPath: .status.Status
