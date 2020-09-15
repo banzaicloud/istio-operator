@@ -360,6 +360,12 @@ When the data plane is fully migrated to the 1.7 version and you made sure that 
 
 1. Uninstall the Istio operator for version 1.6.
 
+   > :warning: If you installed the Istio operator chart for Istio 1.6 with Helm2, then first upgrade that chart with Helm version 3.1.0, otherwise your CRDs might be deleted!
+   > ```bash
+   > $ helm upgrade istio-operator-v16x --namespace=istio-system --set-string operator.image.tag=0.6.13 --set-string istioVersion=1.6 banzaicloud-stable/istio-operator
+   > ```
+   > For more info on CRD handling issues in Helm, check out these two PRs and the related issues: [https://github.com/helm/helm/pull/7320](https://github.com/helm/helm/pull/7320), [https://github.com/helm/helm/pull/7571](https://github.com/helm/helm/pull/7571).
+
    ```bash
    $ helm uninstall -n=istio-system istio-operator-v16x
    ```
