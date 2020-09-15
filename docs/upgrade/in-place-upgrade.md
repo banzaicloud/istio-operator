@@ -139,7 +139,7 @@ This command will install a Custom Resource Definition in the cluster, and will 
 
 Alternatively, you can deploy the operator using a [Helm chart](https://github.com/banzaicloud/banzai-charts/tree/master/istio-operator), which is available in the Banzai Cloud stable Helm repo:
 
-> :warning: If you installed the original chart with Helm2, then please make sure to use Helm version 3.1.0 to issue the following upgrade command, otherwise your CRDs might be deleted!
+> :warning: If you installed the original chart with Helm2, then please make sure to use Helm version 3.1.0 to issue the following upgrade command, otherwise your CRDs will be deleted!
 > For more info on CRD handling issues in Helm, check out these two PRs and the related issues: [https://github.com/helm/helm/pull/7320](https://github.com/helm/helm/pull/7320), [https://github.com/helm/helm/pull/7571](https://github.com/helm/helm/pull/7571).
 
 ```bash
