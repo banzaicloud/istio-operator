@@ -3,7 +3,7 @@ kind: CustomResourceDefinition
 metadata:
   creationTimestamp: null
   labels:
-    resource.alpha.banzaicloud.io/revision: 1.7.0
+    resource.alpha.banzaicloud.io/revision: 1.7.1
   name: meshgateways.istio.banzaicloud.io
 spec:
   additionalPrinterColumns:
