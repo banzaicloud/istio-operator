@@ -36,7 +36,7 @@ const (
 
 var (
 	SupportedIstioVersion = "1.6.9"
-	Version               = "0.6.13"
+	Version               = "0.6.14"
 )
 
 // IstioVersion stores the intended Istio version
