@@ -293,13 +293,7 @@ containers:
       {{- end}}
       ]
   - name: ISTIO_META_APP_CONTAINERS
-    value: |-
-      [
-        {{- range $index, $container := .Spec.Containers }}
-         {{- if ne $index 0}},{{- end}}
-          {{ $container.Name }}
-        {{- end}}
-      ]
+    value: "{{- range $index, $container := .Spec.Containers }}{{- if ne $index 0}},{{- end}}{{ $container.Name }}{{- end}}"
   - name: ISTIO_META_CLUSTER_ID
     value: "{{ valueOrDefault .Values.global.multicluster.clusterName ` + "`" + `Kubernetes` + "`" + `}}"
 {{- if eq .Values.global.proxy.tracer "zipkin" }}
