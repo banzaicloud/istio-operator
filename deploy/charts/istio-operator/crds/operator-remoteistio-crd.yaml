@@ -3,7 +3,7 @@ kind: CustomResourceDefinition
 metadata:
   name: remoteistios.istio.banzaicloud.io
   labels:
-    resource.alpha.banzaicloud.io/revision: 1.7.1
+    resource.alpha.banzaicloud.io/revision: 1.7.2
 spec:
   additionalPrinterColumns:
   - JSONPath: .status.Status
