@@ -686,7 +686,7 @@ const (
 )
 
 type HTTPProxyEnvs struct {
-	HTTPProxy  string `json:"httpProxy,omitemtpy"`
+	HTTPProxy  string `json:"httpProxy,omitempty"`
 	HTTPSProxy string `json:"httpsProxy,omitempty"`
 	NoProxy    string `json:"noProxy,omitempty"`
 }
