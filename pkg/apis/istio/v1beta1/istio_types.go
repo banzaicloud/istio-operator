@@ -939,6 +939,14 @@ func (v IstioVersion) IsSupported() bool {
 	return re.Match([]byte(v))
 }
 
+func (c *Istio) GetControlPlaneAuthPolicy() ControlPlaneAuthPolicyType {
+	if c.Spec.ControlPlaneAuthPolicy != "" {
+		return c.Spec.ControlPlaneAuthPolicy
+	}
+
+	return ControlPlaneAuthPolicyMTLS
+}
+
 func (c *Istio) GetCAAddress() string {
 	if c.Spec.CAAddress != "" {
 		return c.Spec.CAAddress
