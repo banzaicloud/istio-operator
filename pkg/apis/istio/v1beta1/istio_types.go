@@ -35,7 +35,7 @@ const (
 )
 
 var (
-	SupportedIstioVersion = "1.6.9"
+	SupportedIstioVersion = "1.6.10"
 	Version               = "0.6.14"
 )
 
