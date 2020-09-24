@@ -86,7 +86,7 @@ func Add(mgr manager.Manager) error {
 	if err != nil {
 		return emperror.Wrap(err, "failed to create dynamic client")
 	}
-	crd, err := crds.New(mgr.GetConfig(), istiov1beta1.SupportedIstioVersion)
+	crd, err := crds.New(mgr, mgr.GetConfig(), istiov1beta1.SupportedIstioVersion)
 	if err != nil {
 		return emperror.Wrap(err, "unable to set up CRD reconciler")
 	}
