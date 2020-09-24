@@ -466,8 +466,6 @@ spec:
                   type: string
                 noProxy:
                   type: string
-              required:
-              - httpProxy
               type: object
             imagePullPolicy:
               description: ImagePullPolicy describes a policy for if/when to pull
