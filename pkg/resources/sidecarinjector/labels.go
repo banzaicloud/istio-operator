@@ -52,7 +52,7 @@ func (r *Reconciler) reconcileAutoInjectionLabels(log logr.Logger) error {
 	selector := managedAutoInjectionLabelKey + "=" + autoInjectLabels[managedAutoInjectionLabelKey]
 	err := o.SetLabelSelector(selector)
 	if err != nil {
-		return emperror.WrapWith(err, "could set label selector to list options", "selector", selector)
+		return emperror.WrapWith(err, "could not set label selector to list options", "selector", selector)
 	}
 
 	err = r.Client.List(context.Background(), o, &namespaces)
