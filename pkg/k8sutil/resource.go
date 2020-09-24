@@ -199,7 +199,7 @@ func ReconcileNamespaceLabelsIgnoreNotFound(log logr.Logger, client runtimeClien
 
 	if ns.Labels != nil {
 		if _, ok := ns.Labels["istio.io/rev"]; ok {
-			log.V(1).Info("namespace has 'istio.io/rev' label, ignoring", "namespace", namespace)
+			log.V(1).Info("namespace has 'istio.io/rev' label, ignoring namespace", "namespace", namespace)
 			return nil
 		}
 	}
