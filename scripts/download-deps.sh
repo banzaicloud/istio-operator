@@ -1,8 +1,8 @@
 #!/usr/bin/env bash
 set +x
-
-binpath=${PWD}/$(dirname "$0")/../bin
-version="v0.0.0-20180823001027-3dcf91f64f63"
+dirname=$(dirname "$0")
+binpath=$PWD/$dirname/../bin
+version="v0.18.6"
 cmds="deepcopy-gen defaulter-gen lister-gen client-gen informer-gen"
 
 for name in ${cmds}; do
@@ -11,8 +11,17 @@ for name in ${cmds}; do
     fi
 done
 
-if [[ ! -f $binpath/controller-gen ]]; then
-    GOBIN=$binpath go get sigs.k8s.io/controller-tools/cmd/controller-gen@v0.1.9
+if [[ ! -f $binpath/controller-gen1 ]]; then
+    TMPDIR=$(mktemp -d -t ci-XXXXXXXXXX)
+    if [ -d "$TMPDIR" ]; then
+        BUILDDIR=$TMPDIR/cgen-build
+        mkdir "$BUILDDIR"
+        cp "$PWD"/"$dirname"/go.mod.cgen "$BUILDDIR"/go.mod
+        pushd "$BUILDDIR" >/dev/null || exit
+        GOBIN=$binpath GOMOD=$BUILDDIR/go.mod go get sigs.k8s.io/controller-tools/cmd/controller-gen@v0.1.9
+        popd >/dev/null || exit
+        rm -rf "$BUILDDIR"
+    fi
 fi
 
 go mod vendor
