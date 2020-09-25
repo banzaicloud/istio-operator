@@ -50,3 +50,6 @@ leaderElection:
   enabled: true
   namespace: "istio-system"
   nameOverride: ""
+
+webhook:
+  enabled: true

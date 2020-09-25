@@ -33,6 +33,7 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/client/config"
 	"sigs.k8s.io/controller-runtime/pkg/manager"
 	logf "sigs.k8s.io/controller-runtime/pkg/runtime/log"
+	"sigs.k8s.io/controller-runtime/pkg/webhook"
 
 	"github.com/banzaicloud/istio-operator/pkg/apis"
 	"github.com/banzaicloud/istio-operator/pkg/controller"
@@ -40,7 +41,8 @@ import (
 	"github.com/banzaicloud/istio-operator/pkg/controller/remoteistio"
 	"github.com/banzaicloud/istio-operator/pkg/k8sutil"
 	"github.com/banzaicloud/istio-operator/pkg/remoteclusters"
-	"github.com/banzaicloud/istio-operator/pkg/webhook"
+	wh "github.com/banzaicloud/istio-operator/pkg/webhook"
+	"github.com/banzaicloud/istio-operator/pkg/webhook/cert"
 )
 
 const watchNamespaceEnvVar = "WATCH_NAMESPACE"
@@ -50,18 +52,24 @@ func main() {
 	var metricsAddr string
 	flag.StringVar(&metricsAddr, "metrics-addr", ":8080", "The address the metric endpoint binds to.")
 	var developmentMode bool
-	flag.BoolVar(&developmentMode, "devel-mode", false, "Set development mode (mainly for logging)")
+	flag.BoolVar(&developmentMode, "devel-mode", false, "Set development mode (mainly for logging).")
 	var shutdownWaitDuration time.Duration
-	flag.DurationVar(&shutdownWaitDuration, "shutdown-wait-duration", time.Duration(30)*time.Second, "Wait duration before shutting down")
+	flag.DurationVar(&shutdownWaitDuration, "shutdown-wait-duration", time.Duration(30)*time.Second, "Wait duration before shutting down.")
 	var waitBeforeExitDuration time.Duration
-	flag.DurationVar(&waitBeforeExitDuration, "wait-before-exit-duration", time.Duration(3)*time.Second, "Wait for workers to finish before exiting and removing finalizers")
+	flag.DurationVar(&waitBeforeExitDuration, "wait-before-exit-duration", time.Duration(3)*time.Second, "Wait for workers to finish before exiting and removing finalizers.")
 	var leaderElectionEnabled bool
 	flag.BoolVar(&leaderElectionEnabled, "leader-election-enabled", true, "Enable leader election for controller manager. "+
 		"Enabling this will ensure there is only one active controller manager.")
 	var leaderElectionNamespace string
-	flag.StringVar(&leaderElectionNamespace, "leader-election-namespace", "istio-system", "LeaderElectionNamespace determines the namespace in which the leader election configmap will be created.")
+	flag.StringVar(&leaderElectionNamespace, "leader-election-namespace", "istio-system", "Determines the namespace in which the leader election configmap will be created.")
 	var leaderElectionName string
-	flag.StringVar(&leaderElectionName, "leader-election-name", "istio-operator-leader-election", "LeaderElectionName determines the name of the leader election configmap.")
+	flag.StringVar(&leaderElectionName, "leader-election-name", "istio-operator-leader-election", "Determines the name of the leader election configmap.")
+	var webhookServerPort uint
+	flag.UintVar(&webhookServerPort, "webhook-server-port", 9443, "The port that the webhook server serves at.")
+	var webhookCertDir string
+	flag.StringVar(&webhookCertDir, "webhook-cert-dir", "/etc/webhook/certs", "Determines the directory that contains the server key and certificate.")
+	var webhookConfigurationName string
+	flag.StringVar(&webhookConfigurationName, "webhook-name", "istio-operator-webhook", "Sets the name of the validating webhook resource.")
 	flag.Parse()
 	logf.SetLogger(logf.ZapLogger(developmentMode))
 	log := logf.Log.WithName("entrypoint")
@@ -94,6 +102,8 @@ func main() {
 		LeaderElection:          leaderElectionEnabled,
 		LeaderElectionNamespace: leaderElectionNamespace,
 		LeaderElectionID:        leaderElectionName,
+		CertDir:                 webhookCertDir,
+		Port:                    int(webhookServerPort),
 	})
 	if err != nil {
 		log.Error(err, "unable to set up overall controller manager")
@@ -118,11 +128,10 @@ func main() {
 		os.Exit(1)
 	}
 
-	log.Info("setting up webhooks")
-	if err := webhook.AddToManager(mgr); err != nil {
-		log.Error(err, "unable to register webhooks to the manager")
-		os.Exit(1)
-	}
+	mgr.GetWebhookServer().Register("/validate-istio-config", &webhook.Admission{Handler: wh.NewIstioResourceValidator(mgr)})
+
+	whLogger := logf.Log.WithName("wh-cert-provisioner")
+	mgr.Add(wh.NewValidatingWebhookCertificateProvisioner(mgr, webhookConfigurationName, cert.NewCertProvisioner(whLogger, []string{}, webhookCertDir), whLogger))
 
 	// Start the Cmd
 	log.Info("starting the Cmd.")
