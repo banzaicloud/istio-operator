@@ -107,11 +107,11 @@ func (c *Cluster) waitForCRD(crd *apiextensionsv1.CustomResourceDefinition) erro
 }
 
 func (c *Cluster) istiocrd() (*apiextensionsv1.CustomResourceDefinition, error) {
-	return c.getCRD("istio_v1beta1_istio.yaml")
+	return c.getCRD("istio.banzaicloud.io_istios.yaml")
 }
 
 func (c *Cluster) meshgatewaycrd() (*apiextensionsv1.CustomResourceDefinition, error) {
-	return c.getCRD("istio_v1beta1_meshgateway.yaml")
+	return c.getCRD("istio.banzaicloud.io_meshgateways.yaml")
 }
 
 func (c *Cluster) getCRD(name string) (*apiextensionsv1.CustomResourceDefinition, error) {
