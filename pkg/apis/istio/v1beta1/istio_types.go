@@ -40,6 +40,7 @@ var (
 )
 
 // IstioVersion stores the intended Istio version
+// +kubebuilder:validation:Pattern=^1.
 type IstioVersion string
 
 // BaseK8sResourceConfiguration defines basic K8s resource spec configurations
@@ -122,7 +123,7 @@ type PilotConfiguration struct {
 	// Currently, two providers are supported: "kubernetes" and "istiod".
 	// As some platforms may not have kubernetes signing APIs,
 	// Istiod is the default
-	// +kubebuilder:validation:Enum=kubernetes,istiod
+	// +kubebuilder:validation:Enum=kubernetes;istiod
 	CertProvider PilotCertProviderType `json:"certProvider,omitempty"`
 
 	// If present will be appended at the end of the initial/preconfigured container arguments
@@ -429,7 +430,7 @@ func (c EnvoyServiceCommonConfiguration) GetDataJSON() string {
 }
 
 type TLSSettings struct {
-	// +kubebuilder:validation:Enum=DISABLE,SIMPLE,MUTUAL,ISTIO_MUTUAL
+	// +kubebuilder:validation:Enum=DISABLE;SIMPLE;MUTUAL;ISTIO_MUTUAL
 	Mode              string   `json:"mode,omitempty"`
 	ClientCertificate string   `json:"clientCertificate,omitempty"`
 	PrivateKey        string   `json:"privateKey,omitempty"`
@@ -451,7 +452,7 @@ type ProxyConfiguration struct {
 	// Options:
 	//   "" - disables access log
 	//   "/dev/stdout" - enables access log
-	// +kubebuilder:validation:Enum=,/dev/stdout
+	// +kubebuilder:validation:Enum=;/dev/stdout
 	AccessLogFile *string `json:"accessLogFile,omitempty"`
 	// Configure how and what fields are displayed in sidecar access log. Setting to
 	// empty string will result in default log format.
@@ -461,7 +462,7 @@ type ProxyConfiguration struct {
 	// example: '{"start_time": "%START_TIME%", "req_method": "%REQ(:METHOD)%"}'
 	AccessLogFormat *string `json:"accessLogFormat,omitempty"`
 	// Configure the access log for sidecar to JSON or TEXT.
-	// +kubebuilder:validation:Enum=JSON,TEXT
+	// +kubebuilder:validation:Enum=JSON;TEXT
 	AccessLogEncoding *string `json:"accessLogEncoding,omitempty"`
 	// If set to true, istio-proxy container will have privileged securityContext
 	Privileged bool `json:"privileged,omitempty"`
@@ -471,14 +472,14 @@ type ProxyConfiguration struct {
 	CoreDumpImage string `json:"coreDumpImage,omitempty"`
 	// Log level for proxy, applies to gateways and sidecars. If left empty, "warning" is used.
 	// Expected values are: trace|debug|info|warning|error|critical|off
-	// +kubebuilder:validation:Enum=trace,debug,info,warning,error,critical,off
+	// +kubebuilder:validation:Enum=trace;debug;info;warning;error;critical;off
 	LogLevel string `json:"logLevel,omitempty"`
 	// Per Component log level for proxy, applies to gateways and sidecars. If a component level is
 	// not set, then the "LogLevel" will be used. If left empty, "misc:error" is used.
 	ComponentLogLevel string `json:"componentLogLevel,omitempty"`
 	// Configure the DNS refresh rate for Envoy cluster of type STRICT_DNS
 	// This must be given it terms of seconds. For example, 300s is valid but 5m is invalid.
-	// +kubebuilder:validation:Pattern=^[0-9]{1,5}s$
+	// +kubebuilder:validation:Pattern=`^[0-9]{1,5}s$`
 	DNSRefreshRate string `json:"dnsRefreshRate,omitempty"`
 	// cluster domain. Default value is "cluster.local"
 	ClusterDomain string `json:"clusterDomain,omitempty"`
@@ -508,14 +509,14 @@ type PDBConfiguration struct {
 }
 
 type OutboundTrafficPolicyConfiguration struct {
-	// +kubebuilder:validation:Enum=ALLOW_ANY,REGISTRY_ONLY
+	// +kubebuilder:validation:Enum=ALLOW_ANY;REGISTRY_ONLY
 	Mode string `json:"mode,omitempty"`
 }
 
 // Configuration for Envoy to send trace data to Zipkin/Jaeger.
 type ZipkinConfiguration struct {
 	// Host:Port for reporting trace data in zipkin format. If not specified, will default to zipkin service (port 9411) in the same namespace as the other istio components.
-	// +kubebuilder:validation:Pattern=^[^\:]+:[0-9]{1,5}$
+	// +kubebuilder:validation:Pattern=`^[^:]+:[0-9]{1,5}$`
 	Address string `json:"address,omitempty"`
 	// TLS setting for Zipkin endpoint.
 	TLSSettings *TLSSettings `json:"tlsSettings,omitempty"`
@@ -532,7 +533,7 @@ func (c ZipkinConfiguration) GetData() map[string]interface{} {
 // Configuration for Envoy to send trace data to Lightstep
 type LightstepConfiguration struct {
 	// the <host>:<port> of the satellite pool
-	// +kubebuilder:validation:Pattern=^[^\:]+:[0-9]{1,5}$
+	// +kubebuilder:validation:Pattern=`^[^:]+:[0-9]{1,5}$`
 	Address string `json:"address,omitempty"`
 	// required for sending data to the pool
 	AccessToken string `json:"accessToken,omitempty"`
@@ -547,7 +548,7 @@ type LightstepConfiguration struct {
 // Configuration for Envoy to send trace data to Datadog
 type DatadogConfiugration struct {
 	// Host:Port for submitting traces to the Datadog agent.
-	// +kubebuilder:validation:Pattern=^[^\:]+:[0-9]{1,5}$
+	// +kubebuilder:validation:Pattern=`^[^:]+:[0-9]{1,5}$`
 	Address string `json:"address,omitempty"`
 }
 
@@ -573,7 +574,7 @@ const (
 
 type TracingConfiguration struct {
 	Enabled *bool `json:"enabled,omitempty"`
-	// +kubebuilder:validation:Enum=zipkin,lightstep,datadog,stackdriver
+	// +kubebuilder:validation:Enum=zipkin;lightstep;datadog;stackdriver
 	Tracer       TracerType                `json:"tracer,omitempty"`
 	Zipkin       ZipkinConfiguration       `json:"zipkin,omitempty"`
 	Lightstep    LightstepConfiguration    `json:"lightstep,omitempty"`
@@ -645,14 +646,14 @@ type CertificateConfig struct {
 // The control plane has different scopes depending on component, but can configure default log level across all components
 // If empty, default scope and level will be used as configured in code
 type LoggingConfiguration struct {
-	// +kubebuilder:validation:Pattern=^([a-zA-Z]+:[a-zA-Z]+,?)+$
+	// +kubebuilder:validation:Pattern=`^([a-zA-Z]+:[a-zA-Z]+,?)+$`
 	Level *string `json:"level,omitempty"`
 }
 
 // MeshPolicyConfiguration configures the mesh-wide PeerAuthentication resource
 type MeshPolicyConfiguration struct {
 	// MTLSMode sets the mesh-wide mTLS policy
-	// +kubebuilder:validation:Enum=STRICT,PERMISSIVE,DISABLED
+	// +kubebuilder:validation:Enum=STRICT;PERMISSIVE;DISABLED
 	MTLSMode MTLSMode `json:"mtlsMode,omitempty"`
 }
 
@@ -694,7 +695,6 @@ type HTTPProxyEnvs struct {
 // IstioSpec defines the desired state of Istio
 type IstioSpec struct {
 	// Contains the intended Istio version
-	// +kubebuilder:validation:Pattern=^1.
 	Version IstioVersion `json:"version"`
 
 	// Logging configurations
@@ -723,7 +723,7 @@ type IstioSpec struct {
 	AutoInjectionNamespaces []string `json:"autoInjectionNamespaces,omitempty"`
 
 	// ControlPlaneAuthPolicy defines how the proxy is authenticated when it connects to the control plane
-	// +kubebuilder:validation:Enum=MUTUAL_TLS,NONE
+	// +kubebuilder:validation:Enum=MUTUAL_TLS;NONE
 	ControlPlaneAuthPolicy ControlPlaneAuthPolicyType `json:"controlPlaneAuthPolicy,omitempty"`
 
 	// Use the user-specified, secret volume mounted key and certs for Pilot and workloads.
@@ -806,7 +806,7 @@ type IstioSpec struct {
 	Tracing TracingConfiguration `json:"tracing,omitempty"`
 
 	// ImagePullPolicy describes a policy for if/when to pull a container image
-	// +kubebuilder:validation:Enum=Always,Never,IfNotPresent
+	// +kubebuilder:validation:Enum=Always;Never;IfNotPresent
 	ImagePullPolicy corev1.PullPolicy `json:"imagePullPolicy,omitempty"`
 
 	// If set to true, the pilot and citadel mtls will be exposed on the
@@ -867,7 +867,7 @@ type IstioSpec struct {
 
 	// Configure the policy for validating JWT.
 	// Currently, two options are supported: "third-party-jwt" and "first-party-jwt".
-	// +kubebuilder:validation:Enum=third-party-jwt,first-party-jwt
+	// +kubebuilder:validation:Enum=third-party-jwt;first-party-jwt
 	JWTPolicy JWTPolicyType `json:"jwtPolicy,omitempty"`
 
 	// The customized CA address to retrieve certificates for the pods in the cluster.
