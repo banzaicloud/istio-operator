@@ -35,7 +35,6 @@ import (
 	"k8s.io/client-go/kubernetes/scheme"
 	"k8s.io/client-go/rest"
 	"k8s.io/client-go/tools/record"
-	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/event"
 	"sigs.k8s.io/controller-runtime/pkg/manager"
 	"sigs.k8s.io/controller-runtime/pkg/predicate"
@@ -65,7 +64,7 @@ func New(mgr manager.Manager, revision string, crds ...*extensionsobj.CustomReso
 		crds:     crds,
 		config:   mgr.GetConfig(),
 		revision: revision,
-		recorder: mgr.GetRecorder(eventRecorderName),
+		recorder: mgr.GetEventRecorderFor(eventRecorderName),
 	}
 
 	return r, nil
@@ -198,7 +197,7 @@ func (r *CRDReconciler) Reconcile(config *istiov1beta1.Istio, log logr.Logger) e
 				log.Error(err, "Failed to set last applied annotation", "crd", crd)
 			}
 
-			if _, err := crdClient.Update(context.Background(), crd, client.UpdateOptions{}); err != nil {
+			if _, err := crdClient.Update(context.Background(), crd, metav1.UpdateOptions{}); err != nil {
 				errorMessage := "updating CRD failed, consider updating the CRD manually if needed"
 				r.recorder.Eventf(
 					config,
