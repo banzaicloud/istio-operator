@@ -12,7 +12,6 @@ metadata:
   name: {{ include "istio-operator.name" . }}-webhook
 webhooks:
 - clientConfig:
-    caBundle: {{ $ca.Cert | b64enc }}
     service:
       name: "{{ include "istio-operator.fullname" . }}-operator"
       namespace: {{ .Release.Namespace }}
