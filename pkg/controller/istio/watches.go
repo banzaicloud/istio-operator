@@ -23,7 +23,7 @@ import (
 	autoscalingv2beta2 "k8s.io/api/autoscaling/v2beta2"
 	corev1 "k8s.io/api/core/v1"
 	rbacv1 "k8s.io/api/rbac/v1"
-	extensionsobj "k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1beta1"
+	apiextensionsv1 "k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/types"
@@ -192,10 +192,10 @@ func (r *ReconcileIstio) watchResource(resource runtime.Object) error {
 func (r *ReconcileIstio) watchCRDs(nn types.NamespacedName) error {
 	err := r.ctrl.Watch(
 		&source.Kind{
-			Type: &extensionsobj.CustomResourceDefinition{
+			Type: &apiextensionsv1.CustomResourceDefinition{
 				TypeMeta: metav1.TypeMeta{
 					Kind:       "CustomResourceDefinition",
-					APIVersion: extensionsobj.SchemeGroupVersion.String(),
+					APIVersion: apiextensionsv1.SchemeGroupVersion.String(),
 				},
 			},
 		},

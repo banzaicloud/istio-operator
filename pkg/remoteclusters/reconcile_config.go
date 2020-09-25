@@ -20,8 +20,8 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/goph/emperror"
 	k8sapierrors "k8s.io/apimachinery/pkg/api/errors"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/types"
 
 	istiov1beta1 "github.com/banzaicloud/istio-operator/pkg/apis/istio/v1beta1"
@@ -104,13 +104,7 @@ func (c *Cluster) reconcileConfig(remoteConfig *istiov1beta1.RemoteIstio, istio 
 		}
 	}
 
-	crd, err := c.istiocrd()
-	if err != nil {
-		return emperror.Wrap(err, "could not get istio CRD")
-	}
-
-	istioConfig.TypeMeta.Kind = crd.Spec.Names.Kind
-	istioConfig.TypeMeta.APIVersion = crd.Spec.Group + "/" + crd.Spec.Version
+	istioConfig.TypeMeta = metav1.TypeMeta{Kind: "Istio", APIVersion: istiov1beta1.SchemeGroupVersion.WithKind("Istio").GroupVersion().String()}
 	c.istioConfig = &istioConfig
 
 	return nil
