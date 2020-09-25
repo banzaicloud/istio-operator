@@ -55,7 +55,7 @@ func TestReconcile(t *testing.T) {
 	dynamic, err := dynamic.NewForConfig(mgr.GetConfig())
 	g.Expect(err).NotTo(gomega.HaveOccurred())
 
-	crd, err := crds.New(mgr, mgr.GetConfig(), istiov1beta1.SupportedIstioVersion)
+	crd, err := crds.New(mgr, istiov1beta1.SupportedIstioVersion)
 	g.Expect(err).NotTo(gomega.HaveOccurred())
 
 	recFn, requests := SetupTestReconcile(newReconciler(mgr, dynamic, crd))

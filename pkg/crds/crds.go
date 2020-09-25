@@ -45,9 +45,10 @@ import (
 )
 
 const (
-	componentName  = "crds"
-	createdByLabel = "banzaicloud.io/created-by"
-	createdBy      = "istio-operator"
+	componentName     = "crds"
+	createdByLabel    = "banzaicloud.io/created-by"
+	createdBy         = "istio-operator"
+	eventRecorderName = "istio-crd-controller"
 )
 
 type CRDReconciler struct {
@@ -57,12 +58,12 @@ type CRDReconciler struct {
 	recorder record.EventRecorder
 }
 
-func New(mgr manager.Manager, cfg *rest.Config, revision string, crds ...*extensionsobj.CustomResourceDefinition) (*CRDReconciler, error) {
+func New(mgr manager.Manager, revision string, crds ...*extensionsobj.CustomResourceDefinition) (*CRDReconciler, error) {
 	r := &CRDReconciler{
 		crds:     crds,
-		config:   cfg,
+		config:   mgr.GetConfig(),
 		revision: revision,
-		recorder: mgr.GetRecorder("istio-crd-controller"),
+		recorder: mgr.GetRecorder(eventRecorderName),
 	}
 
 	return r, nil
