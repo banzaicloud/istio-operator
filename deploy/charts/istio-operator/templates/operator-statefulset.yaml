@@ -69,6 +69,9 @@ spec:
           {{- end }}
           - "--leader-election-namespace={{ .Values.leaderElection.namespace }}"
           {{- end }}
+          {{- if .Values.webhook.enabled -}}
+          - "--webhook-name={{ include "istio-operator.name" . }}-webhook"
+          {{- end }}
         env:
           - name: POD_NAMESPACE
             valueFrom:
@@ -85,7 +88,6 @@ spec:
           {{- end }}
         resources:
 {{ toYaml .Values.operator.resources | indent 10 }}
-    {{- with .Values.nodeSelector }}
         securityContext:
           runAsUser: 1337
           runAsGroup: 1337
@@ -93,6 +95,7 @@ spec:
           capabilities:
             drop:
             - ALL
+    {{- with .Values.nodeSelector }}
       nodeSelector:
 {{ toYaml . | indent 8 }}
     {{- end }}

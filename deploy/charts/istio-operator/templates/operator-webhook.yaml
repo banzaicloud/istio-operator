@@ -1,0 +1,35 @@
+{{- if .Values.webhook.enabled -}}
+apiVersion: admissionregistration.k8s.io/v1beta1
+kind: ValidatingWebhookConfiguration
+metadata:
+  labels:
+    app.kubernetes.io/name: {{ include "istio-operator.name" . }}
+    helm.sh/chart: {{ include "istio-operator.chart" . }}
+    app.kubernetes.io/instance: {{ .Release.Name }}
+    app.kubernetes.io/managed-by: {{ .Release.Service }}
+    app.kubernetes.io/version: {{ .Chart.AppVersion }}
+    app.kubernetes.io/component: webhook
+  name: {{ include "istio-operator.name" . }}-webhook
+webhooks:
+- clientConfig:
+    caBundle: {{ $ca.Cert | b64enc }}
+    service:
+      name: "{{ include "istio-operator.fullname" . }}-operator"
+      namespace: {{ .Release.Namespace }}
+      path: /validate-istio-config
+  failurePolicy: Ignore
+  matchPolicy: Exact
+  name: istio.validation.banzaicloud.io
+  rules:
+  - apiGroups:
+    - istio.banzaicloud.io
+    apiVersions:
+    - v1beta1
+    operations:
+    - CREATE
+    resources:
+    - istios
+    scope: '*'
+  sideEffects: Unknown
+  timeoutSeconds: 30
+{{- end -}}

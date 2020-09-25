@@ -1,0 +1,26 @@
+
+apiVersion: admissionregistration.k8s.io/v1beta1
+kind: ValidatingWebhookConfiguration
+metadata:
+  name: webhook
+webhooks:
+- clientConfig:
+    service:
+      name: istio-operator-controller-manager-service
+      namespace: istio-system
+      path: /validate-istio-config
+  failurePolicy: Fail
+  matchPolicy: Exact
+  name: istio.validation.banzaicloud.io
+  rules:
+  - apiGroups:
+    - istio.banzaicloud.io
+    apiVersions:
+    - v1beta1
+    operations:
+    - CREATE
+    resources:
+    - istios
+    scope: '*'
+  sideEffects: Unknown
+  timeoutSeconds: 30

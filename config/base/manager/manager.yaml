@@ -62,7 +62,7 @@ spec:
             drop:
             - ALL
         ports:
-        - containerPort: 9876
+        - containerPort: 9443
           name: webhook-server
           protocol: TCP
       terminationGracePeriodSeconds: 60
