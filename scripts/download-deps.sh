@@ -13,7 +13,7 @@ for name in ${cmds}; do
     fi
 done
 
-cgen_version=0.2.9
+cgen_version=0.4.0
 
 target_name=controller-gen-${cgen_version}
 link_path=${binpath}/controller-gen
