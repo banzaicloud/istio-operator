@@ -1,5 +1,7 @@
 #!/usr/bin/env bash
-set +x
+
+set -euo pipefail
+
 dirname=$(dirname "$0")
 binpath=$PWD/$dirname/../bin
 version="v0.18.6"
@@ -11,17 +13,18 @@ for name in ${cmds}; do
     fi
 done
 
-if [[ ! -f $binpath/controller-gen1 ]]; then
-    TMPDIR=$(mktemp -d -t ci-XXXXXXXXXX)
-    if [ -d "$TMPDIR" ]; then
-        BUILDDIR=$TMPDIR/cgen-build
-        mkdir "$BUILDDIR"
-        cp "$PWD"/"$dirname"/go.mod.cgen "$BUILDDIR"/go.mod
-        pushd "$BUILDDIR" >/dev/null || exit
-        GOBIN=$binpath GOMOD=$BUILDDIR/go.mod go get sigs.k8s.io/controller-tools/cmd/controller-gen@v0.1.9
-        popd >/dev/null || exit
-        rm -rf "$BUILDDIR"
-    fi
+cgen_version=0.2.9
+
+target_name=controller-gen-${cgen_version}
+link_path=${binpath}/controller-gen
+
+[ -e "${link_path}" ] && rm -r "${link_path}"
+
+if [ ! -e "${binpath}/${target_name}" ]; then
+    GOBIN=$binpath go get sigs.k8s.io/controller-tools/cmd/controller-gen@v${cgen_version}
+    mv "${binpath}/controller-gen" "${binpath}/${target_name}"
 fi
+
+ln -s "${target_name}" "${link_path}"
 
 go mod vendor

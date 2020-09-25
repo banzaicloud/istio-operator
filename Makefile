@@ -104,12 +104,8 @@ download-deps:
 # Generate code
 generate: download-deps
 	go generate ./pkg/... ./cmd/...
-	./hack/update-codegen.sh
+	bin/controller-gen object:headerFile="hack/boilerplate.go.txt" paths="./..."
 	go run static/generate.go
-
-# Verify codegen
-verify-codegen: download-deps
-	./hack/verify-codegen.sh
 
 # Build the docker image
 docker-build:
