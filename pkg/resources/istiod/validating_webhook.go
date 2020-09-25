@@ -17,20 +17,21 @@ limitations under the License.
 package istiod
 
 import (
-	admissionv1beta1 "k8s.io/api/admissionregistration/v1beta1"
+	admissionv1 "k8s.io/api/admissionregistration/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 
 	"github.com/banzaicloud/istio-operator/pkg/resources/templates"
 	"github.com/banzaicloud/istio-operator/pkg/util"
 )
 
-func (r *Reconciler) webhooks() []admissionv1beta1.Webhook {
-	se := admissionv1beta1.SideEffectClassNone
-	return []admissionv1beta1.Webhook{
+func (r *Reconciler) webhooks() []admissionv1.ValidatingWebhook {
+	se := admissionv1.SideEffectClassNone
+	scope := admissionv1.AllScopes
+	return []admissionv1.ValidatingWebhook{
 		{
 			Name: "validation.istio.io",
-			ClientConfig: admissionv1beta1.WebhookClientConfig{
-				Service: &admissionv1beta1.ServiceReference{
+			ClientConfig: admissionv1.WebhookClientConfig{
+				Service: &admissionv1.ServiceReference{
 					Name:      r.Config.WithRevision(ServiceNameIstiod),
 					Namespace: r.Config.Namespace,
 					Path:      util.StrPointer("/validate"),
@@ -38,16 +39,17 @@ func (r *Reconciler) webhooks() []admissionv1beta1.Webhook {
 				// patched at runtime when the webhook is ready
 				CABundle: nil,
 			},
-			Rules: []admissionv1beta1.RuleWithOperations{
+			Rules: []admissionv1.RuleWithOperations{
 				{
-					Operations: []admissionv1beta1.OperationType{
-						admissionv1beta1.Create,
-						admissionv1beta1.Update,
+					Operations: []admissionv1.OperationType{
+						admissionv1.Create,
+						admissionv1.Update,
 					},
-					Rule: admissionv1beta1.Rule{
+					Rule: admissionv1.Rule{
 						APIGroups:   []string{"config.istio.io", "rbac.istio.io", "security.istio.io", "authentication.istio.io", "networking.istio.io"},
 						APIVersions: []string{"*"},
 						Resources:   []string{"*"},
+						Scope:       &scope,
 					},
 				},
 			},
@@ -58,7 +60,7 @@ func (r *Reconciler) webhooks() []admissionv1beta1.Webhook {
 }
 
 func (r *Reconciler) validatingWebhook() runtime.Object {
-	return &admissionv1beta1.ValidatingWebhookConfiguration{
+	return &admissionv1.ValidatingWebhookConfiguration{
 		ObjectMeta: templates.ObjectMetaClusterScopeWithRevision(validatingWebhookName, util.MergeMultipleStringMaps(istiodLabels, istiodLabelSelector, r.Config.RevisionLabels()), r.Config),
 		Webhooks:   r.webhooks(),
 	}
