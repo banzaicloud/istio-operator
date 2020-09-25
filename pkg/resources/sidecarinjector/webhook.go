@@ -17,7 +17,7 @@ limitations under the License.
 package sidecarinjector
 
 import (
-	admissionv1beta1 "k8s.io/api/admissionregistration/v1beta1"
+	admissionv1 "k8s.io/api/admissionregistration/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 
@@ -27,8 +27,9 @@ import (
 )
 
 func (r *Reconciler) webhook() runtime.Object {
-	fail := admissionv1beta1.Fail
-	noneSideEffects := admissionv1beta1.SideEffectClassNone
+	fail := admissionv1.Fail
+	noneSideEffects := admissionv1.SideEffectClassNone
+	scope := admissionv1.AllScopes
 	service := serviceName
 	if !util.PointerToBool(r.Config.Spec.SidecarInjector.Enabled) && util.PointerToBool(r.Config.Spec.Istiod.Enabled) {
 		service = istiod.ServiceNameIstiod
@@ -80,30 +81,31 @@ func (r *Reconciler) webhook() runtime.Object {
 		},
 	}
 
-	webhookConfiguration := &admissionv1beta1.MutatingWebhookConfiguration{
+	webhookConfiguration := &admissionv1.MutatingWebhookConfiguration{
 		ObjectMeta: templates.ObjectMetaClusterScopeWithRevision(webhookName, sidecarInjectorLabels, r.Config),
-		Webhooks:   []admissionv1beta1.Webhook{},
+		Webhooks:   []admissionv1.MutatingWebhook{},
 	}
 
-	webhook := &admissionv1beta1.Webhook{
+	webhook := &admissionv1.MutatingWebhook{
 		Name: "sidecar-injector.istio.io",
-		ClientConfig: admissionv1beta1.WebhookClientConfig{
-			Service: &admissionv1beta1.ServiceReference{
+		ClientConfig: admissionv1.WebhookClientConfig{
+			Service: &admissionv1.ServiceReference{
 				Name:      r.Config.WithRevision(service),
 				Namespace: r.Config.Namespace,
 				Path:      util.StrPointer("/inject"),
 			},
 			CABundle: nil,
 		},
-		Rules: []admissionv1beta1.RuleWithOperations{
+		Rules: []admissionv1.RuleWithOperations{
 			{
-				Operations: []admissionv1beta1.OperationType{
-					admissionv1beta1.Create,
+				Operations: []admissionv1.OperationType{
+					admissionv1.Create,
 				},
-				Rule: admissionv1beta1.Rule{
+				Rule: admissionv1.Rule{
 					Resources:   []string{"pods"},
 					APIGroups:   []string{""},
 					APIVersions: []string{"v1"},
+					Scope:       &scope,
 				},
 			},
 		},

@@ -22,7 +22,7 @@ import (
 
 	"github.com/go-logr/logr"
 	"github.com/goph/emperror"
-	admissionv1beta1 "k8s.io/api/admissionregistration/v1beta1"
+	admissionregistrationv1 "k8s.io/api/admissionregistration/v1"
 	"k8s.io/client-go/tools/cache"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/manager"
@@ -36,7 +36,7 @@ type ValidatingWebhookCertificateProvisioner struct {
 	mgr             manager.Manager
 	certProvisioner *cert.Provisioner
 	log             logr.Logger
-	whc             *admissionv1beta1.ValidatingWebhookConfiguration
+	whc             *admissionregistrationv1.ValidatingWebhookConfiguration
 	trigger         chan struct{}
 }
 
@@ -49,7 +49,7 @@ func NewValidatingWebhookCertificateProvisioner(mgr manager.Manager, name string
 		certProvisioner: certProvisioner,
 		log:             log,
 		trigger:         make(chan struct{}),
-		whc:             &admissionv1beta1.ValidatingWebhookConfiguration{},
+		whc:             &admissionregistrationv1.ValidatingWebhookConfiguration{},
 	}
 }
 
@@ -102,14 +102,14 @@ func (m *ValidatingWebhookCertificateProvisioner) getWHC() error {
 }
 
 func (m *ValidatingWebhookCertificateProvisioner) startInformer() error {
-	si, err := m.mgr.GetCache().GetInformerForKind(context.Background(), admissionv1beta1.SchemeGroupVersion.WithKind("ValidatingWebhookConfiguration"))
+	si, err := m.mgr.GetCache().GetInformerForKind(context.Background(), admissionregistrationv1.SchemeGroupVersion.WithKind("ValidatingWebhookConfiguration"))
 	if err != nil {
 		return emperror.Wrap(err, "could not get informer")
 	}
 
 	si.AddEventHandler(cache.ResourceEventHandlerFuncs{
 		UpdateFunc: func(old, new interface{}) {
-			if whc, ok := new.(*admissionv1beta1.ValidatingWebhookConfiguration); ok && whc.Name == m.whc.Name {
+			if whc, ok := new.(*admissionregistrationv1.ValidatingWebhookConfiguration); ok && whc.Name == m.whc.Name {
 				err = m.mgr.GetClient().Get(context.Background(), client.ObjectKey{
 					Name: m.whc.Name,
 				}, m.whc)
