@@ -185,7 +185,7 @@ func IsObjectChanged(oldObj, newObj runtime.Object, ignoreStatusChange bool) (bo
 }
 
 // ReconcileNamespaceLabelsIgnoreNotFound patches namespaces by adding/removing labels, returns without error if namespace is not found
-func ReconcileNamespaceLabelsIgnoreNotFound(log logr.Logger, client runtimeClient.Client, namespace string, labels map[string]string, labelsToRemove []string) error {
+func ReconcileNamespaceLabelsIgnoreNotFound(log logr.Logger, client runtimeClient.Client, namespace string, labels map[string]string, labelsToRemove []string, customLabelsToIgnoreReconcile ...string) error {
 	var ns = &corev1.Namespace{}
 	err := client.Get(context.TODO(), runtimeClient.ObjectKey{Name: namespace}, ns)
 	if err != nil {
@@ -197,9 +197,11 @@ func ReconcileNamespaceLabelsIgnoreNotFound(log logr.Logger, client runtimeClien
 		return emperror.WrapWith(err, "getting namespace failed", "namespace", namespace)
 	}
 
-	if _, ok := ns.Labels["istio.io/rev"]; ok {
-		log.V(1).Info("namespace has 'istio.io/rev' label, ignoring namespace", "namespace", namespace)
-		return nil
+	for _, customLabel := range customLabelsToIgnoreReconcile {
+		if _, ok := ns.Labels[customLabel]; ok {
+			log.V(1).Info("namespace has a custom label, ignoring namespace", "namespace", namespace, "customLabel", customLabel)
+			return nil
+		}
 	}
 
 	updateNeeded := false

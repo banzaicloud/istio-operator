@@ -28,8 +28,9 @@ import (
 )
 
 const (
-	managedAutoInjectionLabelKey = "istio-operator-managed-injection"
-	autoInjectionLabelKey        = "istio-injection"
+	managedAutoInjectionLabelKey    = "istio-operator-managed-injection"
+	autoInjectionLabelKey           = "istio-injection"
+	revisionedAutoInjectionLabelKey = "istio.io/rev"
 )
 
 func (r *Reconciler) reconcileAutoInjectionLabels(log logr.Logger) error {
@@ -41,7 +42,7 @@ func (r *Reconciler) reconcileAutoInjectionLabels(log logr.Logger) error {
 	managedNamespaces := make(map[string]bool)
 	for _, ns := range r.Config.Spec.AutoInjectionNamespaces {
 		managedNamespaces[ns] = true
-		err := k8sutil.ReconcileNamespaceLabelsIgnoreNotFound(log, r.Client, ns, autoInjectLabels, nil)
+		err := k8sutil.ReconcileNamespaceLabelsIgnoreNotFound(log, r.Client, ns, autoInjectLabels, nil, revisionedAutoInjectionLabelKey)
 		if err != nil {
 			log.Error(err, "failed to label namespace", "namespace", ns)
 		}
@@ -65,7 +66,7 @@ func (r *Reconciler) reconcileAutoInjectionLabels(log logr.Logger) error {
 			err := k8sutil.ReconcileNamespaceLabelsIgnoreNotFound(log, r.Client, ns.Name, nil, []string{
 				autoInjectionLabelKey,
 				managedAutoInjectionLabelKey,
-			})
+			}, revisionedAutoInjectionLabelKey)
 			if err != nil {
 				log.Error(emperror.Wrap(err, "failed to label namespace"), "namespace", ns.Name)
 			}
