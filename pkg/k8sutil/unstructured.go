@@ -17,6 +17,7 @@ limitations under the License.
 package k8sutil
 
 import (
+	"context"
 	"reflect"
 
 	patch "github.com/banzaicloud/k8s-objectmatcher/patch"
@@ -49,7 +50,7 @@ func (d *DynamicObject) Reconcile(log logr.Logger, client dynamic.Interface, des
 	desired := d.unstructured()
 	desiredType := reflect.TypeOf(desired)
 	log = log.WithValues("type", reflect.TypeOf(d), "name", d.Name)
-	current, err := client.Resource(d.Gvr).Namespace(d.Namespace).Get(d.Name, metav1.GetOptions{})
+	current, err := client.Resource(d.Gvr).Namespace(d.Namespace).Get(context.Background(), d.Name, metav1.GetOptions{})
 	if err != nil && !apierrors.IsNotFound(err) {
 		return emperror.WrapWith(err, "getting resource failed", "name", d.Name, "kind", desiredType)
 	}
@@ -58,7 +59,7 @@ func (d *DynamicObject) Reconcile(log logr.Logger, client dynamic.Interface, des
 			if err := patch.DefaultAnnotator.SetLastAppliedAnnotation(desired); err != nil {
 				log.Error(err, "Failed to set last applied annotation", "desired", desired)
 			}
-			if _, err := client.Resource(d.Gvr).Namespace(d.Namespace).Create(desired, metav1.CreateOptions{}); err != nil {
+			if _, err := client.Resource(d.Gvr).Namespace(d.Namespace).Create(context.Background(), desired, metav1.CreateOptions{}); err != nil {
 				return emperror.WrapWith(err, "creating resource failed", "name", d.Name, "kind", desiredType)
 			}
 			log.Info("resource created", "kind", d.Gvr.Resource)
@@ -83,12 +84,12 @@ func (d *DynamicObject) Reconcile(log logr.Logger, client dynamic.Interface, des
 				log.Error(err, "Failed to set last applied annotation", "desired", desired)
 			}
 			desired.SetResourceVersion(current.GetResourceVersion())
-			if _, err := client.Resource(d.Gvr).Namespace(d.Namespace).Update(desired, metav1.UpdateOptions{}); err != nil {
+			if _, err := client.Resource(d.Gvr).Namespace(d.Namespace).Update(context.Background(), desired, metav1.UpdateOptions{}); err != nil {
 				return emperror.WrapWith(err, "updating resource failed", "name", d.Name, "kind", desiredType)
 			}
 			log.Info("resource updated", "kind", d.Gvr.Resource)
 		} else if desiredState == DesiredStateAbsent {
-			if err := client.Resource(d.Gvr).Namespace(d.Namespace).Delete(d.Name, &metav1.DeleteOptions{}); err != nil {
+			if err := client.Resource(d.Gvr).Namespace(d.Namespace).Delete(context.Background(), d.Name, metav1.DeleteOptions{}); err != nil {
 				return emperror.WrapWith(err, "deleting resource failed", "name", d.Name, "kind", desiredType)
 			}
 			log.Info("resource deleted", "kind", d.Gvr.Resource)

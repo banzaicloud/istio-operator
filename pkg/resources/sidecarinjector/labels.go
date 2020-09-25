@@ -49,14 +49,9 @@ func (r *Reconciler) reconcileAutoInjectionLabels(log logr.Logger) error {
 	}
 
 	var namespaces corev1.NamespaceList
-	o := &client.ListOptions{}
-	selector := managedAutoInjectionLabelKey + "=" + autoInjectLabels[managedAutoInjectionLabelKey]
-	err := o.SetLabelSelector(selector)
-	if err != nil {
-		return emperror.WrapWith(err, "could not set label selector to list options", "selector", selector)
-	}
-
-	err = r.Client.List(context.Background(), o, &namespaces)
+	err := r.Client.List(context.Background(), &namespaces, client.MatchingLabels(map[string]string{
+		managedAutoInjectionLabelKey: autoInjectLabels[managedAutoInjectionLabelKey],
+	}))
 	if err != nil {
 		return emperror.Wrap(err, "could not list namespaces")
 	}

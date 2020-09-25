@@ -8,6 +8,7 @@ approved = [
 
 ignored = [
   "github.com/ghodss/yaml",
+  "sigs.k8s.io/yaml", # Forked from above
   "github.com/gogo/protobuf",
   "github.com/hpcloud/tail",
   "github.com/inconshreveable/mousetrap",

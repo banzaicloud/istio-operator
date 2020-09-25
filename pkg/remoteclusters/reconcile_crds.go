@@ -18,6 +18,7 @@ package remoteclusters
 
 import (
 	"bytes"
+	"context"
 	"time"
 
 	"github.com/goph/emperror"
@@ -80,7 +81,7 @@ func (c *Cluster) waitForCRDs(crds []*extensionsobj.CustomResourceDefinition) er
 	crdClient := apiExtensions.ApiextensionsV1beta1().CustomResourceDefinitions()
 
 	for _, crd := range crds {
-		crd, err := crdClient.Get(crd.Name, metav1.GetOptions{IncludeUninitialized: true})
+		crd, err := crdClient.Get(context.Background(), crd.Name, metav1.GetOptions{})
 		if err != nil {
 			return err
 		}

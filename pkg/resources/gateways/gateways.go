@@ -23,6 +23,7 @@ import (
 	"github.com/goph/emperror"
 	"github.com/pkg/errors"
 	v1 "k8s.io/api/core/v1"
+	"k8s.io/apimachinery/pkg/labels"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/client-go/dynamic"
 	"sigs.k8s.io/controller-runtime/pkg/client"
@@ -109,16 +110,14 @@ func (r *Reconciler) waitForIstiod() error {
 	}
 
 	var pods v1.PodList
-	o := &client.ListOptions{
-		Namespace: r.Config.Namespace,
-	}
-	o.InNamespace(r.Config.Namespace)
-	err := o.SetLabelSelector("app=istiod")
+	ls, err := labels.Parse("app=istiod")
 	if err != nil {
 		return err
 	}
 
-	err = r.Client.List(context.Background(), o, &pods)
+	err = r.Client.List(context.Background(), &pods, client.InNamespace(r.Config.Namespace), client.MatchingLabelsSelector{
+		Selector: ls,
+	})
 	if err != nil {
 		return emperror.Wrap(err, "could not list pods")
 	}

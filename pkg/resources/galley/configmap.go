@@ -52,7 +52,7 @@ func (r *Reconciler) validatingWebhookConfig() string {
 			Name:   webhookName,
 			Labels: galleyLabels,
 		},
-		Webhooks: []admissionv1beta1.Webhook{
+		Webhooks: []admissionv1beta1.ValidatingWebhook{
 			{
 				Name: "pilot.validation.istio.io",
 				ClientConfig: admissionv1beta1.WebhookClientConfig{
