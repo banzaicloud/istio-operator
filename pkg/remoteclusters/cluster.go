@@ -107,7 +107,7 @@ func (c *Cluster) namespaceInformer() error {
 		return errors.New("remoteconfig must be set")
 	}
 
-	namespaceInformer, err := c.mgr.GetCache().GetInformerForKind(corev1.SchemeGroupVersion.WithKind("Namespace"))
+	namespaceInformer, err := c.mgr.GetCache().GetInformerForKind(context.Background(), corev1.SchemeGroupVersion.WithKind("Namespace"))
 	if err != nil {
 		return emperror.Wrap(err, "could not get informer for namespaces")
 	}
@@ -152,7 +152,7 @@ func (c *Cluster) configmapInformer() error {
 		return errors.New("remoteconfig must be set")
 	}
 
-	configmapInformer, err := c.mgr.GetCache().GetInformerForKind(corev1.SchemeGroupVersion.WithKind("ConfigMap"))
+	configmapInformer, err := c.mgr.GetCache().GetInformerForKind(context.Background(), corev1.SchemeGroupVersion.WithKind("ConfigMap"))
 	if err != nil {
 		return emperror.Wrap(err, "could not get informer for namespaces")
 	}

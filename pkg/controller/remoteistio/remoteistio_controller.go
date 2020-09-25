@@ -462,12 +462,13 @@ func (r *ReconcileRemoteConfig) populateEnabledServiceEndpointsFlat(remoteIstio 
 			svc.LabelSelector = labels.Set(service.Spec.Selector).String()
 		}
 
-		o := &client.ListOptions{}
-		err = o.SetLabelSelector(svc.LabelSelector)
+		ls, err := labels.Parse(svc.LabelSelector)
 		if err != nil {
 			return remoteIstio, err
 		}
-		err = r.List(context.TODO(), o, &pods)
+		err = r.List(context.TODO(), &pods, client.MatchingLabelsSelector{
+			Selector: ls,
+		})
 		if err != nil {
 			return remoteIstio, err
 		}
@@ -590,7 +591,7 @@ func (r *ReconcileRemoteConfig) getRelatedIstioCR(instance *istiov1beta1.RemoteI
 
 	// get the oldest otherwise for backward compatibility
 	var configs istiov1beta1.IstioList
-	err := r.Client.List(context.TODO(), &client.ListOptions{}, &configs)
+	err := r.Client.List(context.Background(), &configs)
 	if err != nil {
 		return nil, emperror.Wrap(err, "could not list istio resources")
 	}
@@ -624,7 +625,7 @@ func triggerRemoteIstios(mgr manager.Manager, object runtime.Object, logger logr
 	}
 
 	var remoteIstiosWithoutOR istiov1beta1.RemoteIstioList
-	err := mgr.GetClient().List(context.Background(), &client.ListOptions{}, &remoteIstiosWithoutOR)
+	err := mgr.GetClient().List(context.Background(), &remoteIstiosWithoutOR)
 	if err != nil {
 		logger.Error(err, "could not list remote istio resources")
 	}
@@ -645,7 +646,7 @@ func triggerRemoteIstios(mgr manager.Manager, object runtime.Object, logger logr
 func RemoveFinalizers(c client.Client) error {
 	var remoteistios istiov1beta1.RemoteIstioList
 
-	err := c.List(context.TODO(), &client.ListOptions{}, &remoteistios)
+	err := c.List(context.Background(), &remoteistios)
 	if err != nil {
 		return emperror.Wrap(err, "could not list Istio resources")
 	}
@@ -672,7 +673,7 @@ func GetRemoteIstiosByOwnerReference(mgr manager.Manager, object runtime.Object,
 		ownerMatcher = k8sutil.NewOwnerReferenceMatcher(object, true, mgr.GetScheme())
 	}
 
-	err := mgr.GetClient().List(context.Background(), &client.ListOptions{}, &remoteIstios)
+	err := mgr.GetClient().List(context.Background(), &remoteIstios)
 	if err != nil {
 		logger.Error(err, "could not list remote istio resources")
 	}

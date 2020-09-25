@@ -194,10 +194,9 @@ func (r RecreateAwareDeploymentDesiredState) waitForDeplomentAndRemoveDetached(d
 	}
 
 	pods := &corev1.PodList{}
-	err = r.client.List(context.Background(), &client.ListOptions{
-		Namespace:     deployment.GetNamespace(),
-		LabelSelector: labels.Set(r.podLabels).AsSelector(),
-	}, pods)
+	err = r.client.List(context.Background(), pods, client.InNamespace(deployment.GetNamespace()), client.MatchingLabelsSelector{
+		Selector: labels.Set(r.podLabels).AsSelector(),
+	})
 	if err != nil {
 		return err
 	}

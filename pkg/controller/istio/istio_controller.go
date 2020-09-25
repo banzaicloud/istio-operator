@@ -109,7 +109,7 @@ func newReconciler(mgr manager.Manager, d dynamic.Interface, crd *crds.CRDReconc
 		dynamic:       d,
 		crdReconciler: crd,
 		mgr:           mgr,
-		recorder:      mgr.GetRecorder("istio-controller"),
+		recorder:      mgr.GetEventRecorderFor("istio-controller"),
 	}
 }
 
@@ -484,9 +484,7 @@ func (r *ReconcileIstio) setCitadelAsOwnerReferenceToIstioSecrets(config *istiov
 		return err
 	}
 
-	err = r.Client.List(context.TODO(), &client.ListOptions{
-		Namespace: config.Namespace,
-	}, &secrets)
+	err = r.Client.List(context.Background(), &secrets, client.InNamespace(config.Namespace))
 	if err != nil {
 		return err
 	}
@@ -547,9 +545,7 @@ func IsControlPlaneShouldBeRevisioned(c client.Client, config *istiov1beta1.Isti
 	}
 
 	cps := &istiov1beta1.IstioList{}
-	err := c.List(context.Background(), &client.ListOptions{
-		Namespace: config.Namespace,
-	}, cps)
+	err := c.List(context.Background(), cps, client.InNamespace(config.Namespace))
 	if err != nil {
 		return false, emperror.Wrap(err, "could not list istio resources")
 	}
@@ -615,7 +611,7 @@ func updateStatus(c client.Client, config *istiov1beta1.Istio, status istiov1bet
 func RemoveFinalizers(c client.Client) error {
 	var istios istiov1beta1.IstioList
 
-	err := c.List(context.TODO(), &client.ListOptions{}, &istios)
+	err := c.List(context.Background(), &istios)
 	if err != nil {
 		return emperror.Wrap(err, "could not list Istio resources")
 	}

@@ -34,9 +34,9 @@ func DetachPodsFromDeployment(c client.Client, deployment *appsv1.Deployment, lo
 	}
 
 	pods := &corev1.PodList{}
-	err = c.List(context.Background(), &client.ListOptions{
-		LabelSelector: ls,
-	}, pods)
+	err = c.List(context.Background(), pods, client.MatchingLabelsSelector{
+		Selector: ls,
+	})
 	if err != nil {
 		return err
 	}

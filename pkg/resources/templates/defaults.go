@@ -45,6 +45,7 @@ func GetResourcesRequirementsOrDefault(requirements *apiv1.ResourceRequirements,
 
 func DefaultRollingUpdateStrategy() appsv1.DeploymentStrategy {
 	return appsv1.DeploymentStrategy{
+		Type: appsv1.RollingUpdateDeploymentStrategyType,
 		RollingUpdate: &appsv1.RollingUpdateDeployment{
 			MaxSurge:       util.IntstrPointer(1),
 			MaxUnavailable: util.IntstrPointer(0),

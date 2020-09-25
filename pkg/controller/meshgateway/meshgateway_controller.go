@@ -227,7 +227,7 @@ func (r *ReconcileMeshGateway) getRelatedIstioCR(instance *istiov1beta1.MeshGate
 
 	// get the oldest otherwise for backward compatibility
 	var configs istiov1beta1.IstioList
-	err := r.Client.List(context.TODO(), &client.ListOptions{}, &configs)
+	err := r.Client.List(context.TODO(), &configs)
 	if err != nil {
 		return nil, emperror.Wrap(err, "could not list istio resources")
 	}

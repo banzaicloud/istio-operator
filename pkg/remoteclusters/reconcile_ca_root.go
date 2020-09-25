@@ -22,7 +22,6 @@ import (
 	"github.com/goph/emperror"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"sigs.k8s.io/controller-runtime/pkg/client"
 
 	istiov1beta1 "github.com/banzaicloud/istio-operator/pkg/apis/istio/v1beta1"
 	"github.com/banzaicloud/istio-operator/pkg/k8sutil"
@@ -48,7 +47,7 @@ func (c *Cluster) reconcileCARootToNamespaces(remoteConfig *istiov1beta1.RemoteI
 
 	var namespaces corev1.NamespaceList
 
-	err := c.ctrlRuntimeClient.List(context.Background(), &client.ListOptions{}, &namespaces)
+	err := c.ctrlRuntimeClient.List(context.Background(), &namespaces)
 	if err != nil {
 		return err
 	}
