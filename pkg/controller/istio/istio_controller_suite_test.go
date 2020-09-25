@@ -24,7 +24,7 @@ import (
 	"testing"
 
 	"github.com/onsi/gomega"
-	extensionsobj "k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1beta1"
+	apiextensionsv1 "k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1"
 	"k8s.io/client-go/kubernetes/scheme"
 	"k8s.io/client-go/rest"
 	"sigs.k8s.io/controller-runtime/pkg/envtest"
@@ -37,7 +37,7 @@ import (
 var cfg *rest.Config
 
 func init() {
-	extensionsobj.AddToScheme(scheme.Scheme)
+	apiextensionsv1.AddToScheme(scheme.Scheme)
 }
 
 func TestMain(m *testing.M) {

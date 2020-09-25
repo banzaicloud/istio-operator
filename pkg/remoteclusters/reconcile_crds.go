@@ -23,8 +23,7 @@ import (
 
 	"github.com/goph/emperror"
 	"github.com/pkg/errors"
-	apiextensionsv1beta1 "k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1beta1"
-	extensionsobj "k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1beta1"
+	apiextensionsv1 "k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1"
 	apiextensionsclient "k8s.io/apiextensions-apiserver/pkg/client/clientset/clientset"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
@@ -49,7 +48,7 @@ func (c *Cluster) reconcileCRDs(remoteConfig *istiov1beta1.RemoteIstio, istio *i
 		return emperror.Wrap(err, "could not get meshgateway CRD")
 	}
 
-	resources := []*extensionsobj.CustomResourceDefinition{
+	resources := []*apiextensionsv1.CustomResourceDefinition{
 		istiocrd,
 		meshgatewaycrd,
 	}
@@ -73,12 +72,12 @@ func (c *Cluster) reconcileCRDs(remoteConfig *istiov1beta1.RemoteIstio, istio *i
 	return nil
 }
 
-func (c *Cluster) waitForCRDs(crds []*extensionsobj.CustomResourceDefinition) error {
+func (c *Cluster) waitForCRDs(crds []*apiextensionsv1.CustomResourceDefinition) error {
 	apiExtensions, err := apiextensionsclient.NewForConfig(c.restConfig)
 	if err != nil {
 		return errors.Wrap(err, "instantiating apiextensions client failed")
 	}
-	crdClient := apiExtensions.ApiextensionsV1beta1().CustomResourceDefinitions()
+	crdClient := apiExtensions.ApiextensionsV1().CustomResourceDefinitions()
 
 	for _, crd := range crds {
 		crd, err := crdClient.Get(context.Background(), crd.Name, metav1.GetOptions{})
@@ -95,10 +94,10 @@ func (c *Cluster) waitForCRDs(crds []*extensionsobj.CustomResourceDefinition) er
 	return nil
 }
 
-func (c *Cluster) waitForCRD(crd *extensionsobj.CustomResourceDefinition) error {
+func (c *Cluster) waitForCRD(crd *apiextensionsv1.CustomResourceDefinition) error {
 	for _, condition := range crd.Status.Conditions {
-		if condition.Type == apiextensionsv1beta1.Established {
-			if condition.Status == apiextensionsv1beta1.ConditionTrue {
+		if condition.Type == apiextensionsv1.Established {
+			if condition.Status == apiextensionsv1.ConditionTrue {
 				return nil
 			}
 		}
@@ -107,16 +106,16 @@ func (c *Cluster) waitForCRD(crd *extensionsobj.CustomResourceDefinition) error 
 	return errors.Errorf("CRD '%s' is not established yet", crd.Name)
 }
 
-func (c *Cluster) istiocrd() (*extensionsobj.CustomResourceDefinition, error) {
+func (c *Cluster) istiocrd() (*apiextensionsv1.CustomResourceDefinition, error) {
 	return c.getCRD("istio_v1beta1_istio.yaml")
 }
 
-func (c *Cluster) meshgatewaycrd() (*extensionsobj.CustomResourceDefinition, error) {
+func (c *Cluster) meshgatewaycrd() (*apiextensionsv1.CustomResourceDefinition, error) {
 	return c.getCRD("istio_v1beta1_meshgateway.yaml")
 }
 
-func (c *Cluster) getCRD(name string) (*extensionsobj.CustomResourceDefinition, error) {
-	var resource *apiextensionsv1beta1.CustomResourceDefinition
+func (c *Cluster) getCRD(name string) (*apiextensionsv1.CustomResourceDefinition, error) {
+	var resource *apiextensionsv1.CustomResourceDefinition
 
 	f, err := generated.CRDs.Open("/" + name)
 	if err != nil {
@@ -130,7 +129,7 @@ func (c *Cluster) getCRD(name string) (*extensionsobj.CustomResourceDefinition, 
 	}
 
 	s := runtime.NewScheme()
-	apiextensionsv1beta1.AddToScheme(s)
+	apiextensionsv1.AddToScheme(s)
 
 	serializer := json.NewYAMLSerializer(json.DefaultMetaFactory, s, s)
 	o, _, err := serializer.Decode(yaml.Bytes(), nil, nil)
@@ -139,12 +138,12 @@ func (c *Cluster) getCRD(name string) (*extensionsobj.CustomResourceDefinition, 
 	}
 
 	var ok bool
-	if resource, ok = o.(*apiextensionsv1beta1.CustomResourceDefinition); !ok {
+	if resource, ok = o.(*apiextensionsv1.CustomResourceDefinition); !ok {
 		return nil, errors.New("invalid resource kind")
 	}
 
 	resource.SetGroupVersionKind(schema.GroupVersionKind{})
-	resource.Status = apiextensionsv1beta1.CustomResourceDefinitionStatus{}
+	resource.Status = apiextensionsv1.CustomResourceDefinitionStatus{}
 
 	return resource, nil
 }

@@ -26,7 +26,7 @@ import (
 
 	"github.com/go-logr/logr"
 	"github.com/goph/emperror"
-	extensionsobj "k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1beta1"
+	apiextensionsv1 "k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1"
 	apiextensionsclient "k8s.io/apiextensions-apiserver/pkg/client/clientset/clientset"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -53,13 +53,13 @@ const (
 )
 
 type CRDReconciler struct {
-	crds     []*extensionsobj.CustomResourceDefinition
+	crds     []*apiextensionsv1.CustomResourceDefinition
 	config   *rest.Config
 	revision string
 	recorder record.EventRecorder
 }
 
-func New(mgr manager.Manager, revision string, crds ...*extensionsobj.CustomResourceDefinition) (*CRDReconciler, error) {
+func New(mgr manager.Manager, revision string, crds ...*apiextensionsv1.CustomResourceDefinition) (*CRDReconciler, error) {
 	r := &CRDReconciler{
 		crds:     crds,
 		config:   mgr.GetConfig(),
@@ -127,13 +127,13 @@ func (r *CRDReconciler) load(f io.Reader) error {
 			continue
 		}
 
-		var crd *extensionsobj.CustomResourceDefinition
+		var crd *apiextensionsv1.CustomResourceDefinition
 		var ok bool
-		if crd, ok = obj.(*extensionsobj.CustomResourceDefinition); !ok {
+		if crd, ok = obj.(*apiextensionsv1.CustomResourceDefinition); !ok {
 			continue
 		}
 
-		crd.Status = extensionsobj.CustomResourceDefinitionStatus{}
+		crd.Status = apiextensionsv1.CustomResourceDefinitionStatus{}
 		crd.SetGroupVersionKind(schema.GroupVersionKind{})
 		labels := crd.GetLabels()
 		labels[createdByLabel] = createdBy
@@ -149,7 +149,7 @@ func (r *CRDReconciler) Reconcile(config *istiov1beta1.Istio, log logr.Logger) e
 	if err != nil {
 		return emperror.Wrap(err, "instantiating apiextensions client failed")
 	}
-	crdClient := apiExtensions.ApiextensionsV1beta1().CustomResourceDefinitions()
+	crdClient := apiExtensions.ApiextensionsV1().CustomResourceDefinitions()
 	for _, obj := range r.crds {
 		crd := obj.DeepCopy()
 		err = k8sutil.SetResourceRevision(crd, r.revision)
