@@ -76,7 +76,7 @@ type RemoteIstioSpec struct {
 	// Istio CR to which this gateway belongs to
 	IstioControlPlane *NamespacedName `json:"istioControlPlane,omitempty"`
 
-	signCert SignCert
+	signCert SignCert `json:"-"`
 }
 
 // RemoteIstioStatus defines the observed state of RemoteIstio
