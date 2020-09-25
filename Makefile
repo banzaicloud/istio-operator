@@ -86,9 +86,8 @@ deploy: install-kustomize
 	bin/kustomize build $(KUSTOMIZE_BASE) | kubectl apply -f -
 
 # Generate manifests e.g. CRD, RBAC etc.
-manifests:
-	bin/controller-gen rbac --output-dir config/base/rbac
-	bin/controller-gen crd --output-dir config/base/crds
+manifests: download-deps
+	bin/controller-gen $(CRD_OPTIONS) rbac:roleName=manager-role webhook paths="./..." output:crd:artifacts:config=config/crd/bases
 
 # Run go fmt against code
 fmt:
