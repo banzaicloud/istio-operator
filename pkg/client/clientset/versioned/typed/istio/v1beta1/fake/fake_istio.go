@@ -18,6 +18,8 @@ limitations under the License.
 package fake
 
 import (
+	"context"
+
 	v1beta1 "github.com/banzaicloud/istio-operator/pkg/apis/istio/v1beta1"
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	labels "k8s.io/apimachinery/pkg/labels"
@@ -38,7 +40,7 @@ var istiosResource = schema.GroupVersionResource{Group: "istio.banzaicloud.io", 
 var istiosKind = schema.GroupVersionKind{Group: "istio.banzaicloud.io", Version: "v1beta1", Kind: "Istio"}
 
 // Get takes name of the istio, and returns the corresponding istio object, and an error if there is any.
-func (c *FakeIstios) Get(name string, options v1.GetOptions) (result *v1beta1.Istio, err error) {
+func (c *FakeIstios) Get(ctx context.Context, name string, options v1.GetOptions) (result *v1beta1.Istio, err error) {
 	obj, err := c.Fake.
 		Invokes(testing.NewGetAction(istiosResource, c.ns, name), &v1beta1.Istio{})
 
@@ -49,7 +51,7 @@ func (c *FakeIstios) Get(name string, options v1.GetOptions) (result *v1beta1.Is
 }
 
 // List takes label and field selectors, and returns the list of Istios that match those selectors.
-func (c *FakeIstios) List(opts v1.ListOptions) (result *v1beta1.IstioList, err error) {
+func (c *FakeIstios) List(ctx context.Context, opts v1.ListOptions) (result *v1beta1.IstioList, err error) {
 	obj, err := c.Fake.
 		Invokes(testing.NewListAction(istiosResource, istiosKind, c.ns, opts), &v1beta1.IstioList{})
 
@@ -71,14 +73,14 @@ func (c *FakeIstios) List(opts v1.ListOptions) (result *v1beta1.IstioList, err e
 }
 
 // Watch returns a watch.Interface that watches the requested istios.
-func (c *FakeIstios) Watch(opts v1.ListOptions) (watch.Interface, error) {
+func (c *FakeIstios) Watch(ctx context.Context, opts v1.ListOptions) (watch.Interface, error) {
 	return c.Fake.
 		InvokesWatch(testing.NewWatchAction(istiosResource, c.ns, opts))
 
 }
 
 // Create takes the representation of a istio and creates it.  Returns the server's representation of the istio, and an error, if there is any.
-func (c *FakeIstios) Create(istio *v1beta1.Istio) (result *v1beta1.Istio, err error) {
+func (c *FakeIstios) Create(ctx context.Context, istio *v1beta1.Istio, opts v1.CreateOptions) (result *v1beta1.Istio, err error) {
 	obj, err := c.Fake.
 		Invokes(testing.NewCreateAction(istiosResource, c.ns, istio), &v1beta1.Istio{})
 
@@ -89,7 +91,7 @@ func (c *FakeIstios) Create(istio *v1beta1.Istio) (result *v1beta1.Istio, err er
 }
 
 // Update takes the representation of a istio and updates it. Returns the server's representation of the istio, and an error, if there is any.
-func (c *FakeIstios) Update(istio *v1beta1.Istio) (result *v1beta1.Istio, err error) {
+func (c *FakeIstios) Update(ctx context.Context, istio *v1beta1.Istio, opts v1.UpdateOptions) (result *v1beta1.Istio, err error) {
 	obj, err := c.Fake.
 		Invokes(testing.NewUpdateAction(istiosResource, c.ns, istio), &v1beta1.Istio{})
 
@@ -101,7 +103,7 @@ func (c *FakeIstios) Update(istio *v1beta1.Istio) (result *v1beta1.Istio, err er
 
 // UpdateStatus was generated because the type contains a Status member.
 // Add a +genclient:noStatus comment above the type to avoid generating UpdateStatus().
-func (c *FakeIstios) UpdateStatus(istio *v1beta1.Istio) (*v1beta1.Istio, error) {
+func (c *FakeIstios) UpdateStatus(ctx context.Context, istio *v1beta1.Istio, opts v1.UpdateOptions) (*v1beta1.Istio, error) {
 	obj, err := c.Fake.
 		Invokes(testing.NewUpdateSubresourceAction(istiosResource, "status", c.ns, istio), &v1beta1.Istio{})
 
@@ -112,7 +114,7 @@ func (c *FakeIstios) UpdateStatus(istio *v1beta1.Istio) (*v1beta1.Istio, error) 
 }
 
 // Delete takes name of the istio and deletes it. Returns an error if one occurs.
-func (c *FakeIstios) Delete(name string, options *v1.DeleteOptions) error {
+func (c *FakeIstios) Delete(ctx context.Context, name string, opts v1.DeleteOptions) error {
 	_, err := c.Fake.
 		Invokes(testing.NewDeleteAction(istiosResource, c.ns, name), &v1beta1.Istio{})
 
@@ -120,17 +122,17 @@ func (c *FakeIstios) Delete(name string, options *v1.DeleteOptions) error {
 }
 
 // DeleteCollection deletes a collection of objects.
-func (c *FakeIstios) DeleteCollection(options *v1.DeleteOptions, listOptions v1.ListOptions) error {
-	action := testing.NewDeleteCollectionAction(istiosResource, c.ns, listOptions)
+func (c *FakeIstios) DeleteCollection(ctx context.Context, opts v1.DeleteOptions, listOpts v1.ListOptions) error {
+	action := testing.NewDeleteCollectionAction(istiosResource, c.ns, listOpts)
 
 	_, err := c.Fake.Invokes(action, &v1beta1.IstioList{})
 	return err
 }
 
 // Patch applies the patch and returns the patched istio.
-func (c *FakeIstios) Patch(name string, pt types.PatchType, data []byte, subresources ...string) (result *v1beta1.Istio, err error) {
+func (c *FakeIstios) Patch(ctx context.Context, name string, pt types.PatchType, data []byte, opts v1.PatchOptions, subresources ...string) (result *v1beta1.Istio, err error) {
 	obj, err := c.Fake.
-		Invokes(testing.NewPatchSubresourceAction(istiosResource, c.ns, name, data, subresources...), &v1beta1.Istio{})
+		Invokes(testing.NewPatchSubresourceAction(istiosResource, c.ns, name, pt, data, subresources...), &v1beta1.Istio{})
 
 	if obj == nil {
 		return nil, err

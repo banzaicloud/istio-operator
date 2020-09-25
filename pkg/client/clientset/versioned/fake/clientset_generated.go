@@ -40,7 +40,7 @@ func NewSimpleClientset(objects ...runtime.Object) *Clientset {
 		}
 	}
 
-	cs := &Clientset{}
+	cs := &Clientset{tracker: o}
 	cs.discovery = &fakediscovery.FakeDiscovery{Fake: &cs.Fake}
 	cs.AddReactor("*", "*", testing.ObjectReaction(o))
 	cs.AddWatchReactor("*", func(action testing.Action) (handled bool, ret watch.Interface, err error) {
@@ -62,20 +62,20 @@ func NewSimpleClientset(objects ...runtime.Object) *Clientset {
 type Clientset struct {
 	testing.Fake
 	discovery *fakediscovery.FakeDiscovery
+	tracker   testing.ObjectTracker
 }
 
 func (c *Clientset) Discovery() discovery.DiscoveryInterface {
 	return c.discovery
 }
 
+func (c *Clientset) Tracker() testing.ObjectTracker {
+	return c.tracker
+}
+
 var _ clientset.Interface = &Clientset{}
 
 // IstioV1beta1 retrieves the IstioV1beta1Client
 func (c *Clientset) IstioV1beta1() istiov1beta1.IstioV1beta1Interface {
-	return &fakeistiov1beta1.FakeIstioV1beta1{Fake: &c.Fake}
-}
-
-// Istio retrieves the IstioV1beta1Client
-func (c *Clientset) Istio() istiov1beta1.IstioV1beta1Interface {
 	return &fakeistiov1beta1.FakeIstioV1beta1{Fake: &c.Fake}
 }

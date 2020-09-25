@@ -18,6 +18,8 @@ limitations under the License.
 package fake
 
 import (
+	"context"
+
 	v1beta1 "github.com/banzaicloud/istio-operator/pkg/apis/istio/v1beta1"
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	labels "k8s.io/apimachinery/pkg/labels"
@@ -38,7 +40,7 @@ var meshgatewaysResource = schema.GroupVersionResource{Group: "istio.banzaicloud
 var meshgatewaysKind = schema.GroupVersionKind{Group: "istio.banzaicloud.io", Version: "v1beta1", Kind: "MeshGateway"}
 
 // Get takes name of the meshGateway, and returns the corresponding meshGateway object, and an error if there is any.
-func (c *FakeMeshGateways) Get(name string, options v1.GetOptions) (result *v1beta1.MeshGateway, err error) {
+func (c *FakeMeshGateways) Get(ctx context.Context, name string, options v1.GetOptions) (result *v1beta1.MeshGateway, err error) {
 	obj, err := c.Fake.
 		Invokes(testing.NewGetAction(meshgatewaysResource, c.ns, name), &v1beta1.MeshGateway{})
 
@@ -49,7 +51,7 @@ func (c *FakeMeshGateways) Get(name string, options v1.GetOptions) (result *v1be
 }
 
 // List takes label and field selectors, and returns the list of MeshGateways that match those selectors.
-func (c *FakeMeshGateways) List(opts v1.ListOptions) (result *v1beta1.MeshGatewayList, err error) {
+func (c *FakeMeshGateways) List(ctx context.Context, opts v1.ListOptions) (result *v1beta1.MeshGatewayList, err error) {
 	obj, err := c.Fake.
 		Invokes(testing.NewListAction(meshgatewaysResource, meshgatewaysKind, c.ns, opts), &v1beta1.MeshGatewayList{})
 
@@ -71,14 +73,14 @@ func (c *FakeMeshGateways) List(opts v1.ListOptions) (result *v1beta1.MeshGatewa
 }
 
 // Watch returns a watch.Interface that watches the requested meshGateways.
-func (c *FakeMeshGateways) Watch(opts v1.ListOptions) (watch.Interface, error) {
+func (c *FakeMeshGateways) Watch(ctx context.Context, opts v1.ListOptions) (watch.Interface, error) {
 	return c.Fake.
 		InvokesWatch(testing.NewWatchAction(meshgatewaysResource, c.ns, opts))
 
 }
 
 // Create takes the representation of a meshGateway and creates it.  Returns the server's representation of the meshGateway, and an error, if there is any.
-func (c *FakeMeshGateways) Create(meshGateway *v1beta1.MeshGateway) (result *v1beta1.MeshGateway, err error) {
+func (c *FakeMeshGateways) Create(ctx context.Context, meshGateway *v1beta1.MeshGateway, opts v1.CreateOptions) (result *v1beta1.MeshGateway, err error) {
 	obj, err := c.Fake.
 		Invokes(testing.NewCreateAction(meshgatewaysResource, c.ns, meshGateway), &v1beta1.MeshGateway{})
 
@@ -89,7 +91,7 @@ func (c *FakeMeshGateways) Create(meshGateway *v1beta1.MeshGateway) (result *v1b
 }
 
 // Update takes the representation of a meshGateway and updates it. Returns the server's representation of the meshGateway, and an error, if there is any.
-func (c *FakeMeshGateways) Update(meshGateway *v1beta1.MeshGateway) (result *v1beta1.MeshGateway, err error) {
+func (c *FakeMeshGateways) Update(ctx context.Context, meshGateway *v1beta1.MeshGateway, opts v1.UpdateOptions) (result *v1beta1.MeshGateway, err error) {
 	obj, err := c.Fake.
 		Invokes(testing.NewUpdateAction(meshgatewaysResource, c.ns, meshGateway), &v1beta1.MeshGateway{})
 
@@ -101,7 +103,7 @@ func (c *FakeMeshGateways) Update(meshGateway *v1beta1.MeshGateway) (result *v1b
 
 // UpdateStatus was generated because the type contains a Status member.
 // Add a +genclient:noStatus comment above the type to avoid generating UpdateStatus().
-func (c *FakeMeshGateways) UpdateStatus(meshGateway *v1beta1.MeshGateway) (*v1beta1.MeshGateway, error) {
+func (c *FakeMeshGateways) UpdateStatus(ctx context.Context, meshGateway *v1beta1.MeshGateway, opts v1.UpdateOptions) (*v1beta1.MeshGateway, error) {
 	obj, err := c.Fake.
 		Invokes(testing.NewUpdateSubresourceAction(meshgatewaysResource, "status", c.ns, meshGateway), &v1beta1.MeshGateway{})
 
@@ -112,7 +114,7 @@ func (c *FakeMeshGateways) UpdateStatus(meshGateway *v1beta1.MeshGateway) (*v1be
 }
 
 // Delete takes name of the meshGateway and deletes it. Returns an error if one occurs.
-func (c *FakeMeshGateways) Delete(name string, options *v1.DeleteOptions) error {
+func (c *FakeMeshGateways) Delete(ctx context.Context, name string, opts v1.DeleteOptions) error {
 	_, err := c.Fake.
 		Invokes(testing.NewDeleteAction(meshgatewaysResource, c.ns, name), &v1beta1.MeshGateway{})
 
@@ -120,17 +122,17 @@ func (c *FakeMeshGateways) Delete(name string, options *v1.DeleteOptions) error 
 }
 
 // DeleteCollection deletes a collection of objects.
-func (c *FakeMeshGateways) DeleteCollection(options *v1.DeleteOptions, listOptions v1.ListOptions) error {
-	action := testing.NewDeleteCollectionAction(meshgatewaysResource, c.ns, listOptions)
+func (c *FakeMeshGateways) DeleteCollection(ctx context.Context, opts v1.DeleteOptions, listOpts v1.ListOptions) error {
+	action := testing.NewDeleteCollectionAction(meshgatewaysResource, c.ns, listOpts)
 
 	_, err := c.Fake.Invokes(action, &v1beta1.MeshGatewayList{})
 	return err
 }
 
 // Patch applies the patch and returns the patched meshGateway.
-func (c *FakeMeshGateways) Patch(name string, pt types.PatchType, data []byte, subresources ...string) (result *v1beta1.MeshGateway, err error) {
+func (c *FakeMeshGateways) Patch(ctx context.Context, name string, pt types.PatchType, data []byte, opts v1.PatchOptions, subresources ...string) (result *v1beta1.MeshGateway, err error) {
 	obj, err := c.Fake.
-		Invokes(testing.NewPatchSubresourceAction(meshgatewaysResource, c.ns, name, data, subresources...), &v1beta1.MeshGateway{})
+		Invokes(testing.NewPatchSubresourceAction(meshgatewaysResource, c.ns, name, pt, data, subresources...), &v1beta1.MeshGateway{})
 
 	if obj == nil {
 		return nil, err

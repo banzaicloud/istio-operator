@@ -18,6 +18,8 @@ limitations under the License.
 package fake
 
 import (
+	"context"
+
 	v1beta1 "github.com/banzaicloud/istio-operator/pkg/apis/istio/v1beta1"
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	labels "k8s.io/apimachinery/pkg/labels"
@@ -38,7 +40,7 @@ var remoteistiosResource = schema.GroupVersionResource{Group: "istio.banzaicloud
 var remoteistiosKind = schema.GroupVersionKind{Group: "istio.banzaicloud.io", Version: "v1beta1", Kind: "RemoteIstio"}
 
 // Get takes name of the remoteIstio, and returns the corresponding remoteIstio object, and an error if there is any.
-func (c *FakeRemoteIstios) Get(name string, options v1.GetOptions) (result *v1beta1.RemoteIstio, err error) {
+func (c *FakeRemoteIstios) Get(ctx context.Context, name string, options v1.GetOptions) (result *v1beta1.RemoteIstio, err error) {
 	obj, err := c.Fake.
 		Invokes(testing.NewGetAction(remoteistiosResource, c.ns, name), &v1beta1.RemoteIstio{})
 
@@ -49,7 +51,7 @@ func (c *FakeRemoteIstios) Get(name string, options v1.GetOptions) (result *v1be
 }
 
 // List takes label and field selectors, and returns the list of RemoteIstios that match those selectors.
-func (c *FakeRemoteIstios) List(opts v1.ListOptions) (result *v1beta1.RemoteIstioList, err error) {
+func (c *FakeRemoteIstios) List(ctx context.Context, opts v1.ListOptions) (result *v1beta1.RemoteIstioList, err error) {
 	obj, err := c.Fake.
 		Invokes(testing.NewListAction(remoteistiosResource, remoteistiosKind, c.ns, opts), &v1beta1.RemoteIstioList{})
 
@@ -71,14 +73,14 @@ func (c *FakeRemoteIstios) List(opts v1.ListOptions) (result *v1beta1.RemoteIsti
 }
 
 // Watch returns a watch.Interface that watches the requested remoteIstios.
-func (c *FakeRemoteIstios) Watch(opts v1.ListOptions) (watch.Interface, error) {
+func (c *FakeRemoteIstios) Watch(ctx context.Context, opts v1.ListOptions) (watch.Interface, error) {
 	return c.Fake.
 		InvokesWatch(testing.NewWatchAction(remoteistiosResource, c.ns, opts))
 
 }
 
 // Create takes the representation of a remoteIstio and creates it.  Returns the server's representation of the remoteIstio, and an error, if there is any.
-func (c *FakeRemoteIstios) Create(remoteIstio *v1beta1.RemoteIstio) (result *v1beta1.RemoteIstio, err error) {
+func (c *FakeRemoteIstios) Create(ctx context.Context, remoteIstio *v1beta1.RemoteIstio, opts v1.CreateOptions) (result *v1beta1.RemoteIstio, err error) {
 	obj, err := c.Fake.
 		Invokes(testing.NewCreateAction(remoteistiosResource, c.ns, remoteIstio), &v1beta1.RemoteIstio{})
 
@@ -89,7 +91,7 @@ func (c *FakeRemoteIstios) Create(remoteIstio *v1beta1.RemoteIstio) (result *v1b
 }
 
 // Update takes the representation of a remoteIstio and updates it. Returns the server's representation of the remoteIstio, and an error, if there is any.
-func (c *FakeRemoteIstios) Update(remoteIstio *v1beta1.RemoteIstio) (result *v1beta1.RemoteIstio, err error) {
+func (c *FakeRemoteIstios) Update(ctx context.Context, remoteIstio *v1beta1.RemoteIstio, opts v1.UpdateOptions) (result *v1beta1.RemoteIstio, err error) {
 	obj, err := c.Fake.
 		Invokes(testing.NewUpdateAction(remoteistiosResource, c.ns, remoteIstio), &v1beta1.RemoteIstio{})
 
@@ -101,7 +103,7 @@ func (c *FakeRemoteIstios) Update(remoteIstio *v1beta1.RemoteIstio) (result *v1b
 
 // UpdateStatus was generated because the type contains a Status member.
 // Add a +genclient:noStatus comment above the type to avoid generating UpdateStatus().
-func (c *FakeRemoteIstios) UpdateStatus(remoteIstio *v1beta1.RemoteIstio) (*v1beta1.RemoteIstio, error) {
+func (c *FakeRemoteIstios) UpdateStatus(ctx context.Context, remoteIstio *v1beta1.RemoteIstio, opts v1.UpdateOptions) (*v1beta1.RemoteIstio, error) {
 	obj, err := c.Fake.
 		Invokes(testing.NewUpdateSubresourceAction(remoteistiosResource, "status", c.ns, remoteIstio), &v1beta1.RemoteIstio{})
 
@@ -112,7 +114,7 @@ func (c *FakeRemoteIstios) UpdateStatus(remoteIstio *v1beta1.RemoteIstio) (*v1be
 }
 
 // Delete takes name of the remoteIstio and deletes it. Returns an error if one occurs.
-func (c *FakeRemoteIstios) Delete(name string, options *v1.DeleteOptions) error {
+func (c *FakeRemoteIstios) Delete(ctx context.Context, name string, opts v1.DeleteOptions) error {
 	_, err := c.Fake.
 		Invokes(testing.NewDeleteAction(remoteistiosResource, c.ns, name), &v1beta1.RemoteIstio{})
 
@@ -120,17 +122,17 @@ func (c *FakeRemoteIstios) Delete(name string, options *v1.DeleteOptions) error 
 }
 
 // DeleteCollection deletes a collection of objects.
-func (c *FakeRemoteIstios) DeleteCollection(options *v1.DeleteOptions, listOptions v1.ListOptions) error {
-	action := testing.NewDeleteCollectionAction(remoteistiosResource, c.ns, listOptions)
+func (c *FakeRemoteIstios) DeleteCollection(ctx context.Context, opts v1.DeleteOptions, listOpts v1.ListOptions) error {
+	action := testing.NewDeleteCollectionAction(remoteistiosResource, c.ns, listOpts)
 
 	_, err := c.Fake.Invokes(action, &v1beta1.RemoteIstioList{})
 	return err
 }
 
 // Patch applies the patch and returns the patched remoteIstio.
-func (c *FakeRemoteIstios) Patch(name string, pt types.PatchType, data []byte, subresources ...string) (result *v1beta1.RemoteIstio, err error) {
+func (c *FakeRemoteIstios) Patch(ctx context.Context, name string, pt types.PatchType, data []byte, opts v1.PatchOptions, subresources ...string) (result *v1beta1.RemoteIstio, err error) {
 	obj, err := c.Fake.
-		Invokes(testing.NewPatchSubresourceAction(remoteistiosResource, c.ns, name, data, subresources...), &v1beta1.RemoteIstio{})
+		Invokes(testing.NewPatchSubresourceAction(remoteistiosResource, c.ns, name, pt, data, subresources...), &v1beta1.RemoteIstio{})
 
 	if obj == nil {
 		return nil, err

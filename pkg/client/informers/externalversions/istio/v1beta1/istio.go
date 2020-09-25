@@ -18,6 +18,7 @@ limitations under the License.
 package v1beta1
 
 import (
+	"context"
 	time "time"
 
 	istiov1beta1 "github.com/banzaicloud/istio-operator/pkg/apis/istio/v1beta1"
@@ -60,13 +61,13 @@ func NewFilteredIstioInformer(client versioned.Interface, namespace string, resy
 				if tweakListOptions != nil {
 					tweakListOptions(&options)
 				}
-				return client.IstioV1beta1().Istios(namespace).List(options)
+				return client.IstioV1beta1().Istios(namespace).List(context.TODO(), options)
 			},
 			WatchFunc: func(options v1.ListOptions) (watch.Interface, error) {
 				if tweakListOptions != nil {
 					tweakListOptions(&options)
 				}
-				return client.IstioV1beta1().Istios(namespace).Watch(options)
+				return client.IstioV1beta1().Istios(namespace).Watch(context.TODO(), options)
 			},
 		},
 		&istiov1beta1.Istio{},
