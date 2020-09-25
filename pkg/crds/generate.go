@@ -28,16 +28,20 @@ import (
 	"runtime"
 
 	"github.com/shurcooL/vfsgen"
+
+	"github.com/banzaicloud/istio-operator/pkg/util"
 )
 
-var CRDs http.FileSystem = http.Dir(path.Join(getRepoRoot(), "config/base/crds"))
-
 func main() {
-	err := vfsgen.Generate(CRDs, vfsgen.Options{
-		Filename:     path.Join(getRepoRoot(), "pkg/crds/generated/crds.gogen.go"),
-		PackageName:  "generated",
-		VariableName: "CRDs",
-	})
+	err := vfsgen.Generate(
+		util.ZeroModTimeFileSystem{
+			http.Dir(path.Join(getRepoRoot(), "config/base/crds")),
+		},
+		vfsgen.Options{
+			Filename:     path.Join(getRepoRoot(), "pkg/crds/generated/crds.gogen.go"),
+			PackageName:  "generated",
+			VariableName: "CRDs",
+		})
 	if err != nil {
 		log.Fatalln(err)
 	}

@@ -28,9 +28,11 @@ import (
 	"runtime"
 
 	"github.com/shurcooL/vfsgen"
+
+	"github.com/banzaicloud/istio-operator/pkg/util"
 )
 
-var CRDs http.FileSystem = http.Dir(path.Join(getRepoRoot(), "pkg/manifests/istio-crds/assets"))
+var CRDs http.FileSystem = util.ZeroModTimeFileSystem{http.Dir(path.Join(getRepoRoot(), "pkg/manifests/istio-crds/assets"))}
 
 func main() {
 	err := vfsgen.Generate(CRDs, vfsgen.Options{
