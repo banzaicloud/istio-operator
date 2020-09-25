@@ -69,7 +69,7 @@ spec:
           {{- end }}
           - "--leader-election-namespace={{ .Values.leaderElection.namespace }}"
           {{- end }}
-          {{- if .Values.webhook.enabled -}}
+          {{- if .Values.webhook.enabled }}
           - "--webhook-name={{ include "istio-operator.name" . }}-webhook"
           {{- end }}
         env:
