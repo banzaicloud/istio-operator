@@ -452,7 +452,7 @@ type ProxyConfiguration struct {
 	// Options:
 	//   "" - disables access log
 	//   "/dev/stdout" - enables access log
-	// +kubebuilder:validation:Enum=;/dev/stdout
+	// +kubebuilder:validation:Enum=/dev/stdout
 	AccessLogFile *string `json:"accessLogFile,omitempty"`
 	// Configure how and what fields are displayed in sidecar access log. Setting to
 	// empty string will result in default log format.
