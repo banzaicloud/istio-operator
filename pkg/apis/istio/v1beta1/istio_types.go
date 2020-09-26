@@ -841,7 +841,7 @@ type IstioSpec struct {
 	// Mixerless telemetry configuration
 	MixerlessTelemetry *MixerlessTelemetryConfiguration `json:"mixerlessTelemetry,omitempty"`
 
-	meshNetworks *MeshNetworks `json:"-"`
+	MeshNetworks *MeshNetworks `json:"-"`
 
 	// The domain serves to identify the system with SPIFFE. (default "cluster.local")
 	TrustDomain string `json:"trustDomain,omitempty"`
@@ -906,17 +906,17 @@ type MeshNetworks struct {
 }
 
 func (s *IstioSpec) SetMeshNetworks(networks *MeshNetworks) *IstioSpec {
-	s.meshNetworks = networks
+	s.MeshNetworks = networks
 	return s
 }
 
 func (s *IstioSpec) GetMeshNetworks() *MeshNetworks {
-	return s.meshNetworks
+	return s.MeshNetworks
 }
 
 func (s *IstioSpec) GetMeshNetworksHash() string {
 	hash := ""
-	j, err := json.Marshal(s.meshNetworks)
+	j, err := json.Marshal(s.MeshNetworks)
 	if err != nil {
 		return hash
 	}

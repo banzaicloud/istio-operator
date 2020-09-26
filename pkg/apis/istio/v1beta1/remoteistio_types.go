@@ -36,12 +36,12 @@ type IstioService struct {
 }
 
 func (spec RemoteIstioSpec) SetSignCert(signCert SignCert) RemoteIstioSpec {
-	spec.signCert = signCert
+	spec.SignCert = signCert
 	return spec
 }
 
 func (spec RemoteIstioSpec) GetSignCert() SignCert {
-	return spec.signCert
+	return spec.SignCert
 }
 
 // RemoteIstioSpec defines the desired state of RemoteIstio
@@ -76,7 +76,7 @@ type RemoteIstioSpec struct {
 	// Istio CR to which this gateway belongs to
 	IstioControlPlane *NamespacedName `json:"istioControlPlane,omitempty"`
 
-	signCert SignCert `json:"-"`
+	SignCert SignCert `json:"-"`
 }
 
 // RemoteIstioStatus defines the observed state of RemoteIstio
