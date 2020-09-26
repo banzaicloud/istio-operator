@@ -54,7 +54,8 @@ func (r *Reconciler) validatingWebhookConfig() string {
 		},
 		Webhooks: []admissionregistrationv1.ValidatingWebhook{
 			{
-				Name: "pilot.validation.istio.io",
+				Name:                    "pilot.validation.istio.io",
+				AdmissionReviewVersions: []string{"v1", "v1beta1"},
 				ClientConfig: admissionregistrationv1.WebhookClientConfig{
 					Service: &admissionregistrationv1.ServiceReference{
 						Name:      serviceName,
@@ -113,7 +114,8 @@ func (r *Reconciler) validatingWebhookConfig() string {
 				SideEffects:   &se,
 			},
 			{
-				Name: "mixer.validation.istio.io",
+				Name:                    "mixer.validation.istio.io",
+				AdmissionReviewVersions: []string{"v1", "v1beta1"},
 				ClientConfig: admissionregistrationv1.WebhookClientConfig{
 					Service: &admissionregistrationv1.ServiceReference{
 						Name:      serviceName,
