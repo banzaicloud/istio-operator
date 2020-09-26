@@ -9,11 +9,19 @@ metadata:
     app.kubernetes.io/managed-by: {{ .Release.Service }}
     app.kubernetes.io/version: {{ .Chart.AppVersion }}
     app.kubernetes.io/component: webhook
-  name: {{ include "istio-operator.name" . }}-webhook
+  {{- if eq .Values.istioVersion "1.7" }}
+  name: "{{ include "istio-operator.fullname" . }}{{ .Values.operatorComponentSuffix }}-webhook"
+  {{- else }}
+  name: "istio-operator-webhook"
+  {{- end }}
 webhooks:
 - clientConfig:
     service:
-      name: "{{ include "istio-operator.fullname" . }}-operator"
+      {{- if eq .Values.istioVersion "1.7" }}
+      name: "{{ include "istio-operator.fullname" . }}{{ .Values.operatorComponentSuffix }}"
+      {{- else }}
+      name: "istio-operator-webhook"
+      {{- end }}
       namespace: {{ .Release.Namespace }}
       path: /validate-istio-config
   failurePolicy: Ignore
