@@ -107,7 +107,12 @@ download-deps:
 generate: download-deps
 	go generate ./pkg/... ./cmd/...
 	bin/controller-gen object:headerFile="hack/boilerplate.go.txt" paths="./..."
+	./hack/update-codegen.sh
 	go run static/generate.go
+
+# Verify codegen
+verify-codegen: download-deps
+	./hack/verify-codegen.sh
 
 # Build the docker image
 docker-build:
@@ -137,7 +142,7 @@ shellcheck-makefile: bin/shellcheck ## Check each makefile recipe using shellche
 
 .PHONY: shellcheck
 shellcheck: bin/shellcheck ## Check shell scripts
-	bin/shellcheck scripts/*.sh docs/federation/gateway/cluster-add/*.sh docs/federation/flat/*.sh
+	bin/shellcheck scripts/*.sh hack/*.sh docs/federation/gateway/cluster-add/*.sh docs/federation/flat/*.sh
 
 bin/shellcheck:
 	scripts/install_shellcheck.sh
