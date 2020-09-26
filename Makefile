@@ -1,13 +1,15 @@
 # Image URL to use all building/pushing image targets
 TAG ?= $(shell git describe --tags --abbrev=0 --match '[0-9].*[0-9].*[0-9]' 2>/dev/null )
 IMG ?= banzaicloud/istio-operator:$(TAG)
+# Produce CRDs that work back to Kubernetes 1.11 (no version conversion)
+CRD_OPTIONS = "crd:trivialVersions=true,maxDescLen=0,preserveUnknownFields=false,allowDangerousTypes=true"
 
 RELEASE_TYPE ?= p
 RELEASE_MSG ?= "operator release"
 
 REL_TAG = $(shell ./scripts/increment_version.sh -${RELEASE_TYPE} ${TAG})
 
-GOLANGCI_VERSION = 1.23.8
+GOLANGCI_VERSION = 1.31.0
 LICENSEI_VERSION = 0.1.0
 KUBEBUILDER_VERSION = 2.3.1
 KUSTOMIZE_VERSION = 2.0.3
@@ -87,7 +89,7 @@ deploy: install-kustomize
 
 # Generate manifests e.g. CRD, RBAC etc.
 manifests: download-deps
-	bin/controller-gen $(CRD_OPTIONS) rbac:roleName=manager-role webhook paths="./..." output:crd:artifacts:config=config/crd/bases
+	bin/controller-gen $(CRD_OPTIONS) rbac:roleName=manager-role webhook paths="./..." output:rbac:artifacts:config=config/base/rbac output:crd:artifacts:config=config/base/crds
 
 # Run go fmt against code
 fmt:
@@ -134,7 +136,7 @@ shellcheck-makefile: bin/shellcheck ## Check each makefile recipe using shellche
 
 .PHONY: shellcheck
 shellcheck: bin/shellcheck ## Check shell scripts
-	bin/shellcheck scripts/*.sh hack/*.sh docs/federation/gateway/cluster-add/*.sh docs/federation/flat/*.sh
+	bin/shellcheck scripts/*.sh docs/federation/gateway/cluster-add/*.sh docs/federation/flat/*.sh
 
 bin/shellcheck:
 	scripts/install_shellcheck.sh

@@ -2,7 +2,7 @@
 namespace: istio-system
 
 resources:
-- rbac/rbac_role.yaml
-- rbac/rbac_role_binding.yaml
+- rbac/role.yaml
+- rbac/role_binding.yaml
 - manager/manager.yaml
 - webhook/webhook.yaml
