@@ -101,7 +101,7 @@ func (cert Certificate) Write(dir string) error {
 }
 
 func (cert *Certificate) Verify(dnsName string, checkTime time.Time) bool {
-	if cert == nil {
+	if cert == nil || cert.Key == nil || cert.Cert == nil {
 		return false
 	}
 
