@@ -41,6 +41,7 @@ import (
 
 	istiov1beta1 "github.com/banzaicloud/istio-operator/pkg/apis/istio/v1beta1"
 	"github.com/banzaicloud/istio-operator/pkg/controller/meshgateway"
+	"github.com/banzaicloud/istio-operator/pkg/k8sutil"
 )
 
 type Cluster struct {
@@ -221,11 +222,7 @@ func (c *Cluster) Reconcile(remoteConfig *istiov1beta1.RemoteIstio, istio *istio
 	c.log.Info("reconciling remote istio")
 
 	var ReconcilerFuncs []func(remoteConfig *istiov1beta1.RemoteIstio, istio *istiov1beta1.Istio) error
-
-	err := c.reconcileCRDs(remoteConfig, istio)
-	if err != nil {
-		return emperror.Wrapf(err, "could not reconcile")
-	}
+	var err error
 
 	c.remoteConfig = remoteConfig
 
@@ -246,6 +243,7 @@ func (c *Cluster) Reconcile(remoteConfig *istiov1beta1.RemoteIstio, istio *istio
 	}
 
 	ReconcilerFuncs = append(ReconcilerFuncs,
+		c.reconcileCRDs,
 		c.reconcileConfig,
 		c.reconcileSignCert,
 		c.reconcileCARootToNamespaces,
@@ -316,6 +314,7 @@ func (c *Cluster) getRestConfig(kubeconfig []byte) (*rest.Config, error) {
 func (c *Cluster) startManager(config *rest.Config) error {
 	mgr, err := manager.New(config, manager.Options{
 		MetricsBindAddress: "0", // disable metrics
+		MapperProvider:     k8sutil.NewCachedRESTMapper,
 	})
 	if err != nil {
 		return emperror.Wrap(err, "could not create manager")
