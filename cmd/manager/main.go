@@ -131,7 +131,13 @@ func main() {
 	mgr.GetWebhookServer().Register("/validate-istio-config", &webhook.Admission{Handler: wh.NewIstioResourceValidator(mgr)})
 
 	whLogger := logf.Log.WithName("wh-cert-provisioner")
-	mgr.Add(wh.NewValidatingWebhookCertificateProvisioner(mgr, webhookConfigurationName, cert.NewCertProvisioner(whLogger, []string{}, webhookCertDir), whLogger))
+	certProvisioner := cert.NewCertProvisioner(whLogger, []string{}, webhookCertDir)
+	err = certProvisioner.Init()
+	if err != nil {
+		log.Error(err, "could not init cert provisioner")
+		os.Exit(1)
+	}
+	mgr.Add(wh.NewValidatingWebhookCertificateProvisioner(mgr, webhookConfigurationName, certProvisioner, whLogger))
 
 	// Start the Cmd
 	log.Info("starting the Cmd.")

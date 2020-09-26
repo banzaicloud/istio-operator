@@ -23,7 +23,6 @@ import (
 	"crypto/x509"
 	"crypto/x509/pkix"
 	"encoding/pem"
-	"errors"
 	"math/big"
 	"time"
 
@@ -47,6 +46,12 @@ func NewCertProvisioner(log logr.Logger, dnsNames []string, certDir string, afte
 
 		afterCheckFuncs: afterCheckFuncs,
 	}
+}
+
+func (p *Provisioner) Init() error {
+	_, _, err := p.checkCert()
+
+	return err
 }
 
 func (p *Provisioner) SetDNSNames(dnsNames []string) {
@@ -93,15 +98,19 @@ func (p *Provisioner) checkCert() (bool, *Certificate, error) {
 	}
 
 	valid := true
-	for _, name := range p.dnsNames {
-		if !c.Verify(name, time.Now().AddDate(0, 6, 0)) {
-			valid = false
-			break
+	if len(p.dnsNames) > 0 {
+		for _, name := range p.dnsNames {
+			if !c.Verify(name, time.Now().AddDate(0, 6, 0)) {
+				valid = false
+				break
+			}
 		}
+	} else {
+		valid = c.Verify("", time.Now().AddDate(0, 6, 0))
 	}
 
 	if valid {
-		p.log.Info("certificate is valid")
+		p.log.V(1).Info("certificate is valid")
 		return false, c, nil
 	}
 
@@ -115,10 +124,6 @@ func (p *Provisioner) checkCert() (bool, *Certificate, error) {
 }
 
 func (p *Provisioner) generateCert(dnsNames []string) (*Certificate, error) {
-	if len(dnsNames) == 0 {
-		return nil, errors.New("at least 1 dns name must be specified")
-	}
-
 	var certificate Certificate
 	var caPEM, caPrivateKeyPEM, serverCertPEM, serverPrivKeyPEM *bytes.Buffer
 	// CA config
@@ -162,7 +167,10 @@ func (p *Provisioner) generateCert(dnsNames []string) (*Certificate, error) {
 	})
 	certificate.CACert = caPEM.Bytes()
 
-	commonName := dnsNames[0]
+	commonName := "unspecified"
+	if len(dnsNames) > 0 {
+		commonName = dnsNames[0]
+	}
 
 	// server cert config
 	cert := &x509.Certificate{
