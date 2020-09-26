@@ -67,7 +67,7 @@ func main() {
 	var webhookServerPort uint
 	flag.UintVar(&webhookServerPort, "webhook-server-port", 9443, "The port that the webhook server serves at.")
 	var webhookCertDir string
-	flag.StringVar(&webhookCertDir, "webhook-cert-dir", "/etc/webhook/certs", "Determines the directory that contains the server key and certificate.")
+	flag.StringVar(&webhookCertDir, "webhook-cert-dir", "/tmp/certs", "Determines the directory that contains the server key and certificate.")
 	var webhookConfigurationName string
 	flag.StringVar(&webhookConfigurationName, "webhook-name", "istio-operator-webhook", "Sets the name of the validating webhook resource.")
 	flag.Parse()

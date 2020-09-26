@@ -7,6 +7,7 @@ operator:
     repository: banzaicloud/istio-operator
     tag: 0.7.3
     pullPolicy: IfNotPresent
+  extraArgs: []
   resources:
     requests:
       cpu: 200m
