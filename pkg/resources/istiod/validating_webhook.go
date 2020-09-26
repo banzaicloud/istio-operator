@@ -17,22 +17,21 @@ limitations under the License.
 package istiod
 
 import (
-	admissionv1 "k8s.io/api/admissionregistration/v1"
+	admissionregistrationv1beta1 "k8s.io/api/admissionregistration/v1beta1"
 	"k8s.io/apimachinery/pkg/runtime"
 
 	"github.com/banzaicloud/istio-operator/pkg/resources/templates"
 	"github.com/banzaicloud/istio-operator/pkg/util"
 )
 
-func (r *Reconciler) webhooks() []admissionv1.ValidatingWebhook {
-	se := admissionv1.SideEffectClassNone
-	scope := admissionv1.AllScopes
-	return []admissionv1.ValidatingWebhook{
+func (r *Reconciler) webhooks() []admissionregistrationv1beta1.ValidatingWebhook {
+	se := admissionregistrationv1beta1.SideEffectClassNone
+	scope := admissionregistrationv1beta1.AllScopes
+	return []admissionregistrationv1beta1.ValidatingWebhook{
 		{
-			Name:                    "validation.istio.io",
-			AdmissionReviewVersions: []string{"v1", "v1beta1"},
-			ClientConfig: admissionv1.WebhookClientConfig{
-				Service: &admissionv1.ServiceReference{
+			Name: "validation.istio.io",
+			ClientConfig: admissionregistrationv1beta1.WebhookClientConfig{
+				Service: &admissionregistrationv1beta1.ServiceReference{
 					Name:      r.Config.WithRevision(ServiceNameIstiod),
 					Namespace: r.Config.Namespace,
 					Path:      util.StrPointer("/validate"),
@@ -40,13 +39,13 @@ func (r *Reconciler) webhooks() []admissionv1.ValidatingWebhook {
 				// patched at runtime when the webhook is ready
 				CABundle: nil,
 			},
-			Rules: []admissionv1.RuleWithOperations{
+			Rules: []admissionregistrationv1beta1.RuleWithOperations{
 				{
-					Operations: []admissionv1.OperationType{
-						admissionv1.Create,
-						admissionv1.Update,
+					Operations: []admissionregistrationv1beta1.OperationType{
+						admissionregistrationv1beta1.Create,
+						admissionregistrationv1beta1.Update,
 					},
-					Rule: admissionv1.Rule{
+					Rule: admissionregistrationv1beta1.Rule{
 						APIGroups:   []string{"config.istio.io", "rbac.istio.io", "security.istio.io", "authentication.istio.io", "networking.istio.io"},
 						APIVersions: []string{"*"},
 						Resources:   []string{"*"},
@@ -61,7 +60,7 @@ func (r *Reconciler) webhooks() []admissionv1.ValidatingWebhook {
 }
 
 func (r *Reconciler) validatingWebhook() runtime.Object {
-	return &admissionv1.ValidatingWebhookConfiguration{
+	return &admissionregistrationv1beta1.ValidatingWebhookConfiguration{
 		ObjectMeta: templates.ObjectMetaClusterScopeWithRevision(validatingWebhookName, util.MergeMultipleStringMaps(istiodLabels, istiodLabelSelector, r.Config.RevisionLabels()), r.Config),
 		Webhooks:   r.webhooks(),
 	}
