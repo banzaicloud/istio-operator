@@ -4206,7 +4206,7 @@ spec:
                     type: string
                   accessLogFile:
                     enum:
-                    - ;/dev/stdout
+                    - /dev/stdout
                     type: string
                   accessLogFormat:
                     type: string
