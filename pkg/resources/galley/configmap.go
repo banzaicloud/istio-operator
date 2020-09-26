@@ -18,7 +18,7 @@ package galley
 
 import (
 	"github.com/ghodss/yaml"
-	admissionregistrationv1 "k8s.io/api/admissionregistration/v1"
+	admissionregistrationv1beta1 "k8s.io/api/admissionregistration/v1beta1"
 	apiv1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
@@ -45,65 +45,64 @@ func (r *Reconciler) configMap() runtime.Object {
 }
 
 func (r *Reconciler) validatingWebhookConfig() string {
-	ignore := admissionregistrationv1.Ignore
-	se := admissionregistrationv1.SideEffectClassNone
-	webhook := admissionregistrationv1.ValidatingWebhookConfiguration{
+	ignore := admissionregistrationv1beta1.Ignore
+	se := admissionregistrationv1beta1.SideEffectClassNone
+	webhook := admissionregistrationv1beta1.ValidatingWebhookConfiguration{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:   webhookName,
 			Labels: galleyLabels,
 		},
-		Webhooks: []admissionregistrationv1.ValidatingWebhook{
+		Webhooks: []admissionregistrationv1beta1.ValidatingWebhook{
 			{
-				Name:                    "pilot.validation.istio.io",
-				AdmissionReviewVersions: []string{"v1", "v1beta1"},
-				ClientConfig: admissionregistrationv1.WebhookClientConfig{
-					Service: &admissionregistrationv1.ServiceReference{
+				Name: "pilot.validation.istio.io",
+				ClientConfig: admissionregistrationv1beta1.WebhookClientConfig{
+					Service: &admissionregistrationv1beta1.ServiceReference{
 						Name:      serviceName,
 						Namespace: r.Config.Namespace,
 						Path:      util.StrPointer("/admitpilot"),
 					},
 					CABundle: []byte{},
 				},
-				Rules: []admissionregistrationv1.RuleWithOperations{
+				Rules: []admissionregistrationv1beta1.RuleWithOperations{
 					{
-						Operations: []admissionregistrationv1.OperationType{
-							admissionregistrationv1.Create,
-							admissionregistrationv1.Update,
+						Operations: []admissionregistrationv1beta1.OperationType{
+							admissionregistrationv1beta1.Create,
+							admissionregistrationv1beta1.Update,
 						},
-						Rule: admissionregistrationv1.Rule{
+						Rule: admissionregistrationv1beta1.Rule{
 							APIGroups:   []string{"config.istio.io"},
 							APIVersions: []string{"v1alpha2"},
 							Resources:   []string{"httpapispecs", "httpapispecbindings", "quotaspecs", "quotaspecbindings"},
 						},
 					},
 					{
-						Operations: []admissionregistrationv1.OperationType{
-							admissionregistrationv1.Create,
-							admissionregistrationv1.Update,
+						Operations: []admissionregistrationv1beta1.OperationType{
+							admissionregistrationv1beta1.Create,
+							admissionregistrationv1beta1.Update,
 						},
-						Rule: admissionregistrationv1.Rule{
+						Rule: admissionregistrationv1beta1.Rule{
 							APIGroups:   []string{"security.istio.io"},
 							APIVersions: []string{"*"},
 							Resources:   []string{"*"},
 						},
 					},
 					{
-						Operations: []admissionregistrationv1.OperationType{
-							admissionregistrationv1.Create,
-							admissionregistrationv1.Update,
+						Operations: []admissionregistrationv1beta1.OperationType{
+							admissionregistrationv1beta1.Create,
+							admissionregistrationv1beta1.Update,
 						},
-						Rule: admissionregistrationv1.Rule{
+						Rule: admissionregistrationv1beta1.Rule{
 							APIGroups:   []string{"authentication.istio.io"},
 							APIVersions: []string{"*"},
 							Resources:   []string{"*"},
 						},
 					},
 					{
-						Operations: []admissionregistrationv1.OperationType{
-							admissionregistrationv1.Create,
-							admissionregistrationv1.Update,
+						Operations: []admissionregistrationv1beta1.OperationType{
+							admissionregistrationv1beta1.Create,
+							admissionregistrationv1beta1.Update,
 						},
-						Rule: admissionregistrationv1.Rule{
+						Rule: admissionregistrationv1beta1.Rule{
 							APIGroups:   []string{"networking.istio.io"},
 							APIVersions: []string{"*"},
 							Resources:   []string{"destinationrules", "envoyfilters", "gateways", "serviceentries", "sidecars", "virtualservices"},
@@ -114,23 +113,22 @@ func (r *Reconciler) validatingWebhookConfig() string {
 				SideEffects:   &se,
 			},
 			{
-				Name:                    "mixer.validation.istio.io",
-				AdmissionReviewVersions: []string{"v1", "v1beta1"},
-				ClientConfig: admissionregistrationv1.WebhookClientConfig{
-					Service: &admissionregistrationv1.ServiceReference{
+				Name: "mixer.validation.istio.io",
+				ClientConfig: admissionregistrationv1beta1.WebhookClientConfig{
+					Service: &admissionregistrationv1beta1.ServiceReference{
 						Name:      serviceName,
 						Namespace: r.Config.Namespace,
 						Path:      util.StrPointer("/admitmixer"),
 					},
 					CABundle: []byte{},
 				},
-				Rules: []admissionregistrationv1.RuleWithOperations{
+				Rules: []admissionregistrationv1beta1.RuleWithOperations{
 					{
-						Operations: []admissionregistrationv1.OperationType{
-							admissionregistrationv1.Create,
-							admissionregistrationv1.Update,
+						Operations: []admissionregistrationv1beta1.OperationType{
+							admissionregistrationv1beta1.Create,
+							admissionregistrationv1beta1.Update,
 						},
-						Rule: admissionregistrationv1.Rule{
+						Rule: admissionregistrationv1beta1.Rule{
 							APIGroups:   []string{"config.istio.io"},
 							APIVersions: []string{"v1alpha2"},
 							Resources: []string{
