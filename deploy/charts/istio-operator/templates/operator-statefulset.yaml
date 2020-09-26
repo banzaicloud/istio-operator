@@ -69,8 +69,11 @@ spec:
           {{- end }}
           - "--leader-election-namespace={{ .Values.leaderElection.namespace }}"
           {{- end }}
-          {{- if .Values.webhook.enabled }}
+          {{- if and (.Values.webhook.enabled) (eq .Values.istioVersion "1.7") }}
           - "--webhook-name={{ include "istio-operator.name" . }}-webhook"
+          {{- end }}
+          {{- range $value := .Values.operator.extraArgs }}
+          - {{ quote $value }}
           {{- end }}
         env:
           - name: POD_NAMESPACE
