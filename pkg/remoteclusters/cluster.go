@@ -199,11 +199,6 @@ func (c *Cluster) configmapInformer() error {
 }
 
 func (c *Cluster) initK8SClients() error {
-	err := c.startManager(c.restConfig)
-	if err != nil {
-		return err
-	}
-
 	// add mesh gateway controller to the manager
 	meshgateway.Add(c.mgr)
 
@@ -222,9 +217,17 @@ func (c *Cluster) Reconcile(remoteConfig *istiov1beta1.RemoteIstio, istio *istio
 	c.log.Info("reconciling remote istio")
 
 	var ReconcilerFuncs []func(remoteConfig *istiov1beta1.RemoteIstio, istio *istiov1beta1.Istio) error
-	var err error
 
 	c.remoteConfig = remoteConfig
+
+	err := c.startManager(c.restConfig)
+	if err != nil {
+		return err
+	}
+
+	if err := c.reconcileCRDs(remoteConfig, istio); err != nil {
+		return emperror.Wrapf(err, "could not reconcile")
+	}
 
 	// init k8s clients
 	c.initClient.Do(func() {
@@ -243,7 +246,6 @@ func (c *Cluster) Reconcile(remoteConfig *istiov1beta1.RemoteIstio, istio *istio
 	}
 
 	ReconcilerFuncs = append(ReconcilerFuncs,
-		c.reconcileCRDs,
 		c.reconcileConfig,
 		c.reconcileSignCert,
 		c.reconcileCARootToNamespaces,
