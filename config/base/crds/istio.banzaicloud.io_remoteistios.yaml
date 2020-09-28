@@ -566,6 +566,7 @@ spec:
                     type: string
                   accessLogFile:
                     enum:
+                    - ""
                     - /dev/stdout
                     type: string
                   accessLogFormat:
