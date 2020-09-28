@@ -9,7 +9,7 @@ metadata:
     app.kubernetes.io/managed-by: {{ .Release.Service }}
     app.kubernetes.io/version: {{ .Chart.AppVersion }}
     app.kubernetes.io/component: webhook
-  {{- if eq .Values.istioVersion "1.7" }}
+  {{- if semverCompare ">= 1.7.0" .Values.istioVersion }}
   name: "{{ include "istio-operator.fullname" . }}{{ .Values.operatorComponentSuffix }}-webhook"
   {{- else }}
   name: "istio-operator-webhook"
@@ -17,7 +17,7 @@ metadata:
 webhooks:
 - clientConfig:
     service:
-      {{- if eq .Values.istioVersion "1.7" }}
+      {{- if semverCompare ">= 1.7.0" .Values.istioVersion }}
       name: "{{ include "istio-operator.fullname" . }}{{ .Values.operatorComponentSuffix }}"
       {{- else }}
       name: "istio-operator-webhook"

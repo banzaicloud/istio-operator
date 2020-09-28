@@ -274,9 +274,9 @@ rules:
   - networking.istio.io
   - security.istio.io
   - scalingpolicy.istio.io
-  {{ if ne .Values.istioVersion "1.7" }}
+  {{- if semverCompare "< 1.7.0" .Values.istioVersion }}
   - rbac.istio.io
-  {{ end }}
+  {{- end }}
   resources:
   - '*'
   verbs:
