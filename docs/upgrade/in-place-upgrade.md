@@ -17,7 +17,7 @@ What happens is that once the operator discerns that the Custom Resource it's wa
 
 #### Requirements
 
-- Minikube v1.1.1+ or Kubernetes 1.15.0+
+- Minikube v1.1.1+ or Kubernetes 1.16.0+
 - `KUBECONFIG` set to an existing Kubernetes cluster
 
 If you already have Istio 1.6.x installed on your cluster you can skip the next section and can jump right to [Deploy sample BookInfo application](#deploy-sample-bookinfo-application).
