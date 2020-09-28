@@ -686,7 +686,7 @@ const (
 )
 
 type HTTPProxyEnvs struct {
-	HTTPProxy  string `json:"httpProxy,omitemtpy"`
+	HTTPProxy  string `json:"httpProxy,omitempty"`
 	HTTPSProxy string `json:"httpsProxy,omitempty"`
 	NoProxy    string `json:"noProxy,omitempty"`
 }
@@ -937,6 +937,14 @@ func (v IstioVersion) IsSupported() bool {
 	re, _ := regexp.Compile(supportedIstioMinorVersionRegex)
 
 	return re.Match([]byte(v))
+}
+
+func (c *Istio) GetControlPlaneAuthPolicy() ControlPlaneAuthPolicyType {
+	if c.Spec.ControlPlaneAuthPolicy != "" {
+		return c.Spec.ControlPlaneAuthPolicy
+	}
+
+	return ControlPlaneAuthPolicyMTLS
 }
 
 func (c *Istio) GetCAAddress() string {
