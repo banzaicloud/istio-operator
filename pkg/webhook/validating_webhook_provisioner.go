@@ -40,8 +40,6 @@ type ValidatingWebhookCertificateProvisioner struct {
 	trigger         chan struct{}
 }
 
-// +kubebuilder:rbac:groups=admissionregistration.k8s.io,resources=validatingwebhookconfigurations;mutatingwebhookconfigurations,verbs=*
-// +kubebuilder:rbac:groups="",resources=secrets;services,verbs=get;list;watch;create;update;patch;delete
 func NewValidatingWebhookCertificateProvisioner(mgr manager.Manager, name string, certProvisioner *cert.Provisioner, log logr.Logger) *ValidatingWebhookCertificateProvisioner {
 	return &ValidatingWebhookCertificateProvisioner{
 		name:            name,
