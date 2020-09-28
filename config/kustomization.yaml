@@ -1,5 +1,5 @@
 resources:
-- base/crds/istio_v1beta1_istio.yaml
-- base/crds/istio_v1beta1_remoteistio.yaml
-- base/crds/istio_v1beta1_meshgateway.yaml
+- base/crds/istio.banzaicloud.io_istios.yaml
+- base/crds/istio.banzaicloud.io_remoteistios.yaml
+- base/crds/istio.banzaicloud.io_meshgateways.yaml
 - base/manager/namespace.yaml
