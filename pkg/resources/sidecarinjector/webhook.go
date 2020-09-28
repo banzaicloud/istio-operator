@@ -87,7 +87,8 @@ func (r *Reconciler) webhook() runtime.Object {
 	}
 
 	webhook := &admissionregistrationv1beta1.MutatingWebhook{
-		Name: "sidecar-injector.istio.io",
+		Name:                    "sidecar-injector.istio.io",
+		AdmissionReviewVersions: []string{"v1beta1", "v1"},
 		ClientConfig: admissionregistrationv1beta1.WebhookClientConfig{
 			Service: &admissionregistrationv1beta1.ServiceReference{
 				Name:      r.Config.WithRevision(service),

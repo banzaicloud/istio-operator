@@ -29,7 +29,8 @@ func (r *Reconciler) webhooks() []admissionregistrationv1beta1.ValidatingWebhook
 	scope := admissionregistrationv1beta1.AllScopes
 	return []admissionregistrationv1beta1.ValidatingWebhook{
 		{
-			Name: "validation.istio.io",
+			Name:                    "validation.istio.io",
+			AdmissionReviewVersions: []string{"v1beta1", "v1"},
 			ClientConfig: admissionregistrationv1beta1.WebhookClientConfig{
 				Service: &admissionregistrationv1beta1.ServiceReference{
 					Name:      r.Config.WithRevision(ServiceNameIstiod),
