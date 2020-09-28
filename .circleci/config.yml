@@ -41,9 +41,6 @@ jobs:
           name: Restore build dependencies
           keys:
             - build-deps-v1-{{ .Branch }}-{{ checksum "scripts/download-deps.sh" }}
-            - build-deps-v1-{{ .Branch }}
-            - build-deps-v1-master
-            - build-deps-v1
 
       - restore_cache:
           name: Restore dependencies
