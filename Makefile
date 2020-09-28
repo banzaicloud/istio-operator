@@ -91,6 +91,7 @@ deploy: install-kustomize
 manifests: download-deps
 	bin/controller-gen $(CRD_OPTIONS) rbac:roleName=manager-role webhook paths="./..." output:rbac:artifacts:config=config/base/rbac output:crd:artifacts:config=config/base/crds
 	rm deploy/charts/istio-operator/crds/* && cp config/base/crds/* deploy/charts/istio-operator/crds/
+	scripts/label-crds.sh $(ISTIO_VERSION)
 
 # Run go fmt against code
 fmt:
