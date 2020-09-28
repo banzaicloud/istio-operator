@@ -2,38 +2,40 @@
 
 set -euo pipefail
 
-version="v0.18.6"
-cgen_version=0.4.0
+code_generator_version=0.18.6
+controller_gen_version=0.4.0
 yq_version=3.4.0
 
 dirname=$(dirname "$0")
 binpath=$PWD/$dirname/../bin
 
+function ensure-binary-version() {
+    local bin_name=$1
+    local bin_version=$2
+    local download_location=$3
+
+    local target_name=${bin_name}-${bin_version}
+    local link_path=${binpath}/${bin_name}
+
+    [ -e "${link_path}" ] && rm "${link_path}"
+
+    if [ ! -e "${binpath}/${target_name}" ]; then
+        GOBIN=$binpath go get "${download_location}"
+        mv "${binpath}/${bin_name}" "${binpath}/${target_name}"
+    fi
+
+    ln -s "${target_name}" "${link_path}"
+}
+
 # code generators
 cmds="deepcopy-gen defaulter-gen lister-gen client-gen informer-gen"
 for name in ${cmds}; do
-    if [[ ! -f $binpath/$name ]]; then
-        GOBIN=$binpath go get k8s.io/code-generator/cmd/"$name"@$version
-    fi
+    ensure-binary-version "${name}" ${code_generator_version} "k8s.io/code-generator/cmd/$name@v${code_generator_version}"
 done
 
-# controller-gen
-target_name=controller-gen-${cgen_version}
-link_path=${binpath}/controller-gen
+ensure-binary-version controller-gen ${controller_gen_version} "sigs.k8s.io/controller-tools/cmd/controller-gen@v${controller_gen_version}"
 
-[ -e "${link_path}" ] && rm -r "${link_path}"
-
-if [ ! -e "${binpath}/${target_name}" ]; then
-    GOBIN=$binpath go get sigs.k8s.io/controller-tools/cmd/controller-gen@v${cgen_version}
-    mv "${binpath}/controller-gen" "${binpath}/${target_name}"
-fi
-
-ln -s "${target_name}" "${link_path}"
-
-# yq
-if [[ ! -f $binpath/yq ]]; then
-    GOBIN=$binpath go get github.com/mikefarah/yq/v3@${yq_version}
-fi
+ensure-binary-version yq ${yq_version} "github.com/mikefarah/yq/v3@${yq_version}"
 
 go mod tidy
 go mod vendor
