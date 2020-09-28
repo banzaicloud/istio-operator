@@ -33,7 +33,9 @@ import (
 	"k8s.io/apimachinery/pkg/runtime/serializer/json"
 	"k8s.io/client-go/kubernetes/scheme"
 	"k8s.io/client-go/rest"
+	"k8s.io/client-go/tools/record"
 	"sigs.k8s.io/controller-runtime/pkg/event"
+	"sigs.k8s.io/controller-runtime/pkg/manager"
 	"sigs.k8s.io/controller-runtime/pkg/predicate"
 
 	istiov1beta1 "github.com/banzaicloud/istio-operator/pkg/apis/istio/v1beta1"
@@ -43,22 +45,25 @@ import (
 )
 
 const (
-	componentName  = "crds"
-	createdByLabel = "banzaicloud.io/created-by"
-	createdBy      = "istio-operator"
+	componentName     = "crds"
+	createdByLabel    = "banzaicloud.io/created-by"
+	createdBy         = "istio-operator"
+	eventRecorderName = "istio-crd-controller"
 )
 
 type CRDReconciler struct {
 	crds     []*extensionsobj.CustomResourceDefinition
 	config   *rest.Config
 	revision string
+	recorder record.EventRecorder
 }
 
-func New(cfg *rest.Config, revision string, crds ...*extensionsobj.CustomResourceDefinition) (*CRDReconciler, error) {
+func New(mgr manager.Manager, revision string, crds ...*extensionsobj.CustomResourceDefinition) (*CRDReconciler, error) {
 	r := &CRDReconciler{
 		crds:     crds,
-		config:   cfg,
+		config:   mgr.GetConfig(),
 		revision: revision,
+		recorder: mgr.GetRecorder(eventRecorderName),
 	}
 
 	return r, nil
@@ -192,20 +197,16 @@ func (r *CRDReconciler) Reconcile(config *istiov1beta1.Istio, log logr.Logger) e
 			}
 
 			if _, err := crdClient.Update(crd); err != nil {
-				if apierrors.IsConflict(err) || apierrors.IsInvalid(err) {
-					err := crdClient.Delete(crd.Name, &metav1.DeleteOptions{})
-					if err != nil {
-						return emperror.WrapWith(err, "could not delete CRD", "kind", crd.Spec.Names.Kind)
-					}
-					crd.ResourceVersion = ""
-					if _, err := crdClient.Create(crd); err != nil {
-						log.Info("resource needs to be re-created")
-						return emperror.WrapWith(err, "creating CRD failed", "kind", crd.Spec.Names.Kind)
-					}
-					log.Info("CRD created")
-				}
-
-				return emperror.WrapWith(err, "updating CRD failed", "kind", crd.Spec.Names.Kind)
+				errorMessage := "updating CRD failed, consider updating the CRD manually if needed"
+				r.recorder.Eventf(
+					config,
+					"Warning",
+					"IstioCRDUpdateFailure",
+					errorMessage,
+					"kind",
+					crd.Spec.Names.Kind,
+				)
+				return emperror.WrapWith(err, errorMessage, "kind", crd.Spec.Names.Kind)
 			}
 			log.Info("CRD updated")
 		}
