@@ -178,7 +178,6 @@ type ReconcileComponent func(log logr.Logger, istio *istiov1beta1.Istio) error
 
 // Reconcile reads that state of the cluster for a Config object and makes changes based on the state read
 // and what is in the Config.Spec
-// Automatically generate RBAC rules to allow the Controller to read and write Deployments
 func (r *ReconcileIstio) Reconcile(request reconcile.Request) (reconcile.Result, error) {
 	logger := log.WithValues("trigger", request.Namespace+"/"+request.Name, "correlationID", uuid.Must(uuid.NewV4()).String())
 	// Fetch the Config instance
