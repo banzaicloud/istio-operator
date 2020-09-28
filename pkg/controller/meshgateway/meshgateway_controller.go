@@ -114,11 +114,11 @@ type ReconcileMeshGateway struct {
 	scheme  *runtime.Scheme
 }
 
-// Reconcile reads that state of the cluster for a MeshGateway object and makes changes based on the state read
-// and what is in the MeshGateway.Spec
-// Automatically generate RBAC rules to allow the Controller to read and write Deployments
 // +kubebuilder:rbac:groups=istio.banzaicloud.io,resources=meshgateways;meshgateways/finalizers,verbs=get;list;watch;create;update;patch;delete
 // +kubebuilder:rbac:groups=istio.banzaicloud.io,resources=meshgateways/status,verbs=get;update;patch
+
+// Reconcile reads that state of the cluster for a MeshGateway object and makes changes based on the state read
+// and what is in the MeshGateway.Spec
 func (r *ReconcileMeshGateway) Reconcile(request reconcile.Request) (reconcile.Result, error) {
 	logger := log.WithValues("trigger", request.Namespace+"/"+request.Name, "correlationID", uuid.Must(uuid.NewV4()).String())
 
