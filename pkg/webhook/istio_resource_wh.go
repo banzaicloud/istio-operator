@@ -51,7 +51,7 @@ func (v *IstioResourceValidator) Handle(ctx context.Context, req admission.Reque
 		return admission.Errored(http.StatusBadRequest, emperror.Wrap(err, "could not check control plane revisions"))
 	}
 	if yes && !obj.IsRevisionUsed() {
-		return admission.Denied("'global' property must be set to false. A global Istio control plane is already exists.")
+		return admission.Denied("'global' property must be set to false. A global Istio control plane already exists.")
 	}
 
 	return admission.Allowed("")
