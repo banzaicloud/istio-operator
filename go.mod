@@ -5,7 +5,7 @@ go 1.14
 require (
 	cloud.google.com/go v0.35.1 // indirect
 	github.com/Masterminds/semver/v3 v3.1.0
-	github.com/banzaicloud/istio-client-go v0.0.0-20200421090622-98a770729d7b
+	github.com/banzaicloud/istio-client-go v0.0.9
 	github.com/banzaicloud/k8s-objectmatcher v1.4.0
 	github.com/coreos/go-semver v0.3.0
 	github.com/ghodss/yaml v1.0.0
