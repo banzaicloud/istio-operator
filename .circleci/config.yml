@@ -40,6 +40,7 @@ jobs:
       - restore_cache:
           name: Restore build dependencies
           keys:
+            - build-deps-v1-{{ .Branch }}-{{ checksum "Makefile" }}-{{ checksum "scripts/download-deps.sh" }}
             - build-deps-v1-{{ .Branch }}-{{ checksum "Makefile" }}
             - build-deps-v1-{{ .Branch }}
             - build-deps-v1-master
@@ -100,7 +101,7 @@ jobs:
 
       - save_cache:
           name: Save build dependencies
-          key: build-deps-v1-{{ .Branch }}-{{ checksum "Makefile" }}
+          key: build-deps-v1-{{ .Branch }}-{{ checksum "Makefile" }}-{{ checksum "scripts/download-deps.sh" }}
           paths:
             - bin/
 
