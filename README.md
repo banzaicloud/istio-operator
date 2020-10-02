@@ -152,11 +152,19 @@ If you find this project useful here's how you can help:
 - Help new users with issues they may encounter
 - Support the development of this project and star this repo!
 
-## Community
+## Istio operator support
 
-If you have any questions about the Istio operator, and would like to talk to us and the other members of the Banzai Cloud community, please join our **#istio-operator** channel on [Slack](https://pages.banzaicloud.com/invite-slack).
+### Community support
 
-We also frequently write blog posts about [Istio](https://banzaicloud.com/tags/istio/) itself and the [Istio operator](https://banzaicloud.com/tags/istio-operator/).
+If you encounter any problems that is not addressed in our documentation, [open an issue](https://github.com/banzaicloud/istio-operator/issues) or talk to us on the [Banzai Cloud Slack channel #istio-operator.](https://pages.banzaicloud.com/invite-slack).
+
+### Commercial support
+
+If you are using the Istio operator in a production environment and [require commercial support, contact Banzai Cloud](https://banzaicloud.com/contact/), the company backing the development of the Istio operator.
+
+### Engineering blog
+
+We frequently write blog posts about [Istio](https://banzaicloud.com/tags/istio/) itself and the [Istio operator](https://banzaicloud.com/tags/istio-operator/). To be up-to-date with the Istio operator and the other open source and commercial [products of Banzai Cloud, subscribe to our blog](https://pages.banzaicloud.com/sign-up-for-the-banzai-cloud-newsletter/).
 
 ## License
 
