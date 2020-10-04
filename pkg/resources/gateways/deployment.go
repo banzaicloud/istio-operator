@@ -275,6 +275,11 @@ func (r *Reconciler) envVars() []apiv1.EnvVar {
 		})
 	}
 
+	envVars = append(envVars, apiv1.EnvVar{
+		Name:  "ISTIO_META_REVISION",
+		Value: r.Config.NamespacedRevision(),
+	})
+
 	envVars = k8sutil.MergeEnvVars(envVars, r.gw.Spec.AdditionalEnvVars)
 
 	return envVars
