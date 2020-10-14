@@ -52,6 +52,14 @@ func Reconcile(log logr.Logger, client runtimeClient.Client, desired runtime.Obj
 	}
 	if apierrors.IsNotFound(err) {
 		if desiredState != DesiredStateAbsent {
+			should, err := desiredState.ShouldCreate(current)
+			if err != nil {
+				return emperror.WrapWith(err, "could not execute ShouldCreate func")
+			}
+			if !should {
+				log.V(1).Info("resource should not be created")
+				return nil
+			}
 			if err := desiredState.BeforeCreate(desired); err != nil {
 				return emperror.WrapWith(err, "could not execute BeforeCreate func")
 			}
@@ -68,6 +76,14 @@ func Reconcile(log logr.Logger, client runtimeClient.Client, desired runtime.Obj
 		}
 	} else {
 		if desiredState != DesiredStateAbsent && desiredState != DesiredStateExists {
+			should, err := desiredState.ShouldUpdate(current, desiredCopy)
+			if err != nil {
+				return emperror.WrapWith(err, "could not execute ShouldUpdate func")
+			}
+			if !should {
+				log.V(1).Info("resource should not be updated")
+				return nil
+			}
 			if err := desiredState.BeforeUpdate(current, desiredCopy); err != nil {
 				return emperror.WrapWith(err, "could not execute BeforeUpdate func")
 			}
@@ -105,12 +121,19 @@ func Reconcile(log logr.Logger, client runtimeClient.Client, desired runtime.Obj
 
 			if err := client.Update(context.TODO(), desired); err != nil {
 				if apierrors.IsConflict(err) || apierrors.IsInvalid(err) {
+					should, err := desiredState.ShouldRecreate(current, desiredCopy)
+					if err != nil {
+						return emperror.WrapWith(err, "could not execute ShoudReCreate func")
+					}
+					if !should {
+						log.V(1).Info("resource should not be re-created")
+						return nil
+					}
 					log.Info("resource needs to be re-created", "error", err)
 					if err := desiredState.BeforeRecreate(current, desiredCopy); err != nil {
 						return emperror.WrapWith(err, "could not execute BeforeRecreate func")
 					}
-					err := client.Delete(context.TODO(), current)
-					if err != nil {
+					if err := client.Delete(context.TODO(), current); err != nil {
 						return emperror.WrapWith(err, "could not delete resource", "kind", desiredType, "name", key.Name)
 					}
 					log.Info("resource deleted")
@@ -131,6 +154,14 @@ func Reconcile(log logr.Logger, client runtimeClient.Client, desired runtime.Obj
 			}
 			log.Info("resource updated")
 		} else if desiredState == DesiredStateAbsent {
+			should, err := desiredState.ShouldDelete(current)
+			if err != nil {
+				return emperror.WrapWith(err, "could not execute ShouldDelete func")
+			}
+			if !should {
+				log.V(1).Info("resource should not be deleted")
+				return nil
+			}
 			if err := desiredState.BeforeDelete(current); err != nil {
 				return emperror.WrapWith(err, "could not execute BeforeDelete func")
 			}
