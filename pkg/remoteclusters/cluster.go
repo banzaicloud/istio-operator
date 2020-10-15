@@ -62,9 +62,10 @@ type Cluster struct {
 	istioConfig       *istiov1beta1.Istio
 	remoteConfig      *istiov1beta1.RemoteIstio
 	ctrl              controller.Controller
+	cl                client.Client
 }
 
-func NewCluster(name string, ctrl controller.Controller, config []byte, log logr.Logger) (*Cluster, error) {
+func NewCluster(name string, ctrl controller.Controller, cl client.Client, config []byte, log logr.Logger) (*Cluster, error) {
 	stop := make(chan struct{})
 
 	cluster := &Cluster{
@@ -74,6 +75,7 @@ func NewCluster(name string, ctrl controller.Controller, config []byte, log logr
 		stop:    stop,
 		stopper: stop,
 		ctrl:    ctrl,
+		cl:      cl,
 	}
 
 	restConfig, err := cluster.getRestConfig(config)
@@ -137,7 +139,7 @@ func (c *Cluster) namespaceInformer() error {
 			return false
 		},
 		UpdateFunc: func(e event.UpdateEvent) bool {
-			return false
+			return true
 		},
 	})
 
@@ -251,6 +253,7 @@ func (c *Cluster) Reconcile(remoteConfig *istiov1beta1.RemoteIstio, istio *istio
 		c.reconcileCARootToNamespaces,
 		c.reconcileEnabledServices,
 		c.ReconcileEnabledServiceEndpoints,
+		c.reconcileNamespaceInjectionLabels,
 		c.reconcileComponents,
 	)
 
