@@ -118,6 +118,16 @@ func add(mgr manager.Manager, r reconcile.Reconciler) error {
 		return err
 	}
 
+	// Watch for namespace changes
+	err = c.Watch(&source.Kind{Type: &corev1.Namespace{TypeMeta: metav1.TypeMeta{Kind: "Namespace", APIVersion: "v1"}}}, &handler.EnqueueRequestsFromMapFunc{
+		ToRequests: handler.ToRequestsFunc(func(object handler.MapObject) []reconcile.Request {
+			return triggerRemoteIstios(mgr, nil, log)
+		}),
+	})
+	if err != nil {
+		return err
+	}
+
 	return nil
 }
 
@@ -527,7 +537,7 @@ func (r *ReconcileRemoteConfig) getRemoteCluster(remoteConfig *istiov1beta1.Remo
 
 	logger.Info("k8s config found")
 
-	cluster, err := remoteclusters.NewCluster(remoteConfig.Name, r.ctrl, k8sconfig, logger)
+	cluster, err := remoteclusters.NewCluster(remoteConfig.Name, r.ctrl, r.Client, k8sconfig, logger)
 	if err != nil {
 		return nil, err
 	}

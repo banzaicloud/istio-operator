@@ -123,6 +123,23 @@ func RemoveString(slice []string, s string) (result []string) {
 	return
 }
 
+func ReduceMapByMap(original map[string]string, reduce map[string]string) map[string]string {
+	final := make(map[string]string)
+	slice := make(map[string]bool, 0)
+	for k := range reduce {
+		slice[k] = true
+	}
+
+	for k, v := range original {
+		if slice[k] {
+			continue
+		}
+		final[k] = v
+	}
+
+	return final
+}
+
 func GetPodSecurityContextFromSecurityContext(sc *corev1.SecurityContext) *corev1.PodSecurityContext {
 	if sc == nil || *sc == (corev1.SecurityContext{}) {
 		return &corev1.PodSecurityContext{}
