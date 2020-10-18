@@ -21,6 +21,7 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 
+	"github.com/banzaicloud/istio-operator/pkg/apis/istio/v1beta1"
 	"github.com/banzaicloud/istio-operator/pkg/resources/istiod"
 	"github.com/banzaicloud/istio-operator/pkg/resources/templates"
 	"github.com/banzaicloud/istio-operator/pkg/util"
@@ -37,7 +38,7 @@ func (r *Reconciler) webhook() runtime.Object {
 
 	globalMatchExpression := []metav1.LabelSelectorRequirement{
 		{
-			Key:      "istio-injection",
+			Key:      v1beta1.LegacyAutoInjectionLabelKey,
 			Operator: metav1.LabelSelectorOpIn,
 			Values:   []string{"enabled"},
 		},
@@ -50,7 +51,7 @@ func (r *Reconciler) webhook() runtime.Object {
 			Values:   []string{r.Config.Namespace},
 		},
 		{
-			Key:      "istio-injection",
+			Key:      v1beta1.LegacyAutoInjectionLabelKey,
 			Operator: metav1.LabelSelectorOpNotIn,
 			Values:   []string{"disabled"},
 		},
@@ -62,18 +63,18 @@ func (r *Reconciler) webhook() runtime.Object {
 			Operator: metav1.LabelSelectorOpDoesNotExist,
 		},
 		{
-			Key:      "istio.io/rev",
+			Key:      v1beta1.RevisionedAutoInjectionLabelKey,
 			Operator: metav1.LabelSelectorOpDoesNotExist,
 		},
 	}
 
 	revisionLabelMatchExpression := []metav1.LabelSelectorRequirement{
 		{
-			Key:      "istio-injection",
+			Key:      v1beta1.LegacyAutoInjectionLabelKey,
 			Operator: metav1.LabelSelectorOpDoesNotExist,
 		},
 		{
-			Key:      "istio.io/rev",
+			Key:      v1beta1.RevisionedAutoInjectionLabelKey,
 			Operator: metav1.LabelSelectorOpIn,
 			Values: []string{
 				r.Config.NamespacedRevision(),

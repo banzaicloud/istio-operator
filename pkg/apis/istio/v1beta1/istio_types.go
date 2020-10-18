@@ -25,12 +25,16 @@ import (
 
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/apimachinery/pkg/util/intstr"
 
 	"github.com/banzaicloud/istio-operator/pkg/util"
 )
 
 const (
+	LegacyAutoInjectionLabelKey     = "istio-injection"
+	RevisionedAutoInjectionLabelKey = "istio.io/rev"
+
 	supportedIstioMinorVersionRegex = "^1.7"
 )
 
@@ -993,6 +997,17 @@ func NamespacedRevision(revision, namespace string) string {
 	return fmt.Sprintf("%s.%s", revision, namespace)
 }
 
+func NamespacedNameFromRevision(revision string) types.NamespacedName {
+	nn := types.NamespacedName{}
+	p := strings.SplitN(revision, ".", 2)
+	if len(p) == 2 {
+		nn.Name = p[0]
+		nn.Namespace = p[1]
+	}
+
+	return nn
+}
+
 func (c *Istio) Revision() string {
 	return strings.Replace(c.Name, ".", "-", -1)
 }
@@ -1003,7 +1018,7 @@ func (c *Istio) NamespacedRevision() string {
 
 func (c *Istio) RevisionLabels() map[string]string {
 	return map[string]string{
-		"istio.io/rev": c.NamespacedRevision(),
+		RevisionedAutoInjectionLabelKey: c.NamespacedRevision(),
 	}
 }
 
@@ -1028,6 +1043,12 @@ func (c *Istio) WithNamespacedRevision(s string) string {
 		return s
 	}
 	return strings.Join([]string{c.WithRevision(s), c.Namespace}, "-")
+}
+
+func (c *Istio) LegacyInjectionLabels() map[string]string {
+	return map[string]string{
+		LegacyAutoInjectionLabelKey: "enabled",
+	}
 }
 
 type SortableIstioItems []Istio

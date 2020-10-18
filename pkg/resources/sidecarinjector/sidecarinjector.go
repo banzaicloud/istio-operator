@@ -99,10 +99,15 @@ func (r *Reconciler) Reconcile(log logr.Logger) error {
 	}
 
 	if util.PointerToBool(r.Config.Spec.SidecarInjector.Enabled) || util.PointerToBool(r.Config.Spec.Istiod.Enabled) {
-		err := r.reconcileAutoInjectionLabels(log)
+		err := r.reconcileLegacyAutoInjectionLabels(log)
 		if err != nil {
 			return emperror.WrapWith(err, "failed to label namespaces")
 		}
+	}
+
+	err := r.reconcileAutoInjectionLabels(log)
+	if err != nil {
+		return emperror.WrapWith(err, "failed to label namespaces")
 	}
 
 	log.Info("Reconciled")

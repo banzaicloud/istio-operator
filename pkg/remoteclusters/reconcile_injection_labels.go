@@ -38,7 +38,7 @@ func (c *Cluster) reconcileNamespaceInjectionLabels(remoteConfig *istiov1beta1.R
 	}
 
 	for _, ns := range namespaces.Items {
-		err = c.reconcileNamespaceInjectionLabel(ns.Name, istio.RevisionLabels())
+		err = c.reconcileNamespaceInjectionLabel(ns.Name, istio.LegacyInjectionLabels(), istio.RevisionLabels())
 		if err != nil {
 			return err
 		}
@@ -66,7 +66,7 @@ func (c *Cluster) reconcileNamespaceInjectionLabels(remoteConfig *istiov1beta1.R
 	return nil
 }
 
-func (c *Cluster) reconcileNamespaceInjectionLabel(name string, matchingLabels map[string]string) error {
+func (c *Cluster) reconcileNamespaceInjectionLabel(name string, legacyInjectionLabels, matchingLabels map[string]string) error {
 	ns := &corev1.Namespace{}
 
 	// get namespace
@@ -81,13 +81,13 @@ func (c *Cluster) reconcileNamespaceInjectionLabel(name string, matchingLabels m
 	}
 
 	// check if the labels already set
-	if labels.SelectorFromValidatedSet(matchingLabels).Matches(labels.Set(ns.GetLabels())) {
+	if labels.SelectorFromValidatedSet(matchingLabels).Matches(labels.Set(ns.GetLabels())) && !labels.SelectorFromValidatedSet(legacyInjectionLabels).Matches(labels.Set(ns.GetLabels())) {
 		c.log.V(1).Info("injection label already matches", "namespace", ns.Name, "labels", matchingLabels)
 		return nil
 	}
 
 	// update labels
-	ns.Labels = util.MergeStringMaps(ns.Labels, matchingLabels)
+	ns.Labels = util.ReduceMapByMap(util.MergeStringMaps(ns.Labels, matchingLabels), legacyInjectionLabels)
 	err = c.ctrlRuntimeClient.Update(context.Background(), ns)
 	if err != nil {
 		return err
