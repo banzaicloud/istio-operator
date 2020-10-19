@@ -20,7 +20,6 @@ import (
 	"reflect"
 
 	corev1 "k8s.io/api/core/v1"
-	"k8s.io/apimachinery/pkg/api/meta"
 	"k8s.io/apimachinery/pkg/runtime"
 	"sigs.k8s.io/controller-runtime/pkg/event"
 	"sigs.k8s.io/controller-runtime/pkg/predicate"
@@ -162,24 +161,15 @@ func GetWatchPredicateForMeshGateway() predicate.Funcs {
 
 func GetWatchPredicateForOwnedResources(owner runtime.Object, isController bool, scheme *runtime.Scheme, logger logr.Logger) predicate.Funcs {
 	ownerMatcher := NewOwnerReferenceMatcher(owner, isController, scheme)
-
 	return predicate.Funcs{
 		CreateFunc: func(e event.CreateEvent) bool {
-			object, err := meta.Accessor(e.Object)
-			if err != nil {
-				return false
-			}
-			// If a new namespace created we need to reconcile to mutate it with auto injection labels if required in the CR
-			if _, ok := object.(*corev1.Namespace); ok {
+			// If a new namespace is created, we need to reconcile to mutate the injection labels
+			if _, ok := e.Object.(*corev1.Namespace); ok {
 				return true
 			}
 			return false
 		},
 		DeleteFunc: func(e event.DeleteEvent) bool {
-			object, err := meta.Accessor(e.Object)
-			if err != nil {
-				return false
-			}
 			// We don't want to run reconcile if a namespace is deleted
 			if _, ok := e.Object.(*corev1.Namespace); ok {
 				return false
@@ -194,6 +184,10 @@ func GetWatchPredicateForOwnedResources(owner runtime.Object, isController bool,
 			return true
 		},
 		UpdateFunc: func(e event.UpdateEvent) bool {
+			// If a namespace is updated, we need to reconcile to mutate the injection labels
+			if _, ok := e.MetaNew.(*corev1.Namespace); ok {
+				return true
+			}
 			related, object, err := ownerMatcher.Match(e.ObjectNew)
 			if err != nil {
 				logger.Error(err, "could not determine relation", "kind", e.ObjectNew.GetObjectKind())

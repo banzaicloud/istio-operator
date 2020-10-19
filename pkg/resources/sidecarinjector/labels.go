@@ -22,27 +22,54 @@ import (
 	"github.com/go-logr/logr"
 	"github.com/goph/emperror"
 	corev1 "k8s.io/api/core/v1"
+	"k8s.io/apimachinery/pkg/labels"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
+	"github.com/banzaicloud/istio-operator/pkg/apis/istio/v1beta1"
 	"github.com/banzaicloud/istio-operator/pkg/k8sutil"
+	"github.com/banzaicloud/istio-operator/pkg/util"
 )
 
 const (
-	managedAutoInjectionLabelKey    = "istio-operator-managed-injection"
-	autoInjectionLabelKey           = "istio-injection"
-	revisionedAutoInjectionLabelKey = "istio.io/rev"
+	managedAutoInjectionLabelKey = "istio-operator-managed-injection"
 )
 
 func (r *Reconciler) reconcileAutoInjectionLabels(log logr.Logger) error {
+	namespaces := &corev1.NamespaceList{}
+	err := r.Client.List(context.Background(), namespaces, client.MatchingLabels(r.Config.RevisionLabels()))
+	if err != nil {
+		return err
+	}
+
+	for _, ns := range namespaces.Items {
+		// remove legacy injection label if set
+		if labels.SelectorFromValidatedSet(r.Config.LegacyInjectionLabels()).Matches(labels.Set(ns.GetLabels())) {
+			ns.Labels = util.ReduceMapByMap(ns.Labels, r.Config.LegacyInjectionLabels())
+			err := r.Client.Update(context.Background(), &ns)
+			if err != nil {
+				return err
+			}
+		}
+	}
+
+	return nil
+}
+
+func (r *Reconciler) reconcileLegacyAutoInjectionLabels(log logr.Logger) error {
 	var autoInjectLabels = map[string]string{
-		autoInjectionLabelKey:        "enabled",
-		managedAutoInjectionLabelKey: "enabled",
+		v1beta1.LegacyAutoInjectionLabelKey: "enabled",
+		managedAutoInjectionLabelKey:        "enabled",
+	}
+
+	// this feature is only available for a global control plane
+	if r.Config.IsRevisionUsed() {
+		return nil
 	}
 
 	managedNamespaces := make(map[string]bool)
 	for _, ns := range r.Config.Spec.AutoInjectionNamespaces {
 		managedNamespaces[ns] = true
-		err := k8sutil.ReconcileNamespaceLabelsIgnoreNotFound(log, r.Client, ns, autoInjectLabels, nil, revisionedAutoInjectionLabelKey)
+		err := k8sutil.ReconcileNamespaceLabelsIgnoreNotFound(log, r.Client, ns, autoInjectLabels, nil, v1beta1.RevisionedAutoInjectionLabelKey)
 		if err != nil {
 			log.Error(err, "failed to label namespace", "namespace", ns)
 		}
@@ -59,9 +86,9 @@ func (r *Reconciler) reconcileAutoInjectionLabels(log logr.Logger) error {
 	for _, ns := range namespaces.Items {
 		if !managedNamespaces[ns.Name] {
 			err := k8sutil.ReconcileNamespaceLabelsIgnoreNotFound(log, r.Client, ns.Name, nil, []string{
-				autoInjectionLabelKey,
+				v1beta1.LegacyAutoInjectionLabelKey,
 				managedAutoInjectionLabelKey,
-			}, revisionedAutoInjectionLabelKey)
+			}, v1beta1.RevisionedAutoInjectionLabelKey)
 			if err != nil {
 				log.Error(emperror.Wrap(err, "failed to label namespace"), "namespace", ns.Name)
 			}

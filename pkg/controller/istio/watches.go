@@ -32,6 +32,7 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/source"
 
 	securityv1beta1 "github.com/banzaicloud/istio-client-go/pkg/security/v1beta1"
+	"github.com/banzaicloud/istio-operator/pkg/apis/istio/v1beta1"
 	istiov1beta1 "github.com/banzaicloud/istio-operator/pkg/apis/istio/v1beta1"
 	"github.com/banzaicloud/istio-operator/pkg/crds"
 	"github.com/banzaicloud/istio-operator/pkg/k8sutil"
@@ -57,6 +58,11 @@ func (r *ReconcileIstio) initWatches(watchCreatedResourcesEvents bool) error {
 		return err
 	}
 
+	err = r.watchNamespaces()
+	if err != nil {
+		return err
+	}
+
 	if !watchCreatedResourcesEvents {
 		return nil
 	}
@@ -73,7 +79,6 @@ func (r *ReconcileIstio) initWatches(watchCreatedResourcesEvents bool) error {
 		&appsv1.DaemonSet{TypeMeta: metav1.TypeMeta{Kind: "DaemonSet", APIVersion: appsv1.SchemeGroupVersion.String()}},
 		&autoscalingv2beta2.HorizontalPodAutoscaler{TypeMeta: metav1.TypeMeta{Kind: "HorizontalPodAutoscaler", APIVersion: autoscalingv2beta2.SchemeGroupVersion.String()}},
 		&admissionregistrationv1beta1.MutatingWebhookConfiguration{TypeMeta: metav1.TypeMeta{Kind: "MutatingWebhookConfiguration", APIVersion: admissionregistrationv1beta1.SchemeGroupVersion.String()}},
-		&corev1.Namespace{TypeMeta: metav1.TypeMeta{Kind: "Namespace", APIVersion: corev1.SchemeGroupVersion.String()}},
 		&istiov1beta1.MeshGateway{TypeMeta: metav1.TypeMeta{Kind: "MeshGateway", APIVersion: istiov1beta1.SchemeGroupVersion.String()}},
 	}
 
@@ -86,6 +91,31 @@ func (r *ReconcileIstio) initWatches(watchCreatedResourcesEvents bool) error {
 	}
 
 	return nil
+}
+
+func (r *ReconcileIstio) watchNamespaces() error {
+	return r.ctrl.Watch(
+		&source.Kind{
+			Type: &corev1.Namespace{TypeMeta: metav1.TypeMeta{Kind: "Namespace", APIVersion: corev1.SchemeGroupVersion.String()}},
+		},
+		&handler.EnqueueRequestsFromMapFunc{
+			ToRequests: handler.ToRequestsFunc(func(object handler.MapObject) []reconcile.Request {
+				if revision, ok := object.Meta.GetLabels()[v1beta1.RevisionedAutoInjectionLabelKey]; ok {
+					nn := v1beta1.NamespacedNameFromRevision(revision)
+					if nn.Name == "" {
+						return nil
+					}
+					return []reconcile.Request{
+						{
+							NamespacedName: nn,
+						},
+					}
+				}
+
+				return nil
+			}),
+		},
+	)
 }
 
 func (r *ReconcileIstio) watchIstioConfig() error {
