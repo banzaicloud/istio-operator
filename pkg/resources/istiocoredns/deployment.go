@@ -117,12 +117,7 @@ func (r *Reconciler) deployment() runtime.Object {
 				Name:      r.Config.WithRevision(hpaName),
 				Namespace: r.Config.Namespace,
 			}, util.PointerToInt32(r.Config.Spec.IstioCoreDNS.ReplicaCount))),
-			Strategy: appsv1.DeploymentStrategy{
-				RollingUpdate: &appsv1.RollingUpdateDeployment{
-					MaxSurge:       util.IntstrPointer(1),
-					MaxUnavailable: util.IntstrPointer(0),
-				},
-			},
+			Strategy: templates.DefaultRollingUpdateStrategy(),
 			Selector: &metav1.LabelSelector{
 				MatchLabels: util.MergeMultipleStringMaps(labels, labelSelector, r.Config.RevisionLabels()),
 			},
