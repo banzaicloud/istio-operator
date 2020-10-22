@@ -35,12 +35,7 @@ func (r *Reconciler) deployment() runtime.Object {
 		ObjectMeta: templates.ObjectMetaWithRevision(deploymentName, util.MergeStringMaps(galleyLabels, labelSelector), r.Config),
 		Spec: appsv1.DeploymentSpec{
 			Replicas: r.Config.Spec.Galley.ReplicaCount,
-			Strategy: appsv1.DeploymentStrategy{
-				RollingUpdate: &appsv1.RollingUpdateDeployment{
-					MaxSurge:       util.IntstrPointer(1),
-					MaxUnavailable: util.IntstrPointer(0),
-				},
-			},
+			Strategy: templates.DefaultRollingUpdateStrategy(),
 			Selector: &metav1.LabelSelector{
 				MatchLabels: util.MergeMultipleStringMaps(galleyLabels, labelSelector, r.Config.RevisionLabels()),
 			},
