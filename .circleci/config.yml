@@ -1,15 +1,17 @@
 version: 2.1
 orbs:
   helm: banzaicloud/helm@0.0.3
-  docker: banzaicloud/docker@0.0.3
+  docker: banzaicloud/docker@0.0.5
 
 commands:
   publish-with-latests:
     steps:
-      - docker/tag:
-          target-image: banzaicloud/istio-operator
-          target-tag: ${CIRCLE_TAG}
       - docker/push:
+          registry: docker.io
+          image: banzaicloud/istio-operator
+          tag: ${CIRCLE_TAG}
+      - docker/push:
+          registry: ghcr.io
           image: banzaicloud/istio-operator
           tag: ${CIRCLE_TAG}
       - docker/version-check:
@@ -21,11 +23,15 @@ commands:
             minor="$(echo ${CIRCLE_TAG} | cut -d '.' -f2)"
             docker tag "banzaicloud/istio-operator:${CIRCLE_TAG}" "banzaicloud/istio-operator:latest-1.${minor}"
             docker push "banzaicloud/istio-operator:latest-1.${minor}"
+            docker tag "banzaicloud/istio-operator:${CIRCLE_TAG}" "ghcr.io/banzaicloud/istio-operator:latest-1.${minor}"
+            docker push "ghcr.io/banzaicloud/istio-operator:latest-1.${minor}"
 
             latest="$(git tag | grep -E '^[0-9]+\.[0-9]+\.[0-9]+$' | cut -d '.' -f2 | sort -urn | head -n 1)"
             if [ "${latest}" -eq "${minor}" ]; then
               docker tag "banzaicloud/istio-operator:${CIRCLE_TAG}" "banzaicloud/istio-operator:latest"
               docker push "banzaicloud/istio-operator:latest"
+              docker tag "banzaicloud/istio-operator:${CIRCLE_TAG}" "ghcr.io/banzaicloud/istio-operator:latest"
+              docker push "ghcr.io/banzaicloud/istio-operator:latest"
             fi
 
 jobs:
@@ -116,13 +122,25 @@ workflows:
     jobs:
       - build
 
+      - docker/build:
+          name: Build docker image
+          executor: docker/machine-dlc
+          image: banzaicloud/istio-operator
+          tag: ${CIRCLE_BRANCH//\//-}
+          filters:
+            tags:
+              ignore: /.*/
+
       - docker/custom-publish:
           name: Publish tagged & latest docker image
-          executor: docker/machine
-          context: dockerhub
+          executor: docker/machine-dlc
+          context:
+          - dockerhub
+          - github
           image: banzaicloud/istio-operator
           login:
             - docker/login
+            - docker/ghcr-login
           push:
             - publish-with-latests
           filters:
