@@ -474,6 +474,8 @@ type ProxyConfiguration struct {
 	EnableCoreDump *bool `json:"enableCoreDump,omitempty"`
 	// Image used to enable core dumps. This is only used, when "EnableCoreDump" is set to true.
 	CoreDumpImage string `json:"coreDumpImage,omitempty"`
+	// Specifies the directory where the core dumps will be saved
+	CoreDumpDirectory string `json:"coreDumpDirectory,omitempty"`
 	// Log level for proxy, applies to gateways and sidecars. If left empty, "warning" is used.
 	// Expected values are: trace|debug|info|warning|error|critical|off
 	// +kubebuilder:validation:Enum=trace;debug;info;warning;error;critical;off
