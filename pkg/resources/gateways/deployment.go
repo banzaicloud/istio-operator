@@ -481,7 +481,7 @@ func GetCoreDumpContainer(config *istiov1beta1.Istio) apiv1.Container {
 		},
 		Args: []string{
 			"-c",
-			"sysctl -w kernel.core_pattern=/var/lib/istio/data/core.proxy && ulimit -c unlimited",
+			fmt.Sprintf("sysctl -w kernel.core_pattern=%s/core.proxy && ulimit -c unlimited", config.Spec.Proxy.CoreDumpDirectory),
 		},
 		Resources: templates.GetResourcesRequirementsOrDefault(config.Spec.SidecarInjector.Init.Resources, config.Spec.DefaultResources),
 		SecurityContext: &apiv1.SecurityContext{

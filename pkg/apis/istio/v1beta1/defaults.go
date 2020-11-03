@@ -43,6 +43,7 @@ const (
 	defaultProxyImage                 = defaultImageHub + "/" + "proxyv2" + ":" + defaultImageVersion
 	defaultProxyInitImage             = defaultImageHub + "/" + "proxyv2" + ":" + defaultImageVersion
 	defaultProxyCoreDumpImage         = "busybox"
+	defaultProxyCoreDumpDirectory     = "/var/lib/istio/data"
 	defaultInitCNIImage               = defaultImageHub + "/" + "install-cni:" + defaultImageVersion
 	defaultCoreDNSImage               = "coredns/coredns:1.6.2"
 	defaultCoreDNSPluginImage         = defaultImageHub + "/coredns-plugin:0.2-istio-1.1"
@@ -504,6 +505,9 @@ func SetDefaults(config *Istio) {
 	}
 	if config.Spec.Proxy.CoreDumpImage == "" {
 		config.Spec.Proxy.CoreDumpImage = defaultProxyCoreDumpImage
+	}
+	if config.Spec.Proxy.CoreDumpDirectory == "" {
+		config.Spec.Proxy.CoreDumpDirectory = defaultProxyCoreDumpDirectory
 	}
 	if config.Spec.Proxy.SecurityContext == nil {
 		config.Spec.Proxy.SecurityContext = defaultSecurityContext
