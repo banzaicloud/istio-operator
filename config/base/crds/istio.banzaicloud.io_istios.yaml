@@ -4215,6 +4215,8 @@ spec:
                     type: string
                   componentLogLevel:
                     type: string
+                  coreDumpDirectory:
+                    type: string
                   coreDumpImage:
                     type: string
                   dnsRefreshRate:
