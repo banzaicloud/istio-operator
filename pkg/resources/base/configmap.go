@@ -126,6 +126,12 @@ func MeshConfig(config *istiov1beta1.Istio, remote bool) map[string]interface{} 
 		"dnsRefreshRate":              config.Spec.Proxy.DNSRefreshRate,
 	}
 
+	if config.Spec.MeshID != "" {
+		defaultConfig["meshId"] = config.Spec.MeshID
+	} else {
+		defaultConfig["meshId"] = config.Spec.TrustDomain
+	}
+
 	if len(config.Spec.Certificates) != 0 {
 		meshConfig["certificates"] = config.Spec.Certificates
 	}
