@@ -276,8 +276,6 @@ func (r *Reconciler) certFetcherContainer() apiv1.Container {
 		"--domain",
 		r.Config.Namespace + ".svc." + r.Config.Spec.Proxy.ClusterDomain,
 		"--discoveryAddress", r.Config.GetDiscoveryAddress(),
-		"--trust-domain",
-		r.Config.Spec.TrustDomain,
 	}
 
 	if util.PointerToBool(r.Config.Spec.Proxy.EnvoyAccessLogService.Enabled) {

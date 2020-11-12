@@ -42,8 +42,6 @@ func (r *Reconciler) containerArgs() []string {
 		r.Config.Spec.Proxy.ClusterDomain,
 		"--keepaliveMaxServerConnectionAge",
 		"30m",
-		"--trust-domain",
-		r.Config.Spec.TrustDomain,
 	}
 
 	if r.Config.Spec.Logging.Level != nil {
