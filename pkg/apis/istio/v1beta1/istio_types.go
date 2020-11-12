@@ -316,6 +316,7 @@ type InitCNIConfiguration struct {
 	Affinity *corev1.Affinity       `json:"affinity,omitempty"`
 	Chained  *bool                  `json:"chained,omitempty"`
 	Repair   CNIRepairConfiguration `json:"repair,omitempty"`
+	Taint    CNITaintConfiguration  `json:"taint,omitempty"`
 }
 
 // CNIRepairConfiguration defines config for the repair CNI container
@@ -328,6 +329,11 @@ type CNIRepairConfiguration struct {
 	InitContainerName   *string `json:"initContainerName,omitempty"`
 	BrokenPodLabelKey   *string `json:"brokenPodLabelKey,omitempty"`
 	BrokenPodLabelValue *string `json:"brokenPodLabelValue,omitempty"`
+}
+
+// CNITaintConfiguration defines config for the CNI taint controller
+type CNITaintConfiguration struct {
+	Enabled *bool `json:"enabled,omitempty"`
 }
 
 // SidecarInjectorInitConfiguration defines options for init containers in the sidecar

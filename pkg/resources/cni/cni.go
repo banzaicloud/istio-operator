@@ -32,18 +32,21 @@ const (
 	serviceAccountName           = "istio-cni"
 	clusterRoleName              = "istio-cni"
 	clusterRoleRepairName        = "istio-cni-repair-role"
+	clusterRoleTaintName         = "istio-cni-taint-role"
 	clusterRoleBindingName       = "istio-cni"
 	clusterRoleBindingRepairName = "istio-cni-repair-rolebinding"
+	clusterRoleBindingTaintName  = "istio-cni-taint-rolebinding"
 	daemonSetName                = "istio-cni-node"
 	configMapName                = "istio-cni-config"
+	taintConfigMapName           = "istio-cni-taint-configmap"
 )
 
 var cniLabels = map[string]string{
 	"k8s-app": "istio-cni-node",
 }
 
-var cniRepairLabels = map[string]string{
-	"k8s-app": "istio-cni-repair",
+var defaultLabels = map[string]string{
+	"app": "istio-cni",
 }
 
 var labelSelector = map[string]string{
@@ -68,12 +71,13 @@ func (r *Reconciler) Reconcile(log logr.Logger) error {
 
 	desiredState := k8sutil.DesiredStatePresent
 	desiredStateRepair := k8sutil.DesiredStatePresent
+	desiredStateTaint := k8sutil.DesiredStatePresent
 	if !util.PointerToBool(r.Config.Spec.SidecarInjector.InitCNIConfiguration.Enabled) {
 		desiredState = k8sutil.DesiredStateAbsent
 		desiredStateRepair = k8sutil.DesiredStateAbsent
 	}
-	if !util.PointerToBool(r.Config.Spec.SidecarInjector.InitCNIConfiguration.Repair.Enabled) {
-		desiredStateRepair = k8sutil.DesiredStateAbsent
+	if !util.PointerToBool(r.Config.Spec.SidecarInjector.InitCNIConfiguration.Taint.Enabled) {
+		desiredStateTaint = k8sutil.DesiredStateAbsent
 	}
 
 	log.Info("Reconciling")
@@ -82,9 +86,12 @@ func (r *Reconciler) Reconcile(log logr.Logger) error {
 		{Resource: r.serviceAccount, DesiredState: desiredState},
 		{Resource: r.clusterRole, DesiredState: desiredState},
 		{Resource: r.clusterRoleRepair, DesiredState: desiredStateRepair},
+		{Resource: r.clusterRoleTaint, DesiredState: desiredStateTaint},
 		{Resource: r.clusterRoleBinding, DesiredState: desiredState},
 		{Resource: r.clusterRoleBindingRepair, DesiredState: desiredStateRepair},
+		{Resource: r.clusterRoleBindingTaint, DesiredState: desiredStateTaint},
 		{Resource: r.configMap, DesiredState: desiredState},
+		{Resource: r.configMapTaint, DesiredState: desiredStateTaint},
 		{Resource: r.daemonSet, DesiredState: desiredState},
 	} {
 		o := res.Resource()

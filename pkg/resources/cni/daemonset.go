@@ -17,14 +17,13 @@ limitations under the License.
 package cni
 
 import (
-	"fmt"
 	"strconv"
-	"strings"
 
 	appsv1 "k8s.io/api/apps/v1"
 	apiv1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
+	"k8s.io/apimachinery/pkg/util/intstr"
 
 	"github.com/banzaicloud/istio-operator/pkg/resources/templates"
 	"github.com/banzaicloud/istio-operator/pkg/util"
@@ -148,14 +147,30 @@ func (r *Reconciler) container() []apiv1.Container {
 			},
 			TerminationMessagePath:   apiv1.TerminationMessagePathDefault,
 			TerminationMessagePolicy: apiv1.TerminationMessageReadFile,
+			LivenessProbe: &apiv1.Probe{
+				Handler: apiv1.Handler{
+					HTTPGet: &apiv1.HTTPGetAction{
+						Path:   "/healthz",
+						Port:   intstr.FromInt(8000),
+						Scheme: apiv1.URISchemeHTTP,
+					},
+				},
+				InitialDelaySeconds: 5,
+			},
+			ReadinessProbe: &apiv1.Probe{
+				Handler: apiv1.Handler{
+					HTTPGet: &apiv1.HTTPGetAction{
+						Path:   "/healthz",
+						Port:   intstr.FromInt(8000),
+						Scheme: apiv1.URISchemeHTTP,
+					},
+				},
+			},
 		},
 	}
 
 	if util.PointerToBool(cniConfig.Repair.Enabled) {
 		image := cniConfig.Image
-		if !strings.Contains(cniConfig.Image, "/") {
-			image = fmt.Sprintf("%s/%s:%s", r.repairHub(), r.repairImage(), r.repairTag())
-		}
 		containers = append(containers, apiv1.Container{
 			Name:  "repair-cni",
 			Image: image,
@@ -203,32 +218,30 @@ func (r *Reconciler) container() []apiv1.Container {
 		})
 	}
 
+	if util.PointerToBool(cniConfig.Taint.Enabled) {
+		image := cniConfig.Image
+		containers = append(containers, apiv1.Container{
+			Name:  "taint-controller",
+			Image: image,
+			Command: []string{
+				"/opt/cni/bin/istio-cni-taint",
+			},
+			Env: []apiv1.EnvVar{
+				{
+					Name:  "TAINT_RUN-AS-DAEMON",
+					Value: "true",
+				},
+				{
+					Name:  "TAINT_CONFIGMAP-NAME",
+					Value: r.Config.WithRevision(taintConfigMapName),
+				},
+				{
+					Name:  "TAINT_CONFIGMAP-NAMESPACE",
+					Value: r.Config.Namespace,
+				},
+			},
+		})
+	}
+
 	return containers
-}
-
-func (r *Reconciler) repairHub() string {
-	repairConfig := r.Config.Spec.SidecarInjector.InitCNIConfiguration.Repair
-	if util.PointerToString(repairConfig.Hub) == "" {
-		return "docker.io/istio"
-	}
-
-	return util.PointerToString(repairConfig.Hub)
-}
-
-func (r *Reconciler) repairImage() string {
-	cniConfig := r.Config.Spec.SidecarInjector.InitCNIConfiguration
-	if cniConfig.Image == "" {
-		return "install-cni"
-	}
-
-	return cniConfig.Image
-}
-
-func (r *Reconciler) repairTag() string {
-	repairConfig := r.Config.Spec.SidecarInjector.InitCNIConfiguration.Repair
-	if util.PointerToString(repairConfig.Tag) == "" {
-		return "1.8.0"
-	}
-
-	return util.PointerToString(repairConfig.Tag)
 }

@@ -26,13 +26,13 @@ import (
 
 func (r *Reconciler) serviceAccount() runtime.Object {
 	return &apiv1.ServiceAccount{
-		ObjectMeta: templates.ObjectMetaWithRevision(serviceAccountName, nil, r.Config),
+		ObjectMeta: templates.ObjectMetaWithRevision(serviceAccountName, defaultLabels, r.Config),
 	}
 }
 
 func (r *Reconciler) clusterRole() runtime.Object {
 	return &rbacv1.ClusterRole{
-		ObjectMeta: templates.ObjectMetaClusterScopeWithRevision(clusterRoleName, nil, r.Config),
+		ObjectMeta: templates.ObjectMetaClusterScopeWithRevision(clusterRoleName, defaultLabels, r.Config),
 		Rules: []rbacv1.PolicyRule{
 			{
 				APIGroups: []string{""},
@@ -45,7 +45,7 @@ func (r *Reconciler) clusterRole() runtime.Object {
 
 func (r *Reconciler) clusterRoleRepair() runtime.Object {
 	return &rbacv1.ClusterRole{
-		ObjectMeta: templates.ObjectMetaClusterScopeWithRevision(clusterRoleRepairName, nil, r.Config),
+		ObjectMeta: templates.ObjectMetaClusterScopeWithRevision(clusterRoleRepairName, defaultLabels, r.Config),
 		Rules: []rbacv1.PolicyRule{
 			{
 				APIGroups: []string{""},
@@ -61,9 +61,37 @@ func (r *Reconciler) clusterRoleRepair() runtime.Object {
 	}
 }
 
+func (r *Reconciler) clusterRoleTaint() runtime.Object {
+	return &rbacv1.ClusterRole{
+		ObjectMeta: templates.ObjectMetaClusterScopeWithRevision(clusterRoleTaintName, defaultLabels, r.Config),
+		Rules: []rbacv1.PolicyRule{
+			{
+				APIGroups: []string{""},
+				Resources: []string{"pods"},
+				Verbs:     []string{"get", "list", "watch", "patch"},
+			},
+			{
+				APIGroups: []string{""},
+				Resources: []string{"nodes"},
+				Verbs:     []string{"get", "list", "watch", "update", "patch"},
+			},
+			{
+				APIGroups: []string{""},
+				Resources: []string{"configmaps"},
+				Verbs:     []string{"get", "list"},
+			},
+			{
+				APIGroups: []string{"coordination.k8s.io"},
+				Resources: []string{"leases"},
+				Verbs:     []string{"get", "list", "create", "update"},
+			},
+		},
+	}
+}
+
 func (r *Reconciler) clusterRoleBinding() runtime.Object {
 	return &rbacv1.ClusterRoleBinding{
-		ObjectMeta: templates.ObjectMetaClusterScopeWithRevision(clusterRoleBindingName, cniRepairLabels, r.Config),
+		ObjectMeta: templates.ObjectMetaClusterScopeWithRevision(clusterRoleBindingName, defaultLabels, r.Config),
 		RoleRef: rbacv1.RoleRef{
 			Kind:     "ClusterRole",
 			APIGroup: "rbac.authorization.k8s.io",
@@ -81,11 +109,29 @@ func (r *Reconciler) clusterRoleBinding() runtime.Object {
 
 func (r *Reconciler) clusterRoleBindingRepair() runtime.Object {
 	return &rbacv1.ClusterRoleBinding{
-		ObjectMeta: templates.ObjectMetaClusterScopeWithRevision(clusterRoleBindingRepairName, nil, r.Config),
+		ObjectMeta: templates.ObjectMetaClusterScopeWithRevision(clusterRoleBindingRepairName, defaultLabels, r.Config),
 		RoleRef: rbacv1.RoleRef{
 			Kind:     "ClusterRole",
 			APIGroup: "rbac.authorization.k8s.io",
 			Name:     r.Config.WithNamespacedRevision(clusterRoleRepairName),
+		},
+		Subjects: []rbacv1.Subject{
+			{
+				Kind:      "ServiceAccount",
+				Name:      r.Config.WithRevision(serviceAccountName),
+				Namespace: r.Config.Namespace,
+			},
+		},
+	}
+}
+
+func (r *Reconciler) clusterRoleBindingTaint() runtime.Object {
+	return &rbacv1.ClusterRoleBinding{
+		ObjectMeta: templates.ObjectMetaClusterScopeWithRevision(clusterRoleBindingTaintName, defaultLabels, r.Config),
+		RoleRef: rbacv1.RoleRef{
+			Kind:     "ClusterRole",
+			APIGroup: "rbac.authorization.k8s.io",
+			Name:     r.Config.WithNamespacedRevision(clusterRoleTaintName),
 		},
 		Subjects: []rbacv1.Subject{
 			{
