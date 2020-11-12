@@ -2,7 +2,7 @@
 
 ## High level flow
 
-Let us suppose that we have an Istio 1.6 control plane running in our cluster and we would like to upgrade to an Istio 1.8 control plane.
+Let us suppose that we have an Istio 1.7 control plane running in our cluster and we would like to upgrade to an Istio 1.8 control plane.
 To make sure that we are limiting the potential blast radius of the upgrade, we introduced the Canary upgrade flow. This consists of the following steps:
 
 1. Deploy an Istio 1.8 control plane *next* to the Istio 1.6 control plane
