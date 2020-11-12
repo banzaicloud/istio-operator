@@ -275,10 +275,16 @@ func (r *Reconciler) envVars() []apiv1.EnvVar {
 		})
 	}
 
-	envVars = append(envVars, apiv1.EnvVar{
-		Name:  "ISTIO_META_REVISION",
-		Value: r.Config.NamespacedRevision(),
-	})
+	envVars = append(envVars, []apiv1.EnvVar{
+		{
+			Name:  "ISTIO_META_REVISION",
+			Value: r.Config.NamespacedRevision(),
+		},
+		{
+			Name:  "TRUST_DOMAIN",
+			Value: r.Config.Spec.TrustDomain,
+		},
+	}...)
 
 	envVars = k8sutil.MergeEnvVars(envVars, r.gw.Spec.AdditionalEnvVars)
 
@@ -304,6 +310,10 @@ func (r *Reconciler) volumeMounts() []apiv1.VolumeMount {
 			Name:      fmt.Sprintf("%s-ca-certs", r.gw.Name),
 			MountPath: fmt.Sprintf("/etc/istio/%s-ca-certs", r.gw.Spec.Type+"gateway"),
 			ReadOnly:  true,
+		},
+		{
+			Name:      "istio-data",
+			MountPath: "/var/lib/istio/data",
 		},
 	}
 
@@ -407,12 +417,20 @@ func (r *Reconciler) volumes() []apiv1.Volume {
 		},
 	})
 
-	volumes = append(volumes, apiv1.Volume{
-		Name: "istio-envoy",
-		VolumeSource: apiv1.VolumeSource{
-			EmptyDir: &apiv1.EmptyDirVolumeSource{},
+	volumes = append(volumes, []apiv1.Volume{
+		{
+			Name: "istio-envoy",
+			VolumeSource: apiv1.VolumeSource{
+				EmptyDir: &apiv1.EmptyDirVolumeSource{},
+			},
 		},
-	})
+		{
+			Name: "istio-data",
+			VolumeSource: apiv1.VolumeSource{
+				EmptyDir: &apiv1.EmptyDirVolumeSource{},
+			},
+		},
+	}...)
 
 	if util.PointerToBool(r.Config.Spec.Istiod.Enabled) {
 		volumes = append(volumes, apiv1.Volume{
