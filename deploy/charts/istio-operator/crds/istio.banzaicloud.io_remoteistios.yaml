@@ -4,7 +4,7 @@ metadata:
   creationTimestamp: null
   name: remoteistios.istio.banzaicloud.io
   labels:
-    resource.alpha.banzaicloud.io/revision: 1.7.4
+    resource.alpha.banzaicloud.io/revision: 1.8.0
 spec:
   group: istio.banzaicloud.io
   names:
