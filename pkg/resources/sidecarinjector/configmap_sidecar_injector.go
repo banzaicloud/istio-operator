@@ -208,9 +208,6 @@ containers:
 {{- if .Values.global.proxy.componentLogLevel }}
   - --proxyComponentLogLevel={{ .Values.global.proxy.componentLogLevel }}
 {{- end}}
-{{- if .Values.global.trustDomain }}
-  - --trust-domain={{ .Values.global.trustDomain }}
-{{- end }}
 {{- if .Values.global.istiod.enabled }}
   {{- if gt .ProxyConfig.Concurrency.GetValue 0 }}
   - --concurrency
@@ -318,7 +315,7 @@ containers:
   {{- end }}
   {{- if .DeploymentMeta.Name }}
   - name: ISTIO_META_WORKLOAD_NAME
-    value: {{ .DeploymentMeta.Name }}
+    value: "{{ .DeploymentMeta.Name }}"
   {{ end }}
   {{- if and .TypeMeta.APIVersion .DeploymentMeta.Name }}
   - name: ISTIO_META_OWNER
@@ -345,6 +342,8 @@ containers:
   - name: ISTIO_META_MESH_ID
     value: "{{ .Values.global.trustDomain }}"
   {{- end }}
+  - name: TRUST_DOMAIN
+    value: "{{ .Values.global.trustDomain }}"
 {{- if .Values.global.proxy.envoyAccessLogService.enabled }}
   - name: ISTIO_META_ALS_ENABLED
     value: "true"
@@ -362,6 +361,7 @@ containers:
       port: 15021
     initialDelaySeconds: {{ annotation .ObjectMeta ` + "`" + `readiness.status.sidecar.istio.io/initialDelaySeconds` + "`" + ` .Values.global.proxy.readinessInitialDelaySeconds }}
     periodSeconds: {{ annotation .ObjectMeta ` + "`" + `readiness.status.sidecar.istio.io/periodSeconds` + "`" + ` .Values.global.proxy.readinessPeriodSeconds }}
+    timeoutSeconds: 3
     failureThreshold: {{ annotation .ObjectMeta ` + "`" + `readiness.status.sidecar.istio.io/failureThreshold` + "`" + ` .Values.global.proxy.readinessFailureThreshold }}
   {{ end -}}
   securityContext:
@@ -469,12 +469,6 @@ containers:
     {{ toYaml $value | indent 4 }}
     {{ end }}
     {{- end }}
-  {{- if .ProxyConfig.ProxyMetadata.ISTIO_META_DNS_CAPTURE }}
-  dnsConfig:
-    options:
-    - name: "ndots"
-      value: "4"
-  {{- end }}
 volumes:
 {{- if (isset .ObjectMeta.Annotations ` + "`" + `sidecar.istio.io/bootstrapOverride` + "`" + `) }}
 - name: custom-bootstrap-volume
@@ -564,11 +558,7 @@ volumes:
 {{- end }}
 podRedirectAnnot:
 {{- if and (.Values.global.proxy_init.cniEnabled) (not .Values.global.proxy_init.cniChained) }}
-{{ if isset .ObjectMeta.Annotations ` + "`" + `k8s.v1.cni.cncf.io/networks` + "`" + ` }}
-  k8s.v1.cni.cncf.io/networks: "{{ index .ObjectMeta.Annotations ` + "`" + `k8s.v1.cni.cncf.io/networks` + "`" + `}}, istio-cni"
-{{- else }}
-  k8s.v1.cni.cncf.io/networks: "istio-cni"
-{{- end }}
+k8s.v1.cni.cncf.io/networks: '{{ appendMultusNetwork (index .ObjectMeta.Annotations ` + "`" + `k8s.v1.cni.cncf.io/networks` + "`" + `) ` + "`" + `istio-cni` + "`" + ` }}'
 {{- end }}
    sidecar.istio.io/interceptionMode: "{{ annotation .ObjectMeta ` + "`" + `sidecar.istio.io/interceptionMode` + "`" + ` .ProxyConfig.InterceptionMode }}"
    traffic.sidecar.istio.io/includeOutboundIPRanges: "{{ annotation .ObjectMeta ` + "`" + `traffic.sidecar.istio.io/includeOutboundIPRanges` + "`" + ` .Values.global.proxy.includeIPRanges }}"
@@ -699,6 +689,31 @@ func (r *Reconciler) proxyInitContainer() string {
       drop:
       - ALL
   restartPolicy: Always
+  resources:
+  {{- if or (isset .ObjectMeta.Annotations ` + "`" + `sidecar.istio.io/proxyCPU` + "`" + `) (isset .ObjectMeta.Annotations ` + "`" + `sidecar.istio.io/proxyMemory` + "`" + `) (isset .ObjectMeta.Annotations ` + "`" + `sidecar.istio.io/proxyCPULimit` + "`" + `) (isset .ObjectMeta.Annotations ` + "`" + `sidecar.istio.io/proxyMemoryLimit` + "`" + `) }}
+    {{- if or (isset .ObjectMeta.Annotations ` + "`" + `sidecar.istio.io/proxyCPU` + "`" + `) (isset .ObjectMeta.Annotations ` + "`" + `sidecar.istio.io/proxyMemory` + "`" + `) }}
+      requests:
+        {{ if (isset .ObjectMeta.Annotations ` + "`" + `sidecar.istio.io/proxyCPU` + "`" + `) -}}
+        cpu: "{{ index .ObjectMeta.Annotations ` + "`" + `sidecar.istio.io/proxyCPU` + "`" + ` }}"
+        {{ end }}
+        {{ if (isset .ObjectMeta.Annotations ` + "`" + `sidecar.istio.io/proxyMemory` + "`" + `) -}}
+        memory: "{{ index .ObjectMeta.Annotations ` + "`" + `sidecar.istio.io/proxyMemory` + "`" + ` }}"
+        {{ end }}
+    {{- end }}
+    {{- if or (isset .ObjectMeta.Annotations ` + "`" + `sidecar.istio.io/proxyCPULimit` + "`" + `) (isset .ObjectMeta.Annotations ` + "`" + `sidecar.istio.io/proxyMemoryLimit` + "`" + `) }}
+      limits:
+        {{ if (isset .ObjectMeta.Annotations ` + "`" + `sidecar.istio.io/proxyCPULimit` + "`" + `) -}}
+        cpu: "{{ index .ObjectMeta.Annotations ` + "`" + `sidecar.istio.io/proxyCPULimit` + "`" + ` }}"
+        {{ end }}
+        {{ if (isset .ObjectMeta.Annotations ` + "`" + `sidecar.istio.io/proxyMemoryLimit` + "`" + `) -}}
+        memory: "{{ index .ObjectMeta.Annotations ` + "`" + `sidecar.istio.io/proxyMemoryLimit` + "`" + ` }}"
+        {{ end }}
+    {{- end }}
+  {{- else }}
+{{- if .Values.global.proxy.resources }}
+    {{ toYaml .Values.global.proxy.resources | indent 4 }}
+{{- end }}
+  {{- end }}
   `
 }
 
