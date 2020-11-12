@@ -22,6 +22,7 @@ import (
 	"k8s.io/apimachinery/pkg/runtime"
 
 	"github.com/banzaicloud/istio-operator/pkg/resources/templates"
+	"github.com/banzaicloud/istio-operator/pkg/util"
 )
 
 func (r *Reconciler) serviceAccountReader() runtime.Object {
@@ -31,25 +32,62 @@ func (r *Reconciler) serviceAccountReader() runtime.Object {
 }
 
 func (r *Reconciler) clusterRoleReader() runtime.Object {
-	return &rbacv1.ClusterRole{
-		ObjectMeta: templates.ObjectMetaClusterScopeWithRevision(istioReaderName, istioReaderLabel, r.Config),
-		Rules: []rbacv1.PolicyRule{
-			{
-				APIGroups: []string{"config.istio.io", "security.istio.io", "networking.istio.io", "authentication.istio.io"},
-				Resources: []string{"*"},
-				Verbs:     []string{"get", "watch", "list"},
-			},
+	rules := []rbacv1.PolicyRule{
+		{
+			APIGroups: []string{"config.istio.io", "security.istio.io", "networking.istio.io", "authentication.istio.io"},
+			Resources: []string{"*"},
+			Verbs:     []string{"get", "watch", "list"},
+		},
+		{
+			APIGroups: []string{""},
+			Resources: []string{"endpoints", "pods", "services", "nodes", "replicationcontrollers", "namespaces", "secrets"},
+			Verbs:     []string{"get", "watch", "list"},
+		},
+		{
+			APIGroups: []string{"discovery.k8s.io"},
+			Resources: []string{"endpointslices"},
+			Verbs:     []string{"get", "watch", "list"},
+		},
+		{
+			APIGroups: []string{"apps"},
+			Resources: []string{"replicasets"},
+			Verbs:     []string{"get", "watch", "list"},
+		},
+		{
+			APIGroups: []string{"authentication.k8s.io"},
+			Resources: []string{"tokenreviews"},
+			Verbs:     []string{"create"},
+		},
+		{
+			APIGroups: []string{"authorization.k8s.io"},
+			Resources: []string{"subjectaccessreviews"},
+			Verbs:     []string{"create"},
+		},
+	}
+
+	if util.PointerToBool(r.Config.Spec.MeshExpansion) {
+		rules = append(rules, []rbacv1.PolicyRule{
 			{
 				APIGroups: []string{""},
-				Resources: []string{"endpoints", "pods", "services", "nodes", "replicationcontrollers", "namespaces"},
-				Verbs:     []string{"get", "watch", "list"},
+				Resources: []string{"configmaps"},
+				Verbs:     []string{"create", "get", "list", "watch", "update"},
 			},
 			{
-				APIGroups: []string{"apps"},
-				Resources: []string{"replicasets"},
-				Verbs:     []string{"get", "watch", "list"},
+				APIGroups: []string{"admissionregistration.k8s.io"},
+				Resources: []string{"mutatingwebhookconfigurations"},
+				Verbs:     []string{"get", "list", "watch", "patch"},
 			},
-		},
+			{
+				APIGroups: []string{"admissionregistration.k8s.io"},
+				Resources: []string{"validatingwebhookconfigurations"},
+				Verbs:     []string{"get", "list", "watch", "update"},
+			},
+		}...)
+	}
+
+	return &rbacv1.ClusterRole{
+		ObjectMeta: templates.ObjectMetaClusterScopeWithRevision(istioReaderName, istioReaderLabel, r.Config),
+		Rules:      rules,
 	}
 }
 
