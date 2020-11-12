@@ -3,9 +3,9 @@ kind: Istio
 metadata:
   labels:
     controller-tools.k8s.io: "1.0"
-  name: multimesh-v17x
+  name: multimesh-v18x
 spec:
-  version: "1.7.4"
+  version: "1.8.0"
   global: false
   autoInjectionNamespaces:
   - "default"
@@ -18,5 +18,5 @@ spec:
   citadel:
     caSecretName: "cacerts"
   proxy:
-    image: "docker.io/istio/proxyv2:1.7.4"
+    image: "docker.io/istio/proxyv2:1.8.0"
   jwtPolicy: "first-party-jwt"
