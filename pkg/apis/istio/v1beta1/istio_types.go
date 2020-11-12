@@ -825,6 +825,9 @@ type IstioSpec struct {
 	// have a shared root CA for this model to work.
 	MultiMesh *bool `json:"multiMesh,omitempty"`
 
+	// The domain for global service names
+	GlobalDomain *string `json:"globalDomain,omitempty"`
+
 	// Istio CoreDNS provides DNS resolution for services in multi mesh setups
 	IstioCoreDNS IstioCoreDNS `json:"istioCoreDNS,omitempty"`
 

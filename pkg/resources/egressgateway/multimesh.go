@@ -17,6 +17,8 @@ limitations under the License.
 package egressgateway
 
 import (
+	"fmt"
+
 	"k8s.io/apimachinery/pkg/runtime/schema"
 
 	"github.com/banzaicloud/istio-operator/pkg/k8sutil"
@@ -41,7 +43,7 @@ func (r *Reconciler) multimeshEgressGateway() *k8sutil.DynamicObject {
 		Spec: map[string]interface{}{
 			"servers": []map[string]interface{}{
 				{
-					"hosts": util.EmptyTypedStrSlice("*.global"),
+					"hosts": util.EmptyTypedStrSlice(fmt.Sprintf("*.%s", util.PointerToString(r.Config.Spec.GlobalDomain))),
 					"port": map[string]interface{}{
 						"name":     "tls",
 						"protocol": "TLS",

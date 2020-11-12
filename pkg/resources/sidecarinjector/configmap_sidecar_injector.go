@@ -18,6 +18,7 @@ package sidecarinjector
 
 import (
 	"encoding/json"
+	"fmt"
 	"strings"
 
 	"github.com/ghodss/yaml"
@@ -48,8 +49,8 @@ func (r *Reconciler) getValues() string {
 	podDNSSearchNamespaces := make([]string, 0)
 	if util.PointerToBool(r.Config.Spec.MultiMesh) {
 		podDNSSearchNamespaces = append(podDNSSearchNamespaces, []string{
-			"global",
-			"{{ valueOrDefault .DeploymentMeta.Namespace \"default\" }}.global",
+			util.PointerToString(r.Config.Spec.GlobalDomain),
+			fmt.Sprintf("{{ valueOrDefault .DeploymentMeta.Namespace \"default\" }}.%s", util.PointerToString(r.Config.Spec.GlobalDomain)),
 		}...)
 	}
 

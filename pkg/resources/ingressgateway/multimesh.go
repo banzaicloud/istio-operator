@@ -17,6 +17,8 @@ limitations under the License.
 package ingressgateway
 
 import (
+	"fmt"
+
 	"k8s.io/apimachinery/pkg/runtime/schema"
 
 	"github.com/banzaicloud/istio-operator/pkg/k8sutil"
@@ -41,7 +43,7 @@ func (r *Reconciler) multimeshIngressGateway() *k8sutil.DynamicObject {
 		Spec: map[string]interface{}{
 			"servers": []map[string]interface{}{
 				{
-					"hosts": util.EmptyTypedStrSlice("*.global"),
+					"hosts": util.EmptyTypedStrSlice(fmt.Sprintf("*.%s", util.PointerToString(r.Config.Spec.GlobalDomain))),
 					"port": map[string]interface{}{
 						"name":     "tls",
 						"protocol": "TLS",
@@ -91,8 +93,9 @@ func (r *Reconciler) multimeshEnvoyFilter() *k8sutil.DynamicObject {
 						"operation": "INSERT_AFTER",
 						"value": map[string]interface{}{
 							"name": "envoy.filters.network.tcp_cluster_rewrite",
-							"config": map[string]interface{}{
-								"cluster_pattern":     "\\.global$",
+							"typed_config": map[string]interface{}{
+								"@type":               "type.googleapis.com/istio.envoy.config.filter.network.tcp_cluster_rewrite.v2alpha1.TcpClusterRewrite",
+								"cluster_pattern":     fmt.Sprintf("\\.%s$", util.PointerToString(r.Config.Spec.GlobalDomain)),
 								"cluster_replacement": ".svc." + r.Config.Spec.Proxy.ClusterDomain,
 							},
 						},
@@ -116,7 +119,7 @@ func (r *Reconciler) multimeshDestinationRule() *k8sutil.DynamicObject {
 		Namespace: r.Config.Namespace,
 		Labels:    r.Config.RevisionLabels(),
 		Spec: map[string]interface{}{
-			"host": "*.global",
+			"host": util.EmptyTypedStrSlice(fmt.Sprintf("*.%s", util.PointerToString(r.Config.Spec.GlobalDomain))),
 			"trafficPolicy": map[string]interface{}{
 				"tls": map[string]interface{}{
 					"mode": "ISTIO_MUTUAL",

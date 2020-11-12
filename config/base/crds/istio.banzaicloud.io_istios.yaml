@@ -2018,6 +2018,8 @@ spec:
                 type: object
               global:
                 type: boolean
+              globalDomain:
+                type: string
               httpProxyEnvs:
                 properties:
                   httpProxy:

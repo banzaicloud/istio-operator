@@ -68,6 +68,7 @@ const (
 	defaultEnvoyAccessLogEncoding     = "TEXT"
 	defaultClusterName                = "Kubernetes"
 	defaultNetworkName                = "local-network"
+	defaultGlobalDomain               = "global"
 )
 
 var defaultResources = &apiv1.ResourceRequirements{
@@ -629,6 +630,10 @@ func SetDefaults(config *Istio) {
 	// Multi mesh support
 	if config.Spec.MultiMesh == nil {
 		config.Spec.MultiMesh = util.BoolPointer(false)
+	}
+
+	if config.Spec.GlobalDomain == nil {
+		config.Spec.GlobalDomain = util.StrPointer(defaultGlobalDomain)
 	}
 
 	// Istio CoreDNS for multi mesh support
