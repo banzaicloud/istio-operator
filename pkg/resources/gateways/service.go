@@ -53,10 +53,6 @@ func (r *Reconciler) servicePorts(name string) []apiv1.ServicePort {
 
 	if name == r.Config.WithRevision(defaultIngressgatewayName) {
 		if util.PointerToBool(r.Config.Spec.MeshExpansion) {
-			ports = append(ports, apiv1.ServicePort{
-				Port: 853, Protocol: apiv1.ProtocolTCP, TargetPort: intstr.FromInt(8853), Name: "tcp-dns-tls",
-			})
-
 			if util.PointerToBool(r.Config.Spec.Istiod.Enabled) {
 				ports = append(ports, apiv1.ServicePort{
 					Port: 15012, Protocol: apiv1.ProtocolTCP, TargetPort: intstr.FromInt(15012), Name: "tcp-istiod-grpc-tls",

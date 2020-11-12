@@ -58,12 +58,6 @@ func (r *Reconciler) service() runtime.Object {
 					TargetPort: intstr.FromInt(15014),
 					Protocol:   apiv1.ProtocolTCP,
 				},
-				{
-					Name:       "dns-tls",
-					Port:       853,
-					TargetPort: intstr.FromInt(15053),
-					Protocol:   apiv1.ProtocolTCP,
-				},
 			},
 			Selector: util.MergeMultipleStringMaps(istiodLabels, pilotLabelSelector, r.Config.RevisionLabels()),
 		},
