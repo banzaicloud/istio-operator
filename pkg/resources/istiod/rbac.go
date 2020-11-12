@@ -66,6 +66,17 @@ func (r *Reconciler) clusterRole() runtime.Object {
 			Resources: []string{"validatingwebhookconfigurations"},
 			Verbs:     []string{"get", "list", "watch", "update"},
 		},
+		// manage workloadentries
+		{
+			APIGroups: []string{"networking.istio.io"},
+			Resources: []string{"workloadentries"},
+			Verbs:     []string{"get", "watch", "list", "update", "patch", "create", "delete"},
+		},
+		{
+			APIGroups: []string{"networking.istio.io"},
+			Resources: []string{"workloadentries/status"},
+			Verbs:     []string{"get", "watch", "list", "update", "patch", "create", "delete"},
+		},
 		// auto-detect installed CRD definitions
 		{
 			APIGroups: []string{"apiextensions.k8s.io"},
@@ -116,6 +127,12 @@ func (r *Reconciler) clusterRole() runtime.Object {
 		{
 			APIGroups: []string{"authentication.k8s.io"},
 			Resources: []string{"tokenreviews"},
+			Verbs:     []string{"create"},
+		},
+		// Used by Istiod to verify gateway SDS
+		{
+			APIGroups: []string{"authorization.k8s.io"},
+			Resources: []string{"subjectaccessreviews"},
 			Verbs:     []string{"create"},
 		},
 		// Use for Kubernetes Service APIs
