@@ -35,6 +35,7 @@ const (
 	proxyVersion15 = "1.5"
 	proxyVersion16 = "1.6"
 	proxyVersion17 = "1.7"
+	proxyVersion18 = "1.8"
 )
 
 type Reconciler struct {
@@ -85,6 +86,11 @@ func (r *Reconciler) Reconcile(log logr.Logger) error {
 		{DynamicResource: r.tcpMetaExchangeEnvoyFilter17, DesiredState: exchangeFilterDesiredState},
 		{DynamicResource: r.httpStatsFilter17, DesiredState: statsFilterDesiredState},
 		{DynamicResource: r.tcpStatsFilter17, DesiredState: statsFilterDesiredState},
+
+		{DynamicResource: r.metaExchangeEnvoyFilter18, DesiredState: exchangeFilterDesiredState},
+		{DynamicResource: r.tcpMetaExchangeEnvoyFilter18, DesiredState: exchangeFilterDesiredState},
+		{DynamicResource: r.httpStatsFilter18, DesiredState: statsFilterDesiredState},
+		{DynamicResource: r.tcpStatsFilter18, DesiredState: statsFilterDesiredState},
 	}
 
 	for _, dr := range drs {
