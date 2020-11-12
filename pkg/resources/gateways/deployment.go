@@ -46,7 +46,6 @@ func (r *Reconciler) deployment() runtime.Object {
 		"--domain", fmt.Sprintf("$(POD_NAMESPACE).svc.%s", r.Config.Spec.Proxy.ClusterDomain),
 		"--log_output_level", "info",
 		"--serviceCluster", r.gw.Name,
-		"--trust-domain", r.Config.Spec.TrustDomain,
 	}
 
 	if r.Config.Spec.Proxy.LogLevel != "" {
