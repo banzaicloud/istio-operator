@@ -108,8 +108,8 @@ You can also have your own `kustomization.yaml` file with a reference to Istio o
 
 ```bash
 bases:
-  - github.com/banzaicloud/istio-operator/config?ref=release-1.7
-  - github.com/banzaicloud/istio-operator/config/overlays/auth-proxy-enabled?ref=release-1.7
+  - github.com/banzaicloud/istio-operator/config?ref=release-1.8
+  - github.com/banzaicloud/istio-operator/config/overlays/auth-proxy-enabled?ref=release-1.8
 ```
 
 ## Istio upgrade

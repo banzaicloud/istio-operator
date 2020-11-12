@@ -5,7 +5,7 @@
 operator:
   image:
     repository: ghcr.io/banzaicloud/istio-operator
-    tag: 0.7.8
+    tag: 0.8.0
     pullPolicy: IfNotPresent
   extraArgs: []
   resources:
@@ -13,7 +13,7 @@ operator:
       cpu: 200m
       memory: 256Mi
 
-istioVersion: "1.7"
+istioVersion: "1.8"
 
 # If you want the operator to expose the /metrics
 prometheusMetrics:

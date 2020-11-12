@@ -35,7 +35,7 @@ const (
 	LegacyAutoInjectionLabelKey     = "istio-injection"
 	RevisionedAutoInjectionLabelKey = "istio.io/rev"
 
-	supportedIstioMinorVersionRegex = "^1.7"
+	supportedIstioMinorVersionRegex = "^1.8"
 )
 
 var (
