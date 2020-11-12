@@ -27,7 +27,7 @@ import (
 
 func (r *Reconciler) configMap() runtime.Object {
 	return &apiv1.ConfigMap{
-		ObjectMeta: templates.ObjectMetaWithRevision(configMapName, nil, r.Config),
+		ObjectMeta: templates.ObjectMetaWithRevision(configMapName, defaultLabels, r.Config),
 		Data: map[string]string{
 			"cni_network_config": r.networkConfig(),
 		},
@@ -51,4 +51,15 @@ func (r *Reconciler) networkConfig() string {
 
 	marshaledConfig, _ := json.Marshal(config)
 	return string(marshaledConfig)
+}
+
+func (r *Reconciler) configMapTaint() runtime.Object {
+	return &apiv1.ConfigMap{
+		ObjectMeta: templates.ObjectMetaWithRevision(taintConfigMapName, defaultLabels, r.Config),
+		Data: map[string]string{
+			"config": `- name: istio-cni
+  selector: k8s-app=istio-cni-node
+  namespace: ` + r.Config.Namespace,
+		},
+	}
 }
