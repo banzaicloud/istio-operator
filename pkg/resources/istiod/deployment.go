@@ -129,6 +129,10 @@ func (r *Reconciler) containerEnvs() []apiv1.EnvVar {
 				Name:  "CACERT_CONFIG_NAME",
 				Value: r.Config.WithRevision("istio-ca-root-cert"),
 			},
+			{
+				Name:  "PILOT_ENDPOINT_TELEMETRY_LABEL",
+				Value: "true",
+			},
 		}...)
 	}
 
