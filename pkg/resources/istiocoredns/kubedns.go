@@ -27,6 +27,7 @@ import (
 	"k8s.io/apimachinery/pkg/types"
 
 	"github.com/banzaicloud/istio-operator/pkg/k8sutil"
+	"github.com/banzaicloud/istio-operator/pkg/util"
 )
 
 // Add/Remove .global to/from kube-dns configmap
@@ -61,11 +62,11 @@ func (r *Reconciler) reconcileKubeDNSConfigMap(log logr.Logger, desiredState k8s
 		if err != nil {
 			return emperror.Wrap(err, "could not get Istio coreDNS service")
 		}
-		stubDomains["global"] = []string{svc.Spec.ClusterIP}
+		stubDomains[util.PointerToString(r.Config.Spec.GlobalDomain)] = []string{svc.Spec.ClusterIP}
 	} else if desiredState == k8sutil.DesiredStateAbsent {
-		_, ok := stubDomains["global"]
+		_, ok := stubDomains[util.PointerToString(r.Config.Spec.GlobalDomain)]
 		if ok {
-			delete(stubDomains, "global")
+			delete(stubDomains, util.PointerToString(r.Config.Spec.GlobalDomain))
 		}
 	}
 

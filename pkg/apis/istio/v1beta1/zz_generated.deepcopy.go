@@ -728,6 +728,11 @@ func (in *IstioSpec) DeepCopyInto(out *IstioSpec) {
 		*out = new(bool)
 		**out = **in
 	}
+	if in.GlobalDomain != nil {
+		in, out := &in.GlobalDomain, &out.GlobalDomain
+		*out = new(string)
+		**out = **in
+	}
 	in.IstioCoreDNS.DeepCopyInto(&out.IstioCoreDNS)
 	if in.LocalityLB != nil {
 		in, out := &in.LocalityLB, &out.LocalityLB
