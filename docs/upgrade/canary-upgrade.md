@@ -5,9 +5,9 @@
 Let us suppose that we have an Istio 1.7 control plane running in our cluster and we would like to upgrade to an Istio 1.8 control plane.
 To make sure that we are limiting the potential blast radius of the upgrade, we introduced the Canary upgrade flow. This consists of the following steps:
 
-1. Deploy an Istio 1.8 control plane *next* to the Istio 1.6 control plane
+1. Deploy an Istio 1.8 control plane *next* to the Istio 1.7 control plane
 1. Migrate the data plane *gradually* to the new control plane
-1. When migration is fully finished, uninstall the Istio 1.6 control plane
+1. When migration is fully finished, uninstall the Istio 1.7 control plane
 
 ![Istio control plane canary upgrade](istio-cp-canary-upgrade.gif)
 
@@ -19,12 +19,12 @@ This upgrade flow gives us more flexibility and confidence when making Istio upg
 ### Canary upgrade process with the Istio operator
 
 Let's take a closer look at how the process works in conjunction with our open source Istio operator.
-So our starting point is a running Istio operator and Istio 1.6 control plane, with applications using that control plane version.
+So our starting point is a running Istio operator and Istio 1.7 control plane, with applications using that control plane version.
 
 1. Deploy another Istio operator (alongside the previous one), which has Istio 1.8 support
 1. Apply a new Istio CR with Istio version 1.8 and let the operator reconcile an Istio 1.8 control plane
 
-   It is recommended that you turn off gateways for the new control plane and migrate the 1.6 gateway pods to the 1.8 control plane. That way the ingress gateway's typically LoadBalancer-type service will not be recreated, neither will the cloud platform-managed LoadBalancer, and hence the IP address won't change either.
+   It is recommended that you turn off gateways for the new control plane and migrate the 1.7 gateway pods to the 1.8 control plane. That way the ingress gateway's typically LoadBalancer-type service will not be recreated, neither will the cloud platform-managed LoadBalancer, and hence the IP address won't change either.
 
    > This new control plane is often referred to as a *canary*, but, in practice, it is advisable that this be named based on Istio version, as it will remain on the cluster for the long term.
 
@@ -35,12 +35,12 @@ So our starting point is a running Istio operator and Istio 1.6 control plane, w
 1. Migrate data plane applications
 
    It is recommended that for safety reasons you perform this migration gradually.
-  During the data plane migration, it is important to keep in mind that the two Istio control planes share trust (because they use the same certificates for encrypted communication). Therefore, when an application pod that still uses Istio's 1.6 control plane calls another pod that already uses Istio's 1.8 control plane, the encrypted communication will succeed because of that shared trust.
+  During the data plane migration, it is important to keep in mind that the two Istio control planes share trust (because they use the same certificates for encrypted communication). Therefore, when an application pod that still uses Istio's 1.7 control plane calls another pod that already uses Istio's 1.8 control plane, the encrypted communication will succeed because of that shared trust.
    That's why this migration can be performed on a namespace by namespace basis and the **communication** of the pods **won't be affected.**
 
-1. Delete the Istio 1.6 control plane
+1. Delete the Istio 1.7 control plane
 
-   Once the migration is finished, and you've made sure that your applications are working properly in conjunction with the new control plane, the older Istio 1.6 control plane can be safely deleted.
+   Once the migration is finished, and you've made sure that your applications are working properly in conjunction with the new control plane, the older Istio 1.7 control plane can be safely deleted.
    It's recommended that you take some time to make sure that everything is working on the new control plane before turning off the old one. The overhead of doing so is minimal as it's only an `istiod` deployment running.
 
    > In the traditional sense, a canary upgrade flow ends with a rolling update of the old application into the new one.
@@ -49,10 +49,10 @@ So our starting point is a running Istio operator and Istio 1.6 control plane, w
 
 ## Try it out!
 
-First, we'll deploy an Istio 1.6 control plane with the Istio operator and two demo applications in separate namespaces.
+First, we'll deploy an Istio 1.7 control plane with the Istio operator and two demo applications in separate namespaces.
 Then, we'll deploy an Istio 1.8 control plane alongside the other control plane and migrate the demo applications to the new control plane gradually.
 During the process we'll make sure that the communication works even when the demo apps are on different control planes at the time.
-When the data plane migration is finished, we'll delete the Istio 1.6 control plane and operator.
+When the data plane migration is finished, we'll delete the Istio 1.7 control plane and operator.
 
 ### Setup
 
@@ -60,22 +60,22 @@ When the data plane migration is finished, we'll delete the Istio 1.6 control pl
 
    > If you need a hand with this, you can use our free version of [Banzai Cloud's Pipeline platform](https://try.pipeline.banzai.cloud/) to create a cluster.
 
-### Deploy Istio 1.6 control plane
+### Deploy Istio 1.7 control plane
 
-1. Deploy an Istio operator version, which can install an Istio 1.6 control plane.
+1. Deploy an Istio operator version, which can install an Istio 1.7 control plane.
 
    ```bash
    $ helm repo add banzaicloud-stable https://kubernetes-charts.banzaicloud.com
-   $ helm install istio-operator-v16x --create-namespace --namespace=istio-system --set-string operator.image.tag=0.6.12 --set-string istioVersion=1.6 banzaicloud-stable/istio-operator
+   $ helm install istio-operator-v17x --create-namespace --namespace=istio-system --set-string operator.image.tag=0.7.8 --set-string istioVersion=1.7 banzaicloud-stable/istio-operator
    ```
 
-1. Apply an `Istio` Custom Resource and let the operator reconcile the Istio 1.6 control plane.
+1. Apply an `Istio` Custom Resource and let the operator reconcile the Istio 1.7 control plane.
 
    ```bash
-   $ kubectl apply -n istio-system -f https://raw.githubusercontent.com/banzaicloud/istio-operator/release-1.6/config/samples/istio_v1beta1_istio.yaml
+   $ kubectl apply -n istio-system -f https://raw.githubusercontent.com/banzaicloud/istio-operator/release-1.7/config/samples/istio_v1beta1_istio.yaml
    ```
 
-1. Check that the Istio 1.6 control plane is deployed.
+1. Check that the Istio 1.7 control plane is deployed.
 
    ```bash
    $ kubectl get po -n=istio-system
@@ -221,7 +221,7 @@ When the data plane migration is finished, we'll delete the Istio 1.6 control pl
 1. Deploy an Istio operator version, which can install an Istio 1.8 control plane.
 
    ```bash
-   $ helm install istio-operator-v17x --create-namespace --namespace=istio-system --set-string operator.image.tag=0.7.8 banzaicloud-stable/istio-operator
+   $ helm install istio-operator-v18x --create-namespace --namespace=istio-system --set-string operator.image.tag=0.8.0 banzaicloud-stable/istio-operator
    ```
 
    *Note: In case you upgrade from an earlier chart version your Istio operator CRD definitions might be outdated in which case you should apply the [new CRDs](../../deploy/charts/istio-operator/crds) manually!*
@@ -238,8 +238,8 @@ When the data plane migration is finished, we'll delete the Istio 1.6 control pl
    $ kubectl get po -n=istio-system
    NAME                                        READY   STATUS    RESTARTS   AGE
    istio-ingressgateway-55b89d99d7-4m884       1/1     Running   0          6m38s
-   istio-operator-v16x-0                       2/2     Running   0          7m18s
-   istio-operator-v17x-0                       2/2     Running   0          76s
+   istio-operator-v17x-0                       2/2     Running   0          7m18s
+   istio-operator-v18x-0                       2/2     Running   0          76s
    istiod-676fc6d449-9jwfj                     1/1     Running   0          10s
    istiod-istio-sample-v17x-7dbdf4f9fc-bfxhl   1/1     Running   0          18s
    ```
@@ -251,7 +251,7 @@ When the data plane migration is finished, we'll delete the Istio 1.6 control pl
 1. Change the ingress gateway so that it utilizes the new Istio 1.8 control plane.
 
    ```bash
-   $ kubectl patch mgw -n istio-system istio-ingressgateway --type=json -p='[{"op": "replace", "path": "/spec/istioControlPlane/name", "value": "istio-sample-v17x"}]'
+   $ kubectl patch mgw -n istio-system istio-ingressgateway --type=json -p='[{"op": "replace", "path": "/spec/istioControlPlane/name", "value": "istio-sample-v18x"}]'
    ```
 
 #### Migrate first namespace
@@ -259,7 +259,7 @@ When the data plane migration is finished, we'll delete the Istio 1.6 control pl
 1. Label the first namespace so that all workloads there utilize the new control plane.
 
    ```bash
-   $ kubectl label ns demo-a istio-injection- istio.io/rev=istio-sample-v17x.istio-system
+   $ kubectl label ns demo-a istio-injection- istio.io/rev=istio-sample-v18x.istio-system
    ```
 
    The new `istio.io/rev` label needs to be used for the new revisioned control planes to indicate that it should perform sidecar injection.
@@ -270,7 +270,7 @@ When the data plane migration is finished, we'll delete the Istio 1.6 control pl
    ```bash
    $ kubectl get ns demo-a -L istio-injection -L istio.io/rev
    NAME     STATUS   AGE   ISTIO-INJECTION   REV
-   demo-a   Active   12m                     istio-sample-v17x.istio-system
+   demo-a   Active   12m                     istio-sample-v18x.istio-system
    ```
 
 1. Restart the pod in the namespace.
@@ -294,7 +294,7 @@ When the data plane migration is finished, we'll delete the Istio 1.6 control pl
 
 Let's make sure that encrypted communication still works between pods that use different control planes.
 The reason why the data plane migration can be done gradually is that the communication works even between pods on different control planes. In this step it will be verified that the communication works in such a way, making the upgrade flow a safe one.
-Remember that the pod(s) in the `demo-a` namespace are already on the Istio 1.8 control plane, but the pod in `demo-b` is still using the Istio 1.6 version.
+Remember that the pod(s) in the `demo-a` namespace are already on the Istio 1.8 control plane, but the pod in `demo-b` is still using the Istio 1.7 version.
 
 1. Save the application pod names for easier access.
 
@@ -322,7 +322,7 @@ Remember that the pod(s) in the `demo-a` namespace are already on the Istio 1.8 
 1. Label the second namespace so that all workloads there utilize the new control plane.
 
    ```bash
-   $ kubectl label ns demo-b istio-injection- istio.io/rev=istio-sample-v17x.istio-system
+   $ kubectl label ns demo-b istio-injection- istio.io/rev=istio-sample-v18x.istio-system
    ```
 
 1. Make sure that the labeling is correct.
@@ -330,7 +330,7 @@ Remember that the pod(s) in the `demo-a` namespace are already on the Istio 1.8 
    ```bash
    $ kubectl get ns demo-b -L istio-injection -L istio.io/rev
    NAME     STATUS   AGE   ISTIO-INJECTION   REV
-   demo-b   Active   19m                     istio-sample-v17x.istio-system
+   demo-b   Active   19m                     istio-sample-v18x.istio-system
    ```
 
 1. Restart the pod in the namespace.
@@ -350,21 +350,21 @@ Remember that the pod(s) in the `demo-a` namespace are already on the Istio 1.8 
        image: docker.io/istio/proxyv2:1.8.0
    ```
 
-### Uninstall the Istio 1.6 control plane
+### Uninstall the Istio 1.7 control plane
 
-When the data plane is fully migrated to the 1.8 version and you made sure that it works as expected, we can delete the "old" Istio 1.6 control plane.
+When the data plane is fully migrated to the 1.8 version and you made sure that it works as expected, we can delete the "old" Istio 1.7 control plane.
 
-1. Delete the 1.6 `Istio` Custom Resource to delete the Istio 1.6 control plane.
+1. Delete the 1.7 `Istio` Custom Resource to delete the Istio 1.7 control plane.
 
    ```bash
-   $ kubectl delete -n istio-system -f https://raw.githubusercontent.com/banzaicloud/istio-operator/release-1.6/config/samples/istio_v1beta1_istio.yaml
+   $ kubectl delete -n istio-system -f https://raw.githubusercontent.com/banzaicloud/istio-operator/release-1.7/config/samples/istio_v1beta1_istio.yaml
    ```
 
-1. Uninstall the Istio operator for version 1.6.
+1. Uninstall the Istio operator for version 1.7.
 
-   > :warning: If you installed the Istio operator chart for Istio 1.6 with Helm2, then first upgrade that chart with Helm version 3.1.0, otherwise your CRDs will be deleted!
+   > :warning: If you installed the Istio operator chart for Istio 1.7 with Helm2, then first upgrade that chart with Helm version 3.1.0, otherwise your CRDs will be deleted!
    > ```bash
-   > $ helm upgrade istio-operator-v16x --namespace=istio-system --set-string operator.image.tag=0.6.13 --set-string istioVersion=1.6 banzaicloud-stable/istio-operator
+   > $ helm upgrade istio-operator-v17x --namespace=istio-system --set-string operator.image.tag=0.7.8 --set-string istioVersion=1.7 banzaicloud-stable/istio-operator
    > ```
    > For more info on CRD handling issues in Helm, check out these two PRs and the related issues: [https://github.com/helm/helm/pull/7320](https://github.com/helm/helm/pull/7320), [https://github.com/helm/helm/pull/7571](https://github.com/helm/helm/pull/7571).
 

@@ -20,15 +20,15 @@ What happens is that once the operator discerns that the Custom Resource it's wa
 - Minikube v1.1.1+ or Kubernetes 1.16.0+
 - `KUBECONFIG` set to an existing Kubernetes cluster
 
-If you already have Istio 1.6.x installed on your cluster you can skip the next section and can jump right to [Deploy sample BookInfo application](#deploy-sample-bookinfo-application).
+If you already have Istio 1.7.x installed on your cluster you can skip the next section and can jump right to [Deploy sample BookInfo application](#deploy-sample-bookinfo-application).
 
-#### Install Istio 1.6.13
+#### Install Istio 1.7.4
 
-We install Istio with our operator, so first we need to check out the `1.6.x` branch of our operator (this branch supports Istio versions 1.6.x):
+We install Istio with our operator, so first we need to check out the `1.7.x` branch of our operator (this branch supports Istio versions 1.7.x):
 
 ```bash
 $ git clone git@github.com:banzaicloud/istio-operator.git
-$ git checkout 1.6.x
+$ git checkout 1.7.x
 ```
 
 **Install Istio Operator with make**
@@ -48,16 +48,16 @@ Alternatively, if you just can't let go of Helm completely, you can deploy the o
 
 ```bash
 $ helm repo add banzaicloud-stable https://kubernetes-charts.banzaicloud.com
-$ helm install istio-operator --create-namespace --namespace=istio-system --set-string operator.image.tag=0.6.13 --set-string istioVersion=1.6 banzaicloud-stable/istio-operator
+$ helm install istio-operator --create-namespace --namespace=istio-system --set-string operator.image.tag=0.6.13 --set-string istioVersion=1.7 banzaicloud-stable/istio-operator
 ```
 
-*Note: As of now, the `0.6.13` tag is the latest version of our operator to support Istio versions 1.6.x
+*Note: As of now, the `0.7.8` tag is the latest version of our operator to support Istio versions 1.7.x
 
 **Apply the Custom Resource**
 
 Once you've applied the Custom Resource to your cluster, the operator will start reconciling all of Istio's components.
 
-There are some sample Custom Resource configurations in the `config/samples` folder. To deploy Istio 1.6.13 with its default configuration options, use the following command:
+There are some sample Custom Resource configurations in the `config/samples` folder. To deploy Istio 1.7.4 with its default configuration options, use the following command:
 
 ```bash
 $ kubectl apply -n istio-system -f config/samples/istio_v1beta1_istio.yaml
@@ -73,24 +73,24 @@ istio-operator-controller-manager-0       2/2       Running   0          9m
 istiod-fc664fcbd-kgl2k                    2/2       Running   0          1m
 ```
 
-The `Istio` Custom Resource is showing `Available` in its status field and the Istio components are using `1.6.13` images :
+The `Istio` Custom Resource is showing `Available` in its status field and the Istio components are using `1.7.4` images :
 
 ```bash
 $ kubectl get istio -n istio-system istio -o yaml | grep "image:"
-    image: docker.io/istio/citadel:1.6.13
-    image: docker.io/istio/galley:1.6.13
-    image: docker.io/istio-mixer:1.6.13
-    image: docker.io/istio-pilot:1.6.13
-    image: docker.io/istio/proxyv2:1.6.13
-    image: docker.io/istio/sidecar_injector:1.6.13
+    image: docker.io/istio/citadel:1.7.4
+    image: docker.io/istio/galley:1.7.4
+    image: docker.io/istio-mixer:1.7.4
+    image: docker.io/istio-pilot:1.7.4
+    image: docker.io/istio/proxyv2:1.7.4
+    image: docker.io/istio/sidecar_injector:1.7.4
 ```
 
 #### Deploy sample BookInfo application
 
-Let's make sure that Istio 1.6.13 is properly installed with Istio's BookInfo application:
+Let's make sure that Istio 1.7.4 is properly installed with Istio's BookInfo application:
 
 ```bash
-$ kubectl -n default apply -f https://raw.githubusercontent.com/istio/istio/1.6.x/samples/bookinfo/platform/kube/bookinfo.yaml
+$ kubectl -n default apply -f https://raw.githubusercontent.com/istio/istio/1.7.4/samples/bookinfo/platform/kube/bookinfo.yaml
 service "details" created
 deployment.extensions "details-v1" created
 service "ratings" created
@@ -102,7 +102,7 @@ deployment.extensions "reviews-v3" created
 service "productpage" created
 deployment.extensions "productpage-v1" created
 
-$ kubectl -n default apply -f https://raw.githubusercontent.com/istio/istio/1.6.x/samples/bookinfo/networking/bookinfo-gateway.yaml
+$ kubectl -n default apply -f https://raw.githubusercontent.com/istio/istio/1.7.4/samples/bookinfo/networking/bookinfo-gateway.yaml
 gateway.networking.istio.io "bookinfo-gateway" created
 virtualservice.networking.istio.io "bookinfo" created
 ```
