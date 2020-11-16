@@ -32,7 +32,6 @@ const (
 	componentName  = "mixerless-telemetry"
 	wasmRuntime    = "envoy.wasm.runtime.v8"
 	noWasmRuntime  = "envoy.wasm.runtime.null"
-	proxyVersion15 = "1.5"
 	proxyVersion16 = "1.6"
 	proxyVersion17 = "1.7"
 	proxyVersion18 = "1.8"
@@ -70,17 +69,12 @@ func (r *Reconciler) Reconcile(log logr.Logger) error {
 	}
 
 	drs := []resources.DynamicResourceWithDesiredState{
-		// delete deprecated 1.5 EnvoyFilters
-		// these lines can be removed when upgrading to 1.8
-		{DynamicResource: r.metaExchangeEnvoyFilter15, DesiredState: k8sutil.DesiredStateAbsent},
-		{DynamicResource: r.tcpMetaExchangeEnvoyFilter15, DesiredState: k8sutil.DesiredStateAbsent},
-		{DynamicResource: r.httpStatsFilter15, DesiredState: k8sutil.DesiredStateAbsent},
-		{DynamicResource: r.tcpStatsFilter15, DesiredState: k8sutil.DesiredStateAbsent},
-
-		{DynamicResource: r.metaExchangeEnvoyFilter16, DesiredState: exchangeFilterDesiredState},
-		{DynamicResource: r.tcpMetaExchangeEnvoyFilter16, DesiredState: exchangeFilterDesiredState},
-		{DynamicResource: r.httpStatsFilter16, DesiredState: statsFilterDesiredState},
-		{DynamicResource: r.tcpStatsFilter16, DesiredState: statsFilterDesiredState},
+		// delete deprecated 1.6 EnvoyFilters
+		// these lines can be removed when upgrading to 1.9
+		{DynamicResource: r.metaExchangeEnvoyFilter16, DesiredState: k8sutil.DesiredStateAbsent},
+		{DynamicResource: r.tcpMetaExchangeEnvoyFilter16, DesiredState: k8sutil.DesiredStateAbsent},
+		{DynamicResource: r.httpStatsFilter16, DesiredState: k8sutil.DesiredStateAbsent},
+		{DynamicResource: r.tcpStatsFilter16, DesiredState: k8sutil.DesiredStateAbsent},
 
 		{DynamicResource: r.metaExchangeEnvoyFilter17, DesiredState: exchangeFilterDesiredState},
 		{DynamicResource: r.tcpMetaExchangeEnvoyFilter17, DesiredState: exchangeFilterDesiredState},
