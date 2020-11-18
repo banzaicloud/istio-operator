@@ -20,6 +20,7 @@ import (
 	"bufio"
 	"bytes"
 	"context"
+	"errors"
 	"fmt"
 	"io"
 	"strings"
@@ -27,14 +28,15 @@ import (
 	"github.com/go-logr/logr"
 	"github.com/goph/emperror"
 	apiextensionsv1 "k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1"
-	apiextensionsclient "k8s.io/apiextensions-apiserver/pkg/client/clientset/clientset"
+	apiextensionsv1beta1 "k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1beta1"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/apimachinery/pkg/runtime/schema"
+	"k8s.io/apimachinery/pkg/api/meta"
+	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/runtime/serializer/json"
 	"k8s.io/client-go/kubernetes/scheme"
 	"k8s.io/client-go/rest"
 	"k8s.io/client-go/tools/record"
+	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/event"
 	"sigs.k8s.io/controller-runtime/pkg/manager"
 	"sigs.k8s.io/controller-runtime/pkg/predicate"
@@ -42,6 +44,7 @@ import (
 	istiov1beta1 "github.com/banzaicloud/istio-operator/pkg/apis/istio/v1beta1"
 	"github.com/banzaicloud/istio-operator/pkg/k8sutil"
 	istio_crds "github.com/banzaicloud/istio-operator/pkg/manifests/istio-crds/generated"
+	"github.com/banzaicloud/istio-operator/pkg/util"
 	"github.com/banzaicloud/k8s-objectmatcher/patch"
 )
 
@@ -53,18 +56,20 @@ const (
 )
 
 type CRDReconciler struct {
-	crds     []*apiextensionsv1.CustomResourceDefinition
+	crds     []runtime.Object
 	config   *rest.Config
 	revision string
 	recorder record.EventRecorder
+	client   client.Client
 }
 
-func New(mgr manager.Manager, revision string, crds ...*apiextensionsv1.CustomResourceDefinition) (*CRDReconciler, error) {
+func New(mgr manager.Manager, revision string, crds ...runtime.Object) (*CRDReconciler, error) {
 	r := &CRDReconciler{
 		crds:     crds,
 		config:   mgr.GetConfig(),
 		revision: revision,
 		recorder: mgr.GetEventRecorderFor(eventRecorderName),
+		client:   mgr.GetClient(),
 	}
 
 	return r, nil
@@ -127,17 +132,24 @@ func (r *CRDReconciler) load(f io.Reader) error {
 			continue
 		}
 
-		var crd *apiextensionsv1.CustomResourceDefinition
-		var ok bool
-		if crd, ok = obj.(*apiextensionsv1.CustomResourceDefinition); !ok {
+		if crd, ok := obj.(*apiextensionsv1.CustomResourceDefinition); ok {
+			crd.Status = apiextensionsv1.CustomResourceDefinitionStatus{}
+			crd.SetGroupVersionKind(apiextensionsv1.SchemeGroupVersion.WithKind("CustomResourceDefinition"))
+			crd.SetLabels(util.MergeStringMaps(crd.GetLabels(), map[string]string{
+				createdByLabel: createdBy,
+			}))
+			r.crds = append(r.crds, crd)
 			continue
 		}
 
-		crd.Status = apiextensionsv1.CustomResourceDefinitionStatus{}
-		crd.SetGroupVersionKind(schema.GroupVersionKind{})
-		labels := crd.GetLabels()
-		labels[createdByLabel] = createdBy
-		r.crds = append(r.crds, crd)
+		if crd, ok := obj.(*apiextensionsv1beta1.CustomResourceDefinition); ok {
+			crd.Status = apiextensionsv1beta1.CustomResourceDefinitionStatus{}
+			crd.SetGroupVersionKind(apiextensionsv1beta1.SchemeGroupVersion.WithKind("CustomResourceDefinition"))
+			crd.SetLabels(util.MergeStringMaps(crd.GetLabels(), map[string]string{
+				createdByLabel: createdBy,
+			}))
+			r.crds = append(r.crds, crd)
+		}
 	}
 
 	return nil
@@ -145,28 +157,39 @@ func (r *CRDReconciler) load(f io.Reader) error {
 
 func (r *CRDReconciler) Reconcile(config *istiov1beta1.Istio, log logr.Logger) error {
 	log = log.WithValues("component", componentName)
-	apiExtensions, err := apiextensionsclient.NewForConfig(r.config)
-	if err != nil {
-		return emperror.Wrap(err, "instantiating apiextensions client failed")
-	}
-	crdClient := apiExtensions.ApiextensionsV1().CustomResourceDefinitions()
+
 	for _, obj := range r.crds {
-		crd := obj.DeepCopy()
-		err = k8sutil.SetResourceRevision(crd, r.revision)
+		var name, kind string
+		if crd, ok := obj.(*apiextensionsv1.CustomResourceDefinition); ok {
+			name = crd.Name
+			kind = crd.Spec.Names.Kind
+		} else if crd, ok := obj.(*apiextensionsv1beta1.CustomResourceDefinition); ok {
+			name = crd.Name
+			kind = crd.Spec.Names.Kind
+		} else {
+			log.Error(errors.New("invalid GVK"), "cannot reconcile CRD", "gvk", obj.GetObjectKind().GroupVersionKind())
+			continue
+		}
+
+		crd := obj.DeepCopyObject()
+		current := obj.DeepCopyObject()
+		err := k8sutil.SetResourceRevision(crd, r.revision)
 		if err != nil {
 			return emperror.Wrap(err, "could not set resource revision")
 		}
-		log := log.WithValues("kind", crd.Spec.Names.Kind)
-		current, err := crdClient.Get(context.Background(), crd.Name, metav1.GetOptions{})
+		log := log.WithValues("kind", kind)
+		err = r.client.Get(context.Background(), client.ObjectKey{
+			Name: name,
+		}, current)
 		if err != nil && !apierrors.IsNotFound(err) {
-			return emperror.WrapWith(err, "getting CRD failed", "kind", crd.Spec.Names.Kind)
+			return emperror.WrapWith(err, "getting CRD failed", "kind", kind)
 		}
 		if apierrors.IsNotFound(err) {
 			if err := patch.DefaultAnnotator.SetLastAppliedAnnotation(crd); err != nil {
 				log.Error(err, "Failed to set last applied annotation", "crd", crd)
 			}
-			if _, err := crdClient.Create(context.Background(), crd, metav1.CreateOptions{}); err != nil {
-				return emperror.WrapWith(err, "creating CRD failed", "kind", crd.Spec.Names.Kind)
+			if err := r.client.Create(context.Background(), crd); err != nil {
+				return emperror.WrapWith(err, "creating CRD failed", "kind", kind)
 			}
 			log.Info("CRD created")
 		} else {
@@ -178,10 +201,17 @@ func (r *CRDReconciler) Reconcile(config *istiov1beta1.Istio, log logr.Logger) e
 				}
 				continue
 			}
-			crd.ResourceVersion = current.ResourceVersion
+			metaAccessor := meta.NewAccessor()
+			currentResourceVersion, err := metaAccessor.ResourceVersion(current)
+			if err != nil {
+				return err
+			}
+
+			metaAccessor.SetResourceVersion(crd, currentResourceVersion)
+
 			patchResult, err := patch.DefaultPatchMaker.Calculate(current, crd, patch.IgnoreStatusFields())
 			if err != nil {
-				log.Error(err, "could not match objects", "kind", crd.Spec.Names.Kind)
+				log.Error(err, "could not match objects", "kind", kind)
 			} else if patchResult.IsEmpty() {
 				log.V(1).Info("CRD is in sync")
 				continue
@@ -197,7 +227,7 @@ func (r *CRDReconciler) Reconcile(config *istiov1beta1.Istio, log logr.Logger) e
 				log.Error(err, "Failed to set last applied annotation", "crd", crd)
 			}
 
-			if _, err := crdClient.Update(context.Background(), crd, metav1.UpdateOptions{}); err != nil {
+			if err := r.client.Update(context.Background(), crd); err != nil {
 				errorMessage := "updating CRD failed, consider updating the CRD manually if needed"
 				r.recorder.Eventf(
 					config,
@@ -205,9 +235,9 @@ func (r *CRDReconciler) Reconcile(config *istiov1beta1.Istio, log logr.Logger) e
 					"IstioCRDUpdateFailure",
 					errorMessage,
 					"kind",
-					crd.Spec.Names.Kind,
+					kind,
 				)
-				return emperror.WrapWith(err, errorMessage, "kind", crd.Spec.Names.Kind)
+				return emperror.WrapWith(err, errorMessage, "kind", kind)
 			}
 			log.Info("CRD updated")
 		}

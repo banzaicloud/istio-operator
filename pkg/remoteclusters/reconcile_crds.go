@@ -24,11 +24,12 @@ import (
 	"github.com/goph/emperror"
 	"github.com/pkg/errors"
 	apiextensionsv1 "k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1"
-	apiextensionsclient "k8s.io/apiextensions-apiserver/pkg/client/clientset/clientset"
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	apiextensionsv1beta1 "k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1beta1"
+	"k8s.io/apimachinery/pkg/api/meta"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/runtime/schema"
 	"k8s.io/apimachinery/pkg/runtime/serializer/json"
+	"sigs.k8s.io/controller-runtime/pkg/client"
 
 	istiov1beta1 "github.com/banzaicloud/istio-operator/pkg/apis/istio/v1beta1"
 	"github.com/banzaicloud/istio-operator/pkg/crds"
@@ -48,7 +49,7 @@ func (c *Cluster) reconcileCRDs(remoteConfig *istiov1beta1.RemoteIstio, istio *i
 		return emperror.Wrap(err, "could not get meshgateway CRD")
 	}
 
-	resources := []*apiextensionsv1.CustomResourceDefinition{
+	resources := []runtime.Object{
 		istiocrd,
 		meshgatewaycrd,
 	}
@@ -72,20 +73,23 @@ func (c *Cluster) reconcileCRDs(remoteConfig *istiov1beta1.RemoteIstio, istio *i
 	return nil
 }
 
-func (c *Cluster) waitForCRDs(crds []*apiextensionsv1.CustomResourceDefinition) error {
-	apiExtensions, err := apiextensionsclient.NewForConfig(c.restConfig)
-	if err != nil {
-		return errors.Wrap(err, "instantiating apiextensions client failed")
-	}
-	crdClient := apiExtensions.ApiextensionsV1().CustomResourceDefinitions()
-
+func (c *Cluster) waitForCRDs(crds []runtime.Object) error {
 	for _, crd := range crds {
-		crd, err := crdClient.Get(context.Background(), crd.Name, metav1.GetOptions{})
+		crd := crd.DeepCopyObject()
+		metaAccessor := meta.NewAccessor()
+		crdName, err := metaAccessor.Name(crd)
 		if err != nil {
 			return err
 		}
-		c.log.Info("wait for CRD", "name", crd.Name)
-		err = c.waitForCRD(crd)
+
+		err = c.mgr.GetClient().Get(context.Background(), client.ObjectKey{
+			Name: crdName,
+		}, crd)
+		if err != nil {
+			return err
+		}
+		c.log.Info("wait for CRD", "name", crdName)
+		err = c.waitForCRD(crdName, crd)
 		if err != nil {
 			return err
 		}
@@ -94,16 +98,28 @@ func (c *Cluster) waitForCRDs(crds []*apiextensionsv1.CustomResourceDefinition) 
 	return nil
 }
 
-func (c *Cluster) waitForCRD(crd *apiextensionsv1.CustomResourceDefinition) error {
-	for _, condition := range crd.Status.Conditions {
-		if condition.Type == apiextensionsv1.Established {
-			if condition.Status == apiextensionsv1.ConditionTrue {
-				return nil
+func (c *Cluster) waitForCRD(name string, crd runtime.Object) error {
+	if crd, ok := crd.(*apiextensionsv1beta1.CustomResourceDefinition); ok {
+		for _, condition := range crd.Status.Conditions {
+			if condition.Type == apiextensionsv1beta1.Established {
+				if condition.Status == apiextensionsv1beta1.ConditionTrue {
+					return nil
+				}
 			}
 		}
 	}
 
-	return errors.Errorf("CRD '%s' is not established yet", crd.Name)
+	if crd, ok := crd.(*apiextensionsv1.CustomResourceDefinition); ok {
+		for _, condition := range crd.Status.Conditions {
+			if condition.Type == apiextensionsv1.Established {
+				if condition.Status == apiextensionsv1.ConditionTrue {
+					return nil
+				}
+			}
+		}
+	}
+
+	return errors.Errorf("CRD '%s' is not established yet", name)
 }
 
 func (c *Cluster) istiocrd() (*apiextensionsv1.CustomResourceDefinition, error) {
