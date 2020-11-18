@@ -19,6 +19,7 @@ package apis
 import (
 	securityv1beta1 "github.com/banzaicloud/istio-client-go/pkg/security/v1beta1"
 	apiextensionsv1 "k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1"
+	apiextensionsv1beta1 "k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1beta1"
 
 	"github.com/banzaicloud/istio-operator/pkg/apis/istio/v1beta1"
 )
@@ -27,5 +28,6 @@ func init() {
 	// Register the types with the Scheme so the components can map objects to GroupVersionKinds and back
 	AddToSchemes = append(AddToSchemes, v1beta1.SchemeBuilder.AddToScheme)
 	AddToSchemes = append(AddToSchemes, apiextensionsv1.AddToScheme)
+	AddToSchemes = append(AddToSchemes, apiextensionsv1beta1.AddToScheme)
 	AddToSchemes = append(AddToSchemes, securityv1beta1.SchemeBuilder.AddToScheme)
 }
