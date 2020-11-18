@@ -496,7 +496,7 @@ func SetDefaults(config *Istio) {
 		}
 	}
 	if config.Spec.Proxy.ProtocolDetectionTimeout == nil {
-		config.Spec.Proxy.ProtocolDetectionTimeout = util.StrPointer("5s")
+		config.Spec.Proxy.ProtocolDetectionTimeout = util.StrPointer("0")
 	}
 	if config.Spec.Proxy.ClusterDomain == "" {
 		config.Spec.Proxy.ClusterDomain = "cluster.local"
