@@ -4,7 +4,7 @@
 
 ## Prerequisites
 
-- Kubernetes 1.13.0+
+- Kubernetes 1.16.0+
 
 ## Installing the chart
 
