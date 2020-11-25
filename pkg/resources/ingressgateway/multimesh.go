@@ -91,7 +91,8 @@ func (r *Reconciler) multimeshEnvoyFilter() *k8sutil.DynamicObject {
 						"operation": "INSERT_AFTER",
 						"value": map[string]interface{}{
 							"name": "envoy.filters.network.tcp_cluster_rewrite",
-							"config": map[string]interface{}{
+							"typed_config": map[string]interface{}{
+								"\"@type\"":           "type.googleapis.com/istio.envoy.config.filter.network.tcp_cluster_rewrite.v2alpha1.TcpClusterRewrite",
 								"cluster_pattern":     "\\.global$",
 								"cluster_replacement": ".svc." + r.Config.Spec.Proxy.ClusterDomain,
 							},
