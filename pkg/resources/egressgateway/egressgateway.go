@@ -64,8 +64,8 @@ func (r *Reconciler) Reconcile(log logr.Logger) error {
 	log.Info("Reconciling")
 
 	spec := istiov1beta1.MeshGatewaySpec{
-		MeshGatewayConfiguration: r.Config.Spec.Gateways.EgressConfig.MeshGatewayConfiguration,
-		Ports:                    r.Config.Spec.Gateways.EgressConfig.Ports,
+		MeshGatewayConfiguration: r.Config.Spec.Gateways.Egress.MeshGatewayConfiguration,
+		Ports:                    r.Config.Spec.Gateways.Egress.Ports,
 		Type:                     istiov1beta1.GatewayTypeEgress,
 	}
 	spec.IstioControlPlane = &istiov1beta1.NamespacedName{
@@ -77,9 +77,9 @@ func (r *Reconciler) Reconcile(log logr.Logger) error {
 
 	var desiredState k8sutil.DesiredState
 
-	if util.PointerToBool(r.Config.Spec.Gateways.Enabled) && util.PointerToBool(r.Config.Spec.Gateways.EgressConfig.Enabled) {
+	if util.PointerToBool(r.Config.Spec.Gateways.Enabled) && util.PointerToBool(r.Config.Spec.Gateways.Egress.Enabled) {
 		desiredState = k8sutil.DesiredStatePresent
-		if util.PointerToBool(r.Config.Spec.Gateways.EgressConfig.CreateOnly) {
+		if util.PointerToBool(r.Config.Spec.Gateways.Egress.CreateOnly) {
 			objectMeta.OwnerReferences = nil
 			desiredState = k8sutil.MeshGatewayCreateOnlyDesiredState{}
 		}
@@ -99,9 +99,9 @@ func (r *Reconciler) Reconcile(log logr.Logger) error {
 	}
 
 	var multimeshEgressGatewayDesiredState k8sutil.DesiredState
-	if desiredState != k8sutil.DesiredStateAbsent && util.PointerToBool(r.Config.Spec.MultiMesh) && util.PointerToBool(r.Config.Spec.Gateways.EgressConfig.Enabled) {
+	if desiredState != k8sutil.DesiredStateAbsent && util.PointerToBool(r.Config.Spec.MultiMesh) && util.PointerToBool(r.Config.Spec.Gateways.Egress.Enabled) {
 		multimeshEgressGatewayDesiredState = k8sutil.DesiredStatePresent
-		if util.PointerToBool(r.Config.Spec.Gateways.EgressConfig.CreateOnly) {
+		if util.PointerToBool(r.Config.Spec.Gateways.Egress.CreateOnly) {
 			multimeshEgressGatewayDesiredState = k8sutil.DesiredStateExists
 		}
 	} else {
@@ -130,5 +130,5 @@ func (r *Reconciler) Reconcile(log logr.Logger) error {
 }
 
 func (r *Reconciler) labels() map[string]string {
-	return util.MergeMultipleStringMaps(resourceLabels, r.Config.Spec.Gateways.EgressConfig.MeshGatewayConfiguration.Labels, r.Config.RevisionLabels())
+	return util.MergeMultipleStringMaps(resourceLabels, r.Config.Spec.Gateways.Egress.MeshGatewayConfiguration.Labels, r.Config.RevisionLabels())
 }

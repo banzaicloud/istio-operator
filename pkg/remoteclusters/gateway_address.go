@@ -26,7 +26,7 @@ import (
 )
 
 func (c *Cluster) SetIngressGatewayAddress(remoteIstio *istiov1beta1.RemoteIstio, istio *istiov1beta1.Istio) error {
-	if !util.PointerToBool(istio.Spec.Gateways.Enabled) || !util.PointerToBool(istio.Spec.Gateways.IngressConfig.Enabled) || !util.PointerToBool(istio.Spec.MeshExpansion) {
+	if !util.PointerToBool(istio.Spec.Gateways.Enabled) || !util.PointerToBool(istio.Spec.Gateways.Ingress.Enabled) || !util.PointerToBool(istio.Spec.MeshExpansion) {
 		return nil
 	}
 
