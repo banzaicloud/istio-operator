@@ -41,6 +41,7 @@ import (
 
 	istiov1beta1 "github.com/banzaicloud/istio-operator/pkg/apis/istio/v1beta1"
 	"github.com/banzaicloud/istio-operator/pkg/k8sutil"
+	k8sutil_mgw "github.com/banzaicloud/istio-operator/pkg/k8sutil/mgw"
 	"github.com/banzaicloud/istio-operator/pkg/remoteclusters"
 	"github.com/banzaicloud/istio-operator/pkg/resources/istiod"
 	"github.com/banzaicloud/istio-operator/pkg/resources/mixer"
@@ -322,7 +323,7 @@ func (r *ReconcileRemoteConfig) reconcile(remoteConfig *istiov1beta1.RemoteIstio
 
 	err = cluster.Reconcile(remoteConfig, istio)
 	if err == nil {
-		err = cluster.SetIngressGatewayAddress(remoteConfig, istio)
+		err = k8sutil_mgw.SetGatewayAddress(r.Client, remoteConfig, istio)
 		if err != nil {
 			log.Info(fmt.Sprintf("ingress gateway address pending: %s", err.Error()))
 			updateRemoteConfigStatus(r.Client, remoteConfig, istiov1beta1.ReconcileFailed, errors.Cause(err).Error(), logger)

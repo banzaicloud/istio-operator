@@ -44,6 +44,10 @@ func (spec RemoteIstioSpec) GetSignCert() SignCert {
 	return spec.SignCert
 }
 
+func (spec *RemoteIstio) SetGatewayAddress(address []string) {
+	spec.Status.GatewayAddress = address
+}
+
 // RemoteIstioSpec defines the desired state of RemoteIstio
 type RemoteIstioSpec struct {
 	// IncludeIPRanges the range where to capture egress traffic

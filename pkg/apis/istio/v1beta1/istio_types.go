@@ -1077,6 +1077,10 @@ func (list SortableIstioItems) Less(i, j int) bool {
 	return list[i].CreationTimestamp.Time.Before(list[j].CreationTimestamp.Time)
 }
 
+func (spec *Istio) SetGatewayAddress(address []string) {
+	spec.Status.GatewayAddress = address
+}
+
 // IstioStatus defines the observed state of Istio
 type IstioStatus struct {
 	Status         ConfigState `json:"Status,omitempty"`
