@@ -126,6 +126,11 @@ var defaultEgressGatewayPorts = []ServicePort{
 	{ServicePort: corev1.ServicePort{Port: 15443, Protocol: apiv1.ProtocolTCP, Name: "tls"}, TargetPort: util.IntPointer(15443)},
 }
 
+var defaultMeshExpansionGatewayPorts = []ServicePort{
+	{ServicePort: corev1.ServicePort{Port: PortStatusPortNumber, Protocol: apiv1.ProtocolTCP, Name: PortStatusPortName}, TargetPort: util.IntPointer(PortStatusPortNumber)},
+	{ServicePort: corev1.ServicePort{Port: 15443, Protocol: apiv1.ProtocolTCP, Name: "tls"}, TargetPort: util.IntPointer(15443)},
+}
+
 // SetDefaults used to support generic defaulter interface
 func (config *Istio) SetDefaults() {
 	SetDefaults(config)
@@ -251,53 +256,38 @@ func SetDefaults(config *Istio) {
 	if config.Spec.Gateways.Enabled == nil {
 		config.Spec.Gateways.Enabled = util.BoolPointer(true)
 	}
-	if config.Spec.Gateways.Ingress.Enabled == nil {
-		config.Spec.Gateways.Ingress.Enabled = util.BoolPointer(true)
+	ingress := &config.Spec.Gateways.Ingress
+	ingress.MeshGatewayConfiguration.SetDefaults()
+	if ingress.ServiceType == "" {
+		ingress.ServiceType = defaultIngressGatewayServiceType
 	}
-	if config.Spec.Gateways.Ingress.ReplicaCount == nil {
-		config.Spec.Gateways.Ingress.ReplicaCount = util.IntPointer(defaultReplicaCount)
+	if len(ingress.Ports) == 0 {
+		ingress.Ports = defaultIngressGatewayPorts
 	}
-	if config.Spec.Gateways.Ingress.MinReplicas == nil {
-		config.Spec.Gateways.Ingress.MinReplicas = util.IntPointer(defaultMinReplicas)
+	if ingress.CreateOnly == nil {
+		ingress.CreateOnly = util.BoolPointer(true)
 	}
-	if config.Spec.Gateways.Ingress.MaxReplicas == nil {
-		config.Spec.Gateways.Ingress.MaxReplicas = util.IntPointer(defaultMaxReplicas)
+	egress := &config.Spec.Gateways.Egress
+	egress.MeshGatewayConfiguration.SetDefaults()
+	if egress.ServiceType == "" {
+		egress.ServiceType = defaultEgressGatewayServiceType
 	}
-	if config.Spec.Gateways.Ingress.SDS.Enabled == nil {
-		config.Spec.Gateways.Ingress.SDS.Enabled = util.BoolPointer(false)
+	if len(egress.Ports) == 0 {
+		egress.Ports = defaultEgressGatewayPorts
 	}
-	if len(config.Spec.Gateways.Ingress.Ports) == 0 {
-		config.Spec.Gateways.Ingress.Ports = defaultIngressGatewayPorts
+	if egress.CreateOnly == nil {
+		egress.CreateOnly = util.BoolPointer(true)
 	}
-	if config.Spec.Gateways.Ingress.CreateOnly == nil {
-		config.Spec.Gateways.Ingress.CreateOnly = util.BoolPointer(true)
+	mexpgw := &config.Spec.Gateways.MeshExpansion
+	mexpgw.MeshGatewayConfiguration.SetDefaults()
+	if mexpgw.ServiceType == "" {
+		mexpgw.ServiceType = defaultMeshExpansionGatewayServiceType
 	}
-	if config.Spec.Gateways.Egress.Enabled == nil {
-		config.Spec.Gateways.Egress.Enabled = util.BoolPointer(false)
+	if len(mexpgw.Ports) == 0 {
+		mexpgw.Ports = defaultMeshExpansionGatewayPorts
 	}
-	if config.Spec.Gateways.Egress.ReplicaCount == nil {
-		config.Spec.Gateways.Egress.ReplicaCount = util.IntPointer(defaultReplicaCount)
-	}
-	if config.Spec.Gateways.Egress.MinReplicas == nil {
-		config.Spec.Gateways.Egress.MinReplicas = util.IntPointer(defaultMinReplicas)
-	}
-	if config.Spec.Gateways.Egress.MaxReplicas == nil {
-		config.Spec.Gateways.Egress.MaxReplicas = util.IntPointer(defaultMaxReplicas)
-	}
-	if config.Spec.Gateways.Ingress.ServiceType == "" {
-		config.Spec.Gateways.Ingress.ServiceType = defaultIngressGatewayServiceType
-	}
-	if config.Spec.Gateways.Egress.ServiceType == "" {
-		config.Spec.Gateways.Egress.ServiceType = defaultEgressGatewayServiceType
-	}
-	if config.Spec.Gateways.Egress.SDS.Enabled == nil {
-		config.Spec.Gateways.Egress.SDS.Enabled = util.BoolPointer(false)
-	}
-	if len(config.Spec.Gateways.Egress.Ports) == 0 {
-		config.Spec.Gateways.Egress.Ports = defaultEgressGatewayPorts
-	}
-	if config.Spec.Gateways.Egress.CreateOnly == nil {
-		config.Spec.Gateways.Egress.CreateOnly = util.BoolPointer(true)
+	if mexpgw.CreateOnly == nil {
+		mexpgw.CreateOnly = util.BoolPointer(true)
 	}
 	if config.Spec.Gateways.K8sIngress.Enabled == nil {
 		config.Spec.Gateways.K8sIngress.Enabled = util.BoolPointer(false)
