@@ -14,7 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package k8sutil
+package mgw
 
 import (
 	"context"
@@ -24,7 +24,40 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
 	istiov1beta1 "github.com/banzaicloud/istio-operator/pkg/apis/istio/v1beta1"
+	"github.com/banzaicloud/istio-operator/pkg/resources/ingressgateway"
+	"github.com/banzaicloud/istio-operator/pkg/resources/meshexpansiongateway"
+	"github.com/banzaicloud/istio-operator/pkg/util"
 )
+
+type GatewayAddressSetter interface {
+	SetGatewayAddress(address []string)
+}
+
+func SetGatewayAddress(k8sclient client.Client, obj GatewayAddressSetter, istio *istiov1beta1.Istio) error {
+	if !util.PointerToBool(istio.Spec.Gateways.Enabled) && (!util.PointerToBool(istio.Spec.Gateways.Ingress.Enabled) || !!util.PointerToBool(istio.Spec.Gateways.MeshExpansion.Enabled)) {
+		obj.SetGatewayAddress(nil)
+		return nil
+	}
+	var err error
+	var gatewayResourceName string
+	if util.PointerToBool(istio.Spec.Gateways.MeshExpansion.Enabled) {
+		gatewayResourceName = istio.WithRevision(meshexpansiongateway.ResourceName)
+	} else {
+		gatewayResourceName = istio.WithRevision(ingressgateway.ResourceName)
+	}
+
+	address, err := GetMeshGatewayAddress(k8sclient, client.ObjectKey{
+		Name:      gatewayResourceName,
+		Namespace: istio.Namespace,
+	})
+	if err != nil {
+		return err
+	}
+
+	obj.SetGatewayAddress(address)
+
+	return nil
+}
 
 func GetMeshGatewayAddress(client client.Client, key client.ObjectKey) ([]string, error) {
 	var mgw istiov1beta1.MeshGateway
