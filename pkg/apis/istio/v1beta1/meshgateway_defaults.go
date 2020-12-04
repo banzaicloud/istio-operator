@@ -22,25 +22,40 @@ import (
 	"github.com/banzaicloud/istio-operator/pkg/util"
 )
 
+func (c *MeshGatewayConfiguration) SetDefaults() {
+	if c.ReplicaCount == nil {
+		c.ReplicaCount = util.IntPointer(defaultReplicaCount)
+	}
+	if c.MinReplicas == nil {
+		c.MinReplicas = util.IntPointer(defaultReplicaCount)
+	}
+	if c.MaxReplicas == nil {
+		c.MaxReplicas = util.IntPointer(defaultReplicaCount)
+	}
+	if c.Resources == nil {
+		c.Resources = defaultProxyResources
+	}
+	if c.SDS.Enabled == nil {
+		c.SDS.Enabled = util.BoolPointer(false)
+	}
+	if c.SDS.Image == "" {
+		c.SDS.Image = defaultNodeAgentImage
+	}
+	if c.RunAsRoot == nil {
+		c.RunAsRoot = util.BoolPointer(false)
+	}
+	if c.SecurityContext == nil {
+		if util.PointerToBool(c.RunAsRoot) {
+			c.SecurityContext = &apiv1.SecurityContext{}
+		} else {
+			c.SecurityContext = defaultSecurityContext
+		}
+	}
+}
+
 func (gw *MeshGateway) SetDefaults() {
-	if gw.Spec.ReplicaCount == nil {
-		gw.Spec.ReplicaCount = util.IntPointer(defaultReplicaCount)
-	}
-	if gw.Spec.MinReplicas == nil {
-		gw.Spec.MinReplicas = util.IntPointer(defaultReplicaCount)
-	}
-	if gw.Spec.MaxReplicas == nil {
-		gw.Spec.MaxReplicas = util.IntPointer(defaultReplicaCount)
-	}
-	if gw.Spec.Resources == nil {
-		gw.Spec.Resources = defaultProxyResources
-	}
-	if gw.Spec.SDS.Enabled == nil {
-		gw.Spec.SDS.Enabled = util.BoolPointer(false)
-	}
-	if gw.Spec.SDS.Image == "" {
-		gw.Spec.SDS.Image = defaultNodeAgentImage
-	}
+	gw.Spec.MeshGatewayConfiguration.SetDefaults()
+
 	if gw.Spec.Type == GatewayTypeIngress && gw.Spec.ServiceType == "" {
 		gw.Spec.ServiceType = defaultIngressGatewayServiceType
 	}
@@ -50,16 +65,6 @@ func (gw *MeshGateway) SetDefaults() {
 	// always turn off SDS for egress
 	if gw.Spec.Type == GatewayTypeEgress {
 		gw.Spec.SDS.Enabled = util.BoolPointer(false)
-	}
-	if gw.Spec.RunAsRoot == nil {
-		gw.Spec.RunAsRoot = util.BoolPointer(false)
-	}
-	if gw.Spec.SecurityContext == nil {
-		if util.PointerToBool(gw.Spec.RunAsRoot) {
-			gw.Spec.SecurityContext = &apiv1.SecurityContext{}
-		} else {
-			gw.Spec.SecurityContext = defaultSecurityContext
-		}
 	}
 
 	gw.SetDefaultLabels()
