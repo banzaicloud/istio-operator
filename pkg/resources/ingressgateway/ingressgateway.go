@@ -66,8 +66,8 @@ func (r *Reconciler) Reconcile(log logr.Logger) error {
 	log.Info("Reconciling")
 
 	spec := istiov1beta1.MeshGatewaySpec{
-		MeshGatewayConfiguration: r.Config.Spec.Gateways.IngressConfig.MeshGatewayConfiguration,
-		Ports:                    r.Config.Spec.Gateways.IngressConfig.Ports,
+		MeshGatewayConfiguration: r.Config.Spec.Gateways.Ingress.MeshGatewayConfiguration,
+		Ports:                    r.Config.Spec.Gateways.Ingress.Ports,
 		Type:                     istiov1beta1.GatewayTypeIngress,
 	}
 	spec.IstioControlPlane = &istiov1beta1.NamespacedName{
@@ -79,9 +79,9 @@ func (r *Reconciler) Reconcile(log logr.Logger) error {
 
 	var desiredState k8sutil.DesiredState
 
-	if util.PointerToBool(r.Config.Spec.Gateways.Enabled) && util.PointerToBool(r.Config.Spec.Gateways.IngressConfig.Enabled) {
+	if util.PointerToBool(r.Config.Spec.Gateways.Enabled) && util.PointerToBool(r.Config.Spec.Gateways.Ingress.Enabled) {
 		desiredState = k8sutil.DesiredStatePresent
-		if util.PointerToBool(r.Config.Spec.Gateways.IngressConfig.CreateOnly) {
+		if util.PointerToBool(r.Config.Spec.Gateways.Ingress.CreateOnly) {
 			objectMeta.OwnerReferences = nil
 			desiredState = k8sutil.MeshGatewayCreateOnlyDesiredState{}
 		}
@@ -102,7 +102,7 @@ func (r *Reconciler) Reconcile(log logr.Logger) error {
 
 	var k8sIngressDesiredState k8sutil.DesiredState
 	if util.PointerToBool(r.Config.Spec.Gateways.Enabled) &&
-		util.PointerToBool(r.Config.Spec.Gateways.IngressConfig.Enabled) &&
+		util.PointerToBool(r.Config.Spec.Gateways.Ingress.Enabled) &&
 		util.PointerToBool(r.Config.Spec.Gateways.K8sIngress.Enabled) {
 		k8sIngressDesiredState = k8sutil.DesiredStatePresent
 	} else {
@@ -150,5 +150,5 @@ func (r *Reconciler) Reconcile(log logr.Logger) error {
 }
 
 func (r *Reconciler) labels() map[string]string {
-	return util.MergeMultipleStringMaps(resourceLabels, r.Config.Spec.Gateways.IngressConfig.MeshGatewayConfiguration.Labels, r.Config.RevisionLabels())
+	return util.MergeMultipleStringMaps(resourceLabels, r.Config.Spec.Gateways.Ingress.MeshGatewayConfiguration.Labels, r.Config.RevisionLabels())
 }

@@ -191,8 +191,9 @@ type GalleyConfiguration struct {
 // GatewaysConfiguration defines config options for Gateways
 type GatewaysConfiguration struct {
 	Enabled       *bool                   `json:"enabled,omitempty"`
-	IngressConfig GatewayConfiguration    `json:"ingress,omitempty"`
-	EgressConfig  GatewayConfiguration    `json:"egress,omitempty"`
+	Ingress       GatewayConfiguration    `json:"ingress,omitempty"`
+	Egress        GatewayConfiguration    `json:"egress,omitempty"`
+	MeshExpansion GatewayConfiguration    `json:"meshExpansion,omitempty"`
 	K8sIngress    K8sIngressConfiguration `json:"k8singress,omitempty"`
 }
 

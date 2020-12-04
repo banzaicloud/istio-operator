@@ -508,8 +508,9 @@ func (in *GatewaysConfiguration) DeepCopyInto(out *GatewaysConfiguration) {
 		*out = new(bool)
 		**out = **in
 	}
-	in.IngressConfig.DeepCopyInto(&out.IngressConfig)
-	in.EgressConfig.DeepCopyInto(&out.EgressConfig)
+	in.Ingress.DeepCopyInto(&out.Ingress)
+	in.Egress.DeepCopyInto(&out.Egress)
+	in.MeshExpansion.DeepCopyInto(&out.MeshExpansion)
 	in.K8sIngress.DeepCopyInto(&out.K8sIngress)
 }
 

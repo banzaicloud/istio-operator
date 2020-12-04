@@ -252,53 +252,53 @@ func SetDefaults(config *Istio) {
 	if config.Spec.Gateways.Enabled == nil {
 		config.Spec.Gateways.Enabled = util.BoolPointer(true)
 	}
-	if config.Spec.Gateways.IngressConfig.Enabled == nil {
-		config.Spec.Gateways.IngressConfig.Enabled = util.BoolPointer(true)
+	if config.Spec.Gateways.Ingress.Enabled == nil {
+		config.Spec.Gateways.Ingress.Enabled = util.BoolPointer(true)
 	}
-	if config.Spec.Gateways.IngressConfig.ReplicaCount == nil {
-		config.Spec.Gateways.IngressConfig.ReplicaCount = util.IntPointer(defaultReplicaCount)
+	if config.Spec.Gateways.Ingress.ReplicaCount == nil {
+		config.Spec.Gateways.Ingress.ReplicaCount = util.IntPointer(defaultReplicaCount)
 	}
-	if config.Spec.Gateways.IngressConfig.MinReplicas == nil {
-		config.Spec.Gateways.IngressConfig.MinReplicas = util.IntPointer(defaultMinReplicas)
+	if config.Spec.Gateways.Ingress.MinReplicas == nil {
+		config.Spec.Gateways.Ingress.MinReplicas = util.IntPointer(defaultMinReplicas)
 	}
-	if config.Spec.Gateways.IngressConfig.MaxReplicas == nil {
-		config.Spec.Gateways.IngressConfig.MaxReplicas = util.IntPointer(defaultMaxReplicas)
+	if config.Spec.Gateways.Ingress.MaxReplicas == nil {
+		config.Spec.Gateways.Ingress.MaxReplicas = util.IntPointer(defaultMaxReplicas)
 	}
-	if config.Spec.Gateways.IngressConfig.SDS.Enabled == nil {
-		config.Spec.Gateways.IngressConfig.SDS.Enabled = util.BoolPointer(false)
+	if config.Spec.Gateways.Ingress.SDS.Enabled == nil {
+		config.Spec.Gateways.Ingress.SDS.Enabled = util.BoolPointer(false)
 	}
-	if len(config.Spec.Gateways.IngressConfig.Ports) == 0 {
-		config.Spec.Gateways.IngressConfig.Ports = defaultIngressGatewayPorts
+	if len(config.Spec.Gateways.Ingress.Ports) == 0 {
+		config.Spec.Gateways.Ingress.Ports = defaultIngressGatewayPorts
 	}
-	if config.Spec.Gateways.IngressConfig.CreateOnly == nil {
-		config.Spec.Gateways.IngressConfig.CreateOnly = util.BoolPointer(true)
+	if config.Spec.Gateways.Ingress.CreateOnly == nil {
+		config.Spec.Gateways.Ingress.CreateOnly = util.BoolPointer(true)
 	}
-	if config.Spec.Gateways.EgressConfig.Enabled == nil {
-		config.Spec.Gateways.EgressConfig.Enabled = util.BoolPointer(false)
+	if config.Spec.Gateways.Egress.Enabled == nil {
+		config.Spec.Gateways.Egress.Enabled = util.BoolPointer(false)
 	}
-	if config.Spec.Gateways.EgressConfig.ReplicaCount == nil {
-		config.Spec.Gateways.EgressConfig.ReplicaCount = util.IntPointer(defaultReplicaCount)
+	if config.Spec.Gateways.Egress.ReplicaCount == nil {
+		config.Spec.Gateways.Egress.ReplicaCount = util.IntPointer(defaultReplicaCount)
 	}
-	if config.Spec.Gateways.EgressConfig.MinReplicas == nil {
-		config.Spec.Gateways.EgressConfig.MinReplicas = util.IntPointer(defaultMinReplicas)
+	if config.Spec.Gateways.Egress.MinReplicas == nil {
+		config.Spec.Gateways.Egress.MinReplicas = util.IntPointer(defaultMinReplicas)
 	}
-	if config.Spec.Gateways.EgressConfig.MaxReplicas == nil {
-		config.Spec.Gateways.EgressConfig.MaxReplicas = util.IntPointer(defaultMaxReplicas)
+	if config.Spec.Gateways.Egress.MaxReplicas == nil {
+		config.Spec.Gateways.Egress.MaxReplicas = util.IntPointer(defaultMaxReplicas)
 	}
-	if config.Spec.Gateways.IngressConfig.ServiceType == "" {
-		config.Spec.Gateways.IngressConfig.ServiceType = defaultIngressGatewayServiceType
+	if config.Spec.Gateways.Ingress.ServiceType == "" {
+		config.Spec.Gateways.Ingress.ServiceType = defaultIngressGatewayServiceType
 	}
-	if config.Spec.Gateways.EgressConfig.ServiceType == "" {
-		config.Spec.Gateways.EgressConfig.ServiceType = defaultEgressGatewayServiceType
+	if config.Spec.Gateways.Egress.ServiceType == "" {
+		config.Spec.Gateways.Egress.ServiceType = defaultEgressGatewayServiceType
 	}
-	if config.Spec.Gateways.EgressConfig.SDS.Enabled == nil {
-		config.Spec.Gateways.EgressConfig.SDS.Enabled = util.BoolPointer(false)
+	if config.Spec.Gateways.Egress.SDS.Enabled == nil {
+		config.Spec.Gateways.Egress.SDS.Enabled = util.BoolPointer(false)
 	}
-	if len(config.Spec.Gateways.EgressConfig.Ports) == 0 {
-		config.Spec.Gateways.EgressConfig.Ports = defaultEgressGatewayPorts
+	if len(config.Spec.Gateways.Egress.Ports) == 0 {
+		config.Spec.Gateways.Egress.Ports = defaultEgressGatewayPorts
 	}
-	if config.Spec.Gateways.EgressConfig.CreateOnly == nil {
-		config.Spec.Gateways.EgressConfig.CreateOnly = util.BoolPointer(true)
+	if config.Spec.Gateways.Egress.CreateOnly == nil {
+		config.Spec.Gateways.Egress.CreateOnly = util.BoolPointer(true)
 	}
 	if config.Spec.Gateways.K8sIngress.Enabled == nil {
 		config.Spec.Gateways.K8sIngress.Enabled = util.BoolPointer(false)
@@ -427,11 +427,11 @@ func SetDefaults(config *Istio) {
 		config.Spec.NodeAgent.Image = util.StrPointer(defaultNodeAgentImage)
 	}
 
-	if config.Spec.Gateways.IngressConfig.SDS.Image == "" {
-		config.Spec.Gateways.IngressConfig.SDS.Image = defaultSDSImage
+	if config.Spec.Gateways.Ingress.SDS.Image == "" {
+		config.Spec.Gateways.Ingress.SDS.Image = defaultSDSImage
 	}
-	if config.Spec.Gateways.EgressConfig.SDS.Image == "" {
-		config.Spec.Gateways.EgressConfig.SDS.Image = defaultSDSImage
+	if config.Spec.Gateways.Egress.SDS.Image == "" {
+		config.Spec.Gateways.Egress.SDS.Image = defaultSDSImage
 	}
 	// Proxy config
 	if config.Spec.Proxy.Image == "" {
