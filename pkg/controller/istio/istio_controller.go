@@ -20,6 +20,7 @@ import (
 	"context"
 	"flag"
 	"fmt"
+	"reflect"
 	"sort"
 	"strings"
 	"sync"
@@ -46,6 +47,7 @@ import (
 	remoteistioCtrl "github.com/banzaicloud/istio-operator/pkg/controller/remoteistio"
 	"github.com/banzaicloud/istio-operator/pkg/crds"
 	"github.com/banzaicloud/istio-operator/pkg/k8sutil"
+	k8sutil_mgw "github.com/banzaicloud/istio-operator/pkg/k8sutil/mgw"
 	"github.com/banzaicloud/istio-operator/pkg/resources"
 	"github.com/banzaicloud/istio-operator/pkg/resources/base"
 	"github.com/banzaicloud/istio-operator/pkg/resources/citadel"
@@ -360,28 +362,35 @@ func (r *ReconcileIstio) reconcile(logger logr.Logger, config *istiov1beta1.Isti
 		}
 	}
 
-	if util.PointerToBool(config.Spec.Gateways.Enabled) && util.PointerToBool(config.Spec.Gateways.Ingress.Enabled) {
-		config.Status.GatewayAddress, err = k8sutil.GetMeshGatewayAddress(r.Client, client.ObjectKey{
-			Name:      config.WithRevision(ingressgateway.ResourceName),
-			Namespace: config.Namespace,
-		})
-		if err != nil {
-			log.Info(fmt.Sprintf("ingress gateway address pending: %s", err.Error()))
-			updateStatus(r.Client, config, istiov1beta1.ReconcileFailed, err.Error(), logger)
-			return reconcile.Result{
-				Requeue:      true,
-				RequeueAfter: time.Duration(30) * time.Second,
-			}, nil
-		}
-	} else {
-		config.Status.GatewayAddress = nil
+	err = k8sutil_mgw.SetGatewayAddress(r.Client, config, config)
+	if err != nil {
+		log.Info(fmt.Sprintf("ingress gateway address pending: %s", err.Error()))
+		updateStatus(r.Client, config, istiov1beta1.ReconcileFailed, err.Error(), logger)
+		return reconcile.Result{
+			Requeue:      true,
+			RequeueAfter: time.Duration(30) * time.Second,
+		}, nil
 	}
 
 	err = updateStatus(r.Client, config, istiov1beta1.Available, "", logger)
 	if err != nil {
 		return reconcile.Result{}, errors.WithStack(err)
 	}
+
 	logger.Info("reconcile finished")
+
+	// requeue if mesh networks changed
+	meshNetworks, err = r.getMeshNetworks(config, logger)
+	if err != nil {
+		return reconcile.Result{}, err
+	}
+	if !reflect.DeepEqual(meshNetworks.Networks, config.Spec.GetMeshNetworks().Networks) {
+		logger.Info("meshnetwork settings changed, trigger reconciliation")
+		return reconcile.Result{
+			Requeue: true,
+		}, nil
+	}
+
 	return reconcile.Result{}, nil
 }
 
