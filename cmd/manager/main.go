@@ -41,6 +41,7 @@ import (
 	"github.com/banzaicloud/istio-operator/pkg/controller/remoteistio"
 	"github.com/banzaicloud/istio-operator/pkg/k8sutil"
 	"github.com/banzaicloud/istio-operator/pkg/remoteclusters"
+	"github.com/banzaicloud/istio-operator/pkg/util"
 	wh "github.com/banzaicloud/istio-operator/pkg/webhook"
 	"github.com/banzaicloud/istio-operator/pkg/webhook/cert"
 )
@@ -70,8 +71,11 @@ func main() {
 	flag.StringVar(&webhookCertDir, "webhook-cert-dir", "/tmp/certs", "Determines the directory that contains the server key and certificate.")
 	var webhookConfigurationName string
 	flag.StringVar(&webhookConfigurationName, "webhook-name", "istio-operator-webhook", "Sets the name of the validating webhook resource.")
+	var verboseLogging bool
+	flag.BoolVar(&verboseLogging, "verbose", false, "Enable verbose logging")
 	flag.Parse()
-	logf.SetLogger(logf.ZapLogger(developmentMode))
+
+	logf.SetLogger(util.CreateLogger(verboseLogging, developmentMode))
 	log := logf.Log.WithName("entrypoint")
 
 	// Get a config to talk to the apiserver
