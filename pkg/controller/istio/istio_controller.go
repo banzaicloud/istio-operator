@@ -55,6 +55,7 @@ import (
 	"github.com/banzaicloud/istio-operator/pkg/resources/ingressgateway"
 	"github.com/banzaicloud/istio-operator/pkg/resources/istiocoredns"
 	"github.com/banzaicloud/istio-operator/pkg/resources/istiod"
+	"github.com/banzaicloud/istio-operator/pkg/resources/meshexpansiongateway"
 	"github.com/banzaicloud/istio-operator/pkg/resources/mixer"
 	"github.com/banzaicloud/istio-operator/pkg/resources/mixerlesstelemetry"
 	"github.com/banzaicloud/istio-operator/pkg/resources/nodeagent"
@@ -349,6 +350,7 @@ func (r *ReconcileIstio) reconcile(logger logr.Logger, config *istiov1beta1.Isti
 		mixerlesstelemetry.New(r.Client, r.dynamic, config),
 		ingressgateway.New(r.Client, r.dynamic, config, false),
 		egressgateway.New(r.Client, r.dynamic, config, false),
+		meshexpansiongateway.New(r.Client, r.dynamic, config, false),
 	}
 
 	for _, rec := range reconcilers {
