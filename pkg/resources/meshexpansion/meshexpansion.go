@@ -14,7 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package ingressgateway
+package meshexpansion
 
 import (
 	"k8s.io/apimachinery/pkg/runtime/schema"
@@ -23,7 +23,7 @@ import (
 	"github.com/banzaicloud/istio-operator/pkg/util"
 )
 
-func (r *Reconciler) meshExpansionGateway() *k8sutil.DynamicObject {
+func (r *Reconciler) meshExpansionGateway(selector map[string]string) *k8sutil.DynamicObject {
 	servers := make([]map[string]interface{}, 0)
 
 	if util.PointerToBool(r.Config.Spec.Istiod.Enabled) {
@@ -36,14 +36,16 @@ func (r *Reconciler) meshExpansionGateway() *k8sutil.DynamicObject {
 			"hosts": util.EmptyTypedStrSlice("*"),
 		})
 
-		servers = append(servers, map[string]interface{}{
-			"port": map[string]interface{}{
-				"name":     "tcp-istiodwebhook",
-				"protocol": "TCP",
-				"number":   r.Config.GetWebhookPort(),
-			},
-			"hosts": util.EmptyTypedStrSlice("*"),
-		})
+		if util.PointerToBool(r.Config.Spec.Istiod.ExposeWebhookPort) {
+			servers = append(servers, map[string]interface{}{
+				"port": map[string]interface{}{
+					"name":     "tcp-istiodwebhook",
+					"protocol": "TCP",
+					"number":   r.Config.GetWebhookPort(),
+				},
+				"hosts": util.EmptyTypedStrSlice("*"),
+			})
+		}
 	}
 
 	return &k8sutil.DynamicObject{
@@ -58,13 +60,13 @@ func (r *Reconciler) meshExpansionGateway() *k8sutil.DynamicObject {
 		Labels:    r.Config.RevisionLabels(),
 		Spec: map[string]interface{}{
 			"servers":  servers,
-			"selector": r.labels(),
+			"selector": selector,
 		},
 		Owner: r.Config,
 	}
 }
 
-func (r *Reconciler) clusterAwareGateway() *k8sutil.DynamicObject {
+func (r *Reconciler) clusterAwareGateway(selector map[string]string) *k8sutil.DynamicObject {
 	return &k8sutil.DynamicObject{
 		Gvr: schema.GroupVersionResource{
 			Group:    "networking.istio.io",
@@ -81,7 +83,7 @@ func (r *Reconciler) clusterAwareGateway() *k8sutil.DynamicObject {
 					"port": map[string]interface{}{
 						"name":     "tls",
 						"protocol": "TLS",
-						"number":   443,
+						"number":   15443,
 					},
 					"tls": map[string]interface{}{
 						"mode": "AUTO_PASSTHROUGH",
@@ -89,7 +91,7 @@ func (r *Reconciler) clusterAwareGateway() *k8sutil.DynamicObject {
 					"hosts": util.EmptyTypedStrSlice("*.local"),
 				},
 			},
-			"selector": r.labels(),
+			"selector": selector,
 		},
 		Owner: r.Config,
 	}
