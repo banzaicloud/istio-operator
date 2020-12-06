@@ -278,7 +278,7 @@ func SetDefaults(config *Istio) {
 		mexpgw.Ports = defaultMeshExpansionGatewayPorts
 	}
 	if mexpgw.CreateOnly == nil {
-		mexpgw.CreateOnly = util.BoolPointer(true)
+		mexpgw.CreateOnly = util.BoolPointer(false)
 	}
 	if mexpgw.Enabled == nil {
 		mexpgw.Enabled = util.BoolPointer(*config.Spec.MeshExpansion)
