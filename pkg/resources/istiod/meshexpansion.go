@@ -83,6 +83,28 @@ func (r *Reconciler) meshExpansionVirtualService() *k8sutil.DynamicObject {
 }
 
 func (r *Reconciler) meshExpansionDestinationRule() *k8sutil.DynamicObject {
+	pls := []map[string]interface{}{
+		{
+			"port": map[string]interface{}{
+				"number": r.Config.GetDiscoveryPort(),
+			},
+			"tls": map[string]interface{}{
+				"mode": "DISABLE",
+			},
+		},
+	}
+
+	if util.PointerToBool(r.Config.Spec.Istiod.ExposeWebhookPort) {
+		pls = append(pls, map[string]interface{}{
+			"port": map[string]interface{}{
+				"number": r.Config.GetWebhookPort(),
+			},
+			"tls": map[string]interface{}{
+				"mode": "DISABLE",
+			},
+		})
+	}
+
 	return &k8sutil.DynamicObject{
 		Gvr: schema.GroupVersionResource{
 			Group:    "networking.istio.io",
@@ -96,24 +118,7 @@ func (r *Reconciler) meshExpansionDestinationRule() *k8sutil.DynamicObject {
 		Spec: map[string]interface{}{
 			"host": r.Config.GetDiscoveryHost(true),
 			"trafficPolicy": map[string]interface{}{
-				"portLevelSettings": []map[string]interface{}{
-					{
-						"port": map[string]interface{}{
-							"number": r.Config.GetDiscoveryPort(),
-						},
-						"tls": map[string]interface{}{
-							"mode": "DISABLE",
-						},
-					},
-					{
-						"port": map[string]interface{}{
-							"number": r.Config.GetWebhookPort(),
-						},
-						"tls": map[string]interface{}{
-							"mode": "DISABLE",
-						},
-					},
-				},
+				"portLevelSettings": pls,
 			},
 		},
 		Owner: r.Config,
