@@ -20,7 +20,6 @@ import (
 	"fmt"
 
 	apiv1 "k8s.io/api/core/v1"
-	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
 
 	"github.com/banzaicloud/istio-operator/pkg/util"
@@ -113,23 +112,9 @@ const ProxyStatusPort = 15020
 const PortStatusPortNumber = 15021
 const PortStatusPortName = "status-port"
 
-var defaultIngressGatewayPorts = []ServicePort{
-	{ServicePort: corev1.ServicePort{Port: PortStatusPortNumber, Protocol: apiv1.ProtocolTCP, Name: PortStatusPortName}, TargetPort: util.IntPointer(PortStatusPortNumber)},
-	{ServicePort: corev1.ServicePort{Port: 80, Protocol: apiv1.ProtocolTCP, Name: "http2"}, TargetPort: util.IntPointer(8080)},
-	{ServicePort: corev1.ServicePort{Port: 443, Protocol: apiv1.ProtocolTCP, Name: "https"}, TargetPort: util.IntPointer(8443)},
-	{ServicePort: corev1.ServicePort{Port: 15443, Protocol: apiv1.ProtocolTCP, Name: "tls"}, TargetPort: util.IntPointer(15443)},
-}
-
-var defaultEgressGatewayPorts = []ServicePort{
-	{ServicePort: corev1.ServicePort{Port: 80, Protocol: apiv1.ProtocolTCP, Name: "http2"}, TargetPort: util.IntPointer(8080)},
-	{ServicePort: corev1.ServicePort{Port: 443, Protocol: apiv1.ProtocolTCP, Name: "https"}, TargetPort: util.IntPointer(8443)},
-	{ServicePort: corev1.ServicePort{Port: 15443, Protocol: apiv1.ProtocolTCP, Name: "tls"}, TargetPort: util.IntPointer(15443)},
-}
-
-var defaultMeshExpansionGatewayPorts = []ServicePort{
-	{ServicePort: corev1.ServicePort{Port: PortStatusPortNumber, Protocol: apiv1.ProtocolTCP, Name: PortStatusPortName}, TargetPort: util.IntPointer(PortStatusPortNumber)},
-	{ServicePort: corev1.ServicePort{Port: 15443, Protocol: apiv1.ProtocolTCP, Name: "tls"}, TargetPort: util.IntPointer(15443)},
-}
+var defaultIngressGatewayPorts = []ServicePort{}
+var defaultEgressGatewayPorts = []ServicePort{}
+var defaultMeshExpansionGatewayPorts = []ServicePort{}
 
 // SetDefaults used to support generic defaulter interface
 func (config *Istio) SetDefaults() {
@@ -267,6 +252,9 @@ func SetDefaults(config *Istio) {
 	if ingress.CreateOnly == nil {
 		ingress.CreateOnly = util.BoolPointer(true)
 	}
+	if ingress.Enabled == nil {
+		ingress.Enabled = util.BoolPointer(true)
+	}
 	egress := &config.Spec.Gateways.Egress
 	egress.MeshGatewayConfiguration.SetDefaults()
 	if egress.ServiceType == "" {
@@ -278,6 +266,9 @@ func SetDefaults(config *Istio) {
 	if egress.CreateOnly == nil {
 		egress.CreateOnly = util.BoolPointer(true)
 	}
+	if egress.Enabled == nil {
+		egress.Enabled = util.BoolPointer(true)
+	}
 	mexpgw := &config.Spec.Gateways.MeshExpansion
 	mexpgw.MeshGatewayConfiguration.SetDefaults()
 	if mexpgw.ServiceType == "" {
@@ -288,6 +279,9 @@ func SetDefaults(config *Istio) {
 	}
 	if mexpgw.CreateOnly == nil {
 		mexpgw.CreateOnly = util.BoolPointer(true)
+	}
+	if mexpgw.Enabled == nil {
+		mexpgw.Enabled = util.BoolPointer(*config.Spec.MeshExpansion)
 	}
 	if config.Spec.Gateways.K8sIngress.Enabled == nil {
 		config.Spec.Gateways.K8sIngress.Enabled = util.BoolPointer(false)
