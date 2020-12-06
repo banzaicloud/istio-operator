@@ -17,6 +17,8 @@ limitations under the License.
 package meshexpansion
 
 import (
+	"fmt"
+
 	"k8s.io/apimachinery/pkg/runtime/schema"
 
 	"github.com/banzaicloud/istio-operator/pkg/k8sutil"
@@ -118,7 +120,7 @@ func (r *Reconciler) multimeshDestinationRule() *k8sutil.DynamicObject {
 		Labels:    r.Config.RevisionLabels(),
 		Spec: map[string]interface{}{
 			"exportTo": util.EmptyTypedStrSlice("*"),
-			"host":     fmt.Sprintf("*.%s", util.PointerToString(r.Config.Spec.GlobalDomain)),
+			"host":     fmt.Sprintf("*.global"),
 			"trafficPolicy": map[string]interface{}{
 				"tls": map[string]interface{}{
 					"mode": "ISTIO_MUTUAL",
