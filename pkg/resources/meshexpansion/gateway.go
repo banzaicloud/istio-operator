@@ -14,7 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package meshexpansiongateway
+package meshexpansion
 
 import (
 	"github.com/go-logr/logr"
@@ -25,6 +25,7 @@ import (
 	istiov1beta1 "github.com/banzaicloud/istio-operator/pkg/apis/istio/v1beta1"
 	"github.com/banzaicloud/istio-operator/pkg/k8sutil"
 	"github.com/banzaicloud/istio-operator/pkg/resources"
+	"github.com/banzaicloud/istio-operator/pkg/resources/ingressgateway"
 	"github.com/banzaicloud/istio-operator/pkg/resources/templates"
 	"github.com/banzaicloud/istio-operator/pkg/util"
 )
@@ -63,9 +64,14 @@ func (r *Reconciler) Reconcile(log logr.Logger) error {
 
 	log.Info("Reconciling")
 
+	ports := r.Config.Spec.Gateways.MeshExpansion.Ports
+	if ports == nil {
+		ports = make([]istiov1beta1.ServicePort, 0)
+	}
+
 	spec := istiov1beta1.MeshGatewaySpec{
 		MeshGatewayConfiguration: r.Config.Spec.Gateways.MeshExpansion.MeshGatewayConfiguration,
-		Ports:                    r.Config.Spec.Gateways.MeshExpansion.Ports,
+		Ports:                    ports,
 		Type:                     istiov1beta1.GatewayTypeIngress,
 	}
 	spec.IstioControlPlane = &istiov1beta1.NamespacedName{
@@ -101,6 +107,40 @@ func (r *Reconciler) Reconcile(log logr.Logger) error {
 	if r.remote {
 		log.Info("Reconciled")
 		return nil
+	}
+
+	var meshExpansionDesiredState k8sutil.DesiredState
+	if (desiredState != k8sutil.DesiredStateAbsent || (util.PointerToBool(r.Config.Spec.Gateways.Enabled) && util.PointerToBool(r.Config.Spec.Gateways.Ingress.Enabled))) && util.PointerToBool(r.Config.Spec.MeshExpansion) {
+		meshExpansionDesiredState = k8sutil.DesiredStatePresent
+	} else {
+		meshExpansionDesiredState = k8sutil.DesiredStateAbsent
+	}
+
+	var multimeshDesiredState k8sutil.DesiredState
+	if (desiredState != k8sutil.DesiredStateAbsent || (util.PointerToBool(r.Config.Spec.Gateways.Enabled) && util.PointerToBool(r.Config.Spec.Gateways.Ingress.Enabled))) && util.PointerToBool(r.Config.Spec.MultiMesh) {
+		multimeshDesiredState = k8sutil.DesiredStatePresent
+	} else {
+		multimeshDesiredState = k8sutil.DesiredStateAbsent
+	}
+
+	selector := resourceLabels
+	if desiredState == k8sutil.DesiredStateAbsent {
+		selector = ingressgateway.ResourceLabels
+	}
+
+	var drs = []resources.DynamicResourceWithDesiredState{
+		{DynamicResource: func() *k8sutil.DynamicObject { return r.meshExpansionGateway(selector) }, DesiredState: meshExpansionDesiredState},
+		{DynamicResource: func() *k8sutil.DynamicObject { return r.clusterAwareGateway(selector) }, DesiredState: meshExpansionDesiredState},
+		{DynamicResource: func() *k8sutil.DynamicObject { return r.multimeshIngressGateway(selector) }, DesiredState: multimeshDesiredState},
+		{DynamicResource: r.multimeshDestinationRule, DesiredState: multimeshDesiredState},
+		{DynamicResource: func() *k8sutil.DynamicObject { return r.multimeshEnvoyFilter(selector) }, DesiredState: multimeshDesiredState},
+	}
+	for _, dr := range drs {
+		o := dr.DynamicResource()
+		err := o.Reconcile(log, r.dynamic, dr.DesiredState)
+		if err != nil {
+			return emperror.WrapWith(err, "failed to reconcile dynamic resource", "resource", o.Gvr)
+		}
 	}
 
 	log.Info("Reconciled")

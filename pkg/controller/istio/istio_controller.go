@@ -57,7 +57,7 @@ import (
 	"github.com/banzaicloud/istio-operator/pkg/resources/ingressgateway"
 	"github.com/banzaicloud/istio-operator/pkg/resources/istiocoredns"
 	"github.com/banzaicloud/istio-operator/pkg/resources/istiod"
-	"github.com/banzaicloud/istio-operator/pkg/resources/meshexpansiongateway"
+	"github.com/banzaicloud/istio-operator/pkg/resources/meshexpansion"
 	"github.com/banzaicloud/istio-operator/pkg/resources/mixer"
 	"github.com/banzaicloud/istio-operator/pkg/resources/mixerlesstelemetry"
 	"github.com/banzaicloud/istio-operator/pkg/resources/nodeagent"
@@ -352,7 +352,7 @@ func (r *ReconcileIstio) reconcile(logger logr.Logger, config *istiov1beta1.Isti
 		mixerlesstelemetry.New(r.Client, r.dynamic, config),
 		ingressgateway.New(r.Client, r.dynamic, config, false),
 		egressgateway.New(r.Client, r.dynamic, config, false),
-		meshexpansiongateway.New(r.Client, r.dynamic, config, false),
+		meshexpansion.New(r.Client, r.dynamic, config, false),
 	}
 
 	for _, rec := range reconcilers {
@@ -450,7 +450,7 @@ func (r *ReconcileIstio) getMeshNetworks(config *istiov1beta1.Istio, logger logr
 		gateways := make([]istiov1beta1.MeshNetworkGateway, 0)
 		for _, address := range config.Status.GatewayAddress {
 			gateways = append(gateways, istiov1beta1.MeshNetworkGateway{
-				Address: address, Port: 443,
+				Address: address, Port: 15443,
 			})
 		}
 		localNetwork.Gateways = gateways
@@ -464,7 +464,7 @@ func (r *ReconcileIstio) getMeshNetworks(config *istiov1beta1.Istio, logger logr
 		if len(remoteIstio.Status.GatewayAddress) > 0 {
 			for _, address := range remoteIstio.Status.GatewayAddress {
 				gateways = append(gateways, istiov1beta1.MeshNetworkGateway{
-					Address: address, Port: 443,
+					Address: address, Port: 15443,
 				})
 			}
 		}

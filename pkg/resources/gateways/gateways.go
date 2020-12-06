@@ -35,8 +35,7 @@ import (
 )
 
 const (
-	componentName             = "meshgateway"
-	defaultIngressgatewayName = "istio-ingressgateway"
+	componentName = "meshgateway"
 )
 
 type Reconciler struct {

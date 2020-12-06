@@ -25,7 +25,7 @@ import (
 
 	istiov1beta1 "github.com/banzaicloud/istio-operator/pkg/apis/istio/v1beta1"
 	"github.com/banzaicloud/istio-operator/pkg/resources/ingressgateway"
-	"github.com/banzaicloud/istio-operator/pkg/resources/meshexpansiongateway"
+	"github.com/banzaicloud/istio-operator/pkg/resources/meshexpansion"
 	"github.com/banzaicloud/istio-operator/pkg/util"
 )
 
@@ -41,7 +41,7 @@ func SetGatewayAddress(k8sclient client.Client, obj GatewayAddressSetter, istio 
 	var err error
 	var gatewayResourceName string
 	if util.PointerToBool(istio.Spec.Gateways.MeshExpansion.Enabled) {
-		gatewayResourceName = istio.WithRevision(meshexpansiongateway.ResourceName)
+		gatewayResourceName = istio.WithRevision(meshexpansion.ResourceName)
 	} else {
 		gatewayResourceName = istio.WithRevision(ingressgateway.ResourceName)
 	}

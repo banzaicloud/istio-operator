@@ -322,11 +322,19 @@ func (r *ReconcileRemoteConfig) reconcile(remoteConfig *istiov1beta1.RemoteIstio
 	}
 
 	err = cluster.Reconcile(remoteConfig, istio)
+	var remoteClient client.Client
 	if err == nil {
-		err = k8sutil_mgw.SetGatewayAddress(r.Client, remoteConfig, istio)
+		remoteClient, err = cluster.GetClient()
+	}
+	if err == nil {
+		err = k8sutil_mgw.SetGatewayAddress(remoteClient, remoteConfig, istio)
 		if err != nil {
 			log.Info(fmt.Sprintf("ingress gateway address pending: %s", err.Error()))
-			updateRemoteConfigStatus(r.Client, remoteConfig, istiov1beta1.ReconcileFailed, errors.Cause(err).Error(), logger)
+			updateErr := updateRemoteConfigStatus(r.Client, remoteConfig, istiov1beta1.ReconcileFailed, errors.Cause(err).Error(), logger)
+			if updateErr != nil {
+				logger.Error(updateErr, "failed to update state")
+				return reconcile.Result{}, errors.WithStack(err)
+			}
 			return reconcile.Result{
 				RequeueAfter: time.Second * 30,
 			}, nil
@@ -335,7 +343,11 @@ func (r *ReconcileRemoteConfig) reconcile(remoteConfig *istiov1beta1.RemoteIstio
 	if err != nil {
 		err = emperror.Wrap(err, "could not reconcile remote istio")
 		if _, ok := errors.Cause(err).(k8sutil.IngressSetupPendingError); ok {
-			updateRemoteConfigStatus(r.Client, remoteConfig, istiov1beta1.ReconcileFailed, errors.Cause(err).Error(), logger)
+			updateErr := updateRemoteConfigStatus(r.Client, remoteConfig, istiov1beta1.ReconcileFailed, errors.Cause(err).Error(), logger)
+			if updateErr != nil {
+				logger.Error(updateErr, "failed to update state")
+				return reconcile.Result{}, errors.WithStack(err)
+			}
 			return reconcile.Result{
 				Requeue:      true,
 				RequeueAfter: 30 * time.Second,
