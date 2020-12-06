@@ -2936,6 +2936,8 @@ spec:
                     type: boolean
                   enabled:
                     type: boolean
+                  exposeWebhookPort:
+                    type: boolean
                   multiClusterSupport:
                     type: boolean
                   multiControlPlaneSupport:

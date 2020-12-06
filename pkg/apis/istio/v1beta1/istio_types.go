@@ -111,6 +111,7 @@ type IstiodConfiguration struct {
 	EnableStatus             *bool `json:"enableStatus,omitempty"`
 	MultiClusterSupport      *bool `json:"multiClusterSupport,omitempty"`
 	MultiControlPlaneSupport *bool `json:"multiControlPlaneSupport,omitempty"`
+	ExposeWebhookPort        *bool `json:"exposeWebhookPort,omitempty"`
 }
 
 // PilotConfiguration defines config options for Pilot
