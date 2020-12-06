@@ -201,6 +201,11 @@ func (c *Cluster) configmapInformer() error {
 }
 
 func (c *Cluster) initK8SClients() error {
+	// already initialized
+	if c.ctrlRuntimeClient != nil {
+		return nil
+	}
+
 	// add mesh gateway controller to the manager
 	meshgateway.Add(c.mgr)
 
@@ -268,6 +273,15 @@ func (c *Cluster) Reconcile(remoteConfig *istiov1beta1.RemoteIstio, istio *istio
 
 func (c *Cluster) GetRemoteConfig() *istiov1beta1.RemoteIstio {
 	return c.remoteConfig
+}
+
+func (c *Cluster) GetClient() (client.Client, error) {
+	err := c.initK8SClients()
+	if err != nil {
+		return nil, err
+	}
+
+	return c.ctrlRuntimeClient, nil
 }
 
 func (c *Cluster) RemoveRemoteIstioComponents() error {

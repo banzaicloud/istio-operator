@@ -14,7 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package ingressgateway
+package meshexpansion
 
 import (
 	"fmt"
@@ -29,7 +29,7 @@ const (
 	multimeshResourceNamePrefix = "istio-multicluster"
 )
 
-func (r *Reconciler) multimeshIngressGateway() *k8sutil.DynamicObject {
+func (r *Reconciler) multimeshIngressGateway(selector map[string]string) *k8sutil.DynamicObject {
 	return &k8sutil.DynamicObject{
 		Gvr: schema.GroupVersionResource{
 			Group:    "networking.istio.io",
@@ -54,13 +54,13 @@ func (r *Reconciler) multimeshIngressGateway() *k8sutil.DynamicObject {
 					},
 				},
 			},
-			"selector": resourceLabels,
+			"selector": selector,
 		},
 		Owner: r.Config,
 	}
 }
 
-func (r *Reconciler) multimeshEnvoyFilter() *k8sutil.DynamicObject {
+func (r *Reconciler) multimeshEnvoyFilter(selector map[string]string) *k8sutil.DynamicObject {
 	return &k8sutil.DynamicObject{
 		Gvr: schema.GroupVersionResource{
 			Group:    "networking.istio.io",
@@ -73,7 +73,7 @@ func (r *Reconciler) multimeshEnvoyFilter() *k8sutil.DynamicObject {
 		Labels:    r.Config.RevisionLabels(),
 		Spec: map[string]interface{}{
 			"workloadSelector": map[string]interface{}{
-				"labels": resourceLabels,
+				"labels": selector,
 			},
 			"configPatches": []map[string]interface{}{
 				{

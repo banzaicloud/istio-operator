@@ -37,7 +37,7 @@ const (
 )
 
 var (
-	resourceLabels = map[string]string{
+	ResourceLabels = map[string]string{
 		"app":   "istio-ingressgateway",
 		"istio": "ingressgateway",
 	}
@@ -109,20 +109,6 @@ func (r *Reconciler) Reconcile(log logr.Logger) error {
 		k8sIngressDesiredState = k8sutil.DesiredStateAbsent
 	}
 
-	var meshExpansionDesiredState k8sutil.DesiredState
-	if desiredState != k8sutil.DesiredStateAbsent && util.PointerToBool(r.Config.Spec.MeshExpansion) {
-		meshExpansionDesiredState = k8sutil.DesiredStatePresent
-	} else {
-		meshExpansionDesiredState = k8sutil.DesiredStateAbsent
-	}
-
-	var multimeshDesiredState k8sutil.DesiredState
-	if desiredState != k8sutil.DesiredStateAbsent && util.PointerToBool(r.Config.Spec.MultiMesh) {
-		multimeshDesiredState = k8sutil.DesiredStatePresent
-	} else {
-		multimeshDesiredState = k8sutil.DesiredStateAbsent
-	}
-
 	if r.remote {
 		log.Info("Reconciled")
 		return nil
@@ -130,11 +116,6 @@ func (r *Reconciler) Reconcile(log logr.Logger) error {
 
 	var drs = []resources.DynamicResourceWithDesiredState{
 		{DynamicResource: r.k8sIngressGateway, DesiredState: k8sIngressDesiredState},
-		{DynamicResource: r.meshExpansionGateway, DesiredState: meshExpansionDesiredState},
-		{DynamicResource: r.clusterAwareGateway, DesiredState: meshExpansionDesiredState},
-		{DynamicResource: r.multimeshIngressGateway, DesiredState: multimeshDesiredState},
-		{DynamicResource: r.multimeshDestinationRule, DesiredState: multimeshDesiredState},
-		{DynamicResource: r.multimeshEnvoyFilter, DesiredState: multimeshDesiredState},
 	}
 	for _, dr := range drs {
 		o := dr.DynamicResource()
@@ -150,5 +131,5 @@ func (r *Reconciler) Reconcile(log logr.Logger) error {
 }
 
 func (r *Reconciler) labels() map[string]string {
-	return util.MergeMultipleStringMaps(resourceLabels, r.Config.Spec.Gateways.Ingress.MeshGatewayConfiguration.Labels, r.Config.RevisionLabels())
+	return util.MergeMultipleStringMaps(ResourceLabels, r.Config.Spec.Gateways.Ingress.MeshGatewayConfiguration.Labels, r.Config.RevisionLabels())
 }

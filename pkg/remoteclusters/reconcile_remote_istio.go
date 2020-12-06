@@ -24,7 +24,7 @@ import (
 	"github.com/banzaicloud/istio-operator/pkg/resources/cni"
 	"github.com/banzaicloud/istio-operator/pkg/resources/egressgateway"
 	"github.com/banzaicloud/istio-operator/pkg/resources/ingressgateway"
-	"github.com/banzaicloud/istio-operator/pkg/resources/meshexpansiongateway"
+	"github.com/banzaicloud/istio-operator/pkg/resources/meshexpansion"
 	"github.com/banzaicloud/istio-operator/pkg/resources/nodeagent"
 	"github.com/banzaicloud/istio-operator/pkg/resources/sidecarinjector"
 )
@@ -42,7 +42,7 @@ func (c *Cluster) reconcileComponents(remoteConfig *istiov1beta1.RemoteIstio, is
 		sidecarinjector.New(c.ctrlRuntimeClient, c.istioConfig),
 		ingressgateway.New(c.ctrlRuntimeClient, c.dynamicClient, c.istioConfig, true),
 		egressgateway.New(c.ctrlRuntimeClient, c.dynamicClient, c.istioConfig, true),
-		meshexpansiongateway.New(c.ctrlRuntimeClient, c.dynamicClient, c.istioConfig, true),
+		meshexpansion.New(c.ctrlRuntimeClient, c.dynamicClient, c.istioConfig, true),
 	}
 
 	for _, rec := range reconcilers {
