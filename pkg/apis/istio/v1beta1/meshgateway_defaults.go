@@ -66,6 +66,9 @@ func (gw *MeshGateway) SetDefaults() {
 	if gw.Spec.Type == GatewayTypeEgress {
 		gw.Spec.SDS.Enabled = util.BoolPointer(false)
 	}
+	if gw.Spec.Ports == nil {
+		gw.Spec.Ports = make([]ServicePort, 0)
+	}
 
 	gw.SetDefaultLabels()
 }
