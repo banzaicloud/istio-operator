@@ -332,7 +332,7 @@ func (r *ReconcileRemoteConfig) reconcile(remoteConfig *istiov1beta1.RemoteIstio
 			log.Info(fmt.Sprintf("ingress gateway address pending: %s", err.Error()))
 			updateErr := updateRemoteConfigStatus(r.Client, remoteConfig, istiov1beta1.ReconcileFailed, errors.Cause(err).Error(), logger)
 			if updateErr != nil {
-				logger.Error(updateErr, "failed to update state")
+				logger.Error(updateErr, "failed to update remote state")
 				return reconcile.Result{}, errors.WithStack(err)
 			}
 			return reconcile.Result{
@@ -345,7 +345,7 @@ func (r *ReconcileRemoteConfig) reconcile(remoteConfig *istiov1beta1.RemoteIstio
 		if _, ok := errors.Cause(err).(k8sutil.IngressSetupPendingError); ok {
 			updateErr := updateRemoteConfigStatus(r.Client, remoteConfig, istiov1beta1.ReconcileFailed, errors.Cause(err).Error(), logger)
 			if updateErr != nil {
-				logger.Error(updateErr, "failed to update state")
+				logger.Error(updateErr, "failed to update remote state")
 				return reconcile.Result{}, errors.WithStack(err)
 			}
 			return reconcile.Result{
