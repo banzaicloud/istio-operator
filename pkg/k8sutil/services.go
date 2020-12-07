@@ -30,8 +30,10 @@ func (e IngressSetupPendingError) Error() string {
 	return "ingress gateway endpoint address is pending"
 }
 
-func GetServiceEndpointIPs(service corev1.Service) ([]string, error) {
+func GetServiceEndpointIPs(service corev1.Service) ([]string, bool, error) {
 	ips := make([]string, 0)
+
+	var hasHostname bool
 
 	switch service.Spec.Type {
 	case corev1.ServiceTypeClusterIP:
@@ -42,7 +44,7 @@ func GetServiceEndpointIPs(service corev1.Service) ([]string, error) {
 		}
 	case corev1.ServiceTypeLoadBalancer:
 		if len(service.Status.LoadBalancer.Ingress) < 1 {
-			return ips, IngressSetupPendingError{}
+			return ips, hasHostname, IngressSetupPendingError{}
 		}
 
 		if service.Status.LoadBalancer.Ingress[0].IP != "" {
@@ -50,9 +52,10 @@ func GetServiceEndpointIPs(service corev1.Service) ([]string, error) {
 				service.Status.LoadBalancer.Ingress[0].IP,
 			}
 		} else if service.Status.LoadBalancer.Ingress[0].Hostname != "" {
+			hasHostname = true
 			hostIPs, err := net.LookupIP(service.Status.LoadBalancer.Ingress[0].Hostname)
 			if err != nil {
-				return ips, err
+				return ips, hasHostname, err
 			}
 			sort.Slice(hostIPs, func(i, j int) bool {
 				return bytes.Compare(hostIPs[i], hostIPs[j]) < 0
@@ -65,5 +68,5 @@ func GetServiceEndpointIPs(service corev1.Service) ([]string, error) {
 		}
 	}
 
-	return ips, nil
+	return ips, hasHostname, nil
 }

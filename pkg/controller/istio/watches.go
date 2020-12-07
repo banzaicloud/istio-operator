@@ -43,24 +43,18 @@ func (r *ReconcileIstio) initWatches(watchCreatedResourcesEvents bool) error {
 		return errors.New("controller is not set")
 	}
 
-	err := r.watchIstioConfig()
-	if err != nil {
-		return err
-	}
-
-	err = r.watchRemoteIstioConfig()
-	if err != nil {
-		return err
-	}
-
-	err = r.watchIstioCoreDNSService()
-	if err != nil {
-		return err
-	}
-
-	err = r.watchNamespaces()
-	if err != nil {
-		return err
+	var err error
+	for _, f := range []func() error{
+		r.watchIstioConfig,
+		r.watchRemoteIstioConfig,
+		r.watchIstioCoreDNSService,
+		r.watchNamespace,
+		r.watchMeshGateway,
+	} {
+		err = f()
+		if err != nil {
+			return err
+		}
 	}
 
 	if !watchCreatedResourcesEvents {
@@ -79,7 +73,6 @@ func (r *ReconcileIstio) initWatches(watchCreatedResourcesEvents bool) error {
 		&appsv1.DaemonSet{TypeMeta: metav1.TypeMeta{Kind: "DaemonSet", APIVersion: appsv1.SchemeGroupVersion.String()}},
 		&autoscalingv2beta2.HorizontalPodAutoscaler{TypeMeta: metav1.TypeMeta{Kind: "HorizontalPodAutoscaler", APIVersion: autoscalingv2beta2.SchemeGroupVersion.String()}},
 		&admissionregistrationv1beta1.MutatingWebhookConfiguration{TypeMeta: metav1.TypeMeta{Kind: "MutatingWebhookConfiguration", APIVersion: admissionregistrationv1beta1.SchemeGroupVersion.String()}},
-		&istiov1beta1.MeshGateway{TypeMeta: metav1.TypeMeta{Kind: "MeshGateway", APIVersion: istiov1beta1.SchemeGroupVersion.String()}},
 	}
 
 	// Watch for changes to resources managed by the operator
@@ -93,7 +86,29 @@ func (r *ReconcileIstio) initWatches(watchCreatedResourcesEvents bool) error {
 	return nil
 }
 
-func (r *ReconcileIstio) watchNamespaces() error {
+func (r *ReconcileIstio) watchMeshGateway() error {
+	return r.ctrl.Watch(
+		&source.Kind{
+			Type: &istiov1beta1.MeshGateway{TypeMeta: metav1.TypeMeta{Kind: "MeshGateway", APIVersion: istiov1beta1.SchemeGroupVersion.String()}},
+		},
+		&handler.EnqueueRequestsFromMapFunc{
+			ToRequests: handler.ToRequestsFunc(func(object handler.MapObject) []reconcile.Request {
+				if mgw, ok := object.Object.(*istiov1beta1.MeshGateway); ok && mgw.Spec.IstioControlPlane != nil {
+					return []reconcile.Request{
+						{
+							NamespacedName: types.NamespacedName(*mgw.Spec.IstioControlPlane),
+						},
+					}
+				}
+
+				return nil
+			}),
+		},
+		k8sutil.GetWatchPredicateForMeshGateway(),
+	)
+}
+
+func (r *ReconcileIstio) watchNamespace() error {
 	return r.ctrl.Watch(
 		&source.Kind{
 			Type: &corev1.Namespace{TypeMeta: metav1.TypeMeta{Kind: "Namespace", APIVersion: corev1.SchemeGroupVersion.String()}},

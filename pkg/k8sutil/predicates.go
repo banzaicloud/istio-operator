@@ -147,11 +147,15 @@ func GetWatchPredicateForMeshGateway() predicate.Funcs {
 			return true
 		},
 		UpdateFunc: func(e event.UpdateEvent) bool {
+			if _, ok := e.ObjectOld.(*istiov1beta1.MeshGateway); !ok {
+				return false
+			}
 			old := e.ObjectOld.(*istiov1beta1.MeshGateway)
 			new := e.ObjectNew.(*istiov1beta1.MeshGateway)
 			if !reflect.DeepEqual(old.Spec, new.Spec) ||
 				old.GetDeletionTimestamp() != new.GetDeletionTimestamp() ||
-				old.GetGeneration() != new.GetGeneration() {
+				old.GetGeneration() != new.GetGeneration() ||
+				!reflect.DeepEqual(old.Status.GatewayAddress, new.Status.GatewayAddress) {
 				return true
 			}
 			return false

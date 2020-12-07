@@ -50,6 +50,8 @@ import (
 	"github.com/banzaicloud/istio-operator/pkg/util"
 )
 
+const hostnameSyncWaitDuration = time.Minute * 5
+
 var log = logf.Log.WithName("controller")
 
 // Add creates a new MeshGateway Controller and adds it to the Manager with default RBAC. The Manager will set fields on the Controller
@@ -168,9 +170,10 @@ func (r *ReconcileMeshGateway) Reconcile(request reconcile.Request) (reconcile.R
 
 	reconciler := gateways.New(r.Client, r.dynamic, istio, instance, r.scheme)
 
+	var gatewayHasHostname bool
 	err = reconciler.Reconcile(log)
 	if err == nil {
-		instance.Status.GatewayAddress, err = reconciler.GetGatewayAddress()
+		instance.Status.GatewayAddress, gatewayHasHostname, err = reconciler.GetGatewayAddress()
 		if err != nil {
 			log.Info(fmt.Sprintf("gateway address pending: %s", err.Error()))
 			updateErr := updateStatus(r.Client, instance, istiov1beta1.ReconcileFailed, errors.Cause(err).Error(), logger)
@@ -194,6 +197,13 @@ func (r *ReconcileMeshGateway) Reconcile(request reconcile.Request) (reconcile.R
 	err = updateStatus(r.Client, instance, istiov1beta1.Available, "", logger)
 	if err != nil {
 		return reconcile.Result{}, errors.WithStack(err)
+	}
+
+	if gatewayHasHostname {
+		log.Info(fmt.Sprintf("gateway uses hostname, trigger reconciliation after %s", hostnameSyncWaitDuration.String()))
+		return reconcile.Result{
+			RequeueAfter: hostnameSyncWaitDuration,
+		}, nil
 	}
 
 	return reconcile.Result{}, nil
