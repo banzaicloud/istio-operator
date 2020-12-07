@@ -25,22 +25,23 @@ import (
 	"github.com/banzaicloud/istio-operator/pkg/k8sutil"
 )
 
-func (r *Reconciler) GetGatewayAddress() ([]string, error) {
+func (r *Reconciler) GetGatewayAddress() ([]string, bool, error) {
 	var service corev1.Service
 	var ips []string
+	var hasHostname bool
 
 	err := r.Get(context.Background(), types.NamespacedName{
 		Name:      r.gatewayName(),
 		Namespace: r.gw.Namespace,
 	}, &service)
 	if err != nil {
-		return nil, err
+		return nil, false, err
 	}
 
-	ips, err = k8sutil.GetServiceEndpointIPs(service)
+	ips, hasHostname, err = k8sutil.GetServiceEndpointIPs(service)
 	if err != nil {
-		return nil, err
+		return nil, hasHostname, err
 	}
 
-	return ips, nil
+	return ips, hasHostname, nil
 }
