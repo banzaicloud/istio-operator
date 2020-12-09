@@ -89,6 +89,8 @@ func (c *Cluster) reconcileConfig(remoteConfig *istiov1beta1.RemoteIstio, istio 
 	istioConfig.Spec.NetworkName = remoteConfig.Name
 	istioConfig.Spec.ClusterName = remoteConfig.Name
 
+	istioConfig.SetDefaults()
+
 	if k8sapierrors.IsNotFound(err) {
 		istioConfig.Name = istio.Name
 		istioConfig.Namespace = remoteConfig.Namespace
