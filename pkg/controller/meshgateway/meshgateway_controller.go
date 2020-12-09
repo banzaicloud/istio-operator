@@ -153,6 +153,7 @@ func (r *ReconcileMeshGateway) Reconcile(request reconcile.Request) (reconcile.R
 			Requeue: false,
 		}, errors.WithStack(err)
 	}
+	istio.SetDefaults()
 
 	if !istio.Spec.Version.IsSupported() {
 		return reconcile.Result{}, nil
