@@ -223,6 +223,7 @@ func (r *ReconcileRemoteConfig) Reconcile(request reconcile.Request) (reconcile.
 	if err != nil {
 		return reconcile.Result{}, err
 	}
+	istio.SetDefaults()
 
 	if !istio.Spec.Version.IsSupported() {
 		if istio.Status.Status == istiov1beta1.Created || istio.Status.Status == istiov1beta1.Unmanaged {
