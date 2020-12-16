@@ -283,7 +283,7 @@ func SetDefaults(config *Istio) {
 		mexpgw.CreateOnly = util.BoolPointer(false)
 	}
 	if mexpgw.Enabled == nil {
-		mexpgw.Enabled = util.BoolPointer(*config.Spec.MeshExpansion)
+		mexpgw.Enabled = config.Spec.MeshExpansion
 	}
 	if config.Spec.Gateways.K8sIngress.Enabled == nil {
 		config.Spec.Gateways.K8sIngress.Enabled = util.BoolPointer(false)
