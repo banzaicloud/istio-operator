@@ -252,10 +252,10 @@ func SetDefaults(config *Istio) {
 		ingress.Ports = defaultIngressGatewayPorts
 	}
 	if ingress.CreateOnly == nil {
-		ingress.CreateOnly = util.BoolPointer(true)
+		ingress.CreateOnly = util.BoolPointer(false)
 	}
 	if ingress.Enabled == nil {
-		ingress.Enabled = util.BoolPointer(true)
+		ingress.Enabled = util.BoolPointer(false)
 	}
 	egress := &config.Spec.Gateways.Egress
 	egress.MeshGatewayConfiguration.SetDefaults()
@@ -266,10 +266,10 @@ func SetDefaults(config *Istio) {
 		egress.Ports = defaultEgressGatewayPorts
 	}
 	if egress.CreateOnly == nil {
-		egress.CreateOnly = util.BoolPointer(true)
+		egress.CreateOnly = util.BoolPointer(false)
 	}
 	if egress.Enabled == nil {
-		egress.Enabled = util.BoolPointer(true)
+		egress.Enabled = util.BoolPointer(false)
 	}
 	mexpgw := &config.Spec.Gateways.MeshExpansion
 	mexpgw.MeshGatewayConfiguration.SetDefaults()
