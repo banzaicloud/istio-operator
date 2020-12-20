@@ -35,7 +35,7 @@ func (r *Reconciler) GetGatewayAddress() ([]string, bool, error) {
 		Namespace: r.gw.Namespace,
 	}, &service)
 	if err != nil {
-		return nil, false, err
+		return nil, hasHostname, err
 	}
 
 	ips, hasHostname, err = k8sutil.GetServiceEndpointIPs(service)
