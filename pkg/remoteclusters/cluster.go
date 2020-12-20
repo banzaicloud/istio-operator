@@ -92,14 +92,15 @@ func (c *Cluster) GetName() string {
 }
 
 func (c *Cluster) initK8sInformers() error {
-	err := c.namespaceInformer()
-	if err != nil {
-		return err
-	}
-
-	err = c.configmapInformer()
-	if err != nil {
-		return err
+	for _, f := range []func() error{
+		c.namespaceInformer,
+		c.configMapInformer,
+		c.meshGatewayInformer,
+	} {
+		err := f()
+		if err != nil {
+			return err
+		}
 	}
 
 	return nil
@@ -112,7 +113,7 @@ func (c *Cluster) namespaceInformer() error {
 
 	namespaceInformer, err := c.mgr.GetCache().GetInformerForKind(context.Background(), corev1.SchemeGroupVersion.WithKind("Namespace"))
 	if err != nil {
-		return emperror.Wrap(err, "could not get informer for namespaces")
+		return emperror.Wrap(err, "could not get informer for Namespace")
 	}
 
 	err = c.ctrl.Watch(&source.Informer{
@@ -144,20 +145,20 @@ func (c *Cluster) namespaceInformer() error {
 	})
 
 	if err != nil {
-		return emperror.Wrap(err, "could not set informer for namespaces")
+		return emperror.Wrap(err, "could not set informer for Namespace")
 	}
 
 	return nil
 }
 
-func (c *Cluster) configmapInformer() error {
+func (c *Cluster) configMapInformer() error {
 	if c.remoteConfig == nil {
 		return errors.New("remoteconfig must be set")
 	}
 
 	configmapInformer, err := c.mgr.GetCache().GetInformerForKind(context.Background(), corev1.SchemeGroupVersion.WithKind("ConfigMap"))
 	if err != nil {
-		return emperror.Wrap(err, "could not get informer for namespaces")
+		return emperror.Wrap(err, "could not get informer for ConfigMap")
 	}
 
 	err = c.ctrl.Watch(&source.Informer{
@@ -194,7 +195,39 @@ func (c *Cluster) configmapInformer() error {
 	})
 
 	if err != nil {
-		return emperror.Wrap(err, "could not set informer for configmaps")
+		return emperror.Wrap(err, "could not set informer for ConfigMap")
+	}
+
+	return nil
+}
+
+func (c *Cluster) meshGatewayInformer() error {
+	if c.remoteConfig == nil {
+		return errors.New("remoteconfig must be set")
+	}
+
+	mgwInformer, err := c.mgr.GetCache().GetInformerForKind(context.Background(), istiov1beta1.SchemeGroupVersion.WithKind("MeshGateway"))
+	if err != nil {
+		return emperror.Wrap(err, "could not get informer for MeshGateway")
+	}
+
+	err = c.ctrl.Watch(&source.Informer{
+		Informer: mgwInformer,
+	}, &handler.EnqueueRequestsFromMapFunc{
+		ToRequests: handler.ToRequestsFunc(func(object handler.MapObject) []reconcile.Request {
+			return []reconcile.Request{
+				{
+					NamespacedName: types.NamespacedName{
+						Name:      c.remoteConfig.Name,
+						Namespace: c.remoteConfig.Namespace,
+					},
+				},
+			}
+		}),
+	}, k8sutil.GetWatchPredicateForMeshGateway())
+
+	if err != nil {
+		return emperror.Wrap(err, "could not set informer for MeshGateway")
 	}
 
 	return nil
