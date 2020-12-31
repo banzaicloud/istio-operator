@@ -4279,6 +4279,14 @@ spec:
                     type: object
                   sidecar:
                     type: boolean
+                  spiffe:
+                    properties:
+                      operatorEndpoints:
+                        properties:
+                          enabled:
+                            type: boolean
+                        type: object
+                    type: object
                   tolerations:
                     items:
                       properties:

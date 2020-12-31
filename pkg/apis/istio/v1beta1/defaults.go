@@ -241,6 +241,15 @@ func SetDefaults(config *Istio) {
 	if config.Spec.Pilot.SecurityContext == nil {
 		config.Spec.Pilot.SecurityContext = defaultSecurityContext
 	}
+	if config.Spec.Pilot.SPIFFE == nil {
+		config.Spec.Pilot.SPIFFE = &SPIFFEConfiguration{}
+	}
+	if config.Spec.Pilot.SPIFFE.OperatorEndpoints == nil {
+		config.Spec.Pilot.SPIFFE.OperatorEndpoints = &OperatorEndpointsConfiguration{}
+	}
+	if config.Spec.Pilot.SPIFFE.OperatorEndpoints.Enabled == nil {
+		config.Spec.Pilot.SPIFFE.OperatorEndpoints.Enabled = util.BoolPointer(true)
+	}
 	// Citadel config
 	if config.Spec.Citadel.Enabled == nil {
 		config.Spec.Citadel.Enabled = util.BoolPointer(false)
