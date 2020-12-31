@@ -31,6 +31,7 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/reconcile"
 
 	istiov1beta1 "github.com/banzaicloud/istio-operator/pkg/apis/istio/v1beta1"
+	"github.com/banzaicloud/istio-operator/pkg/config"
 	"github.com/banzaicloud/istio-operator/pkg/crds"
 )
 
@@ -48,7 +49,7 @@ func TestReconcile(t *testing.T) {
 
 	// Setup the Manager and Controller.  Wrap the Controller Reconcile function so it writes each request to a
 	// channel when it is finished.
-	mgr, err := manager.New(cfg, manager.Options{
+	mgr, err := manager.New(k8sConfig, manager.Options{
 		MetricsBindAddress: "0",
 	})
 	g.Expect(err).NotTo(gomega.HaveOccurred())
@@ -60,7 +61,7 @@ func TestReconcile(t *testing.T) {
 	crd, err := crds.New(mgr, istiov1beta1.SupportedIstioVersion)
 	g.Expect(err).NotTo(gomega.HaveOccurred())
 
-	recFn, requests := SetupTestReconcile(newReconciler(mgr, dynamic, crd))
+	recFn, requests := SetupTestReconcile(newReconciler(mgr, config.Configuration{}, dynamic, crd))
 	g.Expect(newController(mgr, recFn)).NotTo(gomega.HaveOccurred())
 
 	stopMgr, mgrStopped := StartTestManager(mgr, g)

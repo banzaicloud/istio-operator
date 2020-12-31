@@ -40,6 +40,7 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/source"
 
 	istiov1beta1 "github.com/banzaicloud/istio-operator/pkg/apis/istio/v1beta1"
+	"github.com/banzaicloud/istio-operator/pkg/config"
 	"github.com/banzaicloud/istio-operator/pkg/k8sutil"
 	k8sutil_mgw "github.com/banzaicloud/istio-operator/pkg/k8sutil/mgw"
 	"github.com/banzaicloud/istio-operator/pkg/remoteclusters"
@@ -56,16 +57,17 @@ var log = logf.Log.WithName("remote-istio-controller")
 
 // Add creates a new RemoteConfig Controller and adds it to the Manager with default RBAC. The Manager will set fields on the Controller
 // and Start it when the Manager is Started.
-func Add(mgr manager.Manager, cm *remoteclusters.Manager) error {
-	return add(mgr, newReconciler(mgr, cm))
+func Add(mgr manager.Manager, cm *remoteclusters.Manager, cfg config.Configuration) error {
+	return add(mgr, newReconciler(mgr, cm, cfg))
 }
 
 // newReconciler returns a new reconcile.Reconciler
-func newReconciler(mgr manager.Manager, cm *remoteclusters.Manager) reconcile.Reconciler {
+func newReconciler(mgr manager.Manager, cm *remoteclusters.Manager, operatorConfig config.Configuration) reconcile.Reconciler {
 	return &ReconcileRemoteConfig{
 		Client:            mgr.GetClient(),
 		scheme:            mgr.GetScheme(),
 		remoteClustersMgr: cm,
+		operatorConfig:    operatorConfig,
 	}
 }
 
@@ -143,6 +145,8 @@ type ReconcileRemoteConfig struct {
 	client.Client
 	scheme *runtime.Scheme
 	ctrl   controller.Controller
+
+	operatorConfig config.Configuration
 
 	remoteClustersMgr *remoteclusters.Manager
 }
@@ -551,7 +555,7 @@ func (r *ReconcileRemoteConfig) getRemoteCluster(remoteConfig *istiov1beta1.Remo
 
 	logger.Info("k8s config found")
 
-	cluster, err := remoteclusters.NewCluster(remoteConfig.Name, r.ctrl, r.Client, k8sconfig, logger)
+	cluster, err := remoteclusters.NewCluster(remoteConfig.Name, r.operatorConfig, r.ctrl, r.Client, k8sconfig, logger)
 	if err != nil {
 		return nil, err
 	}

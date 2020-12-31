@@ -19,24 +19,25 @@ package controller
 import (
 	"sigs.k8s.io/controller-runtime/pkg/manager"
 
+	"github.com/banzaicloud/istio-operator/pkg/config"
 	"github.com/banzaicloud/istio-operator/pkg/remoteclusters"
 )
 
 // AddToManagerFuncs is a list of functions to add all Controllers to the Manager
-var AddToManagerFuncs []func(manager.Manager) error
+var AddToManagerFuncs []func(manager.Manager, config.Configuration) error
 
 // AddToManagerWithCMFuncs is a list of functions to add all Controllers with remote clusters manager to the Manager
-var AddToManagerWithCMFuncs []func(manager.Manager, *remoteclusters.Manager) error
+var AddToManagerWithCMFuncs []func(manager.Manager, *remoteclusters.Manager, config.Configuration) error
 
 // AddToManager adds all Controllers to the Manager
-func AddToManager(m manager.Manager, cm *remoteclusters.Manager) error {
+func AddToManager(m manager.Manager, cm *remoteclusters.Manager, operatorConfig config.Configuration) error {
 	for _, f := range AddToManagerFuncs {
-		if err := f(m); err != nil {
+		if err := f(m, operatorConfig); err != nil {
 			return err
 		}
 	}
 	for _, f := range AddToManagerWithCMFuncs {
-		if err := f(m, cm); err != nil {
+		if err := f(m, cm, operatorConfig); err != nil {
 			return err
 		}
 	}
