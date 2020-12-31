@@ -20,6 +20,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/banzaicloud/istio-operator/pkg/config"
 	"github.com/banzaicloud/istio-operator/pkg/remoteclusters"
 
 	"github.com/onsi/gomega"
@@ -53,7 +54,7 @@ func TestReconcile(t *testing.T) {
 	g.Expect(err).NotTo(gomega.HaveOccurred())
 	c = mgr.GetClient()
 	stop := make(<-chan struct{})
-	recFn, requests := SetupTestReconcile(newReconciler(mgr, remoteclusters.NewManager(stop)))
+	recFn, requests := SetupTestReconcile(newReconciler(mgr, remoteclusters.NewManager(stop), config.Configuration{}))
 	g.Expect(add(mgr, recFn)).NotTo(gomega.HaveOccurred())
 
 	stopMgr, mgrStopped := StartTestManager(mgr, g)

@@ -34,7 +34,7 @@ import (
 	"github.com/banzaicloud/istio-operator/pkg/apis"
 )
 
-var cfg *rest.Config
+var k8sConfig *rest.Config
 
 func init() {
 	apiextensionsv1.AddToScheme(scheme.Scheme)
@@ -50,7 +50,7 @@ func TestMain(m *testing.M) {
 		stdlog.Fatal(err)
 	}
 
-	if cfg, err = t.Start(); err != nil {
+	if k8sConfig, err = t.Start(); err != nil {
 		stdlog.Fatal(err)
 	}
 

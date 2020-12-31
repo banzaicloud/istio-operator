@@ -45,6 +45,7 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/source"
 
 	istiov1beta1 "github.com/banzaicloud/istio-operator/pkg/apis/istio/v1beta1"
+	"github.com/banzaicloud/istio-operator/pkg/config"
 	"github.com/banzaicloud/istio-operator/pkg/k8sutil"
 	"github.com/banzaicloud/istio-operator/pkg/resources/gateways"
 	"github.com/banzaicloud/istio-operator/pkg/util"
@@ -56,7 +57,7 @@ var log = logf.Log.WithName("controller")
 
 // Add creates a new MeshGateway Controller and adds it to the Manager with default RBAC. The Manager will set fields on the Controller
 // and Start it when the Manager is Started.
-func Add(mgr manager.Manager) error {
+func Add(mgr manager.Manager, config config.Configuration) error {
 	dynamic, err := dynamic.NewForConfig(mgr.GetConfig())
 	if err != nil {
 		return emperror.Wrap(err, "failed to create dynamic client")
