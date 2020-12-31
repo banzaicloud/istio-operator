@@ -30,17 +30,19 @@ import (
 	"github.com/pkg/errors"
 	_ "github.com/shurcooL/vfsgen"
 	_ "k8s.io/client-go/plugin/pkg/client/auth/gcp"
-	"sigs.k8s.io/controller-runtime/pkg/client/config"
+	k8sConfig "sigs.k8s.io/controller-runtime/pkg/client/config"
 	"sigs.k8s.io/controller-runtime/pkg/manager"
 	logf "sigs.k8s.io/controller-runtime/pkg/runtime/log"
 	"sigs.k8s.io/controller-runtime/pkg/webhook"
 
 	"github.com/banzaicloud/istio-operator/pkg/apis"
+	"github.com/banzaicloud/istio-operator/pkg/config"
 	"github.com/banzaicloud/istio-operator/pkg/controller"
 	"github.com/banzaicloud/istio-operator/pkg/controller/istio"
 	"github.com/banzaicloud/istio-operator/pkg/controller/remoteistio"
 	"github.com/banzaicloud/istio-operator/pkg/k8sutil"
 	"github.com/banzaicloud/istio-operator/pkg/remoteclusters"
+	"github.com/banzaicloud/istio-operator/pkg/trustbundle"
 	"github.com/banzaicloud/istio-operator/pkg/util"
 	wh "github.com/banzaicloud/istio-operator/pkg/webhook"
 	"github.com/banzaicloud/istio-operator/pkg/webhook/cert"
@@ -71,6 +73,8 @@ func main() {
 	flag.StringVar(&webhookCertDir, "webhook-cert-dir", "/tmp/certs", "Determines the directory that contains the server key and certificate.")
 	var webhookConfigurationName string
 	flag.StringVar(&webhookConfigurationName, "webhook-name", "istio-operator-webhook", "Sets the name of the validating webhook resource.")
+	var webhookServiceAddress string
+	flag.StringVar(&webhookServiceAddress, "webhook-service-address", "istio-operator-webhook", "Address (host[:port]) for the operator webhook endpoint.")
 	var verboseLogging bool
 	flag.BoolVar(&verboseLogging, "verbose", false, "Enable verbose logging")
 	flag.Parse()
@@ -80,7 +84,7 @@ func main() {
 
 	// Get a config to talk to the apiserver
 	log.Info("setting up client for manager")
-	cfg, err := config.GetConfig()
+	k8sConfig, err := k8sConfig.GetConfig()
 	if err != nil {
 		log.Error(err, "unable to set up client config")
 		os.Exit(1)
@@ -99,7 +103,7 @@ func main() {
 
 	// Create a new Cmd to provide shared dependencies and start components
 	log.Info("setting up manager")
-	mgr, err := manager.New(cfg, manager.Options{
+	mgr, err := manager.New(k8sConfig, manager.Options{
 		MetricsBindAddress:      metricsAddr,
 		Namespace:               namespace,
 		MapperProvider:          k8sutil.NewCachedRESTMapper,
@@ -125,14 +129,25 @@ func main() {
 
 	stop := setupSignalHandler(mgr, log, shutdownWaitDuration)
 
+	operatorConfig := config.Configuration{
+		WebhookServiceAddress: webhookServiceAddress,
+	}
+
 	// Setup all Controllers
 	log.Info("setting up controller")
-	if err := controller.AddToManager(mgr, remoteclusters.NewManager(stop)); err != nil {
+	if err := controller.AddToManager(mgr, remoteclusters.NewManager(stop), operatorConfig); err != nil {
 		log.Error(err, "unable to register controllers to the manager")
 		os.Exit(1)
 	}
 
+	tb := trustbundle.NewManager(mgr, logf.Log.WithName("trustbundle"))
+	if err := tb.Start(); err != nil {
+		log.Error(err, "unable to start trust bundle manager")
+		os.Exit(1)
+	}
+
 	mgr.GetWebhookServer().Register("/validate-istio-config", &webhook.Admission{Handler: wh.NewIstioResourceValidator(mgr)})
+	mgr.GetWebhookServer().Register(trustbundle.WebhookEndpointPath, tb)
 
 	whLogger := logf.Log.WithName("wh-cert-provisioner")
 	certProvisioner := cert.NewCertProvisioner(whLogger, []string{}, webhookCertDir)
