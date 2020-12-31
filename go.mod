@@ -11,12 +11,14 @@ require (
 	github.com/go-logr/logr v0.1.0
 	github.com/gofrs/uuid v3.2.0+incompatible
 	github.com/goph/emperror v0.17.2
+	github.com/lestrrat-go/jwx v1.0.6
 	github.com/mholt/caddy v1.0.0
 	github.com/onsi/gomega v1.10.1
 	github.com/pkg/errors v0.9.1
 	github.com/shurcooL/httpfs v0.0.0-20190707220628-8d4bc4ba7749 // indirect
 	github.com/shurcooL/vfsgen v0.0.0-20200627165143-92b8a710ab6c
 	github.com/stretchr/testify v1.6.0
+	go.uber.org/multierr v1.6.0 // indirect
 	go.uber.org/zap v1.10.0
 	golang.org/x/net v0.0.0-20200707034311-ab3426394381
 	golang.org/x/sys v0.0.0-20200905004654-be1d3432aa8f // indirect
