@@ -2930,6 +2930,26 @@ spec:
                 type: object
               istiod:
                 properties:
+                  ca:
+                    properties:
+                      vault:
+                        properties:
+                          address:
+                            type: string
+                          certChainPath:
+                            type: string
+                          certPath:
+                            type: string
+                          enabled:
+                            type: boolean
+                          keyPath:
+                            type: string
+                          role:
+                            type: string
+                          vaultEnvImage:
+                            type: string
+                        type: object
+                    type: object
                   enableAnalysis:
                     type: boolean
                   enableStatus:
