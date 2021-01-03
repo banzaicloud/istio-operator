@@ -69,6 +69,11 @@ const (
 	defaultClusterName                     = "Kubernetes"
 	defaultNetworkName                     = "local-network"
 	defaultGlobalDomain                    = "global"
+	defaultVaultEnvImage                   = "ghcr.io/banzaicloud/vault-env:1.8.0"
+	defaultVaultAddress                    = "https://vault.vault:8200"
+	defaultVaultRole                       = "istiod"
+	defaultVaultCACertPath                 = "vault:secret/data/pki/istiod#certificate"
+	defaultVaultCAKeyPath                  = "vault:secret/data/pki/istiod#privateKey"
 )
 
 var defaultResources = &apiv1.ResourceRequirements{
@@ -174,6 +179,32 @@ func SetDefaults(config *Istio) {
 	}
 	if config.Spec.Istiod.EnableStatus == nil {
 		config.Spec.Istiod.EnableStatus = util.BoolPointer(false)
+	}
+
+	if config.Spec.Istiod.CA == nil {
+		config.Spec.Istiod.CA = &IstiodCAConfiguration{}
+	}
+	if config.Spec.Istiod.CA.Vault == nil {
+		config.Spec.Istiod.CA.Vault = &VaultCAConfiguration{}
+	}
+
+	if config.Spec.Istiod.CA.Vault.Address == nil {
+		config.Spec.Istiod.CA.Vault.Address = util.StrPointer(defaultVaultAddress)
+	}
+	if config.Spec.Istiod.CA.Vault.Role == nil {
+		config.Spec.Istiod.CA.Vault.Role = util.StrPointer(defaultVaultRole)
+	}
+	if config.Spec.Istiod.CA.Vault.CertPath == nil {
+		config.Spec.Istiod.CA.Vault.CertPath = util.StrPointer(defaultVaultCACertPath)
+	}
+	if config.Spec.Istiod.CA.Vault.KeyPath == nil {
+		config.Spec.Istiod.CA.Vault.KeyPath = util.StrPointer(defaultVaultCAKeyPath)
+	}
+	if config.Spec.Istiod.CA.Vault.Enabled == nil {
+		config.Spec.Istiod.CA.Vault.Enabled = util.BoolPointer(false)
+	}
+	if config.Spec.Istiod.CA.Vault.VaultEnvImage == nil {
+		config.Spec.Istiod.CA.Vault.VaultEnvImage = util.StrPointer(defaultVaultEnvImage)
 	}
 
 	// Pilot config
