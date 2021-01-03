@@ -166,6 +166,16 @@ func (r *Reconciler) containerPorts() []apiv1.ContainerPort {
 	}
 }
 
+func (r *Reconciler) initContainers() []apiv1.Container {
+	containers := make([]apiv1.Container, 0)
+
+	if util.PointerToBool(r.Config.Spec.Istiod.CA.Vault.Enabled) {
+		containers = append(containers, r.vaultENVInitContainer())
+	}
+
+	return containers
+}
+
 func (r *Reconciler) containers() []apiv1.Container {
 	discoveryContainer := apiv1.Container{
 		Name:            "discovery",
@@ -205,6 +215,66 @@ func (r *Reconciler) containers() []apiv1.Container {
 	return containers
 }
 
+func (r *Reconciler) vaultENVInitContainer() apiv1.Container {
+	vaultEnvContainer := apiv1.Container{
+		Name:  "vault-env",
+		Image: util.PointerToString(r.Config.Spec.Istiod.CA.Vault.VaultEnvImage),
+		Args: []string{
+			"vault-env",
+			"sh",
+			"-c",
+			`echo "$ISTIO_CA_CERT" > ca-cert.pem; echo "$ISTIO_CA_CERT_CHAIN" > root-cert.pem; echo -e "$ISTIO_CA_CERT\n$ISTIO_CA_CERT_CHAIN" > cert-chain.pem; echo "$ISTIO_CA_KEY" > ca-key.pem`,
+		},
+		Env: []apiv1.EnvVar{
+			{
+				Name:  "VAULT_ADDR",
+				Value: util.PointerToString(r.Config.Spec.Istiod.CA.Vault.Address),
+			},
+			{
+				Name:  "VAULT_ROLE",
+				Value: util.PointerToString(r.Config.Spec.Istiod.CA.Vault.Role),
+			},
+			{
+				Name:  "VAULT_CACERT",
+				Value: "/vault/tls/ca.crt",
+			},
+			{
+				Name:  "ISTIO_CA_CERT",
+				Value: util.PointerToString(r.Config.Spec.Istiod.CA.Vault.CertPath),
+			},
+			{
+				Name:  "ISTIO_CA_KEY",
+				Value: util.PointerToString(r.Config.Spec.Istiod.CA.Vault.KeyPath),
+			},
+		},
+		WorkingDir: "/etc/cacerts",
+		VolumeMounts: []apiv1.VolumeMount{
+			{
+				MountPath: "/etc/cacerts",
+				Name:      "cacerts",
+			},
+			{
+				MountPath: "/vault/tls",
+				Name:      "vault-tls",
+			},
+		},
+	}
+
+	if r.Config.Spec.Istiod.CA.Vault.CertChainPath != nil {
+		vaultEnvContainer.Env = append(vaultEnvContainer.Env, apiv1.EnvVar{
+			Name:  "ISTIO_CA_CERT_CHAIN",
+			Value: util.PointerToString(r.Config.Spec.Istiod.CA.Vault.CertChainPath),
+		})
+	} else {
+		vaultEnvContainer.Env = append(vaultEnvContainer.Env, apiv1.EnvVar{
+			Name:  "ISTIO_CA_CERT_CHAIN",
+			Value: util.PointerToString(r.Config.Spec.Istiod.CA.Vault.CertPath),
+		})
+	}
+
+	return vaultEnvContainer
+}
+
 func (r *Reconciler) volumeMounts() []apiv1.VolumeMount {
 	vms := []apiv1.VolumeMount{
 		{
@@ -222,7 +292,7 @@ func (r *Reconciler) volumeMounts() []apiv1.VolumeMount {
 			})
 		}
 
-		if r.Config.Spec.Citadel.CASecretName != "" {
+		if util.PointerToBool(r.Config.Spec.Istiod.CA.Vault.Enabled) || r.Config.Spec.Citadel.CASecretName != "" {
 			vms = append(vms, apiv1.VolumeMount{
 				Name:      "cacerts",
 				MountPath: "/etc/cacerts",
@@ -290,7 +360,39 @@ func (r *Reconciler) volumes() []apiv1.Volume {
 			})
 		}
 
-		if r.Config.Spec.Citadel.CASecretName != "" {
+		if util.PointerToBool(r.Config.Spec.Istiod.CA.Vault.Enabled) {
+			volumes = append(volumes, []apiv1.Volume{
+				{
+					Name: "cacerts",
+					VolumeSource: apiv1.VolumeSource{
+						EmptyDir: &apiv1.EmptyDirVolumeSource{},
+					},
+				},
+				{
+					Name: "vault-tls",
+					VolumeSource: apiv1.VolumeSource{
+						Projected: &apiv1.ProjectedVolumeSource{
+							DefaultMode: util.IntPointer(420),
+							Sources: []apiv1.VolumeProjection{
+								{
+									Secret: &apiv1.SecretProjection{
+										LocalObjectReference: apiv1.LocalObjectReference{
+											Name: "vault-tls",
+										},
+										Items: []apiv1.KeyToPath{
+											{
+												Key:  "ca.crt",
+												Path: "ca.crt",
+											},
+										},
+									},
+								},
+							},
+						},
+					},
+				},
+			}...)
+		} else if r.Config.Spec.Citadel.CASecretName != "" {
 			volumes = append(volumes, apiv1.Volume{
 				Name: "cacerts",
 				VolumeSource: apiv1.VolumeSource{
@@ -339,6 +441,7 @@ func (r *Reconciler) deployment() runtime.Object {
 				Spec: apiv1.PodSpec{
 					ServiceAccountName: r.Config.WithRevision(serviceAccountName),
 					SecurityContext:    util.GetPodSecurityContextFromSecurityContext(r.Config.Spec.Pilot.SecurityContext),
+					InitContainers:     r.initContainers(),
 					Containers:         r.containers(),
 					Volumes:            r.volumes(),
 					Affinity:           r.Config.Spec.Pilot.Affinity,

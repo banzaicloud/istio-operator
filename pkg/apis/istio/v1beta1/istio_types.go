@@ -112,6 +112,31 @@ type IstiodConfiguration struct {
 	MultiClusterSupport      *bool `json:"multiClusterSupport,omitempty"`
 	MultiControlPlaneSupport *bool `json:"multiControlPlaneSupport,omitempty"`
 	ExposeWebhookPort        *bool `json:"exposeWebhookPort,omitempty"`
+	// Istiod CA config
+	CA *IstiodCAConfiguration `json:"ca,omitempty"`
+}
+
+// IstiodCAConfiguration defines configuration for Istiod CA
+type IstiodCAConfiguration struct {
+	// Configuration for Vault CA integration
+	Vault *VaultCAConfiguration `json:"vault,omitempty"`
+}
+
+// VaultCAConfiguration defines configuration for Vault CA integration
+type VaultCAConfiguration struct {
+	Enabled *bool `json:"enabled,omitempty"`
+	// Vault address
+	Address *string `json:"address,omitempty"`
+	// Vault role
+	Role *string `json:"role,omitempty"`
+	// Reference path in Vault for the CA certificate
+	CertPath *string `json:"certPath,omitempty"`
+	// Reference path in Vault for the CA private key
+	KeyPath *string `json:"keyPath,omitempty"`
+	// Reference path in Vault for the CA cert chain (if any)
+	CertChainPath *string `json:"certChainPath,omitempty"`
+	// Container image for vault-env
+	VaultEnvImage *string `json:"vaultEnvImage,omitempty"`
 }
 
 // PilotConfiguration defines config options for Pilot
