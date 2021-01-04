@@ -21,3 +21,17 @@ resources:
 
 patches:
 - manager_auth_proxy_patch.yaml
+
+vars:
+- name: SERVICE_NAME
+  objref:
+    kind: Service
+    name: controller-manager-service
+    apiVersion: v1
+- name: NAMESPACE
+  objref:
+    kind: StatefulSet
+    name: controller-manager
+    apiVersion: apps/v1
+  fieldref:
+    fieldpath: metadata.namespace
