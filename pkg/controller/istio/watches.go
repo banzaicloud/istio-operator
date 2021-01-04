@@ -17,6 +17,9 @@ limitations under the License.
 package istio
 
 import (
+	"context"
+	"reflect"
+
 	"github.com/pkg/errors"
 	admissionregistrationv1beta1 "k8s.io/api/admissionregistration/v1beta1"
 	appsv1 "k8s.io/api/apps/v1"
@@ -27,7 +30,9 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/types"
+	"sigs.k8s.io/controller-runtime/pkg/event"
 	"sigs.k8s.io/controller-runtime/pkg/handler"
+	"sigs.k8s.io/controller-runtime/pkg/predicate"
 	"sigs.k8s.io/controller-runtime/pkg/reconcile"
 	"sigs.k8s.io/controller-runtime/pkg/source"
 
@@ -50,6 +55,7 @@ func (r *ReconcileIstio) initWatches(watchCreatedResourcesEvents bool) error {
 		r.watchIstioCoreDNSService,
 		r.watchNamespace,
 		r.watchMeshGateway,
+		r.watchValidatingWebhookConfiguration,
 	} {
 		err = f()
 		if err != nil {
@@ -284,6 +290,79 @@ func (r *ReconcileIstio) watchMeshWidePolicy(nn types.NamespacedName) error {
 				APIVersion: istiov1beta1.SchemeGroupVersion.String(),
 			},
 		}, true, r.mgr.GetScheme(), log),
+	)
+
+	return err
+}
+
+func (r *ReconcileIstio) watchValidatingWebhookConfiguration() error {
+	err := r.ctrl.Watch(
+		&source.Kind{
+			Type: &admissionregistrationv1beta1.ValidatingWebhookConfiguration{
+				TypeMeta: metav1.TypeMeta{
+					Kind:       "ValidatingWebhookConfiguration",
+					APIVersion: admissionregistrationv1beta1.SchemeGroupVersion.String(),
+				},
+			},
+		},
+		&handler.EnqueueRequestsFromMapFunc{
+			ToRequests: handler.ToRequestsFunc(func(object handler.MapObject) []reconcile.Request {
+				istios := &istiov1beta1.IstioList{}
+				names := make([]reconcile.Request, 0)
+				err := r.mgr.GetClient().List(context.Background(), istios)
+				if err != nil {
+					log.Error(err, "could not list Istios")
+					return nil
+				}
+
+				for _, istio := range istios.Items {
+					names = append(names, reconcile.Request{
+						NamespacedName: types.NamespacedName{
+							Name:      istio.Name,
+							Namespace: istio.Namespace,
+						},
+					})
+				}
+
+				return names
+			}),
+		},
+		predicate.Funcs{
+			UpdateFunc: func(e event.UpdateEvent) bool {
+				var ok bool
+				var o, n *admissionregistrationv1beta1.ValidatingWebhookConfiguration
+
+				o, ok = e.ObjectOld.(*admissionregistrationv1beta1.ValidatingWebhookConfiguration)
+				if !ok {
+					return false
+				}
+
+				n, ok = e.ObjectNew.(*admissionregistrationv1beta1.ValidatingWebhookConfiguration)
+				if !ok {
+					return false
+				}
+
+				oldCABundles := make([][]byte, 0)
+				for _, wh := range o.Webhooks {
+					oldCABundles = append(oldCABundles, wh.ClientConfig.CABundle)
+				}
+				newCABundles := make([][]byte, 0)
+				for _, wh := range n.Webhooks {
+					newCABundles = append(newCABundles, wh.ClientConfig.CABundle)
+				}
+
+				return !reflect.DeepEqual(oldCABundles, newCABundles)
+			},
+			CreateFunc: func(e event.CreateEvent) bool {
+				return false
+			},
+			DeleteFunc: func(e event.DeleteEvent) bool {
+				return false
+			},
+			GenericFunc: func(e event.GenericEvent) bool {
+				return false
+			},
+		},
 	)
 
 	return err
