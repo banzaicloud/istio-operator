@@ -24,3 +24,4 @@ spec:
         - "--metrics-addr=127.0.0.1:8080"
         - "--watch-created-resources-events=true"
         - "--webhook-cert-dir=/tmp/certs"
+        - "--webhook-service-address=$(SERVICE_NAME).$(NAMESPACE).svc"
