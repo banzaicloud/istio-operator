@@ -64,6 +64,7 @@ import (
 	"github.com/banzaicloud/istio-operator/pkg/resources/nodeagent"
 	"github.com/banzaicloud/istio-operator/pkg/resources/pilot"
 	"github.com/banzaicloud/istio-operator/pkg/resources/sidecarinjector"
+	"github.com/banzaicloud/istio-operator/pkg/resources/webhookcert"
 	"github.com/banzaicloud/istio-operator/pkg/util"
 )
 
@@ -341,6 +342,7 @@ func (r *ReconcileIstio) reconcile(logger logr.Logger, config *istiov1beta1.Isti
 
 	reconcilers := []resources.ComponentReconciler{
 		base.New(r.Client, config, false),
+		webhookcert.New(r.Client, config, r.operatorConfig),
 		citadel.New(citadel.Configuration{
 			DeployMeshWidePolicy: true,
 		}, r.Client, r.dynamic, config),

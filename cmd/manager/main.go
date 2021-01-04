@@ -130,7 +130,8 @@ func main() {
 	stop := setupSignalHandler(mgr, log, shutdownWaitDuration)
 
 	operatorConfig := config.Configuration{
-		WebhookServiceAddress: webhookServiceAddress,
+		WebhookServiceAddress:    webhookServiceAddress,
+		WebhookConfigurationName: webhookConfigurationName,
 	}
 
 	// Setup all Controllers

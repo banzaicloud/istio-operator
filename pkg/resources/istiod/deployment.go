@@ -17,6 +17,7 @@ limitations under the License.
 package istiod
 
 import (
+	"crypto/md5"
 	"fmt"
 	"strconv"
 	"strings"
@@ -32,6 +33,7 @@ import (
 	"github.com/banzaicloud/istio-operator/pkg/k8sutil"
 	"github.com/banzaicloud/istio-operator/pkg/resources/base"
 	"github.com/banzaicloud/istio-operator/pkg/resources/templates"
+	"github.com/banzaicloud/istio-operator/pkg/resources/webhookcert"
 	"github.com/banzaicloud/istio-operator/pkg/trustbundle"
 	"github.com/banzaicloud/istio-operator/pkg/util"
 )
@@ -161,6 +163,14 @@ func (r *Reconciler) containerEnvs() []apiv1.EnvVar {
 		})
 	}
 
+	if util.PointerToBool(r.Config.Spec.Pilot.SPIFFE.OperatorEndpoints.Enabled) {
+		webhookCABundle, _ := webhookcert.GetWebhookCABundles(r.Client, r.operatorConfig.WebhookConfigurationName)
+		envs = append(envs, apiv1.EnvVar{
+			Name:  "WEBHOOK_CABUNDLE_HASH",
+			Value: fmt.Sprintf("%x", md5.Sum([]byte(webhookCABundle))),
+		})
+	}
+
 	envs = k8sutil.MergeEnvVars(envs, r.Config.Spec.Pilot.AdditionalEnvVars)
 
 	envs = r.mergeSPIFFEOperatorEndpoints(envs)
@@ -191,7 +201,7 @@ func (r *Reconciler) mergeSPIFFEOperatorEndpoints(envs []apiv1.EnvVar) []apiv1.E
 	}
 
 	for _, domain := range append(r.Config.Spec.TrustDomainAliases, r.Config.Spec.TrustDomain) {
-		p = append(p, fmt.Sprintf("%s|https://%s/%s?trustDomain=%s&revision=%s#insecure", domain, r.operatorConfig.WebhookServiceAddress, trustbundle.WebhookEndpointPath, domain, r.Config.NamespacedRevision()))
+		p = append(p, fmt.Sprintf("%s|https://%s%s?trustDomain=%s&revision=%s", domain, r.operatorConfig.WebhookServiceAddress, trustbundle.WebhookEndpointPath, domain, r.Config.NamespacedRevision()))
 	}
 
 	env.Value = strings.Join(p, "||")
@@ -352,6 +362,16 @@ func (r *Reconciler) volumeMounts() []apiv1.VolumeMount {
 				ReadOnly:  true,
 			},
 		}...)
+
+		if util.PointerToBool(r.Config.Spec.Pilot.SPIFFE.OperatorEndpoints.Enabled) {
+			vms = append(vms, []apiv1.VolumeMount{
+				{
+					Name:      "operator-webhook-cabundle",
+					MountPath: "/var/ssl/certs",
+					ReadOnly:  true,
+				},
+			}...)
+		}
 	}
 
 	return vms
@@ -370,6 +390,20 @@ func (r *Reconciler) volumes() []apiv1.Volume {
 				},
 			},
 		},
+	}
+
+	if util.PointerToBool(r.Config.Spec.Pilot.SPIFFE.OperatorEndpoints.Enabled) {
+		volumes = append(volumes, apiv1.Volume{
+			Name: "operator-webhook-cabundle",
+			VolumeSource: apiv1.VolumeSource{
+				ConfigMap: &apiv1.ConfigMapVolumeSource{
+					LocalObjectReference: apiv1.LocalObjectReference{
+						Name: r.Config.WithRevision(webhookcert.ConfigMapName),
+					},
+					DefaultMode: util.IntPointer(420),
+				},
+			},
+		})
 	}
 
 	if util.PointerToBool(r.Config.Spec.Istiod.Enabled) {

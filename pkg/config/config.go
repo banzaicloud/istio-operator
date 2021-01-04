@@ -18,5 +18,6 @@ package config
 
 // Configuration defines operator configuration
 type Configuration struct {
-	WebhookServiceAddress string `json:"webhookServiceAddress,omitempty"`
+	WebhookServiceAddress    string `json:"webhookServiceAddress,omitempty"`
+	WebhookConfigurationName string `json:"webhookConfigurationName,omitempty"`
 }
