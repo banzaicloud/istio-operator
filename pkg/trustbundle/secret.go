@@ -20,7 +20,6 @@ import (
 	"crypto/rsa"
 	"crypto/x509"
 	"encoding/base64"
-	"fmt"
 
 	"github.com/goph/emperror"
 	"github.com/lestrrat-go/jwx/jwk"
@@ -43,7 +42,6 @@ func (s Secret) GetJWKs() ([]jwk.Key, error) {
 		}
 
 		key.Set(jwk.X509CertChainKey, base64.StdEncoding.EncodeToString(cert.Raw))
-		key.Set(jwk.KeyIDKey, fmt.Sprintf("%x", cert.SerialNumber))
 		key.Set(jwk.KeyUsageKey, "x509-svid")
 
 		keys = append(keys, key)
