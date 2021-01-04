@@ -260,17 +260,14 @@ func (r *Reconciler) vaultENVInitContainer() apiv1.Container {
 		},
 	}
 
+	certChainPath := util.PointerToString(r.Config.Spec.Istiod.CA.Vault.CertPath)
 	if r.Config.Spec.Istiod.CA.Vault.CertChainPath != nil {
-		vaultEnvContainer.Env = append(vaultEnvContainer.Env, apiv1.EnvVar{
-			Name:  "ISTIO_CA_CERT_CHAIN",
-			Value: util.PointerToString(r.Config.Spec.Istiod.CA.Vault.CertChainPath),
-		})
-	} else {
-		vaultEnvContainer.Env = append(vaultEnvContainer.Env, apiv1.EnvVar{
-			Name:  "ISTIO_CA_CERT_CHAIN",
-			Value: util.PointerToString(r.Config.Spec.Istiod.CA.Vault.CertPath),
-		})
+		certChainPath = util.PointerToString(r.Config.Spec.Istiod.CA.Vault.CertChainPath)
 	}
+	vaultEnvContainer.Env = append(vaultEnvContainer.Env, apiv1.EnvVar{
+		Name:  "ISTIO_CA_CERT_CHAIN",
+		Value: certChainPath,
+	})
 
 	return vaultEnvContainer
 }
