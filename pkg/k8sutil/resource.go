@@ -182,6 +182,9 @@ func prepareResourceForUpdate(current, desired runtime.Object) {
 	case *corev1.Service:
 		svc := desired.(*corev1.Service)
 		svc.Spec.ClusterIP = current.(*corev1.Service).Spec.ClusterIP
+	case *corev1.ServiceAccount:
+		sa := desired.(*corev1.ServiceAccount)
+		sa.Secrets = current.(*corev1.ServiceAccount).Secrets
 	}
 }
 
