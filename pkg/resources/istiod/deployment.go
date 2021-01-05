@@ -34,6 +34,13 @@ import (
 	"github.com/banzaicloud/istio-operator/pkg/util"
 )
 
+const (
+	vaultTLSVolumeName = "vault-tls"
+	vaultTLSVolumePath = "/vault/tls"
+	caCertsVolumeName  = "cacerts"
+	caCertsVolumePath  = "/etc/cacerts"
+)
+
 func (r *Reconciler) containerArgs() []string {
 	containerArgs := []string{
 		"discovery",
@@ -216,6 +223,11 @@ func (r *Reconciler) containers() []apiv1.Container {
 }
 
 func (r *Reconciler) vaultENVInitContainer() apiv1.Container {
+	certChainPath := util.PointerToString(r.Config.Spec.Istiod.CA.Vault.CertPath)
+	if r.Config.Spec.Istiod.CA.Vault.CertChainPath != nil {
+		certChainPath = util.PointerToString(r.Config.Spec.Istiod.CA.Vault.CertChainPath)
+	}
+
 	vaultEnvContainer := apiv1.Container{
 		Name:  "vault-env",
 		Image: util.PointerToString(r.Config.Spec.Istiod.CA.Vault.VaultEnvImage),
@@ -236,7 +248,7 @@ func (r *Reconciler) vaultENVInitContainer() apiv1.Container {
 			},
 			{
 				Name:  "VAULT_CACERT",
-				Value: "/vault/tls/ca.crt",
+				Value: fmt.Sprintf("%s/ca.crt", vaultTLSVolumePath),
 			},
 			{
 				Name:  "ISTIO_CA_CERT",
@@ -246,28 +258,23 @@ func (r *Reconciler) vaultENVInitContainer() apiv1.Container {
 				Name:  "ISTIO_CA_KEY",
 				Value: util.PointerToString(r.Config.Spec.Istiod.CA.Vault.KeyPath),
 			},
+			{
+				Name:  "ISTIO_CA_CERT_CHAIN",
+				Value: certChainPath,
+			},
 		},
-		WorkingDir: "/etc/cacerts",
+		WorkingDir: caCertsVolumePath,
 		VolumeMounts: []apiv1.VolumeMount{
 			{
-				MountPath: "/etc/cacerts",
-				Name:      "cacerts",
+				MountPath: caCertsVolumePath,
+				Name:      caCertsVolumeName,
 			},
 			{
-				MountPath: "/vault/tls",
-				Name:      "vault-tls",
+				MountPath: vaultTLSVolumePath,
+				Name:      vaultTLSVolumeName,
 			},
 		},
 	}
-
-	certChainPath := util.PointerToString(r.Config.Spec.Istiod.CA.Vault.CertPath)
-	if r.Config.Spec.Istiod.CA.Vault.CertChainPath != nil {
-		certChainPath = util.PointerToString(r.Config.Spec.Istiod.CA.Vault.CertChainPath)
-	}
-	vaultEnvContainer.Env = append(vaultEnvContainer.Env, apiv1.EnvVar{
-		Name:  "ISTIO_CA_CERT_CHAIN",
-		Value: certChainPath,
-	})
 
 	return vaultEnvContainer
 }
@@ -291,8 +298,8 @@ func (r *Reconciler) volumeMounts() []apiv1.VolumeMount {
 
 		if util.PointerToBool(r.Config.Spec.Istiod.CA.Vault.Enabled) || r.Config.Spec.Citadel.CASecretName != "" {
 			vms = append(vms, apiv1.VolumeMount{
-				Name:      "cacerts",
-				MountPath: "/etc/cacerts",
+				Name:      caCertsVolumeName,
+				MountPath: caCertsVolumePath,
 				ReadOnly:  true,
 			})
 		}
@@ -360,13 +367,13 @@ func (r *Reconciler) volumes() []apiv1.Volume {
 		if util.PointerToBool(r.Config.Spec.Istiod.CA.Vault.Enabled) {
 			volumes = append(volumes, []apiv1.Volume{
 				{
-					Name: "cacerts",
+					Name: caCertsVolumeName,
 					VolumeSource: apiv1.VolumeSource{
 						EmptyDir: &apiv1.EmptyDirVolumeSource{},
 					},
 				},
 				{
-					Name: "vault-tls",
+					Name: vaultTLSVolumeName,
 					VolumeSource: apiv1.VolumeSource{
 						Projected: &apiv1.ProjectedVolumeSource{
 							DefaultMode: util.IntPointer(420),
@@ -374,7 +381,7 @@ func (r *Reconciler) volumes() []apiv1.Volume {
 								{
 									Secret: &apiv1.SecretProjection{
 										LocalObjectReference: apiv1.LocalObjectReference{
-											Name: "vault-tls",
+											Name: vaultTLSVolumeName,
 										},
 										Items: []apiv1.KeyToPath{
 											{
@@ -391,7 +398,7 @@ func (r *Reconciler) volumes() []apiv1.Volume {
 			}...)
 		} else if r.Config.Spec.Citadel.CASecretName != "" {
 			volumes = append(volumes, apiv1.Volume{
-				Name: "cacerts",
+				Name: caCertsVolumeName,
 				VolumeSource: apiv1.VolumeSource{
 					Secret: &apiv1.SecretVolumeSource{
 						SecretName:  r.Config.Spec.Citadel.CASecretName,
