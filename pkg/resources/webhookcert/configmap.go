@@ -42,7 +42,7 @@ func (r *Reconciler) configMap() (runtime.Object, error) {
 	}
 
 	return &corev1.ConfigMap{
-		ObjectMeta: templates.ObjectMetaWithRevision(r.Config.WithRevision(ConfigMapName), nil, r.Config),
+		ObjectMeta: templates.ObjectMetaWithRevision(ConfigMapName, nil, r.Config),
 		Data: map[string]string{
 			"cacert.pem": caBundle,
 		},
