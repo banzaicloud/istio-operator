@@ -94,7 +94,7 @@ func (r *Reconciler) multimeshEnvoyFilter(selector map[string]string) *k8sutil.D
 						"value": map[string]interface{}{
 							"name": "envoy.filters.network.tcp_cluster_rewrite",
 							"typed_config": map[string]interface{}{
-								"\"@type\"":           "type.googleapis.com/istio.envoy.config.filter.network.tcp_cluster_rewrite.v2alpha1.TcpClusterRewrite",
+								"@type":               "type.googleapis.com/istio.envoy.config.filter.network.tcp_cluster_rewrite.v2alpha1.TcpClusterRewrite",
 								"cluster_pattern":     fmt.Sprintf("\\.%s$", util.PointerToString(r.Config.Spec.GlobalDomain)),
 								"cluster_replacement": ".svc." + r.Config.Spec.Proxy.ClusterDomain,
 							},
@@ -119,7 +119,7 @@ func (r *Reconciler) multimeshDestinationRule() *k8sutil.DynamicObject {
 		Namespace: r.Config.Namespace,
 		Labels:    r.Config.RevisionLabels(),
 		Spec: map[string]interface{}{
-			"host": util.EmptyTypedStrSlice(fmt.Sprintf("*.%s", util.PointerToString(r.Config.Spec.GlobalDomain))),
+			"host": fmt.Sprintf("*.%s", util.PointerToString(r.Config.Spec.GlobalDomain)),
 			"trafficPolicy": map[string]interface{}{
 				"tls": map[string]interface{}{
 					"mode": "ISTIO_MUTUAL",
