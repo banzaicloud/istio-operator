@@ -652,13 +652,20 @@ func SetDefaults(config *Istio) {
 		config.Spec.Telemetry.SecurityContext = defaultSecurityContext
 	}
 
-	// Multi mesh support
-	if config.Spec.MultiMesh == nil {
-		config.Spec.MultiMesh = util.BoolPointer(false)
+	if config.Spec.MultiClusterDomains == nil {
+		config.Spec.MultiClusterDomains = make([]Domain, 0)
 	}
 
-	if config.Spec.GlobalDomain == nil {
-		config.Spec.GlobalDomain = util.StrPointer(defaultGlobalDomain)
+	if config.Spec.GlobalDomain != nil {
+		found := false
+		for _, domain := range config.Spec.GetMultiClusterDomains() {
+			if domain == *config.Spec.GlobalDomain {
+				found = true
+			}
+		}
+		if !found {
+			config.Spec.MultiClusterDomains = append(config.Spec.MultiClusterDomains, Domain(*config.Spec.GlobalDomain))
+		}
 	}
 
 	// Istio CoreDNS for multi mesh support

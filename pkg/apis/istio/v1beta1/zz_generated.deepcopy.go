@@ -750,10 +750,20 @@ func (in *IstioSpec) DeepCopyInto(out *IstioSpec) {
 		*out = new(bool)
 		**out = **in
 	}
+	if in.MultiMeshEnvoyFilter != nil {
+		in, out := &in.MultiMeshEnvoyFilter, &out.MultiMeshEnvoyFilter
+		*out = new(bool)
+		**out = **in
+	}
 	if in.GlobalDomain != nil {
 		in, out := &in.GlobalDomain, &out.GlobalDomain
 		*out = new(string)
 		**out = **in
+	}
+	if in.MultiClusterDomains != nil {
+		in, out := &in.MultiClusterDomains, &out.MultiClusterDomains
+		*out = make([]Domain, len(*in))
+		copy(*out, *in)
 	}
 	in.IstioCoreDNS.DeepCopyInto(&out.IstioCoreDNS)
 	if in.LocalityLB != nil {
