@@ -109,18 +109,19 @@ func (r *Reconciler) Reconcile(log logr.Logger) error {
 		return nil
 	}
 
-	var meshExpansionDesiredState k8sutil.DesiredState
+	meshExpansionDesiredState := k8sutil.DesiredStateAbsent
 	if (desiredState != k8sutil.DesiredStateAbsent || (util.PointerToBool(r.Config.Spec.Gateways.Enabled) && util.PointerToBool(r.Config.Spec.Gateways.Ingress.Enabled))) && util.PointerToBool(r.Config.Spec.MeshExpansion) {
 		meshExpansionDesiredState = k8sutil.DesiredStatePresent
-	} else {
-		meshExpansionDesiredState = k8sutil.DesiredStateAbsent
 	}
 
-	var multimeshDesiredState k8sutil.DesiredState
+	multimeshDesiredState := k8sutil.DesiredStateAbsent
 	if (desiredState != k8sutil.DesiredStateAbsent || (util.PointerToBool(r.Config.Spec.Gateways.Enabled) && util.PointerToBool(r.Config.Spec.Gateways.Ingress.Enabled))) && util.PointerToBool(r.Config.Spec.MultiMesh) {
 		multimeshDesiredState = k8sutil.DesiredStatePresent
-	} else {
-		multimeshDesiredState = k8sutil.DesiredStateAbsent
+	}
+
+	multimeshEnvoyFilterDesiredState := k8sutil.DesiredStateAbsent
+	if (desiredState != k8sutil.DesiredStateAbsent || (util.PointerToBool(r.Config.Spec.Gateways.Enabled) && util.PointerToBool(r.Config.Spec.Gateways.Ingress.Enabled))) && util.PointerToBool(r.Config.Spec.MultiMesh) && util.PointerToBool(r.Config.Spec.MultiMeshEnvoyFilter) {
+		multimeshEnvoyFilterDesiredState = k8sutil.DesiredStatePresent
 	}
 
 	selector := resourceLabels
@@ -132,8 +133,13 @@ func (r *Reconciler) Reconcile(log logr.Logger) error {
 		{DynamicResource: func() *k8sutil.DynamicObject { return r.meshExpansionGateway(selector) }, DesiredState: meshExpansionDesiredState},
 		{DynamicResource: func() *k8sutil.DynamicObject { return r.clusterAwareGateway(selector) }, DesiredState: meshExpansionDesiredState},
 		{DynamicResource: func() *k8sutil.DynamicObject { return r.multimeshIngressGateway(selector) }, DesiredState: multimeshDesiredState},
-		{DynamicResource: r.multimeshDestinationRule, DesiredState: multimeshDesiredState},
-		{DynamicResource: func() *k8sutil.DynamicObject { return r.multimeshEnvoyFilter(selector) }, DesiredState: multimeshDesiredState},
+		{DynamicResource: func() *k8sutil.DynamicObject { return r.multimeshEnvoyFilter(selector) }, DesiredState: multimeshEnvoyFilterDesiredState},
+	}
+	for _, domain := range r.Config.Spec.GetMultiClusterDomains() {
+		domain := domain
+		drs = append(drs, resources.DynamicResourceWithDesiredState{
+			DynamicResource: func() *k8sutil.DynamicObject { return r.multimeshDestinationRule(domain) }, DesiredState: multimeshDesiredState,
+		})
 	}
 	for _, dr := range drs {
 		o := dr.DynamicResource()
