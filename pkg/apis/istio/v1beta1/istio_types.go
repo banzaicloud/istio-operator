@@ -47,6 +47,9 @@ var (
 // +kubebuilder:validation:Pattern=^1.
 type IstioVersion string
 
+// +kubebuilder:validation:Pattern=`^[a-z0-9.]+$`
+type Domain string
+
 // BaseK8sResourceConfiguration defines basic K8s resource spec configurations
 type BaseK8sResourceConfiguration struct {
 	Resources       *corev1.ResourceRequirements `json:"resources,omitempty"`
@@ -871,8 +874,14 @@ type IstioSpec struct {
 	// have a shared root CA for this model to work.
 	MultiMesh *bool `json:"multiMesh,omitempty"`
 
+	// Whether to apply envoy filter to automatically expose every service for multi mesh connections
+	MultiMeshEnvoyFilter *bool `json:"multiMeshEnvoyFilter,omitempty"`
+
 	// The domain for global service names
 	GlobalDomain *string `json:"globalDomain,omitempty"`
+
+	// Domains available for multi mesh communications
+	MultiClusterDomains []Domain `json:"multiClusterDomains,omitempty"`
 
 	// Istio CoreDNS provides DNS resolution for services in multi mesh setups
 	IstioCoreDNS IstioCoreDNS `json:"istioCoreDNS,omitempty"`
@@ -986,6 +995,15 @@ func (s IstioSpec) GetDefaultConfigVisibility() string {
 		return s.DefaultConfigVisibility
 	}
 	return "*"
+}
+
+func (s IstioSpec) GetMultiClusterDomains() []string {
+	domains := []string{}
+	for _, domain := range s.MultiClusterDomains {
+		domains = append(domains, string(domain))
+	}
+
+	return domains
 }
 
 func (v IstioVersion) IsSupported() bool {

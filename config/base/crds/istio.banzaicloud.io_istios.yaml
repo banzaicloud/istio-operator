@@ -3473,7 +3473,14 @@ spec:
                 type: boolean
               mtls:
                 type: boolean
+              multiClusterDomains:
+                items:
+                  pattern: ^[a-z0-9.]+$
+                  type: string
+                type: array
               multiMesh:
+                type: boolean
+              multiMeshEnvoyFilter:
                 type: boolean
               networkName:
                 type: string
