@@ -19,7 +19,7 @@ package istiocoredns
 import (
 	"context"
 	"encoding/json"
-	"strings"
+	"fmt"
 
 	"github.com/go-logr/logr"
 	"github.com/goph/emperror"
@@ -30,6 +30,7 @@ import (
 	"k8s.io/apimachinery/pkg/types"
 
 	"github.com/banzaicloud/istio-operator/pkg/k8sutil"
+	"github.com/banzaicloud/istio-operator/pkg/util"
 )
 
 // Add/Remove global:53 to/from coredns configmap
@@ -48,7 +49,7 @@ func (r *Reconciler) reconcileCoreDNSConfigMap(log logr.Logger, desiredState k8s
 	}
 
 	corefile := cm.Data["Corefile"]
-	desiredCorefile := corefile
+	desiredCorefile := []byte(corefile)
 	clusterIP := ""
 
 	if desiredState == k8sutil.DesiredStatePresent {
@@ -68,7 +69,13 @@ func (r *Reconciler) reconcileCoreDNSConfigMap(log logr.Logger, desiredState k8s
 		proxyOrForward = "forward"
 	}
 	config := caddyfile.EncodedServerBlock{
-		Keys: []string{"global:53"},
+		Keys: func() (d []string) {
+			for _, domain := range r.Config.Spec.GetMultiClusterDomains() {
+				d = append(d, fmt.Sprintf("%s:53", domain))
+			}
+
+			return d
+		}(),
 		Body: [][]interface{}{
 			{"errors"},
 			{"cache", "30"},
@@ -79,19 +86,19 @@ func (r *Reconciler) reconcileCoreDNSConfigMap(log logr.Logger, desiredState k8s
 	if desiredState == k8sutil.DesiredStatePresent {
 		desiredCorefile, err = r.updateCorefile([]byte(corefile), config, false)
 		if err != nil {
-			return emperror.Wrap(err, "could not add config for .global to Corefile")
+			return emperror.Wrap(err, "could not add config to Corefile")
 		}
 	} else if desiredState == k8sutil.DesiredStateAbsent {
 		desiredCorefile, err = r.updateCorefile([]byte(corefile), config, true)
 		if err != nil {
-			return emperror.Wrap(err, "could not remove config for .global from Corefile")
+			return emperror.Wrap(err, "could not remove config from Corefile")
 		}
 	}
 
 	if cm.Data == nil {
 		cm.Data = make(map[string]string, 0)
 	}
-	cm.Data["Corefile"] = desiredCorefile
+	cm.Data["Corefile"] = string(desiredCorefile)
 
 	err = r.Client.Update(context.Background(), &cm)
 	if err != nil {
@@ -101,20 +108,20 @@ func (r *Reconciler) reconcileCoreDNSConfigMap(log logr.Logger, desiredState k8s
 	return nil
 }
 
-func (r *Reconciler) updateCorefile(corefile []byte, config caddyfile.EncodedServerBlock, remove bool) (string, error) {
+func (r *Reconciler) updateCorefile(corefile []byte, config caddyfile.EncodedServerBlock, remove bool) ([]byte, error) {
 	corefileJSONData, err := caddyfile.ToJSON(corefile)
 	if err != nil {
-		return "", emperror.Wrap(err, "could not convert Corefile to JSON data")
+		return nil, emperror.Wrap(err, "could not convert Corefile to JSON data")
 	}
 
 	var corefileJSON caddyfile.EncodedCaddyfile
 	err = json.Unmarshal(corefileJSONData, &corefileJSON)
 	if err != nil {
-		return "", emperror.Wrap(err, "could not unmarshal JSON to EncodedCaddyfile")
+		return nil, emperror.Wrap(err, "could not unmarshal JSON to EncodedCaddyfile")
 	}
 
 	if len(config.Keys) < 1 {
-		return "", errors.New("invalid .global config")
+		return nil, errors.New("invalid config")
 	}
 
 	pos := -1
@@ -140,16 +147,5 @@ func (r *Reconciler) updateCorefile(corefile []byte, config caddyfile.EncodedSer
 		}
 	}
 
-	corefileData, err := json.Marshal(&corefileJSON)
-	if err != nil {
-		return "", emperror.Wrap(err, "could not marshal EncodedCaddyfile to JSON")
-	}
-
-	corefile, err = caddyfile.FromJSON(corefileData)
-	if err != nil {
-		return "", emperror.Wrap(err, "could not convert JSON to Caddyfile")
-	}
-
-	// convert tabs to spaces for properly display content in ConfigMap
-	return strings.Replace(string(corefile), "\t", "  ", -1), nil
+	return util.GenerateCaddyFile(corefileJSON)
 }

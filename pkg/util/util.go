@@ -17,6 +17,11 @@ limitations under the License.
 package util
 
 import (
+	"bytes"
+	"encoding/json"
+
+	"github.com/goph/emperror"
+	"github.com/mholt/caddy/caddyfile"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/util/intstr"
 )
@@ -150,4 +155,19 @@ func GetPodSecurityContextFromSecurityContext(sc *corev1.SecurityContext) *corev
 		RunAsUser:    sc.RunAsUser,
 		FSGroup:      sc.RunAsGroup,
 	}
+}
+
+func GenerateCaddyFile(cf caddyfile.EncodedCaddyfile) ([]byte, error) {
+	corefileData, err := json.Marshal(&cf)
+	if err != nil {
+		return nil, emperror.Wrap(err, "could not marshal EncodedCaddyfile to JSON")
+	}
+
+	corefile, err := caddyfile.FromJSON(corefileData)
+	if err != nil {
+		return nil, emperror.Wrap(err, "could not convert JSON to Caddyfile")
+	}
+
+	// convert tabs to spaces for properly display content in ConfigMap
+	return bytes.Replace(corefile, []byte("\t"), []byte("  "), -1), nil
 }
