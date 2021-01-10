@@ -17,52 +17,72 @@ limitations under the License.
 package istiocoredns
 
 import (
+	"fmt"
+
 	apiv1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 
 	"github.com/banzaicloud/istio-operator/pkg/resources/templates"
+	"github.com/banzaicloud/istio-operator/pkg/util"
+	"github.com/mholt/caddy/caddyfile"
 )
-
-func (r *Reconciler) data() map[string]string {
-	var data map[string]string
-	if r.isProxyPluginDeprecated() {
-		data = map[string]string{
-			"Corefile": `.:53 {
-          errors
-          health
-          grpc global 127.0.0.1:8053
-          forward . /etc/resolv.conf {
-            except global
-          }
-          prometheus :9153
-          cache 30
-          reload
-        }
-`,
-		}
-	} else {
-		data = map[string]string{
-			"Corefile": `.:53 {
-    errors
-    health
-    proxy global 127.0.0.1:8053 {
-        protocol grpc insecure
-    }
-    prometheus :9153
-    proxy . /etc/resolv.conf
-    cache 30
-    reload
-}
-`,
-		}
-	}
-
-	return data
-}
 
 func (r *Reconciler) configMap() runtime.Object {
 	return &apiv1.ConfigMap{
 		ObjectMeta: templates.ObjectMetaWithRevision(configMapName, labels, r.Config),
 		Data:       r.data(),
+	}
+}
+
+func (r *Reconciler) data() map[string]string {
+	var data map[string]string
+	proxyOrGrpc := "proxy"
+	if r.isProxyPluginDeprecated() {
+		proxyOrGrpc = "grpc"
+	}
+
+	// base config
+	config := caddyfile.EncodedCaddyfile([]caddyfile.EncodedServerBlock{
+		{
+			Keys: []string{".:53"},
+			Body: [][]interface{}{
+				{"errors"},
+				{"health"},
+				{proxyOrGrpc, ".", "/etc/resolv.conf"},
+				{"prometheus", ":9153"},
+				{"cache", "30"},
+				{"reload"},
+			},
+		},
+	})
+
+	// get config for specific domains
+	for _, domain := range r.Config.Spec.GetMultiClusterDomains() {
+		config = append(config, r.getCoreDNSConfigBlockForDomain(domain))
+	}
+
+	cf, err := util.GenerateCaddyFile(config)
+	if err != nil {
+		return data
+	}
+
+	return map[string]string{
+		"Corefile": string(cf),
+	}
+}
+
+func (r *Reconciler) getCoreDNSConfigBlockForDomain(domain string) caddyfile.EncodedServerBlock {
+	proxyOrGrpc := "proxy"
+	if r.isProxyPluginDeprecated() {
+		proxyOrGrpc = "grpc"
+	}
+
+	return caddyfile.EncodedServerBlock{
+		Keys: []string{fmt.Sprintf("%s:53", domain)},
+		Body: [][]interface{}{
+			{"errors"},
+			{proxyOrGrpc, domain, "127.0.0.1:8053"},
+			{"cache", "30"},
+		},
 	}
 }

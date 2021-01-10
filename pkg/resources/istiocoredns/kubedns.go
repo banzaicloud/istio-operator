@@ -27,10 +27,9 @@ import (
 	"k8s.io/apimachinery/pkg/types"
 
 	"github.com/banzaicloud/istio-operator/pkg/k8sutil"
-	"github.com/banzaicloud/istio-operator/pkg/util"
 )
 
-// Add/Remove .global to/from kube-dns configmap
+// Add/Remove multicluser domains to/from kube-dns configmap
 func (r *Reconciler) reconcileKubeDNSConfigMap(log logr.Logger, desiredState k8sutil.DesiredState) error {
 	var cm apiv1.ConfigMap
 
@@ -62,11 +61,23 @@ func (r *Reconciler) reconcileKubeDNSConfigMap(log logr.Logger, desiredState k8s
 		if err != nil {
 			return emperror.Wrap(err, "could not get Istio coreDNS service")
 		}
-		stubDomains[util.PointerToString(r.Config.Spec.GlobalDomain)] = []string{svc.Spec.ClusterIP}
+		clusterDomains := make(map[string][]string, 0)
+		for _, domain := range r.Config.Spec.GetMultiClusterDomains() {
+			clusterDomains[domain] = []string{svc.Spec.ClusterIP}
+		}
+		for domain := range stubDomains {
+			if _, ok := clusterDomains[domain]; !ok {
+				delete(stubDomains, domain)
+			}
+		}
+		for k, v := range clusterDomains {
+			stubDomains[k] = v
+		}
 	} else if desiredState == k8sutil.DesiredStateAbsent {
-		_, ok := stubDomains[util.PointerToString(r.Config.Spec.GlobalDomain)]
-		if ok {
-			delete(stubDomains, util.PointerToString(r.Config.Spec.GlobalDomain))
+		for _, domain := range r.Config.Spec.GetMultiClusterDomains() {
+			if _, ok := stubDomains[domain]; ok {
+				delete(stubDomains, domain)
+			}
 		}
 	}
 
