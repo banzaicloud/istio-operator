@@ -248,7 +248,7 @@ func SetDefaults(config *Istio) {
 		config.Spec.Pilot.SPIFFE.OperatorEndpoints = &OperatorEndpointsConfiguration{}
 	}
 	if config.Spec.Pilot.SPIFFE.OperatorEndpoints.Enabled == nil {
-		config.Spec.Pilot.SPIFFE.OperatorEndpoints.Enabled = util.BoolPointer(true)
+		config.Spec.Pilot.SPIFFE.OperatorEndpoints.Enabled = util.BoolPointer(false)
 	}
 	// Citadel config
 	if config.Spec.Citadel.Enabled == nil {
