@@ -39,7 +39,7 @@ Parameter | Description | Default
 `prometheusMetrics.enabled` | If true, use direct access for Prometheus metrics | `false`
 `prometheusMetrics.authProxy.enabled` | If true, use auth proxy for Prometheus metrics | `true`
 `prometheusMetrics.authProxy.image.repository` | Auth proxy container image repository | `gcr.io/kubebuilder/kube-rbac-proxy`
-`prometheusMetrics.authProxy.image.tag` | Auth proxy container image tag | `v0.4.0`
+`prometheusMetrics.authProxy.image.tag` | Auth proxy container image tag | `v0.5.0`
 `prometheusMetrics.authProxy.image.pullPolicy` | Auth proxy container image pull policy | `IfNotPresent`
 `rbac.enabled` | Create rbac service account and roles | `true`
 `rbac.psp.enabled` | Create pod security policy and binding | `false`
