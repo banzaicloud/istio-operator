@@ -49,11 +49,12 @@ type Manager struct {
 
 	secrets       map[string]Secret
 	controlplanes map[string]*istiov1beta1.Istio
+	sequence      int64
 }
 
 type TrustBundle struct {
-	Sequence    uint64    `json:"spiffe_sequence"`
-	RefreshHint uint64    `json:"spiffe_refresh_hint"`
+	Sequence    int64     `json:"spiffe_sequence"`
+	RefreshHint float64   `json:"spiffe_refresh_hint"`
 	Keys        []jwk.Key `json:"keys"`
 	TrustDomain string    `json:"trust_domain,omitempty"`
 }
@@ -65,6 +66,7 @@ func NewManager(mgr manager.Manager, log logr.Logger) *Manager {
 
 		secrets:       make(map[string]Secret),
 		controlplanes: make(map[string]*istiov1beta1.Istio, 0),
+		sequence:      time.Now().Unix(),
 	}
 }
 
@@ -199,8 +201,8 @@ func (m *Manager) getTrustBundle(trustDomain, revision string) (*TrustBundle, er
 	}
 
 	tb := &TrustBundle{
-		Sequence:    1,
-		RefreshHint: uint64((time.Hour * 24).Seconds()),
+		Sequence:    m.sequence,
+		RefreshHint: (time.Minute * 5).Seconds(),
 		Keys:        keys,
 		TrustDomain: trustDomain,
 	}
@@ -218,6 +220,7 @@ func (m *Manager) deleteSecret(s *corev1.Secret) {
 	delete(m.secrets, key)
 
 	m.log.Info("secret deleted", "key", key)
+	m.sequence++
 }
 
 func (m *Manager) updateSecret(s *corev1.Secret) error {
@@ -234,6 +237,7 @@ func (m *Manager) updateSecret(s *corev1.Secret) error {
 	}
 
 	m.log.Info("secret updated", "key", key)
+	m.sequence++
 
 	return nil
 }
