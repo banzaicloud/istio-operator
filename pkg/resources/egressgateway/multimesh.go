@@ -30,7 +30,7 @@ const (
 
 func (r *Reconciler) multimeshEgressGateway() *k8sutil.DynamicObject {
 	domains := make([]string, 0)
-	for _, domain := range r.Config.Spec.MultiClusterDomains {
+	for _, domain := range r.Config.Spec.GetMultiMeshExpansion().GetDomains() {
 		domains = append(domains, fmt.Sprintf("*.%s", domain))
 	}
 

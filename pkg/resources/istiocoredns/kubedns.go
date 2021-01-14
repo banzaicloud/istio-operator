@@ -62,7 +62,7 @@ func (r *Reconciler) reconcileKubeDNSConfigMap(log logr.Logger, desiredState k8s
 			return emperror.Wrap(err, "could not get Istio coreDNS service")
 		}
 		clusterDomains := make(map[string][]string, 0)
-		for _, domain := range r.Config.Spec.GetMultiClusterDomains() {
+		for _, domain := range r.Config.Spec.GetMultiMeshExpansion().GetDomains() {
 			clusterDomains[domain] = []string{svc.Spec.ClusterIP}
 		}
 		for domain := range stubDomains {
@@ -74,7 +74,7 @@ func (r *Reconciler) reconcileKubeDNSConfigMap(log logr.Logger, desiredState k8s
 			stubDomains[k] = v
 		}
 	} else if desiredState == k8sutil.DesiredStateAbsent {
-		for _, domain := range r.Config.Spec.GetMultiClusterDomains() {
+		for _, domain := range r.Config.Spec.GetMultiMeshExpansion().GetDomains() {
 			if _, ok := stubDomains[domain]; ok {
 				delete(stubDomains, domain)
 			}

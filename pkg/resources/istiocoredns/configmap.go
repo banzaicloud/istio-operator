@@ -57,7 +57,7 @@ func (r *Reconciler) data() map[string]string {
 	})
 
 	// get config for specific domains
-	for _, domain := range r.Config.Spec.GetMultiClusterDomains() {
+	for _, domain := range r.Config.Spec.GetMultiMeshExpansion().GetDomains() {
 		config = append(config, r.getCoreDNSConfigBlockForDomain(domain))
 	}
 
