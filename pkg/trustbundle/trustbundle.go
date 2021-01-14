@@ -37,7 +37,6 @@ import (
 
 const (
 	CertsDataKey                              = "certs"
-	RevisionLabel                             = "istio.io/rev"
 	TrustDomainLabel                          = "istio.banzaicloud.io/trust-domain"
 	TrustBundleCASecretType corev1.SecretType = "istio.banzaicloud.io/trust-bundle-ca"
 	WebhookEndpointPath                       = "/spiffe-trust-bundle"
@@ -186,7 +185,7 @@ func (m *Manager) isSecretMatch(s Secret, trustDomain, revision string) bool {
 		return false
 	}
 
-	if s.Labels[RevisionLabel] != "" && s.Labels[RevisionLabel] != revision {
+	if s.Labels[istiov1beta1.RevisionedAutoInjectionLabelKey] != "" && s.Labels[istiov1beta1.RevisionedAutoInjectionLabelKey] != revision {
 		return false
 	}
 
