@@ -1,7 +1,12 @@
 version: 2.1
 orbs:
-  helm: banzaicloud/helm@0.0.3
+  helm: banzaicloud/helm@0.0.8
   docker: banzaicloud/docker@0.0.5
+
+executors:
+  helm311:
+    docker:
+      - image: ghcr.io/banzaicloud/helm:0.0.7
 
 commands:
   publish-with-latests:
@@ -148,14 +153,16 @@ workflows:
   helm-chart:
     jobs:
       - helm/lint-chart:
-          chart-path: deploy/charts/istio-operator
+          executor: helm311
+          charts-dir: deploy/charts
           filters:
             tags:
               ignore: /.*/
 
       - helm/publish-chart:
           context: helm
-          chart-path: deploy/charts/istio-operator
+          executor: helm311
+          charts-dir: deploy/charts
           filters:
             branches:
               ignore: /.*/
