@@ -28,6 +28,7 @@ import (
 
 	"github.com/banzaicloud/istio-operator/pkg/resources/templates"
 	"github.com/banzaicloud/istio-operator/pkg/util"
+	"github.com/goph/emperror"
 )
 
 func (r *Reconciler) configMap() (runtime.Object, error) {
@@ -57,7 +58,7 @@ func GetWebhookCABundles(client client.Client, webhookConfigurationName string) 
 		Name: webhookConfigurationName,
 	}, vwh)
 	if err != nil {
-		return "", err
+		return "", emperror.Wrap(err, "could not get validating webhook")
 	}
 
 	for _, wh := range vwh.Webhooks {
