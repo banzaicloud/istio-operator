@@ -31,7 +31,7 @@ const (
 
 func (r *Reconciler) multimeshIngressGateway(selector map[string]string) *k8sutil.DynamicObject {
 	domains := make([]string, 0)
-	for _, domain := range r.Config.Spec.MultiClusterDomains {
+	for _, domain := range r.Config.Spec.GetMultiMeshExpansion().GetDomains() {
 		domains = append(domains, fmt.Sprintf("*.%s", domain))
 	}
 
@@ -67,7 +67,7 @@ func (r *Reconciler) multimeshIngressGateway(selector map[string]string) *k8suti
 
 func (r *Reconciler) multimeshEnvoyFilter(selector map[string]string) *k8sutil.DynamicObject {
 	domains := make([]string, 0)
-	for _, domain := range r.Config.Spec.MultiClusterDomains {
+	for _, domain := range r.Config.Spec.GetMultiMeshExpansion().GetDomains() {
 		domains = append(domains, fmt.Sprintf("\\.%s", domain))
 	}
 

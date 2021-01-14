@@ -652,19 +652,22 @@ func SetDefaults(config *Istio) {
 		config.Spec.Telemetry.SecurityContext = defaultSecurityContext
 	}
 
-	if config.Spec.MultiClusterDomains == nil {
-		config.Spec.MultiClusterDomains = make([]Domain, 0)
+	if config.Spec.MultiMeshExpansion == nil {
+		config.Spec.MultiMeshExpansion = &MultiMeshConfiguration{}
+	}
+	if config.Spec.MultiMeshExpansion.Domains == nil {
+		config.Spec.MultiMeshExpansion.Domains = make([]Domain, 0)
 	}
 
 	if config.Spec.GlobalDomain != nil {
 		found := false
-		for _, domain := range config.Spec.GetMultiClusterDomains() {
+		for _, domain := range config.Spec.GetMultiMeshExpansion().GetDomains() {
 			if domain == *config.Spec.GlobalDomain {
 				found = true
 			}
 		}
 		if !found {
-			config.Spec.MultiClusterDomains = append(config.Spec.MultiClusterDomains, Domain(*config.Spec.GlobalDomain))
+			config.Spec.MultiMeshExpansion.Domains = append(config.Spec.MultiMeshExpansion.Domains, Domain(*config.Spec.GlobalDomain))
 		}
 	}
 

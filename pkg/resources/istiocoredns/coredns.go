@@ -70,7 +70,7 @@ func (r *Reconciler) reconcileCoreDNSConfigMap(log logr.Logger, desiredState k8s
 	}
 	config := caddyfile.EncodedServerBlock{
 		Keys: func() (d []string) {
-			for _, domain := range r.Config.Spec.GetMultiClusterDomains() {
+			for _, domain := range r.Config.Spec.GetMultiMeshExpansion().GetDomains() {
 				d = append(d, fmt.Sprintf("%s:53", domain))
 			}
 
