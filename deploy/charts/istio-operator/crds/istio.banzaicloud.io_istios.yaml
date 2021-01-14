@@ -3471,15 +3471,20 @@ spec:
                   type: boolean
                 mtls:
                   type: boolean
-                multiClusterDomains:
-                  items:
-                    pattern: ^[a-z0-9.]+$
-                    type: string
-                  type: array
                 multiMesh:
                   type: boolean
-                multiMeshEnvoyFilter:
-                  type: boolean
+                multiMeshExpansion:
+                  properties:
+                    domains:
+                      items:
+                        pattern: ^[a-z0-9.]+$
+                        type: string
+                      type: array
+                    enabled:
+                      type: boolean
+                    envoyFilterEnabled:
+                      type: boolean
+                  type: object
                 networkName:
                   type: string
                 nodeAgent:
