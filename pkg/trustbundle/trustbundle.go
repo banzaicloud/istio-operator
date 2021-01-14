@@ -122,12 +122,18 @@ func (m *Manager) startSecretInformer() error {
 	i.AddEventHandler(cache.ResourceEventHandlerFuncs{
 		AddFunc: func(obj interface{}) {
 			if s, ok := obj.(*corev1.Secret); ok && s.Type == TrustBundleCASecretType {
-				m.updateSecret(s)
+				err := m.updateSecret(s)
+				if err != nil {
+					m.log.Error(err, "could not update secret")
+				}
 			}
 		},
 		UpdateFunc: func(oldObj interface{}, newObj interface{}) {
 			if s, ok := newObj.(*corev1.Secret); ok && s.Type == TrustBundleCASecretType {
-				m.updateSecret(s)
+				err := m.updateSecret(s)
+				if err != nil {
+					m.log.Error(err, "could not update secret")
+				}
 			}
 		},
 		DeleteFunc: func(obj interface{}) {
@@ -149,7 +155,10 @@ func (m *Manager) startControlplaneInformer() error {
 	i.AddEventHandler(cache.ResourceEventHandlerFuncs{
 		AddFunc: func(obj interface{}) {
 			if cp, ok := obj.(*istiov1beta1.Istio); ok {
-				m.addControlplane(cp)
+				err := m.addControlplane(cp)
+				if err != nil {
+					m.log.Error(err, "could not add control plane")
+				}
 			}
 		},
 		DeleteFunc: func(obj interface{}) {
