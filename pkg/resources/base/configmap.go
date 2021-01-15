@@ -101,26 +101,26 @@ func MeshConfig(config *istiov1beta1.Istio, remote bool) map[string]interface{} 
 	}
 
 	meshConfig := map[string]interface{}{
-		"enableTracing":         config.Spec.Tracing.Enabled,
-		"accessLogFile":         config.Spec.Proxy.AccessLogFile,
-		"accessLogFormat":       config.Spec.Proxy.AccessLogFormat,
-		"accessLogEncoding":     config.Spec.Proxy.AccessLogEncoding,
-		"ingressService":        "istio-ingressgateway",
-		"ingressClass":          "istio",
-		"ingressControllerMode": "STRICT",
-		"trustDomain":           config.Spec.TrustDomain,
-		"trustDomainAliases":    config.Spec.TrustDomainAliases,
-		"enableAutoMtls":        util.PointerToBool(config.Spec.AutoMTLS),
+		"connectTimeout":              "10s",
+		"protocolDetectionTimeout":    config.Spec.Proxy.ProtocolDetectionTimeout,
+		"ingressClass":                "istio",
+		"ingressService":              "istio-ingressgateway",
+		"ingressControllerMode":       "STRICT",
+		"enableTracing":               config.Spec.Tracing.Enabled,
+		"accessLogFile":               config.Spec.Proxy.AccessLogFile,
+		"accessLogFormat":             config.Spec.Proxy.AccessLogFormat,
+		"accessLogEncoding":           config.Spec.Proxy.AccessLogEncoding,
+		"enableEnvoyAccessLogService": util.PointerToBool(config.Spec.Proxy.EnvoyAccessLogService.Enabled),
+		"defaultConfig":               defaultConfig,
 		"outboundTrafficPolicy": map[string]interface{}{
 			"mode": config.Spec.OutboundTrafficPolicy.Mode,
 		},
-		"defaultConfig":               defaultConfig,
-		"rootNamespace":               config.Namespace,
-		"connectTimeout":              "10s",
-		"localityLbSetting":           getLocalityLBConfiguration(config),
-		"enableEnvoyAccessLogService": util.PointerToBool(config.Spec.Proxy.EnvoyAccessLogService.Enabled),
-		"protocolDetectionTimeout":    config.Spec.Proxy.ProtocolDetectionTimeout,
-		"dnsRefreshRate":              config.Spec.Proxy.DNSRefreshRate,
+		"enableAutoMtls":     util.PointerToBool(config.Spec.AutoMTLS),
+		"trustDomain":        config.Spec.TrustDomain,
+		"trustDomainAliases": config.Spec.TrustDomainAliases,
+		"rootNamespace":      config.Namespace,
+		"localityLbSetting":  getLocalityLBConfiguration(config),
+		"dnsRefreshRate":     config.Spec.Proxy.DNSRefreshRate,
 	}
 
 	if config.Spec.MeshID != "" {
