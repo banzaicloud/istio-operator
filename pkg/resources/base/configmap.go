@@ -133,8 +133,6 @@ func MeshConfig(config *istiov1beta1.Istio, remote bool) map[string]interface{} 
 		meshConfig["certificates"] = config.Spec.Certificates
 	}
 
-	meshConfig["sdsUdsPath"] = "unix:/etc/istio/proxy/SDS"
-
 	if util.PointerToBool(config.Spec.Policy.Enabled) {
 		meshConfig["mixerCheckServer"] = mixerServerWithRevision(config, "policy", remote)
 	}
