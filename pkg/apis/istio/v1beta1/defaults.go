@@ -241,6 +241,15 @@ func SetDefaults(config *Istio) {
 	if config.Spec.Pilot.SecurityContext == nil {
 		config.Spec.Pilot.SecurityContext = defaultSecurityContext
 	}
+	if config.Spec.Pilot.SPIFFE == nil {
+		config.Spec.Pilot.SPIFFE = &SPIFFEConfiguration{}
+	}
+	if config.Spec.Pilot.SPIFFE.OperatorEndpoints == nil {
+		config.Spec.Pilot.SPIFFE.OperatorEndpoints = &OperatorEndpointsConfiguration{}
+	}
+	if config.Spec.Pilot.SPIFFE.OperatorEndpoints.Enabled == nil {
+		config.Spec.Pilot.SPIFFE.OperatorEndpoints.Enabled = util.BoolPointer(false)
+	}
 	// Citadel config
 	if config.Spec.Citadel.Enabled == nil {
 		config.Spec.Citadel.Enabled = util.BoolPointer(false)
@@ -271,9 +280,6 @@ func SetDefaults(config *Istio) {
 		config.Spec.Galley.EnableAnalysis = util.BoolPointer(false)
 	}
 	// Gateways config
-	if config.Spec.Gateways.Enabled == nil {
-		config.Spec.Gateways.Enabled = util.BoolPointer(true)
-	}
 	ingress := &config.Spec.Gateways.Ingress
 	ingress.MeshGatewayConfiguration.SetDefaults()
 	if ingress.ServiceType == "" {
@@ -321,6 +327,9 @@ func SetDefaults(config *Istio) {
 	}
 	if config.Spec.Gateways.K8sIngress.EnableHttps == nil {
 		config.Spec.Gateways.K8sIngress.EnableHttps = util.BoolPointer(false)
+	}
+	if config.Spec.Gateways.Enabled == nil {
+		config.Spec.Gateways.Enabled = util.BoolPointer(util.PointerToBool(config.Spec.Gateways.Ingress.Enabled) || util.PointerToBool(config.Spec.Gateways.Egress.Enabled) || util.PointerToBool(config.Spec.Gateways.MeshExpansion.Enabled))
 	}
 	// Mixer config
 	if config.Spec.Mixer.Enabled == nil {

@@ -44,6 +44,7 @@ import (
 	logf "sigs.k8s.io/controller-runtime/pkg/runtime/log"
 
 	istiov1beta1 "github.com/banzaicloud/istio-operator/pkg/apis/istio/v1beta1"
+	"github.com/banzaicloud/istio-operator/pkg/config"
 	remoteistioCtrl "github.com/banzaicloud/istio-operator/pkg/controller/remoteistio"
 	"github.com/banzaicloud/istio-operator/pkg/crds"
 	"github.com/banzaicloud/istio-operator/pkg/k8sutil"
@@ -63,6 +64,7 @@ import (
 	"github.com/banzaicloud/istio-operator/pkg/resources/nodeagent"
 	"github.com/banzaicloud/istio-operator/pkg/resources/pilot"
 	"github.com/banzaicloud/istio-operator/pkg/resources/sidecarinjector"
+	"github.com/banzaicloud/istio-operator/pkg/resources/webhookcert"
 	"github.com/banzaicloud/istio-operator/pkg/util"
 )
 
@@ -84,7 +86,7 @@ func init() {
 
 // Add creates a new Controller and adds it to the Manager with default RBAC. The Manager will set fields on the Controller
 // and Start it when the Manager is Started.
-func Add(mgr manager.Manager) error {
+func Add(mgr manager.Manager, operatorConfig config.Configuration) error {
 	dynamic, err := dynamic.NewForConfig(mgr.GetConfig())
 	if err != nil {
 		return emperror.Wrap(err, "failed to create dynamic client")
@@ -97,7 +99,7 @@ func Add(mgr manager.Manager) error {
 	if err != nil {
 		return emperror.Wrap(err, "unable to load CRDs from manifests")
 	}
-	r := newReconciler(mgr, dynamic, crd)
+	r := newReconciler(mgr, operatorConfig, dynamic, crd)
 	err = newController(mgr, r)
 	if err != nil {
 		return emperror.Wrap(err, "failed to create controller")
@@ -106,13 +108,15 @@ func Add(mgr manager.Manager) error {
 }
 
 // newReconciler returns a new IstioReconciler
-func newReconciler(mgr manager.Manager, d dynamic.Interface, crd *crds.CRDReconciler) reconcile.Reconciler {
+func newReconciler(mgr manager.Manager, operatorConfig config.Configuration, d dynamic.Interface, crd *crds.CRDReconciler) reconcile.Reconciler {
 	return &ReconcileIstio{
 		Client:        mgr.GetClient(),
 		dynamic:       d,
 		crdReconciler: crd,
 		mgr:           mgr,
 		recorder:      mgr.GetEventRecorderFor("istio-controller"),
+
+		operatorConfig: operatorConfig,
 	}
 }
 
@@ -145,6 +149,7 @@ type ReconcileIstio struct {
 	mgr              manager.Manager
 	recorder         record.EventRecorder
 	ctrl             controller.Controller
+	operatorConfig   config.Configuration
 	watchersInitOnce sync.Once
 }
 
@@ -337,6 +342,7 @@ func (r *ReconcileIstio) reconcile(logger logr.Logger, config *istiov1beta1.Isti
 
 	reconcilers := []resources.ComponentReconciler{
 		base.New(r.Client, config, false),
+		webhookcert.New(r.Client, config, r.operatorConfig),
 		citadel.New(citadel.Configuration{
 			DeployMeshWidePolicy: true,
 		}, r.Client, r.dynamic, config),
@@ -345,7 +351,7 @@ func (r *ReconcileIstio) reconcile(logger logr.Logger, config *istiov1beta1.Isti
 		mixer.NewPolicyReconciler(r.Client, r.dynamic, config),
 		mixer.NewTelemetryReconciler(r.Client, r.dynamic, config),
 		pilot.New(r.Client, r.dynamic, config),
-		istiod.New(r.Client, r.dynamic, config, r.mgr.GetScheme()),
+		istiod.New(r.Client, r.dynamic, config, r.mgr.GetScheme(), r.operatorConfig),
 		cni.New(r.Client, config),
 		nodeagent.New(r.Client, config),
 		istiocoredns.New(r.Client, config),

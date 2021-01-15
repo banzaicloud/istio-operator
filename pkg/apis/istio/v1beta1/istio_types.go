@@ -161,6 +161,19 @@ type PilotConfiguration struct {
 
 	// If present will be appended to the environment variables of the container
 	AdditionalEnvVars []corev1.EnvVar `json:"additionalEnvVars,omitempty"`
+
+	// SPIFFE configuration of Pilot
+	SPIFFE *SPIFFEConfiguration `json:"spiffe,omitempty"`
+}
+
+// SPIFFEConfiguration is for SPIFFE configuration of Pilot
+type SPIFFEConfiguration struct {
+	OperatorEndpoints *OperatorEndpointsConfiguration `json:"operatorEndpoints,omitempty"`
+}
+
+// OperatorEndpointsConfiguration defines config options for automatic SPIFFE endpoints
+type OperatorEndpointsConfiguration struct {
+	Enabled *bool `json:"enabled,omitempty"`
 }
 
 // CitadelConfiguration defines config options for Citadel

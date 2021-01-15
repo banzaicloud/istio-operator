@@ -71,6 +71,9 @@ spec:
           {{- end }}
           {{- if and (.Values.webhook.enabled) (semverCompare ">= 1.7.0" .Values.istioVersion) }}
           - "--webhook-name={{ include "istio-operator.fullname" . }}{{ .Values.operatorComponentSuffix }}-webhook"
+          {{- if semverCompare ">= 1.8.0" .Values.istioVersion }}
+          - "--webhook-service-address={{ include "istio-operator.fullname" . }}{{ .Values.operatorComponentSuffix }}.{{ .Release.Namespace }}.svc"
+          {{- end }}
           {{- end }}
           {{- range $value := .Values.operator.extraArgs }}
           - {{ quote $value }}

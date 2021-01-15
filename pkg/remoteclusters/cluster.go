@@ -40,14 +40,16 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/source"
 
 	istiov1beta1 "github.com/banzaicloud/istio-operator/pkg/apis/istio/v1beta1"
+	"github.com/banzaicloud/istio-operator/pkg/config"
 	"github.com/banzaicloud/istio-operator/pkg/controller/meshgateway"
 	"github.com/banzaicloud/istio-operator/pkg/k8sutil"
 )
 
 type Cluster struct {
-	name   string
-	config []byte
-	log    logr.Logger
+	name           string
+	operatorConfig config.Configuration
+	k8sConfig      []byte
+	log            logr.Logger
 
 	stop          <-chan struct{}
 	stopper       chan<- struct{}
@@ -65,20 +67,20 @@ type Cluster struct {
 	cl                client.Client
 }
 
-func NewCluster(name string, ctrl controller.Controller, cl client.Client, config []byte, log logr.Logger) (*Cluster, error) {
+func NewCluster(name string, cfg config.Configuration, ctrl controller.Controller, cl client.Client, k8sConfig []byte, log logr.Logger) (*Cluster, error) {
 	stop := make(chan struct{})
 
 	cluster := &Cluster{
-		name:    name,
-		config:  config,
-		log:     log.WithValues("cluster", name),
-		stop:    stop,
-		stopper: stop,
-		ctrl:    ctrl,
-		cl:      cl,
+		name:      name,
+		k8sConfig: k8sConfig,
+		log:       log.WithValues("cluster", name),
+		stop:      stop,
+		stopper:   stop,
+		ctrl:      ctrl,
+		cl:        cl,
 	}
 
-	restConfig, err := cluster.getRestConfig(config)
+	restConfig, err := cluster.getRestConfig(k8sConfig)
 	if err != nil {
 		return nil, emperror.Wrap(err, "could not get k8s rest config")
 	}
@@ -240,7 +242,7 @@ func (c *Cluster) initK8SClients() error {
 	}
 
 	// add mesh gateway controller to the manager
-	meshgateway.Add(c.mgr)
+	meshgateway.Add(c.mgr, c.operatorConfig)
 
 	c.ctrlRuntimeClient = c.mgr.GetClient()
 
