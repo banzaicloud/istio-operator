@@ -109,7 +109,7 @@ func (r *Reconciler) clusterRole() runtime.Object {
 		{
 			APIGroups: []string{""},
 			Resources: []string{"configmaps"},
-			Verbs:     []string{"create", "get", "list", "watch", "update"},
+			Verbs:     []string{"create", "get", "list", "watch", "update", "delete"},
 		},
 		// Istiod and bootstrap
 		{
