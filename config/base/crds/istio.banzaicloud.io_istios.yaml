@@ -3479,7 +3479,7 @@ spec:
                 properties:
                   domains:
                     items:
-                      pattern: ^[a-z0-9.]+$
+                      pattern: ^[-a-z0-9.]+$
                       type: string
                     type: array
                   enabled:
