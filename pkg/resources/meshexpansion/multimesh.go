@@ -25,6 +25,7 @@ import (
 	"k8s.io/apimachinery/pkg/runtime/schema"
 
 	"github.com/banzaicloud/istio-operator/pkg/k8sutil"
+	"github.com/banzaicloud/istio-operator/pkg/util"
 )
 
 const (
@@ -129,7 +130,9 @@ func (r *Reconciler) multimeshDestinationRule(domain string) *k8sutil.DynamicObj
 		Kind:      "DestinationRule",
 		Name:      r.Config.WithRevision(fmt.Sprintf("%s-%08x", multimeshResourceNamePrefix, crc32.ChecksumIEEE([]byte(domain)))),
 		Namespace: r.Config.Namespace,
-		Labels:    r.Config.RevisionLabels(),
+		Labels: util.MergeStringMaps(r.Config.RevisionLabels(), map[string]string{
+			multiMeshDomainLabelName: domain,
+		}),
 		Spec: map[string]interface{}{
 			"host": fmt.Sprintf("*.%s", domain),
 			"trafficPolicy": map[string]interface{}{

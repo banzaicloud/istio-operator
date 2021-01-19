@@ -17,6 +17,9 @@ limitations under the License.
 package meshexpansion
 
 import (
+	"context"
+
+	istionetworkingv1beta1 "github.com/banzaicloud/istio-client-go/pkg/networking/v1beta1"
 	"github.com/go-logr/logr"
 	"github.com/goph/emperror"
 	"k8s.io/client-go/dynamic"
@@ -31,8 +34,9 @@ import (
 )
 
 const (
-	ResourceName  = "istio-meshexpansion-gateway"
-	componentName = "meshexpansiongateway"
+	ResourceName             = "istio-meshexpansion-gateway"
+	componentName            = "meshexpansiongateway"
+	multiMeshDomainLabelName = "istio.banzaicloud.io/multi-mesh-domain"
 )
 
 var (
@@ -135,11 +139,13 @@ func (r *Reconciler) Reconcile(log logr.Logger) error {
 		{DynamicResource: func() *k8sutil.DynamicObject { return r.multimeshIngressGateway(selector) }, DesiredState: multimeshDesiredState},
 		{DynamicResource: func() *k8sutil.DynamicObject { return r.multimeshEnvoyFilter(selector) }, DesiredState: multimeshEnvoyFilterDesiredState},
 	}
+	meshDomains := make(map[string]bool, 0)
 	for _, domain := range r.Config.Spec.GetMultiMeshExpansion().GetDomains() {
 		domain := domain
 		drs = append(drs, resources.DynamicResourceWithDesiredState{
 			DynamicResource: func() *k8sutil.DynamicObject { return r.multimeshDestinationRule(domain) }, DesiredState: multimeshDesiredState,
 		})
+		meshDomains[domain] = true
 	}
 	for _, dr := range drs {
 		o := dr.DynamicResource()
@@ -147,6 +153,19 @@ func (r *Reconciler) Reconcile(log logr.Logger) error {
 		if err != nil {
 			return emperror.WrapWith(err, "failed to reconcile dynamic resource", "resource", o.Gvr)
 		}
+	}
+
+	// remove obsolete destination rules
+	destinationrules := &istionetworkingv1beta1.DestinationRuleList{}
+	err = r.Client.List(context.Background(), destinationrules, client.HasLabels{multiMeshDomainLabelName})
+	if err != nil {
+		return err
+	}
+	for _, dr := range destinationrules.Items {
+		if meshDomains[dr.GetLabels()[multiMeshDomainLabelName]] {
+			continue
+		}
+		k8sutil.Reconcile(log, r.Client, &dr, k8sutil.DesiredStateAbsent)
 	}
 
 	log.Info("Reconciled")
