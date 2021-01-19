@@ -18,6 +18,8 @@ package meshexpansion
 
 import (
 	"fmt"
+	"hash/crc32"
+	"regexp"
 	"strings"
 
 	"k8s.io/apimachinery/pkg/runtime/schema"
@@ -125,7 +127,7 @@ func (r *Reconciler) multimeshDestinationRule(domain string) *k8sutil.DynamicObj
 			Resource: "destinationrules",
 		},
 		Kind:      "DestinationRule",
-		Name:      r.Config.WithRevision(multimeshResourceNamePrefix + "-" + strings.ReplaceAll(domain, ".", "-")),
+		Name:      r.Config.WithRevision(fmt.Sprintf("%s-%08x", multimeshResourceNamePrefix, crc32.ChecksumIEEE([]byte(domain)))),
 		Namespace: r.Config.Namespace,
 		Labels:    r.Config.RevisionLabels(),
 		Spec: map[string]interface{}{
