@@ -17,6 +17,7 @@ limitations under the License.
 package apis
 
 import (
+	istionetworkingv1beta1 "github.com/banzaicloud/istio-client-go/pkg/networking/v1beta1"
 	securityv1beta1 "github.com/banzaicloud/istio-client-go/pkg/security/v1beta1"
 	apiextensionsv1 "k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1"
 	apiextensionsv1beta1 "k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1beta1"
@@ -30,4 +31,5 @@ func init() {
 	AddToSchemes = append(AddToSchemes, apiextensionsv1.AddToScheme)
 	AddToSchemes = append(AddToSchemes, apiextensionsv1beta1.AddToScheme)
 	AddToSchemes = append(AddToSchemes, securityv1beta1.SchemeBuilder.AddToScheme)
+	AddToSchemes = append(AddToSchemes, istionetworkingv1beta1.AddToScheme)
 }
