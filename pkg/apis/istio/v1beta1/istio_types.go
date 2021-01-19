@@ -47,7 +47,7 @@ var (
 // +kubebuilder:validation:Pattern=^1.
 type IstioVersion string
 
-// +kubebuilder:validation:Pattern=`^[a-z0-9.]+$`
+// +kubebuilder:validation:Pattern=`^[-a-z0-9.]+$`
 type Domain string
 
 // BaseK8sResourceConfiguration defines basic K8s resource spec configurations
