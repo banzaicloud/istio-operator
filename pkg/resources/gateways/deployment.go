@@ -285,6 +285,13 @@ func (r *Reconciler) envVars() []apiv1.EnvVar {
 		},
 	}...)
 
+	if util.PointerToBool(r.Config.Spec.Pilot.SPIFFE.OperatorEndpoints.Enabled) {
+		envVars = append(envVars, apiv1.EnvVar{
+			Name:  "TRUSTBUNDLE_MANAGER",
+			Value: "true",
+		})
+	}
+
 	envVars = k8sutil.MergeEnvVars(envVars, r.gw.Spec.AdditionalEnvVars)
 
 	return envVars
