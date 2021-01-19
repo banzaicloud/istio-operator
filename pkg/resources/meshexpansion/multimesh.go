@@ -30,9 +30,9 @@ const (
 )
 
 func (r *Reconciler) multimeshIngressGateway(selector map[string]string) *k8sutil.DynamicObject {
-	domains := make([]string, 0)
+	hosts := make([]string, 0)
 	for _, domain := range r.Config.Spec.GetMultiMeshExpansion().GetDomains() {
-		domains = append(domains, fmt.Sprintf("*.%s", domain))
+		hosts = append(hosts, fmt.Sprintf("*.%s", domain))
 	}
 
 	return &k8sutil.DynamicObject{
@@ -48,7 +48,7 @@ func (r *Reconciler) multimeshIngressGateway(selector map[string]string) *k8suti
 		Spec: map[string]interface{}{
 			"servers": []map[string]interface{}{
 				{
-					"hosts": domains,
+					"hosts": hosts,
 					"port": map[string]interface{}{
 						"name":     "tls",
 						"protocol": "TLS",
@@ -68,7 +68,7 @@ func (r *Reconciler) multimeshIngressGateway(selector map[string]string) *k8suti
 func (r *Reconciler) multimeshEnvoyFilter(selector map[string]string) *k8sutil.DynamicObject {
 	domains := make([]string, 0)
 	for _, domain := range r.Config.Spec.GetMultiMeshExpansion().GetDomains() {
-		domains = append(domains, fmt.Sprintf("\\.%s", domain))
+		domains = append(domains, fmt.Sprintf("\\.%s", regexp.QuoteMeta(domain)))
 	}
 
 	return &k8sutil.DynamicObject{

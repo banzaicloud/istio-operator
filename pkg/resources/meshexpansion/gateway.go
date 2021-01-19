@@ -120,7 +120,7 @@ func (r *Reconciler) Reconcile(log logr.Logger) error {
 	}
 
 	multimeshEnvoyFilterDesiredState := k8sutil.DesiredStateAbsent
-	if (desiredState != k8sutil.DesiredStateAbsent || (util.PointerToBool(r.Config.Spec.Gateways.Enabled) && util.PointerToBool(r.Config.Spec.Gateways.Ingress.Enabled))) && util.PointerToBool(r.Config.Spec.MultiMesh) && util.PointerToBool(r.Config.Spec.MultiMeshExpansion.EnvoyFilterEnabled) {
+	if multimeshDesiredState == k8sutil.DesiredStatePresent && util.PointerToBool(r.Config.Spec.MultiMeshExpansion.EnvoyFilterEnabled) {
 		multimeshEnvoyFilterDesiredState = k8sutil.DesiredStatePresent
 	}
 
