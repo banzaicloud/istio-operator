@@ -21,9 +21,9 @@ import (
 	"encoding/json"
 	"fmt"
 
+	"github.com/caddyserver/caddy/caddyfile"
 	"github.com/go-logr/logr"
 	"github.com/goph/emperror"
-	"github.com/mholt/caddy/caddyfile"
 	"github.com/pkg/errors"
 	apiv1 "k8s.io/api/core/v1"
 	k8serrors "k8s.io/apimachinery/pkg/api/errors"

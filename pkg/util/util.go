@@ -20,8 +20,8 @@ import (
 	"bytes"
 	"encoding/json"
 
+	"github.com/caddyserver/caddy/caddyfile"
 	"github.com/goph/emperror"
-	"github.com/mholt/caddy/caddyfile"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/util/intstr"
 )
