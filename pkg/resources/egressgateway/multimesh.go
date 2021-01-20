@@ -22,7 +22,6 @@ import (
 	"k8s.io/apimachinery/pkg/runtime/schema"
 
 	"github.com/banzaicloud/istio-operator/pkg/k8sutil"
-	"github.com/banzaicloud/istio-operator/pkg/util"
 )
 
 const (
@@ -30,6 +29,11 @@ const (
 )
 
 func (r *Reconciler) multimeshEgressGateway() *k8sutil.DynamicObject {
+	hosts := make([]string, 0)
+	for _, domain := range r.Config.Spec.GetMultiMeshExpansion().GetDomains() {
+		hosts = append(hosts, fmt.Sprintf("*.%s", domain))
+	}
+
 	return &k8sutil.DynamicObject{
 		Gvr: schema.GroupVersionResource{
 			Group:    "networking.istio.io",
@@ -43,7 +47,7 @@ func (r *Reconciler) multimeshEgressGateway() *k8sutil.DynamicObject {
 		Spec: map[string]interface{}{
 			"servers": []map[string]interface{}{
 				{
-					"hosts": util.EmptyTypedStrSlice(fmt.Sprintf("*.%s", util.PointerToString(r.Config.Spec.GlobalDomain))),
+					"hosts": hosts,
 					"port": map[string]interface{}{
 						"name":     "tls",
 						"protocol": "TLS",

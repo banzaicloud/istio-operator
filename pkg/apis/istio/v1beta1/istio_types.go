@@ -47,6 +47,9 @@ var (
 // +kubebuilder:validation:Pattern=^1.
 type IstioVersion string
 
+// +kubebuilder:validation:Pattern=`^[-a-z0-9.]+$`
+type Domain string
+
 // BaseK8sResourceConfiguration defines basic K8s resource spec configurations
 type BaseK8sResourceConfiguration struct {
 	Resources       *corev1.ResourceRequirements `json:"resources,omitempty"`
@@ -869,9 +872,14 @@ type IstioSpec struct {
 	// ingressgateway services when workloads in each cluster cannot directly
 	// talk to one another. All meshes should be using Istio mTLS and must
 	// have a shared root CA for this model to work.
+	// DEPRECATED: Use multiMeshExpansion.enabled instead
 	MultiMesh *bool `json:"multiMesh,omitempty"`
 
+	// Multi mesh communication related configuration
+	MultiMeshExpansion *MultiMeshConfiguration `json:"multiMeshExpansion,omitempty"`
+
 	// The domain for global service names
+	// DEPRECATED: Use multiMeshExpansion.domains instead
 	GlobalDomain *string `json:"globalDomain,omitempty"`
 
 	// Istio CoreDNS provides DNS resolution for services in multi mesh setups
@@ -936,6 +944,17 @@ type IstioSpec struct {
 	Global *bool `json:"global,omitempty"`
 }
 
+type MultiMeshConfiguration struct {
+	// Set to true to connect two or more meshes via their respective
+	// ingressgateway services when workloads in each cluster cannot directly
+	// talk to one another.
+	Enabled *bool `json:"enabled,omitempty"`
+	// Whether to apply envoy filter to automatically expose every service for multi mesh connections
+	EnvoyFilterEnabled *bool `json:"envoyFilterEnabled,omitempty"`
+	// Domains available for multi mesh communications
+	Domains []Domain `json:"domains,omitempty"`
+}
+
 type MixerlessTelemetryConfiguration struct {
 	// If set to true, experimental Mixerless http telemetry will be enabled
 	Enabled *bool `json:"enabled,omitempty"`
@@ -986,6 +1005,25 @@ func (s IstioSpec) GetDefaultConfigVisibility() string {
 		return s.DefaultConfigVisibility
 	}
 	return "*"
+}
+
+func (s IstioSpec) GetMultiMeshExpansion() *MultiMeshConfiguration {
+	c := s.MultiMeshExpansion
+
+	if c == nil {
+		c = &MultiMeshConfiguration{}
+	}
+
+	return c
+}
+
+func (c *MultiMeshConfiguration) GetDomains() []string {
+	domains := []string{}
+	for _, domain := range c.Domains {
+		domains = append(domains, string(domain))
+	}
+
+	return domains
 }
 
 func (v IstioVersion) IsSupported() bool {

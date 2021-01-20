@@ -18,7 +18,6 @@ package sidecarinjector
 
 import (
 	"encoding/json"
-	"fmt"
 	"strings"
 
 	"github.com/ghodss/yaml"
@@ -47,13 +46,6 @@ func (r *Reconciler) configMapInjector() runtime.Object {
 
 func (r *Reconciler) getValues() string {
 	podDNSSearchNamespaces := make([]string, 0)
-	if util.PointerToBool(r.Config.Spec.MultiMesh) {
-		podDNSSearchNamespaces = append(podDNSSearchNamespaces, []string{
-			util.PointerToString(r.Config.Spec.GlobalDomain),
-			fmt.Sprintf("{{ valueOrDefault .DeploymentMeta.Namespace \"default\" }}.%s", util.PointerToString(r.Config.Spec.GlobalDomain)),
-		}...)
-	}
-
 	proxyInitContainerName := "istio-init"
 	if util.PointerToBool(r.Config.Spec.SidecarInjector.InitCNIConfiguration.Enabled) {
 		proxyInitContainerName = "istio-validation"
@@ -677,8 +669,9 @@ func (r *Reconciler) proxyInitContainer() string {
   - "--skip-rule-apply"
   {{ end -}}
   imagePullPolicy: "{{ valueOrDefault .Values.global.imagePullPolicy  ` + "`" + `Always ` + "`" + ` }}"
-  {{- if .ProxyConfig.ProxyMetadata }}
   env:
+` + r.injectedAddtionalEnvVars() + `
+  {{- if .ProxyConfig.ProxyMetadata }}
   {{- range $key, $value := .ProxyConfig.ProxyMetadata }}
   - name: {{ $key }}
     value: "{{ $value }}"

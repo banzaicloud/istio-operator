@@ -1,10 +1,9 @@
-apiVersion: extensions/v1beta1
+apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: echo
   labels:
     k8s-app: echo
-  namespace: default
 spec:
   replicas: 1
   selector:
@@ -21,6 +20,13 @@ spec:
         image: k8s.gcr.io/echoserver:1.10
         ports:
         - containerPort: 8080
+        resources:
+          limits:
+            cpu: 100m
+            memory: 128Mi
+          requests:
+            cpu: 20m
+            memory: 64Mi
 ---
 apiVersion: v1
 kind: Service
@@ -28,7 +34,6 @@ metadata:
   name: echo
   labels:
     k8s-app: echo
-  namespace: default
 spec:
   ports:
   - name: http

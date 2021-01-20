@@ -17,6 +17,9 @@ limitations under the License.
 package meshexpansion
 
 import (
+	"context"
+
+	istionetworkingv1beta1 "github.com/banzaicloud/istio-client-go/pkg/networking/v1beta1"
 	"github.com/go-logr/logr"
 	"github.com/goph/emperror"
 	"k8s.io/client-go/dynamic"
@@ -31,8 +34,9 @@ import (
 )
 
 const (
-	ResourceName  = "istio-meshexpansion-gateway"
-	componentName = "meshexpansiongateway"
+	ResourceName             = "istio-meshexpansion-gateway"
+	componentName            = "meshexpansiongateway"
+	multiMeshDomainLabelName = "istio.banzaicloud.io/multi-mesh-domain"
 )
 
 var (
@@ -109,18 +113,19 @@ func (r *Reconciler) Reconcile(log logr.Logger) error {
 		return nil
 	}
 
-	var meshExpansionDesiredState k8sutil.DesiredState
+	meshExpansionDesiredState := k8sutil.DesiredStateAbsent
 	if (desiredState != k8sutil.DesiredStateAbsent || (util.PointerToBool(r.Config.Spec.Gateways.Enabled) && util.PointerToBool(r.Config.Spec.Gateways.Ingress.Enabled))) && util.PointerToBool(r.Config.Spec.MeshExpansion) {
 		meshExpansionDesiredState = k8sutil.DesiredStatePresent
-	} else {
-		meshExpansionDesiredState = k8sutil.DesiredStateAbsent
 	}
 
-	var multimeshDesiredState k8sutil.DesiredState
+	multimeshDesiredState := k8sutil.DesiredStateAbsent
 	if (desiredState != k8sutil.DesiredStateAbsent || (util.PointerToBool(r.Config.Spec.Gateways.Enabled) && util.PointerToBool(r.Config.Spec.Gateways.Ingress.Enabled))) && util.PointerToBool(r.Config.Spec.MultiMesh) {
 		multimeshDesiredState = k8sutil.DesiredStatePresent
-	} else {
-		multimeshDesiredState = k8sutil.DesiredStateAbsent
+	}
+
+	multimeshEnvoyFilterDesiredState := k8sutil.DesiredStateAbsent
+	if multimeshDesiredState == k8sutil.DesiredStatePresent && util.PointerToBool(r.Config.Spec.MultiMeshExpansion.EnvoyFilterEnabled) {
+		multimeshEnvoyFilterDesiredState = k8sutil.DesiredStatePresent
 	}
 
 	selector := resourceLabels
@@ -132,8 +137,15 @@ func (r *Reconciler) Reconcile(log logr.Logger) error {
 		{DynamicResource: func() *k8sutil.DynamicObject { return r.meshExpansionGateway(selector) }, DesiredState: meshExpansionDesiredState},
 		{DynamicResource: func() *k8sutil.DynamicObject { return r.clusterAwareGateway(selector) }, DesiredState: meshExpansionDesiredState},
 		{DynamicResource: func() *k8sutil.DynamicObject { return r.multimeshIngressGateway(selector) }, DesiredState: multimeshDesiredState},
-		{DynamicResource: r.multimeshDestinationRule, DesiredState: multimeshDesiredState},
-		{DynamicResource: func() *k8sutil.DynamicObject { return r.multimeshEnvoyFilter(selector) }, DesiredState: multimeshDesiredState},
+		{DynamicResource: func() *k8sutil.DynamicObject { return r.multimeshEnvoyFilter(selector) }, DesiredState: multimeshEnvoyFilterDesiredState},
+	}
+	meshDomains := make(map[string]bool, 0)
+	for _, domain := range r.Config.Spec.GetMultiMeshExpansion().GetDomains() {
+		domain := domain
+		drs = append(drs, resources.DynamicResourceWithDesiredState{
+			DynamicResource: func() *k8sutil.DynamicObject { return r.multimeshDestinationRule(domain) }, DesiredState: multimeshDesiredState,
+		})
+		meshDomains[domain] = true
 	}
 	for _, dr := range drs {
 		o := dr.DynamicResource()
@@ -141,6 +153,19 @@ func (r *Reconciler) Reconcile(log logr.Logger) error {
 		if err != nil {
 			return emperror.WrapWith(err, "failed to reconcile dynamic resource", "resource", o.Gvr)
 		}
+	}
+
+	// remove obsolete destination rules
+	destinationrules := &istionetworkingv1beta1.DestinationRuleList{}
+	err = r.Client.List(context.Background(), destinationrules, client.HasLabels{multiMeshDomainLabelName})
+	if err != nil {
+		return err
+	}
+	for _, dr := range destinationrules.Items {
+		if meshDomains[dr.GetLabels()[multiMeshDomainLabelName]] {
+			continue
+		}
+		k8sutil.Reconcile(log, r.Client, &dr, k8sutil.DesiredStateAbsent)
 	}
 
 	log.Info("Reconciled")

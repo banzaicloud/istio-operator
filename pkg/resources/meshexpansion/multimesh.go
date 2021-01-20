@@ -18,6 +18,9 @@ package meshexpansion
 
 import (
 	"fmt"
+	"hash/crc32"
+	"regexp"
+	"strings"
 
 	"k8s.io/apimachinery/pkg/runtime/schema"
 
@@ -30,6 +33,11 @@ const (
 )
 
 func (r *Reconciler) multimeshIngressGateway(selector map[string]string) *k8sutil.DynamicObject {
+	hosts := make([]string, 0)
+	for _, domain := range r.Config.Spec.GetMultiMeshExpansion().GetDomains() {
+		hosts = append(hosts, fmt.Sprintf("*.%s", domain))
+	}
+
 	return &k8sutil.DynamicObject{
 		Gvr: schema.GroupVersionResource{
 			Group:    "networking.istio.io",
@@ -43,7 +51,7 @@ func (r *Reconciler) multimeshIngressGateway(selector map[string]string) *k8suti
 		Spec: map[string]interface{}{
 			"servers": []map[string]interface{}{
 				{
-					"hosts": util.EmptyTypedStrSlice(fmt.Sprintf("*.%s", util.PointerToString(r.Config.Spec.GlobalDomain))),
+					"hosts": hosts,
 					"port": map[string]interface{}{
 						"name":     "tls",
 						"protocol": "TLS",
@@ -61,6 +69,11 @@ func (r *Reconciler) multimeshIngressGateway(selector map[string]string) *k8suti
 }
 
 func (r *Reconciler) multimeshEnvoyFilter(selector map[string]string) *k8sutil.DynamicObject {
+	domains := make([]string, 0)
+	for _, domain := range r.Config.Spec.GetMultiMeshExpansion().GetDomains() {
+		domains = append(domains, fmt.Sprintf("\\.%s", regexp.QuoteMeta(domain)))
+	}
+
 	return &k8sutil.DynamicObject{
 		Gvr: schema.GroupVersionResource{
 			Group:    "networking.istio.io",
@@ -94,8 +107,8 @@ func (r *Reconciler) multimeshEnvoyFilter(selector map[string]string) *k8sutil.D
 						"value": map[string]interface{}{
 							"name": "envoy.filters.network.tcp_cluster_rewrite",
 							"typed_config": map[string]interface{}{
-								"\"@type\"":           "type.googleapis.com/istio.envoy.config.filter.network.tcp_cluster_rewrite.v2alpha1.TcpClusterRewrite",
-								"cluster_pattern":     fmt.Sprintf("\\.%s$", util.PointerToString(r.Config.Spec.GlobalDomain)),
+								"@type":               "type.googleapis.com/istio.envoy.config.filter.network.tcp_cluster_rewrite.v2alpha1.TcpClusterRewrite",
+								"cluster_pattern":     strings.Join(domains, "|") + "$",
 								"cluster_replacement": ".svc." + r.Config.Spec.Proxy.ClusterDomain,
 							},
 						},
@@ -107,7 +120,7 @@ func (r *Reconciler) multimeshEnvoyFilter(selector map[string]string) *k8sutil.D
 	}
 }
 
-func (r *Reconciler) multimeshDestinationRule() *k8sutil.DynamicObject {
+func (r *Reconciler) multimeshDestinationRule(domain string) *k8sutil.DynamicObject {
 	return &k8sutil.DynamicObject{
 		Gvr: schema.GroupVersionResource{
 			Group:    "networking.istio.io",
@@ -115,11 +128,13 @@ func (r *Reconciler) multimeshDestinationRule() *k8sutil.DynamicObject {
 			Resource: "destinationrules",
 		},
 		Kind:      "DestinationRule",
-		Name:      r.Config.WithRevision(multimeshResourceNamePrefix + "-destinationrule"),
+		Name:      r.Config.WithRevision(fmt.Sprintf("%s-%08x", multimeshResourceNamePrefix, crc32.ChecksumIEEE([]byte(domain)))),
 		Namespace: r.Config.Namespace,
-		Labels:    r.Config.RevisionLabels(),
+		Labels: util.MergeStringMaps(r.Config.RevisionLabels(), map[string]string{
+			multiMeshDomainLabelName: domain,
+		}),
 		Spec: map[string]interface{}{
-			"host": util.EmptyTypedStrSlice(fmt.Sprintf("*.%s", util.PointerToString(r.Config.Spec.GlobalDomain))),
+			"host": fmt.Sprintf("*.%s", domain),
 			"trafficPolicy": map[string]interface{}{
 				"tls": map[string]interface{}{
 					"mode": "ISTIO_MUTUAL",
