@@ -24,7 +24,7 @@ import (
 
 	"github.com/banzaicloud/istio-operator/pkg/resources/templates"
 	"github.com/banzaicloud/istio-operator/pkg/util"
-	"github.com/mholt/caddy/caddyfile"
+	"github.com/caddyserver/caddy/caddyfile"
 )
 
 func (r *Reconciler) configMap() runtime.Object {
