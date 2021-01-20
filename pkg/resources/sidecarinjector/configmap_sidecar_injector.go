@@ -352,7 +352,7 @@ containers:
   - name: {{ $key }}
     value: "{{ $value }}"
 {{- end }}
-` + r.tustBundleManagerEnvVar() + `
+` + r.trustBundleManagerEnvVar() + `
 ` + r.injectedAddtionalEnvVars() + `
   imagePullPolicy: {{ .Values.global.imagePullPolicy }}
   {{ if ne (annotation .ObjectMeta ` + "`" + `status.sidecar.istio.io/port` + "`" + ` (valueOrDefault .Values.global.proxy.statusPort 0 )) ` + "`" + `0` + "`" + ` }}
@@ -617,7 +617,7 @@ func (r *Reconciler) injectedAddtionalEnvVars() string {
 	return indentWithSpaces(string(additionalEnvVars), 2)
 }
 
-func (r *Reconciler) tustBundleManagerEnvVar() string {
+func (r *Reconciler) trustBundleManagerEnvVar() string {
 	if !util.PointerToBool(r.Config.Spec.Pilot.SPIFFE.OperatorEndpoints.Enabled) {
 		return ""
 	}
