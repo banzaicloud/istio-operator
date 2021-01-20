@@ -32,7 +32,7 @@ The following table lists the configurable parameters of the Banzaicloud Istio O
 Parameter | Description | Default
 --------- | ----------- | -------
 `operator.image.repository` | Operator container image repository | `banzaicloud/istio-operator`
-`operator.image.tag` | Operator container image tag | `0.8.1`
+`operator.image.tag` | Operator container image tag | `0.8.2`
 `operator.image.pullPolicy` | Operator container image pull policy | `IfNotPresent`
 `operator.resources` | CPU/Memory resource requests/limits (YAML) | Memory: `256Mi`, CPU: `200m`
 `istioVersion` | Supported Istio version | `1.8`
