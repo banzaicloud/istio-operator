@@ -27,9 +27,9 @@ import (
 
 const (
 	banzaiImageHub                         = "ghcr.io/banzaicloud"
-	banzaiImageVersion                     = "1.8.2-bzc"
+	banzaiImageVersion                     = "1.9.0-beta.1-bzc"
 	defaultImageHub                        = "docker.io/istio"
-	defaultImageVersion                    = "1.8.2"
+	defaultImageVersion                    = "1.9.0-beta.1"
 	defaultLogLevel                        = "default:info"
 	defaultMeshPolicy                      = PERMISSIVE
 	defaultPilotImage                      = defaultImageHub + "/" + "pilot" + ":" + defaultImageVersion
@@ -68,7 +68,7 @@ const (
 	defaultEnvoyAccessLogEncoding          = "TEXT"
 	defaultClusterName                     = "Kubernetes"
 	defaultNetworkName                     = "local-network"
-	defaultVaultEnvImage                   = "ghcr.io/banzaicloud/vault-env:1.8.0"
+	defaultVaultEnvImage                   = "ghcr.io/banzaicloud/vault-env:1.9.0"
 	defaultVaultAddress                    = "https://vault.vault:8200"
 	defaultVaultRole                       = "istiod"
 	defaultVaultCACertPath                 = "vault:secret/data/pki/istiod#certificate"
