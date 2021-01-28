@@ -75,7 +75,7 @@ func (r *Reconciler) clusterRoleReader() runtime.Object {
 			{
 				APIGroups: []string{"admissionregistration.k8s.io"},
 				Resources: []string{"mutatingwebhookconfigurations"},
-				Verbs:     []string{"get", "list", "watch", "patch"},
+				Verbs:     []string{"get", "list", "watch", "update", "patch"},
 			},
 			{
 				APIGroups: []string{"admissionregistration.k8s.io"},
