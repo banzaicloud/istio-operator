@@ -409,6 +409,10 @@ func (r *ReconcileIstio) validateLegacyIstioComponentsAreDisabled(config *istiov
 		return errors.New("Galley cannot be enabled")
 	}
 
+	if util.PointerToBool(config.Spec.Mixer.Enabled) || util.PointerToBool(config.Spec.Telemetry.Enabled) || util.PointerToBool(config.Spec.Policy.Enabled) {
+		return errors.New("Mixer components cannot be enabled")
+	}
+
 	if util.PointerToBool(config.Spec.SidecarInjector.Enabled) {
 		return errors.New("Sidecar injector cannot be enabled")
 	}
