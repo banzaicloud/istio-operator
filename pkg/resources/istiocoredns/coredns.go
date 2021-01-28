@@ -54,7 +54,6 @@ func (r *Reconciler) reconcileCoreDNSConfigMap(log logr.Logger, desiredState k8s
 	domains := r.Config.Spec.GetMultiMeshExpansion().GetDomains()
 
 	corefile := cm.Data["Corefile"]
-	desiredCorefile := []byte(corefile)
 	clusterIP := ""
 
 	if desiredState == k8sutil.DesiredStatePresent {
@@ -91,7 +90,7 @@ func (r *Reconciler) reconcileCoreDNSConfigMap(log logr.Logger, desiredState k8s
 		}
 	}
 
-	desiredCorefile, err = r.updateCorefile([]byte(corefile), config, desiredState == k8sutil.DesiredStateAbsent || len(domains) == 0)
+	desiredCorefile, err := r.updateCorefile([]byte(corefile), config, desiredState == k8sutil.DesiredStateAbsent || len(domains) == 0)
 	if err != nil {
 		return emperror.Wrap(err, "could not add config to Corefile")
 	}
