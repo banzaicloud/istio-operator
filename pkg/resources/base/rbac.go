@@ -44,6 +44,16 @@ func (r *Reconciler) clusterRoleReader() runtime.Object {
 			Verbs:     []string{"get", "watch", "list"},
 		},
 		{
+			APIGroups: []string{"networking.istio.io"},
+			Resources: []string{"workloadentries"},
+			Verbs:     []string{"get", "watch", "list"},
+		},
+		{
+			APIGroups: []string{"apiextensions.k8s.io"},
+			Resources: []string{"customresourcedefinitions"},
+			Verbs:     []string{"get", "list", "watch"},
+		},
+		{
 			APIGroups: []string{"discovery.k8s.io"},
 			Resources: []string{"endpointslices"},
 			Verbs:     []string{"get", "watch", "list"},
