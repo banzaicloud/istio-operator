@@ -274,12 +274,9 @@ rules:
   - patch
 - apiGroups:
   - authentication.istio.io
-  - cloud.istio.io
   - config.istio.io
-  - istio.istio.io
   - networking.istio.io
   - security.istio.io
-  - scalingpolicy.istio.io
   {{- if semverCompare "< 1.7.0" .Values.istioVersion }}
   - rbac.istio.io
   {{- end }}
