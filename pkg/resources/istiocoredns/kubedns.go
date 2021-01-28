@@ -29,7 +29,7 @@ import (
 	"github.com/banzaicloud/istio-operator/pkg/k8sutil"
 )
 
-// Add/Remove multicluser domains to/from kube-dns configmap
+// Add/Remove multi mesh domains to/from kube-dns configmap
 func (r *Reconciler) reconcileKubeDNSConfigMap(log logr.Logger, desiredState k8sutil.DesiredState) error {
 	var cm apiv1.ConfigMap
 
@@ -44,6 +44,13 @@ func (r *Reconciler) reconcileKubeDNSConfigMap(log logr.Logger, desiredState k8s
 		return emperror.Wrap(err, "could not get kube-dns configmap")
 	}
 
+	managedDomainsMap, err := getDomainsFromAnnotation(&cm)
+	if err != nil {
+		return err
+	}
+
+	domains := r.Config.Spec.GetMultiMeshExpansion().GetDomains()
+
 	stubDomains := make(map[string][]string, 0)
 	if cm.Data["stubDomains"] != "" {
 		err = json.Unmarshal([]byte(cm.Data["stubDomains"]), &stubDomains)
@@ -51,6 +58,8 @@ func (r *Reconciler) reconcileKubeDNSConfigMap(log logr.Logger, desiredState k8s
 			return emperror.Wrap(err, "could not unmarshal stubDomains")
 		}
 	}
+
+	clusterDomains := make(map[string][]string, 0)
 
 	if desiredState == k8sutil.DesiredStatePresent {
 		var svc apiv1.Service
@@ -61,23 +70,30 @@ func (r *Reconciler) reconcileKubeDNSConfigMap(log logr.Logger, desiredState k8s
 		if err != nil {
 			return emperror.Wrap(err, "could not get Istio coreDNS service")
 		}
-		clusterDomains := make(map[string][]string, 0)
-		for _, domain := range r.Config.Spec.GetMultiMeshExpansion().GetDomains() {
+		for _, domain := range domains {
 			clusterDomains[domain] = []string{svc.Spec.ClusterIP}
-		}
-		for domain := range stubDomains {
-			if _, ok := clusterDomains[domain]; !ok {
-				delete(stubDomains, domain)
-			}
 		}
 		for k, v := range clusterDomains {
 			stubDomains[k] = v
 		}
+
+		err = setDomainsToAnnotation(domains, &cm)
+		if err != nil {
+			return err
+		}
 	} else if desiredState == k8sutil.DesiredStateAbsent {
-		for _, domain := range r.Config.Spec.GetMultiMeshExpansion().GetDomains() {
-			if _, ok := stubDomains[domain]; ok {
-				delete(stubDomains, domain)
-			}
+		err = setDomainsToAnnotation([]string{}, &cm)
+		if err != nil {
+			return err
+		}
+	}
+
+	for domain := range stubDomains {
+		if _, ok := clusterDomains[domain]; ok {
+			continue
+		}
+		if _, ok := managedDomainsMap[domain]; ok {
+			delete(stubDomains, domain)
 		}
 	}
 
