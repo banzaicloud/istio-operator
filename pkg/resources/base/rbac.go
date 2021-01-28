@@ -34,7 +34,7 @@ func (r *Reconciler) serviceAccountReader() runtime.Object {
 func (r *Reconciler) clusterRoleReader() runtime.Object {
 	rules := []rbacv1.PolicyRule{
 		{
-			APIGroups: []string{"config.istio.io", "security.istio.io", "networking.istio.io", "authentication.istio.io"},
+			APIGroups: []string{"security.istio.io", "networking.istio.io"},
 			Resources: []string{"*"},
 			Verbs:     []string{"get", "watch", "list"},
 		},

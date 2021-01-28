@@ -117,15 +117,6 @@ rules:
   - list
   - watch
 - apiGroups:
-  - authentication.istio.io
-  - config.istio.io
-  - networking.istio.io
-  - security.istio.io
-  resources:
-  - '*'
-  verbs:
-  - '*'
-- apiGroups:
   - authentication.k8s.io
   resources:
   - tokenreviews
@@ -283,6 +274,13 @@ rules:
   - get
   - patch
   - update
+- apiGroups:
+  - networking.istio.io
+  - security.istio.io
+  resources:
+  - '*'
+  verbs:
+  - '*'
 - apiGroups:
   - networking.k8s.io
   resources:

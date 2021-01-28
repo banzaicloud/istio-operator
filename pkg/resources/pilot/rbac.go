@@ -35,7 +35,7 @@ func (r *Reconciler) clusterRole() runtime.Object {
 		ObjectMeta: templates.ObjectMetaClusterScope(clusterRoleName, pilotLabels, r.Config),
 		Rules: []rbacv1.PolicyRule{
 			{
-				APIGroups: []string{"config.istio.io", "rbac.istio.io", "security.istio.io", "networking.istio.io", "authentication.istio.io"},
+				APIGroups: []string{"rbac.istio.io", "security.istio.io", "networking.istio.io"},
 				Resources: []string{"*"},
 				Verbs:     []string{"get", "watch", "list"},
 			},
