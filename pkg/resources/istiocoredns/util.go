@@ -17,11 +17,18 @@ limitations under the License.
 package istiocoredns
 
 import (
+	"encoding/json"
 	"strings"
 
 	"github.com/coreos/go-semver/semver"
+	"github.com/goph/emperror"
+	apiv1 "k8s.io/api/core/v1"
 
 	"github.com/banzaicloud/istio-operator/pkg/util"
+)
+
+const (
+	multiMeshDomainsAnnotationName = "istio.banzaicloud.io/multi-mesh-domains"
 )
 
 // Removed support for the proxy plugin: https://coredns.io/2019/03/03/coredns-1.4.0-release/
@@ -37,4 +44,41 @@ func (r *Reconciler) isProxyPluginDeprecated() bool {
 	}
 
 	return false
+}
+
+func setDomainsToAnnotation(domains []string, cm *apiv1.ConfigMap) error {
+	domainsJSON, err := json.Marshal(domains)
+	if err != nil {
+		return emperror.Wrap(err, "could not marshal domains")
+	}
+	if cm.Annotations == nil {
+		cm.Annotations = make(map[string]string)
+	}
+	if len(domains) > 0 {
+		cm.Annotations[multiMeshDomainsAnnotationName] = string(domainsJSON)
+	} else if _, ok := cm.Annotations[multiMeshDomainsAnnotationName]; ok {
+		delete(cm.Annotations, multiMeshDomainsAnnotationName)
+	}
+
+	return nil
+}
+
+func getDomainsFromAnnotation(cm *apiv1.ConfigMap) (map[string]string, error) {
+	domains := make([]string, 0)
+	domainsMap := make(map[string]string)
+
+	domainsJSON := cm.Annotations[multiMeshDomainsAnnotationName]
+	if domainsJSON == "" {
+		return domainsMap, nil
+	}
+	err := json.Unmarshal([]byte(domainsJSON), &domains)
+	if err != nil {
+		return nil, emperror.Wrap(err, "could not unmarshal domains")
+	}
+
+	for _, domain := range domains {
+		domainsMap[domain] = domain
+	}
+
+	return domainsMap, err
 }

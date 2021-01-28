@@ -24,7 +24,6 @@ import (
 	"github.com/caddyserver/caddy/caddyfile"
 	"github.com/go-logr/logr"
 	"github.com/goph/emperror"
-	"github.com/pkg/errors"
 	apiv1 "k8s.io/api/core/v1"
 	k8serrors "k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/types"
@@ -33,7 +32,11 @@ import (
 	"github.com/banzaicloud/istio-operator/pkg/util"
 )
 
-// Add/Remove global:53 to/from coredns configmap
+const (
+	multiMeshBlockChaosString = "Istio-CoreDNS"
+)
+
+// Add/Remove multi mesh domains to/from coredns configmap
 func (r *Reconciler) reconcileCoreDNSConfigMap(log logr.Logger, desiredState k8sutil.DesiredState) error {
 	var cm apiv1.ConfigMap
 
@@ -47,6 +50,8 @@ func (r *Reconciler) reconcileCoreDNSConfigMap(log logr.Logger, desiredState k8s
 	if err != nil {
 		return emperror.Wrap(err, "could not get coredns configmap")
 	}
+
+	domains := r.Config.Spec.GetMultiMeshExpansion().GetDomains()
 
 	corefile := cm.Data["Corefile"]
 	desiredCorefile := []byte(corefile)
@@ -68,31 +73,36 @@ func (r *Reconciler) reconcileCoreDNSConfigMap(log logr.Logger, desiredState k8s
 	if r.isProxyPluginDeprecated() {
 		proxyOrForward = "forward"
 	}
-	config := caddyfile.EncodedServerBlock{
-		Keys: func() (d []string) {
-			for _, domain := range r.Config.Spec.GetMultiMeshExpansion().GetDomains() {
+
+	config := caddyfile.EncodedServerBlock{}
+	if desiredState == k8sutil.DesiredStatePresent {
+		config.Keys = func() (d []string) {
+			for _, domain := range domains {
 				d = append(d, fmt.Sprintf("%s:53", domain))
 			}
 
 			return d
-		}(),
-		Body: [][]interface{}{
+		}()
+		config.Body = [][]interface{}{
+			{"chaos", multiMeshBlockChaosString},
 			{"errors"},
 			{"cache", "30"},
 			{proxyOrForward, ".", clusterIP},
-		},
+		}
 	}
 
-	if desiredState == k8sutil.DesiredStatePresent {
-		desiredCorefile, err = r.updateCorefile([]byte(corefile), config, false)
-		if err != nil {
-			return emperror.Wrap(err, "could not add config to Corefile")
-		}
-	} else if desiredState == k8sutil.DesiredStateAbsent {
-		desiredCorefile, err = r.updateCorefile([]byte(corefile), config, true)
-		if err != nil {
-			return emperror.Wrap(err, "could not remove config from Corefile")
-		}
+	desiredCorefile, err = r.updateCorefile([]byte(corefile), config, desiredState == k8sutil.DesiredStateAbsent || len(domains) == 0)
+	if err != nil {
+		return emperror.Wrap(err, "could not add config to Corefile")
+	}
+
+	if desiredState == k8sutil.DesiredStateAbsent {
+		domains = []string{}
+	}
+
+	err = setDomainsToAnnotation(domains, &cm)
+	if err != nil {
+		return err
 	}
 
 	if cm.Data == nil {
@@ -108,44 +118,37 @@ func (r *Reconciler) reconcileCoreDNSConfigMap(log logr.Logger, desiredState k8s
 	return nil
 }
 
-func (r *Reconciler) updateCorefile(corefile []byte, config caddyfile.EncodedServerBlock, remove bool) ([]byte, error) {
-	corefileJSONData, err := caddyfile.ToJSON(corefile)
+func (r *Reconciler) updateCorefile(corefileJSON []byte, config caddyfile.EncodedServerBlock, remove bool) ([]byte, error) {
+	corefileJSONData, err := caddyfile.ToJSON([]byte(corefileJSON))
 	if err != nil {
 		return nil, emperror.Wrap(err, "could not convert Corefile to JSON data")
 	}
 
-	var corefileJSON caddyfile.EncodedCaddyfile
-	err = json.Unmarshal(corefileJSONData, &corefileJSON)
+	var corefile caddyfile.EncodedCaddyfile
+	err = json.Unmarshal(corefileJSONData, &corefile)
 	if err != nil {
 		return nil, emperror.Wrap(err, "could not unmarshal JSON to EncodedCaddyfile")
 	}
 
-	if len(config.Keys) < 1 {
-		return nil, errors.New("invalid config")
-	}
-
 	pos := -1
-	for i, block := range corefileJSON {
-		if len(block.Keys) < 1 {
-			continue
-		}
-		if block.Keys[0] == config.Keys[0] {
-			pos = i
-			break
+	for i, block := range corefile {
+		for _, b := range block.Body {
+			if len(b) == 2 && b[0] == "chaos" && b[1] == multiMeshBlockChaosString {
+				pos = i
+				break
+			}
 		}
 	}
 
-	if remove {
-		if pos > 0 {
-			corefileJSON = append(corefileJSON[:pos], corefileJSON[pos+1:]...)
-		}
-	} else {
-		if pos > 0 {
-			corefileJSON[pos] = config
+	if pos > 0 {
+		if remove {
+			corefile = append(corefile[:pos], corefile[pos+1:]...)
 		} else {
-			corefileJSON = append(corefileJSON, config)
+			corefile[pos] = config
 		}
+	} else if !remove {
+		corefile = append(corefile, config)
 	}
 
-	return util.GenerateCaddyFile(corefileJSON)
+	return util.GenerateCaddyFile(corefile)
 }
