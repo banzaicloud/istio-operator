@@ -123,7 +123,7 @@ func (r *Reconciler) Reconcile(log logr.Logger) error {
 
 	var meshExpansionDesiredState k8sutil.DesiredState
 	var meshExpansionDestinationRuleDesiredState k8sutil.DesiredState
-	if util.PointerToBool(r.Config.Spec.Gateways.Enabled) && util.PointerToBool(r.Config.Spec.Gateways.Ingress.Enabled) && util.PointerToBool(r.Config.Spec.MeshExpansion) {
+	if util.PointerToBool(r.Config.Spec.Gateways.Enabled) && (util.PointerToBool(r.Config.Spec.Gateways.Ingress.Enabled) || util.PointerToBool(r.Config.Spec.Gateways.MeshExpansion.Enabled)) && util.PointerToBool(r.Config.Spec.MeshExpansion) {
 		meshExpansionDesiredState = k8sutil.DesiredStatePresent
 		meshExpansionDestinationRuleDesiredState = k8sutil.DesiredStatePresent
 	} else {
