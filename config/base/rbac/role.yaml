@@ -118,11 +118,8 @@ rules:
   - watch
 - apiGroups:
   - authentication.istio.io
-  - cloud.istio.io
   - config.istio.io
-  - istio.istio.io
   - networking.istio.io
-  - scalingpolicy.istio.io
   - security.istio.io
   resources:
   - '*'
