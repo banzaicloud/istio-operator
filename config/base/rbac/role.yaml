@@ -117,8 +117,6 @@ rules:
   - list
   - watch
 - apiGroups:
-  - authentication.istio.io
-  - config.istio.io
   - networking.istio.io
   - security.istio.io
   resources:
