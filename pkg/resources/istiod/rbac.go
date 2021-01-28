@@ -58,7 +58,7 @@ func (r *Reconciler) clusterRole() runtime.Object {
 		{
 			APIGroups: []string{"admissionregistration.k8s.io"},
 			Resources: []string{"mutatingwebhookconfigurations"},
-			Verbs:     []string{"get", "list", "watch", "patch"},
+			Verbs:     []string{"get", "list", "watch", "update", "patch"},
 		},
 		// configuration validation webhook controller
 		{
