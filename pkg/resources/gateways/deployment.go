@@ -286,6 +286,13 @@ func (r *Reconciler) envVars() []apiv1.EnvVar {
 		},
 	}...)
 
+	if !util.PointerToBool(r.gw.Spec.RunAsRoot) {
+		envVars = append(envVars, apiv1.EnvVar{
+			Name:  "ISTIO_META_UNPRIVILEGED_POD",
+			Value: "true",
+		})
+	}
+
 	if util.PointerToBool(r.Config.Spec.Pilot.SPIFFE.OperatorEndpoints.Enabled) {
 		envVars = append(envVars, apiv1.EnvVar{
 			Name:  "TRUSTBUNDLE_MANAGER",
