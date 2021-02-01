@@ -76,7 +76,7 @@ func (r *Reconciler) deployment() runtime.Object {
 			},
 			Template: apiv1.PodTemplateSpec{
 				ObjectMeta: metav1.ObjectMeta{
-					Labels:      util.MergeMultipleStringMaps(sidecarInjectorLabels, labelSelector, r.Config.RevisionLabels()),
+					Labels:      util.MergeMultipleStringMaps(sidecarInjectorLabels, labelSelector, r.Config.RevisionLabels(), v1beta1.DisableInjectionLabel),
 					Annotations: util.MergeStringMaps(templates.DefaultDeployAnnotations(), r.Config.Spec.SidecarInjector.PodAnnotations),
 				},
 				Spec: apiv1.PodSpec{

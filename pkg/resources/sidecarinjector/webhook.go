@@ -114,6 +114,15 @@ func (r *Reconciler) webhook() runtime.Object {
 		FailurePolicy:     &fail,
 		NamespaceSelector: &metav1.LabelSelector{},
 		SideEffects:       &noneSideEffects,
+		ObjectSelector: &metav1.LabelSelector{
+			MatchExpressions: []metav1.LabelSelectorRequirement{
+				{
+					Key:      v1beta1.ManualInjectionLabelKey,
+					Operator: metav1.LabelSelectorOpNotIn,
+					Values:   []string{"false"},
+				},
+			},
+		},
 	}
 
 	matchExpression := make([]metav1.LabelSelectorRequirement, 0)

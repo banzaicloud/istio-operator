@@ -35,12 +35,18 @@ const (
 	LegacyAutoInjectionLabelKey     = "istio-injection"
 	RevisionedAutoInjectionLabelKey = "istio.io/rev"
 
+	ManualInjectionLabelKey = "sidecar.istio.io/inject"
+
 	supportedIstioMinorVersionRegex = "^1.9"
 )
 
 var (
 	SupportedIstioVersion = "1.9.0-beta.1"
 	Version               = "0.9.0"
+
+	DisableInjectionLabel = map[string]string{
+		ManualInjectionLabelKey: "false",
+	}
 )
 
 // IstioVersion stores the intended Istio version
