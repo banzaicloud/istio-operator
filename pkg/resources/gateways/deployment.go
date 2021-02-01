@@ -345,13 +345,6 @@ func (r *Reconciler) volumeMounts() []apiv1.VolumeMount {
 		})
 	}
 
-	if util.PointerToBool(r.Config.Spec.Istiod.Enabled) {
-		vms = append(vms, apiv1.VolumeMount{
-			Name:      "gatewaysdsudspath",
-			MountPath: "/var/run/ingress_gateway",
-		})
-	}
-
 	if util.PointerToBool(r.Config.Spec.Istiod.Enabled) && util.PointerToBool(r.Config.Spec.MountMtlsCerts) {
 		vms = append(vms, apiv1.VolumeMount{
 			Name:      "istio-certs",
@@ -444,15 +437,6 @@ func (r *Reconciler) volumes() []apiv1.Volume {
 			},
 		},
 	}...)
-
-	if util.PointerToBool(r.Config.Spec.Istiod.Enabled) {
-		volumes = append(volumes, apiv1.Volume{
-			Name: "gatewaysdsudspath",
-			VolumeSource: apiv1.VolumeSource{
-				EmptyDir: &apiv1.EmptyDirVolumeSource{},
-			},
-		})
-	}
 
 	if util.PointerToBool(r.Config.Spec.Istiod.Enabled) && r.Config.Spec.JWTPolicy == istiov1beta1.JWTPolicyThirdPartyJWT {
 		volumes = append(volumes, apiv1.Volume{
