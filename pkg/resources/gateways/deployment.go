@@ -104,7 +104,7 @@ func (r *Reconciler) deployment() runtime.Object {
 			},
 			Template: apiv1.PodTemplateSpec{
 				ObjectMeta: metav1.ObjectMeta{
-					Labels:      r.labels(),
+					Labels:      util.MergeStringMaps(r.labels(), istiov1beta1.DisableInjectionLabel),
 					Annotations: templates.DefaultDeployAnnotations(),
 				},
 				Spec: apiv1.PodSpec{

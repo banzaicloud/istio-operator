@@ -24,6 +24,7 @@ import (
 	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/apimachinery/pkg/util/intstr"
 
+	"github.com/banzaicloud/istio-operator/pkg/apis/istio/v1beta1"
 	"github.com/banzaicloud/istio-operator/pkg/k8sutil"
 	"github.com/banzaicloud/istio-operator/pkg/resources/templates"
 	"github.com/banzaicloud/istio-operator/pkg/util"
@@ -123,7 +124,7 @@ func (r *Reconciler) deployment() runtime.Object {
 			},
 			Template: apiv1.PodTemplateSpec{
 				ObjectMeta: metav1.ObjectMeta{
-					Labels:      util.MergeMultipleStringMaps(labels, labelSelector, r.Config.RevisionLabels()),
+					Labels:      util.MergeMultipleStringMaps(labels, labelSelector, r.Config.RevisionLabels(), v1beta1.DisableInjectionLabel),
 					Annotations: util.MergeStringMaps(templates.DefaultDeployAnnotations(), r.Config.Spec.IstioCoreDNS.PodAnnotations),
 				},
 				Spec: apiv1.PodSpec{
