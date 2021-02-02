@@ -122,6 +122,7 @@ func (r *Reconciler) deployment() runtime.Object {
 					Tolerations:       r.Config.Spec.SidecarInjector.Tolerations,
 					PriorityClassName: r.Config.Spec.PriorityClassName,
 					SecurityContext:   util.GetPodSecurityContextFromSecurityContext(r.Config.Spec.SidecarInjector.SecurityContext),
+					ImagePullSecrets:  r.Config.Spec.ImagePullSecrets,
 				},
 			},
 		},
