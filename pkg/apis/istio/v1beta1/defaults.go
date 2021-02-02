@@ -20,6 +20,7 @@ import (
 	"fmt"
 
 	apiv1 "k8s.io/api/core/v1"
+	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
 
 	"github.com/banzaicloud/istio-operator/pkg/util"
@@ -671,6 +672,10 @@ func SetDefaults(config *Istio) {
 
 	if config.Spec.ControlPlaneAuthPolicy == "" {
 		config.Spec.ControlPlaneAuthPolicy = ControlPlaneAuthPolicyMTLS
+	}
+
+	if config.Spec.ImagePullSecrets == nil {
+		config.Spec.ImagePullSecrets = make([]corev1.LocalObjectReference, 0)
 	}
 }
 

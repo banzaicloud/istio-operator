@@ -887,6 +887,9 @@ type IstioSpec struct {
 
 	// Specifies whether the control plane is a global one or revisioned. There must be only one global control plane.
 	Global *bool `json:"global,omitempty"`
+
+	// ImagePullSecrets is an optional list of references to secrets to use for pulling any of the images.
+	ImagePullSecrets []corev1.LocalObjectReference `json:"imagePullSecrets,omitempty"`
 }
 
 type MixerlessTelemetryConfiguration struct {
