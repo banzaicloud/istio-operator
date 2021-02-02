@@ -2548,6 +2548,13 @@ spec:
                     - Never
                     - IfNotPresent
                   type: string
+                imagePullSecrets:
+                  items:
+                    properties:
+                      name:
+                        type: string
+                    type: object
+                  type: array
                 includeIPRanges:
                   type: string
                 istioCoreDNS:
