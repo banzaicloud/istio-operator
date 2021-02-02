@@ -522,6 +522,8 @@ func (r *Reconciler) deployment() runtime.Object {
 					Affinity:           r.Config.Spec.Pilot.Affinity,
 					NodeSelector:       r.Config.Spec.Pilot.NodeSelector,
 					Tolerations:        r.Config.Spec.Pilot.Tolerations,
+					PriorityClassName:  r.Config.Spec.PriorityClassName,
+					ImagePullSecrets:   r.Config.Spec.ImagePullSecrets,
 				},
 			},
 		},

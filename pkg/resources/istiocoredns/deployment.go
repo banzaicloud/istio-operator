@@ -156,6 +156,7 @@ func (r *Reconciler) deployment() runtime.Object {
 					NodeSelector:      r.Config.Spec.IstioCoreDNS.NodeSelector,
 					Tolerations:       r.Config.Spec.IstioCoreDNS.Tolerations,
 					PriorityClassName: r.Config.Spec.PriorityClassName,
+					ImagePullSecrets:  r.Config.Spec.ImagePullSecrets,
 				},
 			},
 		},

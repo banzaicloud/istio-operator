@@ -92,6 +92,7 @@ func (r *Reconciler) daemonSet() runtime.Object {
 					},
 					Affinity:          r.Config.Spec.SidecarInjector.InitCNIConfiguration.Affinity,
 					PriorityClassName: r.Config.Spec.PriorityClassName,
+					ImagePullSecrets:  r.Config.Spec.ImagePullSecrets,
 				},
 			},
 		},
