@@ -74,6 +74,7 @@ func (r *Reconciler) getValues() string {
 			"pilotCertProvider":      r.Config.Spec.Pilot.CertProvider,
 			"trustDomain":            r.Config.Spec.TrustDomain,
 			"imagePullPolicy":        r.Config.Spec.ImagePullPolicy,
+			"imagePullSecrets":       r.Config.Spec.ImagePullSecrets,
 			"network":                r.Config.Spec.NetworkName,
 			"podDNSSearchNamespaces": podDNSSearchNamespaces,
 			"proxy_init": map[string]interface{}{
@@ -548,6 +549,12 @@ volumes:
   secret:
     optional: true
     secretName: lightstep.cacert
+{{- end }}
+{{- if .Values.global.imagePullSecrets }}
+imagePullSecrets:
+  {{- range .Values.global.imagePullSecrets }}
+  - name: {{ .name }}
+  {{- end }}
 {{- end }}
 podRedirectAnnot:
 {{- if and (.Values.global.proxy_init.cniEnabled) (not .Values.global.proxy_init.cniChained) }}
