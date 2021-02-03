@@ -144,10 +144,10 @@ Alternatively, you can deploy the operator using a [Helm chart](https://github.c
 
 ```bash
 $ helm repo add banzaicloud-stable https://kubernetes-charts.banzaicloud.com
-$ helm upgrade istio-operator --install --namespace=istio-system --set-string operator.image.tag=0.7.11 --set-string istioVersion=1.7 banzaicloud-stable/istio-operator
+$ helm upgrade istio-operator --install --namespace=istio-system --set-string operator.image.tag=0.7.12 --set-string istioVersion=1.7 banzaicloud-stable/istio-operator
 ```
 
-*Note: As of now, the `0.7.11` tag is the latest version of our operator to support Istio versions 1.7.x*
+*Note: As of now, the `0.7.12` tag is the latest version of our operator to support Istio versions 1.7.x*
 
 *Note: In case you upgrade from an earlier chart version your Istio operator CRD definitions might be outdated in which case you should apply the [new CRDs](../../deploy/charts/istio-operator/crds) manually!*
 
