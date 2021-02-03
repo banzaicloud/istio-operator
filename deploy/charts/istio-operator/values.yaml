@@ -44,6 +44,7 @@ fullnameOverride: ""
 nodeSelector: {}
 tolerations: []
 affinity: {}
+imagePullSecrets: []
 
 operatorComponentSuffix: ""
 
