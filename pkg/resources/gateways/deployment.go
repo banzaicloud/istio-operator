@@ -22,6 +22,7 @@ import (
 
 	appsv1 "k8s.io/api/apps/v1"
 	apiv1 "k8s.io/api/core/v1"
+	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/types"
@@ -417,6 +418,22 @@ func (r *Reconciler) volumes() []apiv1.Volume {
 						FieldRef: &apiv1.ObjectFieldSelector{
 							APIVersion: "v1",
 							FieldPath:  "metadata.annotations",
+						},
+					},
+					{
+						Path: "cpu-limit",
+						ResourceFieldRef: &apiv1.ResourceFieldSelector{
+							ContainerName: "istio-proxy",
+							Resource:      "limits.cpu",
+							Divisor:       resource.MustParse("1m"),
+						},
+					},
+					{
+						Path: "cpu-request",
+						ResourceFieldRef: &apiv1.ResourceFieldSelector{
+							ContainerName: "istio-proxy",
+							Resource:      "requests.cpu",
+							Divisor:       resource.MustParse("1m"),
 						},
 					},
 				},
