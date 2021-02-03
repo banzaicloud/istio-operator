@@ -5,7 +5,7 @@ metadata:
     controller-tools.k8s.io: "1.0"
   name: istio-sample-v17x
 spec:
-  version: "1.7.6"
+  version: "1.7.7"
   global: false
   meshPolicy:
     mtlsMode: PERMISSIVE
@@ -28,5 +28,5 @@ spec:
         brokenPodLabelKey: "cni.istio.io/uninitialized"
         brokenPodLabelValue: "true"
   proxy:
-    image: "docker.io/istio/proxyv2:1.7.6"
+    image: "docker.io/istio/proxyv2:1.7.7"
   jwtPolicy: "first-party-jwt"
