@@ -216,7 +216,6 @@ func (r *Reconciler) containerPorts() []apiv1.ContainerPort {
 		{ContainerPort: 8080, Protocol: apiv1.ProtocolTCP},
 		{ContainerPort: 15010, Protocol: apiv1.ProtocolTCP},
 		{ContainerPort: 15017, Protocol: apiv1.ProtocolTCP},
-		{ContainerPort: 15053, Protocol: apiv1.ProtocolTCP},
 	}
 }
 
