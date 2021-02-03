@@ -34,7 +34,7 @@ type GatewayAddressSetter interface {
 }
 
 func SetGatewayAddress(k8sclient client.Client, obj GatewayAddressSetter, istio *istiov1beta1.Istio) error {
-	if !util.PointerToBool(istio.Spec.Gateways.Enabled) || (!util.PointerToBool(istio.Spec.Gateways.Ingress.Enabled) || !!util.PointerToBool(istio.Spec.Gateways.MeshExpansion.Enabled)) {
+	if !util.PointerToBool(istio.Spec.Gateways.Enabled) || (!util.PointerToBool(istio.Spec.Gateways.Ingress.Enabled) && !!util.PointerToBool(istio.Spec.Gateways.MeshExpansion.Enabled)) {
 		obj.SetGatewayAddress(nil)
 		return nil
 	}
