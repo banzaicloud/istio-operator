@@ -118,6 +118,13 @@ func (r *Reconciler) containerEnvs() []apiv1.EnvVar {
 		},
 	}
 
+	if !util.PointerToBool(r.Config.Spec.MixerlessTelemetry.Enabled) {
+		envs = append(envs, apiv1.EnvVar{
+			Name:  "PILOT_ENDPOINT_TELEMETRY_LABEL",
+			Value: "false",
+		})
+	}
+
 	if util.PointerToBool(r.Config.Spec.Istiod.MultiControlPlaneSupport) {
 		envs = append(envs, []apiv1.EnvVar{
 			{
