@@ -34,6 +34,7 @@ const (
 	noWasmRuntime  = "envoy.wasm.runtime.null"
 	proxyVersion17 = "1.7"
 	proxyVersion18 = "1.8"
+	proxyVersion19 = "1.9"
 )
 
 type Reconciler struct {
@@ -79,6 +80,11 @@ func (r *Reconciler) Reconcile(log logr.Logger) error {
 		{DynamicResource: r.tcpMetaExchangeEnvoyFilter18, DesiredState: exchangeFilterDesiredState},
 		{DynamicResource: r.httpStatsFilter18, DesiredState: statsFilterDesiredState},
 		{DynamicResource: r.tcpStatsFilter18, DesiredState: statsFilterDesiredState},
+
+		{DynamicResource: r.metaExchangeEnvoyFilter19, DesiredState: exchangeFilterDesiredState},
+		{DynamicResource: r.tcpMetaExchangeEnvoyFilter19, DesiredState: exchangeFilterDesiredState},
+		{DynamicResource: r.httpStatsFilter19, DesiredState: statsFilterDesiredState},
+		{DynamicResource: r.tcpStatsFilter19, DesiredState: statsFilterDesiredState},
 	}
 
 	for _, dr := range drs {
