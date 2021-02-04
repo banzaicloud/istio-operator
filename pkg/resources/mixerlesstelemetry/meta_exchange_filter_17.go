@@ -27,7 +27,7 @@ const (
     context: ANY # inbound, outbound, and gateway
     proxy:
       proxyVersion: '^1\.7.*'
-      %[3]s
+      %[4]s
     listener:
       filterChain:
         filter:
@@ -50,6 +50,7 @@ const (
                 local:
                   %[1]s
               runtime: %[2]s
+              allow_precompiled: %[3]s
 `
 )
 

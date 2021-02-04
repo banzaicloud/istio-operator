@@ -27,11 +27,11 @@ const (
     context: ANY # inbound, outbound, and gateway
     proxy:
       proxyVersion: '^1\.8.*'
-      %[3]s
+      %[4]s
     listener:
       filterChain:
         filter:
-          name: "envoy.http_connection_manager"
+          name: "envoy.filters.network.http_connection_manager"
   patch:
     operation: INSERT_BEFORE
     value:
@@ -50,6 +50,7 @@ const (
                 local:
                   %[1]s
               runtime: %[2]s
+              allow_precompiled: %[3]s
 `
 )
 
