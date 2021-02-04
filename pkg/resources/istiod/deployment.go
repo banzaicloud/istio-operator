@@ -118,12 +118,14 @@ func (r *Reconciler) containerEnvs() []apiv1.EnvVar {
 		},
 	}
 
-	if !util.PointerToBool(r.Config.Spec.MixerlessTelemetry.Enabled) {
-		envs = append(envs, apiv1.EnvVar{
-			Name:  "PILOT_ENDPOINT_TELEMETRY_LABEL",
-			Value: "false",
-		})
+	enablePilotEndpointTelemetry := false
+	if util.PointerToBool(r.Config.Spec.MixerlessTelemetry.Enabled) || util.PointerToBool(r.Config.Spec.Istiod.MultiControlPlaneSupport) {
+		enablePilotEndpointTelemetry = true
 	}
+	envs = append(envs, apiv1.EnvVar{
+		Name:  "PILOT_ENDPOINT_TELEMETRY_LABEL",
+		Value: strconv.FormatBool(enablePilotEndpointTelemetry),
+	})
 
 	if util.PointerToBool(r.Config.Spec.Istiod.MultiControlPlaneSupport) {
 		envs = append(envs, []apiv1.EnvVar{
@@ -142,10 +144,6 @@ func (r *Reconciler) containerEnvs() []apiv1.EnvVar {
 			{
 				Name:  "CACERT_CONFIG_NAME",
 				Value: r.Config.WithRevision("istio-ca-root-cert"),
-			},
-			{
-				Name:  "PILOT_ENDPOINT_TELEMETRY_LABEL",
-				Value: "true",
 			},
 		}...)
 	}
