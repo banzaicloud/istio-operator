@@ -17,18 +17,18 @@ What happens is that once the operator discerns that the Custom Resource it's wa
 
 #### Requirements
 
-- Minikube v1.1.1+ or Kubernetes 1.16.0+
+- Minikube v1.1.1+ or Kubernetes 1.17.0+
 - `KUBECONFIG` set to an existing Kubernetes cluster
 
-If you already have Istio 1.7.x installed on your cluster you can skip the next section and can jump right to [Deploy sample BookInfo application](#deploy-sample-bookinfo-application).
+If you already have Istio 1.8.x installed on your cluster you can skip the next section and can jump right to [Deploy sample BookInfo application](#deploy-sample-bookinfo-application).
 
 #### Install Istio 1.8.2
 
-We install Istio with our operator, so first we need to check out the `1.7.x` branch of our operator (this branch supports Istio versions 1.7.x):
+We install Istio with our operator, so first we need to check out the `1.8.x` branch of our operator (this branch supports Istio versions 1.8.x):
 
 ```bash
 $ git clone git@github.com:banzaicloud/istio-operator.git
-$ git checkout 1.7.x
+$ git checkout 1.8.x
 ```
 
 **Install Istio Operator with make**
@@ -48,10 +48,10 @@ Alternatively, if you just can't let go of Helm completely, you can deploy the o
 
 ```bash
 $ helm repo add banzaicloud-stable https://kubernetes-charts.banzaicloud.com
-$ helm install istio-operator --create-namespace --namespace=istio-system --set-string operator.image.tag=0.6.13 --set-string istioVersion=1.7 banzaicloud-stable/istio-operator
+$ helm install istio-operator --create-namespace --namespace=istio-system --set-string operator.image.tag=0.8.5 --set-string istioVersion=1.8 banzaicloud-stable/istio-operator
 ```
 
-*Note: As of now, the `0.8.3` tag is the latest version of our operator to support Istio versions 1.7.x
+*Note: As of now, the `0.8.5` tag is the latest version of our operator to support Istio versions 1.8.x
 
 **Apply the Custom Resource**
 
