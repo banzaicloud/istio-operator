@@ -824,5 +824,4 @@ func indentWithSpaces(v string, spaces int) string {
 		lines = append(lines, l)
 	}
 	return strings.Join(lines, "\n")
-	return strings.TrimRight(pad+strings.Replace(v, "\n", "\n"+pad, -1), pad)
 }
