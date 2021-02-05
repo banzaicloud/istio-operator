@@ -69,12 +69,17 @@ func (r *Reconciler) getValues() string {
 				"enabled":          util.PointerToBool(r.Config.Spec.Istiod.Enabled),
 				"caRootConfigName": r.Config.WithRevisionIf("istio-ca-root-cert", util.PointerToBool(r.Config.Spec.Istiod.MultiControlPlaneSupport)),
 			},
-			"caAddress":              r.Config.GetCAAddress(),
-			"jwtPolicy":              r.Config.Spec.JWTPolicy,
-			"pilotCertProvider":      r.Config.Spec.Pilot.CertProvider,
-			"trustDomain":            r.Config.Spec.TrustDomain,
-			"imagePullPolicy":        r.Config.Spec.ImagePullPolicy,
-			"imagePullSecrets":       r.Config.Spec.ImagePullSecrets,
+			"caAddress":         r.Config.GetCAAddress(),
+			"jwtPolicy":         r.Config.Spec.JWTPolicy,
+			"pilotCertProvider": r.Config.Spec.Pilot.CertProvider,
+			"trustDomain":       r.Config.Spec.TrustDomain,
+			"imagePullPolicy":   r.Config.Spec.ImagePullPolicy,
+			"imagePullSecrets": func() (names []string) {
+				for _, name := range r.Config.Spec.ImagePullSecrets {
+					names = append(names, name.Name)
+				}
+				return names
+			}(),
 			"network":                r.Config.Spec.NetworkName,
 			"podDNSSearchNamespaces": podDNSSearchNamespaces,
 			"proxy_init": map[string]interface{}{
@@ -553,7 +558,7 @@ volumes:
 {{- if .Values.global.imagePullSecrets }}
 imagePullSecrets:
   {{- range .Values.global.imagePullSecrets }}
-  - name: {{ .name }}
+  - name: {{ . }}
   {{- end }}
 {{- end }}
 podRedirectAnnot:
