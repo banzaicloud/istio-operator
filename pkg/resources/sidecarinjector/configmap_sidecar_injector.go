@@ -18,6 +18,7 @@ package sidecarinjector
 
 import (
 	"encoding/json"
+	"fmt"
 	"strings"
 
 	"github.com/ghodss/yaml"
@@ -141,6 +142,9 @@ func (r *Reconciler) siConfig() string {
 	siConfig := map[string]interface{}{
 		"policy":   autoInjection,
 		"template": r.templateConfig(),
+
+		"defaultTemplates": []string{"sidecar"},
+		"templates":        r.templates(),
 	}
 
 	if len(r.Config.Spec.SidecarInjector.AlwaysInjectSelector) > 0 {
@@ -159,22 +163,50 @@ func (r *Reconciler) siConfig() string {
 
 }
 
-func (r *Reconciler) templateConfig() string {
-	return `rewriteAppHTTPProbe: {{ valueOrDefault .Values.sidecarInjectorWebhook.rewriteAppHTTPProbe true }}
-{{- if .Values.global.podDNSSearchNamespaces }}
-dnsConfig:
-  searches:
-    {{- range .Values.global.podDNSSearchNamespaces }}
-    - {{ render . }}
+func (r *Reconciler) templates() map[string]string {
+	return map[string]string{"sidecar": `
+{{- $containers := list }}
+{{- range $index, $container := .Spec.Containers }}{{ if not (eq $container.Name "istio-proxy") }}{{ $containers = append $containers $container.Name }}{{end}}{{- end}}
+metadata:
+  labels:
+    security.istio.io/tlsMode: {{ index .ObjectMeta.Labels ` + "`" + `security.istio.io/tlsMode` + "`" + ` | default "istio" }}
+    service.istio.io/canonical-name: {{ index .ObjectMeta.Labels ` + "`" + `service.istio.io/canonical-name` + "`" + ` | default (index .ObjectMeta.Labels ` + "`" + `app.kubernetes.io/name` + "`" + `) | default (index .ObjectMeta.Labels ` + "`" + `app` + "`" + `) | default .DeploymentMeta.Name }}
+    service.istio.io/canonical-revision: {{ index .ObjectMeta.Labels ` + "`" + `service.istio.io/canonical-revision` + "`" + ` | default (index .ObjectMeta.Labels ` + "`" + `app.kubernetes.io/version` + "`" + `) | default (index .ObjectMeta.Labels ` + "`" + `version` + "`" + `) | default "latest" }}
+    istio.io/rev: {{ .Revision | default "default" }}
+  annotations:
+    {{- if eq (len $containers) 1 }}
+    kubectl.kubernetes.io/default-logs-container: "{{ index $containers 0 }}"
+    {{ end }}
+{{ if .Values.global.proxy_init.cniEnabled -}}
+    {{- if not .Values.global.proxy_init.cniChained }}
+    k8s.v1.cni.cncf.io/networks: '{{ appendMultusNetwork (index .ObjectMeta.Annotations ` + "`" + `k8s.v1.cni.cncf.io/networks` + "`" + `) ` + "`" + `istio-cni` + "`" + ` }}'
     {{- end }}
+    sidecar.istio.io/interceptionMode: "{{ annotation .ObjectMeta ` + "`" + `sidecar.istio.io/interceptionMode` + "`" + ` .ProxyConfig.InterceptionMode }}"
+    {{ with annotation .ObjectMeta ` + "`" + `traffic.sidecar.istio.io/includeOutboundIPRanges` + "`" + ` .Values.global.proxy.includeIPRanges }}
+    traffic.sidecar.istio.io/includeOutboundIPRanges: "{{.}}"
+    {{ end }}
+    {{ with annotation .ObjectMeta ` + "`" + `traffic.sidecar.istio.io/excludeOutboundIPRanges` + "`" + ` .Values.global.proxy.excludeIPRanges }}
+    traffic.sidecar.istio.io/excludeOutboundIPRanges: "{{.}}"
+    {{ end }}
+    traffic.sidecar.istio.io/includeInboundPorts: "{{ annotation .ObjectMeta ` + "`" + `traffic.sidecar.istio.io/includeInboundPorts` + "`" + ` ` + "`" + `*` + "`" + ` }}"
+    traffic.sidecar.istio.io/excludeInboundPorts: "{{ excludeInboundPort (annotation .ObjectMeta ` + "`" + `status.sidecar.istio.io/port` + "`" + ` .Values.global.proxy.statusPort) (annotation .ObjectMeta ` + "`" + `traffic.sidecar.istio.io/excludeInboundPorts` + "`" + ` .Values.global.proxy.excludeInboundPorts) }}"
+    {{ if or (isset .ObjectMeta.Annotations ` + "`" + `traffic.sidecar.istio.io/includeOutboundPorts` + "`" + `) (ne (valueOrDefault .Values.global.proxy.includeOutboundPorts "") "") }}
+    traffic.sidecar.istio.io/includeOutboundPorts: "{{ annotation .ObjectMeta ` + "`" + `traffic.sidecar.istio.io/includeOutboundPorts` + "`" + ` .Values.global.proxy.includeOutboundPorts }}"
+    {{- end }}
+    {{ if or (isset .ObjectMeta.Annotations ` + "`" + `traffic.sidecar.istio.io/excludeOutboundPorts` + "`" + `) (ne .Values.global.proxy.excludeOutboundPorts "") }}
+    traffic.sidecar.istio.io/excludeOutboundPorts: "{{ annotation .ObjectMeta ` + "`" + `traffic.sidecar.istio.io/excludeOutboundPorts` + "`" + ` .Values.global.proxy.excludeOutboundPorts }}"
+    {{- end }}
+    {{ with index .ObjectMeta.Annotations ` + "`" + `traffic.sidecar.istio.io/kubevirtInterfaces` + "`" + ` }}traffic.sidecar.istio.io/kubevirtInterfaces: "{{.}}",{{ end }}
 {{- end }}
-httpProxyEnvs:
-  httpProxy: {{ .Values.sidecarInjectorWebhook.httpProxyEnvs.httpProxy }}
-  httpsProxy: {{ .Values.sidecarInjectorWebhook.httpProxyEnvs.httpsProxy }}
-  noProxy: {{ .Values.sidecarInjectorWebhook.httpProxyEnvs.noProxy }}
-initContainers:
+spec:
+` + indentWithSpaces(r.templatePodSpec(2), 2) + `
+`}
+}
+
+func (r *Reconciler) templatePodSpec(indentSize int) string {
+	return `initContainers:
 {{ if ne (annotation .ObjectMeta ` + "`" + `sidecar.istio.io/interceptionMode` + "`" + ` .ProxyConfig.InterceptionMode) "NONE" }}
-` + r.proxyInitContainer() + `
+` + r.proxyInitContainer(indentSize) + `
 {{ end -}}
 ` + r.coreDumpContainer() + `
 containers:
@@ -210,7 +242,7 @@ containers:
 ` + r.injectedAddtionalContainerArgs() + `
 {{- if .Values.global.proxy.lifecycle }}
   lifecycle:
-    {{ toYaml .Values.global.proxy.lifecycle | indent 4 }}
+    {{ toYaml .Values.global.proxy.lifecycle | indent ` + fmt.Sprintf("%d", (4+indentSize)) + ` }}
 {{- else if .Values.global.proxy.holdApplicationUntilProxyStarts}}
   lifecycle:
     postStart:
@@ -380,8 +412,8 @@ containers:
     runAsNonRoot: true
     runAsUser: 1337
     {{- end }}
-  resources:
   {{- if or (isset .ObjectMeta.Annotations ` + "`" + `sidecar.istio.io/proxyCPU` + "`" + `) (isset .ObjectMeta.Annotations ` + "`" + `sidecar.istio.io/proxyMemory` + "`" + `) (isset .ObjectMeta.Annotations ` + "`" + `sidecar.istio.io/proxyCPULimit` + "`" + `) (isset .ObjectMeta.Annotations ` + "`" + `sidecar.istio.io/proxyMemoryLimit` + "`" + `) }}
+  resources:
     {{- if or (isset .ObjectMeta.Annotations ` + "`" + `sidecar.istio.io/proxyCPU` + "`" + `) (isset .ObjectMeta.Annotations ` + "`" + `sidecar.istio.io/proxyMemory` + "`" + `) }}
       requests:
         {{ if (isset .ObjectMeta.Annotations ` + "`" + `sidecar.istio.io/proxyCPU` + "`" + `) -}}
@@ -401,9 +433,7 @@ containers:
         {{ end }}
     {{- end }}
   {{- else }}
-{{- if .Values.global.proxy.resources }}
-    {{ toYaml .Values.global.proxy.resources | indent 4 }}
-{{- end }}
+` + r.getFormattedResources(r.Config.Spec.Proxy.Resources, 2) + `
   {{- end }}
   volumeMounts:
   {{- if .Values.global.istiod.enabled }}
@@ -460,7 +490,7 @@ containers:
     {{- if isset .ObjectMeta.Annotations ` + "`" + `sidecar.istio.io/userVolumeMount` + "`" + ` }}
     {{ range $index, $value := fromJSON (index .ObjectMeta.Annotations ` + "`" + `sidecar.istio.io/userVolumeMount` + "`" + `) }}
   - name: "{{  $index }}"
-    {{ toYaml $value | indent 4 }}
+    {{ toYaml $value | indent ` + fmt.Sprintf("%d", (4+indentSize)) + ` }}
     {{ end }}
     {{- end }}
 volumes:
@@ -551,7 +581,7 @@ volumes:
   {{- if isset .ObjectMeta.Annotations ` + "`" + `sidecar.istio.io/userVolume` + "`" + ` }}
   {{range $index, $value := fromJSON (index .ObjectMeta.Annotations ` + "`" + `sidecar.istio.io/userVolume` + "`" + `) }}
 - name: "{{ $index }}"
-  {{ toYaml $value | indent 2 }}
+  {{ toYaml $value | indent ` + fmt.Sprintf("%d", (2+indentSize)) + ` }}
   {{ end }}
   {{ end }}
 {{- if and (eq .Values.global.proxy.tracer "lightstep") .ProxyConfig.GetTracing.GetTlsSettings }}
@@ -566,6 +596,27 @@ imagePullSecrets:
   - name: {{ .name }}
   {{- end }}
 {{- end }}
+{{- if eq (env "ENABLE_LEGACY_FSGROUP_INJECTION" "true") "true" }}
+securityContext:
+  fsGroup: 1337
+{{- end }}
+`
+}
+
+func (r *Reconciler) templateConfig() string {
+	return `rewriteAppHTTPProbe: {{ valueOrDefault .Values.sidecarInjectorWebhook.rewriteAppHTTPProbe true }}
+{{- if .Values.global.podDNSSearchNamespaces }}
+dnsConfig:
+  searches:
+    {{- range .Values.global.podDNSSearchNamespaces }}
+    - {{ render . }}
+    {{- end }}
+{{- end }}
+httpProxyEnvs:
+  httpProxy: {{ .Values.sidecarInjectorWebhook.httpProxyEnvs.httpProxy }}
+  httpsProxy: {{ .Values.sidecarInjectorWebhook.httpProxyEnvs.httpsProxy }}
+  noProxy: {{ .Values.sidecarInjectorWebhook.httpProxyEnvs.noProxy }}
+` + r.templatePodSpec(0) + `
 podRedirectAnnot:
 {{- if and (.Values.global.proxy_init.cniEnabled) (not .Values.global.proxy_init.cniChained) }}
 k8s.v1.cni.cncf.io/networks: '{{ appendMultusNetwork (index .ObjectMeta.Annotations ` + "`" + `k8s.v1.cni.cncf.io/networks` + "`" + `) ` + "`" + `istio-cni` + "`" + ` }}'
@@ -644,7 +695,7 @@ func (r *Reconciler) trustBundleManagerEnvVar() string {
 	return indentWithSpaces(string(env), 2)
 }
 
-func (r *Reconciler) proxyInitContainer() string {
+func (r *Reconciler) proxyInitContainer(indentSize int) string {
 	return `- name: {{ .Values.global.proxy_init.containerName }}
   image: "{{ .Values.global.proxy_init.image }}"
   args:
@@ -654,7 +705,7 @@ func (r *Reconciler) proxyInitContainer() string {
   - "-z"
   - "15006"
   - "-u"
-  - 1337
+  - "1337"
   - "-m"
   - "{{ annotation .ObjectMeta ` + "`" + `sidecar.istio.io/interceptionMode` + "`" + ` .ProxyConfig.InterceptionMode }}"
   - "-i"
@@ -694,7 +745,6 @@ func (r *Reconciler) proxyInitContainer() string {
     value: "{{ $value }}"
   {{- end }}
   {{- end }}
-` + r.getFormattedResources(r.Config.Spec.SidecarInjector.Init.Resources, 2) + `
   securityContext:
   {{- if not .Values.global.proxy_init.cniEnabled }}
     readOnlyRootFilesystem: false
@@ -718,8 +768,8 @@ func (r *Reconciler) proxyInitContainer() string {
       drop:
       - ALL
   restartPolicy: Always
-  resources:
   {{- if or (isset .ObjectMeta.Annotations ` + "`" + `sidecar.istio.io/proxyCPU` + "`" + `) (isset .ObjectMeta.Annotations ` + "`" + `sidecar.istio.io/proxyMemory` + "`" + `) (isset .ObjectMeta.Annotations ` + "`" + `sidecar.istio.io/proxyCPULimit` + "`" + `) (isset .ObjectMeta.Annotations ` + "`" + `sidecar.istio.io/proxyMemoryLimit` + "`" + `) }}
+  resources:
     {{- if or (isset .ObjectMeta.Annotations ` + "`" + `sidecar.istio.io/proxyCPU` + "`" + `) (isset .ObjectMeta.Annotations ` + "`" + `sidecar.istio.io/proxyMemory` + "`" + `) }}
       requests:
         {{ if (isset .ObjectMeta.Annotations ` + "`" + `sidecar.istio.io/proxyCPU` + "`" + `) -}}
@@ -739,11 +789,9 @@ func (r *Reconciler) proxyInitContainer() string {
         {{ end }}
     {{- end }}
   {{- else }}
-{{- if .Values.global.proxy.resources }}
-    {{ toYaml .Values.global.proxy.resources | indent 4 }}
-{{- end }}
+` + r.getFormattedResources(r.Config.Spec.SidecarInjector.Init.Resources, 2) + `
   {{- end }}
-  `
+`
 }
 
 func (r *Reconciler) getFormattedResources(resources *apiv1.ResourceRequirements, indentSize int) string {
@@ -768,5 +816,13 @@ func (r *Reconciler) getFormattedResources(resources *apiv1.ResourceRequirements
 
 func indentWithSpaces(v string, spaces int) string {
 	pad := strings.Repeat(" ", spaces)
-	return pad + strings.Replace(v, "\n", "\n"+pad, -1)
+	lines := make([]string, 0)
+	for _, l := range strings.Split(v, "\n") {
+		if len(l) > 0 {
+			l = pad + l
+		}
+		lines = append(lines, l)
+	}
+	return strings.Join(lines, "\n")
+	return strings.TrimRight(pad+strings.Replace(v, "\n", "\n"+pad, -1), pad)
 }
