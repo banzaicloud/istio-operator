@@ -59,7 +59,6 @@ import (
 	"github.com/banzaicloud/istio-operator/pkg/resources/istiocoredns"
 	"github.com/banzaicloud/istio-operator/pkg/resources/istiod"
 	"github.com/banzaicloud/istio-operator/pkg/resources/meshexpansion"
-	"github.com/banzaicloud/istio-operator/pkg/resources/mixer"
 	"github.com/banzaicloud/istio-operator/pkg/resources/mixerlesstelemetry"
 	"github.com/banzaicloud/istio-operator/pkg/resources/nodeagent"
 	"github.com/banzaicloud/istio-operator/pkg/resources/pilot"
@@ -348,8 +347,6 @@ func (r *ReconcileIstio) reconcile(logger logr.Logger, config *istiov1beta1.Isti
 		}, r.Client, r.dynamic, config),
 		galley.New(r.Client, config),
 		sidecarinjector.New(r.Client, config),
-		mixer.NewPolicyReconciler(r.Client, r.dynamic, config),
-		mixer.NewTelemetryReconciler(r.Client, r.dynamic, config),
 		pilot.New(r.Client, r.dynamic, config),
 		istiod.New(r.Client, r.dynamic, config, r.mgr.GetScheme(), r.operatorConfig),
 		cni.New(r.Client, config),
