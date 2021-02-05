@@ -97,6 +97,14 @@ func (r *Reconciler) containerEnvs() []apiv1.EnvVar {
 			Value: r.Config.WithNamespacedRevision("istio-sidecar-injector"),
 		},
 		{
+			Name:  "CENTRAL_ISTIOD",
+			Value: "true",
+		},
+		{
+			Name:  "EXTERNAL_ISTIOD",
+			Value: "true",
+		},
+		{
 			Name:  "REVISION",
 			Value: r.Config.NamespacedRevision(),
 		},
