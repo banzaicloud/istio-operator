@@ -11,8 +11,6 @@ spec:
   global: false
   meshPolicy:
     mtlsMode: PERMISSIVE
-  autoInjectionNamespaces:
-  - "default"
   useMCP: false
   istiod:
     enabled: true

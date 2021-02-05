@@ -9,8 +9,6 @@ spec:
   global: false
   meshPolicy:
     mtlsMode: PERMISSIVE
-  autoInjectionNamespaces:
-  - "default"
   gateways:
     ingress:
       runAsRoot: false

@@ -7,8 +7,6 @@ metadata:
 spec:
   version: "1.9.0-rc.0"
   global: false
-  autoInjectionNamespaces:
-  - "default"
   useMCP: false
   meshPolicy:
     mtlsMode: STRICT
