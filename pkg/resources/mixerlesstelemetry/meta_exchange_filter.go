@@ -18,6 +18,7 @@ package mixerlesstelemetry
 
 import (
 	"fmt"
+	"strconv"
 	"strings"
 
 	"github.com/banzaicloud/istio-operator/pkg/util"
@@ -54,7 +55,7 @@ func (r *Reconciler) metaExchangeEnvoyFilter(version string, metadataExchangeFil
 	}
 
 	var y []map[string]interface{}
-	yaml.Unmarshal([]byte(fmt.Sprintf(metadataExchangeFilterYAML, vmConfigLocal, vmConfigRuntime, vmConfigAllowPrecompiled, r.metadataMatch(8))), &y)
+	yaml.Unmarshal([]byte(fmt.Sprintf(metadataExchangeFilterYAML, vmConfigLocal, vmConfigRuntime, strconv.FormatBool(vmConfigAllowPrecompiled), r.metadataMatch(8))), &y)
 
 	return &k8sutil.DynamicObject{
 		Gvr: schema.GroupVersionResource{
