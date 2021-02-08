@@ -66,7 +66,7 @@ When the data plane migration is finished, we'll delete the Istio 1.8 control pl
 
    ```bash
    $ helm repo add banzaicloud-stable https://kubernetes-charts.banzaicloud.com
-   $ helm install istio-operator-v18x --create-namespace --namespace=istio-system --set-string operator.image.tag=0.8.5 --set-string istioVersion=1.8 banzaicloud-stable/istio-operator
+   $ helm install istio-operator-v18x --create-namespace --namespace=istio-system --set-string operator.image.tag=0.8.6 --set-string istioVersion=1.8 banzaicloud-stable/istio-operator
    ```
 
 1. Apply an `Istio` Custom Resource and let the operator reconcile the Istio 1.8 control plane.
@@ -364,7 +364,7 @@ When the data plane is fully migrated to the 1.9 version and you made sure that 
 
    > :warning: If you installed the Istio operator chart for Istio 1.8 with Helm2, then first upgrade that chart with Helm version 3.1.0, otherwise your CRDs will be deleted!
    > ```bash
-   > $ helm upgrade istio-operator-v18x --namespace=istio-system --set-string operator.image.tag=0.8.5 --set-string istioVersion=1.8 banzaicloud-stable/istio-operator
+   > $ helm upgrade istio-operator-v18x --namespace=istio-system --set-string operator.image.tag=0.8.6 --set-string istioVersion=1.8 banzaicloud-stable/istio-operator
    > ```
    > For more info on CRD handling issues in Helm, check out these two PRs and the related issues: [https://github.com/helm/helm/pull/7320](https://github.com/helm/helm/pull/7320), [https://github.com/helm/helm/pull/7571](https://github.com/helm/helm/pull/7571).
 

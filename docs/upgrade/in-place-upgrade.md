@@ -24,11 +24,11 @@ If you already have Istio 1.8.x installed on your cluster you can skip the next 
 
 #### Install Istio 1.8.2
 
-We install Istio with our operator, so first we need to check out the `1.8.x` branch of our operator (this branch supports Istio versions 1.8.x):
+We install Istio with our operator, so first we need to check out the `release-1.8` branch of our operator (this branch supports Istio versions 1.8.x):
 
 ```bash
 $ git clone git@github.com:banzaicloud/istio-operator.git
-$ git checkout 1.8.x
+$ git checkout release-1.8
 ```
 
 **Install Istio Operator with make**
@@ -76,7 +76,7 @@ istiod-fc664fcbd-kgl2k                    2/2       Running   0          1m
 The `Istio` Custom Resource is showing `Available` in its status field and the Istio components are using `1.8.2` images :
 
 ```bash
-$ kubectl get istio -n istio-system istio -o yaml | grep "image:"
+$ kubectl get -n istio-system istio -o yaml | grep "image:"
     image: docker.io/istio/citadel:1.8.2
     image: docker.io/istio/galley:1.8.2
     image: docker.io/istio-mixer:1.8.2
@@ -155,7 +155,7 @@ $ helm upgrade istio-operator --install --namespace=istio-system --set-string op
 
 > If you've installed Istio 1.8.2 or earlier with the Istio operator, and if you check the logs of the operator pod at this point, you will see the following error message: `intended Istio version is unsupported by this version of the operator`. We need to update the Istio Custom Resource with Istio 1.9's components for the operator to be reconciled with the Istio control plane.
 
-To deploy Istio 1.9.0-rc.0 with its default configuration options, use the following command:
+To deploy Istio 1.9.0-rc.0 with its default configuration options, use the following command (please modify the sample CR to have the same name as the one on your cluster so that replace command can work):
 
 ```bash
 $ kubectl replace -n istio-system -f config/samples/istio_v1beta1_istio.yaml
