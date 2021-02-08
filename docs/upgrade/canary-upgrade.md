@@ -79,10 +79,10 @@ When the data plane migration is finished, we'll delete the Istio 1.8 control pl
 
    ```bash
    $ kubectl get po -n=istio-system
-   NAME                                    READY   STATUS    RESTARTS   AGE
-   istio-ingressgateway-55b89d99d7-4m884   1/1     Running   0          17s
-   istio-operator-v18x-0                   2/2     Running   0          57s
-   istiod-5865cb6547-zp5zh                 1/1     Running   0          29s
+   NAME                                                      READY   STATUS    RESTARTS   AGE
+   istio-istio-sample-v18x-ingressgateway-55b89d99d7-4m884   1/1     Running   0          17s
+   istio-operator-v18x-0                                     2/2     Running   0          57s
+   istiod-istio-sample-v18x-5865cb6547-zp5zh                 1/1     Running   0          29s
    ```
 
 ### Deploy demo app
@@ -97,16 +97,17 @@ When the data plane migration is finished, we'll delete the Istio 1.8 control pl
 1. Add those namespaces to the mesh.
 
    ```bash
-   $ kubectl patch istio -n istio-system istio-sample --type=json -p='[{"op": "replace", "path": "/spec/autoInjectionNamespaces", "value": ["demo-a", "demo-b"]}]'
+   $ kubectl label ns demo-a istio.io/rev=istio-sample-v18x.istio-system
+   $ kubectl label ns demo-b istio.io/rev=istio-sample-v18x.istio-system
    ```
 
-1. Make sure that the namespaces are labeled for sidecar injection (if not, wait a few seconds, then please re-check the namespaces).
+1. Make sure that the namespaces are labeled for sidecar injection.
 
    ```bash
-   $ kubectl get ns demo-a demo-b -L istio-injection
-   NAME     STATUS   AGE     ISTIO-INJECTION
-   demo-a   Active   2m11s   enabled
-   demo-b   Active   2m9s    enabled
+   $ kubectl get ns demo-a demo-b -L istio.io/rev
+   NAME     STATUS   AGE     REV
+   demo-a   Active   2m11s   istio-sample-v18x.istio-system
+   demo-b   Active   2m9s    istio-sample-v18x.istio-system
    ```
 
 1. Deploy two sample applications in those two namespaces.
@@ -150,9 +151,7 @@ When the data plane migration is finished, we'll delete the Istio 1.8 control pl
        targetPort: 8080
      selector:
        k8s-app: app-a
-   ```
-
-   ```yaml
+   ---
    apiVersion: apps/v1
    kind: Deployment
    metadata:
@@ -236,12 +235,12 @@ When the data plane migration is finished, we'll delete the Istio 1.8 control pl
 
    ```bash
    $ kubectl get po -n=istio-system
-   NAME                                        READY   STATUS    RESTARTS   AGE
-   istio-ingressgateway-55b89d99d7-4m884       1/1     Running   0          6m38s
-   istio-operator-v18x-0                       2/2     Running   0          7m18s
-   istio-operator-v19x-0                       2/2     Running   0          76s
-   istiod-676fc6d449-9jwfj                     1/1     Running   0          10s
-   istiod-istio-sample-v18x-7dbdf4f9fc-bfxhl   1/1     Running   0          18s
+   NAME                                                          READY   STATUS    RESTARTS   AGE
+   istio-istio-sample-v18x-ingressgateway-55b89d99d7-4m884       1/1     Running   0          6m38s
+   istio-operator-v18x-0                                         2/2     Running   0          7m18s
+   istio-operator-v19x-0                                         2/2     Running   0          76s
+   istiod-istio-sample-v19x-676fc6d449-9jwfj                     1/1     Running   0          10s
+   istiod-istio-sample-v18x-7dbdf4f9fc-bfxhl                     1/1     Running   0          6m32s
    ```
 
 ### Migrate data plane
@@ -251,7 +250,7 @@ When the data plane migration is finished, we'll delete the Istio 1.8 control pl
 1. Change the ingress gateway so that it utilizes the new Istio 1.9 control plane.
 
    ```bash
-   $ kubectl patch mgw -n istio-system istio-ingressgateway --type=json -p='[{"op": "replace", "path": "/spec/istioControlPlane/name", "value": "istio-sample-v19x"}]'
+   $ kubectl patch mgw -n istio-system istio-ingressgateway-istio-sample-v18x --type=json -p='[{"op": "replace", "path": "/spec/istioControlPlane/name", "value": "istio-sample-v19x"}]'
    ```
 
 #### Migrate first namespace
@@ -259,7 +258,7 @@ When the data plane migration is finished, we'll delete the Istio 1.8 control pl
 1. Label the first namespace so that all workloads there utilize the new control plane.
 
    ```bash
-   $ kubectl label ns demo-a istio-injection- istio.io/rev=istio-sample-v19x.istio-system
+   $ kubectl label ns demo-a istio-injection- istio.io/rev=istio-sample-v19x.istio-system --overwrite
    ```
 
    The new `istio.io/rev` label needs to be used for the new revisioned control planes to indicate that it should perform sidecar injection.
@@ -322,7 +321,7 @@ Remember that the pod(s) in the `demo-a` namespace are already on the Istio 1.9 
 1. Label the second namespace so that all workloads there utilize the new control plane.
 
    ```bash
-   $ kubectl label ns demo-b istio-injection- istio.io/rev=istio-sample-v19x.istio-system
+   $ kubectl label ns demo-b istio-injection- istio.io/rev=istio-sample-v19x.istio-system --overwrite
    ```
 
 1. Make sure that the labeling is correct.
