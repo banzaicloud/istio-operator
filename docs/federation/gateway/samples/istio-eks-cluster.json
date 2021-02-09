@@ -5,7 +5,7 @@
   "secretId": "{{secretID}}",
   "properties": {
     "eks": {
-      "version": "1.14",
+      "version": "1.18",
       "nodePools": {
         "pool1": {
           "spotPrice": "0",
