@@ -81,23 +81,18 @@ This command will install a custom resource definition in the cluster, and will 
 Following a pattern typical of operators, this will allow you to specify your Istio configurations to a Kubernetes custom resource.
 Once you apply that to your cluster, the operator will start reconciling all of Istio's components.
 
-Wait for the `gateway-multicluster` Istio resource status become `Available` and also the pods in the `istio-system` become ready as well.
+Wait for the `istio-gw-multi` Istio resource status become `Available` and also the pods in the `istio-system` become ready as well.
 
 ```bash
 ❯ kubectl --context=${CTX_PKE} -n istio-system get istios
-NAME                   STATUS      ERROR   AGE
-gateway-multicluster   Available           1m
+NAME             STATUS      ERROR   INGRESS IPS       AGE
+istio-gw-multi   Available           [13.49.186.143]   3m15s
 
 ❯ kubectl --context=${CTX_PKE} -n istio-system get pods
-NAME                                      READY   STATUS    RESTARTS   AGE
-istio-citadel-67f99b7f5f-lg859            1/1     Running   0          1m30s
-istio-galley-665cf4d49d-qrm5s             1/1     Running   0          1m30s
-istio-ingressgateway-64f9d4b75b-jh6jr     1/1     Running   0          1m30s
-istio-operator-controller-manager-0       2/2     Running   0          2m27s
-istio-pilot-df5d467c7-jmj77               2/2     Running   0          1m30s
-istio-policy-57dd995b-fq4ss               2/2     Running   2          1m29s
-istio-sidecar-injector-746f5cccd9-8mwdb   1/1     Running   0          1m18s
-istio-telemetry-6b6b987c94-nmqpg          2/2     Running   2          1m29s
+NAME                                                          READY   STATUS    RESTARTS   AGE
+istio-meshexpansion-gateway-istio-gw-multi-57b59b5ffd-rvffp   1/1     Running   0          2m20s
+istio-operator-controller-manager-0                           2/2     Running   0          35m
+istiod-istio-gw-multi-59d5b4b6db-rzbjr                        1/1     Running   0          79s
 ```
 
 Add GKE cluster to the service mesh
@@ -122,7 +117,7 @@ Add EKS cluster to the service mesh
 
 Wait for the `istio-eks` and `istio-gke` RemoteIstio resource status to become `Available` and also the pods in the `istio-system` on those clusters to become ready as well.
 
-> It could take some time to these resrouces to become `Available` and also reconiliation failures will occur since the reconciliation process must determine the ingress gateway addresses of the clusters.
+> It could take some time to these resources to become `Available` and also reconciliation failures will occur since the reconciliation process must determine the ingress gateway addresses of the clusters.
 
 ```text
 ❯ kubectl --context=${CTX_PKE} -n istio-system get remoteistios
@@ -141,6 +136,12 @@ NAME                                      READY   STATUS    RESTARTS   AGE
 istio-citadel-78478cfb44-7h42v            1/1     Running   0          4m
 istio-ingressgateway-7f75c479b8-w4qr9     1/1     Running   0          4m
 istio-sidecar-injector-56dbb9587f-928h9   1/1     Running   0          4m
+```
+
+Make sure that sidecar injection will take place in the namespace where the bookinfo sample application will be deployed (if labeled on the master cluster, it will be automatically labeled on peer clusters as well by the istio operator).
+
+```bash
+kubectl --context=${CTX_PKE} label ns default istio.io/rev=istio-gw-multi.istio-system
 ```
 
 Deploy the bookinfo sample application in a distributed way
@@ -232,9 +233,9 @@ spec:
 The bookinfo app's product page is reachable through every clusters ingress gateway since they are part of one single mesh. Let's determine the ingress gateway address of the clusters:
 
 ```bash
-export PKE_INGRESS=$(kubectl --context=${CTX_PKE} -n istio-system get svc/istio-ingressgateway -o jsonpath='{.status.loadBalancer.ingress[0].hostname}')
-export GKE_INGRESS=$(kubectl --context=${CTX_GKE} -n istio-system get svc/istio-ingressgateway -o jsonpath='{.status.loadBalancer.ingress[0].ip}')
-export EKS_INGRESS=$(kubectl --context=${CTX_EKS} -n istio-system get svc/istio-ingressgateway -o jsonpath='{.status.loadBalancer.ingress[0].hostname}')
+export PKE_INGRESS=$(kubectl --context=${CTX_PKE} -n istio-system get svc/istio-meshexpansion-gateway-istio-gw-multi -o jsonpath='{.status.loadBalancer.ingress[0].hostname}')
+export GKE_INGRESS=$(kubectl --context=${CTX_GKE} -n istio-system get svc/istio-meshexpansion-gateway-istio-gw-multi -o jsonpath='{.status.loadBalancer.ingress[0].ip}')
+export EKS_INGRESS=$(kubectl --context=${CTX_EKS} -n istio-system get svc/istio-meshexpansion-gateway-istio-gw-multi -o jsonpath='{.status.loadBalancer.ingress[0].hostname}')
 ```
 
 Hit the PKE cluster's ingress with some traffic to see the spreading of the `reviews` service:
