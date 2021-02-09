@@ -311,7 +311,7 @@ func (r *Reconciler) cfEnvVars() []apiv1.EnvVar {
 		},
 		{
 			Name:  "SECRET_TTL",
-			Value: "8640h",
+			Value: "2160h",
 		},
 		{
 			Name:  "OUTPUT_CERTS",
