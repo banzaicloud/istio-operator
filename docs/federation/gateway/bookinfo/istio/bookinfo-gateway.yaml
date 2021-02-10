@@ -4,7 +4,7 @@ metadata:
   name: bookinfo-gateway
 spec:
   selector:
-    istio: ingressgateway
+    istio: meshexpansiongateway
   servers:
   - port:
       number: 80

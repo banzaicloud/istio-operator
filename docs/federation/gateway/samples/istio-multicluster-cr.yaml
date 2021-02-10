@@ -19,3 +19,10 @@ spec:
     egress:
       maxReplicas: 1
       enabled: false
+    meshExpansion:
+      enabled: true
+      ports:
+      - name: http
+        port: 80
+        protocol: TCP
+        targetPort: 8080

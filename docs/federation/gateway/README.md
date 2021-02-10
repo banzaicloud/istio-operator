@@ -127,13 +127,11 @@ istio-gke   Available           [35.204.1.52]               5m
 
 ❯ kubectl --context=${CTX_GKE} -n istio-system get pods
 NAME                                      READY   STATUS    RESTARTS   AGE
-istio-citadel-75648bdf6b-k8rfl            1/1     Running   0          6m9s
 istio-ingressgateway-7f494bcf8-qb692      1/1     Running   0          6m8s
 istio-sidecar-injector-746f5cccd9-7b55s   1/1     Running   0          6m8s
 
 ❯ kubectl --context=${CTX_EKS} -n istio-system get pods
 NAME                                      READY   STATUS    RESTARTS   AGE
-istio-citadel-78478cfb44-7h42v            1/1     Running   0          4m
 istio-ingressgateway-7f75c479b8-w4qr9     1/1     Running   0          4m
 istio-sidecar-injector-56dbb9587f-928h9   1/1     Running   0          4m
 ```
