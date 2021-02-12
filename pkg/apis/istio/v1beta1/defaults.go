@@ -180,6 +180,12 @@ func SetDefaults(config *Istio) {
 	if config.Spec.Istiod.EnableStatus == nil {
 		config.Spec.Istiod.EnableStatus = util.BoolPointer(false)
 	}
+	if config.Spec.Istiod.ExternalIstiod == nil {
+		config.Spec.Istiod.ExternalIstiod = &ExternalIstiodConfiguration{}
+	}
+	if config.Spec.Istiod.ExternalIstiod.Enabled == nil {
+		config.Spec.Istiod.ExternalIstiod.Enabled = util.BoolPointer(false)
+	}
 
 	if config.Spec.Istiod.CA == nil {
 		config.Spec.Istiod.CA = &IstiodCAConfiguration{}

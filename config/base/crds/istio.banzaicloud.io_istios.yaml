@@ -2965,6 +2965,11 @@ spec:
                     type: boolean
                   exposeWebhookPort:
                     type: boolean
+                  externalIstiod:
+                    properties:
+                      enabled:
+                        type: boolean
+                    type: object
                   multiClusterSupport:
                     type: boolean
                   multiControlPlaneSupport:

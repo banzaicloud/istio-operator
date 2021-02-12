@@ -24,6 +24,8 @@ spec:
     enabled: true
     enableAnalysis: true
     enableStatus: true
+    externalIstiod:
+      enabled: false
   pilot:
     enabled: true
     image: "docker.io/istio/pilot:1.9.0"
