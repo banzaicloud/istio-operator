@@ -3,17 +3,15 @@ kind: Istio
 metadata:
   labels:
     controller-tools.k8s.io: "1.0"
-  name: istio-sample-v18x
+  name: istio-sample-v19x
 spec:
-  version: "1.8.2"
+  version: "1.9.0"
   global: false
   meshPolicy:
     mtlsMode: PERMISSIVE
   autoMtls: true
   includeIPRanges: "*"
   excludeIPRanges: ""
-  autoInjectionNamespaces:
-  - "default"
   controlPlaneAuthPolicy: "MUTUAL_TLS"
   mountMtlsCerts: false
   # priorityClassName: system-cluster-critical
@@ -26,9 +24,11 @@ spec:
     enabled: true
     enableAnalysis: true
     enableStatus: true
+    externalIstiod:
+      enabled: false
   pilot:
     enabled: true
-    image: "docker.io/istio/pilot:1.8.2"
+    image: "docker.io/istio/pilot:1.9.0"
     replicaCount: 1
     minReplicas: 1
     maxReplicas: 5
@@ -101,18 +101,18 @@ spec:
       enabled: false
   policy:
     enabled: false
-    image: "docker.io/istio/mixer:1.8.2"
+    image: "docker.io/istio/mixer:1.9.0"
     replicaCount: 1
     minReplicas: 1
     maxReplicas: 5
   telemetry:
     enabled: false
-    image: "docker.io/istio/mixer:1.8.2"
+    image: "docker.io/istio/mixer:1.9.0"
     replicaCount: 1
     minReplicas: 1
     maxReplicas: 5
   proxy:
-    image: "docker.io/istio/proxyv2:1.8.2"
+    image: "docker.io/istio/proxyv2:1.9.0"
     accessLogFile: "/dev/stdout"
     accessLogFormat: ""
     accessLogEncoding: "TEXT"
@@ -126,7 +126,7 @@ spec:
         cpu: 2000m
         memory: 1024Mi
   proxyInit:
-    image: "docker.io/istio/proxyv2:1.8.2"
+    image: "docker.io/istio/proxyv2:1.9.0"
   defaultPodDisruptionBudget:
     enabled: true
   outboundTrafficPolicy:

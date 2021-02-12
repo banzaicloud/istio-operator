@@ -97,8 +97,8 @@ func (r *Reconciler) containerEnvs() []apiv1.EnvVar {
 			Value: r.Config.WithNamespacedRevision("istio-sidecar-injector"),
 		},
 		{
-			Name:  "CENTRAL_ISTIOD",
-			Value: "true",
+			Name:  "EXTERNAL_ISTIOD",
+			Value: strconv.FormatBool(util.PointerToBool(r.Config.Spec.Istiod.ExternalIstiod.Enabled)),
 		},
 		{
 			Name:  "REVISION",
@@ -122,6 +122,15 @@ func (r *Reconciler) containerEnvs() []apiv1.EnvVar {
 		},
 	}
 
+	enablePilotEndpointTelemetry := false
+	if util.PointerToBool(r.Config.Spec.MixerlessTelemetry.Enabled) || util.PointerToBool(r.Config.Spec.Istiod.MultiControlPlaneSupport) {
+		enablePilotEndpointTelemetry = true
+	}
+	envs = append(envs, apiv1.EnvVar{
+		Name:  "PILOT_ENDPOINT_TELEMETRY_LABEL",
+		Value: strconv.FormatBool(enablePilotEndpointTelemetry),
+	})
+
 	if util.PointerToBool(r.Config.Spec.Istiod.MultiControlPlaneSupport) {
 		envs = append(envs, []apiv1.EnvVar{
 			{
@@ -139,10 +148,6 @@ func (r *Reconciler) containerEnvs() []apiv1.EnvVar {
 			{
 				Name:  "CACERT_CONFIG_NAME",
 				Value: r.Config.WithRevision("istio-ca-root-cert"),
-			},
-			{
-				Name:  "PILOT_ENDPOINT_TELEMETRY_LABEL",
-				Value: "true",
 			},
 		}...)
 	}
@@ -216,7 +221,6 @@ func (r *Reconciler) containerPorts() []apiv1.ContainerPort {
 		{ContainerPort: 8080, Protocol: apiv1.ProtocolTCP},
 		{ContainerPort: 15010, Protocol: apiv1.ProtocolTCP},
 		{ContainerPort: 15017, Protocol: apiv1.ProtocolTCP},
-		{ContainerPort: 15053, Protocol: apiv1.ProtocolTCP},
 	}
 }
 
@@ -510,7 +514,7 @@ func (r *Reconciler) deployment() runtime.Object {
 			},
 			Template: apiv1.PodTemplateSpec{
 				ObjectMeta: metav1.ObjectMeta{
-					Labels:      util.MergeMultipleStringMaps(istiodLabels, pilotLabelSelector, r.Config.RevisionLabels()),
+					Labels:      util.MergeMultipleStringMaps(istiodLabels, pilotLabelSelector, r.Config.RevisionLabels(), v1beta1.DisableInjectionLabel),
 					Annotations: util.MergeStringMaps(templates.DefaultDeployAnnotations(), r.Config.Spec.Pilot.PodAnnotations),
 				},
 				Spec: apiv1.PodSpec{

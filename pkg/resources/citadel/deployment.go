@@ -177,7 +177,7 @@ func (r *Reconciler) deployment() runtime.Object {
 	}
 
 	var podSpec = apiv1.PodSpec{
-		ServiceAccountName:            serviceAccountName,
+		ServiceAccountName:            r.Config.WithRevision(serviceAccountName),
 		DNSPolicy:                     apiv1.DNSClusterFirst,
 		RestartPolicy:                 apiv1.RestartPolicyAlways,
 		TerminationGracePeriodSeconds: util.Int64Pointer(int64(30)),

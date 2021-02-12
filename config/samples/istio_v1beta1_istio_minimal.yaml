@@ -5,15 +5,12 @@ kind: Istio
 metadata:
   labels:
     controller-tools.k8s.io: "1.0"
-  name: istio-sample-v18x
+  name: istio-sample-v19x
 spec:
-  version: "1.8.2"
+  version: "1.9.0"
   global: false
   meshPolicy:
     mtlsMode: PERMISSIVE
-  autoInjectionNamespaces:
-  - "default"
-  useMCP: false
   istiod:
     enabled: true
   pilot:
@@ -32,5 +29,5 @@ spec:
   tracing:
     enabled: false
   proxy:
-    image: "docker.io/istio/proxyv2:1.8.2"
+    image: "docker.io/istio/proxyv2:1.9.0"
   jwtPolicy: "first-party-jwt"

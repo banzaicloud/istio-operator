@@ -34,12 +34,11 @@ rules:
   - endpoints
   - pods
   - replicationcontrollers
-  - services
-  - endpoints
-  - pods
   verbs:
   - get
   - list
+  - patch
+  - update
   - watch
 - apiGroups:
   - ""
@@ -207,6 +206,15 @@ rules:
   verbs:
   - approve
 - apiGroups:
+  - coordination.k8s.io
+  resources:
+  - leases
+  verbs:
+  - create
+  - get
+  - list
+  - update
+- apiGroups:
   - extensions
   - networking.k8s.io
   resources:
@@ -275,13 +283,12 @@ rules:
   - update
   - patch
 - apiGroups:
+  {{- if semverCompare "< 1.8.0" .Values.istioVersion }}
   - authentication.istio.io
-  - cloud.istio.io
   - config.istio.io
-  - istio.istio.io
+  {{- end }}
   - networking.istio.io
   - security.istio.io
-  - scalingpolicy.istio.io
   {{- if semverCompare "< 1.7.0" .Values.istioVersion }}
   - rbac.istio.io
   {{- end }}

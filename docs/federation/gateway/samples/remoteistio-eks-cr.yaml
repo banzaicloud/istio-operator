@@ -3,14 +3,7 @@ kind: RemoteIstio
 metadata:
   name: istio-eks
 spec:
-  autoInjectionNamespaces:
-  - "default"
-  enabledServices:
-  - name: "istio-pilot"
-  - name: "istio-policy"
-  - name: "istio-telemetry"
-  citadel:
-      enabled: true
+  enabledServices: []
   sidecarInjector:
-      enabled: true
-      replicaCount: 1
+    enabled: true
+    replicaCount: 1

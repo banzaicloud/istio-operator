@@ -28,9 +28,9 @@ import (
 
 const (
 	banzaiImageHub                         = "ghcr.io/banzaicloud"
-	banzaiImageVersion                     = "1.8.2-bzc"
+	banzaiImageVersion                     = "1.9.0-bzc"
 	defaultImageHub                        = "docker.io/istio"
-	defaultImageVersion                    = "1.8.2"
+	defaultImageVersion                    = "1.9.0"
 	defaultLogLevel                        = "default:info"
 	defaultMeshPolicy                      = PERMISSIVE
 	defaultPilotImage                      = defaultImageHub + "/" + "pilot" + ":" + defaultImageVersion
@@ -69,7 +69,7 @@ const (
 	defaultEnvoyAccessLogEncoding          = "TEXT"
 	defaultClusterName                     = "Kubernetes"
 	defaultNetworkName                     = "local-network"
-	defaultVaultEnvImage                   = "ghcr.io/banzaicloud/vault-env:1.8.0"
+	defaultVaultEnvImage                   = "ghcr.io/banzaicloud/vault-env:1.11.1"
 	defaultVaultAddress                    = "https://vault.vault:8200"
 	defaultVaultRole                       = "istiod"
 	defaultVaultCACertPath                 = "vault:secret/data/pki/istiod#certificate"
@@ -179,6 +179,12 @@ func SetDefaults(config *Istio) {
 	}
 	if config.Spec.Istiod.EnableStatus == nil {
 		config.Spec.Istiod.EnableStatus = util.BoolPointer(false)
+	}
+	if config.Spec.Istiod.ExternalIstiod == nil {
+		config.Spec.Istiod.ExternalIstiod = &ExternalIstiodConfiguration{}
+	}
+	if config.Spec.Istiod.ExternalIstiod.Enabled == nil {
+		config.Spec.Istiod.ExternalIstiod.Enabled = util.BoolPointer(false)
 	}
 
 	if config.Spec.Istiod.CA == nil {

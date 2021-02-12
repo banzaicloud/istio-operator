@@ -1,5 +1,5 @@
 /*
-Copyright 2020 Banzai Cloud.
+Copyright 2021 Banzai Cloud.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -21,17 +21,17 @@ import (
 )
 
 const (
-	metadataExchangeFilterYAML16 = `
+	metadataExchangeFilterYAML19 = `
 - applyTo: HTTP_FILTER
   match:
     context: ANY # inbound, outbound, and gateway
     proxy:
-      proxyVersion: '^1\.6.*'
-      %[3]s
+      proxyVersion: '^1\.9.*'
+      %[4]s
     listener:
       filterChain:
         filter:
-          name: "envoy.http_connection_manager"
+          name: "envoy.filters.network.http_connection_manager"
   patch:
     operation: INSERT_BEFORE
     value:
@@ -41,16 +41,19 @@ const (
         type_url: type.googleapis.com/envoy.extensions.filters.http.wasm.v3.Wasm
         value:
           config:
-            configuration: |
-              {}
+            configuration:
+              "@type": "type.googleapis.com/google.protobuf.StringValue"
+              value: |
+                {}
             vm_config:
               code:
                 local:
                   %[1]s
               runtime: %[2]s
+              allow_precompiled: %[3]s
 `
 )
 
-func (r *Reconciler) metaExchangeEnvoyFilter16() *k8sutil.DynamicObject {
-	return r.metaExchangeEnvoyFilter(proxyVersion16, metadataExchangeFilterYAML16)
+func (r *Reconciler) metaExchangeEnvoyFilter19() *k8sutil.DynamicObject {
+	return r.metaExchangeEnvoyFilter(proxyVersion19, metadataExchangeFilterYAML19)
 }

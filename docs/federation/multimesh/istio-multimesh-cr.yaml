@@ -5,13 +5,16 @@ metadata:
     controller-tools.k8s.io: "1.0"
   name: multimesh
 spec:
-  version: "1.8.2"
-  autoInjectionNamespaces:
-  - "default"
-  useMCP: false
+  version: "1.9.0"
+  global: false
+  meshExpansion: true
   meshPolicy:
     mtlsMode: STRICT
-  multiMesh: true
+  multiMeshExpansion:
+    enabled: true
+    envoyFilterEnabled: false
+    domains:
+    - "acme.corp"
   istioCoreDNS:
     enabled: true
   citadel:
@@ -25,5 +28,10 @@ spec:
     egress:
       maxReplicas: 1
       enabled: false
-  mixer:
-    maxReplicas: 1
+    meshExpansion:
+      enabled: true
+      ports:
+      - name: http
+        port: 80
+        protocol: TCP
+        targetPort: 8080

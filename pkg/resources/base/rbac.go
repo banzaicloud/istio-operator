@@ -34,7 +34,7 @@ func (r *Reconciler) serviceAccountReader() runtime.Object {
 func (r *Reconciler) clusterRoleReader() runtime.Object {
 	rules := []rbacv1.PolicyRule{
 		{
-			APIGroups: []string{"config.istio.io", "security.istio.io", "networking.istio.io", "authentication.istio.io"},
+			APIGroups: []string{"security.istio.io", "networking.istio.io"},
 			Resources: []string{"*"},
 			Verbs:     []string{"get", "watch", "list"},
 		},
@@ -42,6 +42,16 @@ func (r *Reconciler) clusterRoleReader() runtime.Object {
 			APIGroups: []string{""},
 			Resources: []string{"endpoints", "pods", "services", "nodes", "replicationcontrollers", "namespaces", "secrets"},
 			Verbs:     []string{"get", "watch", "list"},
+		},
+		{
+			APIGroups: []string{"networking.istio.io"},
+			Resources: []string{"workloadentries"},
+			Verbs:     []string{"get", "watch", "list"},
+		},
+		{
+			APIGroups: []string{"apiextensions.k8s.io"},
+			Resources: []string{"customresourcedefinitions"},
+			Verbs:     []string{"get", "list", "watch"},
 		},
 		{
 			APIGroups: []string{"discovery.k8s.io"},
@@ -75,7 +85,7 @@ func (r *Reconciler) clusterRoleReader() runtime.Object {
 			{
 				APIGroups: []string{"admissionregistration.k8s.io"},
 				Resources: []string{"mutatingwebhookconfigurations"},
-				Verbs:     []string{"get", "list", "watch", "patch"},
+				Verbs:     []string{"get", "list", "watch", "update", "patch"},
 			},
 			{
 				APIGroups: []string{"admissionregistration.k8s.io"},

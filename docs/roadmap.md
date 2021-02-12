@@ -18,3 +18,4 @@ Released:
 - [x] - Multi control plane support
 - [x] - Istio 1.7.x support
 - [x] - Istio 1.8.x support
+- [x] - Istio 1.9.x support

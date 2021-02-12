@@ -4,7 +4,7 @@ metadata:
   creationTimestamp: null
   name: istios.istio.banzaicloud.io
   labels:
-    resource.alpha.banzaicloud.io/revision: 1.8.2
+    resource.alpha.banzaicloud.io/revision: 1.9.0
 spec:
   group: istio.banzaicloud.io
   names:
@@ -2963,6 +2963,11 @@ spec:
                       type: boolean
                     exposeWebhookPort:
                       type: boolean
+                    externalIstiod:
+                      properties:
+                        enabled:
+                          type: boolean
+                      type: object
                     multiClusterSupport:
                       type: boolean
                     multiControlPlaneSupport:

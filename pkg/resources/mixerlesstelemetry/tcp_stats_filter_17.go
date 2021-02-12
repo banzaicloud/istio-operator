@@ -31,7 +31,7 @@ const (
           name: envoy.tcp_proxy
     proxy:
       proxyVersion: ^1\.7.*
-      %[3]s
+      %[4]s
   patch:
     operation: INSERT_BEFORE
     value:
@@ -62,6 +62,7 @@ const (
                 local:
                   %[1]s
               runtime: %[2]s
+              allow_precompiled: %[3]s
               vm_id: tcp_stats_inbound
 - applyTo: NETWORK_FILTER
   match:
@@ -72,7 +73,7 @@ const (
           name: envoy.tcp_proxy
     proxy:
       proxyVersion: ^1\.7.*
-      %[3]s
+      %[4]s
   patch:
     operation: INSERT_BEFORE
     value:
@@ -103,6 +104,7 @@ const (
                 local:
                   %[1]s
               runtime: %[2]s
+              allow_precompiled: %[3]s
               vm_id: tcp_stats_outbound
 - applyTo: NETWORK_FILTER
   match:
@@ -113,7 +115,7 @@ const (
           name: envoy.tcp_proxy
     proxy:
       proxyVersion: ^1\.7.*
-      %[3]s
+      %[4]s
   patch:
     operation: INSERT_BEFORE
     value:
@@ -144,6 +146,7 @@ const (
                 local:
                   %[1]s
               runtime: %[2]s
+              allow_precompiled: %[3]s
               vm_id: tcp_stats_outbound
 `
 )

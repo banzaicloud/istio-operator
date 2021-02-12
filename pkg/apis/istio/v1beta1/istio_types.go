@@ -35,12 +35,18 @@ const (
 	LegacyAutoInjectionLabelKey     = "istio-injection"
 	RevisionedAutoInjectionLabelKey = "istio.io/rev"
 
-	supportedIstioMinorVersionRegex = "^1.8"
+	ManualInjectionLabelKey = "sidecar.istio.io/inject"
+
+	supportedIstioMinorVersionRegex = "^1.9"
 )
 
 var (
-	SupportedIstioVersion = "1.8.2"
-	Version               = "0.8.6"
+	SupportedIstioVersion = "1.9.0"
+	Version               = "0.9.0"
+
+	DisableInjectionLabel = map[string]string{
+		ManualInjectionLabelKey: "false",
+	}
 )
 
 // IstioVersion stores the intended Istio version
@@ -115,8 +121,15 @@ type IstiodConfiguration struct {
 	MultiClusterSupport      *bool `json:"multiClusterSupport,omitempty"`
 	MultiControlPlaneSupport *bool `json:"multiControlPlaneSupport,omitempty"`
 	ExposeWebhookPort        *bool `json:"exposeWebhookPort,omitempty"`
+	// Settings for local istiod to control remote clusters as well
+	ExternalIstiod *ExternalIstiodConfiguration `json:"externalIstiod,omitempty"`
 	// Istiod CA config
 	CA *IstiodCAConfiguration `json:"ca,omitempty"`
+}
+
+// ExternalIstiodConfiguration defines settings for local istiod to control remote clusters as well
+type ExternalIstiodConfiguration struct {
+	Enabled *bool `json:"enabled,omitempty"`
 }
 
 // IstiodCAConfiguration defines configuration for Istiod CA

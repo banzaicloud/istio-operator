@@ -73,7 +73,7 @@ For a complete list of [Backyards](https://banzaicloud.com/products/backyards/) 
 
 ## Istio operator installation
 
-The operator (`release-1.8` branch) installs the 1.8.2 version of Istio, and can run on Minikube v1.1.1+ and Kubernetes 1.16.0+.
+The operator (`release-1.9` branch) installs the 1.9.0 version of Istio, and can run on Minikube v1.1.1+ and Kubernetes 1.17.0+.
 
 As a pre-requisite it needs a Kubernetes cluster (you can create one using [Pipeline](https://github.com/banzaicloud/pipeline)).
 
@@ -99,7 +99,7 @@ Alternatively, if you just can’t let go of Helm completely, you can deploy the
 
 ```bash
 helm repo add banzaicloud-stable https://kubernetes-charts.banzaicloud.com/
-helm install istio-operator-v17x --create-namespace --namespace=istio-system banzaicloud-stable/istio-operator
+helm install istio-operator-v19x --create-namespace --namespace=istio-system banzaicloud-stable/istio-operator
 ```
 
 ### Installation with Kustomize
@@ -108,8 +108,8 @@ You can also have your own `kustomization.yaml` file with a reference to Istio o
 
 ```bash
 bases:
-  - github.com/banzaicloud/istio-operator/config?ref=release-1.8
-  - github.com/banzaicloud/istio-operator/config/overlays/auth-proxy-enabled?ref=release-1.8
+  - github.com/banzaicloud/istio-operator/config?ref=release-1.9
+  - github.com/banzaicloud/istio-operator/config/overlays/auth-proxy-enabled?ref=release-1.9
 ```
 
 ## Istio upgrade

@@ -3,9 +3,9 @@ kind: Istio
 metadata:
   labels:
     controller-tools.k8s.io: "1.0"
-  name: istio-sample-v18x
+  name: istio-sample-v19x
 spec:
-  version: "1.8.2"
+  version: "1.9.0"
   pilot:
     spiffe:
       operatorEndpoints:

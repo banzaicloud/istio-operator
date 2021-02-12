@@ -18,6 +18,7 @@ package mixerlesstelemetry
 
 import (
 	"fmt"
+	"strconv"
 
 	"github.com/banzaicloud/istio-operator/pkg/util"
 	"github.com/ghodss/yaml"
@@ -27,23 +28,24 @@ import (
 )
 
 const (
-	statsWasmLocal   = "filename: /etc/istio/extensions/stats-filter.wasm"
+	statsWasmLocal   = "filename: /etc/istio/extensions/stats-filter.compiled.wasm"
 	statsNoWasmLocal = "inline_string: envoy.wasm.stats"
 )
 
 func (r *Reconciler) httpStatsFilter(version string, httpStatsFilterYAML string) *k8sutil.DynamicObject {
-
 	wasmEnabled := util.PointerToBool(r.Config.Spec.ProxyWasm.Enabled)
 
 	vmConfigLocal := statsNoWasmLocal
 	vmConfigRuntime := noWasmRuntime
+	vmConfigAllowPrecompiled := false
 	if wasmEnabled {
 		vmConfigLocal = statsWasmLocal
 		vmConfigRuntime = wasmRuntime
+		vmConfigAllowPrecompiled = true
 	}
 
 	var y []map[string]interface{}
-	yaml.Unmarshal([]byte(fmt.Sprintf(httpStatsFilterYAML, vmConfigLocal, vmConfigRuntime, r.metadataMatch(8))), &y)
+	yaml.Unmarshal([]byte(fmt.Sprintf(httpStatsFilterYAML, vmConfigLocal, vmConfigRuntime, strconv.FormatBool(vmConfigAllowPrecompiled), r.metadataMatch(8))), &y)
 
 	return &k8sutil.DynamicObject{
 		Gvr: schema.GroupVersionResource{

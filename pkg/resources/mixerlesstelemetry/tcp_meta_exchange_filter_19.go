@@ -1,5 +1,5 @@
 /*
-Copyright 2020 Banzai Cloud.
+Copyright 2021 Banzai Cloud.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -21,12 +21,12 @@ import (
 )
 
 const (
-	tcpMetadataExchangeFilterYAML16 = `
+	tcpMetadataExchangeFilterYAML19 = `
     - applyTo: NETWORK_FILTER
       match:
         context: SIDECAR_INBOUND
         proxy:
-          proxyVersion: '^1\.6.*'
+          proxyVersion: '^1\.9.*'
           %[1]s
         listener: {}
       patch:
@@ -42,7 +42,7 @@ const (
       match:
         context: SIDECAR_OUTBOUND
         proxy:
-          proxyVersion: '^1\.6.*'
+          proxyVersion: '^1\.9.*'
           %[1]s
         cluster: {}
       patch:
@@ -59,7 +59,7 @@ const (
       match:
         context: GATEWAY
         proxy:
-          proxyVersion: '^1\.6.*'
+          proxyVersion: '^1\.9.*'
           %[1]s
         cluster: {}
       patch:
@@ -75,6 +75,6 @@ const (
 `
 )
 
-func (r *Reconciler) tcpMetaExchangeEnvoyFilter16() *k8sutil.DynamicObject {
-	return r.tcpMetaExchangeEnvoyFilter(proxyVersion16, tcpMetadataExchangeFilterYAML16)
+func (r *Reconciler) tcpMetaExchangeEnvoyFilter19() *k8sutil.DynamicObject {
+	return r.tcpMetaExchangeEnvoyFilter(proxyVersion19, tcpMetadataExchangeFilterYAML19)
 }

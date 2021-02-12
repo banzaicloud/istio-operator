@@ -59,7 +59,6 @@ import (
 	"github.com/banzaicloud/istio-operator/pkg/resources/istiocoredns"
 	"github.com/banzaicloud/istio-operator/pkg/resources/istiod"
 	"github.com/banzaicloud/istio-operator/pkg/resources/meshexpansion"
-	"github.com/banzaicloud/istio-operator/pkg/resources/mixer"
 	"github.com/banzaicloud/istio-operator/pkg/resources/mixerlesstelemetry"
 	"github.com/banzaicloud/istio-operator/pkg/resources/nodeagent"
 	"github.com/banzaicloud/istio-operator/pkg/resources/pilot"
@@ -155,7 +154,7 @@ type ReconcileIstio struct {
 
 type ReconcileComponent func(log logr.Logger, istio *istiov1beta1.Istio) error
 
-// +kubebuilder:rbac:groups="",resources=nodes;services;endpoints;pods;replicationcontrollers;services;endpoints;pods,verbs=get;list;watch
+// +kubebuilder:rbac:groups="",resources=nodes;services;endpoints;pods;replicationcontrollers;services;endpoints;pods,verbs=get;list;watch;update;patch
 // +kubebuilder:rbac:groups="",resources=serviceaccounts;configmaps;pods;events,verbs=get;list;watch;create;update;patch;delete
 // +kubebuilder:rbac:groups="",resources=namespaces,verbs=get;list;watch;update;patch
 // +kubebuilder:rbac:groups="",resources=namespaces/finalizers,verbs=update
@@ -173,6 +172,7 @@ type ReconcileComponent func(log logr.Logger, istio *istiov1beta1.Istio) error
 // +kubebuilder:rbac:groups="authentication.k8s.io",resources=tokenreviews,verbs=create
 // +kubebuilder:rbac:groups="certificates.k8s.io",resources=certificatesigningrequests;certificatesigningrequests/approval;certificatesigningrequests/status,verbs=update;create;get;delete;watch
 // +kubebuilder:rbac:groups="certificates.k8s.io",resources=signers,resourceNames=kubernetes.io/legacy-unknown,verbs=approve
+// +kubebuilder:rbac:groups="coordination.k8s.io",resources=leases,verbs=get;list;create;update
 // +kubebuilder:rbac:groups="extensions;networking.k8s.io",resources=ingresses,verbs=get;list;watch
 // +kubebuilder:rbac:groups="extensions;networking.k8s.io",resources=ingresses/status,verbs=*
 // +kubebuilder:rbac:groups="networking.k8s.io",resources=ingressclasses;ingresses,verbs=get;list;watch
@@ -182,7 +182,7 @@ type ReconcileComponent func(log logr.Logger, istio *istiov1beta1.Istio) error
 
 // +kubebuilder:rbac:groups=istio.banzaicloud.io,resources=istios;istios/finalizers,verbs=get;list;watch;create;update;patch;delete
 // +kubebuilder:rbac:groups=istio.banzaicloud.io,resources=istios/status,verbs=get;update;patch
-// +kubebuilder:rbac:groups=authentication.istio.io;cloud.istio.io;config.istio.io;istio.istio.io;networking.istio.io;security.istio.io;scalingpolicy.istio.io,resources=*,verbs=*
+// +kubebuilder:rbac:groups=networking.istio.io;security.istio.io,resources=*,verbs=*
 // +kubebuilder:rbac:groups=admissionregistration.k8s.io,resources=validatingwebhookconfigurations;mutatingwebhookconfigurations,verbs=*
 // +kubebuilder:rbac:groups="",resources=secrets;services,verbs=get;list;watch;create;update;patch;delete
 // +kubebuilder:rbac:groups="authorization.k8s.io",resources=subjectaccessreviews,verbs=create
@@ -348,8 +348,6 @@ func (r *ReconcileIstio) reconcile(logger logr.Logger, config *istiov1beta1.Isti
 		}, r.Client, r.dynamic, config),
 		galley.New(r.Client, config),
 		sidecarinjector.New(r.Client, config),
-		mixer.NewPolicyReconciler(r.Client, r.dynamic, config),
-		mixer.NewTelemetryReconciler(r.Client, r.dynamic, config),
 		pilot.New(r.Client, r.dynamic, config),
 		istiod.New(r.Client, r.dynamic, config, r.mgr.GetScheme(), r.operatorConfig),
 		cni.New(r.Client, config),
@@ -407,6 +405,10 @@ func (r *ReconcileIstio) validateLegacyIstioComponentsAreDisabled(config *istiov
 
 	if util.PointerToBool(config.Spec.Galley.Enabled) {
 		return errors.New("Galley cannot be enabled")
+	}
+
+	if util.PointerToBool(config.Spec.Mixer.Enabled) || util.PointerToBool(config.Spec.Telemetry.Enabled) || util.PointerToBool(config.Spec.Policy.Enabled) {
+		return errors.New("Mixer components cannot be enabled")
 	}
 
 	if util.PointerToBool(config.Spec.SidecarInjector.Enabled) {

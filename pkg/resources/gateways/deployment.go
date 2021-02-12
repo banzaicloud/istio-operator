@@ -22,6 +22,7 @@ import (
 
 	appsv1 "k8s.io/api/apps/v1"
 	apiv1 "k8s.io/api/core/v1"
+	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/types"
@@ -104,7 +105,7 @@ func (r *Reconciler) deployment() runtime.Object {
 			},
 			Template: apiv1.PodTemplateSpec{
 				ObjectMeta: metav1.ObjectMeta{
-					Labels:      r.labels(),
+					Labels:      util.MergeStringMaps(r.labels(), istiov1beta1.DisableInjectionLabel),
 					Annotations: templates.DefaultDeployAnnotations(),
 				},
 				Spec: apiv1.PodSpec{
@@ -286,6 +287,13 @@ func (r *Reconciler) envVars() []apiv1.EnvVar {
 		},
 	}...)
 
+	if !util.PointerToBool(r.gw.Spec.RunAsRoot) {
+		envVars = append(envVars, apiv1.EnvVar{
+			Name:  "ISTIO_META_UNPRIVILEGED_POD",
+			Value: "true",
+		})
+	}
+
 	if util.PointerToBool(r.Config.Spec.Pilot.SPIFFE.OperatorEndpoints.Enabled) {
 		envVars = append(envVars, apiv1.EnvVar{
 			Name:  "TRUSTBUNDLE_MANAGER",
@@ -336,13 +344,6 @@ func (r *Reconciler) volumeMounts() []apiv1.VolumeMount {
 			Name:      "istio-token",
 			MountPath: "/var/run/secrets/tokens",
 			ReadOnly:  true,
-		})
-	}
-
-	if util.PointerToBool(r.Config.Spec.Istiod.Enabled) {
-		vms = append(vms, apiv1.VolumeMount{
-			Name:      "gatewaysdsudspath",
-			MountPath: "/var/run/ingress_gateway",
 		})
 	}
 
@@ -419,6 +420,22 @@ func (r *Reconciler) volumes() []apiv1.Volume {
 							FieldPath:  "metadata.annotations",
 						},
 					},
+					{
+						Path: "cpu-limit",
+						ResourceFieldRef: &apiv1.ResourceFieldSelector{
+							ContainerName: "istio-proxy",
+							Resource:      "limits.cpu",
+							Divisor:       resource.MustParse("1m"),
+						},
+					},
+					{
+						Path: "cpu-request",
+						ResourceFieldRef: &apiv1.ResourceFieldSelector{
+							ContainerName: "istio-proxy",
+							Resource:      "requests.cpu",
+							Divisor:       resource.MustParse("1m"),
+						},
+					},
 				},
 			},
 		},
@@ -438,15 +455,6 @@ func (r *Reconciler) volumes() []apiv1.Volume {
 			},
 		},
 	}...)
-
-	if util.PointerToBool(r.Config.Spec.Istiod.Enabled) {
-		volumes = append(volumes, apiv1.Volume{
-			Name: "gatewaysdsudspath",
-			VolumeSource: apiv1.VolumeSource{
-				EmptyDir: &apiv1.EmptyDirVolumeSource{},
-			},
-		})
-	}
 
 	if util.PointerToBool(r.Config.Spec.Istiod.Enabled) && r.Config.Spec.JWTPolicy == istiov1beta1.JWTPolicyThirdPartyJWT {
 		volumes = append(volumes, apiv1.Volume{

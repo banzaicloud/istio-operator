@@ -18,6 +18,7 @@ package mixerlesstelemetry
 
 import (
 	"fmt"
+	"strconv"
 	"strings"
 
 	"github.com/banzaicloud/istio-operator/pkg/util"
@@ -28,7 +29,7 @@ import (
 )
 
 const (
-	metaExchangeWasmLocal   = "filename: /etc/istio/extensions/metadata-exchange-filter.wasm"
+	metaExchangeWasmLocal   = "filename: /etc/istio/extensions/metadata-exchange-filter.compiled.wasm"
 	metaExchangeNoWasmLocal = "inline_string: envoy.wasm.metadata_exchange"
 )
 
@@ -46,13 +47,15 @@ func (r *Reconciler) metaExchangeEnvoyFilter(version string, metadataExchangeFil
 
 	vmConfigLocal := metaExchangeNoWasmLocal
 	vmConfigRuntime := noWasmRuntime
+	vmConfigAllowPrecompiled := false
 	if wasmEnabled {
 		vmConfigLocal = metaExchangeWasmLocal
 		vmConfigRuntime = wasmRuntime
+		vmConfigAllowPrecompiled = true
 	}
 
 	var y []map[string]interface{}
-	yaml.Unmarshal([]byte(fmt.Sprintf(metadataExchangeFilterYAML, vmConfigLocal, vmConfigRuntime, r.metadataMatch(8))), &y)
+	yaml.Unmarshal([]byte(fmt.Sprintf(metadataExchangeFilterYAML, vmConfigLocal, vmConfigRuntime, strconv.FormatBool(vmConfigAllowPrecompiled), r.metadataMatch(8))), &y)
 
 	return &k8sutil.DynamicObject{
 		Gvr: schema.GroupVersionResource{

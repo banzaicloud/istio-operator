@@ -1,5 +1,5 @@
 /*
-Copyright 2020 Banzai Cloud.
+Copyright 2021 Banzai Cloud.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -21,19 +21,19 @@ import (
 )
 
 const (
-	httpStatsFilterYAML16 = `
+	httpStatsFilterYAML19 = `
 - applyTo: HTTP_FILTER
   match:
     context: SIDECAR_OUTBOUND
     proxy:
-      proxyVersion: '^1\.6.*'
-      %[3]s
+      proxyVersion: '^1\.9.*'
+      %[4]s
     listener:
       filterChain:
         filter:
-          name: envoy.http_connection_manager
+          name: envoy.filters.network.http_connection_manager
           subFilter:
-            name: envoy.router
+            name: envoy.filters.http.router
   patch:
     operation: INSERT_BEFORE
     value:
@@ -43,38 +43,41 @@ const (
         type_url: type.googleapis.com/envoy.extensions.filters.http.wasm.v3.Wasm
         value:
           config:
-            configuration: |
-              {
-                "debug": "false",
-                "stat_prefix": "istio",
-                "metrics": [
-                  {
-                    "dimensions": {
-                      "source_cluster": "node.metadata['CLUSTER_ID']",
-                      "destination_cluster": "upstream_peer.cluster_id"
+            configuration:
+              "@type": "type.googleapis.com/google.protobuf.StringValue"
+              value: |
+                {
+                  "debug": "false",
+                  "stat_prefix": "istio",
+                  "metrics": [
+                    {
+                      "dimensions": {
+                        "source_cluster": "node.metadata['CLUSTER_ID']",
+                        "destination_cluster": "upstream_peer.cluster_id"
+                      }
                     }
-                  }
-                ]
-              }
+                  ]
+                }
             root_id: stats_outbound
             vm_config:
               code:
                 local:
                   %[1]s
               runtime: %[2]s
+              allow_precompiled: %[3]s
               vm_id: stats_outbound
 - applyTo: HTTP_FILTER
   match:
     context: SIDECAR_INBOUND
     proxy:
-      proxyVersion: '^1\.6.*'
-      %[3]s
+      proxyVersion: '^1\.9.*'
+      %[4]s
     listener:
       filterChain:
         filter:
-          name: envoy.http_connection_manager
+          name: envoy.filters.network.http_connection_manager
           subFilter:
-            name: envoy.router
+            name: envoy.filters.http.router
   patch:
     operation: INSERT_BEFORE
     value:
@@ -84,38 +87,41 @@ const (
         type_url: type.googleapis.com/envoy.extensions.filters.http.wasm.v3.Wasm
         value:
           config:
-            configuration: |
-              {
-                "debug": "false",
-                "stat_prefix": "istio",
-                "metrics": [
-                  {
-                    "dimensions": {
-                      "destination_cluster": "node.metadata['CLUSTER_ID']",
-                      "source_cluster": "downstream_peer.cluster_id"
+            configuration:
+              "@type": "type.googleapis.com/google.protobuf.StringValue"
+              value: |
+                {
+                  "debug": "false",
+                  "stat_prefix": "istio",
+                  "metrics": [
+                    {
+                      "dimensions": {
+                        "destination_cluster": "node.metadata['CLUSTER_ID']",
+                        "source_cluster": "downstream_peer.cluster_id"
+                     }
                     }
-                  }
-                ]
-              }
+                  ]
+                }
             root_id: stats_inbound
             vm_config:
               code:
                 local:
                   %[1]s
               runtime: %[2]s
+              allow_precompiled: %[3]s
               vm_id: stats_inbound
 - applyTo: HTTP_FILTER
   match:
     context: GATEWAY
     proxy:
-      proxyVersion: '^1\.6.*'
-      %[3]s
+      proxyVersion: '^1\.9.*'
+      %[4]s
     listener:
       filterChain:
         filter:
-          name: envoy.http_connection_manager
+          name: envoy.filters.network.http_connection_manager
           subFilter:
-            name: envoy.router
+            name: envoy.filters.http.router
   patch:
     operation: INSERT_BEFORE
     value:
@@ -125,30 +131,32 @@ const (
         type_url: type.googleapis.com/envoy.extensions.filters.http.wasm.v3.Wasm
         value:
           config:
-            configuration: |
-              {
-                "debug": "false",
-                "stat_prefix": "istio",
-                "disable_host_header_fallback": true,
-                "metrics": [
-                  {
-                    "dimensions": {
-                      "source_cluster": "node.metadata['CLUSTER_ID']",
-                      "destination_cluster": "upstream_peer.cluster_id"
+            configuration:
+              "@type": "type.googleapis.com/google.protobuf.StringValue"
+              value: |
+                {
+                  "debug": "false",
+                  "stat_prefix": "istio",
+                  "metrics": [
+                    {
+                      "dimensions": {
+                        "source_cluster": "node.metadata['CLUSTER_ID']",
+                        "destination_cluster": "upstream_peer.cluster_id"
+                     }
                     }
-                  }
-                ]
-              }
+                  ]
+                }
             root_id: stats_outbound
             vm_config:
               code:
                 local:
                   %[1]s
               runtime: %[2]s
+              allow_precompiled: %[3]s
               vm_id: stats_outbound
 `
 )
 
-func (r *Reconciler) httpStatsFilter16() *k8sutil.DynamicObject {
-	return r.httpStatsFilter(proxyVersion16, httpStatsFilterYAML16)
+func (r *Reconciler) httpStatsFilter19() *k8sutil.DynamicObject {
+	return r.httpStatsFilter(proxyVersion19, httpStatsFilterYAML19)
 }

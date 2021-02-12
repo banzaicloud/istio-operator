@@ -58,7 +58,7 @@ func (r *Reconciler) clusterRole() runtime.Object {
 		{
 			APIGroups: []string{"admissionregistration.k8s.io"},
 			Resources: []string{"mutatingwebhookconfigurations"},
-			Verbs:     []string{"get", "list", "watch", "patch"},
+			Verbs:     []string{"get", "list", "watch", "update", "patch"},
 		},
 		// configuration validation webhook controller
 		{
@@ -170,7 +170,7 @@ func (r *Reconciler) clusterRole() runtime.Object {
 	}
 	rules = append(rules, rbacv1.PolicyRule{
 		// istio configuration
-		APIGroups: []string{"config.istio.io", "security.istio.io", "networking.istio.io", "authentication.istio.io"},
+		APIGroups: []string{"security.istio.io", "networking.istio.io"},
 		Resources: []string{"*"},
 		Verbs:     verbs,
 	})

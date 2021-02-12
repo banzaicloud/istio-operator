@@ -3,7 +3,7 @@ kind: MeshGateway
 metadata:
   labels:
     controller-tools.k8s.io: "1.0"
-  name: meshgateway-sample-v18x
+  name: meshgateway-sample-v19x
 spec:
   type: ingress
   replicaCount: 1
@@ -35,7 +35,6 @@ spec:
 #     valueFrom:
 #       fieldRef:
 #         fieldPath: metadata.name
-  applicationPorts: ""
   resources:
     requests:
       cpu: 100m

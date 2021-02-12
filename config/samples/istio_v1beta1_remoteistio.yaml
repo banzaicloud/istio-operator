@@ -3,7 +3,7 @@ kind: RemoteIstio
 metadata:
   labels:
     controller-tools.k8s.io: "1.0"
-  name: remoteistio-sample-v18x
+  name: remoteistio-sample-v19x
 spec:
   autoInjectionNamespaces:
   - "default"
