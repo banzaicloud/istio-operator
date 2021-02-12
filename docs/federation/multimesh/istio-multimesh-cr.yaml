@@ -6,11 +6,15 @@ metadata:
   name: multimesh
 spec:
   version: "1.9.0"
-  autoInjectionNamespaces:
-  - "default"
+  global: false
+  meshExpansion: true
   meshPolicy:
     mtlsMode: STRICT
-  multiMesh: true
+  multiMeshExpansion:
+    enabled: true
+    envoyFilterEnabled: false
+    domains:
+    - "acme.corp"
   istioCoreDNS:
     enabled: true
   citadel:
@@ -24,5 +28,10 @@ spec:
     egress:
       maxReplicas: 1
       enabled: false
-  mixer:
-    maxReplicas: 1
+    meshExpansion:
+      enabled: true
+      ports:
+      - name: http
+        port: 80
+        protocol: TCP
+        targetPort: 8080
