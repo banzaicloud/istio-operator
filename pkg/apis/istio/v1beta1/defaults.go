@@ -69,7 +69,7 @@ const (
 	defaultEnvoyAccessLogEncoding          = "TEXT"
 	defaultClusterName                     = "Kubernetes"
 	defaultNetworkName                     = "local-network"
-	defaultVaultEnvImage                   = "ghcr.io/banzaicloud/vault-env:1.9.0"
+	defaultVaultEnvImage                   = "ghcr.io/banzaicloud/vault-env:1.11.1"
 	defaultVaultAddress                    = "https://vault.vault:8200"
 	defaultVaultRole                       = "istiod"
 	defaultVaultCACertPath                 = "vault:secret/data/pki/istiod#certificate"
