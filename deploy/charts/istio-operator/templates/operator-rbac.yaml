@@ -34,12 +34,11 @@ rules:
   - endpoints
   - pods
   - replicationcontrollers
-  - services
-  - endpoints
-  - pods
   verbs:
   - get
   - list
+  - patch
+  - update
   - watch
 - apiGroups:
   - ""
@@ -206,6 +205,15 @@ rules:
   - signers
   verbs:
   - approve
+- apiGroups:
+  - coordination.k8s.io
+  resources:
+  - leases
+  verbs:
+  - create
+  - get
+  - list
+  - update
 - apiGroups:
   - extensions
   - networking.k8s.io
