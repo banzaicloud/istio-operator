@@ -221,3 +221,29 @@ func TestEnsureStatusPort_PortNameAndTargetPort(t *testing.T) {
 	}
 	require.Equal(t, expectedPorts, ports)
 }
+
+func TestEnsurePort_MissingProtocol(t *testing.T) {
+	originalPorts := []apiv1.ServicePort{
+		{
+			Name:       "http",
+			Port:       80,
+			TargetPort: intstr.FromInt(8080),
+		},
+	}
+	ports := ensureStatusPort(append([]apiv1.ServicePort{}, originalPorts...))
+
+	expectedPorts := []apiv1.ServicePort{
+		{
+			Name:       "status-port",
+			Protocol:   "TCP",
+			Port:       istiov1beta1.PortStatusPortNumber,
+			TargetPort: intstr.FromInt(15021),
+		},
+		{
+			Name:       "http",
+			Port:       80,
+			TargetPort: intstr.FromInt(8080),
+		},
+	}
+	require.Equal(t, expectedPorts, ports)
+}
