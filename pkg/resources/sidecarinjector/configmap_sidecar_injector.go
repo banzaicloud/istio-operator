@@ -145,8 +145,7 @@ func (r *Reconciler) siConfig() string {
 		autoInjection = "enabled"
 	}
 	siConfig := map[string]interface{}{
-		"policy":   autoInjection,
-		"template": r.templateConfig(),
+		"policy": autoInjection,
 
 		"defaultTemplates": []string{"sidecar"},
 		"templates":        r.templates(),
@@ -605,39 +604,6 @@ imagePullSecrets:
 securityContext:
   fsGroup: 1337
 {{- end }}
-`
-}
-
-func (r *Reconciler) templateConfig() string {
-	return `rewriteAppHTTPProbe: {{ valueOrDefault .Values.sidecarInjectorWebhook.rewriteAppHTTPProbe true }}
-{{- if .Values.global.podDNSSearchNamespaces }}
-dnsConfig:
-  searches:
-    {{- range .Values.global.podDNSSearchNamespaces }}
-    - {{ render . }}
-    {{- end }}
-{{- end }}
-httpProxyEnvs:
-  httpProxy: {{ .Values.sidecarInjectorWebhook.httpProxyEnvs.httpProxy }}
-  httpsProxy: {{ .Values.sidecarInjectorWebhook.httpProxyEnvs.httpsProxy }}
-  noProxy: {{ .Values.sidecarInjectorWebhook.httpProxyEnvs.noProxy }}
-` + r.templatePodSpec(0) + `
-podRedirectAnnot:
-{{- if and (.Values.global.proxy_init.cniEnabled) (not .Values.global.proxy_init.cniChained) }}
-k8s.v1.cni.cncf.io/networks: '{{ appendMultusNetwork (index .ObjectMeta.Annotations ` + "`" + `k8s.v1.cni.cncf.io/networks` + "`" + `) ` + "`" + `istio-cni` + "`" + ` }}'
-{{- end }}
-   sidecar.istio.io/interceptionMode: "{{ annotation .ObjectMeta ` + "`" + `sidecar.istio.io/interceptionMode` + "`" + ` .ProxyConfig.InterceptionMode }}"
-   traffic.sidecar.istio.io/includeOutboundIPRanges: "{{ annotation .ObjectMeta ` + "`" + `traffic.sidecar.istio.io/includeOutboundIPRanges` + "`" + ` .Values.global.proxy.includeIPRanges }}"
-   traffic.sidecar.istio.io/excludeOutboundIPRanges: "{{ annotation .ObjectMeta ` + "`" + `traffic.sidecar.istio.io/excludeOutboundIPRanges` + "`" + ` .Values.global.proxy.excludeIPRanges }}"
-   traffic.sidecar.istio.io/includeInboundPorts: "{{ annotation .ObjectMeta ` + "`" + `traffic.sidecar.istio.io/includeInboundPorts` + "`" + ` (includeInboundPorts .Spec.Containers) }}"
-   traffic.sidecar.istio.io/excludeInboundPorts: "{{ excludeInboundPort (annotation .ObjectMeta ` + "`" + `status.sidecar.istio.io/port` + "`" + ` .Values.global.proxy.statusPort) (annotation .ObjectMeta ` + "`" + `traffic.sidecar.istio.io/excludeInboundPorts` + "`" + ` .Values.global.proxy.excludeInboundPorts) }}"
-{{ if or (isset .ObjectMeta.Annotations  ` + "`" + `traffic.sidecar.istio.io/includeOutboundPorts ` + "`" + `) (ne (valueOrDefault .Values.global.proxy.includeOutboundPorts "") "") }}
-    traffic.sidecar.istio.io/includeOutboundPorts: "{{ annotation .ObjectMeta  ` + "`" + `traffic.sidecar.istio.io/includeOutboundPorts ` + "`" + ` .Values.global.proxy.includeOutboundPorts }}"
-{{- end }}
-{{ if or (isset .ObjectMeta.Annotations ` + "`" + `traffic.sidecar.istio.io/excludeOutboundPorts` + "`" + `) (ne .Values.global.proxy.excludeOutboundPorts "") }}
-   traffic.sidecar.istio.io/excludeOutboundPorts: "{{ annotation .ObjectMeta ` + "`" + `traffic.sidecar.istio.io/excludeOutboundPorts` + "`" + ` .Values.global.proxy.excludeOutboundPorts }}"
-{{- end }}
-   traffic.sidecar.istio.io/kubevirtInterfaces: "{{ index .ObjectMeta.Annotations ` + "`" + `traffic.sidecar.istio.io/kubevirtInterfaces` + "`" + ` }}"
 `
 }
 
