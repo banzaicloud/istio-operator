@@ -22,7 +22,6 @@ import (
 	apiv1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/util/intstr"
-	"k8s.io/apimachinery/pkg/util/sets"
 
 	istiov1beta1 "github.com/banzaicloud/istio-operator/pkg/apis/istio/v1beta1"
 	"github.com/banzaicloud/istio-operator/pkg/resources/ingressgateway"
@@ -119,34 +118,35 @@ func ensureServicePort(ports []apiv1.ServicePort, servicePort apiv1.ServicePort,
 	newPorts := make([]apiv1.ServicePort, 0)
 	newPorts = append(newPorts, ports...)
 
-	protocols := sets.NewString()
 	portNameTaken := false
 	portNumberTaken := false
 	for _, port := range ports {
 		if port.Protocol == servicePort.Protocol && port.Port == servicePort.Port && port.TargetPort == servicePort.TargetPort {
-			// health probe port is included with proper protocol and target port. Nothing to do
+			// Service probe port is included with proper protocol and target port. Nothing to do
 			return newPorts
 		}
 
-		protocols.Insert(string(port.Protocol))
 		if strings.ToLower(port.Name) == strings.ToLower(servicePort.Name) {
 			portNameTaken = true
+			break
 		}
-		if port.Protocol == servicePort.Protocol && port.Port == servicePort.Port {
+
+		if port.Port == servicePort.Port {
 			portNumberTaken = true
+			break
 		}
 	}
 
-	if protocols.Len() > 1 || (protocols.Len() == 1 && !protocols.Has(string(servicePort.Protocol))) {
-		// mixed protocol types are not supported for LoadBalancer type services until
-		// https://github.com/kubernetes/enhancements/pull/1438 is implemented. Health probe port cannot be included.
-		// TODO check if type is LoadBalancer
+	// mixed protocol types are not supported for LoadBalancer type services until
+	// https://github.com/kubernetes/enhancements/pull/1438 is implemented. Health probe port cannot be included.
+	// TODO check if type is LoadBalancer
+	if portNumberTaken {
 		return ports
 	}
 
-	if portNameTaken || portNumberTaken {
-		// random port name and number could be generated, but the reconciliation does not play nice in that case
-		// (it's reconciling indefinitely), so let's just leave out the status port for now
+	// random port name and number could be generated, but the reconciliation does not play nice in that case
+	// (it's reconciling indefinitely), so let's just leave out the status port for now
+	if portNameTaken {
 		return ports
 	}
 
