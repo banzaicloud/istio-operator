@@ -28,9 +28,9 @@ import (
 
 const (
 	banzaiImageHub                         = "ghcr.io/banzaicloud"
-	banzaiImageVersion                     = "1.8.2-bzc"
+	banzaiImageVersion                     = "1.8.3-bzc"
 	defaultImageHub                        = "docker.io/istio"
-	defaultImageVersion                    = "1.8.2"
+	defaultImageVersion                    = "1.8.3"
 	defaultLogLevel                        = "default:info"
 	defaultMeshPolicy                      = PERMISSIVE
 	defaultPilotImage                      = defaultImageHub + "/" + "pilot" + ":" + defaultImageVersion
@@ -127,7 +127,6 @@ var defaultMeshExpansionGatewayPorts = []ServicePort{}
 func (config *Istio) SetDefaults() {
 	SetDefaults(config)
 }
-
 func SetDefaults(config *Istio) {
 	// MeshPolicy config
 	if config.Spec.MeshPolicy.MTLSMode == "" {
