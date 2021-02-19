@@ -59,7 +59,6 @@ import (
 	"github.com/banzaicloud/istio-operator/pkg/resources/istiocoredns"
 	"github.com/banzaicloud/istio-operator/pkg/resources/istiod"
 	"github.com/banzaicloud/istio-operator/pkg/resources/meshexpansion"
-	"github.com/banzaicloud/istio-operator/pkg/resources/mixer"
 	"github.com/banzaicloud/istio-operator/pkg/resources/mixerlesstelemetry"
 	"github.com/banzaicloud/istio-operator/pkg/resources/nodeagent"
 	"github.com/banzaicloud/istio-operator/pkg/resources/pilot"
@@ -349,8 +348,6 @@ func (r *ReconcileIstio) reconcile(logger logr.Logger, config *istiov1beta1.Isti
 		}, r.Client, r.dynamic, config),
 		galley.New(r.Client, config),
 		sidecarinjector.New(r.Client, config),
-		mixer.NewPolicyReconciler(r.Client, r.dynamic, config),
-		mixer.NewTelemetryReconciler(r.Client, r.dynamic, config),
 		pilot.New(r.Client, r.dynamic, config),
 		istiod.New(r.Client, r.dynamic, config, r.mgr.GetScheme(), r.operatorConfig),
 		cni.New(r.Client, config),
@@ -408,6 +405,10 @@ func (r *ReconcileIstio) validateLegacyIstioComponentsAreDisabled(config *istiov
 
 	if util.PointerToBool(config.Spec.Galley.Enabled) {
 		return errors.New("Galley cannot be enabled")
+	}
+
+	if util.PointerToBool(config.Spec.Mixer.Enabled) || util.PointerToBool(config.Spec.Telemetry.Enabled) || util.PointerToBool(config.Spec.Policy.Enabled) {
+		return errors.New("Mixer components cannot be enabled")
 	}
 
 	if util.PointerToBool(config.Spec.SidecarInjector.Enabled) {
