@@ -19,12 +19,13 @@ package meshexpansion
 import (
 	"context"
 
-	istionetworkingv1beta1 "github.com/banzaicloud/istio-client-go/pkg/networking/v1beta1"
 	"github.com/go-logr/logr"
 	"github.com/goph/emperror"
+	corev1 "k8s.io/api/core/v1"
 	"k8s.io/client-go/dynamic"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
+	istionetworkingv1beta1 "github.com/banzaicloud/istio-client-go/pkg/networking/v1beta1"
 	istiov1beta1 "github.com/banzaicloud/istio-operator/pkg/apis/istio/v1beta1"
 	"github.com/banzaicloud/istio-operator/pkg/k8sutil"
 	"github.com/banzaicloud/istio-operator/pkg/resources"
@@ -39,12 +40,10 @@ const (
 	multiMeshDomainLabelName = "istio.banzaicloud.io/multi-mesh-domain"
 )
 
-var (
-	resourceLabels = map[string]string{
-		"app":   "istio-meshexpansion-gateway",
-		"istio": "meshexpansiongateway",
-	}
-)
+var resourceLabels = map[string]string{
+	"app":   "istio-meshexpansion-gateway",
+	"istio": "meshexpansiongateway",
+}
 
 type Reconciler struct {
 	resources.Reconciler
@@ -83,6 +82,12 @@ func (r *Reconciler) Reconcile(log logr.Logger) error {
 		Namespace: r.Config.Namespace,
 	}
 	spec.Labels = r.labels()
+	spec.AdditionalEnvVars = k8sutil.MergeEnvVars(spec.AdditionalEnvVars, []corev1.EnvVar{
+		{
+			Name:  "ISTIO_META_LOCAL_ENDPOINTS_ONLY",
+			Value: "true",
+		},
+	})
 	objectMeta := templates.ObjectMetaWithRevision(ResourceName, spec.Labels, r.Config)
 
 	var desiredState k8sutil.DesiredState
@@ -133,7 +138,7 @@ func (r *Reconciler) Reconcile(log logr.Logger) error {
 		selector = ingressgateway.ResourceLabels
 	}
 
-	var drs = []resources.DynamicResourceWithDesiredState{
+	drs := []resources.DynamicResourceWithDesiredState{
 		{DynamicResource: func() *k8sutil.DynamicObject { return r.meshExpansionGateway(selector) }, DesiredState: meshExpansionDesiredState},
 		{DynamicResource: func() *k8sutil.DynamicObject { return r.clusterAwareGateway(selector) }, DesiredState: meshExpansionDesiredState},
 		{DynamicResource: func() *k8sutil.DynamicObject { return r.multimeshIngressGateway(selector) }, DesiredState: multimeshDesiredState},
