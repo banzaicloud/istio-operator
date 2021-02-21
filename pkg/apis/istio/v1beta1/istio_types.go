@@ -979,7 +979,7 @@ type MeshNetwork struct {
 }
 
 type MeshNetworks struct {
-	Networks map[string]MeshNetwork `json:"networks"`
+	Networks map[string]*MeshNetwork `json:"networks"`
 }
 
 func (s *IstioSpec) SetMeshNetworks(networks *MeshNetworks) *IstioSpec {
