@@ -947,7 +947,7 @@ type IstioSpec struct {
 	JWTPolicy JWTPolicyType `json:"jwtPolicy,omitempty"`
 
 	// The customized CA address to retrieve certificates for the pods in the cluster.
-	//CSR clients such as the Istio Agent and ingress gateways can use this to specify the CA endpoint.
+	// CSR clients such as the Istio Agent and ingress gateways can use this to specify the CA endpoint.
 	CAAddress string `json:"caAddress,omitempty"`
 
 	// Upstream HTTP proxy properties to be injected as environment variables to the pod containers
@@ -992,7 +992,7 @@ type MeshNetwork struct {
 }
 
 type MeshNetworks struct {
-	Networks map[string]MeshNetwork `json:"networks"`
+	Networks map[string]*MeshNetwork `json:"networks"`
 }
 
 func (s *IstioSpec) SetMeshNetworks(networks *MeshNetworks) *IstioSpec {
