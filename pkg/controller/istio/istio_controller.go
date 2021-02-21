@@ -67,11 +67,15 @@ import (
 	"github.com/banzaicloud/istio-operator/pkg/util"
 )
 
-const finalizerID = "istio-operator.finializer.banzaicloud.io"
-const istioSecretTypePrefix = "istio.io"
+const (
+	finalizerID           = "istio-operator.finializer.banzaicloud.io"
+	istioSecretTypePrefix = "istio.io"
+)
 
-var log = logf.Log.WithName("controller")
-var watchCreatedResourcesEvents bool
+var (
+	log                         = logf.Log.WithName("controller")
+	watchCreatedResourcesEvents bool
+)
 
 type IstioReconciler interface {
 	reconcile.Reconciler
@@ -261,7 +265,6 @@ func (r *ReconcileIstio) setController(ctrl controller.Controller) {
 }
 
 func (r *ReconcileIstio) reconcile(logger logr.Logger, config *istiov1beta1.Istio) (reconcile.Result, error) {
-
 	if config.Status.Status == "" {
 		err := updateStatus(r.Client, config, istiov1beta1.Created, "", logger)
 		if err != nil {
@@ -444,7 +447,7 @@ func (r *ReconcileIstio) checkMeshWidePolicyConflict(config *istiov1beta1.Istio,
 }
 
 func (r *ReconcileIstio) getMeshNetworks(config *istiov1beta1.Istio, logger logr.Logger) (*istiov1beta1.MeshNetworks, error) {
-	meshNetworks := make(map[string]istiov1beta1.MeshNetwork)
+	meshNetworks := make(map[string]*istiov1beta1.MeshNetwork)
 
 	localNetwork := istiov1beta1.MeshNetwork{
 		Endpoints: []istiov1beta1.MeshNetworkEndpoint{
@@ -464,7 +467,7 @@ func (r *ReconcileIstio) getMeshNetworks(config *istiov1beta1.Istio, logger logr
 		localNetwork.Gateways = gateways
 	}
 
-	meshNetworks[config.Spec.NetworkName] = localNetwork
+	meshNetworks[config.Spec.NetworkName] = &localNetwork
 
 	remoteIstios := remoteistioCtrl.GetRemoteIstiosByOwnerReference(r.mgr, config, logger)
 	for _, remoteIstio := range remoteIstios {
@@ -477,14 +480,19 @@ func (r *ReconcileIstio) getMeshNetworks(config *istiov1beta1.Istio, logger logr
 			}
 		}
 
-		meshNetworks[remoteIstio.Name] = istiov1beta1.MeshNetwork{
-			Endpoints: []istiov1beta1.MeshNetworkEndpoint{
-				{
-					FromRegistry: remoteIstio.Name,
-				},
-			},
-			Gateways: gateways,
+		networkName := remoteIstio.Spec.NetworkName
+		// to be backward compatible, the network name is the CR name if not specified
+		if networkName == "" {
+			networkName = remoteIstio.Name
 		}
+
+		if meshNetworks[networkName] == nil {
+			meshNetworks[networkName] = &istiov1beta1.MeshNetwork{}
+		}
+		meshNetworks[networkName].Endpoints = append(meshNetworks[networkName].Endpoints, istiov1beta1.MeshNetworkEndpoint{
+			FromRegistry: remoteIstio.Name,
+		})
+		meshNetworks[networkName].Gateways = append(meshNetworks[networkName].Gateways, gateways...)
 	}
 
 	return &istiov1beta1.MeshNetworks{
