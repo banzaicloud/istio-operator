@@ -105,7 +105,48 @@ func add(mgr manager.Manager, r reconcile.Reconciler) error {
 		}
 	}
 
+	// Watch for Istio changes to trigger reconciliation for MeshGateways
+	err = c.Watch(&source.Kind{Type: &istiov1beta1.Istio{TypeMeta: metav1.TypeMeta{Kind: "Istio", APIVersion: istiov1beta1.SchemeGroupVersion.String()}}}, &handler.EnqueueRequestsFromMapFunc{
+		ToRequests: handler.ToRequestsFunc(func(object handler.MapObject) []reconcile.Request {
+			return triggerMeshGateways(mgr, object.Object, log)
+		}),
+	}, k8sutil.GetWatchPredicateForIstio())
+	if err != nil {
+		return err
+	}
+
 	return nil
+}
+
+func triggerMeshGateways(mgr manager.Manager, object runtime.Object, logger logr.Logger) []reconcile.Request {
+	requests := make([]reconcile.Request, 0)
+
+	istio := &istiov1beta1.Istio{}
+	var ok bool
+	if istio, ok = object.(*istiov1beta1.Istio); !ok {
+		return nil
+	}
+
+	mgws := &istiov1beta1.MeshGatewayList{}
+	err := mgr.GetClient().List(context.Background(), mgws)
+	if err != nil {
+		logger.Error(err, "could not list mesh gateways")
+		return nil
+	}
+
+	for _, mgw := range mgws.Items {
+		cp := mgw.Spec.IstioControlPlane
+		if cp != nil && cp.Name == istio.Name && cp.Namespace == istio.Namespace {
+			requests = append(requests, reconcile.Request{
+				NamespacedName: client.ObjectKey{
+					Name:      mgw.Name,
+					Namespace: mgw.Namespace,
+				},
+			})
+		}
+	}
+
+	return requests
 }
 
 var _ reconcile.Reconciler = &ReconcileMeshGateway{}
