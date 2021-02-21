@@ -1257,9 +1257,17 @@ func (in *MeshNetworks) DeepCopyInto(out *MeshNetworks) {
 	*out = *in
 	if in.Networks != nil {
 		in, out := &in.Networks, &out.Networks
-		*out = make(map[string]MeshNetwork, len(*in))
+		*out = make(map[string]*MeshNetwork, len(*in))
 		for key, val := range *in {
-			(*out)[key] = *val.DeepCopy()
+			var outVal *MeshNetwork
+			if val == nil {
+				(*out)[key] = nil
+			} else {
+				in, out := &val, &outVal
+				*out = new(MeshNetwork)
+				(*in).DeepCopyInto(*out)
+			}
+			(*out)[key] = outVal
 		}
 	}
 }

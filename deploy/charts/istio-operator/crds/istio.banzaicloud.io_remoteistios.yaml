@@ -555,6 +555,8 @@ spec:
                     namespace:
                       type: string
                   type: object
+                networkName:
+                  type: string
                 proxy:
                   properties:
                     accessLogEncoding:
