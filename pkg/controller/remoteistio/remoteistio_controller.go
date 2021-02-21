@@ -50,8 +50,10 @@ import (
 	"github.com/banzaicloud/istio-operator/pkg/util"
 )
 
-const finalizerID = "remote-istio-operator.finializer.banzaicloud.io"
-const istioSecretLabel = "istio/multiCluster"
+const (
+	finalizerID      = "remote-istio-operator.finializer.banzaicloud.io"
+	istioSecretLabel = "istio/multiCluster"
+)
 
 var log = logf.Log.WithName("remote-istio-controller")
 
@@ -412,7 +414,7 @@ func (r *ReconcileRemoteConfig) setEnabledServices(remoteIstio *istiov1beta1.Rem
 	if util.PointerToBool(istio.Spec.Pilot.Enabled) || util.PointerToBool(istio.Spec.Istiod.Enabled) {
 		pilotSvc := istiov1beta1.IstioService{
 			Name:  istio.WithRevision(pilot.ServiceName()),
-			Ports: []corev1.ServicePort{{Port: 65000, Protocol: corev1.ProtocolTCP}},
+			Ports: pilot.ServicePorts(istio),
 		}
 		remoteIstio.Spec.EnabledServices = append(remoteIstio.Spec.EnabledServices, pilotSvc)
 	}
@@ -420,7 +422,7 @@ func (r *ReconcileRemoteConfig) setEnabledServices(remoteIstio *istiov1beta1.Rem
 	if util.PointerToBool(istio.Spec.Istiod.Enabled) {
 		istiodSvc := istiov1beta1.IstioService{
 			Name:  istio.WithRevision(istiod.ServiceName()),
-			Ports: []corev1.ServicePort{{Port: 65000, Protocol: corev1.ProtocolTCP}},
+			Ports: istiod.ServicePorts(istio),
 		}
 		remoteIstio.Spec.EnabledServices = append(remoteIstio.Spec.EnabledServices, istiodSvc)
 	}
@@ -656,7 +658,9 @@ func triggerRemoteIstios(mgr manager.Manager, object runtime.Object, logger logr
 	err := mgr.GetClient().List(context.Background(), &remoteIstiosWithoutOR)
 	if err != nil {
 		logger.Error(err, "could not list remote istio resources")
+		return nil
 	}
+
 	for _, remoteIstio := range remoteIstiosWithoutOR.Items {
 		if len(remoteIstio.GetOwnerReferences()) == 0 {
 			requests = append(requests, reconcile.Request{
@@ -704,6 +708,7 @@ func GetRemoteIstiosByOwnerReference(mgr manager.Manager, object runtime.Object,
 	err := mgr.GetClient().List(context.Background(), &remoteIstios)
 	if err != nil {
 		logger.Error(err, "could not list remote istio resources")
+		return nil
 	}
 
 	for _, remoteIstio := range remoteIstios.Items {
