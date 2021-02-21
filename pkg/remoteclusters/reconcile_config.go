@@ -87,7 +87,10 @@ func (c *Cluster) reconcileConfig(remoteConfig *istiov1beta1.RemoteIstio, istio 
 		istioConfig.Spec.Gateways.Ingress.Enabled = istio.Spec.Gateways.Ingress.Enabled
 	}
 
-	istioConfig.Spec.NetworkName = remoteConfig.Name
+	if remoteConfig.Spec.NetworkName == "" {
+		remoteConfig.Spec.NetworkName = remoteConfig.Name
+	}
+	istioConfig.Spec.NetworkName = remoteConfig.Spec.NetworkName
 	istioConfig.Spec.ClusterName = remoteConfig.Name
 
 	istioConfig.SetDefaults()
