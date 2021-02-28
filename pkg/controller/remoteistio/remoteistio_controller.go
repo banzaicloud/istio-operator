@@ -169,6 +169,22 @@ func (r *ReconcileRemoteConfig) Reconcile(request reconcile.Request) (reconcile.
 		return reconcile.Result{}, nil
 	}
 
+	istio, err := r.getRelatedIstioCR(remoteConfig)
+	if err != nil {
+		return reconcile.Result{}, err
+	}
+	istio.SetDefaults()
+
+	if !istio.Spec.Version.IsSupported() {
+		if istio.Status.Status == istiov1beta1.Created || istio.Status.Status == istiov1beta1.Unmanaged {
+			err = errors.New("intended Istio version is unsupported by this version of the operator")
+			logger.Error(err, "", "version", istio.Spec.Version)
+		}
+		return reconcile.Result{
+			Requeue: false,
+		}, nil
+	}
+
 	if remoteConfig.ObjectMeta.DeletionTimestamp.IsZero() {
 		if !util.ContainsString(remoteConfig.ObjectMeta.Finalizers, finalizerID) {
 			remoteConfig.ObjectMeta.Finalizers = append(remoteConfig.ObjectMeta.Finalizers, finalizerID)
@@ -217,22 +233,6 @@ func (r *ReconcileRemoteConfig) Reconcile(request reconcile.Request) (reconcile.
 		logger.Info("remote istio removed")
 
 		return reconcile.Result{}, nil
-	}
-
-	istio, err := r.getRelatedIstioCR(remoteConfig)
-	if err != nil {
-		return reconcile.Result{}, err
-	}
-	istio.SetDefaults()
-
-	if !istio.Spec.Version.IsSupported() {
-		if istio.Status.Status == istiov1beta1.Created || istio.Status.Status == istiov1beta1.Unmanaged {
-			err = errors.New("intended Istio version is unsupported by this version of the operator")
-			logger.Error(err, "", "version", istio.Spec.Version)
-		}
-		return reconcile.Result{
-			Requeue: false,
-		}, nil
 	}
 
 	remoteConfig.Spec.IstioControlPlane = &istiov1beta1.NamespacedName{
