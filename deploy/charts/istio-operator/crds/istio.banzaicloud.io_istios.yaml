@@ -27,6 +27,10 @@ spec:
           jsonPath: .status.GatewayAddress
           name: Ingress IPs
           type: string
+        - description: Network name
+          jsonPath: .spec.networkName
+          name: Network name
+          type: string
         - jsonPath: .metadata.creationTimestamp
           name: Age
           type: date
