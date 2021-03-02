@@ -649,7 +649,7 @@ type TracingConfiguration struct {
 	Lightstep    LightstepConfiguration    `json:"lightstep,omitempty"`
 	Datadog      DatadogConfiugration      `json:"datadog,omitempty"`
 	Strackdriver StrackdriverConfiguration `json:"stackdriver,omitempty"`
-	//Custom tags to be added to spans, value can be literals, environment variables, or client requeset headers
+	// Custom tags to be added to all spans, value can be literals, environment variables, or client request headers
 	CustomTags map[string]apiextensionsv1.JSON `json:"customTags,omitempty"`
 }
 
