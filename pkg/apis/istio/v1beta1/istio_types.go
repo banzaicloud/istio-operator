@@ -905,7 +905,7 @@ type IstioSpec struct {
 	// This is required for sidecar injection to properly label proxies
 	ClusterName string `json:"clusterName,omitempty"`
 
-	// Network defines the network this cluster belong to. This name
+	// Network defines the network this cluster belongs to. This name
 	// corresponds to the networks in the map of mesh networks.
 	NetworkName string `json:"networkName,omitempty"`
 
