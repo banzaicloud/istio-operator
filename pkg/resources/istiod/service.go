@@ -28,8 +28,8 @@ import (
 
 func ServicePorts(config *v1beta1.Istio) []apiv1.ServicePort {
 	return []apiv1.ServicePort{
-		{
 		// plaintext
+		{
 			Name:       "grpc-xds",
 			Port:       15010,
 			TargetPort: intstr.FromInt(15010),
