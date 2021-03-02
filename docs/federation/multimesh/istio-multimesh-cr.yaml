@@ -5,7 +5,7 @@ metadata:
     controller-tools.k8s.io: "1.0"
   name: multimesh
 spec:
-  version: "1.9.0"
+  version: "1.9.1"
   global: false
   meshExpansion: true
   meshPolicy:
