@@ -46,7 +46,11 @@ func (c *MeshGatewayConfiguration) SetDefaults() {
 	}
 	if c.SecurityContext == nil {
 		if util.PointerToBool(c.RunAsRoot) {
-			c.SecurityContext = &apiv1.SecurityContext{}
+			c.SecurityContext = &apiv1.SecurityContext{
+				RunAsUser:    util.Int64Pointer(0),
+				RunAsGroup:   util.Int64Pointer(0),
+				RunAsNonRoot: util.BoolPointer(false),
+			}
 		} else {
 			c.SecurityContext = defaultSecurityContext
 		}
