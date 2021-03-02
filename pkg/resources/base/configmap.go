@@ -98,6 +98,9 @@ func MeshConfig(config *istiov1beta1.Istio, remote bool) map[string]interface{} 
 				"stackdriver": config.Spec.Tracing.Strackdriver,
 			}
 		}
+		if config.Spec.Tracing.CustomTags != nil && len(config.Spec.Tracing.CustomTags) > 0 {
+			defaultConfig["tracing"].(map[string]interface{})["custom_tags"] = config.Spec.Tracing.CustomTags
+		}
 	}
 
 	meshConfig := map[string]interface{}{

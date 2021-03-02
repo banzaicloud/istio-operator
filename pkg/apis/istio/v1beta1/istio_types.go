@@ -24,6 +24,7 @@ import (
 	"strings"
 
 	corev1 "k8s.io/api/core/v1"
+	apiextensionsv1 "k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/apimachinery/pkg/util/intstr"
@@ -648,6 +649,8 @@ type TracingConfiguration struct {
 	Lightstep    LightstepConfiguration    `json:"lightstep,omitempty"`
 	Datadog      DatadogConfiugration      `json:"datadog,omitempty"`
 	Strackdriver StrackdriverConfiguration `json:"stackdriver,omitempty"`
+	//Custom tags to be added to spans, value can be literals, environment variables, or client requeset headers
+	CustomTags map[string]apiextensionsv1.JSON `json:"customTags,omitempty"`
 }
 
 type IstioCoreDNS struct {
