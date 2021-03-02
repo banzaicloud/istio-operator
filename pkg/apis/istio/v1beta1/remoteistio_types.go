@@ -80,7 +80,7 @@ type RemoteIstioSpec struct {
 	// Istio CR to which this gateway belongs to
 	IstioControlPlane *NamespacedName `json:"istioControlPlane,omitempty"`
 
-	// Network defines the network this cluster belong to. This name
+	// Network defines the network this cluster belongs to. This name
 	// corresponds to the networks in the map of mesh networks.
 	NetworkName string `json:"networkName,omitempty"`
 
