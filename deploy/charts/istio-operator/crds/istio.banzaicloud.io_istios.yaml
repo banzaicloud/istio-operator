@@ -6433,6 +6433,10 @@ spec:
                   type: object
                 tracing:
                   properties:
+                    customTags:
+                      additionalProperties:
+                        x-kubernetes-preserve-unknown-fields: true
+                      type: object
                     datadog:
                       properties:
                         address:
