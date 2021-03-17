@@ -40,7 +40,7 @@ const (
 )
 
 var (
-	SupportedIstioVersion = "1.8.3"
+	SupportedIstioVersion = "1.8.4"
 	Version               = "0.8.10"
 )
 
