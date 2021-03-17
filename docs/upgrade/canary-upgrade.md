@@ -221,7 +221,7 @@ When the data plane migration is finished, we'll delete the Istio 1.7 control pl
 1. Deploy an Istio operator version, which can install an Istio 1.8 control plane.
 
    ```bash
-   $ helm install istio-operator-v18x --create-namespace --namespace=istio-system --set-string operator.image.tag=0.8.10 banzaicloud-stable/istio-operator
+   $ helm install istio-operator-v18x --create-namespace --namespace=istio-system --set-string operator.image.tag=0.8.11 banzaicloud-stable/istio-operator
    ```
 
    *Note: In case you upgrade from an earlier chart version your Istio operator CRD definitions might be outdated in which case you should apply the [new CRDs](../../deploy/charts/istio-operator/crds) manually!*
@@ -284,10 +284,10 @@ When the data plane migration is finished, we'll delete the Istio 1.7 control pl
    ```bash
    $ APP_A_POD_NAME=$(kubectl get pods -n demo-a -l k8s-app=app-a -o=jsonpath='{.items[0].metadata.name}')
    $ kubectl get po -n=demo-a $APP_A_POD_NAME -o yaml | grep istio/proxyv2:
-       image: docker.io/istio/proxyv2:1.8.3
-       image: docker.io/istio/proxyv2:1.8.3
-       image: docker.io/istio/proxyv2:1.8.3
-       image: docker.io/istio/proxyv2:1.8.3
+       image: docker.io/istio/proxyv2:1.8.4
+       image: docker.io/istio/proxyv2:1.8.4
+       image: docker.io/istio/proxyv2:1.8.4
+       image: docker.io/istio/proxyv2:1.8.4
    ```
 
 #### Test communication
@@ -344,10 +344,10 @@ Remember that the pod(s) in the `demo-a` namespace are already on the Istio 1.8 
    ```bash
    $ APP_B_POD_NAME=$(kubectl get pods -n demo-b -l k8s-app=app-b -o=jsonpath='{.items[0].metadata.name}')
    $ kubectl get po -n=demo-b $APP_B_POD_NAME -o yaml | grep istio/proxyv2:
-       image: docker.io/istio/proxyv2:1.8.3
-       image: docker.io/istio/proxyv2:1.8.3
-       image: docker.io/istio/proxyv2:1.8.3
-       image: docker.io/istio/proxyv2:1.8.3
+       image: docker.io/istio/proxyv2:1.8.4
+       image: docker.io/istio/proxyv2:1.8.4
+       image: docker.io/istio/proxyv2:1.8.4
+       image: docker.io/istio/proxyv2:1.8.4
    ```
 
 ### Uninstall the Istio 1.7 control plane
