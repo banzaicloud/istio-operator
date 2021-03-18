@@ -123,7 +123,7 @@ func newReconciler(mgr manager.Manager, operatorConfig config.Configuration, d d
 	}
 }
 
-// add adds a new Controller to mgr with r as the reconcile.Reconciler
+// newController adds a new Controller to mgr with r as the reconcile.Reconciler
 func newController(mgr manager.Manager, r reconcile.Reconciler) error {
 	// Create a new controller
 	ctrl, err := controller.New("istio-controller", mgr, controller.Options{Reconciler: r})
