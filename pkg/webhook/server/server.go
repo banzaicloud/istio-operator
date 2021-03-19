@@ -44,7 +44,12 @@ func add(mgr manager.Manager) error {
 		return errors.Errorf("%s env variable must be specified and cannot be empty", podNamespaceEnvVar)
 	}
 
-	svr, err := webhook.NewServer(name, mgr, webhook.ServerOptions{
+	svr, err := webhook.NewServer(name, &ManagerWithCustomClient{
+		Manager: mgr,
+		client: &WebhookUpdateClient{
+			Client: mgr.GetClient(),
+		},
+	}, webhook.ServerOptions{
 		Port:    9443,
 		CertDir: "/tmp/cert",
 		BootstrapOptions: &webhook.BootstrapOptions{
