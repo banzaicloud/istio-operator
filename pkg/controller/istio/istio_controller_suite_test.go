@@ -23,7 +23,7 @@ import (
 	"sync"
 	"testing"
 
-	"github.com/onsi/gomega"
+	"github.com/stretchr/testify/require"
 	apiextensionsv1 "k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1"
 	"k8s.io/client-go/kubernetes/scheme"
 	"k8s.io/client-go/rest"
@@ -38,7 +38,10 @@ import (
 var k8sConfig *rest.Config
 
 func init() {
-	apiextensionsv1.AddToScheme(scheme.Scheme)
+	err := apiextensionsv1.AddToScheme(scheme.Scheme)
+	if err != nil {
+		stdlog.Fatal(err)
+	}
 }
 
 func TestMain(m *testing.M) {
@@ -71,13 +74,14 @@ func SetupTestReconcile(inner IstioReconciler) (IstioReconciler, chan reconcile.
 }
 
 // StartTestManager adds recFn
-func StartTestManager(mgr manager.Manager, g *gomega.GomegaWithT) (chan struct{}, *sync.WaitGroup) {
+func StartTestManager(mgr manager.Manager, t *testing.T) (chan struct{}, *sync.WaitGroup) {
 	stop := make(chan struct{})
 	wg := &sync.WaitGroup{}
 	wg.Add(1)
 	go func() {
 		defer wg.Done()
-		g.Expect(mgr.Start(stop)).NotTo(gomega.HaveOccurred())
+		err := mgr.Start(stop)
+		require.NoError(t, err)
 	}()
 	return stop, wg
 }
