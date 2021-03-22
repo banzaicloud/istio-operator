@@ -29,10 +29,12 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/manager"
 	"sigs.k8s.io/controller-runtime/pkg/reconcile"
+	logf "sigs.k8s.io/controller-runtime/pkg/runtime/log"
 
 	istiov1beta1 "github.com/banzaicloud/istio-operator/pkg/apis/istio/v1beta1"
 	"github.com/banzaicloud/istio-operator/pkg/config"
 	"github.com/banzaicloud/istio-operator/pkg/crds"
+	"github.com/banzaicloud/istio-operator/pkg/util"
 )
 
 var c client.Client
@@ -47,10 +49,14 @@ func TestReconcile(t *testing.T) {
 	g := gomega.NewGomegaWithT(t)
 	instance := &istiov1beta1.Istio{ObjectMeta: metav1.ObjectMeta{Name: "foo", Namespace: "default"}}
 
+	logf.SetLogger(util.CreateLogger(true, true))
+	log := logf.Log.WithName(t.Name())
+
 	// Setup the Manager and Controller.  Wrap the Controller Reconcile function so it writes each request to a
 	// channel when it is finished.
 	mgr, err := manager.New(k8sConfig, manager.Options{
 		MetricsBindAddress: "0",
+		Logger:             log,
 	})
 	g.Expect(err).NotTo(gomega.HaveOccurred())
 	c = mgr.GetClient()
