@@ -74,6 +74,8 @@ func TestReconcile(t *testing.T) {
 
 	crd, err := crds.New(mgr, istiov1beta1.SupportedIstioVersion)
 	require.NoError(t, err)
+	err = crd.LoadCRDs()
+	require.NoError(t, err)
 
 	recFn, requests := SetupTestReconcile(newReconciler(mgr, config.Configuration{}, dynamic, crd))
 	err = newController(mgr, recFn)
