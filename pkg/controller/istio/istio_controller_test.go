@@ -111,6 +111,7 @@ func TestReconcile(t *testing.T) {
 		}
 	}()
 
+	//TODO this should pass, but for some reason it doesn't see the arriving request(?)
 	g := gomega.NewGomegaWithT(t)
 	var expectedRequest = reconcile.Request{NamespacedName: types.NamespacedName{Name: instanceName, Namespace: namespace}}
 	log.Info("Waiting for request to arrive")
@@ -131,6 +132,11 @@ func TestReconcile(t *testing.T) {
 		HPAExists(t, context.TODO(), c, namespace, fmt.Sprintf("istiod-autoscaler-%s", instanceName)),
 		timeout, 100*time.Millisecond)
 
+	// TODO this seems to run after the manager (and envtest?) is stopped. That could be the cause of seemingly not
+	//  receiving the request in the gomega check. Also, this must be the reason why the other three checks are
+	//  failing. The issue could be the blocking(?) watch setup (MGW?) and also, the istio reconcile might be
+	//  blocking. There is two request received in the logs, but only one result: the second reconcile might be
+	//  waiting for e.g. the deployment to be fully reconciled?
 	if t.Failed() {
 		log.Info("Test failed, listing resources")
 		listAllResources(t, c)

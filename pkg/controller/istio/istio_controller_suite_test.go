@@ -69,7 +69,9 @@ func TestMain(m *testing.M) {
 // SetupTestReconcile returns a reconcile.Reconcile implementation that delegates to inner and
 // writes the request to requests after Reconcile is finished.
 func SetupTestReconcile(logger logr.Logger, inner IstioReconciler) (IstioReconciler, chan reconcile.Request) {
-	requests := make(chan reconcile.Request)
+	// TODO this is stupid, but the reconciliation should not block because of the test code.
+	//  Rather, the testReconciler should just store the received requests in an array...
+	requests := make(chan reconcile.Request, 100000)
 	x := testReconciler{logger, inner, requests}
 	return x, requests
 }
