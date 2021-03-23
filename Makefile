@@ -4,6 +4,8 @@ IMG ?= banzaicloud/istio-operator:$(TAG)
 # Produce CRDs that work back to Kubernetes 1.11 (no version conversion)
 CRD_OPTIONS = "crd:trivialVersions=true,maxDescLen=0,preserveUnknownFields=false,allowDangerousTypes=true"
 
+TEST_RACE_DETECTOR ?= 0
+
 RELEASE_TYPE ?= p
 RELEASE_MSG ?= "operator release"
 
@@ -16,6 +18,12 @@ KUSTOMIZE_VERSION = 2.0.3
 ISTIO_VERSION = 1.9.1
 
 KUSTOMIZE_BASE = config/overlays/specific-manager-version
+
+ifeq (${TEST_RACE_DETECTOR}, 1)
+    TEST_GOARGS += -race
+    TEST_CGO_ENABLED = 1
+endif
+TEST_CGO_ENABLED ?= 0
 
 all: test manager
 
@@ -52,7 +60,9 @@ license-cache: bin/licensei ## Generate license cache
 # Run tests
 .PHONY: test
 test: install-kubebuilder generate fmt vet manifests
-	KUBEBUILDER_ASSETS="$${PWD}/bin/kubebuilder/bin" go test ./pkg/... ./cmd/... -coverprofile cover.out
+	env CGO_ENABLED=${TEST_CGO_ENABLED} \
+	    KUBEBUILDER_ASSETS="$${PWD}/bin/kubebuilder/bin" \
+	    go test ${TEST_GOARGS} ./pkg/... ./cmd/... -coverprofile cover.out
 
 # Build manager binary
 manager: generate fmt vet build
