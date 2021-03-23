@@ -88,7 +88,6 @@ func TestReconcile(t *testing.T) {
 		mgrStopped.Wait()
 	}()
 
-	time.Sleep(1 * time.Second)
 	listAllResources(t, c)
 
 	// Create the Config object and expect the Reconcile and Deployment to be created
