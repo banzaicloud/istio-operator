@@ -112,6 +112,7 @@ func main() {
 		LeaderElectionID:        leaderElectionName,
 		CertDir:                 webhookCertDir,
 		Port:                    int(webhookServerPort),
+		Logger:                  log,
 	})
 	if err != nil {
 		log.Error(err, "unable to set up overall controller manager")
