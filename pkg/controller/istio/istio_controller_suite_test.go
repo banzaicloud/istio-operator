@@ -23,6 +23,7 @@ import (
 	"sync"
 	"testing"
 
+	"github.com/go-logr/logr"
 	"github.com/stretchr/testify/require"
 	apiextensionsv1 "k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1"
 	"k8s.io/client-go/kubernetes/scheme"
@@ -67,9 +68,9 @@ func TestMain(m *testing.M) {
 
 // SetupTestReconcile returns a reconcile.Reconcile implementation that delegates to inner and
 // writes the request to requests after Reconcile is finished.
-func SetupTestReconcile(inner IstioReconciler) (IstioReconciler, chan reconcile.Request) {
+func SetupTestReconcile(logger logr.Logger, inner IstioReconciler) (IstioReconciler, chan reconcile.Request) {
 	requests := make(chan reconcile.Request)
-	x := testReconciler{inner, requests}
+	x := testReconciler{logger, inner, requests}
 	return x, requests
 }
 
@@ -87,6 +88,7 @@ func StartTestManager(mgr manager.Manager, t *testing.T) (chan struct{}, *sync.W
 }
 
 type testReconciler struct {
+	logger   logr.Logger
 	inner    IstioReconciler
 	requests chan reconcile.Request
 }
@@ -94,9 +96,11 @@ type testReconciler struct {
 var _ IstioReconciler = testReconciler{}
 
 func (r testReconciler) Reconcile(request reconcile.Request) (reconcile.Result, error) {
+	r.logger.Info("Received reconcile request", "request", request)
 	result, err := r.inner.Reconcile(request)
+	r.logger.Info("Reconcile result", "result", result, "err", err)
 	if err != nil {
-		log.Error(err, "reconcile failed, requeuing..")
+		r.logger.Error(err, "reconcile failed, requeuing..")
 	}
 	r.requests <- request
 	return result, err

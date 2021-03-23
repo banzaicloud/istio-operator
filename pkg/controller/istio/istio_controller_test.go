@@ -77,23 +77,34 @@ func TestReconcile(t *testing.T) {
 	err = crd.LoadCRDs()
 	require.NoError(t, err)
 
-	recFn, requests := SetupTestReconcile(newReconciler(mgr, config.Configuration{}, dynamic, crd))
+	log.Info("Creating reconciler")
+	recFn, requests := SetupTestReconcile(log, newReconciler(mgr, config.Configuration{}, dynamic, crd))
+	log.Info("Creating controller")
 	err = newController(mgr, recFn)
 	require.NoError(t, err)
 
+	log.Info("Starting test manager")
 	stopMgr, mgrStopped := StartTestManager(mgr, t)
 
 	defer func() {
+		log.Info("Stopping manager")
 		close(stopMgr)
+		log.Info("Waiting for manager to stop")
 		mgrStopped.Wait()
+		log.Info("Manager stopped")
 	}()
 
+	log.Info("Sleeping...")
+	//time.Sleep(15 * time.Second)
+	log.Info("Listing all resources")
 	listAllResources(t, c)
 
+	log.Info("Creating Istio instance")
 	// Create the Config object and expect the Reconcile and Deployment to be created
 	err = c.Create(context.TODO(), instance)
 	assert.NoError(t, err)
 	defer func() {
+		log.Info("Deleting Istio instance")
 		err := c.Delete(context.TODO(), instance)
 		if err != nil {
 			t.Log(err)
@@ -102,6 +113,7 @@ func TestReconcile(t *testing.T) {
 
 	g := gomega.NewGomegaWithT(t)
 	var expectedRequest = reconcile.Request{NamespacedName: types.NamespacedName{Name: instanceName, Namespace: namespace}}
+	log.Info("Waiting for request to arrive")
 	g.Eventually(requests, timeout).Should(gomega.Receive(gomega.Equal(expectedRequest)))
 
 	// default        service/istiod-istio-sample-v19x
@@ -120,6 +132,7 @@ func TestReconcile(t *testing.T) {
 		timeout, 100*time.Millisecond)
 
 	if t.Failed() {
+		log.Info("Test failed, listing resources")
 		listAllResources(t, c)
 	}
 }
