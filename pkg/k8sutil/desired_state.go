@@ -152,7 +152,7 @@ func (r RecreateAwareDeploymentDesiredState) AfterRecreate(current, desired runt
 		return nil
 	}
 
-	return r.waitForDeplomentAndRemoveDetached(deployment)
+	return r.waitForDeploymentAndRemoveDetached(deployment)
 }
 
 func (r RecreateAwareDeploymentDesiredState) AfterUpdate(current, desired runtime.Object, inSync bool) error {
@@ -162,7 +162,7 @@ func (r RecreateAwareDeploymentDesiredState) AfterUpdate(current, desired runtim
 		return nil
 	}
 
-	return r.waitForDeplomentAndRemoveDetached(deployment)
+	return r.waitForDeploymentAndRemoveDetached(deployment)
 }
 
 func (r RecreateAwareDeploymentDesiredState) BeforeRecreate(current, desired runtime.Object) error {
@@ -180,7 +180,7 @@ func (r RecreateAwareDeploymentDesiredState) BeforeRecreate(current, desired run
 	return nil
 }
 
-func (r RecreateAwareDeploymentDesiredState) waitForDeplomentAndRemoveDetached(deployment *appsv1.Deployment) error {
+func (r RecreateAwareDeploymentDesiredState) waitForDeploymentAndRemoveDetached(deployment *appsv1.Deployment) error {
 	rcc := wait.NewResourceConditionChecks(r.client, wait.Backoff{
 		Duration: time.Second * 5,
 		Factor:   1,

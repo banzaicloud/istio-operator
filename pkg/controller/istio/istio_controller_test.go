@@ -21,7 +21,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/onsi/gomega"
+	"github.com/go-logr/logr"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"golang.org/x/net/context"
@@ -31,14 +31,13 @@ import (
 	"k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
+	"k8s.io/apimachinery/pkg/runtime/schema"
 	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/client-go/dynamic"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/manager"
 	"sigs.k8s.io/controller-runtime/pkg/reconcile"
 	logf "sigs.k8s.io/controller-runtime/pkg/runtime/log"
-
-	//"sigs.k8s.io/controller-runtime/pkg/reconcile"
 
 	istiov1beta1 "github.com/banzaicloud/istio-operator/pkg/apis/istio/v1beta1"
 	"github.com/banzaicloud/istio-operator/pkg/config"
@@ -49,6 +48,12 @@ import (
 var c client.Client
 
 const timeout = time.Second * 5
+
+var istioGVR = schema.GroupVersionResource{
+	Group:    "istio.banzaicloud.io",
+	Version:  "v1beta1",
+	Resource: "istios",
+}
 
 func TestReconcile(t *testing.T) {
 	// TODO randomize!
@@ -78,7 +83,7 @@ func TestReconcile(t *testing.T) {
 	require.NoError(t, err)
 
 	log.Info("Creating reconciler")
-	recFn, requests := SetupTestReconcile(log, newReconciler(mgr, config.Configuration{}, dynamic, crd))
+	recFn, reconciliations := SetupTestReconcile(log, newReconciler(mgr, config.Configuration{}, dynamic, crd))
 	log.Info("Creating controller")
 	err = newController(mgr, recFn)
 	require.NoError(t, err)
@@ -111,36 +116,150 @@ func TestReconcile(t *testing.T) {
 		}
 	}()
 
-	//TODO this should pass, but for some reason it doesn't see the arriving request(?)
-	g := gomega.NewGomegaWithT(t)
+	// set to true when debugging. It effectively disables the timeouts in the test.
+	const debug = false
+
+	overallTimeout := 120 * time.Second
+	perReconcileTimeout := 60 * time.Second
+	if debug {
+		overallTimeout = 24 * time.Hour
+		perReconcileTimeout = 24 * time.Hour
+	}
+
+	// wait until the istio resource is fully reconciled
 	var expectedRequest = reconcile.Request{NamespacedName: types.NamespacedName{Name: instanceName, Namespace: namespace}}
-	log.Info("Waiting for request to arrive")
-	g.Eventually(requests, timeout).Should(gomega.Receive(gomega.Equal(expectedRequest)))
+	timer := time.After(overallTimeout)
+	ticker := time.NewTicker(1000 * time.Millisecond)
+	defer ticker.Stop()
+x:
+	for {
+		subTimer := time.After(perReconcileTimeout)
+		select {
+		case reconciliation := <-reconciliations:
+			log.Info("Got reconciliation result", "reconciliation", reconciliation)
+			assert.Equal(t, expectedRequest, reconciliation.request)
+			assert.NoError(t, reconciliation.err)
+			listAllResources(t, c)
+			fakeReconcileBuiltins(t, context.TODO(), log, c)
+		case <-ticker.C:
+			log.Info("Tick")
+			listAllResources(t, c)
+			d := DeploymentExists(t, context.TODO(), c, namespace, "istiod")()
+			s := ServiceExists(t, context.TODO(), c, namespace, "istiod")()
+			h := HPAExists(t, context.TODO(), c, namespace, "istiod-autoscaler")()
+			log.Info("Checking resources", "deployment", d, "service", s, "hpa", h)
+			status := GetStatus(t, context.TODO(), dynamic, istioGVR, namespace, instanceName)
+			log.Info("Resource status", "resource", fmt.Sprintf("%s/%s", namespace, instanceName), "status", status)
+			if status != nil && *status == string(istiov1beta1.Available) {
+				log.Info("Reconciled")
+				break x
+			}
+			fakeReconcileBuiltins(t, context.TODO(), log, c)
+		case <-timer:
+			log.Info("timer")
+			break x
+		case <-subTimer:
+			log.Info("subTimer")
+			break x
+		}
+	}
 
-	// default        service/istiod-istio-sample-v19x
-	assert.Eventually(t,
-		ServiceExists(t, context.TODO(), c, namespace, fmt.Sprintf("istiod-%s", instanceName)),
-		timeout, 100*time.Millisecond)
+	// check that status is stable
+	timer2 := time.After(5*time.Second)
+	ticker2 := time.NewTicker(1000 * time.Millisecond)
+	defer ticker2.Stop()
+y:
+	for {
+		select {
+		case <- ticker2.C:
+			log.Info("tick2")
+			status := GetStatus(t, context.TODO(), dynamic, istioGVR, namespace, instanceName)
+			log.Info("Resource status", "resource", fmt.Sprintf("%s/%s", namespace, instanceName), "status", status)
+			assert.NotNil(t, status)
+			if status != nil {
+				assert.Equal(t, string(istiov1beta1.Available), *status)
+			}
+		case <-timer2:
+			log.Info("timer2")
+			break y
+		}
+	}
 
-	// default              deployment.apps/istiod-istio-sample-v19x
-	assert.Eventually(t,
-		DeploymentExists(t, context.TODO(), c, namespace, fmt.Sprintf("istiod-%s", instanceName)),
-		timeout, 100*time.Millisecond)
+	// TODO Add CRDs, etc.
+	assert.True(t, ServiceExists(t, context.TODO(), c, namespace, "istiod")())
+	assert.True(t, DeploymentExists(t, context.TODO(), c, namespace, "istiod")())
+	assert.True(t, HPAExists(t, context.TODO(), c, namespace, "istiod-autoscaler")())
 
-	// default     horizontalpodautoscaler.autoscaling/istiod-autoscaler-istio-sample-v19x
-	assert.Eventually(t,
-		HPAExists(t, context.TODO(), c, namespace, fmt.Sprintf("istiod-autoscaler-%s", instanceName)),
-		timeout, 100*time.Millisecond)
-
-	// TODO this seems to run after the manager (and envtest?) is stopped. That could be the cause of seemingly not
-	//  receiving the request in the gomega check. Also, this must be the reason why the other three checks are
-	//  failing. The issue could be the blocking(?) watch setup (MGW?) and also, the istio reconcile might be
-	//  blocking. There is two request received in the logs, but only one result: the second reconcile might be
-	//  waiting for e.g. the deployment to be fully reconciled?
 	if t.Failed() {
 		log.Info("Test failed, listing resources")
 		listAllResources(t, c)
 	}
+}
+
+func GetStatus(t *testing.T, ctx context.Context, d dynamic.Interface, gvr schema.GroupVersionResource, namespace, name string) *string {
+	obj, err := d.Resource(gvr).Namespace(namespace).Get(ctx, name, metav1.GetOptions{})
+	require.NoError(t, err)
+	fmt.Printf("%#v\n", obj.Object)
+
+	status := obj.Object["status"]
+	if status == nil {
+		return nil
+	}
+
+	statusObj, ok := status.(map[string]interface{})
+	if !ok {
+		return nil
+	}
+
+	statusStatus, ok := statusObj["Status"]
+	if !ok {
+		return nil
+	}
+
+	statusStatusString, ok := statusStatus.(string)
+	if !ok {
+		return nil
+	}
+	return &statusStatusString
+}
+
+func fakeReconcileBuiltins(t *testing.T, ctx context.Context, logger logr.Logger, c client.Client) {
+	logger.Info("faking builtin reconciles")
+	fakeReconcileDeployments(t, ctx, logger, c)
+}
+
+func fakeReconcileDeployments(t *testing.T, ctx context.Context, logger logr.Logger, c client.Client) {
+	var deploymentList appsv1.DeploymentList
+	err := c.List(ctx, &deploymentList)
+	require.NoError(t, err)
+	logger.Info("Faking deployment reconciles", "deployments", len(deploymentList.Items))
+	for _, deployment := range deploymentList.Items {
+		fakeReconcileDeployment(t, ctx, logger, c, deployment.Namespace, deployment.Name)
+	}
+}
+
+func fakeReconcileDeployment(t *testing.T, ctx context.Context, logger logr.Logger, c client.Client, namespace string, name string) {
+	logger.Info("Faking deployment reconcile", "namespace", namespace, "name", name)
+	var deployment appsv1.Deployment
+	err := c.Get(ctx, client.ObjectKey{Namespace: namespace, Name: name}, &deployment)
+	require.NoError(t, err)
+
+	desiredReplicas := util.PointerToInt32(deployment.Spec.Replicas)
+	if deployment.Status.ReadyReplicas == desiredReplicas && deployment.Status.Replicas == desiredReplicas {
+		logger.Info("deployment is in sync", "namespace", namespace, "name", name)
+	}
+
+	logger.Info("Updating deployment", "namespace", namespace, "name", name)
+
+	deployment.Status.ReadyReplicas = desiredReplicas
+	deployment.Status.Replicas = desiredReplicas
+
+	err = c.Update(ctx, &deployment)
+	require.NoError(t, err)
+
+	err = c.Get(ctx, client.ObjectKey{Namespace: namespace, Name: name}, &deployment)
+	require.NoError(t, err)
+	logger.Info("fake deployment reconcile result", "spec.replicas", deployment.Spec.Replicas, "status", deployment.Status)
 }
 
 func newIstio() *istiov1beta1.Istio {

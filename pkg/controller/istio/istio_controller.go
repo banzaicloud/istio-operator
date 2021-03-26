@@ -26,6 +26,7 @@ import (
 	"sync"
 	"time"
 
+	"github.com/banzaicloud/istio-operator/pkg/resources/mixerlesstelemetry"
 	"github.com/go-logr/logr"
 	"github.com/gofrs/uuid"
 	"github.com/goph/emperror"
@@ -59,7 +60,6 @@ import (
 	"github.com/banzaicloud/istio-operator/pkg/resources/istiocoredns"
 	"github.com/banzaicloud/istio-operator/pkg/resources/istiod"
 	"github.com/banzaicloud/istio-operator/pkg/resources/meshexpansion"
-	"github.com/banzaicloud/istio-operator/pkg/resources/mixerlesstelemetry"
 	"github.com/banzaicloud/istio-operator/pkg/resources/nodeagent"
 	"github.com/banzaicloud/istio-operator/pkg/resources/pilot"
 	"github.com/banzaicloud/istio-operator/pkg/resources/sidecarinjector"
@@ -360,8 +360,12 @@ func (r *ReconcileIstio) reconcile(logger logr.Logger, config *istiov1beta1.Isti
 		meshexpansion.New(r.Client, r.dynamic, config, false),
 	}
 
-	for _, rec := range reconcilers {
+	// TODO use a lower verbosity level for logging. (debug/trace)
+	logger.Info("Running reconcilers", "count", len(reconcilers))
+	for i, rec := range reconcilers {
+		logger.Info("Running reconciler", "index", i, "reconciler", reflect.TypeOf(rec))
 		err = rec.Reconcile(logger)
+		logger.Info("Reconciler finished", "index", i, "reconciler", reflect.TypeOf(rec), "err", err)
 		if err != nil {
 			return reconcile.Result{}, err
 		}

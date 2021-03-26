@@ -25,7 +25,6 @@ import (
 	istiov1beta1 "github.com/banzaicloud/istio-operator/pkg/apis/istio/v1beta1"
 	"github.com/banzaicloud/istio-operator/pkg/k8sutil"
 	"github.com/banzaicloud/istio-operator/pkg/resources"
-	"github.com/banzaicloud/istio-operator/pkg/util"
 )
 
 const (
@@ -57,16 +56,16 @@ func (r *Reconciler) Reconcile(log logr.Logger) error {
 
 	log.Info("Reconciling")
 
-	exchangeFilterDesiredState := k8sutil.DesiredStateAbsent
-	statsFilterDesiredState := k8sutil.DesiredStateAbsent
-	if util.PointerToBool(r.Config.Spec.MixerlessTelemetry.Enabled) {
-		exchangeFilterDesiredState = k8sutil.DesiredStatePresent
-		statsFilterDesiredState = k8sutil.DesiredStatePresent
-	}
+	//exchangeFilterDesiredState := k8sutil.DesiredStateAbsent
+	//statsFilterDesiredState := k8sutil.DesiredStateAbsent
+	//if util.PointerToBool(r.Config.Spec.MixerlessTelemetry.Enabled) {
+	//	exchangeFilterDesiredState = k8sutil.DesiredStatePresent
+	//	statsFilterDesiredState = k8sutil.DesiredStatePresent
+	//}
 
-	if util.PointerToBool(r.Config.Spec.Proxy.UseMetadataExchangeFilter) {
-		exchangeFilterDesiredState = k8sutil.DesiredStatePresent
-	}
+	//if util.PointerToBool(r.Config.Spec.Proxy.UseMetadataExchangeFilter) {
+	//	exchangeFilterDesiredState = k8sutil.DesiredStatePresent
+	//}
 
 	drs := []resources.DynamicResourceWithDesiredState{
 		// delete deprecated 1.7 EnvoyFilters
@@ -76,20 +75,23 @@ func (r *Reconciler) Reconcile(log logr.Logger) error {
 		{DynamicResource: r.httpStatsFilter17, DesiredState: k8sutil.DesiredStateAbsent},
 		{DynamicResource: r.tcpStatsFilter17, DesiredState: k8sutil.DesiredStateAbsent},
 
-		{DynamicResource: r.metaExchangeEnvoyFilter18, DesiredState: exchangeFilterDesiredState},
-		{DynamicResource: r.tcpMetaExchangeEnvoyFilter18, DesiredState: exchangeFilterDesiredState},
-		{DynamicResource: r.httpStatsFilter18, DesiredState: statsFilterDesiredState},
-		{DynamicResource: r.tcpStatsFilter18, DesiredState: statsFilterDesiredState},
+		//{DynamicResource: r.metaExchangeEnvoyFilter18, DesiredState: exchangeFilterDesiredState},
+		//{DynamicResource: r.tcpMetaExchangeEnvoyFilter18, DesiredState: exchangeFilterDesiredState},
+		//{DynamicResource: r.httpStatsFilter18, DesiredState: statsFilterDesiredState},
+		//{DynamicResource: r.tcpStatsFilter18, DesiredState: statsFilterDesiredState},
 
-		{DynamicResource: r.metaExchangeEnvoyFilter19, DesiredState: exchangeFilterDesiredState},
-		{DynamicResource: r.tcpMetaExchangeEnvoyFilter19, DesiredState: exchangeFilterDesiredState},
-		{DynamicResource: r.httpStatsFilter19, DesiredState: statsFilterDesiredState},
-		{DynamicResource: r.tcpStatsFilter19, DesiredState: statsFilterDesiredState},
+		//{DynamicResource: r.metaExchangeEnvoyFilter19, DesiredState: exchangeFilterDesiredState},
+		//{DynamicResource: r.tcpMetaExchangeEnvoyFilter19, DesiredState: exchangeFilterDesiredState},
+		//{DynamicResource: r.httpStatsFilter19, DesiredState: statsFilterDesiredState},
+		//{DynamicResource: r.tcpStatsFilter19, DesiredState: statsFilterDesiredState},
 	}
 
-	for _, dr := range drs {
+	for i, dr := range drs {
+		log.Info("Reconciling resource", "i", i, "desiredstate", dr.DesiredState)
 		o := dr.DynamicResource()
+		log.Info("Reconciling dynamicresource", "i", i, "dynamicresource", o)
 		err := o.Reconcile(log, r.dynamic, dr.DesiredState)
+		log.Info("Reconciling resource", "i", i, "err", err)
 		if err != nil {
 			return emperror.WrapWith(err, "failed to reconcile dynamic resource", "resource", o.Gvr)
 		}

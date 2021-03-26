@@ -66,14 +66,18 @@ func TestMain(m *testing.M) {
 	os.Exit(code)
 }
 
+type Reconciliation struct {
+	request reconcile.Request
+	result  reconcile.Result
+	err     error
+}
+
 // SetupTestReconcile returns a reconcile.Reconcile implementation that delegates to inner and
-// writes the request to requests after Reconcile is finished.
-func SetupTestReconcile(logger logr.Logger, inner IstioReconciler) (IstioReconciler, chan reconcile.Request) {
-	// TODO this is stupid, but the reconciliation should not block because of the test code.
-	//  Rather, the testReconciler should just store the received requests in an array...
-	requests := make(chan reconcile.Request, 100000)
-	x := testReconciler{logger, inner, requests}
-	return x, requests
+// writes the request and result to reconciliations after Reconcile is finished.
+func SetupTestReconcile(logger logr.Logger, inner IstioReconciler) (IstioReconciler, chan Reconciliation) {
+	reconciliations := make(chan Reconciliation)
+	x := testReconciler{logger, inner, reconciliations}
+	return x, reconciliations
 }
 
 // StartTestManager adds recFn
@@ -90,9 +94,9 @@ func StartTestManager(mgr manager.Manager, t *testing.T) (chan struct{}, *sync.W
 }
 
 type testReconciler struct {
-	logger   logr.Logger
-	inner    IstioReconciler
-	requests chan reconcile.Request
+	logger          logr.Logger
+	inner           IstioReconciler
+	reconciliations chan Reconciliation
 }
 
 var _ IstioReconciler = testReconciler{}
@@ -104,7 +108,11 @@ func (r testReconciler) Reconcile(request reconcile.Request) (reconcile.Result, 
 	if err != nil {
 		r.logger.Error(err, "reconcile failed, requeuing..")
 	}
-	r.requests <- request
+	r.reconciliations <- Reconciliation{
+		request: request,
+		result:  result,
+		err:     err,
+	}
 	return result, err
 }
 
