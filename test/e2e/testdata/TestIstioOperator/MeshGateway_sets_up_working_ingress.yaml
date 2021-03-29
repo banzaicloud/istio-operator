@@ -1,0 +1,114 @@
+apiVersion: istio.banzaicloud.io/v1beta1
+kind: MeshGateway
+metadata:
+  labels:
+    app: mgw01
+    istio: mgw01
+  name: mgw01
+  namespace: istio-system
+spec:
+  labels:
+    app: mgw01
+    istio: mgw01
+  maxReplicas: 1
+  minReplicas: 1
+  replicaCount: 1
+  ports:
+    - name: http
+      port: 80
+      protocol: TCP
+      targetPort: 80
+  runAsRoot: true
+  serviceType: LoadBalancer
+  type: ingress
+---
+apiVersion: networking.istio.io/v1beta1
+kind: Gateway
+metadata:
+  name: mgw01-gw1
+  namespace: istio-system
+spec:
+  selector:
+    app: mgw01
+    gateway-name: mgw01
+    gateway-type: ingress
+    istio: mgw01
+  servers:
+    - port:
+        number: 80
+        name: http
+        protocol: HTTP
+      hosts:
+        - '*'
+---
+apiVersion: networking.istio.io/v1beta1
+kind: VirtualService
+metadata:
+  name: mgw01-gw1-vs1
+  namespace: istio-system
+spec:
+  gateways:
+    - mgw01-gw1
+  hosts:
+    - '*'
+  http:
+    - route:
+        - destination:
+            host: httpbin.default.svc.cluster.local
+            port:
+              number: 8080
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: httpbin
+  namespace: istio-system
+spec:
+  selector:
+    app: httpbin
+  ports:
+    - port: 8080
+      protocol: TCP
+      targetPort: 80
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: httpbin
+  name: httpbin
+  namespace: default
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: httpbin
+  template:
+    metadata:
+      labels:
+        app: httpbin
+    spec:
+      terminationGracePeriodSeconds: 0
+      containers:
+        - image: kennethreitz/httpbin
+          imagePullPolicy: Always
+          name: httpbin
+          ports:
+            - containerPort: 80
+              protocol: TCP
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: httpbin
+  name: httpbin
+  namespace: default
+spec:
+  ports:
+    - port: 8080
+      protocol: TCP
+      targetPort: 80
+  selector:
+    app: httpbin
+  type: LoadBalancer

@@ -1,6 +1,7 @@
 # Image URL to use all building/pushing image targets
 TAG ?= $(shell git describe --tags --abbrev=0 --match '[0-9].*[0-9].*[0-9]' 2>/dev/null )
-IMG ?= banzaicloud/istio-operator:$(TAG)
+IMAGE_REPOSITORY ?= banzaicloud/istio-operator
+IMG ?= ${IMAGE_REPOSITORY}:$(TAG)
 # Produce CRDs that work back to Kubernetes 1.11 (no version conversion)
 CRD_OPTIONS = "crd:trivialVersions=true,maxDescLen=0,preserveUnknownFields=false,allowDangerousTypes=true"
 
@@ -126,12 +127,63 @@ verify-codegen: download-deps
 	./hack/verify-codegen.sh
 
 # Build the docker image
-docker-build:
+docker-build: vendor
 	docker build -f Dockerfile.dev . -t ${IMG}
 
 # Push the docker image
 docker-push:
 	docker push ${IMG}
+
+.PHONY: e2e-test-dependencies
+e2e-test-dependencies:
+	./scripts/download-e2e-test-dependencies.sh
+
+.PHONY: e2e-test-env
+e2e-test-env: export PATH:=./bin:${PATH}
+e2e-test-env: e2e-test-dependencies
+	kind create cluster
+
+	# TODO get these from the MetalLB resource yaml
+	docker pull metallb/controller:v0.9.6
+	docker pull metallb/speaker:v0.9.6
+	kind load docker-image metallb/controller:v0.9.6
+	kind load docker-image metallb/speaker:v0.9.6
+	./scripts/install-metallb.sh
+
+	docker pull kennethreitz/httpbin
+	kind load docker-image kennethreitz/httpbin
+
+	# TODO collect these from the operator (run the related functions and collect the referenced images)
+	docker pull gcr.io/kubebuilder/kube-rbac-proxy:v0.8.0
+	docker pull docker.io/istio/pilot:${ISTIO_VERSION}
+	docker pull docker.io/istio/proxyv2:${ISTIO_VERSION}
+	kind load docker-image gcr.io/kubebuilder/kube-rbac-proxy:v0.8.0
+	kind load docker-image docker.io/istio/pilot:${ISTIO_VERSION}
+	kind load docker-image docker.io/istio/proxyv2:${ISTIO_VERSION}
+
+.PHONY: e2e-test-install-istio-operator
+e2e-test-install-istio-operator: export PATH:=./bin:${PATH}
+e2e-test-install-istio-operator: docker-build
+	# TODO build with TEST_RACE_DETECTOR=1 in docker-build
+	kind load docker-image ${IMG}
+	helm install --wait \
+		--set operator.image.repository=${IMAGE_REPOSITORY} \
+		--set operator.image.tag=${TAG} \
+		--create-namespace \
+		--namespace istio-system \
+		istio-operator-e2e-test \
+		deploy/charts/istio-operator/
+
+	# TODO maybe wait until all pods are up and running?
+
+.PHONY: e2e-test
+e2e-test: export PATH:=./bin:${PATH}
+e2e-test: e2e-test-install-istio-operator
+	env CGO_ENABLED=${TEST_CGO_ENABLED} \
+	    go test --failfast --timeout 10m -v ${TEST_GOARGS} ./test/e2e/... -coverprofile cover.out
+
+    # TODO collect used docker images and compare with known list. This list can be used to preload the images into kind
+    # TODO  `kind export logs` and look for "ImageCreate" in containerd.log
 
 check_release:
 	@echo "A new tag (${REL_TAG}) will be pushed to Github, and a new Docker image will be released. Are you sure? [y/N] " && read -r ans && [ "$${ans:-N}" = y ]
