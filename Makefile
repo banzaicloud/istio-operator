@@ -106,11 +106,11 @@ manifests: download-deps
 
 # Run go fmt against code
 fmt:
-	go fmt ./pkg/... ./cmd/...
+	go fmt ./...
 
 # Run go vet against code
 vet:
-	go vet ./pkg/... ./cmd/...
+	go vet ./...
 
 download-deps:
 	./scripts/download-deps.sh
