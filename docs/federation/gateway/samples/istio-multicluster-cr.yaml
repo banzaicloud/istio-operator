@@ -3,7 +3,7 @@ kind: Istio
 metadata:
   name: istio-gw-multi
 spec:
-  version: "1.9.1"
+  version: "1.9.2"
   global: false
   meshPolicy:
     mtlsMode: STRICT
