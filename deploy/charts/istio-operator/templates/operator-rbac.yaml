@@ -283,7 +283,7 @@ rules:
   - update
   - patch
 - apiGroups:
-  {{- if semverCompare "< 1.8.0" .Values.istioVersion }}
+  {{- if semverCompare "<= 1.8.0" .Values.istioVersion }}
   - authentication.istio.io
   - config.istio.io
   {{- end }}
