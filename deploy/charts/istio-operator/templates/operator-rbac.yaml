@@ -275,13 +275,12 @@ rules:
   - update
   - patch
 - apiGroups:
+  {{- if semverCompare "< 1.8.0" .Values.istioVersion }}
   - authentication.istio.io
-  - cloud.istio.io
   - config.istio.io
-  - istio.istio.io
+  {{- end }}
   - networking.istio.io
   - security.istio.io
-  - scalingpolicy.istio.io
   {{- if semverCompare "< 1.7.0" .Values.istioVersion }}
   - rbac.istio.io
   {{- end }}
