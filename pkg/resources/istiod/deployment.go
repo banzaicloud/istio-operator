@@ -120,6 +120,10 @@ func (r *Reconciler) containerEnvs() []apiv1.EnvVar {
 			Name:  "PILOT_ENABLE_STATUS",
 			Value: strconv.FormatBool(util.PointerToBool(r.Config.Spec.Istiod.EnableStatus)),
 		},
+		{
+			Name:  "CLUSTER_ID",
+			Value: r.Config.Spec.ClusterName,
+		},
 	}
 
 	enablePilotEndpointTelemetry := false
