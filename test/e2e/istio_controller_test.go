@@ -179,6 +179,14 @@ func TestIstioOperator(t *testing.T) {
 		}()
 
 		isAvailableConsistently, err := IstioResourceIsAvailableConsistently(t, namespace, instanceName, 5*time.Second, 100*time.Millisecond)
+		if !isAvailableConsistently || err != nil {
+			// TODO this is temporary, until the exact issue can be tracked down
+			t.Logf("Not available consistently (%v). Re-checking with a longer timeout", err)
+			isAvailableConsistently2, err2 := IstioResourceIsAvailableConsistently(t, namespace, instanceName, 5*time.Minute, 100*time.Millisecond)
+			t.Logf("Result: %v %v", isAvailableConsistently2, err2)
+			t.Log("Failing because of the failure with a short timeout")
+			t.Fail()
+		}
 		g.Expect(isAvailableConsistently, err).Should(BeTrue())
 
 		// TODO Check that the expected CRDs, deployments, services, etc. are present
