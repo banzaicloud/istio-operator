@@ -5,7 +5,7 @@ metadata:
     controller-tools.k8s.io: "1.0"
   name: istio-sample-v18x
 spec:
-  version: "1.8.4"
+  version: "1.8.5"
   pilot:
     spiffe:
       operatorEndpoints:
