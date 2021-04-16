@@ -220,7 +220,7 @@ When the data plane migration is finished, we'll delete the Istio 1.8 control pl
 1. Deploy an Istio operator version, which can install an Istio 1.9 control plane.
 
    ```bash
-   $ helm install istio-operator-v19x --create-namespace --namespace=istio-system --set-string operator.image.tag=0.9.2 banzaicloud-stable/istio-operator
+   $ helm install istio-operator-v19x --create-namespace --namespace=istio-system --set-string operator.image.tag=0.9.3 banzaicloud-stable/istio-operator
    ```
 
    *Note: In case you upgrade from an earlier chart version your Istio operator CRD definitions might be outdated in which case you should apply the [new CRDs](../../deploy/charts/istio-operator/crds) manually!*
