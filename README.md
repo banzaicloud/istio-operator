@@ -2,6 +2,11 @@
 
 Istio operator v2 is a Kubernetes operator to deploy and manage [Istio](https://istio.io/) resources for a Kubernetes cluster.
 
+This is the second/revamped version of the original Banzai Cloud Istio operator.
+Istio has evolved a lot over the last releases and while we kept up with that with the original Istio operator, we felt like a complete rewrite was needed to more naturally support the new Istio architecture and all of its new features.
+
+> :warning: Istio operator v2 contains **breaking changes** compared to the earlier Istio operator version.
+
 ## Overview
 
 [Istio](https://istio.io/) is an open platform to connect, manage, and secure microservices and it is emerging as the `standard` for building service meshes on Kubernetes.
