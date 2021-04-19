@@ -1,0 +1,9 @@
+# Placeholder config so that the CI does not fail (cannot easily disable CI for a specific branch)
+version: 2.1
+
+jobs:
+    build:
+        docker:
+          - image: circleci/golang:1.15
+        steps:
+          - run: circleci-agent step halt
