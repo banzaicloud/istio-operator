@@ -1,0 +1,14 @@
+linters-settings:
+    golint:
+        min-confidence: 0.9
+
+    gocyclo:
+        min-complexity: 15
+
+linters:
+    enable:
+        - misspell
+        - gofmt
+        - golint
+        - goimports
+    fast: false
