@@ -11,9 +11,4 @@ linters:
         - gofmt
         - golint
         - goimports
-    disable:
-        - errcheck
-        - gas
-        - megacheck
-        - varcheck
     fast: false
