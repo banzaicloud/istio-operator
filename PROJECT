@@ -1,0 +1,3 @@
+domain: cisco.com
+repo: github.com/banzaicloud/istio-operator
+version: "2"
