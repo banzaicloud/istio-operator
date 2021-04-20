@@ -1,0 +1,24 @@
+# permissions for end users to edit istiocontrolplanes.
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: istiocontrolplane-editor-role
+rules:
+- apiGroups:
+  - servicemesh.cisco.com
+  resources:
+  - istiocontrolplanes
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
+- apiGroups:
+  - servicemesh.cisco.com
+  resources:
+  - istiocontrolplanes/status
+  verbs:
+  - get
