@@ -1,3 +1,10 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  labels:
+    istio.io/rev: istio.default
+  name: test0001
+---
 apiVersion: istio.banzaicloud.io/v1beta1
 kind: MeshGateway
 metadata:
@@ -5,7 +12,7 @@ metadata:
     app: mgw01
     istio: mgw01
   name: mgw01
-  namespace: istio-system
+  namespace: test0001
 spec:
   labels:
     app: mgw01
@@ -25,7 +32,7 @@ apiVersion: networking.istio.io/v1beta1
 kind: Gateway
 metadata:
   name: mgw01-gw1
-  namespace: istio-system
+  namespace: test0001
 spec:
   selector:
     app: mgw01
@@ -44,7 +51,7 @@ apiVersion: networking.istio.io/v1beta1
 kind: VirtualService
 metadata:
   name: mgw01-gw1-vs1
-  namespace: istio-system
+  namespace: test0001
 spec:
   gateways:
     - mgw01-gw1
@@ -53,7 +60,7 @@ spec:
   http:
     - route:
         - destination:
-            host: httpbin.default.svc.cluster.local
+            host: httpbin.test0001.svc.cluster.local
             port:
               number: 8080
 ---
@@ -63,7 +70,7 @@ metadata:
   labels:
     app: httpbin
   name: httpbin
-  namespace: default
+  namespace: test0001
 spec:
   replicas: 1
   selector:
@@ -89,7 +96,7 @@ metadata:
   labels:
     app: httpbin
   name: httpbin
-  namespace: default
+  namespace: test0001
 spec:
   ports:
     - port: 8080

@@ -78,6 +78,7 @@ func TestIstioOperator(t *testing.T) {
 	})
 
 	t.Run("MeshGateway sets up working ingress", func(t *testing.T) {
+		testNamespace := "test0001"
 		g := gomega.NewWithT(t)
 		resourcesFile := filepath.Join("testdata", t.Name()+".yaml")
 
@@ -91,7 +92,7 @@ func TestIstioOperator(t *testing.T) {
 			}
 		}()
 
-		meshGatewayAddress, err := GetMeshGatewayAddress("istio-system", "mgw01", 30*time.Second, 100*time.Millisecond)
+		meshGatewayAddress, err := GetMeshGatewayAddress(testNamespace, "mgw01", 30*time.Second, 100*time.Millisecond)
 		g.Expect(err).NotTo(gomega.HaveOccurred())
 
 		g.Expect(URLIsAccessible(t, fmt.Sprintf("http://%s:8080/get", meshGatewayAddress), 30*time.Second, 100*time.Millisecond)).To(gomega.Succeed())
