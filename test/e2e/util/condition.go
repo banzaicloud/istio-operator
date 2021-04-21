@@ -31,7 +31,7 @@ func WaitForCondition(timeout time.Duration, interval time.Duration, f func() (b
 	for {
 		select {
 		case <-timer:
-			return errors.Errorf("Timeout after %s", timeout)
+			return errors.Errorf("timeout after %s", timeout)
 		case <-ticker.C:
 			result, err := f()
 			if err != nil {
