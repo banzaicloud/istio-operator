@@ -94,7 +94,7 @@ func TestIstioOperator(t *testing.T) {
 		meshGatewayAddress, err := GetMeshGatewayAddress("istio-system", "mgw01", 30*time.Second, 100*time.Millisecond)
 		g.Expect(err).NotTo(gomega.HaveOccurred())
 
-		g.Expect(URLIsAccessible(t, fmt.Sprintf("http://%s:80/get", meshGatewayAddress), 30*time.Second, 100*time.Millisecond)).To(gomega.Succeed())
+		g.Expect(URLIsAccessible(t, fmt.Sprintf("http://%s:8080/get", meshGatewayAddress), 30*time.Second, 100*time.Millisecond)).To(gomega.Succeed())
 	})
 
 	t.Log("Test done")

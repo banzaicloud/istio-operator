@@ -15,10 +15,9 @@ spec:
   replicaCount: 1
   ports:
     - name: http
-      port: 80
+      port: 8080
       protocol: TCP
-      targetPort: 80
-  runAsRoot: true
+      targetPort: 8080
   serviceType: LoadBalancer
   type: ingress
 ---
@@ -35,7 +34,7 @@ spec:
     istio: mgw01
   servers:
     - port:
-        number: 80
+        number: 8080
         name: http
         protocol: HTTP
       hosts:
