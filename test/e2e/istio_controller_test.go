@@ -81,7 +81,7 @@ func (e *IstioTestEnv) Start() {
 	require.NotNil(e.t, e.clusterStateBefore)
 
 	e.t.Log("Creating Istio resource")
-	err = testEnv.Client.Create(context.TODO(), e.istio)
+	err = e.c.Create(context.TODO(), e.istio)
 	assert.NoError(e.t, err)
 }
 
