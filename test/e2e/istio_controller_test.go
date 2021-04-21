@@ -28,7 +28,6 @@ import (
 
 	"emperror.dev/errors"
 	"github.com/onsi/gomega"
-	. "github.com/onsi/gomega"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"golang.org/x/net/context"
@@ -90,20 +89,20 @@ func (e *IstioTestEnv) Close() {
 
 	e.t.Log("Deleting Istio resource")
 	err := e.c.Delete(context.TODO(), e.istio)
-	g.Expect(err).NotTo(HaveOccurred())
+	g.Expect(err).NotTo(gomega.HaveOccurred())
 
 	e.t.Log("Waiting for Istio resource to be deleted")
 	// TODO use g.Eventually() and remove util.WaitForCondition
 	err = util.WaitForCondition(10*time.Second, 100*time.Millisecond, func() (bool, error) {
 		return !IstioExists(context.TODO(), e.t, e.c, e.istio.Namespace, e.istio.Name)(), nil
 	})
-	g.Expect(err).NotTo(HaveOccurred(), "waiting for Istio resource to be deleted")
+	g.Expect(err).NotTo(gomega.HaveOccurred(), "waiting for Istio resource to be deleted")
 
 	e.t.Log("Waiting for the cluster to be cleaned up")
 	WaitForCleanup(e.t, g, *e.clusterStateBefore, 120*time.Second, 100*time.Millisecond)
 }
 
-func WaitForCleanup(t *testing.T, g *WithT, expectedClusterState ClusterState, timeout time.Duration, interval time.Duration) {
+func WaitForCleanup(t *testing.T, g *gomega.WithT, expectedClusterState ClusterState, timeout time.Duration, interval time.Duration) {
 	t.Log("Waiting for cleanup")
 	err := util.WaitForCondition(timeout, interval, func() (bool, error) {
 		currentClusterState, err := listAllResources(testEnv.Client)
@@ -116,8 +115,8 @@ func WaitForCleanup(t *testing.T, g *WithT, expectedClusterState ClusterState, t
 		// The err can be a timeout, in which case it's helpful to show the resources which were not cleaned up
 		t.Log("Got error while waiting for cluster cleanup. Rechecking to give more detail.", err)
 		clusterStateAfter, err := listAllResources(testEnv.Client)
-		g.Expect(err).NotTo(HaveOccurred())
-		g.Expect(*clusterStateAfter).To(Equal(expectedClusterState))
+		g.Expect(err).NotTo(gomega.HaveOccurred())
+		g.Expect(*clusterStateAfter).To(gomega.Equal(expectedClusterState))
 	} else {
 		t.Log("Cleaned up")
 	}
@@ -128,7 +127,7 @@ func (e *IstioTestEnv) WaitForIstioReconcile() {
 
 	e.t.Log("Waiting for Istio resource to be reconciled")
 	err := WaitForStatus(istioGVR, e.istio.Namespace, e.istio.Name, string(istiov1beta1.Available), 300*time.Second, 1000*time.Millisecond)
-	g.Expect(err).NotTo(HaveOccurred(), "waiting for Istio resource to be reconciled")
+	g.Expect(err).NotTo(gomega.HaveOccurred(), "waiting for Istio resource to be reconciled")
 	e.t.Log("Istio resource is reconciled")
 }
 
@@ -166,7 +165,7 @@ func TestIstioOperator(t *testing.T) {
 
 	// TODO extract this and related code
 	clusterStateBeforeTests, err := listAllResources(testEnv.Client)
-	g.Expect(err).NotTo(HaveOccurred())
+	g.Expect(err).NotTo(gomega.HaveOccurred())
 
 	t.Run("Istio resource stays reconciled (Available)", func(t *testing.T) {
 		g := gomega.NewWithT(t)
@@ -187,7 +186,7 @@ func TestIstioOperator(t *testing.T) {
 			t.Log("Failing because of the failure with a short timeout")
 			t.Fail()
 		}
-		g.Expect(isAvailableConsistently, err).Should(BeTrue())
+		g.Expect(isAvailableConsistently, err).Should(gomega.BeTrue())
 
 		// TODO Check that the expected CRDs, deployments, services, etc. are present
 	})
@@ -207,9 +206,9 @@ func TestIstioOperator(t *testing.T) {
 		}()
 
 		meshGatewayAddress, err := GetMeshGatewayAddress("istio-system", "mgw01", 30*time.Second, 100*time.Millisecond)
-		g.Expect(err).NotTo(HaveOccurred())
+		g.Expect(err).NotTo(gomega.HaveOccurred())
 
-		g.Expect(URLIsAccessible(t, fmt.Sprintf("http://%s:80/get", meshGatewayAddress), 30*time.Second, 100*time.Millisecond)).To(Succeed())
+		g.Expect(URLIsAccessible(t, fmt.Sprintf("http://%s:80/get", meshGatewayAddress), 30*time.Second, 100*time.Millisecond)).To(gomega.Succeed())
 	})
 
 	t.Log("Test done")
