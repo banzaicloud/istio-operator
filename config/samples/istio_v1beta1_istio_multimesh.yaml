@@ -15,5 +15,5 @@ spec:
   citadel:
     caSecretName: "cacerts"
   proxy:
-    image: "docker.io/istio/proxyv2:1.9.3"
+    image: "gcr.io/istio-release/proxyv2:1.9.3"
   jwtPolicy: "first-party-jwt"
