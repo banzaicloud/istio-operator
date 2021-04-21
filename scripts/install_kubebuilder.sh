@@ -21,6 +21,6 @@ if [ ! -e bin/"${target_dir_name}" ]; then
     # download kubebuilder and extract it to tmp
     curl -L "https://go.kubebuilder.io/dl/${version}/${os}/${arch}" | tar -xz -C /tmp/
 
-    # extract the archive
+    # move the archive
     mv "/tmp/kubebuilder_${version}_${os}_${arch}" bin/"${target_dir_name}"
 fi
