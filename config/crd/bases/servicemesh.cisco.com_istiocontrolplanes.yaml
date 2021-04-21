@@ -13,6 +13,9 @@ spec:
     kind: IstioControlPlane
     listKind: IstioControlPlaneList
     plural: istiocontrolplanes
+    shortNames:
+    - icp
+    - istiocp
     singular: istiocontrolplane
   scope: Namespaced
   versions:

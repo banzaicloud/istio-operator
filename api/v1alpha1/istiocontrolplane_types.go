@@ -41,6 +41,7 @@ type IstioControlPlaneStatus struct {
 // +kubebuilder:object:root=true
 
 // IstioControlPlane is the Schema for the istiocontrolplanes API
+// +kubebuilder:resource:path=istiocontrolplanes,shortName=icp;istiocp
 type IstioControlPlane struct {
 	metav1.TypeMeta   `json:",inline"`
 	metav1.ObjectMeta `json:"metadata,omitempty"`
