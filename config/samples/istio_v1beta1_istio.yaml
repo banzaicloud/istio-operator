@@ -101,16 +101,8 @@ spec:
       enabled: false
   policy:
     enabled: false
-    image: "docker.io/istio/mixer:1.9.3"
-    replicaCount: 1
-    minReplicas: 1
-    maxReplicas: 5
   telemetry:
     enabled: false
-    image: "docker.io/istio/mixer:1.9.3"
-    replicaCount: 1
-    minReplicas: 1
-    maxReplicas: 5
   proxy:
     image: "docker.io/istio/proxyv2:1.9.3"
     accessLogFile: "/dev/stdout"
