@@ -1,3 +1,7 @@
 domain: cisco.com
 repo: github.com/banzaicloud/istio-operator
+resources:
+- group: servicemesh
+  kind: IstioControlPlane
+  version: v1alpha1
 version: "2"
