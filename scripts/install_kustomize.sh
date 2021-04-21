@@ -18,7 +18,8 @@ if [ ! -e bin/"${target_name}" ]; then
     os=$(go env GOOS)
     arch=$(go env GOARCH)
 
-    url="https://github.com/kubernetes-sigs/kustomize/releases/download/v${version}/kustomize_${version}_${os}_${arch}"
-    curl -L "${url}" -o bin/"${target_name}"
+    url="https://github.com/kubernetes-sigs/kustomize/releases/download/kustomize/v${version}/kustomize_v${version}_${os}_${arch}.tar.gz"
+    curl -L "${url}" | tar -xz -C /tmp/
+    mv "/tmp/kustomize" bin/"${target_name}"
     chmod u+x bin/"${target_name}"
 fi
