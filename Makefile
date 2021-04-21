@@ -5,6 +5,20 @@ IMG ?= ${IMAGE_REPOSITORY}:$(TAG)
 # Produce CRDs that work back to Kubernetes 1.11 (no version conversion)
 CRD_OPTIONS = "crd:trivialVersions=true,maxDescLen=0,preserveUnknownFields=false,allowDangerousTypes=true"
 
+# When running the end-to-end tests, an istio-operator docker image is built from the local
+# source, then loaded into the kind cluster as `banzaicloud/istio-operator:${E2E_TEST_TAG}`.
+# The reason for using this variable instead of `TAG` is to make sure the pod isn't showing
+# a released version tag (the `TAG` variable defaults to the latest released version).
+# Without this variable, the installed istio-operator pod would contain something like
+# `image: banzaicloud/istio-operator:0.9.3`, but it would _not_ be running the 0.9.3 version
+# of istio-operator. On the other hand, if for some reason the image is not loaded into the
+# cluster before installing the istio-operator, the `banzaicloud/istio-operator:0.9.3` image
+# would be pulled down and started, which wouldn't be the expected image.
+# To avoid this and similar issues, the tag is forced to be some other value: `e2e-test` by
+# default, or the current branch name on the CI.
+# Currently, it's not possible to run the tests with a different istio-operator version.
+E2E_TEST_TAG ?= e2e-test
+
 TEST_RACE_DETECTOR ?= 0
 
 RELEASE_TYPE ?= p
@@ -144,6 +158,7 @@ e2e-test-env: e2e-test-dependencies
 
 .PHONY: e2e-test-install-istio-operator
 e2e-test-install-istio-operator: export PATH:=./bin:${PATH}
+e2e-test-install-istio-operator: TAG=${E2E_TEST_TAG}
 e2e-test-install-istio-operator: docker-build
 	# TODO build with TEST_RACE_DETECTOR=1 in docker-build
 	kind load docker-image ${IMG}

@@ -133,7 +133,7 @@ jobs:
           command: make e2e-test-env
       - run:
           name: Run E2E test
-          command: make e2e-test TAG=<<parameters.tag>>
+          command: make e2e-test E2E_TEST_TAG=<<parameters.tag>>
 
 workflows:
   version: 2

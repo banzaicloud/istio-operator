@@ -15,11 +15,7 @@ To run the tests locally, run the following commands:
 
 2. run the tests (builds the istio-operator docker image, installs it using helm and starts the tests):
 
-       make TAG=dev e2e-test
-
-The "TAG" variable is used for the istio-operator docker image tag. It can be anything, but you should
-definitely set it. By default, the TAG is the latest released version, so it could cause mix-ups if not
-overridden.
+       make e2e-test
 
 Currently, the kind cluster needs to be deleted before the tests can be re-run.
 The test itself can be re-run, but the istio-operator will not be updated, so code changes
