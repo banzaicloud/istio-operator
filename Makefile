@@ -139,27 +139,8 @@ e2e-test-dependencies:
 	./scripts/e2e-test/download-deps.sh
 
 .PHONY: e2e-test-env
-e2e-test-env: export PATH:=./bin:${PATH}
 e2e-test-env: e2e-test-dependencies
-	kind create cluster
-
-	# TODO get these from the MetalLB resource yaml
-	docker pull metallb/controller:v0.9.6
-	docker pull metallb/speaker:v0.9.6
-	kind load docker-image metallb/controller:v0.9.6
-	kind load docker-image metallb/speaker:v0.9.6
-	./scripts/install-metallb.sh
-
-	docker pull kennethreitz/httpbin
-	kind load docker-image kennethreitz/httpbin
-
-	# TODO collect these from the operator (run the related functions and collect the referenced images)
-	docker pull gcr.io/kubebuilder/kube-rbac-proxy:v0.8.0
-	docker pull docker.io/istio/pilot:${ISTIO_VERSION}
-	docker pull docker.io/istio/proxyv2:${ISTIO_VERSION}
-	kind load docker-image gcr.io/kubebuilder/kube-rbac-proxy:v0.8.0
-	kind load docker-image docker.io/istio/pilot:${ISTIO_VERSION}
-	kind load docker-image docker.io/istio/proxyv2:${ISTIO_VERSION}
+	env PATH=./bin:$${PATH} ./scripts/e2e-test/setup-env.sh ${ISTIO_VERSION}
 
 .PHONY: e2e-test-install-istio-operator
 e2e-test-install-istio-operator: export PATH:=./bin:${PATH}
