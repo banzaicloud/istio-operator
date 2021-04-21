@@ -136,7 +136,7 @@ docker-push:
 
 .PHONY: e2e-test-dependencies
 e2e-test-dependencies:
-	./scripts/download-e2e-test-dependencies.sh
+	./scripts/e2e-test/download-deps.sh
 
 .PHONY: e2e-test-env
 e2e-test-env: export PATH:=./bin:${PATH}
