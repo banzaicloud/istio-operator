@@ -24,6 +24,11 @@ import (
 	corev1 "k8s.io/api/core/v1"
 )
 
+const (
+	serviceIpAddressOverrideAnnotation = "service.banzaicloud.io/ip-address-override"
+	serviceHostnameOverrideAnnotation  = "service.banzaicloud.io/hostname-override"
+)
+
 type IngressSetupPendingError struct{}
 
 func (e IngressSetupPendingError) Error() string {
@@ -33,7 +38,26 @@ func (e IngressSetupPendingError) Error() string {
 func GetServiceEndpointIPs(service corev1.Service) ([]string, bool, error) {
 	ips := make([]string, 0)
 
-	var hasHostname bool
+	// check whether the load balancer was assigned
+	if service.Spec.Type == corev1.ServiceTypeLoadBalancer && len(service.Status.LoadBalancer.Ingress) < 1 {
+		return nil, false, IngressSetupPendingError{}
+	}
+
+	// ip address is overridden by annotation
+	if overriddenIPAddress, ok := service.GetAnnotations()[serviceIpAddressOverrideAnnotation]; ok && overriddenIPAddress != "" {
+		return []string{overriddenIPAddress}, false, nil
+	}
+
+	// hostname is overridden by annotation
+	if overriddenHostname, ok := service.GetAnnotations()[serviceHostnameOverrideAnnotation]; ok && overriddenHostname != "" {
+		hostIPs, err := getIPsForHostname(overriddenHostname)
+		if err != nil {
+			return nil, true, err
+		}
+		ips = append(ips, hostIPs...)
+
+		return ips, true, nil
+	}
 
 	switch service.Spec.Type {
 	case corev1.ServiceTypeClusterIP:
@@ -43,30 +67,39 @@ func GetServiceEndpointIPs(service corev1.Service) ([]string, bool, error) {
 			}
 		}
 	case corev1.ServiceTypeLoadBalancer:
-		if len(service.Status.LoadBalancer.Ingress) < 1 {
-			return ips, hasHostname, IngressSetupPendingError{}
-		}
-
 		if service.Status.LoadBalancer.Ingress[0].IP != "" {
 			ips = []string{
 				service.Status.LoadBalancer.Ingress[0].IP,
 			}
 		} else if service.Status.LoadBalancer.Ingress[0].Hostname != "" {
-			hasHostname = true
-			hostIPs, err := net.LookupIP(service.Status.LoadBalancer.Ingress[0].Hostname)
+			hostIPs, err := getIPsForHostname(service.Status.LoadBalancer.Ingress[0].Hostname)
 			if err != nil {
-				return ips, hasHostname, err
+				return nil, true, err
 			}
-			sort.Slice(hostIPs, func(i, j int) bool {
-				return bytes.Compare(hostIPs[i], hostIPs[j]) < 0
-			})
-			for _, ip := range hostIPs {
-				if ip.To4() != nil {
-					ips = append(ips, ip.String())
-				}
-			}
+			ips = append(ips, hostIPs...)
+
+			return ips, true, nil
 		}
 	}
 
-	return ips, hasHostname, nil
+	return ips, false, nil
+}
+
+func getIPsForHostname(hostname string) ([]string, error) {
+	ips := make([]string, 0)
+
+	hostIPs, err := net.LookupIP(hostname)
+	if err != nil {
+		return ips, err
+	}
+	sort.Slice(hostIPs, func(i, j int) bool {
+		return bytes.Compare(hostIPs[i], hostIPs[j]) < 0
+	})
+	for _, ip := range hostIPs {
+		if ip.To4() != nil {
+			ips = append(ips, ip.String())
+		}
+	}
+
+	return ips, nil
 }
