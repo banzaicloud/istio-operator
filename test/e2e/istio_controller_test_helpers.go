@@ -291,7 +291,6 @@ func mkMinimalIstio(namespace, name string) *istiov1beta1.Istio {
 		},
 	}
 	istio.SetGroupVersionKind(istiov1beta1.SchemeGroupVersion.WithKind("Istio"))
-	istio.SetDefaults()
 
 	istio.Spec.Version = istiov1beta1.IstioVersion(istiov1beta1.SupportedIstioVersion)
 
