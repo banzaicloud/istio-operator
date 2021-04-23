@@ -1,8 +1,25 @@
 # Image URL to use all building/pushing image targets
 TAG ?= $(shell git describe --tags --abbrev=0 --match '[0-9].*[0-9].*[0-9]' 2>/dev/null )
-IMG ?= banzaicloud/istio-operator:$(TAG)
+IMAGE_REPOSITORY ?= banzaicloud/istio-operator
+IMG ?= ${IMAGE_REPOSITORY}:$(TAG)
 # Produce CRDs that work back to Kubernetes 1.11 (no version conversion)
 CRD_OPTIONS = "crd:trivialVersions=true,maxDescLen=0,preserveUnknownFields=false,allowDangerousTypes=true"
+
+# When running the end-to-end tests, an istio-operator docker image is built from the local
+# source, then loaded into the kind cluster as `banzaicloud/istio-operator:${E2E_TEST_TAG}`.
+# The reason for using this variable instead of `TAG` is to make sure the pod isn't showing
+# a released version tag (the `TAG` variable defaults to the latest released version).
+# Without this variable, the installed istio-operator pod would contain something like
+# `image: banzaicloud/istio-operator:0.9.3`, but it would _not_ be running the 0.9.3 version
+# of istio-operator. On the other hand, if for some reason the image is not loaded into the
+# cluster before installing the istio-operator, the `banzaicloud/istio-operator:0.9.3` image
+# would be pulled down and started, which wouldn't be the expected image.
+# To avoid this and similar issues, the tag is forced to be some other value: `e2e-test` by
+# default, or the current branch name on the CI.
+# Currently, it's not possible to run the tests with a different istio-operator version.
+E2E_TEST_TAG ?= e2e-test
+
+TEST_RACE_DETECTOR ?= 0
 
 RELEASE_TYPE ?= p
 RELEASE_MSG ?= "operator release"
@@ -16,6 +33,12 @@ KUSTOMIZE_VERSION = 2.0.3
 ISTIO_VERSION = 1.9.3
 
 KUSTOMIZE_BASE = config/overlays/specific-manager-version
+
+ifeq (${TEST_RACE_DETECTOR}, 1)
+    TEST_GOARGS += -race
+    TEST_CGO_ENABLED = 1
+endif
+TEST_CGO_ENABLED ?= 0
 
 all: test manager
 
@@ -52,7 +75,9 @@ license-cache: bin/licensei ## Generate license cache
 # Run tests
 .PHONY: test
 test: install-kubebuilder generate fmt vet manifests
-	KUBEBUILDER_ASSETS="$${PWD}/bin/kubebuilder/bin" go test ./pkg/... ./cmd/... -coverprofile cover.out
+	env CGO_ENABLED=${TEST_CGO_ENABLED} \
+	    KUBEBUILDER_ASSETS="$${PWD}/bin/kubebuilder/bin" \
+	    go test ${TEST_GOARGS} ./pkg/... ./cmd/... -coverprofile cover.out
 
 # Build manager binary
 manager: generate fmt vet build
@@ -95,11 +120,11 @@ manifests: download-deps
 
 # Run go fmt against code
 fmt:
-	go fmt ./pkg/... ./cmd/...
+	go fmt ./...
 
 # Run go vet against code
 vet:
-	go vet ./pkg/... ./cmd/...
+	go vet ./...
 
 download-deps:
 	./scripts/download-deps.sh
@@ -116,12 +141,49 @@ verify-codegen: download-deps
 	./hack/verify-codegen.sh
 
 # Build the docker image
-docker-build:
+docker-build: vendor
 	docker build -f Dockerfile.dev . -t ${IMG}
 
 # Push the docker image
 docker-push:
 	docker push ${IMG}
+
+.PHONY: e2e-test-dependencies
+e2e-test-dependencies:
+	./scripts/e2e-test/download-deps.sh
+
+.PHONY: e2e-test-env
+e2e-test-env: e2e-test-dependencies
+	env PATH=./bin:$${PATH} ./scripts/e2e-test/setup-env.sh ${ISTIO_VERSION}
+
+.PHONY: e2e-test-install-istio-operator
+e2e-test-install-istio-operator: export PATH:=./bin:${PATH}
+e2e-test-install-istio-operator: TAG=${E2E_TEST_TAG}
+e2e-test-install-istio-operator: docker-build
+	# TODO build with TEST_RACE_DETECTOR=1 in docker-build
+	kind load docker-image ${IMG}
+	helm install --wait \
+		--set operator.image.repository=${IMAGE_REPOSITORY} \
+		--set operator.image.tag=${TAG} \
+		--create-namespace \
+		--namespace istio-system \
+		istio-operator-e2e-test \
+		deploy/charts/istio-operator/
+
+	# TODO maybe wait until all pods are up and running?
+	#  `helm --wait` only waits for the pods installed by helm. Usually, when the istio-operator is ready,
+	#  a couple of pods in kube-system are still just starting up. It works out fine now, probably because
+	#  there is a wait in TestMain for the cluster to be reachable. Waiting here for all pods might result
+	#  in a lower load on the cluster when the actual tests start, so it might remove some flakiness.
+
+.PHONY: e2e-test
+e2e-test: export PATH:=./bin:${PATH}
+e2e-test: e2e-test-install-istio-operator
+	env CGO_ENABLED=${TEST_CGO_ENABLED} \
+	    go test --failfast --timeout 10m -v ${TEST_GOARGS} ./test/e2e/... -coverprofile cover.out
+
+    # TODO collect used docker images and compare with known list. This list can be used to preload the images into kind
+    # TODO  `kind export logs` and look for "ImageCreate" in containerd.log
 
 check_release:
 	@echo "A new tag (${REL_TAG}) will be pushed to Github, and a new Docker image will be released. Are you sure? [y/N] " && read -r ans && [ "$${ans:-N}" = y ]

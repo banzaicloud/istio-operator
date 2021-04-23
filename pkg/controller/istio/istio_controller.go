@@ -111,7 +111,7 @@ func Add(mgr manager.Manager, operatorConfig config.Configuration) error {
 }
 
 // newReconciler returns a new IstioReconciler
-func newReconciler(mgr manager.Manager, operatorConfig config.Configuration, d dynamic.Interface, crd *crds.CRDReconciler) reconcile.Reconciler {
+func newReconciler(mgr manager.Manager, operatorConfig config.Configuration, d dynamic.Interface, crd *crds.CRDReconciler) IstioReconciler {
 	return &ReconcileIstio{
 		Client:        mgr.GetClient(),
 		dynamic:       d,
@@ -123,20 +123,18 @@ func newReconciler(mgr manager.Manager, operatorConfig config.Configuration, d d
 	}
 }
 
-// add adds a new Controller to mgr with r as the reconcile.Reconciler
-func newController(mgr manager.Manager, r reconcile.Reconciler) error {
+// newController adds a new Controller to mgr with r as the reconcile.Reconciler
+func newController(mgr manager.Manager, r IstioReconciler) error {
 	// Create a new controller
 	ctrl, err := controller.New("istio-controller", mgr, controller.Options{Reconciler: r})
 	if err != nil {
 		return err
 	}
 
-	if r, ok := r.(IstioReconciler); ok {
-		r.setController(ctrl)
-		err = r.initWatches(watchCreatedResourcesEvents)
-		if err != nil {
-			return emperror.Wrapf(err, "could not init watches")
-		}
+	r.setController(ctrl)
+	err = r.initWatches(watchCreatedResourcesEvents)
+	if err != nil {
+		return emperror.Wrapf(err, "could not init watches")
 	}
 
 	return nil

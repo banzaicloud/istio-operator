@@ -1,0 +1,107 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  labels:
+    istio.io/rev: istio.default
+  name: test0001
+---
+apiVersion: istio.banzaicloud.io/v1beta1
+kind: MeshGateway
+metadata:
+  labels:
+    app: mgw01
+    istio: mgw01
+  name: mgw01
+  namespace: test0001
+spec:
+  labels:
+    app: mgw01
+    istio: mgw01
+  maxReplicas: 1
+  minReplicas: 1
+  replicaCount: 1
+  ports:
+    - name: http
+      port: 8080
+      protocol: TCP
+      targetPort: 8080
+  serviceType: LoadBalancer
+  type: ingress
+---
+apiVersion: networking.istio.io/v1beta1
+kind: Gateway
+metadata:
+  name: mgw01-gw1
+  namespace: test0001
+spec:
+  selector:
+    app: mgw01
+    gateway-name: mgw01
+    gateway-type: ingress
+    istio: mgw01
+  servers:
+    - port:
+        number: 8080
+        name: http
+        protocol: HTTP
+      hosts:
+        - '*'
+---
+apiVersion: networking.istio.io/v1beta1
+kind: VirtualService
+metadata:
+  name: mgw01-gw1-vs1
+  namespace: test0001
+spec:
+  gateways:
+    - mgw01-gw1
+  hosts:
+    - '*'
+  http:
+    - route:
+        - destination:
+            host: httpbin.test0001.svc.cluster.local
+            port:
+              number: 8080
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: httpbin
+  name: httpbin
+  namespace: test0001
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: httpbin
+  template:
+    metadata:
+      labels:
+        app: httpbin
+    spec:
+      terminationGracePeriodSeconds: 0
+      containers:
+        - image: kennethreitz/httpbin
+          imagePullPolicy: Always
+          name: httpbin
+          ports:
+            - containerPort: 80
+              protocol: TCP
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: httpbin
+  name: httpbin
+  namespace: test0001
+spec:
+  ports:
+    - port: 8080
+      protocol: TCP
+      targetPort: 80
+  selector:
+    app: httpbin
+  type: LoadBalancer
