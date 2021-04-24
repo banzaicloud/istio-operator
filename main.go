@@ -26,9 +26,9 @@ import (
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/log/zap"
 
+	// +kubebuilder:scaffold:imports
 	servicemeshv1alpha1 "github.com/banzaicloud/istio-operator/v2/api/v1alpha1"
 	"github.com/banzaicloud/istio-operator/v2/controllers"
-	// +kubebuilder:scaffold:imports
 )
 
 var (
@@ -57,7 +57,7 @@ func main() {
 	mgr, err := ctrl.NewManager(ctrl.GetConfigOrDie(), ctrl.Options{
 		Scheme:             scheme,
 		MetricsBindAddress: metricsAddr,
-		Port:               9443,
+		Port:               9443, //nolint:gomnd
 		LeaderElection:     enableLeaderElection,
 		LeaderElectionID:   "e59a683c.cisco.com",
 	})
