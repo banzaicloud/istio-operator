@@ -42,7 +42,7 @@ license-cache: bin/licensei ## Generate license cache
 
 # Run tests
 .PHONY: test
-test: install-kubebuilder generate fmt vet manifests
+test: update-istio-deps install-kubebuilder generate fmt vet manifests
 	KUBEBUILDER_ASSETS="$${PWD}/bin/kubebuilder/bin" go test ./... -coverprofile cover.out
 
 # Build manager binary
