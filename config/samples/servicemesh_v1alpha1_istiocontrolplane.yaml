@@ -3,5 +3,5 @@ kind: IstioControlPlane
 metadata:
   name: istiocontrolplane-sample
 spec:
-  # Add fields here
-  foo: bar
+  config:
+    accessLogEncoding: TEXT
