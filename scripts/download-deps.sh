@@ -4,7 +4,8 @@ set -euo pipefail
 
 code_generator_version=0.17.2
 controller_gen_version=0.4.0
-cue_gen_version=1.9.3
+istio_deps_version=1.9.3
+gogo_protobuf_version=1.3.2
 
 script_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" >/dev/null 2>&1 && pwd)"
 binpath=${script_dir}/../bin
@@ -41,6 +42,9 @@ for name in ${cmds}; do
 done
 
 ensure-binary-version controller-gen ${controller_gen_version} "sigs.k8s.io/controller-tools/cmd/controller-gen@v${controller_gen_version}"
-ensure-binary-version cue-gen ${cue_gen_version} "istio.io/tools/cmd/cue-gen@${cue_gen_version}"
+ensure-binary-version cue-gen ${istio_deps_version} "istio.io/tools/cmd/cue-gen@${istio_deps_version}"
+ensure-binary-version protoc-gen-deepcopy ${istio_deps_version} "istio.io/tools/cmd/protoc-gen-deepcopy@${istio_deps_version}"
+ensure-binary-version protoc-gen-jsonshim ${istio_deps_version} "istio.io/tools/cmd/protoc-gen-jsonshim@${istio_deps_version}"
+ensure-binary-version protoc-gen-gogofast ${gogo_protobuf_version} "github.com/gogo/protobuf/protoc-gen-gogofast@v${gogo_protobuf_version}"
 
 go mod tidy

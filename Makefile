@@ -8,6 +8,8 @@ KUBEBUILDER_VERSION = 2.3.2
 KUSTOMIZE_VERSION = 4.1.2
 ISTIO_VERSION = 1.9.3
 
+PATH := $(PATH):$(PWD)/bin
+
 all: check manager
 
 .PHONY: check
