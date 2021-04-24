@@ -1,0 +1,58 @@
+
+syntax = "proto3";
+
+import "mesh/v1alpha1/config.proto";
+
+// $schema: istio-operator.api.v1alpha1.IstioControlPlaneSpec
+// $title: Istio ControlPlane Spec
+// $description: Istio control plane descriptor
+
+// Copyright 2021 Cisco Systems, Inc. and/or its affiliates.
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//     http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+package istio_operator.v2.api.v1alpha1;
+
+option go_package = "github.com/banzaicloud/istio-operator/api/v1alpha1";
+
+// IstioControlPlane defines an Istio control plane
+//
+// <!-- crd generation tags
+// +cue-gen:IstioControlPlane:groupName:servicemesh.cisco.com
+// +cue-gen:IstioControlPlane:version:v1alpha1
+// +cue-gen:IstioControlPlane:storageVersion
+// +cue-gen:IstioControlPlane:annotations:helm.sh/resource-policy=keep
+// +cue-gen:IstioControlPlane:subresource:status
+// +cue-gen:IstioControlPlane:scope:Namespaced
+// +cue-gen:IstioControlPlane:resource:shortNames=icp
+// +cue-gen:IstioControlPlane:printerColumn:name=Age,type=date,JSONPath=.metadata.creationTimestamp,description="CreationTimestamp is a timestamp
+// representing the server time when this object was created. It is not guaranteed to be set in happens-before order across separate operations.
+// Clients may not set this value. It is represented in RFC3339 form and is in UTC.
+// Populated by the system. Read-only. Null for lists. More info: https://git.k8s.io/community/contributors/devel/api-conventions.md#metadata"
+// +cue-gen:IstioControlPlane:preserveUnknownFields:false
+// -->
+//
+// <!-- go code generation tags
+// +genclient
+// +k8s:deepcopy-gen=true
+// -->
+message IstioControlPlaneSpec {
+    istio.mesh.v1alpha1.MeshConfig config = 1;
+}
+
+// <!-- go code generation tags
+// +genclient
+// +k8s:deepcopy-gen=true
+// -->
+message IstioControlPlaneStatus {
+    string name = 1;
+}
