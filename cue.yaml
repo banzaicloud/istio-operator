@@ -1,0 +1,13 @@
+module: github.com/banzaicloud/istio-operator
+
+openapi:
+  selfContained: true
+  fieldFilter: "min.*|max.*"
+
+directories:
+  api/v1alpha1:
+    - mode: perFile
+
+crd:
+  dir: config/crd/bases
+  filename: istio-operator-crds

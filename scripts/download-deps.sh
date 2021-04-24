@@ -4,6 +4,7 @@ set -euo pipefail
 
 code_generator_version=0.17.2
 controller_gen_version=0.4.0
+cue_gen_version=1.9.3
 
 script_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" >/dev/null 2>&1 && pwd)"
 binpath=${script_dir}/../bin
@@ -40,5 +41,6 @@ for name in ${cmds}; do
 done
 
 ensure-binary-version controller-gen ${controller_gen_version} "sigs.k8s.io/controller-tools/cmd/controller-gen@v${controller_gen_version}"
+ensure-binary-version cue-gen ${cue_gen_version} "istio.io/tools/cmd/cue-gen@${cue_gen_version}"
 
 go mod tidy

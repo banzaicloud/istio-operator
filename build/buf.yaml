@@ -1,0 +1,14 @@
+version: v1beta1
+build:
+  roots:
+    - .
+  excludes:
+    # Note: buf does not allow multi roots that are within each other; as a result, the common-protos folders are
+    # symlinked into the top level directory.
+    - common-protos
+lint:
+  use:
+    - BASIC
+  except:
+    - FIELD_LOWER_SNAKE_CASE
+    - PACKAGE_DIRECTORY_MATCH
