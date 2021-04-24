@@ -27,3 +27,8 @@ bin
 /.licensei.cache
 bin/*
 cover.out
+
+mesh
+networking
+build/*
+!build/buf.*
