@@ -23,8 +23,8 @@ kind load docker-image kennethreitz/httpbin
 
 # TODO collect these from the operator (run the related functions and collect the referenced images)
 docker pull gcr.io/kubebuilder/kube-rbac-proxy:v0.8.0
-docker pull docker.io/istio/pilot:"${istio_version}"
-docker pull docker.io/istio/proxyv2:"${istio_version}"
+docker pull gcr.io/istio-release/pilot:"${istio_version}"
+docker pull gcr.io/istio-release/proxyv2:"${istio_version}"
 kind load docker-image gcr.io/kubebuilder/kube-rbac-proxy:v0.8.0
-kind load docker-image docker.io/istio/pilot:"${istio_version}"
-kind load docker-image docker.io/istio/proxyv2:"${istio_version}"
+kind load docker-image gcr.io/istio-release/pilot:"${istio_version}"
+kind load docker-image gcr.io/istio-release/proxyv2:"${istio_version}"

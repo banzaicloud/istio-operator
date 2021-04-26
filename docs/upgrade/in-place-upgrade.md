@@ -79,8 +79,7 @@ The `Istio` Custom Resource is showing `Available` in its status field and the I
 $ kubectl get -n istio-system istio -o yaml | grep "image:"
     image: docker.io/istio/citadel:1.8.2
     image: docker.io/istio/galley:1.8.2
-    image: docker.io/istio-mixer:1.8.2
-    image: docker.io/istio-pilot:1.8.2
+    image: docker.io/istio/pilot:1.8.2
     image: docker.io/istio/proxyv2:1.8.2
     image: docker.io/istio/sidecar_injector:1.8.2
 ```
@@ -181,7 +180,6 @@ $ kubectl describe istio -n istio-system istio | grep Image:
         Image:    docker.io/istio/node-agent-k8s:1.9.3
     Image:          coredns/coredns:1.9.3
     Plugin Image:   docker.io/istio/coredns-plugin:0.2-istio-1.1
-    Image:          docker.io/istio/mixer:1.9.3
     Image:    docker.io/istio/node-agent-k8s:1.9.3
     Image:          docker.io/istio/pilot:1.9.3
     Image:             docker.io/istio/proxyv2:1.9.3
