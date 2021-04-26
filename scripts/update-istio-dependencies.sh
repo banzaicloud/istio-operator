@@ -26,8 +26,6 @@ for i in `ls -1 api/common-protos`; do cp -a api/common-protos/$i $i; done
 
 find mesh networking -type f -not -name *.proto -exec rm {} \;
 
-ln -s build/mesh ../mesh
-ln -s build/networking ../networking
 
 rm -rf api
 

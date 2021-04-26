@@ -4,7 +4,7 @@ set -euo pipefail
 
 code_generator_version=0.17.2
 controller_gen_version=0.4.0
-istio_deps_version=1.9.3
+istio_deps_version=1.10.0-alpha.1
 gogo_protobuf_version=1.3.2
 
 script_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" >/dev/null 2>&1 && pwd)"

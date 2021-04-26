@@ -6,7 +6,8 @@ GOLANGCI_VERSION = 1.39.0
 LICENSEI_VERSION = 0.3.1
 KUBEBUILDER_VERSION = 2.3.2
 KUSTOMIZE_VERSION = 4.1.2
-ISTIO_VERSION = 1.9.3
+ISTIO_VERSION = 1.10.0-alpha.1
+BUF_VERSION = 0.41.0
 
 PATH := $(PATH):$(PWD)/bin
 
@@ -95,7 +96,7 @@ vet:
 # Download build dependencies
 download-deps:
 	./scripts/download-deps.sh
-	./scripts/install-buf.sh 0.41.0
+	./scripts/install-buf.sh $(BUF_VERSION)
 
 # Update Istio build dependencies
 update-istio-deps:
