@@ -63,7 +63,7 @@ type IstioTestEnv struct {
 	c     client.Client
 	istio *istiov1beta1.Istio
 
-	clusterStateBefore *ClusterState
+	clusterStateBefore *ClusterResourceList
 }
 
 func NewIstioTestEnv(t *testing.T, c client.Client, istio *istiov1beta1.Istio) IstioTestEnv {
@@ -99,7 +99,7 @@ func (e *IstioTestEnv) Close() {
 	WaitForCleanup(e.t, g, *e.clusterStateBefore, 120*time.Second, 100*time.Millisecond)
 }
 
-func WaitForCleanup(t *testing.T, g *gomega.WithT, expectedClusterState ClusterState, timeout time.Duration, interval time.Duration) {
+func WaitForCleanup(t *testing.T, g *gomega.WithT, expectedClusterState ClusterResourceList, timeout time.Duration, interval time.Duration) {
 	t.Log("Waiting for cleanup")
 	err := util.WaitForCondition(timeout, interval, func() (bool, error) {
 		currentClusterState, err := listAllResources(testEnv.Client)
@@ -342,7 +342,7 @@ func HPAExists(ctx context.Context, t *testing.T, kubeClient client.Client, name
 }
 
 // TODO this should be a `map[metav1.GroupVersionKind][]types.NamespacedName`
-type ClusterState struct {
+type ClusterResourceList struct {
 	Istios      []types.NamespacedName
 	Deployments []types.NamespacedName
 	Pods        []types.NamespacedName
@@ -350,12 +350,12 @@ type ClusterState struct {
 	Hpas        []types.NamespacedName
 }
 
-func clusterIsClean(before ClusterState, after ClusterState) bool {
+func clusterIsClean(before ClusterResourceList, after ClusterResourceList) bool {
 	return reflect.DeepEqual(before, after)
 }
 
 // TODO add more resource types
-func listAllResources(client client.Client) (*ClusterState, error) {
+func listAllResources(client client.Client) (*ClusterResourceList, error) {
 	istios, err := listIstios(client)
 	if err != nil {
 		return nil, err
@@ -376,7 +376,7 @@ func listAllResources(client client.Client) (*ClusterState, error) {
 	if err != nil {
 		return nil, err
 	}
-	return &ClusterState{istios, deployments, pods, services, hpas}, nil
+	return &ClusterResourceList{istios, deployments, pods, services, hpas}, nil
 }
 
 // TODO rewrite these using the dynamic client
