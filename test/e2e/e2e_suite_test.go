@@ -17,10 +17,12 @@ limitations under the License.
 package e2e
 
 import (
-	"os"
 	"testing"
 	"time"
 
+	"github.com/go-logr/logr"
+	. "github.com/onsi/ginkgo"
+	. "github.com/onsi/gomega"
 	"k8s.io/client-go/dynamic"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	logf "sigs.k8s.io/controller-runtime/pkg/runtime/log"
@@ -28,47 +30,52 @@ import (
 	"github.com/banzaicloud/istio-operator/pkg/util"
 )
 
-var testEnv *TestEnv
-
-func TestMain(m *testing.M) {
-	logf.SetLogger(util.CreateLogger(true, true))
-	log := logf.Log.WithName("TestMain")
-
-	testEnv = NewTestEnv()
-
-	err := waitForClientReady(testEnv.Client, 10*time.Second, 100*time.Millisecond)
-	if err != nil {
-		panic(err)
-	}
-
-	clusterStateBefore, err := listAllResources(testEnv.Client)
-	if err != nil {
-		panic(err)
-	}
-
-	code := m.Run()
-
-	clusterStateAfter, err := listAllResources(testEnv.Client)
-	if err != nil {
-		panic(err)
-	}
-	if !clusterIsClean(*clusterStateBefore, *clusterStateAfter) {
-		log.Info("cluster resources before", "clusterStateBefore", clusterStateBefore)
-		log.Info("cluster resources after", "clusterStateAfter", clusterStateAfter)
-		panic("Cluster wasn't cleaned up properly")
-	}
-
-	os.Exit(code)
-}
-
 type TestEnv struct {
-	Client  client.Client
-	Dynamic dynamic.Interface
+	log     logr.Logger
+	client  client.Client
+	dynamic dynamic.Interface
 }
 
 func NewTestEnv() *TestEnv {
+	logf.SetLogger(util.CreateLogger(true, true))
+	log := logf.Log.WithName("TestSuite")
+
 	return &TestEnv{
-		Client:  getClient(),
-		Dynamic: getDynamicClient(),
+		log: log,
+		client:  getClient(),
+		dynamic: getDynamicClient(),
 	}
 }
+
+func TestE2E(t *testing.T) {
+	RegisterFailHandler(Fail)
+	RunSpecs(t, "E2E Suite")
+}
+
+var (
+	testEnv *TestEnv
+	clusterStateBefore *ClusterState
+)
+
+var _ = BeforeSuite(func() {
+	testEnv = NewTestEnv()
+
+	err := waitForClientReady(testEnv.client, 10*time.Second, 100*time.Millisecond)
+	Expect(err).NotTo(HaveOccurred())
+
+	clusterStateBefore, err = listAllResources(testEnv.client)
+	Expect(err).NotTo(HaveOccurred())
+})
+
+var _ = AfterSuite(func() {
+	log := testEnv.log
+
+	clusterStateAfter, err := listAllResources(testEnv.client)
+	Expect(err).NotTo(HaveOccurred())
+
+	if !clusterIsClean(*clusterStateBefore, *clusterStateAfter) {
+		log.Info("cluster resources before", "clusterStateBefore", clusterStateBefore)
+		log.Info("cluster resources after", "clusterStateAfter", clusterStateAfter)
+		Fail("Cluster wasn't cleaned up properly")
+	}
+})
