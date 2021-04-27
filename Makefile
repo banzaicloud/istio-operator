@@ -14,7 +14,7 @@ PATH := $(PATH):$(PWD)/bin
 all: check manager
 
 .PHONY: check
-check: test lint ## Run tests and linters
+check: update-istio-deps generate fmt vet manifests test lint ## Run tests and linters
 
 bin/golangci-lint: bin/golangci-lint-${GOLANGCI_VERSION}
 	@ln -sf golangci-lint-${GOLANGCI_VERSION} bin/golangci-lint
@@ -25,7 +25,9 @@ bin/golangci-lint-${GOLANGCI_VERSION}:
 
 .PHONY: lint
 lint: bin/golangci-lint ## Run linter
-	@bin/golangci-lint run -v
+# "unused" linter is a memory hog, but running it separately keeps it contained (probably because of caching)
+	bin/golangci-lint run --disable=unused -c .golangci.yml --timeout 2m
+	bin/golangci-lint run -c .golangci.yml --timeout 2m
 
 bin/licensei: bin/licensei-${LICENSEI_VERSION}
 	@ln -sf licensei-${LICENSEI_VERSION} bin/licensei
@@ -37,7 +39,7 @@ bin/licensei-${LICENSEI_VERSION}:
 .PHONY: license-check
 license-check: bin/licensei ## Run license check
 	bin/licensei check
-	./scripts/check-header.sh
+	bin/licensei header
 
 .PHONY: license-cache
 license-cache: bin/licensei ## Generate license cache
@@ -45,7 +47,7 @@ license-cache: bin/licensei ## Generate license cache
 
 # Run tests
 .PHONY: test
-test: update-istio-deps install-kubebuilder generate fmt vet manifests
+test: install-kubebuilder
 	KUBEBUILDER_ASSETS="$${PWD}/bin/kubebuilder/bin" go test ./... -coverprofile cover.out
 
 # Build manager binary

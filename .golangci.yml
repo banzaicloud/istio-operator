@@ -1,14 +1,70 @@
-linters-settings:
-    golint:
-        min-confidence: 0.9
-
-    gocyclo:
-        min-complexity: 15
+run:
+  skip-dirs:
+    - .gen
+  skip-files:
+    - ".*zz_.*\\.go$"
 
 linters:
-    enable:
-        - misspell
-        - gofmt
-        - golint
-        - goimports
-    fast: false
+  enable-all: true
+  disable:
+    - lll
+    - gochecknoinits
+    - gochecknoglobals
+    - funlen
+    - godot
+    - wsl
+    - dupl
+    - wrapcheck
+    - forbidigo
+
+    # - goconst
+    # - gocritic
+    # - godox
+    # - gocognit
+    # - gomnd
+    # - nestif
+    # - testpackage
+
+    # special cases only
+    - exhaustivestruct
+
+    # deprecated
+    - maligned
+    - interfacer
+    - scopelint
+
+linters-settings:
+  gomnd:
+    settings:
+      mnd:
+        checks: [case,operation,return,assign]
+  gocognit:
+    min-complexity: 50
+  cyclop:
+    max-complexity: 40
+  golint:
+    min-confidence: 0.1
+  gocyclo:
+    min-complexity: 40
+  goimports:
+    local-prefixes: github.com/banzaicloud
+  gocritic:
+    disabled-checks:
+      - ifElseChain
+
+issues:
+  # mainly because of the operator, but we are using helm chart names
+  # as package names
+  exclude:
+    - underscore in package name
+    - should not use underscores in package names
+
+  exclude-rules:
+  # zz_ files are messing up the receiver name
+  - linters:
+    - stylecheck
+    text: "ST1016:"
+  # fake client is still alive
+  - linters:
+    - staticcheck
+    text: "SA1019:"
