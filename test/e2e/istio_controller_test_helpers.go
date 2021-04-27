@@ -460,7 +460,7 @@ func sortNamespacedNames(nns []types.NamespacedName) {
 		if nns[i].Namespace < nns[j].Namespace {
 			return true
 		}
-		if nns[i].Namespace == nns[j].Namespace {
+		if nns[i].Namespace > nns[j].Namespace {
 			return false
 		}
 
