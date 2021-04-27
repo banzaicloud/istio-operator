@@ -46,7 +46,7 @@ const _ = proto.GoGoProtoPackageIsVersion3 // please upgrade the proto package
 // +cue-gen:IstioControlPlane:annotations:helm.sh/resource-policy=keep
 // +cue-gen:IstioControlPlane:subresource:status
 // +cue-gen:IstioControlPlane:scope:Namespaced
-// +cue-gen:IstioControlPlane:resource:shortNames=icp
+// +cue-gen:IstioControlPlane:resource:shortNames=icp,istiocp
 // +cue-gen:IstioControlPlane:printerColumn:name=Age,type=date,JSONPath=.metadata.creationTimestamp,description="CreationTimestamp is a timestamp
 // representing the server time when this object was created. It is not guaranteed to be set in happens-before order across separate operations.
 // Clients may not set this value. It is represented in RFC3339 form and is in UTC.
