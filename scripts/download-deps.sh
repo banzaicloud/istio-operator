@@ -2,8 +2,8 @@
 
 set -euo pipefail
 
-code_generator_version=0.17.2
-controller_gen_version=0.4.0
+code_generator_version=0.20.2
+controller_gen_version=0.5.0
 istio_deps_version=1.10.0-alpha.1
 gogo_protobuf_version=1.3.2
 
