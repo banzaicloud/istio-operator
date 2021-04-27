@@ -2,14 +2,20 @@
 
 set -euo pipefail
 
-[ -z "${1:-}" ] && { echo "Usage: $0 <istio-version>"; exit 1; }
+readonly kubernetes_version=${1:-}
+readonly istio_version=${2:-}
 
-readonly istio_version=$1
+if [ -z "${kubernetes_version}" ] || [ -z "${istio_version}" ]; then
+    echo "Usage: $0 <kubernetes-version> <istio-version>"
+    echo "Note: <kubernetes-version> must be a version for which there is a KinD node image, e.g. 1.19.7"
+    echo "      Look for supported versions at https://hub.docker.com/r/kindest/node/tags"
+    exit 1
+fi
 
 readonly script_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" >/dev/null 2>&1 && pwd)"
 readonly scripts_dir=${script_dir}/..
 
-kind create cluster
+kind create cluster --image "kindest/node:v${kubernetes_version}"
 
 # TODO get these from the MetalLB resource yaml
 docker pull metallb/controller:v0.9.6
