@@ -22,7 +22,7 @@ import "mesh/v1alpha1/config.proto";
 // limitations under the License.
 package istio_operator.v2.api.v1alpha1;
 
-option go_package = "github.com/banzaicloud/istio-operator/api/v1alpha1";
+option go_package = "github.com/banzaicloud/istio-operator/v2/api/v1alpha1";
 
 // IstioControlPlane defines an Istio control plane
 //
