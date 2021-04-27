@@ -41,18 +41,18 @@ func TestMain(m *testing.M) {
 		panic(err)
 	}
 
-	clusterStateBefore, err := listAllResources(testEnv.Client)
+	clusterStateBefore, err := listAllResources(testEnv.Dynamic)
 	if err != nil {
 		panic(err)
 	}
 
 	code := m.Run()
 
-	clusterStateAfter, err := listAllResources(testEnv.Client)
+	clusterStateAfter, err := listAllResources(testEnv.Dynamic)
 	if err != nil {
 		panic(err)
 	}
-	if !clusterIsClean(*clusterStateBefore, *clusterStateAfter) {
+	if !clusterIsClean(clusterStateBefore, clusterStateAfter) {
 		log.Info("cluster resources before", "clusterStateBefore", clusterStateBefore)
 		log.Info("cluster resources after", "clusterStateAfter", clusterStateAfter)
 		panic("Cluster wasn't cleaned up properly")

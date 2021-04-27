@@ -37,7 +37,7 @@ func TestIstioOperator(t *testing.T) {
 	const instanceName = "istio"
 	instance := mkMinimalIstio(namespace, instanceName)
 
-	istioTestEnv := NewIstioTestEnv(t, testEnv.Client, instance)
+	istioTestEnv := NewIstioTestEnv(t, testEnv.Client, testEnv.Dynamic, instance)
 	istioTestEnv.Start()
 	defer func() {
 		if t.Failed() {
@@ -50,7 +50,7 @@ func TestIstioOperator(t *testing.T) {
 	istioTestEnv.WaitForIstioReconcile()
 
 	// TODO extract this and related code
-	clusterStateBeforeTests, err := listAllResources(testEnv.Client)
+	clusterStateBeforeTests, err := listAllResources(testEnv.Dynamic)
 	g.Expect(err).NotTo(gomega.HaveOccurred())
 
 	t.Run("Istio resource stays reconciled (Available)", func(t *testing.T) {
@@ -59,7 +59,7 @@ func TestIstioOperator(t *testing.T) {
 			if t.Failed() {
 				t.Log("Test failed, not cleaning up")
 			} else {
-				WaitForCleanup(t, g, *clusterStateBeforeTests, 1*time.Second, 100*time.Millisecond)
+				WaitForCleanup(t, g, clusterStateBeforeTests, 1*time.Second, 100*time.Millisecond)
 			}
 		}()
 
@@ -88,7 +88,7 @@ func TestIstioOperator(t *testing.T) {
 				t.Log("Test failed, not cleaning up")
 			} else {
 				resources.MustDeleteResources(t, testEnv.Client, resourcesFile)
-				WaitForCleanup(t, g, *clusterStateBeforeTests, 60*time.Second, 100*time.Millisecond)
+				WaitForCleanup(t, g, clusterStateBeforeTests, 60*time.Second, 100*time.Millisecond)
 			}
 		}()
 

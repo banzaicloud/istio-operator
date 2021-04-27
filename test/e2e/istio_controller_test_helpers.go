@@ -45,34 +45,24 @@ import (
 	"github.com/banzaicloud/istio-operator/test/e2e/util"
 )
 
-var istioGVR = schema.GroupVersionResource{
-	Group:    "istio.banzaicloud.io",
-	Version:  "v1beta1",
-	Resource: "istios",
-}
-
-var meshGatewayGVR = schema.GroupVersionResource{
-	Group:    "istio.banzaicloud.io",
-	Version:  "v1beta1",
-	Resource: "meshgateways",
-}
 
 type IstioTestEnv struct {
 	t *testing.T
 
 	c     client.Client
+	d     dynamic.Interface
 	istio *istiov1beta1.Istio
 
-	clusterStateBefore *ClusterResourceList
+	clusterStateBefore ClusterResourceList
 }
 
-func NewIstioTestEnv(t *testing.T, c client.Client, istio *istiov1beta1.Istio) IstioTestEnv {
-	return IstioTestEnv{t, c, istio, nil}
+func NewIstioTestEnv(t *testing.T, c client.Client, d dynamic.Interface, istio *istiov1beta1.Istio) IstioTestEnv {
+	return IstioTestEnv{t, c, d, istio, nil}
 }
 
 func (e *IstioTestEnv) Start() {
 	var err error
-	e.clusterStateBefore, err = listAllResources(e.c)
+	e.clusterStateBefore, err = listAllResources(e.d)
 	require.NoError(e.t, err)
 	require.NotNil(e.t, e.clusterStateBefore)
 
@@ -96,24 +86,24 @@ func (e *IstioTestEnv) Close() {
 	g.Expect(err).NotTo(gomega.HaveOccurred(), "waiting for Istio resource to be deleted")
 
 	e.t.Log("Waiting for the cluster to be cleaned up")
-	WaitForCleanup(e.t, g, *e.clusterStateBefore, 120*time.Second, 100*time.Millisecond)
+	WaitForCleanup(e.t, g, e.clusterStateBefore, 120*time.Second, 100*time.Millisecond)
 }
 
 func WaitForCleanup(t *testing.T, g *gomega.WithT, expectedClusterState ClusterResourceList, timeout time.Duration, interval time.Duration) {
 	t.Log("Waiting for cleanup")
 	err := util.WaitForCondition(timeout, interval, func() (bool, error) {
-		currentClusterState, err := listAllResources(testEnv.Client)
+		currentClusterState, err := listAllResources(testEnv.Dynamic)
 		if err != nil {
 			return false, err
 		}
-		return clusterIsClean(expectedClusterState, *currentClusterState), nil
+		return clusterIsClean(expectedClusterState, currentClusterState), nil
 	})
 	if err != nil {
 		// The err can be a timeout, in which case it's helpful to show the resources which were not cleaned up
 		t.Log("Got error while waiting for cluster cleanup. Rechecking to give more detail.", err)
-		clusterStateAfter, err := listAllResources(testEnv.Client)
+		clusterStateAfter, err := listAllResources(testEnv.Dynamic)
 		g.Expect(err).NotTo(gomega.HaveOccurred())
-		g.Expect(*clusterStateAfter).To(gomega.Equal(expectedClusterState))
+		g.Expect(clusterStateAfter).To(gomega.Equal(expectedClusterState))
 	} else {
 		t.Log("Cleaned up")
 	}
@@ -341,117 +331,52 @@ func HPAExists(ctx context.Context, t *testing.T, kubeClient client.Client, name
 	return ResourceExists(ctx, t, kubeClient, &hpa, namespace, name)
 }
 
-// TODO this should be a `map[metav1.GroupVersionKind][]types.NamespacedName`
-type ClusterResourceList struct {
-	Istios      []types.NamespacedName
-	Deployments []types.NamespacedName
-	Pods        []types.NamespacedName
-	Services    []types.NamespacedName
-	Hpas        []types.NamespacedName
-}
+type groupVersionResourceString string
+type ClusterResourceList map[groupVersionResourceString][]types.NamespacedName
 
 func clusterIsClean(before ClusterResourceList, after ClusterResourceList) bool {
 	return reflect.DeepEqual(before, after)
 }
 
+
 // TODO add more resource types
-func listAllResources(client client.Client) (*ClusterResourceList, error) {
-	istios, err := listIstios(client)
-	if err != nil {
-		return nil, err
-	}
-	deployments, err := listDeployments(client)
-	if err != nil {
-		return nil, err
-	}
-	pods, err := listPods(client)
-	if err != nil {
-		return nil, err
-	}
-	services, err := listServices(client)
-	if err != nil {
-		return nil, err
-	}
-	hpas, err := listHorizontalPodAutoscalers(client)
-	if err != nil {
-		return nil, err
-	}
-	return &ClusterResourceList{istios, deployments, pods, services, hpas}, nil
-}
-
-// TODO rewrite these using the dynamic client
-func listIstios(client client.Client) ([]types.NamespacedName, error) {
-	var istioList istiov1beta1.IstioList
-	err := client.List(context.TODO(), &istioList)
-	if err != nil {
-		return nil, err
+func listAllResources(d dynamic.Interface) (ClusterResourceList, error) {
+	gvrs := []schema.GroupVersionResource{
+		serviceGVR,
+		podGVR,
+		deploymentGVR,
+		horizontalPodAutoscalerGVR,
+		istioGVR,meshGatewayGVR,
 	}
 
-	result := make([]types.NamespacedName, len(istioList.Items))
-	for i, item := range istioList.Items {
-		result[i] = types.NamespacedName{Namespace: item.Namespace, Name: item.Name}
+	result := make(ClusterResourceList)
+	for _, gvr := range gvrs {
+		items, err := listResources(d, gvr)
+		if err != nil {
+			return nil, err
+		}
+		gvrString := groupVersionResourceString(gvr.String())
+		result[gvrString] = items
 	}
-	sortNamespacedNames(result)
 	return result, nil
 }
 
-func listDeployments(client client.Client) ([]types.NamespacedName, error) {
-	var deploymentList appsv1.DeploymentList
-	err := client.List(context.TODO(), &deploymentList)
+func listResources(d dynamic.Interface, gvr schema.GroupVersionResource) ([]types.NamespacedName, error) {
+	list, err := d.Resource(gvr).List(context.TODO(), metav1.ListOptions{})
 	if err != nil {
 		return nil, err
 	}
 
-	result := make([]types.NamespacedName, len(deploymentList.Items))
-	for i, item := range deploymentList.Items {
-		result[i] = types.NamespacedName{Namespace: item.Namespace, Name: item.Name}
+	result := make([]types.NamespacedName, len(list.Items))
+	for i, item := range list.Items {
+		result[i] = types.NamespacedName{
+			Namespace: item.GetNamespace(),
+			Name:      item.GetName(),
+		}
 	}
+
 	sortNamespacedNames(result)
-	return result, nil
-}
 
-func listPods(client client.Client) ([]types.NamespacedName, error) {
-	var podList corev1.PodList
-	err := client.List(context.TODO(), &podList)
-	if err != nil {
-		return nil, err
-	}
-
-	result := make([]types.NamespacedName, len(podList.Items))
-	for i, item := range podList.Items {
-		result[i] = types.NamespacedName{Namespace: item.Namespace, Name: item.Name}
-	}
-	sortNamespacedNames(result)
-	return result, nil
-}
-
-func listServices(client client.Client) ([]types.NamespacedName, error) {
-	var serviceList corev1.ServiceList
-	err := client.List(context.TODO(), &serviceList)
-	if err != nil {
-		return nil, err
-	}
-
-	result := make([]types.NamespacedName, len(serviceList.Items))
-	for i, item := range serviceList.Items {
-		result[i] = types.NamespacedName{Namespace: item.Namespace, Name: item.Name}
-	}
-	sortNamespacedNames(result)
-	return result, nil
-}
-
-func listHorizontalPodAutoscalers(client client.Client) ([]types.NamespacedName, error) {
-	var hpaList autoscalingv2beta2.HorizontalPodAutoscalerList
-	err := client.List(context.TODO(), &hpaList)
-	if err != nil {
-		return nil, err
-	}
-
-	result := make([]types.NamespacedName, len(hpaList.Items))
-	for i, item := range hpaList.Items {
-		result[i] = types.NamespacedName{Namespace: item.Namespace, Name: item.Name}
-	}
-	sortNamespacedNames(result)
 	return result, nil
 }
 
