@@ -28,7 +28,7 @@ bin
 bin/*
 cover.out
 
-mesh
-networking
-build/*
-!build/buf.*
+/mesh
+/networking
+/build/*
+!/build/buf.*

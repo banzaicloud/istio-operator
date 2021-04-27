@@ -14,17 +14,14 @@ ${script_dir}/remove-istio-dependencies.sh ${build_dir}
 pushd ${build_dir}
 
 echo "clone istio api repository"
-git clone -q https://github.com/istio/api
-pushd api
-git reset --hard ${version} >/dev/null
-popd
+git clone -q -b ${version} https://github.com/istio/api
 
 echo "copy dependencies"
 cp -a api/mesh api/networking .
 
 for i in `ls -1 api/common-protos`; do cp -a api/common-protos/$i $i; done
 
-find mesh networking -type f -not -name *.proto -exec rm {} \;
+find mesh networking -type f -not -name '*.proto' -exec rm {} \;
 
 
 rm -rf api
