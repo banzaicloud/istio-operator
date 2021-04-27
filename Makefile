@@ -1,13 +1,15 @@
 # Image URL to use all building/pushing image targets
 TAG ?= $(shell git describe --tags --abbrev=0 --match '[0-9].*[0-9].*[0-9]' 2>/dev/null )
 IMG ?= banzaicloud/istio-operator-v2:$(TAG)
-# Produce CRDs that work back to Kubernetes 1.11 (no version conversion)
-CRD_OPTIONS ?= "crd:trivialVersions=true"
 
 GOLANGCI_VERSION = 1.39.0
 LICENSEI_VERSION = 0.3.1
 KUBEBUILDER_VERSION = 2.3.2
 KUSTOMIZE_VERSION = 4.1.2
+ISTIO_VERSION = 1.10.0-alpha.1
+BUF_VERSION = 0.41.0
+
+PATH := $(PATH):$(PWD)/bin
 
 all: check manager
 
@@ -43,7 +45,7 @@ license-cache: bin/licensei ## Generate license cache
 
 # Run tests
 .PHONY: test
-test: install-kubebuilder generate fmt vet manifests
+test: update-istio-deps install-kubebuilder generate fmt vet manifests
 	KUBEBUILDER_ASSETS="$${PWD}/bin/kubebuilder/bin" go test ./... -coverprofile cover.out
 
 # Build manager binary
@@ -80,7 +82,8 @@ deploy: install-kustomize manifests
 
 # Generate manifests e.g. CRD, RBAC etc.
 manifests: download-deps
-	bin/controller-gen $(CRD_OPTIONS) rbac:roleName=manager-role webhook paths="./..." output:crd:artifacts:config=config/crd/bases
+	bin/controller-gen rbac:roleName=manager-role webhook paths="./..."
+	bin/cue-gen -paths=build -f=cue.yaml -crd
 
 # Run go fmt against code
 fmt:
@@ -90,11 +93,18 @@ fmt:
 vet:
 	go vet ./...
 
+# Download build dependencies
 download-deps:
 	./scripts/download-deps.sh
+	./scripts/install-buf.sh $(BUF_VERSION)
+
+# Update Istio build dependencies
+update-istio-deps:
+	./scripts/update-istio-dependencies.sh $(ISTIO_VERSION)
 
 # Generate code
 generate: download-deps
+	cd build && ../bin/buf generate --path api
 	bin/controller-gen object:headerFile="hack/boilerplate.go.txt" paths="./..."
 
 # Build the docker image
