@@ -14,7 +14,10 @@ PATH := $(PATH):$(PWD)/bin
 all: check manager
 
 .PHONY: check
-check: update-istio-deps generate fmt vet manifests test lint ## Run tests and linters
+check: fmt vet test lint ## Run tests and linters
+
+# Check that all generated code was checked in to git
+check-all-code-generation: check-generate check-manifests
 
 bin/golangci-lint: bin/golangci-lint-${GOLANGCI_VERSION}
 	@ln -sf golangci-lint-${GOLANGCI_VERSION} bin/golangci-lint
@@ -83,7 +86,7 @@ deploy: install-kustomize manifests
 	bin/kustomize build config/default | kubectl apply -f -
 
 # Generate manifests e.g. CRD, RBAC etc.
-manifests: download-deps
+manifests: download-deps update-istio-deps
 	bin/controller-gen rbac:roleName=manager-role webhook paths="./..."
 	bin/cue-gen -paths=build -f=cue.yaml -crd
 
@@ -105,9 +108,17 @@ update-istio-deps:
 	./scripts/update-istio-dependencies.sh $(ISTIO_VERSION)
 
 # Generate code
-generate: download-deps
+generate: download-deps update-istio-deps
 	cd build && ../bin/buf generate --path api
 	bin/controller-gen object:headerFile="hack/boilerplate.go.txt" paths="./..."
+
+# Check that code generation was checked in to git
+check-generate: generate
+	git diff --exit-code
+
+# Check that manifests were checked in to git
+check-manifests: manifests
+	git diff --exit-code
 
 # Build the docker image
 docker-build: test

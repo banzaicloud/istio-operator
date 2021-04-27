@@ -45,6 +45,10 @@ jobs:
         command:
           make build
 
+    - run:
+        name: Check that all generated code was checked in to git
+        command: make check-all-code-generation
+
     - save_cache:
         name: Save build dependencies
         key: build-deps-v1-{{ .Branch }}-{{ checksum "scripts/download-deps.sh" }}
