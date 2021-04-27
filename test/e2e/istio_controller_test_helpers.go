@@ -346,6 +346,10 @@ func listAllResources(d dynamic.Interface) (ClusterResourceList, error) {
 		podGVR,
 		deploymentGVR,
 		horizontalPodAutoscalerGVR,
+		clusterRoleGVR,
+		clusterRoleBindingGVR,
+		validatingWebhookConfigurationGVR,
+		mutatingWebhookconfigurationGVR,
 		istioGVR,meshGatewayGVR,
 	}
 
