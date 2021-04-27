@@ -27,6 +27,7 @@ function ensure-binary-version() {
         pushd "${BUILD_DIR}"
         go mod init foobar
         GOBIN=${PWD} go get "${download_location}"
+        mkdir -p "${binpath}"
         mv "${bin_name}" "${binpath}/${target_name}"
         popd
         rm -rf "${BUILD_DIR}"
