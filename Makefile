@@ -70,11 +70,11 @@ install-kubebuilder:
 	scripts/install_kubebuilder.sh ${KUBEBUILDER_VERSION}
 
 # Install CRDs into a cluster
-install: manifests
+install: install-kustomize manifests
 	bin/kustomize build config/crd | kubectl apply -f -
 
 # Uninstall CRDs from a cluster
-uninstall: manifests
+uninstall: install-kustomize manifests
 	bin/kustomize build config/crd | kubectl delete -f -
 
 # Deploy controller in the configured Kubernetes cluster in ~/.kube/config

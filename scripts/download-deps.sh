@@ -2,8 +2,8 @@
 
 set -euo pipefail
 
-code_generator_version=0.17.2
-controller_gen_version=0.4.0
+code_generator_version=0.20.2
+controller_gen_version=0.5.0
 istio_deps_version=1.10.0-alpha.1
 gogo_protobuf_version=1.3.2
 
@@ -27,6 +27,7 @@ function ensure-binary-version() {
         pushd "${BUILD_DIR}"
         go mod init foobar
         GOBIN=${PWD} go get "${download_location}"
+        mkdir -p "${binpath}"
         mv "${bin_name}" "${binpath}/${target_name}"
         popd
         rm -rf "${BUILD_DIR}"
