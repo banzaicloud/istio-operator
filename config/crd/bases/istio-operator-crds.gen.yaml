@@ -32,7 +32,7 @@ spec:
         properties:
           spec:
             properties:
-              config:
+              meshConfig:
                 properties:
                   accessLogEncoding:
                     description: Encoding for the proxy access log (`TEXT` or `JSON`).

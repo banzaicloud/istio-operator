@@ -46,7 +46,7 @@ option go_package = "github.com/banzaicloud/istio-operator/v2/api/v1alpha1";
 // +k8s:deepcopy-gen=true
 // -->
 message IstioControlPlaneSpec {
-    istio.mesh.v1alpha1.MeshConfig config = 1;
+    istio.mesh.v1alpha1.MeshConfig mesh_config = 1;
 }
 
 // <!-- go code generation tags
