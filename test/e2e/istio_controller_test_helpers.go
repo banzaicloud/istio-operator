@@ -339,7 +339,6 @@ func clusterIsClean(before ClusterResourceList, after ClusterResourceList) bool 
 	return reflect.DeepEqual(before, after)
 }
 
-
 // TODO add more resource types
 func listAllResources(d dynamic.Interface) (ClusterResourceList, error) {
 	gvrs := []schema.GroupVersionResource{
@@ -351,6 +350,11 @@ func listAllResources(d dynamic.Interface) (ClusterResourceList, error) {
 		gvr.ClusterRoleBinding,
 		gvr.ValidatingWebhookConfiguration,
 		gvr.MutatingWebhookConfiguration,
+		gvr.DestinationRule,
+		gvr.VirtualService,
+		gvr.PeerAuthentication,
+		gvr.Gateway,
+		gvr.EnvoyFilter,
 		gvr.Istio,
 		gvr.MeshGateway,
 	}
