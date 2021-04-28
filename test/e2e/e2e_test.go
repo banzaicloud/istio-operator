@@ -19,84 +19,97 @@ package e2e
 import (
 	"fmt"
 	"path/filepath"
-	"testing"
 	"time"
 
-	"github.com/onsi/gomega"
+	"github.com/go-logr/logr"
+	. "github.com/onsi/ginkgo"
+	. "github.com/onsi/gomega"
 
+	"github.com/banzaicloud/istio-operator/pkg/apis/istio/v1beta1"
 	"github.com/banzaicloud/istio-operator/test/e2e/util/resources"
 )
 
-// TODO use Ginkgo?
-func TestIstioOperator(t *testing.T) {
-	g := gomega.NewWithT(t)
+var _ = Describe("E2E", func() {
+	const istioResourceNamespace = "default"
+	const istioResourceName = "istio"
 
-	// TODO randomize!
-	const namespace = "default"
-	// TODO randomize?
-	const instanceName = "istio"
-	instance := mkMinimalIstio(namespace, instanceName)
+	var (
+		log                     logr.Logger
+		clusterStateBeforeTests ClusterResourceList
+		instance                *v1beta1.Istio
+		istioTestEnv            IstioTestEnv
+	)
 
-	istioTestEnv := NewIstioTestEnv(t, testEnv.Client, testEnv.Dynamic, instance)
-	istioTestEnv.Start()
-	defer func() {
-		if t.Failed() {
-			t.Log("Test failed, not cleaning up")
+	BeforeEach(func() {
+		log = testEnv.Log.WithName(CurrentGinkgoTestDescription().FullTestText)
+
+		var err error
+		clusterStateBeforeTests, err = listAllResources(testEnv.Dynamic)
+		Expect(err).NotTo(HaveOccurred())
+
+		instance = mkMinimalIstio(istioResourceNamespace, istioResourceName)
+	})
+
+	JustBeforeEach(func() {
+		istioTestEnv = NewIstioTestEnv(log, testEnv.Client, testEnv.Dynamic, instance)
+		istioTestEnv.Start()
+		istioTestEnv.WaitForIstioReconcile()
+	})
+
+	AfterEach(func() {
+		if CurrentGinkgoTestDescription().Failed {
+			log.Info("Test failed, not waiting for cleanup")
 		} else {
 			istioTestEnv.Close()
+			WaitForCleanup(log, clusterStateBeforeTests, 60*time.Second, 100*time.Millisecond)
 		}
-	}()
-
-	istioTestEnv.WaitForIstioReconcile()
-
-	// TODO extract this and related code
-	clusterStateBeforeTests, err := listAllResources(testEnv.Dynamic)
-	g.Expect(err).NotTo(gomega.HaveOccurred())
-
-	t.Run("Istio resource stays reconciled (Available)", func(t *testing.T) {
-		g := gomega.NewWithT(t)
-		defer func() {
-			if t.Failed() {
-				t.Log("Test failed, not cleaning up")
-			} else {
-				WaitForCleanup(t, g, clusterStateBeforeTests, 1*time.Second, 100*time.Millisecond)
-			}
-		}()
-
-		isAvailableConsistently, err := IstioResourceIsAvailableConsistently(t, namespace, instanceName, 5*time.Second, 100*time.Millisecond)
-		if !isAvailableConsistently || err != nil {
-			// TODO this is temporary, until the exact issue can be tracked down
-			t.Logf("Not available consistently (%v). Re-checking with a longer timeout", err)
-			isAvailableConsistently2, err2 := IstioResourceIsAvailableConsistently(t, namespace, instanceName, 5*time.Minute, 100*time.Millisecond)
-			t.Logf("Result: %v %v", isAvailableConsistently2, err2)
-			t.Log("Failing because of the failure with a short timeout")
-			t.Fail()
-		}
-		g.Expect(isAvailableConsistently, err).Should(gomega.BeTrue())
-
-		// TODO Check that the expected CRDs, deployments, services, etc. are present
 	})
 
-	t.Run("MeshGateway sets up working ingress", func(t *testing.T) {
-		testNamespace := "test0001"
-		g := gomega.NewWithT(t)
-		resourcesFile := filepath.Join("testdata", t.Name()+".yaml")
+	Describe("tests with minimal istio resource", func() {
+		Context("Istio resource", func() {
+			It("should stay reconciled (Available)", func() {
+				isAvailableConsistently, err := IstioResourceIsAvailableConsistently(log, istioResourceNamespace, istioResourceName, 5*time.Second, 100*time.Millisecond)
+				if !isAvailableConsistently || err != nil {
+					// TODO this is temporary, until the exact issue can be tracked down
+					log.Info("Not available consistently. Re-checking with a longer timeout", "err", err)
+					isAvailableConsistently2, err2 := IstioResourceIsAvailableConsistently(log, istioResourceNamespace, istioResourceName, 5*time.Minute, 100*time.Millisecond)
+					log.Info("Result", "isAvailableConsistently2", isAvailableConsistently2, "err2", err2)
+					Fail("Failing because of the failure with a short timeout")
+				}
+				Expect(isAvailableConsistently, err).Should(BeTrue())
 
-		resources.MustCreateResources(t, testEnv.Client, resourcesFile)
-		defer func() {
-			if t.Failed() {
-				t.Log("Test failed, not cleaning up")
-			} else {
-				resources.MustDeleteResources(t, testEnv.Client, resourcesFile)
-				WaitForCleanup(t, g, clusterStateBeforeTests, 60*time.Second, 100*time.Millisecond)
-			}
-		}()
+				// TODO Check that the expected CRDs, deployments, services, etc. are present
+			})
+		})
 
-		meshGatewayAddress, err := GetMeshGatewayAddress(testNamespace, "mgw01", 30*time.Second, 100*time.Millisecond)
-		g.Expect(err).NotTo(gomega.HaveOccurred())
+		Context("MeshGateway", func() {
+			const testNamespace = "test0001"
 
-		g.Expect(URLIsAccessible(t, fmt.Sprintf("http://%s:8080/get", meshGatewayAddress), 30*time.Second, 100*time.Millisecond)).To(gomega.Succeed())
+			var resourcesFile string
+
+			BeforeEach(func() {
+				resourcesFile = filepath.Join("testdata", testDataPath(CurrentGinkgoTestDescription())+".yaml")
+			})
+
+			JustBeforeEach(func() {
+				Expect(resources.CreateResources(testEnv.Client, resourcesFile)).To(Succeed())
+			})
+
+			AfterEach(func() {
+				if CurrentGinkgoTestDescription().Failed {
+					log.Info("Test failed, not cleaning up")
+				} else {
+					Expect(resources.DeleteResources(testEnv.Client, resourcesFile)).To(Succeed())
+				}
+			})
+
+			It("sets up working ingress", func() {
+				meshGatewayAddress, err := GetMeshGatewayAddress(testNamespace, "mgw01", 30*time.Second, 100*time.Millisecond)
+				Expect(err).NotTo(HaveOccurred())
+
+				Expect(URLIsAccessible(log, fmt.Sprintf("http://%s:8080/get", meshGatewayAddress), 30*time.Second, 100*time.Millisecond)).
+					To(Succeed())
+			})
+		})
 	})
-
-	t.Log("Test done")
-}
+})
