@@ -19,9 +19,8 @@ package egressgateway
 import (
 	"fmt"
 
-	"k8s.io/apimachinery/pkg/runtime/schema"
-
 	"github.com/banzaicloud/istio-operator/pkg/k8sutil"
+	"github.com/banzaicloud/istio-operator/pkg/resources/gvr"
 )
 
 const (
@@ -35,11 +34,7 @@ func (r *Reconciler) multimeshEgressGateway() *k8sutil.DynamicObject {
 	}
 
 	return &k8sutil.DynamicObject{
-		Gvr: schema.GroupVersionResource{
-			Group:    "networking.istio.io",
-			Version:  "v1alpha3",
-			Resource: "gateways",
-		},
+		Gvr:       gvr.Gateway,
 		Kind:      "Gateway",
 		Name:      r.Config.WithRevision(multimeshResourceNamePrefix + "-egressgateway"),
 		Namespace: r.Config.Namespace,

@@ -17,19 +17,14 @@ limitations under the License.
 package pilot
 
 import (
-	"k8s.io/apimachinery/pkg/runtime/schema"
-
 	"github.com/banzaicloud/istio-operator/pkg/k8sutil"
+	"github.com/banzaicloud/istio-operator/pkg/resources/gvr"
 	"github.com/banzaicloud/istio-operator/pkg/util"
 )
 
 func (r *Reconciler) meshExpansionVirtualService() *k8sutil.DynamicObject {
 	return &k8sutil.DynamicObject{
-		Gvr: schema.GroupVersionResource{
-			Group:    "networking.istio.io",
-			Version:  "v1alpha3",
-			Resource: "virtualservices",
-		},
+		Gvr:       gvr.VirtualService,
 		Kind:      "VirtualService",
 		Name:      r.Config.WithRevision("meshexpansion-vs-pilot"),
 		Namespace: r.Config.Namespace,
@@ -67,11 +62,7 @@ func (r *Reconciler) meshExpansionVirtualService() *k8sutil.DynamicObject {
 
 func (r *Reconciler) meshExpansionDestinationRule() *k8sutil.DynamicObject {
 	return &k8sutil.DynamicObject{
-		Gvr: schema.GroupVersionResource{
-			Group:    "networking.istio.io",
-			Version:  "v1alpha3",
-			Resource: "destinationrules",
-		},
+		Gvr:       gvr.DestinationRule,
 		Kind:      "DestinationRule",
 		Name:      r.Config.WithRevision("meshexpansion-dr-pilot"),
 		Namespace: r.Config.Namespace,

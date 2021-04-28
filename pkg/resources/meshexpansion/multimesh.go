@@ -22,9 +22,8 @@ import (
 	"regexp"
 	"strings"
 
-	"k8s.io/apimachinery/pkg/runtime/schema"
-
 	"github.com/banzaicloud/istio-operator/pkg/k8sutil"
+	"github.com/banzaicloud/istio-operator/pkg/resources/gvr"
 	"github.com/banzaicloud/istio-operator/pkg/util"
 )
 
@@ -39,11 +38,7 @@ func (r *Reconciler) multimeshIngressGateway(selector map[string]string) *k8suti
 	}
 
 	return &k8sutil.DynamicObject{
-		Gvr: schema.GroupVersionResource{
-			Group:    "networking.istio.io",
-			Version:  "v1alpha3",
-			Resource: "gateways",
-		},
+		Gvr:       gvr.Gateway,
 		Kind:      "Gateway",
 		Name:      r.Config.WithRevision(multimeshResourceNamePrefix + "-ingressgateway"),
 		Namespace: r.Config.Namespace,
@@ -75,11 +70,7 @@ func (r *Reconciler) multimeshEnvoyFilter(selector map[string]string) *k8sutil.D
 	}
 
 	return &k8sutil.DynamicObject{
-		Gvr: schema.GroupVersionResource{
-			Group:    "networking.istio.io",
-			Version:  "v1alpha3",
-			Resource: "envoyfilters",
-		},
+		Gvr:       gvr.EnvoyFilter,
 		Kind:      "EnvoyFilter",
 		Name:      r.Config.WithRevision(multimeshResourceNamePrefix + "-ingressgateway"),
 		Namespace: r.Config.Namespace,
@@ -122,11 +113,7 @@ func (r *Reconciler) multimeshEnvoyFilter(selector map[string]string) *k8sutil.D
 
 func (r *Reconciler) multimeshDestinationRule(domain string) *k8sutil.DynamicObject {
 	return &k8sutil.DynamicObject{
-		Gvr: schema.GroupVersionResource{
-			Group:    "networking.istio.io",
-			Version:  "v1alpha3",
-			Resource: "destinationrules",
-		},
+		Gvr:       gvr.DestinationRule,
 		Kind:      "DestinationRule",
 		Name:      r.Config.WithRevision(fmt.Sprintf("%s-%08x", multimeshResourceNamePrefix, crc32.ChecksumIEEE([]byte(domain)))),
 		Namespace: r.Config.Namespace,

@@ -17,9 +17,8 @@ limitations under the License.
 package ingressgateway
 
 import (
-	"k8s.io/apimachinery/pkg/runtime/schema"
-
 	"github.com/banzaicloud/istio-operator/pkg/k8sutil"
+	"github.com/banzaicloud/istio-operator/pkg/resources/gvr"
 	"github.com/banzaicloud/istio-operator/pkg/util"
 )
 
@@ -55,11 +54,7 @@ func (r *Reconciler) k8sIngressGateway() *k8sutil.DynamicObject {
 	}
 
 	return &k8sutil.DynamicObject{
-		Gvr: schema.GroupVersionResource{
-			Group:    "networking.istio.io",
-			Version:  "v1alpha3",
-			Resource: "gateways",
-		},
+		Gvr:       gvr.Gateway,
 		Kind:      "Gateway",
 		Name:      r.Config.WithRevision(k8sIngressGatewayName),
 		Namespace: r.Config.Namespace,

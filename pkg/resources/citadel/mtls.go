@@ -17,10 +17,9 @@ limitations under the License.
 package citadel
 
 import (
-	"k8s.io/apimachinery/pkg/runtime/schema"
-
 	"github.com/banzaicloud/istio-operator/pkg/apis/istio/v1beta1"
 	"github.com/banzaicloud/istio-operator/pkg/k8sutil"
+	"github.com/banzaicloud/istio-operator/pkg/resources/gvr"
 	"github.com/banzaicloud/istio-operator/pkg/util"
 )
 
@@ -46,11 +45,7 @@ func (r *Reconciler) spec() map[string]interface{} {
 // https://istio.io/docs/tasks/security/authn-policy/
 func (r *Reconciler) peerAuthentication() *k8sutil.DynamicObject {
 	return &k8sutil.DynamicObject{
-		Gvr: schema.GroupVersionResource{
-			Group:    "security.istio.io",
-			Version:  "v1beta1",
-			Resource: "peerauthentications",
-		},
+		Gvr:       gvr.PeerAuthentication,
 		Kind:      "PeerAuthentication",
 		Name:      r.Config.WithRevision("default"),
 		Namespace: r.Config.Namespace,
@@ -64,11 +59,7 @@ func (r *Reconciler) peerAuthentication() *k8sutil.DynamicObject {
 // any service (host) in the mesh
 func (r *Reconciler) destinationRuleDefaultMtls() *k8sutil.DynamicObject {
 	return &k8sutil.DynamicObject{
-		Gvr: schema.GroupVersionResource{
-			Group:    "networking.istio.io",
-			Version:  "v1alpha3",
-			Resource: "destinationrules",
-		},
+		Gvr:       gvr.DestinationRule,
 		Kind:      "DestinationRule",
 		Name:      r.Config.WithRevision("default"),
 		Namespace: r.Config.Namespace,
@@ -89,11 +80,7 @@ func (r *Reconciler) destinationRuleDefaultMtls() *k8sutil.DynamicObject {
 // User should add similar destination rules for other services that don't have sidecar
 func (r *Reconciler) destinationRuleApiServerMtls() *k8sutil.DynamicObject {
 	return &k8sutil.DynamicObject{
-		Gvr: schema.GroupVersionResource{
-			Group:    "networking.istio.io",
-			Version:  "v1alpha3",
-			Resource: "destinationrules",
-		},
+		Gvr:       gvr.DestinationRule,
 		Kind:      "DestinationRule",
 		Name:      r.Config.WithRevision("api-server"),
 		Namespace: r.Config.Namespace,

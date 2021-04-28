@@ -66,6 +66,60 @@ var MutatingWebhookConfiguration = schema.GroupVersionResource{
 	Resource: "mutatingwebhookconfigurations",
 }
 
+var DestinationRule = schema.GroupVersionResource{
+	Group:    "networking.istio.io",
+	Version:  "v1alpha3",
+	Resource: "destinationrules",
+}
+
+var VirtualService = schema.GroupVersionResource{
+	Group:    "networking.istio.io",
+	Version:  "v1alpha3",
+	Resource: "virtualservices",
+}
+
+var PeerAuthentication = schema.GroupVersionResource{
+	Group:    "security.istio.io",
+	Version:  "v1beta1",
+	Resource: "peerauthentications",
+}
+
+var Gateway = schema.GroupVersionResource{
+	Group:    "networking.istio.io",
+	Version:  "v1alpha3",
+	Resource: "gateways",
+}
+
+var EnvoyFilter = schema.GroupVersionResource{
+	Group:    "networking.istio.io",
+	Version:  "v1alpha3",
+	Resource: "envoyfilters",
+}
+
+var AttributeManifest = schema.GroupVersionResource{
+	Group:    "config.istio.io",
+	Version:  "v1alpha2",
+	Resource: "attributemanifests",
+}
+
+var IstioConfigHandler = schema.GroupVersionResource{
+	Group:    "config.istio.io",
+	Version:  "v1alpha2",
+	Resource: "handlers",
+}
+
+var IstioConfigInstance = schema.GroupVersionResource{
+	Group:    "config.istio.io",
+	Version:  "v1alpha2",
+	Resource: "instances",
+}
+
+var IstioConfigRule = schema.GroupVersionResource{
+	Group:    "config.istio.io",
+	Version:  "v1alpha2",
+	Resource: "rules",
+}
+
 var Istio = schema.GroupVersionResource{
 	Group:    "istio.banzaicloud.io",
 	Version:  "v1beta1",
