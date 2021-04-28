@@ -1,7 +1,37 @@
 apiVersion: servicemesh.cisco.com/v1alpha1
 kind: IstioControlPlane
 metadata:
-  name: istiocontrolplane-sample
+  name: icp-sample
 spec:
-  config:
+  meshConfig:
+    proxyListenPort: 15001
+    connectTimeout: 10s
+    protocolDetectionTimeout: 5s
+    ingressClass: istio
+    ingressService: istio-ingressgateway
+    ingressControllerMode: STRICT
+    ingressSelector: istio-ingressgateway
+    enableTracing: false
+    accessLogFile: /dev/stdout
+    accessLogFormat: ""
     accessLogEncoding: TEXT
+    enableEnvoyAccessLogService: false
+    disableEnvoyListenerLog: false
+    defaultConfig:
+      configPath: ./etc/istio/proxy
+      binaryPath: /usr/local/bin/envoy
+      serviceCluster: istio-proxy
+      drainDuration: 45s
+      parentShutdownDuration: 60s
+      discoveryAddress: istiod-icp-v110x.istio-system.svc:15012
+      proxyAdminPort: 15000
+      controlPlaneAuthPolicy: MUTUAL_TLS
+      concurrency: 2
+      meshId: cluster.local
+    outboundTrafficPolicy:
+      mode: ALLOW_ANY
+    enableAutoMtls: true
+    trustDomain: cluster.local
+    trustDomainAliases: []
+    rootNamespace: istio-system
+    dnsRefreshRate: 5s
