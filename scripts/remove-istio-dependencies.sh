@@ -9,6 +9,6 @@ build_dir=$1
 pushd ${build_dir}
 
 echo "cleanup"
-rm -rf api common-protos github.com gogoproto google istio.io k8s.io mesh networking ../mesh ../networking
+rm -rf api common-protos github.com gogoproto google istio.io k8s.io mesh networking
 
 popd
