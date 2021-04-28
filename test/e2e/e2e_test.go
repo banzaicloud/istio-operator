@@ -104,7 +104,7 @@ var _ = Describe("E2E", func() {
 			})
 
 			It("sets up working ingress", func() {
-				meshGatewayAddress, err := GetMeshGatewayAddress(testNamespace, "mgw01", 30*time.Second, 100*time.Millisecond)
+				meshGatewayAddress, err := GetMeshGatewayAddress(testNamespace, "mgw01", 120*time.Second, 100*time.Millisecond)
 				Expect(err).NotTo(HaveOccurred())
 
 				Expect(URLIsAccessible(log, fmt.Sprintf("http://%s:8080/get", meshGatewayAddress), 30*time.Second, 100*time.Millisecond)).
