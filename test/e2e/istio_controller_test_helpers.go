@@ -362,10 +362,13 @@ func listAllResources(d dynamic.Interface) (ClusterResourceList, error) {
 	result := make(ClusterResourceList)
 	for _, gvr := range gvrs {
 		items, err := listResources(d, gvr)
-		if err != nil {
+		if err != nil && !k8sapierrors.IsNotFound(err) {
 			return nil, err
 		}
 		gvrString := groupVersionResourceString(gvr.String())
+		if items == nil {
+			items = []types.NamespacedName{}
+		}
 		result[gvrString] = items
 	}
 	return result, nil
