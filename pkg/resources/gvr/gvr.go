@@ -14,65 +14,65 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package e2e
+package gvr
 
 import "k8s.io/apimachinery/pkg/runtime/schema"
 
-var serviceGVR = schema.GroupVersionResource{
+var Service = schema.GroupVersionResource{
 	Group:    "",
 	Version:  "v1",
 	Resource: "services",
 }
 
-var podGVR = schema.GroupVersionResource{
+var Pod = schema.GroupVersionResource{
 	Group:    "",
 	Version:  "v1",
 	Resource: "pods",
 }
 
-var deploymentGVR = schema.GroupVersionResource{
+var Deployment = schema.GroupVersionResource{
 	Group:    "apps",
 	Version:  "v1",
 	Resource: "deployments",
 }
 
-var horizontalPodAutoscalerGVR = schema.GroupVersionResource{
+var HorizontalPodAutoscaler = schema.GroupVersionResource{
 	Group:    "autoscaling",
 	Version:  "v1",
 	Resource: "horizontalpodautoscalers",
 }
 
-var clusterRoleGVR = schema.GroupVersionResource{
+var ClusterRole = schema.GroupVersionResource{
 	Group:    "rbac.authorization.k8s.io",
 	Version:  "v1",
 	Resource: "clusterroles",
 }
 
-var clusterRoleBindingGVR = schema.GroupVersionResource{
+var ClusterRoleBinding = schema.GroupVersionResource{
 	Group:    "rbac.authorization.k8s.io",
 	Version:  "v1",
 	Resource: "clusterrolebindings",
 }
 
-var validatingWebhookConfigurationGVR = schema.GroupVersionResource{
+var ValidatingWebhookConfiguration = schema.GroupVersionResource{
 	Group:    "admissionregistration.k8s.io",
 	Version:  "v1",
 	Resource: "validatingwebhookconfigurations",
 }
 
-var mutatingWebhookconfigurationGVR = schema.GroupVersionResource{
+var MutatingWebhookConfiguration = schema.GroupVersionResource{
 	Group:    "admissionregistration.k8s.io",
 	Version:  "v1",
 	Resource: "mutatingwebhookconfigurations",
 }
 
-var istioGVR = schema.GroupVersionResource{
+var Istio = schema.GroupVersionResource{
 	Group:    "istio.banzaicloud.io",
 	Version:  "v1beta1",
 	Resource: "istios",
 }
 
-var meshGatewayGVR = schema.GroupVersionResource{
+var MeshGateway = schema.GroupVersionResource{
 	Group:    "istio.banzaicloud.io",
 	Version:  "v1beta1",
 	Resource: "meshgateways",

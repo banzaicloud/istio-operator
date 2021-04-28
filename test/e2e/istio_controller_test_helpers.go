@@ -42,6 +42,7 @@ import (
 
 	istiov1beta1 "github.com/banzaicloud/istio-operator/pkg/apis/istio/v1beta1"
 	"github.com/banzaicloud/istio-operator/pkg/k8sutil/mgw"
+	"github.com/banzaicloud/istio-operator/pkg/resources/gvr"
 	"github.com/banzaicloud/istio-operator/test/e2e/util"
 )
 
@@ -113,7 +114,7 @@ func (e *IstioTestEnv) WaitForIstioReconcile() {
 	g := gomega.NewWithT(e.t)
 
 	e.t.Log("Waiting for Istio resource to be reconciled")
-	err := WaitForStatus(istioGVR, e.istio.Namespace, e.istio.Name, string(istiov1beta1.Available), 300*time.Second, 1000*time.Millisecond)
+	err := WaitForStatus(gvr.Istio, e.istio.Namespace, e.istio.Name, string(istiov1beta1.Available), 300*time.Second, 1000*time.Millisecond)
 	g.Expect(err).NotTo(gomega.HaveOccurred(), "waiting for Istio resource to be reconciled")
 	e.t.Log("Istio resource is reconciled")
 }
@@ -166,7 +167,7 @@ func GetMeshGatewayAddress(mgw01Namespace string, mgw01Name string, timeout time
 	var meshGatewayAddresses []string
 	err := util.WaitForCondition(timeout, interval, func() (bool, error) {
 		var err error
-		status, err := GetStatus(context.TODO(), testEnv.Dynamic, meshGatewayGVR, mgw01Namespace, mgw01Name)
+		status, err := GetStatus(context.TODO(), testEnv.Dynamic, gvr.MeshGateway, mgw01Namespace, mgw01Name)
 		if err != nil {
 			return false, err
 		}
@@ -205,7 +206,7 @@ y:
 	for {
 		select {
 		case <-ticker.C:
-			status, err := GetStatus(context.TODO(), testEnv.Dynamic, istioGVR, namespace, name)
+			status, err := GetStatus(context.TODO(), testEnv.Dynamic, gvr.Istio, namespace, name)
 			if err != nil {
 				return false, err
 			}
@@ -342,15 +343,16 @@ func clusterIsClean(before ClusterResourceList, after ClusterResourceList) bool 
 // TODO add more resource types
 func listAllResources(d dynamic.Interface) (ClusterResourceList, error) {
 	gvrs := []schema.GroupVersionResource{
-		serviceGVR,
-		podGVR,
-		deploymentGVR,
-		horizontalPodAutoscalerGVR,
-		clusterRoleGVR,
-		clusterRoleBindingGVR,
-		validatingWebhookConfigurationGVR,
-		mutatingWebhookconfigurationGVR,
-		istioGVR,meshGatewayGVR,
+		gvr.Service,
+		gvr.Pod,
+		gvr.Deployment,
+		gvr.HorizontalPodAutoscaler,
+		gvr.ClusterRole,
+		gvr.ClusterRoleBinding,
+		gvr.ValidatingWebhookConfiguration,
+		gvr.MutatingWebhookConfiguration,
+		gvr.Istio,
+		gvr.MeshGateway,
 	}
 
 	result := make(ClusterResourceList)
