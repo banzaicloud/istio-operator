@@ -177,7 +177,7 @@ e2e-test-install-istio-operator: docker-build
 	# works out fine now, probably because there is a wait in TestMain for the cluster to be reachable.
 	# Waiting here for all pods might result in a lower load on the cluster when the actual tests
 	# start, so it might remove some flakiness.
-	kubectl wait pod --all-namespaces --all --for=condition=ready
+	kubectl wait pod --all-namespaces --all --for=condition=ready --timeout=60s
 
 .PHONY: e2e-test
 e2e-test: export PATH:=./bin:${PATH}
