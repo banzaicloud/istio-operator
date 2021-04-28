@@ -59,6 +59,7 @@ const _ = proto.GoGoProtoPackageIsVersion3 // please upgrade the proto package
 // +k8s:deepcopy-gen=true
 // -->
 type IstioControlPlaneSpec struct {
+	// Defines mesh-wide settings for the Istio control plane.
 	MeshConfig           *v1alpha1.MeshConfig `protobuf:"bytes,1,opt,name=mesh_config,json=meshConfig,proto3" json:"mesh_config,omitempty"`
 	XXX_NoUnkeyedLiteral struct{}             `json:"-"`
 	XXX_unrecognized     []byte               `json:"-"`
