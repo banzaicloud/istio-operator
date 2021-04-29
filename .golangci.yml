@@ -51,6 +51,8 @@ linters-settings:
   gocritic:
     disabled-checks:
       - ifElseChain
+  gomoddirectives:
+    replace-local: true
 
 issues:
   # mainly because of the operator, but we are using helm chart names
