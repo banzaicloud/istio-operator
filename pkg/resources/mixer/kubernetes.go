@@ -17,19 +17,14 @@ limitations under the License.
 package mixer
 
 import (
-	"k8s.io/apimachinery/pkg/runtime/schema"
-
 	"github.com/banzaicloud/istio-operator/pkg/k8sutil"
+	"github.com/banzaicloud/istio-operator/pkg/resources/gvr"
 	"github.com/banzaicloud/istio-operator/pkg/util"
 )
 
 func (r *Reconciler) kubernetesEnvHandler() *k8sutil.DynamicObject {
 	return &k8sutil.DynamicObject{
-		Gvr: schema.GroupVersionResource{
-			Group:    "config.istio.io",
-			Version:  "v1alpha2",
-			Resource: "handlers",
-		},
+		Gvr:       gvr.IstioConfigHandler,
 		Kind:      "handler",
 		Name:      r.Config.WithRevision("kubernetesenv"),
 		Namespace: r.Config.Namespace,
@@ -44,11 +39,7 @@ func (r *Reconciler) kubernetesEnvHandler() *k8sutil.DynamicObject {
 
 func (r *Reconciler) attributesKubernetes() *k8sutil.DynamicObject {
 	attributes := &k8sutil.DynamicObject{
-		Gvr: schema.GroupVersionResource{
-			Group:    "config.istio.io",
-			Version:  "v1alpha2",
-			Resource: "instances",
-		},
+		Gvr:       gvr.IstioConfigInstance,
 		Kind:      "instance",
 		Name:      r.Config.WithRevision("attributes"),
 		Namespace: r.Config.Namespace,
@@ -104,11 +95,7 @@ func (r *Reconciler) attributesKubernetes() *k8sutil.DynamicObject {
 
 func (r *Reconciler) kubeAttrRule() *k8sutil.DynamicObject {
 	return &k8sutil.DynamicObject{
-		Gvr: schema.GroupVersionResource{
-			Group:    "config.istio.io",
-			Version:  "v1alpha2",
-			Resource: "rules",
-		},
+		Gvr:       gvr.IstioConfigRule,
 		Kind:      "rule",
 		Name:      r.Config.WithRevision("kubeattrgenrulerule"),
 		Namespace: r.Config.Namespace,
@@ -127,11 +114,7 @@ func (r *Reconciler) kubeAttrRule() *k8sutil.DynamicObject {
 
 func (r *Reconciler) tcpKubeAttrRule() *k8sutil.DynamicObject {
 	return &k8sutil.DynamicObject{
-		Gvr: schema.GroupVersionResource{
-			Group:    "config.istio.io",
-			Version:  "v1alpha2",
-			Resource: "rules",
-		},
+		Gvr:       gvr.IstioConfigRule,
 		Kind:      "rule",
 		Name:      r.Config.WithRevision("tcpkubeattrgenrulerule"),
 		Namespace: r.Config.Namespace,

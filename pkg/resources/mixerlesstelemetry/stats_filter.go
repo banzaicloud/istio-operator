@@ -20,11 +20,11 @@ import (
 	"fmt"
 	"strconv"
 
-	"github.com/banzaicloud/istio-operator/pkg/util"
 	"github.com/ghodss/yaml"
-	"k8s.io/apimachinery/pkg/runtime/schema"
 
 	"github.com/banzaicloud/istio-operator/pkg/k8sutil"
+	"github.com/banzaicloud/istio-operator/pkg/resources/gvr"
+	"github.com/banzaicloud/istio-operator/pkg/util"
 )
 
 const (
@@ -48,11 +48,7 @@ func (r *Reconciler) httpStatsFilter(version string, httpStatsFilterYAML string)
 	yaml.Unmarshal([]byte(fmt.Sprintf(httpStatsFilterYAML, vmConfigLocal, vmConfigRuntime, strconv.FormatBool(vmConfigAllowPrecompiled), r.metadataMatch(8))), &y)
 
 	return &k8sutil.DynamicObject{
-		Gvr: schema.GroupVersionResource{
-			Group:    "networking.istio.io",
-			Version:  "v1alpha3",
-			Resource: "envoyfilters",
-		},
+		Gvr:       gvr.EnvoyFilter,
 		Kind:      "EnvoyFilter",
 		Name:      r.Config.WithRevision(fmt.Sprintf("%s-stats-filter-%s", componentName, version)),
 		Namespace: r.Config.Namespace,

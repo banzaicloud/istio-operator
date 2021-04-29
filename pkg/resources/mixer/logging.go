@@ -17,19 +17,14 @@ limitations under the License.
 package mixer
 
 import (
-	"k8s.io/apimachinery/pkg/runtime/schema"
-
 	"github.com/banzaicloud/istio-operator/pkg/k8sutil"
+	"github.com/banzaicloud/istio-operator/pkg/resources/gvr"
 	"github.com/banzaicloud/istio-operator/pkg/util"
 )
 
 func (r *Reconciler) stdioHandler() *k8sutil.DynamicObject {
 	return &k8sutil.DynamicObject{
-		Gvr: schema.GroupVersionResource{
-			Group:    "config.istio.io",
-			Version:  "v1alpha2",
-			Resource: "handlers",
-		},
+		Gvr:       gvr.IstioConfigHandler,
 		Kind:      "handler",
 		Name:      r.Config.WithRevision("stdio"),
 		Namespace: r.Config.Namespace,
@@ -46,11 +41,7 @@ func (r *Reconciler) stdioHandler() *k8sutil.DynamicObject {
 
 func (r *Reconciler) accessLogLogentry() *k8sutil.DynamicObject {
 	return &k8sutil.DynamicObject{
-		Gvr: schema.GroupVersionResource{
-			Group:    "config.istio.io",
-			Version:  "v1alpha2",
-			Resource: "instances",
-		},
+		Gvr:       gvr.IstioConfigInstance,
 		Kind:      "instance",
 		Name:      r.Config.WithRevision("accesslog"),
 		Namespace: r.Config.Namespace,
@@ -112,11 +103,7 @@ func (r *Reconciler) accessLogLogentry() *k8sutil.DynamicObject {
 
 func (r *Reconciler) tcpAccessLogLogentry() *k8sutil.DynamicObject {
 	return &k8sutil.DynamicObject{
-		Gvr: schema.GroupVersionResource{
-			Group:    "config.istio.io",
-			Version:  "v1alpha2",
-			Resource: "instances",
-		},
+		Gvr:       gvr.IstioConfigInstance,
 		Kind:      "instance",
 		Name:      r.Config.WithRevision("tcpaccesslog"),
 		Namespace: r.Config.Namespace,
@@ -163,11 +150,7 @@ func (r *Reconciler) tcpAccessLogLogentry() *k8sutil.DynamicObject {
 
 func (r *Reconciler) stdioRule() *k8sutil.DynamicObject {
 	return &k8sutil.DynamicObject{
-		Gvr: schema.GroupVersionResource{
-			Group:    "config.istio.io",
-			Version:  "v1alpha2",
-			Resource: "rules",
-		},
+		Gvr:       gvr.IstioConfigRule,
 		Kind:      "rule",
 		Name:      r.Config.WithRevision("stdio"),
 		Namespace: r.Config.Namespace,
@@ -187,11 +170,7 @@ func (r *Reconciler) stdioRule() *k8sutil.DynamicObject {
 
 func (r *Reconciler) stdioTcpRule() *k8sutil.DynamicObject {
 	return &k8sutil.DynamicObject{
-		Gvr: schema.GroupVersionResource{
-			Group:    "config.istio.io",
-			Version:  "v1alpha2",
-			Resource: "rules",
-		},
+		Gvr:       gvr.IstioConfigRule,
 		Kind:      "rule",
 		Name:      r.Config.WithRevision("stdiotcp"),
 		Namespace: r.Config.Namespace,

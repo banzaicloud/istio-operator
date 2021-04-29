@@ -17,20 +17,15 @@ limitations under the License.
 package mixer
 
 import (
-	"k8s.io/apimachinery/pkg/runtime/schema"
-
 	"github.com/banzaicloud/istio-operator/pkg/k8sutil"
+	"github.com/banzaicloud/istio-operator/pkg/resources/gvr"
 	"github.com/banzaicloud/istio-operator/pkg/util"
 )
 
 func (r *Reconciler) prometheusHandler() *k8sutil.DynamicObject {
 	multiClusterEnabled := util.PointerToBool(r.Config.Spec.Mixer.MultiClusterSupport)
 	return &k8sutil.DynamicObject{
-		Gvr: schema.GroupVersionResource{
-			Group:    "config.istio.io",
-			Version:  "v1alpha2",
-			Resource: "handlers",
-		},
+		Gvr:       gvr.IstioConfigHandler,
 		Kind:      "handler",
 		Name:      r.Config.WithRevision("prometheus"),
 		Namespace: r.Config.Namespace,
@@ -116,11 +111,7 @@ func (r *Reconciler) prometheusHandler() *k8sutil.DynamicObject {
 func (r *Reconciler) requestCountMetric() *k8sutil.DynamicObject {
 	multiClusterEnabled := util.PointerToBool(r.Config.Spec.Mixer.MultiClusterSupport)
 	return &k8sutil.DynamicObject{
-		Gvr: schema.GroupVersionResource{
-			Group:    "config.istio.io",
-			Version:  "v1alpha2",
-			Resource: "instances",
-		},
+		Gvr:       gvr.IstioConfigInstance,
 		Kind:      "instance",
 		Name:      r.Config.WithRevision("requestcount"),
 		Namespace: r.Config.Namespace,
@@ -140,11 +131,7 @@ func (r *Reconciler) requestCountMetric() *k8sutil.DynamicObject {
 func (r *Reconciler) requestDurationMetric() *k8sutil.DynamicObject {
 	multiClusterEnabled := util.PointerToBool(r.Config.Spec.Mixer.MultiClusterSupport)
 	return &k8sutil.DynamicObject{
-		Gvr: schema.GroupVersionResource{
-			Group:    "config.istio.io",
-			Version:  "v1alpha2",
-			Resource: "instances",
-		},
+		Gvr:       gvr.IstioConfigInstance,
 		Kind:      "instance",
 		Name:      r.Config.WithRevision("requestduration"),
 		Namespace: r.Config.Namespace,
@@ -164,11 +151,7 @@ func (r *Reconciler) requestDurationMetric() *k8sutil.DynamicObject {
 func (r *Reconciler) requestSizeMetric() *k8sutil.DynamicObject {
 	multiClusterEnabled := util.PointerToBool(r.Config.Spec.Mixer.MultiClusterSupport)
 	return &k8sutil.DynamicObject{
-		Gvr: schema.GroupVersionResource{
-			Group:    "config.istio.io",
-			Version:  "v1alpha2",
-			Resource: "instances",
-		},
+		Gvr:       gvr.IstioConfigInstance,
 		Kind:      "instance",
 		Name:      r.Config.WithRevision("requestsize"),
 		Namespace: r.Config.Namespace,
@@ -188,11 +171,7 @@ func (r *Reconciler) requestSizeMetric() *k8sutil.DynamicObject {
 func (r *Reconciler) responseSizeMetric() *k8sutil.DynamicObject {
 	multiClusterEnabled := util.PointerToBool(r.Config.Spec.Mixer.MultiClusterSupport)
 	return &k8sutil.DynamicObject{
-		Gvr: schema.GroupVersionResource{
-			Group:    "config.istio.io",
-			Version:  "v1alpha2",
-			Resource: "instances",
-		},
+		Gvr:       gvr.IstioConfigInstance,
 		Kind:      "instance",
 		Name:      r.Config.WithRevision("responsesize"),
 		Namespace: r.Config.Namespace,
@@ -212,11 +191,7 @@ func (r *Reconciler) responseSizeMetric() *k8sutil.DynamicObject {
 func (r *Reconciler) tcpByteSentMetric() *k8sutil.DynamicObject {
 	multiClusterEnabled := util.PointerToBool(r.Config.Spec.Mixer.MultiClusterSupport)
 	return &k8sutil.DynamicObject{
-		Gvr: schema.GroupVersionResource{
-			Group:    "config.istio.io",
-			Version:  "v1alpha2",
-			Resource: "instances",
-		},
+		Gvr:       gvr.IstioConfigInstance,
 		Kind:      "instance",
 		Name:      r.Config.WithRevision("tcpbytesent"),
 		Namespace: r.Config.Namespace,
@@ -236,11 +211,7 @@ func (r *Reconciler) tcpByteSentMetric() *k8sutil.DynamicObject {
 func (r *Reconciler) tcpByteReceivedMetric() *k8sutil.DynamicObject {
 	multiClusterEnabled := util.PointerToBool(r.Config.Spec.Mixer.MultiClusterSupport)
 	return &k8sutil.DynamicObject{
-		Gvr: schema.GroupVersionResource{
-			Group:    "config.istio.io",
-			Version:  "v1alpha2",
-			Resource: "instances",
-		},
+		Gvr:       gvr.IstioConfigInstance,
 		Kind:      "instance",
 		Name:      r.Config.WithRevision("tcpbytereceived"),
 		Namespace: r.Config.Namespace,
@@ -260,11 +231,7 @@ func (r *Reconciler) tcpByteReceivedMetric() *k8sutil.DynamicObject {
 func (r *Reconciler) tcpConnectionsOpenedMetric() *k8sutil.DynamicObject {
 	multiClusterEnabled := util.PointerToBool(r.Config.Spec.Mixer.MultiClusterSupport)
 	return &k8sutil.DynamicObject{
-		Gvr: schema.GroupVersionResource{
-			Group:    "config.istio.io",
-			Version:  "v1alpha2",
-			Resource: "instances",
-		},
+		Gvr:       gvr.IstioConfigInstance,
 		Kind:      "instance",
 		Name:      r.Config.WithRevision("tcpconnectionsopened"),
 		Namespace: r.Config.Namespace,
@@ -284,11 +251,7 @@ func (r *Reconciler) tcpConnectionsOpenedMetric() *k8sutil.DynamicObject {
 func (r *Reconciler) tcpConnectionsClosedMetric() *k8sutil.DynamicObject {
 	multiClusterEnabled := util.PointerToBool(r.Config.Spec.Mixer.MultiClusterSupport)
 	return &k8sutil.DynamicObject{
-		Gvr: schema.GroupVersionResource{
-			Group:    "config.istio.io",
-			Version:  "v1alpha2",
-			Resource: "instances",
-		},
+		Gvr:       gvr.IstioConfigInstance,
 		Kind:      "instance",
 		Name:      r.Config.WithRevision("tcpconnectionsclosed"),
 		Namespace: r.Config.Namespace,
@@ -307,11 +270,7 @@ func (r *Reconciler) tcpConnectionsClosedMetric() *k8sutil.DynamicObject {
 
 func (r *Reconciler) promHttpRule() *k8sutil.DynamicObject {
 	return &k8sutil.DynamicObject{
-		Gvr: schema.GroupVersionResource{
-			Group:    "config.istio.io",
-			Version:  "v1alpha2",
-			Resource: "rules",
-		},
+		Gvr:       gvr.IstioConfigRule,
 		Kind:      "rule",
 		Name:      r.Config.WithRevision("promhttp"),
 		Namespace: r.Config.Namespace,
@@ -331,11 +290,7 @@ func (r *Reconciler) promHttpRule() *k8sutil.DynamicObject {
 
 func (r *Reconciler) promTcpRule() *k8sutil.DynamicObject {
 	return &k8sutil.DynamicObject{
-		Gvr: schema.GroupVersionResource{
-			Group:    "config.istio.io",
-			Version:  "v1alpha2",
-			Resource: "rules",
-		},
+		Gvr:       gvr.IstioConfigRule,
 		Kind:      "rule",
 		Name:      r.Config.WithRevision("promtcp"),
 		Namespace: r.Config.Namespace,
@@ -355,11 +310,7 @@ func (r *Reconciler) promTcpRule() *k8sutil.DynamicObject {
 
 func (r *Reconciler) promTcpConnectionOpenRule() *k8sutil.DynamicObject {
 	return &k8sutil.DynamicObject{
-		Gvr: schema.GroupVersionResource{
-			Group:    "config.istio.io",
-			Version:  "v1alpha2",
-			Resource: "rules",
-		},
+		Gvr:       gvr.IstioConfigRule,
 		Kind:      "rule",
 		Name:      r.Config.WithRevision("promtcpconnectionopen"),
 		Namespace: r.Config.Namespace,
@@ -379,11 +330,7 @@ func (r *Reconciler) promTcpConnectionOpenRule() *k8sutil.DynamicObject {
 
 func (r *Reconciler) promTcpConnectionClosedRule() *k8sutil.DynamicObject {
 	return &k8sutil.DynamicObject{
-		Gvr: schema.GroupVersionResource{
-			Group:    "config.istio.io",
-			Version:  "v1alpha2",
-			Resource: "rules",
-		},
+		Gvr:       gvr.IstioConfigRule,
 		Kind:      "rule",
 		Name:      r.Config.WithRevision("promtcpconnectionclosed"),
 		Namespace: r.Config.Namespace,

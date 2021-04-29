@@ -154,7 +154,9 @@ e2e-test-dependencies:
 
 .PHONY: e2e-test-env
 e2e-test-env: e2e-test-dependencies
-	env PATH=./bin:$${PATH} ./scripts/e2e-test/setup-env.sh ${ISTIO_VERSION}
+	# There's an issue (https://github.com/banzaicloud/istio-operator/issues/643) with resource cleanup on
+	# k8s 1.20, so running the tests on 1.19.7 for now
+	env PATH=./bin:$${PATH} ./scripts/e2e-test/setup-env.sh 1.19.7 ${ISTIO_VERSION}
 
 .PHONY: e2e-test-install-istio-operator
 e2e-test-install-istio-operator: export PATH:=./bin:${PATH}
@@ -170,11 +172,12 @@ e2e-test-install-istio-operator: docker-build
 		istio-operator-e2e-test \
 		deploy/charts/istio-operator/
 
-	# TODO maybe wait until all pods are up and running?
-	#  `helm --wait` only waits for the pods installed by helm. Usually, when the istio-operator is ready,
-	#  a couple of pods in kube-system are still just starting up. It works out fine now, probably because
-	#  there is a wait in TestMain for the cluster to be reachable. Waiting here for all pods might result
-	#  in a lower load on the cluster when the actual tests start, so it might remove some flakiness.
+	# Wait for all pods to be ready. `helm --wait` only waits for the pods installed by helm. Usually,
+	# when the istio-operator is ready, a couple of pods in kube-system are still just starting up. It
+	# works out fine now, probably because there is a wait in TestMain for the cluster to be reachable.
+	# Waiting here for all pods might result in a lower load on the cluster when the actual tests
+	# start, so it might remove some flakiness.
+	kubectl wait pod --all-namespaces --all --for=condition=ready --timeout=60s
 
 .PHONY: e2e-test
 e2e-test: export PATH:=./bin:${PATH}

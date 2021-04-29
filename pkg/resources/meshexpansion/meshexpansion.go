@@ -17,9 +17,8 @@ limitations under the License.
 package meshexpansion
 
 import (
-	"k8s.io/apimachinery/pkg/runtime/schema"
-
 	"github.com/banzaicloud/istio-operator/pkg/k8sutil"
+	"github.com/banzaicloud/istio-operator/pkg/resources/gvr"
 	"github.com/banzaicloud/istio-operator/pkg/util"
 )
 
@@ -49,11 +48,7 @@ func (r *Reconciler) meshExpansionGateway(selector map[string]string) *k8sutil.D
 	}
 
 	return &k8sutil.DynamicObject{
-		Gvr: schema.GroupVersionResource{
-			Group:    "networking.istio.io",
-			Version:  "v1alpha3",
-			Resource: "gateways",
-		},
+		Gvr:       gvr.Gateway,
 		Kind:      "Gateway",
 		Name:      r.Config.WithRevision("meshexpansion-gateway"),
 		Namespace: r.Config.Namespace,
@@ -68,11 +63,7 @@ func (r *Reconciler) meshExpansionGateway(selector map[string]string) *k8sutil.D
 
 func (r *Reconciler) clusterAwareGateway(selector map[string]string) *k8sutil.DynamicObject {
 	return &k8sutil.DynamicObject{
-		Gvr: schema.GroupVersionResource{
-			Group:    "networking.istio.io",
-			Version:  "v1alpha3",
-			Resource: "gateways",
-		},
+		Gvr:       gvr.Gateway,
 		Kind:      "Gateway",
 		Name:      r.Config.WithRevision("cluster-aware-gateway"),
 		Namespace: r.Config.Namespace,

@@ -17,18 +17,13 @@ limitations under the License.
 package mixer
 
 import (
-	"k8s.io/apimachinery/pkg/runtime/schema"
-
 	"github.com/banzaicloud/istio-operator/pkg/k8sutil"
+	"github.com/banzaicloud/istio-operator/pkg/resources/gvr"
 )
 
 func (r *Reconciler) istioProxyAttributeManifest() *k8sutil.DynamicObject {
 	return &k8sutil.DynamicObject{
-		Gvr: schema.GroupVersionResource{
-			Group:    "config.istio.io",
-			Version:  "v1alpha2",
-			Resource: "attributemanifests",
-		},
+		Gvr:       gvr.AttributeManifest,
 		Kind:      "attributemanifest",
 		Name:      r.Config.WithRevision("istioproxy"),
 		Namespace: r.Config.Namespace,
@@ -107,11 +102,7 @@ func (r *Reconciler) istioProxyAttributeManifest() *k8sutil.DynamicObject {
 
 func (r *Reconciler) kubernetesAttributeManifest() *k8sutil.DynamicObject {
 	return &k8sutil.DynamicObject{
-		Gvr: schema.GroupVersionResource{
-			Group:    "config.istio.io",
-			Version:  "v1alpha2",
-			Resource: "attributemanifests",
-		},
+		Gvr:       gvr.AttributeManifest,
 		Kind:      "attributemanifest",
 		Name:      r.Config.WithRevision("kubernetes"),
 		Namespace: r.Config.Namespace,

@@ -17,18 +17,13 @@ limitations under the License.
 package mixer
 
 import (
-	"k8s.io/apimachinery/pkg/runtime/schema"
-
 	"github.com/banzaicloud/istio-operator/pkg/k8sutil"
+	"github.com/banzaicloud/istio-operator/pkg/resources/gvr"
 )
 
 func (r *Reconciler) policyDestinationRule() *k8sutil.DynamicObject {
 	dr := &k8sutil.DynamicObject{
-		Gvr: schema.GroupVersionResource{
-			Group:    "networking.istio.io",
-			Version:  "v1alpha3",
-			Resource: "destinationrules",
-		},
+		Gvr:       gvr.DestinationRule,
 		Kind:      "DestinationRule",
 		Name:      r.Config.WithRevision("istio-policy"),
 		Namespace: r.Config.Namespace,
@@ -50,11 +45,7 @@ func (r *Reconciler) policyDestinationRule() *k8sutil.DynamicObject {
 
 func (r *Reconciler) telemetryDestinationRule() *k8sutil.DynamicObject {
 	dr := &k8sutil.DynamicObject{
-		Gvr: schema.GroupVersionResource{
-			Group:    "networking.istio.io",
-			Version:  "v1alpha3",
-			Resource: "destinationrules",
-		},
+		Gvr:       gvr.DestinationRule,
 		Kind:      "DestinationRule",
 		Name:      r.Config.WithRevision("istio-telemetry"),
 		Namespace: r.Config.Namespace,

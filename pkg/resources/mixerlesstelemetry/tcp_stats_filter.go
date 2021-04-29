@@ -20,11 +20,11 @@ import (
 	"fmt"
 	"strconv"
 
-	"github.com/banzaicloud/istio-operator/pkg/util"
 	"github.com/ghodss/yaml"
-	"k8s.io/apimachinery/pkg/runtime/schema"
 
 	"github.com/banzaicloud/istio-operator/pkg/k8sutil"
+	"github.com/banzaicloud/istio-operator/pkg/resources/gvr"
+	"github.com/banzaicloud/istio-operator/pkg/util"
 )
 
 func (r *Reconciler) tcpStatsFilter(version string, tcpStatsFilterYAML string) *k8sutil.DynamicObject {
@@ -43,11 +43,7 @@ func (r *Reconciler) tcpStatsFilter(version string, tcpStatsFilterYAML string) *
 	yaml.Unmarshal([]byte(fmt.Sprintf(tcpStatsFilterYAML, vmConfigLocal, vmConfigRuntime, strconv.FormatBool(vmConfigAllowPrecompiled), r.metadataMatch(10))), &y)
 
 	return &k8sutil.DynamicObject{
-		Gvr: schema.GroupVersionResource{
-			Group:    "networking.istio.io",
-			Version:  "v1alpha3",
-			Resource: "envoyfilters",
-		},
+		Gvr:       gvr.EnvoyFilter,
 		Kind:      "EnvoyFilter",
 		Name:      r.Config.WithRevision(fmt.Sprintf("%s-tcp-stats-filter-%s", componentName, version)),
 		Namespace: r.Config.Namespace,

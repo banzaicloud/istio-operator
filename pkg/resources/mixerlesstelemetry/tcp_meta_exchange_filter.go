@@ -20,9 +20,9 @@ import (
 	"fmt"
 
 	"github.com/ghodss/yaml"
-	"k8s.io/apimachinery/pkg/runtime/schema"
 
 	"github.com/banzaicloud/istio-operator/pkg/k8sutil"
+	"github.com/banzaicloud/istio-operator/pkg/resources/gvr"
 )
 
 func (r *Reconciler) tcpMetaExchangeEnvoyFilter(version string, tcpMetadataExchangeFilterYAML string) *k8sutil.DynamicObject {
@@ -30,11 +30,7 @@ func (r *Reconciler) tcpMetaExchangeEnvoyFilter(version string, tcpMetadataExcha
 	yaml.Unmarshal([]byte(fmt.Sprintf(tcpMetadataExchangeFilterYAML, r.metadataMatch(12))), &y)
 
 	return &k8sutil.DynamicObject{
-		Gvr: schema.GroupVersionResource{
-			Group:    "networking.istio.io",
-			Version:  "v1alpha3",
-			Resource: "envoyfilters",
-		},
+		Gvr:       gvr.EnvoyFilter,
 		Kind:      "EnvoyFilter",
 		Name:      r.Config.WithRevision(fmt.Sprintf("%s-tcp-metadata-exchange-%s", componentName, version)),
 		Namespace: r.Config.Namespace,
