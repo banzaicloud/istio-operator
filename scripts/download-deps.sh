@@ -46,6 +46,7 @@ ensure-binary-version controller-gen ${controller_gen_version} "sigs.k8s.io/cont
 ensure-binary-version cue-gen ${istio_deps_version} "istio.io/tools/cmd/cue-gen@${istio_deps_version}"
 ensure-binary-version protoc-gen-deepcopy ${istio_deps_version} "istio.io/tools/cmd/protoc-gen-deepcopy@${istio_deps_version}"
 ensure-binary-version protoc-gen-jsonshim ${istio_deps_version} "istio.io/tools/cmd/protoc-gen-jsonshim@${istio_deps_version}"
+ensure-binary-version protoc-gen-docs ${istio_deps_version} "istio.io/tools/cmd/protoc-gen-docs@${istio_deps_version}"
 ensure-binary-version protoc-gen-gogofast ${gogo_protobuf_version} "github.com/gogo/protobuf/protoc-gen-gogofast@v${gogo_protobuf_version}"
 
 go mod tidy
