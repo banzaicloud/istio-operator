@@ -41,7 +41,7 @@ var _ = Describe("E2E", func() {
 	)
 
 	BeforeEach(func() {
-		log = testEnv.Log.WithName(CurrentGinkgoTestDescription().FullTestText)
+		log = testEnv.Log.WithName(getLoggerName(CurrentGinkgoTestDescription()))
 
 		var err error
 		clusterStateBeforeTests, err = listAllResources(testEnv.Dynamic)

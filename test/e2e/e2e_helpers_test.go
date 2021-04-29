@@ -47,6 +47,9 @@ import (
 	"github.com/banzaicloud/istio-operator/test/e2e/util"
 )
 
+func getLoggerName(gtd ginkgo.GinkgoTestDescription) string {
+	return strings.Join(gtd.ComponentTexts, "/")
+}
 
 type IstioTestEnv struct {
 	log logr.Logger
