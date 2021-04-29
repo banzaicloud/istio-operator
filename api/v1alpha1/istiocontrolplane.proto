@@ -46,6 +46,7 @@ option go_package = "github.com/banzaicloud/istio-operator/v2/api/v1alpha1";
 // +k8s:deepcopy-gen=true
 // -->
 message IstioControlPlaneSpec {
+    // Defines mesh-wide settings for the Istio control plane.
     istio.mesh.v1alpha1.MeshConfig mesh_config = 1;
 }
 

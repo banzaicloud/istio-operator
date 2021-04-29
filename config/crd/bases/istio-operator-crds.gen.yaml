@@ -33,6 +33,7 @@ spec:
           spec:
             properties:
               meshConfig:
+                description: Defines mesh-wide settings for the Istio control plane.
                 properties:
                   accessLogEncoding:
                     description: Encoding for the proxy access log (`TEXT` or `JSON`).
