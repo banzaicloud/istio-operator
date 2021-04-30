@@ -1,3 +1,5 @@
+SHELL := /bin/bash -euo pipefail
+
 # Image URL to use all building/pushing image targets
 TAG ?= $(shell git describe --tags --abbrev=0 --match '[0-9].*[0-9].*[0-9]' 2>/dev/null )
 IMAGE_REPOSITORY ?= banzaicloud/istio-operator
