@@ -56,6 +56,8 @@ var _ = Describe("E2E", func() {
 		istioTestEnv.WaitForIstioReconcile()
 	})
 
+	JustAfterEach(func() {testEnv.ClusterStateDumper.Dump(CurrentGinkgoTestDescription())})
+
 	AfterEach(func() {
 		maybeCleanup(log, "Test failed, not waiting for cleanup", func() {
 			istioTestEnv.Close()

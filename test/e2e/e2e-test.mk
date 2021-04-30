@@ -12,6 +12,8 @@
 # Currently, it's not possible to run the tests with a different istio-operator version.
 E2E_TEST_TAG ?= e2e-test
 
+E2E_LOG_DIR ?= ${PWD}/logs
+
 E2E_TEST_FAIL_FAST ?= 0
 
 ifeq (${E2E_TEST_FAIL_FAST}, 1)
@@ -51,8 +53,11 @@ e2e-test-install-istio-operator: docker-build
 
 .PHONY: e2e-test
 e2e-test: download-deps e2e-test-install-istio-operator
-	env E2E_TEST_FAIL_FAST=${E2E_TEST_FAIL_FAST} \
-		bin/ginkgo ${E2E_TEST_GINKGO_ARGS} --randomizeSuites --randomizeAllSpecs --timeout 10m -v ./test/e2e/...
+	mkdir -p ${E2E_LOG_DIR}
+	env E2E_TEST_FAIL_FAST=${E2E_TEST_FAIL_FAST} E2E_LOG_DIR=${E2E_LOG_DIR} \
+		E2E_TEST_DUMP_SCRIPT=${PWD}/scripts/dump-cluster-state-and-logs.sh \
+		bin/ginkgo ${E2E_TEST_GINKGO_ARGS} --randomizeSuites --randomizeAllSpecs --timeout 10m -v ./test/e2e/... \
+			| tee ${E2E_LOG_DIR}/e2e-test.log
 
     # TODO collect used docker images and compare with known list. This list can be used to preload the images into kind
     # TODO  `kind export logs` and look for "ImageCreate" in containerd.log
