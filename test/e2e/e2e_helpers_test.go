@@ -354,6 +354,7 @@ func clusterIsClean(before ClusterResourceList, after ClusterResourceList) bool 
 
 // TODO add more resource types
 func listAllResources(d dynamic.Interface) (ClusterResourceList, error) {
+	// This list should probably match the list in dump-cluster-state-and-logs.sh
 	gvrs := []schema.GroupVersionResource{
 		gvr.Service,
 		gvr.Pod,
