@@ -57,12 +57,10 @@ var _ = Describe("E2E", func() {
 	})
 
 	AfterEach(func() {
-		if CurrentGinkgoTestDescription().Failed {
-			log.Info("Test failed, not waiting for cleanup")
-		} else {
+		maybeCleanup(log, "Test failed, not waiting for cleanup", func() {
 			istioTestEnv.Close()
 			WaitForCleanup(log, clusterStateBeforeTests, 60*time.Second, 100*time.Millisecond)
-		}
+		})
 	})
 
 	Describe("tests with minimal istio resource", func() {
@@ -96,11 +94,9 @@ var _ = Describe("E2E", func() {
 			})
 
 			AfterEach(func() {
-				if CurrentGinkgoTestDescription().Failed {
-					log.Info("Test failed, not cleaning up")
-				} else {
+				maybeCleanup(log, "Test failed, not cleaning up", func() {
 					Expect(resources.DeleteResources(testEnv.Client, resourcesFile)).To(Succeed())
-				}
+				})
 			})
 
 			It("sets up working ingress", func() {

@@ -19,6 +19,7 @@ package e2e
 import (
 	"io/ioutil"
 	"net/http"
+	"os"
 	"path/filepath"
 	"reflect"
 	"sort"
@@ -49,6 +50,18 @@ import (
 
 func getLoggerName(gtd ginkgo.GinkgoTestDescription) string {
 	return strings.Join(gtd.ComponentTexts, "/")
+}
+
+func shouldFailFast() bool {
+	return os.Getenv("E2E_TEST_FAIL_FAST") == "1"
+}
+
+func maybeCleanup(log logr.Logger, noCleanupMsg string, cleanup func()) {
+	if shouldFailFast() && ginkgo.CurrentGinkgoTestDescription().Failed {
+		log.Info(noCleanupMsg)
+	} else {
+		cleanup()
+	}
 }
 
 type IstioTestEnv struct {
