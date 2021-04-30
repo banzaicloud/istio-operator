@@ -1,8 +1,9 @@
 apiVersion: servicemesh.cisco.com/v1alpha1
 kind: IstioControlPlane
 metadata:
-  name: icp-sample
+  name: icp-v10x-sample
 spec:
+  version: 1.10.0-rc.0
   meshConfig:
     proxyListenPort: 15001
     connectTimeout: 10s
@@ -23,7 +24,7 @@ spec:
       serviceCluster: istio-proxy
       drainDuration: 45s
       parentShutdownDuration: 60s
-      discoveryAddress: istiod-icp-v110x.istio-system.svc:15012
+      discoveryAddress: istiod-icp-v10x-sample.istio-system.svc:15012
       proxyAdminPort: 15000
       controlPlaneAuthPolicy: MUTUAL_TLS
       concurrency: 2
