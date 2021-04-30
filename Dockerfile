@@ -15,6 +15,7 @@ RUN go mod download
 
 COPY pkg/    pkg/
 COPY cmd/    cmd/
+COPY test/e2e/e2e-test.mk /go/src/${PACKAGE}/test/e2e/
 COPY Makefile go.* /go/src/${PACKAGE}/
 RUN make vendor
 
