@@ -31,6 +31,7 @@ spec:
       openAPIV3Schema:
         properties:
           spec:
+            description: IstioControlPlane defines an Istio control plane.
             properties:
               meshConfig:
                 description: Defines mesh-wide settings for the Istio control plane.
@@ -46,6 +47,9 @@ spec:
                     format: string
                     type: string
                   accessLogFormat:
+                    description: |-
+                      Format for the proxy access log
+                      Empty value results in proxy's default access log format.
                     format: string
                     type: string
                   ca:
@@ -55,14 +59,23 @@ spec:
                         format: string
                         type: string
                       istiodSide:
+                        description: |-
+                          Use istiod_side to specify CA Server integrate to Istiod side or Agent side
+                          Default: true.
                         type: boolean
                       requestTimeout:
+                        description: |-
+                          timeout for forward CSR requests from Istiod to External CA
+                          Default: 10s.
                         type: string
                       tlsSettings:
                         description: Use the tls_settings to specify the tls mode
                           to use.
                         properties:
                           caCertificates:
+                            description: |-
+                              OPTIONAL: The path to the file containing certificate authority
+                              certificates to use in verifying a presented server certificate.
                             format: string
                             type: string
                           clientCertificate:
@@ -70,9 +83,15 @@ spec:
                             format: string
                             type: string
                           credentialName:
+                            description: |-
+                              The name of the secret that holds the TLS certs for the
+                              client including the CA certificates.
                             format: string
                             type: string
                           mode:
+                            description: |-
+                              Indicates whether connections to this port should be secured
+                              using TLS.
                             enum:
                             - DISABLE
                             - SIMPLE
@@ -89,6 +108,9 @@ spec:
                             format: string
                             type: string
                           subjectAltNames:
+                            description: |-
+                              A list of alternate names to verify the subject identity in the
+                              certificate.
                             items:
                               format: string
                               type: string
@@ -116,6 +138,12 @@ spec:
                           format: string
                           type: string
                         spiffeBundleUrl:
+                          description: |-
+                            The SPIFFE bundle endpoint URL that complies to:
+                            https://github.com/spiffe/spiffe/blob/master/standards/SPIFFE_Trust_Domain_and_Bundle.md#the-spiffe-trust-domain-and-bundle
+                            The endpoint should support authentication based on Web PKI:
+                            https://github.com/spiffe/spiffe/blob/master/standards/SPIFFE_Trust_Domain_and_Bundle.md#521-web-pki
+                            The certificate is retrieved from the endpoint.
                           format: string
                           type: string
                       type: object
@@ -138,12 +166,20 @@ spec:
                       type: object
                     type: array
                   configSources:
+                    description: |-
+                      ConfigSource describes a source of configuration data for networking
+                      rules, and other Istio configuration artifacts.
                     items:
                       properties:
                         address:
+                          description: |-
+                            Address of the server implementing the Istio Mesh Configuration
+                            protocol (MCP).
                           format: string
                           type: string
                         subscribedResources:
+                          description: Describes the source of configuration, if nothing
+                            is specified default is MCP.
                           items:
                             enum:
                             - SERVICE_REGISTRY
@@ -154,6 +190,9 @@ spec:
                             to use.
                           properties:
                             caCertificates:
+                              description: |-
+                                OPTIONAL: The path to the file containing certificate authority
+                                certificates to use in verifying a presented server certificate.
                               format: string
                               type: string
                             clientCertificate:
@@ -161,9 +200,15 @@ spec:
                               format: string
                               type: string
                             credentialName:
+                              description: |-
+                                The name of the secret that holds the TLS certs for the
+                                client including the CA certificates.
                               format: string
                               type: string
                             mode:
+                              description: |-
+                                Indicates whether connections to this port should be secured
+                                using TLS.
                               enum:
                               - DISABLE
                               - SIMPLE
@@ -180,6 +225,9 @@ spec:
                               format: string
                               type: string
                             subjectAltNames:
+                              description: |-
+                                A list of alternate names to verify the subject identity in the
+                                certificate.
                               items:
                                 format: string
                                 type: string
@@ -197,6 +245,7 @@ spec:
                         format: string
                         type: string
                       binaryPath:
+                        description: Path to the proxy binary.
                         format: string
                         type: string
                       caCertificatesPem:
@@ -223,6 +272,9 @@ spec:
                         - INHERIT
                         type: string
                       customConfigFile:
+                        description: |-
+                          File path of custom proxy configuration, currently used by proxies
+                          in front of Mixer and Pilot.
                         format: string
                         type: string
                       discoveryAddress:
@@ -233,10 +285,19 @@ spec:
                       discoveryRefreshDelay:
                         type: string
                       drainDuration:
+                        description: |-
+                          The time in seconds that Envoy will drain connections during a hot
+                          restart.
                         type: string
                       envoyAccessLogService:
+                        description: |-
+                          Address of the service to which access logs from Envoys should be
+                          sent.
                         properties:
                           address:
+                            description: |-
+                              Address of a remove service used for various purposes (access log
+                              receiver, metrics receiver, etc.).
                             format: string
                             type: string
                           tcpKeepalive:
@@ -248,8 +309,14 @@ spec:
                                   probes.
                                 type: string
                               probes:
+                                description: |-
+                                  Maximum number of keepalive probes to send without response before
+                                  deciding the connection is dead.
                                 type: integer
                               time:
+                                description: |-
+                                  The time duration a connection needs to be idle before keep-alive
+                                  probes start being sent.
                                 type: string
                             type: object
                           tlsSettings:
@@ -257,6 +324,9 @@ spec:
                               mode to use.
                             properties:
                               caCertificates:
+                                description: |-
+                                  OPTIONAL: The path to the file containing certificate authority
+                                  certificates to use in verifying a presented server certificate.
                                 format: string
                                 type: string
                               clientCertificate:
@@ -264,9 +334,15 @@ spec:
                                 format: string
                                 type: string
                               credentialName:
+                                description: |-
+                                  The name of the secret that holds the TLS certs for the
+                                  client including the CA certificates.
                                 format: string
                                 type: string
                               mode:
+                                description: |-
+                                  Indicates whether connections to this port should be secured
+                                  using TLS.
                                 enum:
                                 - DISABLE
                                 - SIMPLE
@@ -283,6 +359,9 @@ spec:
                                 format: string
                                 type: string
                               subjectAltNames:
+                                description: |-
+                                  A list of alternate names to verify the subject identity in the
+                                  certificate.
                                 items:
                                   format: string
                                   type: string
@@ -294,6 +373,9 @@ spec:
                           (e.g.
                         properties:
                           address:
+                            description: |-
+                              Address of a remove service used for various purposes (access log
+                              receiver, metrics receiver, etc.).
                             format: string
                             type: string
                           tcpKeepalive:
@@ -305,8 +387,14 @@ spec:
                                   probes.
                                 type: string
                               probes:
+                                description: |-
+                                  Maximum number of keepalive probes to send without response before
+                                  deciding the connection is dead.
                                 type: integer
                               time:
+                                description: |-
+                                  The time duration a connection needs to be idle before keep-alive
+                                  probes start being sent.
                                 type: string
                             type: object
                           tlsSettings:
@@ -314,6 +402,9 @@ spec:
                               mode to use.
                             properties:
                               caCertificates:
+                                description: |-
+                                  OPTIONAL: The path to the file containing certificate authority
+                                  certificates to use in verifying a presented server certificate.
                                 format: string
                                 type: string
                               clientCertificate:
@@ -321,9 +412,15 @@ spec:
                                 format: string
                                 type: string
                               credentialName:
+                                description: |-
+                                  The name of the secret that holds the TLS certs for the
+                                  client including the CA certificates.
                                 format: string
                                 type: string
                               mode:
+                                description: |-
+                                  Indicates whether connections to this port should be secured
+                                  using TLS.
                                 enum:
                                 - DISABLE
                                 - SIMPLE
@@ -340,6 +437,9 @@ spec:
                                 format: string
                                 type: string
                               subjectAltNames:
+                                description: |-
+                                  A list of alternate names to verify the subject identity in the
+                                  certificate.
                                 items:
                                   format: string
                                   type: string
@@ -383,9 +483,15 @@ spec:
                         - TPROXY
                         type: string
                       meshId:
+                        description: |-
+                          The unique identifier for the [service mesh](https://istio.io/docs/reference/glossary/#service-mesh)
+                          All control planes running in the same service mesh should specify the same mesh ID.
                         format: string
                         type: string
                       parentShutdownDuration:
+                        description: |-
+                          The time in seconds that Envoy will wait before shutting down the
+                          parent process during a hot restart.
                         type: string
                       proxyAdminPort:
                         description: Port on which Envoy should listen for administrative
@@ -393,6 +499,7 @@ spec:
                         format: int32
                         type: integer
                       proxyBootstrapTemplatePath:
+                        description: Path to the proxy bootstrap template file.
                         format: string
                         type: string
                       proxyMetadata:
@@ -459,6 +566,9 @@ spec:
                             format: int32
                             type: integer
                           httpGet:
+                            description: |-
+                              `httpGet` is performed to a given endpoint
+                              and the status/able to connect determines health.
                             properties:
                               host:
                                 description: Host name to connect to, defaults to
@@ -471,9 +581,11 @@ spec:
                                 items:
                                   properties:
                                     name:
+                                      description: The header field name.
                                       format: string
                                       type: string
                                     value:
+                                      description: The header field value.
                                       format: string
                                       type: string
                                   type: object
@@ -486,6 +598,7 @@ spec:
                                 description: Port on which the endpoint lives.
                                 type: integer
                               scheme:
+                                description: HTTP or HTTPS, defaults to HTTP.
                                 format: string
                                 type: string
                             type: object
@@ -508,9 +621,11 @@ spec:
                               to connect.
                             properties:
                               host:
+                                description: Host to connect to, defaults to localhost.
                                 format: string
                                 type: string
                               port:
+                                description: Port of host.
                                 type: integer
                             type: object
                           timeoutSeconds:
@@ -532,6 +647,9 @@ spec:
                             type: string
                         type: object
                       serviceCluster:
+                        description: |-
+                          Service cluster defines the name for the `service_cluster` that is
+                          shared by all Envoy instances.
                         format: string
                         type: string
                       statNameLength:
@@ -597,15 +715,27 @@ spec:
                                 - header
                               properties:
                                 environment:
+                                  description: |-
+                                    The custom tag's value should be populated from an environmental
+                                    variable.
                                   properties:
                                     defaultValue:
+                                      description: |-
+                                        When the environment variable is not found,
+                                        the tag's value will be populated with this default value if specified,
+                                        otherwise the tag will not be populated.
                                       format: string
                                       type: string
                                     name:
+                                      description: Name of the environment variable
+                                        used to populate the tag's value.
                                       format: string
                                       type: string
                                   type: object
                                 header:
+                                  description: |-
+                                    The custom tag's value is populated by an http header from
+                                    an incoming request.
                                   properties:
                                     defaultValue:
                                       description: Default value to be used for the
@@ -653,6 +783,9 @@ spec:
                                 type: string
                             type: object
                           maxPathTagLength:
+                            description: |-
+                              Configures the maximum length of the request path to extract and include in the
+                              HttpUrl tag.
                             type: integer
                           openCensusAgent:
                             description: Use an OpenCensus tracer exporting to an
@@ -664,6 +797,9 @@ spec:
                                 format: string
                                 type: string
                               context:
+                                description: |-
+                                  Specifies the set of context propagation headers used for distributed
+                                  tracing.
                                 items:
                                   enum:
                                   - UNSPECIFIED
@@ -675,6 +811,9 @@ spec:
                                 type: array
                             type: object
                           sampling:
+                            description: |-
+                              The percentage of requests (0.0 - 100.0) that will be randomly selected for trace generation,
+                              if not requested by the client or not forced.
                             format: double
                             type: number
                           stackdriver:
@@ -704,6 +843,9 @@ spec:
                               to use.
                             properties:
                               caCertificates:
+                                description: |-
+                                  OPTIONAL: The path to the file containing certificate authority
+                                  certificates to use in verifying a presented server certificate.
                                 format: string
                                 type: string
                               clientCertificate:
@@ -711,9 +853,15 @@ spec:
                                 format: string
                                 type: string
                               credentialName:
+                                description: |-
+                                  The name of the secret that holds the TLS certs for the
+                                  client including the CA certificates.
                                 format: string
                                 type: string
                               mode:
+                                description: |-
+                                  Indicates whether connections to this port should be secured
+                                  using TLS.
                                 enum:
                                 - DISABLE
                                 - SIMPLE
@@ -730,6 +878,9 @@ spec:
                                 format: string
                                 type: string
                               subjectAltNames:
+                                description: |-
+                                  A list of alternate names to verify the subject identity in the
+                                  certificate.
                                 items:
                                   format: string
                                   type: string
@@ -766,6 +917,9 @@ spec:
                         type: string
                     type: object
                   defaultServiceExportTo:
+                    description: |-
+                      The default value for the ServiceEntry.export_to field and services
+                      imported through container registry integrations, e.g.
                     items:
                       format: string
                       type: string
@@ -781,6 +935,9 @@ spec:
                     description: This flag disables Envoy Listener logs.
                     type: boolean
                   discoverySelectors:
+                    description: |-
+                      A list of Kubernetes selectors that specify the set of namespaces that Istio considers when
+                      computing configuration updates for sidecars.
                     items:
                       properties:
                         matchExpressions:
@@ -815,14 +972,23 @@ spec:
                       type: object
                     type: array
                   dnsRefreshRate:
+                    description: |-
+                      Configures DNS refresh rate for Envoy clusters of type `STRICT_DNS`
+                      Default refresh rate is `5s`.
                     type: string
                   enableAutoMtls:
+                    description: |-
+                      This flag is used to enable mutual `TLS` automatically for service to service communication
+                      within the mesh, default true.
                     nullable: true
                     type: boolean
                   enableEnvoyAccessLogService:
                     description: This flag enables Envoy's gRPC Access Log Service.
                     type: boolean
                   enablePrometheusMerge:
+                    description: |-
+                      If enabled, Istio agent will merge metrics exposed by the application with metrics from Envoy
+                      and Istio agent.
                     nullable: true
                     type: boolean
                   enableTracing:
@@ -885,6 +1051,9 @@ spec:
                             using the gRPC API.
                           properties:
                             failOpen:
+                              description: |-
+                                If true, the HTTP request or TCP connection will be allowed even if the communication with the authorization service has failed,
+                                or if the authorization service has returned a HTTP 5xx error.
                               type: boolean
                             includeRequestBodyInCheck:
                               description: If set, the client request body will be
@@ -901,6 +1070,9 @@ spec:
                                     body that the ext-authz filter will hold in memory.
                                   type: integer
                                 packAsBytes:
+                                  description: |-
+                                    If true, the body sent to the external authorization service in the gRPC authorization request is set with raw bytes
+                                    in the raw_body field (https://github.com/envoyproxy/envoy/blame/cffb095d59d7935abda12b9509bcd136808367bb/api/envoy/service/auth/v3/attribute_context.proto#L153).
                                   type: boolean
                               type: object
                             port:
@@ -928,13 +1100,22 @@ spec:
                             using the HTTP API.
                           properties:
                             failOpen:
+                              description: |-
+                                If true, the user request will be allowed even if the communication with the authorization service has failed,
+                                or if the authorization service has returned a HTTP 5xx error.
                               type: boolean
                             headersToDownstreamOnDeny:
+                              description: |-
+                                List of headers from the authorization service that should be forwarded to downstream when the authorization
+                                check result is not allowed (HTTP code other than 200).
                               items:
                                 format: string
                                 type: string
                               type: array
                             headersToUpstreamOnAllow:
+                              description: |-
+                                List of headers from the authorization service that should be added or overridden in the original request and
+                                forwarded to the upstream when the authorization check result is allowed (HTTP code 200).
                               items:
                                 format: string
                                 type: string
@@ -968,6 +1149,9 @@ spec:
                                     body that the ext-authz filter will hold in memory.
                                   type: integer
                                 packAsBytes:
+                                  description: |-
+                                    If true, the body sent to the external authorization service in the gRPC authorization request is set with raw bytes
+                                    in the raw_body field (https://github.com/envoyproxy/envoy/blame/cffb095d59d7935abda12b9509bcd136808367bb/api/envoy/service/auth/v3/attribute_context.proto#L153).
                                   type: boolean
                               type: object
                             includeRequestHeadersInCheck:
@@ -1028,6 +1212,9 @@ spec:
                           description: Configures an OpenCensusAgent tracing provider.
                           properties:
                             context:
+                              description: |-
+                                Specifies the set of context propagation headers used for distributed
+                                tracing.
                               items:
                                 enum:
                                 - UNSPECIFIED
@@ -1103,6 +1290,9 @@ spec:
                     format: string
                     type: string
                   ingressClass:
+                    description: |-
+                      Class of ingress resources to be processed by Istio ingress
+                      controller.
                     format: string
                     type: string
                   ingressControllerMode:
@@ -1160,6 +1350,9 @@ spec:
                               format: string
                               type: string
                             to:
+                              description: |-
+                                Destination region the traffic will fail over to when endpoints in
+                                the 'from' region becomes unhealthy.
                               format: string
                               type: string
                           type: object
@@ -1171,6 +1364,9 @@ spec:
                     format: string
                     type: string
                   outboundTrafficPolicy:
+                    description: |-
+                      Set the default behavior of the sidecar for handling outbound
+                      traffic from the application.
                     properties:
                       mode:
                         enum:
@@ -1179,6 +1375,11 @@ spec:
                         type: string
                     type: object
                   protocolDetectionTimeout:
+                    description: |-
+                      Automatic protocol detection uses a set of heuristics to
+                      determine whether the connection is using TLS or not (on the
+                      server side), as well as the application protocol being used
+                      (e.g., http vs tcp).
                     type: string
                   proxyHttpPort:
                     description: Port on which Envoy should listen for HTTP PROXY
@@ -1186,9 +1387,15 @@ spec:
                     format: int32
                     type: integer
                   proxyListenPort:
+                    description: |-
+                      Port on which Envoy should listen for incoming connections from
+                      other services.
                     format: int32
                     type: integer
                   rootNamespace:
+                    description: |-
+                      The namespace to treat as the administrative root namespace for
+                      Istio configuration.
                     format: string
                     type: string
                   serviceSettings:
@@ -1219,11 +1426,18 @@ spec:
                         description: The time duration between keep-alive probes.
                         type: string
                       probes:
+                        description: |-
+                          Maximum number of keepalive probes to send without response before
+                          deciding the connection is dead.
                         type: integer
                       time:
+                        description: |-
+                          The time duration a connection needs to be idle before keep-alive
+                          probes start being sent.
                         type: string
                     type: object
                   thriftConfig:
+                    description: Set configuration for Thrift protocol.
                     properties:
                       rateLimitTimeout:
                         description: Specify thrift rate limit service timeout, in
@@ -1247,6 +1461,10 @@ spec:
                       type: string
                     type: array
                   verifyCertificateAtClient:
+                    description: |-
+                      `VerifyCertificateAtClient` sets the mesh global default for peer certificate validation
+                      at the client-side proxy when `SIMPLE` TLS or `MUTUAL` TLS (non `ISTIO_MUTUAL`) origination
+                      modes are used.
                     nullable: true
                     type: boolean
                 type: object
