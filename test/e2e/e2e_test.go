@@ -56,7 +56,13 @@ var _ = Describe("E2E", func() {
 		istioTestEnv.WaitForIstioReconcile()
 	})
 
-	JustAfterEach(func() {testEnv.ClusterStateDumper.Dump(CurrentGinkgoTestDescription())})
+	// TODO Move this out of this "Describe" somehow. It should automatically run after all failed tests, not just the
+	//  ones in this "Describe".
+	JustAfterEach(func() {
+		if CurrentGinkgoTestDescription().Failed {
+			testEnv.ClusterStateDumper.Dump(CurrentGinkgoTestDescription())
+		}
+	})
 
 	AfterEach(func() {
 		maybeCleanup(log, "Test failed, not waiting for cleanup", func() {
