@@ -1468,6 +1468,11 @@ spec:
                     nullable: true
                     type: boolean
                 type: object
+              version:
+                description: Contains the intended version for the Istio control plane.
+                format: string
+                pattern: ^1.
+                type: string
             type: object
           status:
             type: object
