@@ -19,15 +19,16 @@ package e2e
 import (
 	"io/ioutil"
 	"net/http"
+	"path/filepath"
 	"reflect"
 	"sort"
-	"testing"
+	"strings"
 	"time"
 
 	"emperror.dev/errors"
+	"github.com/go-logr/logr"
+	"github.com/onsi/ginkgo"
 	"github.com/onsi/gomega"
-	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/require"
 	"golang.org/x/net/context"
 	appsv1 "k8s.io/api/apps/v1"
 	autoscalingv2beta2 "k8s.io/api/autoscaling/v2beta2"
@@ -46,9 +47,12 @@ import (
 	"github.com/banzaicloud/istio-operator/test/e2e/util"
 )
 
+func getLoggerName(gtd ginkgo.GinkgoTestDescription) string {
+	return strings.Join(gtd.ComponentTexts, "/")
+}
 
 type IstioTestEnv struct {
-	t *testing.T
+	log logr.Logger
 
 	c     client.Client
 	d     dynamic.Interface
@@ -57,41 +61,39 @@ type IstioTestEnv struct {
 	clusterStateBefore ClusterResourceList
 }
 
-func NewIstioTestEnv(t *testing.T, c client.Client, d dynamic.Interface, istio *istiov1beta1.Istio) IstioTestEnv {
-	return IstioTestEnv{t, c, d, istio, nil}
+func NewIstioTestEnv(log logr.Logger, c client.Client, d dynamic.Interface, istio *istiov1beta1.Istio) IstioTestEnv {
+	return IstioTestEnv{log, c, d, istio, nil}
 }
 
 func (e *IstioTestEnv) Start() {
 	var err error
 	e.clusterStateBefore, err = listAllResources(e.d)
-	require.NoError(e.t, err)
-	require.NotNil(e.t, e.clusterStateBefore)
+	gomega.Expect(err).NotTo(gomega.HaveOccurred())
+	gomega.Expect(e.clusterStateBefore).NotTo(gomega.BeNil())
 
-	e.t.Log("Creating Istio resource")
+	e.log.Info("Creating Istio resource")
 	err = e.c.Create(context.TODO(), e.istio)
-	assert.NoError(e.t, err)
+	gomega.Expect(err).NotTo(gomega.HaveOccurred())
 }
 
 func (e *IstioTestEnv) Close() {
-	g := gomega.NewWithT(e.t)
-
-	e.t.Log("Deleting Istio resource")
+	e.log.Info("Deleting Istio resource")
 	err := e.c.Delete(context.TODO(), e.istio)
-	g.Expect(err).NotTo(gomega.HaveOccurred())
+	gomega.Expect(err).NotTo(gomega.HaveOccurred())
 
-	e.t.Log("Waiting for Istio resource to be deleted")
+	e.log.Info("Waiting for Istio resource to be deleted")
 	// TODO use g.Eventually() and remove util.WaitForCondition
 	err = util.WaitForCondition(10*time.Second, 100*time.Millisecond, func() (bool, error) {
-		return !IstioExists(context.TODO(), e.t, e.c, e.istio.Namespace, e.istio.Name)(), nil
+		return !IstioExists(context.TODO(), e.c, e.istio.Namespace, e.istio.Name)(), nil
 	})
-	g.Expect(err).NotTo(gomega.HaveOccurred(), "waiting for Istio resource to be deleted")
+	gomega.Expect(err).NotTo(gomega.HaveOccurred(), "waiting for Istio resource to be deleted")
 
-	e.t.Log("Waiting for the cluster to be cleaned up")
-	WaitForCleanup(e.t, g, e.clusterStateBefore, 120*time.Second, 100*time.Millisecond)
+	e.log.Info("Waiting for the cluster to be cleaned up")
+	WaitForCleanup(e.log, e.clusterStateBefore, 120*time.Second, 100*time.Millisecond)
 }
 
-func WaitForCleanup(t *testing.T, g *gomega.WithT, expectedClusterState ClusterResourceList, timeout time.Duration, interval time.Duration) {
-	t.Log("Waiting for cleanup")
+func WaitForCleanup(log logr.Logger, expectedClusterState ClusterResourceList, timeout time.Duration, interval time.Duration) {
+	log.Info("Waiting for cleanup")
 	err := util.WaitForCondition(timeout, interval, func() (bool, error) {
 		currentClusterState, err := listAllResources(testEnv.Dynamic)
 		if err != nil {
@@ -101,22 +103,20 @@ func WaitForCleanup(t *testing.T, g *gomega.WithT, expectedClusterState ClusterR
 	})
 	if err != nil {
 		// The err can be a timeout, in which case it's helpful to show the resources which were not cleaned up
-		t.Log("Got error while waiting for cluster cleanup. Rechecking to give more detail.", err)
+		log.Error(err, "Got error while waiting for cluster cleanup. Rechecking to give more detail.")
 		clusterStateAfter, err := listAllResources(testEnv.Dynamic)
-		g.Expect(err).NotTo(gomega.HaveOccurred())
-		g.Expect(clusterStateAfter).To(gomega.Equal(expectedClusterState))
+		gomega.Expect(err).NotTo(gomega.HaveOccurred())
+		gomega.Expect(clusterStateAfter).To(gomega.Equal(expectedClusterState))
 	} else {
-		t.Log("Cleaned up")
+		log.Info("Cleaned up")
 	}
 }
 
 func (e *IstioTestEnv) WaitForIstioReconcile() {
-	g := gomega.NewWithT(e.t)
-
-	e.t.Log("Waiting for Istio resource to be reconciled")
+	e.log.Info("Waiting for Istio resource to be reconciled")
 	err := WaitForStatus(gvr.Istio, e.istio.Namespace, e.istio.Name, string(istiov1beta1.Available), 300*time.Second, 1000*time.Millisecond)
-	g.Expect(err).NotTo(gomega.HaveOccurred(), "waiting for Istio resource to be reconciled")
-	e.t.Log("Istio resource is reconciled")
+	gomega.Expect(err).NotTo(gomega.HaveOccurred(), "waiting for Istio resource to be reconciled")
+	e.log.Info("Istio resource is reconciled")
 }
 
 func WaitForStatus(gvr schema.GroupVersionResource, namespace, name string, expectedStatus string, timeout time.Duration, interval time.Duration) error {
@@ -129,8 +129,8 @@ func WaitForStatus(gvr schema.GroupVersionResource, namespace, name string, expe
 	})
 }
 
-func URLIsAccessible(t *testing.T, url string, timeout time.Duration, interval time.Duration) error {
-	t.Log("Checking url", url)
+func URLIsAccessible(log logr.Logger, url string, timeout time.Duration, interval time.Duration) error {
+	log.Info("Checking url", "url", url)
 
 	var response *http.Response
 	var body []byte
@@ -152,10 +152,11 @@ func URLIsAccessible(t *testing.T, url string, timeout time.Duration, interval t
 	})
 
 	if response != nil {
-		t.Logf("Final response: url=%v proto=%v statusCode=%v status=%v header=%v body=%s",
-			url, response.Proto, response.StatusCode, response.Status, response.Header, string(body))
+		log.Info("Final response",
+			"url", url, "proto", response.Proto, "statusCode", response.StatusCode, "status", response.Status,
+			"header", response.Header, "body", string(body))
 	} else {
-		t.Logf("No response: url=%v", url)
+		log.Info("No response", "url", url)
 	}
 
 	return err
@@ -193,10 +194,10 @@ func GetMeshGatewayAddress(mgw01Namespace string, mgw01Name string, timeout time
 }
 
 // TODO simplify this a bit
-func IstioResourceIsAvailableConsistently(t *testing.T, namespace, name string, timeout time.Duration, interval time.Duration) (bool, error) {
+func IstioResourceIsAvailableConsistently(log logr.Logger, namespace, name string, timeout time.Duration, interval time.Duration) (bool, error) {
 	// check that it stays reconciled. Give it some slack because it is regularly re-reconciled, so there will be
 	// blips of "Reconciling".
-	t.Log(time.Now(), "Checking that Istio resource stays reconciled")
+	log.Info("Checking that Istio resource stays reconciled")
 	timer := time.After(timeout)
 	ticker := time.NewTicker(interval)
 	defer ticker.Stop()
@@ -214,9 +215,9 @@ y:
 			configStateOccurrences[configState] += 1
 			if prevState != configState {
 				if prevState == "" {
-					t.Logf("%v Initial state: %v", time.Now(), configState)
+					log.Info("Initial state", "state", configState)
 				} else {
-					t.Logf("%v Observed transition to %v state", time.Now(), configState)
+					log.Info("Observed transition to new state", "prevState", prevState, "newState", configState)
 				}
 				prevState = configState
 			}
@@ -225,7 +226,7 @@ y:
 		}
 	}
 
-	t.Logf("%v Observed Istio resource states: %v", time.Now(), configStateOccurrences)
+	log.Info("Observed Istio resource states", "resourceStates", configStateOccurrences)
 	occurrencesOfAvailable := configStateOccurrences[istiov1beta1.Available]
 	if occurrencesOfAvailable <= 0 {
 		return false, errors.NewWithDetails(
@@ -291,45 +292,44 @@ func mkMinimalIstio(namespace, name string) *istiov1beta1.Istio {
 		},
 	}
 	istio.SetGroupVersionKind(istiov1beta1.SchemeGroupVersion.WithKind("Istio"))
-	istio.SetDefaults()
 
 	istio.Spec.Version = istiov1beta1.IstioVersion(istiov1beta1.SupportedIstioVersion)
 
 	return &istio
 }
 
-// TODO Remove `t` arg from this and similar functions (the assertion should happen closer to the test function,
+// TODO Do not use gomega in this and similar functions (the assertion should happen closer to the test function,
 //  probably in the test function itself)
 // ResourceExists checks if a resource exists in the cluster
-func ResourceExists(ctx context.Context, t *testing.T, kubeClient client.Client, item runtime.Object, namespace, name string) func() bool {
+func ResourceExists(ctx context.Context, kubeClient client.Client, item runtime.Object, namespace, name string) func() bool {
 	return func() bool {
 		err := kubeClient.Get(ctx, types.NamespacedName{Name: name, Namespace: namespace}, item)
 		if err != nil && k8sapierrors.IsNotFound(err) {
 			return false
 		}
-		assert.NoError(t, err)
+		gomega.Expect(err).NotTo(gomega.HaveOccurred())
 		return true
 	}
 }
 
-func IstioExists(ctx context.Context, t *testing.T, kubeClient client.Client, namespace, name string) func() bool {
+func IstioExists(ctx context.Context, kubeClient client.Client, namespace, name string) func() bool {
 	var istio istiov1beta1.Istio
-	return ResourceExists(ctx, t, kubeClient, &istio, namespace, name)
+	return ResourceExists(ctx, kubeClient, &istio, namespace, name)
 }
 
-func DeploymentExists(ctx context.Context, t *testing.T, kubeClient client.Client, namespace, name string) func() bool {
+func DeploymentExists(ctx context.Context, kubeClient client.Client, namespace, name string) func() bool {
 	var deployment appsv1.Deployment
-	return ResourceExists(ctx, t, kubeClient, &deployment, namespace, name)
+	return ResourceExists(ctx, kubeClient, &deployment, namespace, name)
 }
 
-func ServiceExists(ctx context.Context, t *testing.T, kubeClient client.Client, namespace, name string) func() bool {
+func ServiceExists(ctx context.Context, kubeClient client.Client, namespace, name string) func() bool {
 	var svc corev1.Service
-	return ResourceExists(ctx, t, kubeClient, &svc, namespace, name)
+	return ResourceExists(ctx, kubeClient, &svc, namespace, name)
 }
 
-func HPAExists(ctx context.Context, t *testing.T, kubeClient client.Client, namespace, name string) func() bool {
+func HPAExists(ctx context.Context, kubeClient client.Client, namespace, name string) func() bool {
 	var hpa autoscalingv2beta2.HorizontalPodAutoscaler
-	return ResourceExists(ctx, t, kubeClient, &hpa, namespace, name)
+	return ResourceExists(ctx, kubeClient, &hpa, namespace, name)
 }
 
 type groupVersionResourceString string
@@ -407,4 +407,9 @@ func sortNamespacedNames(nns []types.NamespacedName) {
 		}
 		return false
 	})
+}
+
+func testDataPath(description ginkgo.GinkgoTestDescription) string {
+       path := filepath.Join(description.ComponentTexts...)
+       return strings.ReplaceAll(path, " ", "_")
 }

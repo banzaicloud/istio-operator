@@ -181,9 +181,8 @@ e2e-test-install-istio-operator: docker-build
 
 .PHONY: e2e-test
 e2e-test: export PATH:=./bin:${PATH}
-e2e-test: e2e-test-install-istio-operator
-	env CGO_ENABLED=${TEST_CGO_ENABLED} \
-	    go test --failfast --timeout 10m -v ${TEST_GOARGS} ./test/e2e/... -coverprofile cover.out
+e2e-test: download-deps e2e-test-install-istio-operator
+	bin/ginkgo --failFast --randomizeSuites --randomizeAllSpecs --timeout 10m -v ./test/e2e/...
 
     # TODO collect used docker images and compare with known list. This list can be used to preload the images into kind
     # TODO  `kind export logs` and look for "ImageCreate" in containerd.log

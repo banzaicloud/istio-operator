@@ -4,6 +4,7 @@ set -euo pipefail
 
 code_generator_version=0.18.6
 controller_gen_version=0.4.0
+ginkgo_version=1.16.1
 yq_version=3.4.0
 
 script_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" >/dev/null 2>&1 && pwd)"
@@ -41,7 +42,7 @@ for name in ${cmds}; do
 done
 
 ensure-binary-version controller-gen ${controller_gen_version} "sigs.k8s.io/controller-tools/cmd/controller-gen@v${controller_gen_version}"
-
+ensure-binary-version ginkgo ${ginkgo_version} "github.com/onsi/ginkgo/ginkgo@v${ginkgo_version}"
 ensure-binary-version yq ${yq_version} "github.com/mikefarah/yq/v3@${yq_version}"
 
 go mod tidy
