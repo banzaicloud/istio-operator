@@ -6,13 +6,6 @@ set -euo pipefail
 
 version=$1
 
-skip="${2:-false}"
-if [ "$skip" = true ]
-then
-  echo "skipping istio api dependency update because skip flag is set to true"
-  exit 0
-fi
-
 script_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" >/dev/null 2>&1 && pwd)"
 build_dir=${script_dir}/../build
 
