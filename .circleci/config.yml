@@ -137,6 +137,7 @@ jobs:
       - run:
           name: Compress E2E test dump
           command: tar czf e2e-test-dump.tar.gz logs
+          when: always
       - store_artifacts:
           path: e2e-test-dump.tar.gz
 
