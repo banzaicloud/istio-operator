@@ -1,4 +1,5 @@
-SHELL := /bin/bash -euo pipefail
+# Using -u (unset variable) results in an error on CircleCI (/etc/bash.bashrc uses unset "PS1")
+SHELL := /bin/bash -eo pipefail
 
 # Image URL to use all building/pushing image targets
 TAG ?= $(shell git describe --tags --abbrev=0 --match '[0-9].*[0-9].*[0-9]' 2>/dev/null )
