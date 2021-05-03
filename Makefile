@@ -7,7 +7,6 @@ LICENSEI_VERSION = 0.3.1
 KUBEBUILDER_VERSION = 2.3.2
 KUSTOMIZE_VERSION = 4.1.2
 ISTIO_VERSION = 1.10.0-rc.0
-SKIP_ISTIO_API_UPDATE = false
 BUF_VERSION = 0.41.0
 
 PATH := $(PATH):$(PWD)/bin
@@ -101,12 +100,16 @@ vet:
 
 # Download build dependencies
 download-deps:
+ifneq (${SKIP_UPDATE_DEPS}, 1)
 	./scripts/download-deps.sh
 	./scripts/install-buf.sh $(BUF_VERSION)
+endif
 
 # Update Istio build dependencies
 update-istio-deps:
-	./scripts/update-istio-dependencies.sh $(ISTIO_VERSION) $(SKIP_ISTIO_API_UPDATE)
+ifneq (${SKIP_UPDATE_DEPS}, 1)
+	./scripts/update-istio-dependencies.sh $(ISTIO_VERSION)
+endif
 
 # Generate code
 generate: download-deps update-istio-deps
