@@ -115,6 +115,8 @@ spec:
                               format: string
                               type: string
                             type: array
+                        required:
+                        - mode
                         type: object
                     type: object
                   caCertificates:
@@ -232,6 +234,8 @@ spec:
                                 format: string
                                 type: string
                               type: array
+                          required:
+                          - mode
                           type: object
                       type: object
                     type: array
@@ -366,6 +370,8 @@ spec:
                                   format: string
                                   type: string
                                 type: array
+                            required:
+                            - mode
                             type: object
                         type: object
                       envoyMetricsService:
@@ -444,6 +450,8 @@ spec:
                                   format: string
                                   type: string
                                 type: array
+                            required:
+                            - mode
                             type: object
                         type: object
                       envoyMetricsServiceAddress:
@@ -601,6 +609,8 @@ spec:
                                 description: HTTP or HTTPS, defaults to HTTP.
                                 format: string
                                 type: string
+                            required:
+                            - port
                             type: object
                           initialDelaySeconds:
                             description: Number of seconds after the container has
@@ -627,6 +637,8 @@ spec:
                               port:
                                 description: Port of host.
                                 type: integer
+                            required:
+                            - port
                             type: object
                           timeoutSeconds:
                             description: Number of seconds after which the probe times
@@ -885,6 +897,8 @@ spec:
                                   format: string
                                   type: string
                                 type: array
+                            required:
+                            - mode
                             type: object
                           zipkin:
                             description: Use a Zipkin tracer.
@@ -1473,6 +1487,8 @@ spec:
                 format: string
                 pattern: ^1.
                 type: string
+            required:
+            - version
             type: object
           status:
             type: object
