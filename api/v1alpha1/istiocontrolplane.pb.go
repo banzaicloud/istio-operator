@@ -47,6 +47,7 @@ const _ = proto.GoGoProtoPackageIsVersion3 // please upgrade the proto package
 type IstioControlPlaneSpec struct {
 	// Contains the intended version for the Istio control plane.
 	// +kubebuilder:validation:Pattern=^1.
+	// +kubebuilder:validation:Required
 	Version string `protobuf:"bytes,1,opt,name=version,proto3" json:"version,omitempty"`
 	// Defines mesh-wide settings for the Istio control plane.
 	MeshConfig           *v1alpha1.MeshConfig `protobuf:"bytes,2,opt,name=mesh_config,json=meshConfig,proto3" json:"mesh_config,omitempty"`
