@@ -28,26 +28,32 @@ import (
 	logf "sigs.k8s.io/controller-runtime/pkg/runtime/log"
 
 	"github.com/banzaicloud/istio-operator/pkg/util"
+	"github.com/banzaicloud/istio-operator/test/e2e/util/clusterstate"
 )
 
 type TestEnv struct {
 	Log     logr.Logger
 	Client  client.Client
 	Dynamic dynamic.Interface
+
+	ClusterStateDumper *clusterstate.Dumper
 }
 
 func NewTestEnv() *TestEnv {
-	logf.SetLogger(util.CreateLogger(true, true))
 	log := logf.Log.WithName("TestSuite")
 
 	return &TestEnv{
 		Log: log,
 		Client:  getClient(),
 		Dynamic: getDynamicClient(),
+
+		ClusterStateDumper: clusterstate.NewDumper(log),
 	}
 }
 
 func TestE2E(t *testing.T) {
+	logf.SetLogger(util.CreateLogger(true, true))
+
 	RegisterFailHandler(Fail)
 	RunSpecs(t, "E2E Suite")
 }

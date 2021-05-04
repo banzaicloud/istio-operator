@@ -3,7 +3,7 @@ ARG GO_VERSION=1.13.9
 # Build the manager binary
 FROM golang:${GO_VERSION}-alpine3.11 AS builder
 
-RUN apk add --update --no-cache ca-certificates make~=4.2 git~=2.24 curl~=7.67 mercurial~=5.3
+RUN apk add --update --no-cache ca-certificates make~=4.2 git~=2.24 curl~=7.67 mercurial~=5.3 bash~=5
 
 ARG PACKAGE=github.com/banzaicloud/istio-operator
 
@@ -16,6 +16,7 @@ RUN go mod download
 COPY pkg/    pkg/
 COPY cmd/    cmd/
 COPY vendor/ vendor/
+COPY test/e2e/e2e-test.mk /go/src/${PACKAGE}/test/e2e/
 COPY Makefile go.* /go/src/${PACKAGE}/
 
 # Build

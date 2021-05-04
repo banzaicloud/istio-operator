@@ -19,6 +19,7 @@ package e2e
 import (
 	"io/ioutil"
 	"net/http"
+	"os"
 	"path/filepath"
 	"reflect"
 	"sort"
@@ -49,6 +50,18 @@ import (
 
 func getLoggerName(gtd ginkgo.GinkgoTestDescription) string {
 	return strings.Join(gtd.ComponentTexts, "/")
+}
+
+func shouldFailFast() bool {
+	return os.Getenv("E2E_TEST_FAIL_FAST") == "1"
+}
+
+func maybeCleanup(log logr.Logger, noCleanupMsg string, cleanup func()) {
+	if shouldFailFast() && ginkgo.CurrentGinkgoTestDescription().Failed {
+		log.Info(noCleanupMsg)
+	} else {
+		cleanup()
+	}
 }
 
 type IstioTestEnv struct {
@@ -341,6 +354,7 @@ func clusterIsClean(before ClusterResourceList, after ClusterResourceList) bool 
 
 // TODO add more resource types
 func listAllResources(d dynamic.Interface) (ClusterResourceList, error) {
+	// This list should probably match the list in dump-cluster-state-and-logs.sh
 	gvrs := []schema.GroupVersionResource{
 		gvr.Service,
 		gvr.Pod,
