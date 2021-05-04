@@ -48,6 +48,7 @@ option go_package = "github.com/banzaicloud/istio-operator/v2/api/v1alpha1";
 message IstioControlPlaneSpec {
     // Contains the intended version for the Istio control plane.
     // +kubebuilder:validation:Pattern=^1.
+    // +kubebuilder:validation:Required
     string version = 1;
     // Defines mesh-wide settings for the Istio control plane.
     istio.mesh.v1alpha1.MeshConfig mesh_config = 2;
