@@ -16,9 +16,9 @@ import (
 )
 
 const (
-	ComponentName = "istio-base"
-	ChartName     = "istio-base"
-	ReleaseName   = "istio-base"
+	ComponentName = "base"
+	ChartName     = "base"
+	ReleaseName   = "base"
 )
 
 var _ templatereconciler.Component = &Reconciler{}
@@ -98,7 +98,7 @@ func (rec *Reconciler) values(object runtime.Object) (helm.Strimap, error) {
 				"remotePilotAddress": "",
 			},
 			"base": helm.Strimap{
-				"enableCRDTemplates":    false,
+				"enableCRDTemplates":    true,
 				"validationURL":         "",
 				"enableIstioConfigCRDs": true,
 			},

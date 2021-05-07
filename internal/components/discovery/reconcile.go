@@ -1,6 +1,6 @@
 // Copyright (c) 2021 Banzai Cloud Zrt. All Rights Reserved.
 
-package control
+package discovery
 
 import (
 	"emperror.dev/errors"
@@ -9,16 +9,16 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/reconcile"
 
 	"github.com/banzaicloud/istio-operator/v2/api/v1alpha1"
-	istio_control "github.com/banzaicloud/istio-operator/v2/internal/static/gen/charts/istio-control"
+	istio_discovery "github.com/banzaicloud/istio-operator/v2/internal/static/gen/charts/istio-control/istio-discovery"
 	"github.com/banzaicloud/operator-tools/pkg/helm"
 	"github.com/banzaicloud/operator-tools/pkg/helm/templatereconciler"
 	"github.com/banzaicloud/operator-tools/pkg/types"
 )
 
 const (
-	ComponentName = "istio-control"
-	ChartName     = "istio-control"
-	ReleaseName   = "istio-control"
+	ComponentName = "istio-discovery"
+	ChartName     = "istio-discovery"
+	ReleaseName   = "istio-discovery"
 )
 
 var _ templatereconciler.Component = &Reconciler{}
@@ -63,7 +63,7 @@ func (rec *Reconciler) ReleaseData(object runtime.Object) (*templatereconciler.R
 		}
 
 		return &templatereconciler.ReleaseData{
-			Chart:       istio_control.Chart,
+			Chart:       istio_discovery.Chart,
 			Values:      values,
 			Namespace:   controlPlane.Namespace,
 			ChartName:   ChartName,
@@ -88,19 +88,7 @@ func (rec *Reconciler) values(object runtime.Object) (helm.Strimap, error) {
 	if _, ok := object.(*v1alpha1.IstioControlPlane); ok {
 		return helm.Strimap{
 			"global": helm.Strimap{
-				"imagePullSecrets": []string{},
-				"istioNamespace":   "istio-system",
-				"istiod": helm.Strimap{
-					"enableAnalysis": false,
-				},
-				"configValidation":   true,
-				"externalIstiod":     false,
-				"remotePilotAddress": "",
-			},
-			"base": helm.Strimap{
-				"enableCRDTemplates":    false,
-				"validationURL":         "",
-				"enableIstioConfigCRDs": true,
+				"jwtPolicy": "first-party-jwt",
 			},
 		}, nil
 	}

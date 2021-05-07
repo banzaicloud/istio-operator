@@ -16,7 +16,7 @@ import (
 
 var charts = []string{
 	"base",
-	"istio-control",
+	"istio-control/istio-discovery",
 }
 
 //go:generate go run main.go
@@ -55,9 +55,10 @@ func main() {
 			panic(fmt.Errorf("failed to create directory for charts: %w", err))
 		}
 
+		dirParts := strings.Split(dir, "/")
 		err = vfsgen.Generate(chartDir, vfsgen.Options{
 			Filename:     filepath.Join(staticPath, "generated.go"),
-			PackageName:  strings.ReplaceAll(dir, "-", "_"),
+			PackageName:  strings.ReplaceAll(dirParts[len(dirParts)-1], "-", "_"),
 			VariableName: "Chart",
 		})
 		if err != nil {

@@ -30,7 +30,7 @@ import (
 
 	servicemeshv1alpha1 "github.com/banzaicloud/istio-operator/v2/api/v1alpha1"
 	"github.com/banzaicloud/istio-operator/v2/internal/components/base"
-	"github.com/banzaicloud/istio-operator/v2/internal/components/control"
+	discovery_component "github.com/banzaicloud/istio-operator/v2/internal/components/discovery"
 	"github.com/banzaicloud/operator-tools/pkg/helm/templatereconciler"
 	"github.com/banzaicloud/operator-tools/pkg/reconciler"
 )
@@ -97,10 +97,10 @@ func (r *IstioControlPlaneReconciler) Reconcile(ctx context.Context, req ctrl.Re
 		return ctrl.Result{}, err
 	}
 
-	controlReconciler := control.NewChartReconciler(
-		templatereconciler.NewHelmReconciler(r.Client, r.Scheme, r.Log.WithName("control"), d, []reconciler.NativeReconcilerOpt{}),
+	discoveryReconciler := discovery_component.NewChartReconciler(
+		templatereconciler.NewHelmReconciler(r.Client, r.Scheme, r.Log.WithName("discovery"), d, []reconciler.NativeReconcilerOpt{}),
 	)
-	_, err = controlReconciler.Reconcile(icp)
+	_, err = discoveryReconciler.Reconcile(icp)
 	if err != nil {
 		return ctrl.Result{}, err
 	}
