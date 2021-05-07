@@ -23,11 +23,16 @@ import (
 	"github.com/pkg/errors"
 	k8serrors "k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/runtime"
+	"k8s.io/client-go/discovery"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/reconcile"
 
 	servicemeshv1alpha1 "github.com/banzaicloud/istio-operator/v2/api/v1alpha1"
+	"github.com/banzaicloud/istio-operator/v2/internal/components/base"
+	"github.com/banzaicloud/istio-operator/v2/internal/components/control"
+	"github.com/banzaicloud/operator-tools/pkg/helm/templatereconciler"
+	"github.com/banzaicloud/operator-tools/pkg/reconciler"
 )
 
 // IstioControlPlaneReconciler reconciles a IstioControlPlane object
@@ -73,6 +78,31 @@ func (r *IstioControlPlaneReconciler) Reconcile(ctx context.Context, req ctrl.Re
 		return reconcile.Result{
 			Requeue: false,
 		}, nil
+	}
+
+	config, err := ctrl.GetConfig()
+	if err != nil {
+		return ctrl.Result{}, err
+	}
+	var d discovery.DiscoveryInterface
+	if d, err = discovery.NewDiscoveryClientForConfig(config); err != nil {
+		return ctrl.Result{}, err
+	}
+
+	baseReconciler := base.NewChartReconciler(
+		templatereconciler.NewHelmReconciler(r.Client, r.Scheme, r.Log.WithName("base"), d, []reconciler.NativeReconcilerOpt{}),
+	)
+	_, err = baseReconciler.Reconcile(icp)
+	if err != nil {
+		return ctrl.Result{}, err
+	}
+
+	controlReconciler := control.NewChartReconciler(
+		templatereconciler.NewHelmReconciler(r.Client, r.Scheme, r.Log.WithName("control"), d, []reconciler.NativeReconcilerOpt{}),
+	)
+	_, err = controlReconciler.Reconcile(icp)
+	if err != nil {
+		return ctrl.Result{}, err
 	}
 
 	return ctrl.Result{}, nil
