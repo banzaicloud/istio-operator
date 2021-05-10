@@ -6,9 +6,11 @@ package v1alpha1
 import (
 	bytes "bytes"
 	fmt "fmt"
+	_ "github.com/gogo/protobuf/gogoproto"
 	github_com_gogo_protobuf_jsonpb "github.com/gogo/protobuf/jsonpb"
 	proto "github.com/gogo/protobuf/proto"
 	_ "istio.io/api/mesh/v1alpha1"
+	_ "istio.io/gogo-genproto/googleapis/google/api"
 	math "math"
 )
 
