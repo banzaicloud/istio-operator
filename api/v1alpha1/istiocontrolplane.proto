@@ -15,6 +15,8 @@
 syntax = "proto3";
 
 import "mesh/v1alpha1/config.proto";
+import "gogoproto/gogo.proto";
+import "google/api/field_behavior.proto";
 
 // $schema: istio-operator.api.v1alpha1.IstioControlPlaneSpec
 // $title: Istio ControlPlane Spec
@@ -48,8 +50,7 @@ option go_package = "github.com/banzaicloud/istio-operator/v2/api/v1alpha1";
 message IstioControlPlaneSpec {
     // Contains the intended version for the Istio control plane.
     // +kubebuilder:validation:Pattern=^1.
-    // +kubebuilder:validation:Required
-    string version = 1;
+    string version = 1 [(gogoproto.jsontag) = "version", (google.api.field_behavior) = REQUIRED];
     // Defines mesh-wide settings for the Istio control plane.
     istio.mesh.v1alpha1.MeshConfig mesh_config = 2;
 }
@@ -59,5 +60,4 @@ message IstioControlPlaneSpec {
 // +k8s:deepcopy-gen=true
 // -->
 message IstioControlPlaneStatus {
-    string name = 1;
 }
