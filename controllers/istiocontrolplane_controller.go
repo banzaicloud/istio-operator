@@ -90,7 +90,9 @@ func (r *IstioControlPlaneReconciler) Reconcile(ctx context.Context, req ctrl.Re
 	}
 
 	baseReconciler := base.NewChartReconciler(
-		templatereconciler.NewHelmReconciler(r.Client, r.Scheme, r.Log.WithName("base"), d, []reconciler.NativeReconcilerOpt{}),
+		templatereconciler.NewHelmReconciler(r.Client, r.Scheme, r.Log.WithName("base"), d, []reconciler.NativeReconcilerOpt{
+			reconciler.NativeReconcilerSetControllerRef(),
+		}),
 	)
 	_, err = baseReconciler.Reconcile(icp)
 	if err != nil {
@@ -98,7 +100,9 @@ func (r *IstioControlPlaneReconciler) Reconcile(ctx context.Context, req ctrl.Re
 	}
 
 	discoveryReconciler := discovery_component.NewChartReconciler(
-		templatereconciler.NewHelmReconciler(r.Client, r.Scheme, r.Log.WithName("discovery"), d, []reconciler.NativeReconcilerOpt{}),
+		templatereconciler.NewHelmReconciler(r.Client, r.Scheme, r.Log.WithName("discovery"), d, []reconciler.NativeReconcilerOpt{
+			reconciler.NativeReconcilerSetControllerRef(),
+		}),
 	)
 	_, err = discoveryReconciler.Reconcile(icp)
 	if err != nil {
