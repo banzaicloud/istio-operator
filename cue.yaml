@@ -11,4 +11,3 @@ directories:
 crd:
   dir: config/crd/bases
   filename: istio-operator-crds
-  maxDescriptionLength: 0
