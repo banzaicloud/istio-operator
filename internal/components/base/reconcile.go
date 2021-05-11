@@ -32,7 +32,7 @@ import (
 const (
 	ComponentName = "base"
 	ChartName     = "base"
-	ReleaseName   = "base"
+	ReleaseName   = "istio-operator-base"
 )
 
 var _ templatereconciler.Component = &Reconciler{}
