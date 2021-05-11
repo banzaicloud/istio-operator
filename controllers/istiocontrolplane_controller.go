@@ -21,11 +21,14 @@ import (
 
 	"github.com/go-logr/logr"
 	"github.com/pkg/errors"
+	appsv1 "k8s.io/api/apps/v1"
 	k8serrors "k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/client-go/discovery"
 	ctrl "sigs.k8s.io/controller-runtime"
+	ctrlBuilder "sigs.k8s.io/controller-runtime/pkg/builder"
 	"sigs.k8s.io/controller-runtime/pkg/client"
+	"sigs.k8s.io/controller-runtime/pkg/predicate"
 	"sigs.k8s.io/controller-runtime/pkg/reconcile"
 
 	servicemeshv1alpha1 "github.com/banzaicloud/istio-operator/v2/api/v1alpha1"
@@ -113,7 +116,50 @@ func (r *IstioControlPlaneReconciler) Reconcile(ctx context.Context, req ctrl.Re
 }
 
 func (r *IstioControlPlaneReconciler) SetupWithManager(mgr ctrl.Manager) error {
+	predicate := predicate.GenerationChangedPredicate{}
+	//  Funcs{
+	// 	CreateFunc: func(e event.CreateEvent) bool {
+	// 		object, err := meta.Accessor(e.Object)
+	// 		if err != nil {
+	// 			return false
+	// 		}
+	// 		if _, ok := object.(*kafkabanzaicloudiov1beta1.KafkaCluster); ok {
+	// 			return true
+	// 		}
+	// 		return false
+	// 	},
+	// 	UpdateFunc: func(e event.UpdateEvent) bool {
+	// 		object, err := meta.Accessor(e.ObjectOld)
+	// 		if err != nil {
+	// 			return false
+	// 		}
+	// 		if _, ok := object.(*kafkabanzaicloudiov1beta1.KafkaCluster); !ok {
+	// 			ownedObject := false
+	// 			for _, onwerRef := range object.GetOwnerReferences() {
+	// 				if onwerRef.Kind == kafka.Kind {
+	// 					ownedObject = true
+	// 					break
+	// 				}
+	// 			}
+
+	// 			if !ownedObject {
+	// 				return false
+	// 			}
+	// 		}
+
+	// 		patchResult, err := patch.DefaultPatchMaker.Calculate(e.ObjectOld, e.ObjectNew, ignoreStatusFieldsExceptInternalListenerStatus())
+	// 		if err != nil {
+	// 			r.Log.Error(err, "could not match objects", "kind", e.ObjectOld.GetObjectKind())
+	// 		} else if patchResult.IsEmpty() {
+	// 			return false
+	// 		}
+
+	// 		return true
+	// 	},
+	// }
+
 	return ctrl.NewControllerManagedBy(mgr).
 		For(&servicemeshv1alpha1.IstioControlPlane{}).
+		Owns(&appsv1.Deployment{}, ctrlBuilder.WithPredicates(predicate)).
 		Complete(r)
 }
