@@ -33,7 +33,6 @@ import (
 	ctrl "sigs.k8s.io/controller-runtime"
 	ctrlBuilder "sigs.k8s.io/controller-runtime/pkg/builder"
 	"sigs.k8s.io/controller-runtime/pkg/client"
-	"sigs.k8s.io/controller-runtime/pkg/predicate"
 	"sigs.k8s.io/controller-runtime/pkg/reconcile"
 
 	istioclientv1alpha3 "github.com/banzaicloud/istio-client-go/pkg/networking/v1alpha3"
@@ -123,64 +122,23 @@ func (r *IstioControlPlaneReconciler) Reconcile(ctx context.Context, req ctrl.Re
 }
 
 func (r *IstioControlPlaneReconciler) SetupWithManager(mgr ctrl.Manager) error {
-	predicate := predicate.GenerationChangedPredicate{}
-	//  Funcs{
-	// 	CreateFunc: func(e event.CreateEvent) bool {
-	// 		object, err := meta.Accessor(e.Object)
-	// 		if err != nil {
-	// 			return false
-	// 		}
-	// 		if _, ok := object.(*kafkabanzaicloudiov1beta1.KafkaCluster); ok {
-	// 			return true
-	// 		}
-	// 		return false
-	// 	},
-	// 	UpdateFunc: func(e event.UpdateEvent) bool {
-	// 		object, err := meta.Accessor(e.ObjectOld)
-	// 		if err != nil {
-	// 			return false
-	// 		}
-	// 		if _, ok := object.(*kafkabanzaicloudiov1beta1.KafkaCluster); !ok {
-	// 			ownedObject := false
-	// 			for _, onwerRef := range object.GetOwnerReferences() {
-	// 				if onwerRef.Kind == kafka.Kind {
-	// 					ownedObject = true
-	// 					break
-	// 				}
-	// 			}
-
-	// 			if !ownedObject {
-	// 				return false
-	// 			}
-	// 		}
-
-	// 		patchResult, err := patch.DefaultPatchMaker.Calculate(e.ObjectOld, e.ObjectNew, ignoreStatusFieldsExceptInternalListenerStatus())
-	// 		if err != nil {
-	// 			r.Log.Error(err, "could not match objects", "kind", e.ObjectOld.GetObjectKind())
-	// 		} else if patchResult.IsEmpty() {
-	// 			return false
-	// 		}
-
-	// 		return true
-	// 	},
-	// }
-
 	return ctrl.NewControllerManagedBy(mgr).
 		For(&servicemeshv1alpha1.IstioControlPlane{}).
-		Owns(&appsv1.Deployment{}, ctrlBuilder.WithPredicates(predicate)).
-		Owns(&appsv1.DaemonSet{}, ctrlBuilder.WithPredicates(predicate)).
-		Owns(&corev1.ConfigMap{}, ctrlBuilder.WithPredicates(predicate)).
-		Owns(&corev1.Service{}, ctrlBuilder.WithPredicates(predicate)).
-		Owns(&policyv1beta1.PodSecurityPolicy{}, ctrlBuilder.WithPredicates(predicate)).
-		Owns(&rbacv1.Role{}, ctrlBuilder.WithPredicates(predicate)).
-		Owns(&rbacv1.RoleBinding{}, ctrlBuilder.WithPredicates(predicate)).
-		Owns(&rbacv1.ClusterRole{}, ctrlBuilder.WithPredicates(predicate)).
-		Owns(&rbacv1.ClusterRoleBinding{}, ctrlBuilder.WithPredicates(predicate)).
-		Owns(&corev1.Secret{}, ctrlBuilder.WithPredicates(predicate)).
-		Owns(&istioclientv1alpha3.EnvoyFilter{}, ctrlBuilder.WithPredicates(predicate)).
-		Owns(&istioclientv1beta1.PeerAuthentication{}, ctrlBuilder.WithPredicates(predicate)).
-		Owns(&autoscalingv1.HorizontalPodAutoscaler{}, ctrlBuilder.WithPredicates(predicate)).
-		Owns(&admissionregistrationv1.MutatingWebhookConfiguration{}, ctrlBuilder.WithPredicates(predicate)).
-		Owns(&admissionregistrationv1.ValidatingWebhookConfiguration{}, ctrlBuilder.WithPredicates(predicate)).
+		Owns(&appsv1.Deployment{}, ctrlBuilder.WithPredicates(reconciler.SpecChangePredicate{})).
+		Owns(&appsv1.DaemonSet{}, ctrlBuilder.WithPredicates(reconciler.SpecChangePredicate{})).
+		Owns(&corev1.ConfigMap{}, ctrlBuilder.WithPredicates(reconciler.SpecChangePredicate{})).
+		Owns(&corev1.Service{}, ctrlBuilder.WithPredicates(reconciler.SpecChangePredicate{})).
+		Owns(&policyv1beta1.PodSecurityPolicy{}, ctrlBuilder.WithPredicates(reconciler.SpecChangePredicate{})).
+		Owns(&policyv1beta1.PodDisruptionBudget{}, ctrlBuilder.WithPredicates(reconciler.SpecChangePredicate{})).
+		Owns(&rbacv1.Role{}, ctrlBuilder.WithPredicates(reconciler.SpecChangePredicate{})).
+		Owns(&rbacv1.RoleBinding{}, ctrlBuilder.WithPredicates(reconciler.SpecChangePredicate{})).
+		Owns(&rbacv1.ClusterRole{}, ctrlBuilder.WithPredicates(reconciler.SpecChangePredicate{})).
+		Owns(&rbacv1.ClusterRoleBinding{}, ctrlBuilder.WithPredicates(reconciler.SpecChangePredicate{})).
+		Owns(&corev1.Secret{}, ctrlBuilder.WithPredicates(reconciler.SpecChangePredicate{})).
+		Owns(&istioclientv1alpha3.EnvoyFilter{}, ctrlBuilder.WithPredicates(reconciler.SpecChangePredicate{})).
+		Owns(&istioclientv1beta1.PeerAuthentication{}, ctrlBuilder.WithPredicates(reconciler.SpecChangePredicate{})).
+		Owns(&autoscalingv1.HorizontalPodAutoscaler{}, ctrlBuilder.WithPredicates(reconciler.SpecChangePredicate{})).
+		Owns(&admissionregistrationv1.MutatingWebhookConfiguration{}, ctrlBuilder.WithPredicates(reconciler.SpecChangePredicate{})).
+		Owns(&admissionregistrationv1.ValidatingWebhookConfiguration{}, ctrlBuilder.WithPredicates(reconciler.SpecChangePredicate{})).
 		Complete(r)
 }
