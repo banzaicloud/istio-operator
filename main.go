@@ -26,6 +26,9 @@ import (
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/log/zap"
 
+	istioclientv1alpha3 "github.com/banzaicloud/istio-client-go/pkg/networking/v1alpha3"
+	istioclientv1beta1 "github.com/banzaicloud/istio-client-go/pkg/security/v1beta1"
+
 	// +kubebuilder:scaffold:imports
 	servicemeshv1alpha1 "github.com/banzaicloud/istio-operator/v2/api/v1alpha1"
 	"github.com/banzaicloud/istio-operator/v2/controllers"
@@ -38,6 +41,8 @@ var (
 
 func init() {
 	_ = clientgoscheme.AddToScheme(scheme)
+	_ = istioclientv1alpha3.AddToScheme(scheme)
+	_ = istioclientv1beta1.AddToScheme(scheme)
 
 	_ = servicemeshv1alpha1.AddToScheme(scheme)
 	// +kubebuilder:scaffold:scheme

@@ -21,7 +21,12 @@ import (
 
 	"github.com/go-logr/logr"
 	"github.com/pkg/errors"
+	admissionregistrationv1 "k8s.io/api/admissionregistration/v1"
 	appsv1 "k8s.io/api/apps/v1"
+	autoscalingv1 "k8s.io/api/autoscaling/v1"
+	corev1 "k8s.io/api/core/v1"
+	policyv1beta1 "k8s.io/api/policy/v1beta1"
+	rbacv1 "k8s.io/api/rbac/v1"
 	k8serrors "k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/client-go/discovery"
@@ -31,6 +36,8 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/predicate"
 	"sigs.k8s.io/controller-runtime/pkg/reconcile"
 
+	istioclientv1alpha3 "github.com/banzaicloud/istio-client-go/pkg/networking/v1alpha3"
+	istioclientv1beta1 "github.com/banzaicloud/istio-client-go/pkg/security/v1beta1"
 	servicemeshv1alpha1 "github.com/banzaicloud/istio-operator/v2/api/v1alpha1"
 	"github.com/banzaicloud/istio-operator/v2/internal/components/base"
 	discovery_component "github.com/banzaicloud/istio-operator/v2/internal/components/discovery"
@@ -161,5 +168,19 @@ func (r *IstioControlPlaneReconciler) SetupWithManager(mgr ctrl.Manager) error {
 	return ctrl.NewControllerManagedBy(mgr).
 		For(&servicemeshv1alpha1.IstioControlPlane{}).
 		Owns(&appsv1.Deployment{}, ctrlBuilder.WithPredicates(predicate)).
+		Owns(&appsv1.DaemonSet{}, ctrlBuilder.WithPredicates(predicate)).
+		Owns(&corev1.ConfigMap{}, ctrlBuilder.WithPredicates(predicate)).
+		Owns(&corev1.Service{}, ctrlBuilder.WithPredicates(predicate)).
+		Owns(&policyv1beta1.PodSecurityPolicy{}, ctrlBuilder.WithPredicates(predicate)).
+		Owns(&rbacv1.Role{}, ctrlBuilder.WithPredicates(predicate)).
+		Owns(&rbacv1.RoleBinding{}, ctrlBuilder.WithPredicates(predicate)).
+		Owns(&rbacv1.ClusterRole{}, ctrlBuilder.WithPredicates(predicate)).
+		Owns(&rbacv1.ClusterRoleBinding{}, ctrlBuilder.WithPredicates(predicate)).
+		Owns(&corev1.Secret{}, ctrlBuilder.WithPredicates(predicate)).
+		Owns(&istioclientv1alpha3.EnvoyFilter{}, ctrlBuilder.WithPredicates(predicate)).
+		Owns(&istioclientv1beta1.PeerAuthentication{}, ctrlBuilder.WithPredicates(predicate)).
+		Owns(&autoscalingv1.HorizontalPodAutoscaler{}, ctrlBuilder.WithPredicates(predicate)).
+		Owns(&admissionregistrationv1.MutatingWebhookConfiguration{}, ctrlBuilder.WithPredicates(predicate)).
+		Owns(&admissionregistrationv1.ValidatingWebhookConfiguration{}, ctrlBuilder.WithPredicates(predicate)).
 		Complete(r)
 }
