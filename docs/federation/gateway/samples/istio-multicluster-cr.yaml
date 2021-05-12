@@ -4,7 +4,7 @@ metadata:
   name: istio-gw-multi
 spec:
   version: "1.9.5"
-  global: false
+  global: true
   meshPolicy:
     mtlsMode: STRICT
   meshExpansion: true
