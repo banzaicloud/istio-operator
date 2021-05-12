@@ -28,9 +28,9 @@ import (
 
 const (
 	banzaiImageHub                         = "ghcr.io/banzaicloud"
-	banzaiImageVersion                     = "1.8.5-bzc"
+	banzaiImageVersion                     = "1.8.6-bzc"
 	defaultImageHub                        = "docker.io/istio"
-	defaultImageVersion                    = "1.8.5"
+	defaultImageVersion                    = "1.8.6"
 	defaultLogLevel                        = "default:info"
 	defaultMeshPolicy                      = PERMISSIVE
 	defaultPilotImage                      = defaultImageHub + "/" + "pilot" + ":" + defaultImageVersion
@@ -115,18 +115,23 @@ var defaultInitResources = &apiv1.ResourceRequirements{
 	},
 }
 
-const ProxyStatusPort = 15020
-const PortStatusPortNumber = 15021
-const PortStatusPortName = "status-port"
+const (
+	ProxyStatusPort      = 15020
+	PortStatusPortNumber = 15021
+	PortStatusPortName   = "status-port"
+)
 
-var defaultIngressGatewayPorts = []ServicePort{}
-var defaultEgressGatewayPorts = []ServicePort{}
-var defaultMeshExpansionGatewayPorts = []ServicePort{}
+var (
+	defaultIngressGatewayPorts       = []ServicePort{}
+	defaultEgressGatewayPorts        = []ServicePort{}
+	defaultMeshExpansionGatewayPorts = []ServicePort{}
+)
 
 // SetDefaults used to support generic defaulter interface
 func (config *Istio) SetDefaults() {
 	SetDefaults(config)
 }
+
 func SetDefaults(config *Istio) {
 	// MeshPolicy config
 	if config.Spec.MeshPolicy.MTLSMode == "" {

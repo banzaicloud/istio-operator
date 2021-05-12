@@ -3,7 +3,7 @@ kind: Istio
 metadata:
   name: gateway-multicluster
 spec:
-  version: "1.8.5"
+  version: "1.8.6"
   autoInjectionNamespaces:
   - "default"
   meshPolicy:
