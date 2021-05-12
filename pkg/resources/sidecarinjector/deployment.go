@@ -34,9 +34,9 @@ import (
 
 func (r *Reconciler) containerArgs() []string {
 	containerArgs := []string{
-		"--caCertFile=/etc/istio/certs/root-cert.pem",
-		"--tlsCertFile=/etc/istio/certs/cert-chain.pem",
-		"--tlsKeyFile=/etc/istio/certs/key.pem",
+		"--caCertFile=/etc/istio/certs/ca.crt",
+		"--tlsCertFile=/etc/istio/certs/tls.crt",
+		"--tlsKeyFile=/etc/istio/certs/tls.key",
 		"--injectConfig=/etc/istio/inject/config",
 		"--meshConfig=/etc/istio/config/mesh",
 		"--healthCheckInterval=2s",
@@ -55,10 +55,22 @@ func (r *Reconciler) containerArgs() []string {
 func (r *Reconciler) containerEnvs() []apiv1.EnvVar {
 	envs := make([]apiv1.EnvVar, 0)
 
-	envs = append(envs, apiv1.EnvVar{
-		Name:  "REVISION",
-		Value: r.Config.NamespacedRevision(),
-	})
+	serviceHostnames := []string{
+		fmt.Sprintf("%s.%s", r.Config.WithRevision(serviceName), r.Config.Namespace),
+		fmt.Sprintf("%s.%s.svc", r.Config.WithRevision(serviceName), r.Config.Namespace),
+		fmt.Sprintf("%s.%s.svc.%s", r.Config.WithRevision(serviceName), r.Config.Namespace, r.Config.Spec.Proxy.ClusterDomain),
+	}
+
+	envs = append(envs, []apiv1.EnvVar{
+		{
+			Name:  "REVISION",
+			Value: r.Config.NamespacedRevision(),
+		},
+		{
+			Name:  "CERT_DNS_NAMES",
+			Value: strings.Join(serviceHostnames, ","),
+		},
+	}...)
 
 	envs = k8sutil.MergeEnvVars(envs, r.Config.Spec.SidecarInjector.AdditionalEnvVars)
 
@@ -97,7 +109,7 @@ func (r *Reconciler) deployment() runtime.Object {
 								{
 									Name:      "certs",
 									MountPath: "/etc/istio/certs",
-									ReadOnly:  true,
+									ReadOnly:  false,
 								},
 								{
 									Name:      "inject-config",
@@ -126,12 +138,6 @@ func (r *Reconciler) deployment() runtime.Object {
 				},
 			},
 		},
-	}
-
-	if util.PointerToBool(r.Config.Spec.Istiod.Enabled) && util.PointerToBool(r.Config.Spec.Istiod.MultiClusterSupport) {
-		deployment.Spec.Template.Spec.InitContainers = []apiv1.Container{
-			r.certFetcherContainer(),
-		}
 	}
 
 	return deployment
@@ -264,114 +270,4 @@ func (r *Reconciler) volumes() []apiv1.Volume {
 	}
 
 	return volumes
-}
-
-func (r *Reconciler) certFetcherContainer() apiv1.Container {
-	args := []string{
-		"proxy",
-		"sidecar",
-		"--serviceCluster",
-		"istio-si-cert-fetcher",
-		"--controlPlaneAuthPolicy",
-		string(r.Config.GetControlPlaneAuthPolicy()),
-		"--domain",
-		r.Config.Namespace + ".svc." + r.Config.Spec.Proxy.ClusterDomain,
-		"--discoveryAddress", r.Config.GetDiscoveryAddress(),
-	}
-
-	if util.PointerToBool(r.Config.Spec.Proxy.EnvoyAccessLogService.Enabled) {
-		args = append(args, []string{
-			"--envoyAccessLogService",
-			r.Config.Spec.Proxy.EnvoyAccessLogService.GetDataJSON(),
-		}...)
-	}
-
-	return apiv1.Container{
-		Name:                     "cert-fetcher",
-		Image:                    r.Config.Spec.Proxy.Image,
-		ImagePullPolicy:          r.Config.Spec.ImagePullPolicy,
-		Args:                     args,
-		Env:                      append(templates.IstioProxyEnv(r.Config), r.cfEnvVars()...),
-		VolumeMounts:             r.cfVolumeMounts(),
-		TerminationMessagePath:   apiv1.TerminationMessagePathDefault,
-		TerminationMessagePolicy: apiv1.TerminationMessageReadFile,
-	}
-}
-
-func (r *Reconciler) cfEnvVars() []apiv1.EnvVar {
-	serviceHostnames := []string{
-		fmt.Sprintf("%s.%s", r.Config.WithRevision(serviceName), r.Config.Namespace),
-		fmt.Sprintf("%s.%s.svc", r.Config.WithRevision(serviceName), r.Config.Namespace),
-		fmt.Sprintf("%s.%s.svc.%s", r.Config.WithRevision(serviceName), r.Config.Namespace, r.Config.Spec.Proxy.ClusterDomain),
-	}
-	envVars := []apiv1.EnvVar{
-		{
-			Name:  "CERT_CUSTOM_DNS_NAMES",
-			Value: strings.Join(serviceHostnames, ","),
-		},
-		{
-			Name:  "SECRET_TTL",
-			Value: "2160h",
-		},
-		{
-			Name:  "OUTPUT_CERTS",
-			Value: "/etc/certs",
-		},
-		{
-			Name:  "CERT_GENERATION_ONLY",
-			Value: "true",
-		},
-	}
-
-	envVars = append(envVars, apiv1.EnvVar{
-		Name:  "CA_ADDR",
-		Value: r.Config.GetCAAddress(),
-	})
-
-	if r.Config.Spec.ClusterName != "" {
-		envVars = append(envVars, apiv1.EnvVar{
-			Name:  "ISTIO_META_CLUSTER_ID",
-			Value: r.Config.Spec.ClusterName,
-		})
-	} else {
-		envVars = append(envVars, apiv1.EnvVar{
-			Name:  "ISTIO_META_CLUSTER_ID",
-			Value: "Kubernetes",
-		})
-	}
-
-	return envVars
-}
-
-func (r *Reconciler) cfVolumeMounts() []apiv1.VolumeMount {
-	vms := []apiv1.VolumeMount{}
-
-	vms = append(vms, []apiv1.VolumeMount{
-		{
-			Name:      "certs",
-			MountPath: "/etc/certs",
-		},
-		{
-			Name:      "config-volume",
-			MountPath: "/etc/istio/config",
-		},
-		{
-			Name:      "istiod-ca-cert",
-			MountPath: "/var/run/secrets/istio",
-		},
-		{
-			Name:      "istio-envoy",
-			MountPath: "/etc/istio/proxy",
-		},
-	}...)
-
-	if r.Config.Spec.JWTPolicy == v1beta1.JWTPolicyThirdPartyJWT {
-		vms = append(vms, apiv1.VolumeMount{
-			Name:      "istio-token",
-			MountPath: "/var/run/secrets/tokens",
-			ReadOnly:  true,
-		})
-	}
-
-	return vms
 }
