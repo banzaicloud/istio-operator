@@ -4,4 +4,7 @@ resources:
 - group: servicemesh
   kind: IstioControlPlane
   version: v1alpha1
+- group: servicemesh
+  kind: MeshGateway
+  version: v1alpha1
 version: "2"

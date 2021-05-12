@@ -270,3 +270,23 @@ rules:
   - get
   - patch
   - update
+- apiGroups:
+  - servicemesh.cisco.com
+  resources:
+  - meshgateways
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
+- apiGroups:
+  - servicemesh.cisco.com
+  resources:
+  - meshgateways/status
+  verbs:
+  - get
+  - patch
+  - update

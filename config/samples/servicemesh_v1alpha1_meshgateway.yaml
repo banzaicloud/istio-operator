@@ -1,0 +1,7 @@
+apiVersion: servicemesh.cisco.com/v1alpha1
+kind: MeshGateway
+metadata:
+  name: meshgateway-sample
+spec:
+  # Add fields here
+  foo: bar
