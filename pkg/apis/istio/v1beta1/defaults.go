@@ -28,9 +28,9 @@ import (
 
 const (
 	banzaiImageHub                         = "ghcr.io/banzaicloud"
-	banzaiImageVersion                     = "1.9.3-bzc"
+	banzaiImageVersion                     = "1.9.5-bzc"
 	defaultImageHub                        = "gcr.io/istio-release"
-	defaultImageVersion                    = "1.9.3"
+	defaultImageVersion                    = "1.9.5"
 	defaultLogLevel                        = "default:info"
 	defaultMeshPolicy                      = PERMISSIVE
 	defaultPilotImage                      = defaultImageHub + "/" + "pilot" + ":" + defaultImageVersion
