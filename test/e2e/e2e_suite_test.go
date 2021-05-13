@@ -17,10 +17,15 @@ limitations under the License.
 package e2e
 
 import (
+	"bytes"
+	"encoding/json"
+	"github.com/kr/pretty"
 	"testing"
 	"time"
 
+	_ "encoding/json"
 	"github.com/go-logr/logr"
+	_ "github.com/kr/pretty"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	"k8s.io/client-go/dynamic"
@@ -43,7 +48,7 @@ func NewTestEnv() *TestEnv {
 	log := logf.Log.WithName("TestSuite")
 
 	return &TestEnv{
-		Log: log,
+		Log:     log,
 		Client:  getClient(),
 		Dynamic: getDynamicClient(),
 
@@ -59,7 +64,7 @@ func TestE2E(t *testing.T) {
 }
 
 var (
-	testEnv *TestEnv
+	testEnv            *TestEnv
 	clusterStateBefore ClusterResourceList
 )
 
@@ -80,8 +85,33 @@ var _ = AfterSuite(func() {
 	Expect(err).NotTo(HaveOccurred())
 
 	if !clusterIsClean(clusterStateBefore, clusterStateAfter) {
-		log.Info("cluster resources before", "clusterStateBefore", clusterStateBefore)
-		log.Info("cluster resources after", "clusterStateAfter", clusterStateAfter)
+		pretty.Print(pretty.Diff(clusterStateBefore, clusterStateAfter))
+
+		var prettyJSON bytes.Buffer
+		var bmap, amap []byte
+		var err error
+		bmap, err = json.Marshal(map[string]ClusterResourceList{"ClusterStateBefore": clusterStateBefore})
+		if err != nil {
+			log.Error(err, "Problem with marshal")
+		} else {
+			err = json.Indent(&prettyJSON, bmap, "", "    ")
+			if err == nil {
+				log.Info("cluster resources before")
+				pretty.Print(string(prettyJSON.Bytes()))
+			}
+		}
+
+		amap, err = json.Marshal(map[string]ClusterResourceList{"ClusterStateAfter": clusterStateAfter})
+		if err != nil {
+			log.Error(err, "Problem with marshal")
+		} else {
+			err = json.Indent(&prettyJSON, amap, "", "    ")
+			if err == nil {
+				log.Info("cluster resources after")
+				pretty.Print(string(prettyJSON.Bytes()))
+			}
+		}
+
 		Fail("Cluster wasn't cleaned up properly")
 	}
 })
