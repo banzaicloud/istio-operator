@@ -424,6 +424,82 @@ func sortNamespacedNames(nns []types.NamespacedName) {
 }
 
 func testDataPath(description ginkgo.GinkgoTestDescription) string {
-       path := filepath.Join(description.ComponentTexts...)
-       return strings.ReplaceAll(path, " ", "_")
+	path := filepath.Join(description.ComponentTexts...)
+	return strings.ReplaceAll(path, " ", "_")
 }
+
+func GetIstioObject(istio *istiov1beta1.Istio, namespace, name string) error {
+	return testEnv.Client.Get(context.TODO(), client.ObjectKey{
+		Namespace: namespace,
+		Name:      name},
+		istio)
+}
+
+func GetMixerlessTelemetryStatus(istio *istiov1beta1.Istio, namespace, name string) (bool, bool, error) {
+	var filterNil, filterBefore bool
+
+	err := GetIstioObject(istio, namespace, name)
+	if err != nil {
+		return false, false, err
+	}
+	// query current state and return it
+	if istio.Spec.MixerlessTelemetry.Enabled == nil {
+		filterNil = true
+		filterBefore = false
+	} else {
+		filterNil = false
+		filterBefore = *istio.Spec.MixerlessTelemetry.Enabled
+	}
+	return filterNil, filterBefore, err
+}
+
+func WaitForMixerlessTelemetryFilter(
+	log logr.Logger, namespace, filtername string, expectMissing bool,
+	timeout, interval time.Duration) error {
+
+	return util.WaitForCondition(timeout, interval, func() (bool, error) {
+		_, err := testEnv.Dynamic.Resource(gvr.EnvoyFilter).Namespace(namespace).Get(
+			context.TODO(),
+			filtername,
+			metav1.GetOptions{})
+		if err != nil {
+			// log.Error(err, "Get filtername error")
+		}
+		if k8sapierrors.IsNotFound(err) == expectMissing {
+			// filter state matches expected
+			return true, nil
+		}
+		return false, nil
+	})
+}
+
+//
+//
+//
+//
+//
+//	timer := time.After(timeout)
+//	ticker := time.Tick(interval)
+//	// Keep trying until we're timed out or got a result
+//	log.Info("Waiting for:", "filter", filtername, "expectMissing", expectMissing)
+//	for {
+//		select {
+//		// Got a timeout! fail with a timeout error
+//		case <-timer:
+//			return false, errors.NewWithDetails("Timeout waiting for expected filter state")
+//		// Got a tick, we should check on doSomething()
+//		case <-ticker:
+//			_, err := testEnv.Dynamic.Resource(gvr.EnvoyFilter).Namespace(namespace).Get(
+//				context.TODO(),
+//				filtername,
+//				metav1.GetOptions{})
+//			if k8sapierrors.IsNotFound(err) == expectMissing {
+//				// filter state matches expected
+//				return true, nil
+//			}
+//
+//			//TODO If expectedMissing is true we could be going from F -> Nil or Nil -> F
+//			// Need to make sure the state stays as expected for some minimum time
+//		}
+//	}
+//}
