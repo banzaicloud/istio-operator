@@ -20,7 +20,6 @@ import (
 	"context"
 	"fmt"
 	"strings"
-	//	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"path/filepath"
 	"runtime"
 	"time"
@@ -159,11 +158,11 @@ var _ = Describe("E2E", func() {
 				// based on our starting value filterBefore
 				switch filterBefore {
 				case "T": // beginning state is true
-					stateTransitions = "FNTNFT"
+					stateTransitions = "FTNT"
 				case "F": // beginning state is false
-					stateTransitions = "TFNTNF"
+					stateTransitions = "TFTN"
 				case "N": // beginning state is nil
-					stateTransitions = "TNFTFN"
+					stateTransitions = "TFTN"
 				}
 				for i, state := range stateTransitions {
 					expectMissingFilter, err = SetMixerlessTelemetryState(
