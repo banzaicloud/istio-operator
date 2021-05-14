@@ -142,8 +142,8 @@ var _ = Describe("E2E", func() {
 				log.Info("New Version: ", "Version", majMinor)
 
 				// Names of the filters of interest
-				statsname := fmt.Sprintf("mixerless-telemetry-stats-filter-%s-%s", majMinor, istio.Name)
-				tcpname := fmt.Sprintf("mixerless-tcp-telemetry-stats-filter-%s-%s", majMinor, istio.Name)
+				statsname := istio.WithRevision(fmt.Sprintf("mixerless-telemetry-stats-filter-%s", majMinor))
+				tcpname := istio.WithRevision(fmt.Sprintf("mixerless-tcp-telemetry-stats-filter-%s", majMinor))
 				// logically step through True -> False -> Nil -> True -> Nil -> False -> True
 				// based on our starting values of filterNil and filterBefore
 				if filterNil == true {
