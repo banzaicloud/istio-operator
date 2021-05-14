@@ -19,9 +19,8 @@ package e2e
 import (
 	"context"
 	"fmt"
-	"strings"
 	"path/filepath"
-	"runtime"
+	"strings"
 	"time"
 
 	"github.com/go-logr/logr"
@@ -132,6 +131,7 @@ var _ = Describe("E2E", func() {
 						log.Info("AfterEach: Restore", "filterBefore", filterBefore, "filterNow", filterNow)
 						expectMissingFilter, err = SetMixerlessTelemetryState(
 							&istio, instance.Namespace, instance.Name, filterBefore)
+						Expect(err).NotTo(HaveOccurred())
 						err = WaitForMixerlessTelemetryFilter(
 							istio.Namespace, statsname, expectMissingFilter, 300*time.Second, 5*time.Second)
 						Expect(err).NotTo(HaveOccurred())
@@ -167,6 +167,7 @@ var _ = Describe("E2E", func() {
 				for i, state := range stateTransitions {
 					expectMissingFilter, err = SetMixerlessTelemetryState(
 						&istio, instance.Namespace, instance.Name, string(state))
+					Expect(err).NotTo(HaveOccurred())
 					if state == 'F' && previousState == "N" {
 						time.Sleep(15 * time.Second)
 					}
