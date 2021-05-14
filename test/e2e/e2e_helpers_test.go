@@ -45,6 +45,7 @@ import (
 	istiov1beta1 "github.com/banzaicloud/istio-operator/pkg/apis/istio/v1beta1"
 	"github.com/banzaicloud/istio-operator/pkg/k8sutil/mgw"
 	"github.com/banzaicloud/istio-operator/pkg/resources/gvr"
+	pkgutil "github.com/banzaicloud/istio-operator/pkg/util"
 	"github.com/banzaicloud/istio-operator/test/e2e/util"
 )
 
@@ -65,12 +66,10 @@ func maybeCleanup(log logr.Logger, noCleanupMsg string, cleanup func()) {
 }
 
 type IstioTestEnv struct {
-	log logr.Logger
-
-	c     client.Client
-	d     dynamic.Interface
-	istio *istiov1beta1.Istio
-
+	log                logr.Logger
+	c                  client.Client
+	d                  dynamic.Interface
+	istio              *istiov1beta1.Istio
 	clusterStateBefore ClusterResourceList
 }
 
@@ -435,36 +434,50 @@ func GetIstioObject(istio *istiov1beta1.Istio, namespace, name string) error {
 		istio)
 }
 
-func GetMixerlessTelemetryStatus(istio *istiov1beta1.Istio, namespace, name string) (bool, bool, error) {
-	var filterNil, filterBefore bool
+func GetMixerlessTelemetryStatus(istio *istiov1beta1.Istio, namespace, name string) (string, error) {
 
 	err := GetIstioObject(istio, namespace, name)
 	if err != nil {
-		return false, false, err
+		return "", err
 	}
 	// query current state and return it
 	if istio.Spec.MixerlessTelemetry.Enabled == nil {
-		filterNil = true
-		filterBefore = false
-	} else {
-		filterNil = false
-		filterBefore = *istio.Spec.MixerlessTelemetry.Enabled
+		return "N", nil
 	}
-	return filterNil, filterBefore, err
+	if *istio.Spec.MixerlessTelemetry.Enabled {
+		return "T", nil
+	}
+	return "F", nil
+}
+
+func SetMixerlessTelemetryState(istio *istiov1beta1.Istio, namespace, name, newState string) (bool, error) {
+	var expectMissingFilter bool
+	err := GetIstioObject(istio, namespace, name)
+	if err != nil {
+		return false, err
+	}
+	switch newState {
+	case "T": // transition to true
+		istio.Spec.MixerlessTelemetry.Enabled = pkgutil.BoolPointer(true)
+		expectMissingFilter = false
+	case "F": // transition to false
+		istio.Spec.MixerlessTelemetry.Enabled = pkgutil.BoolPointer(false)
+		expectMissingFilter = true
+	case "N": // transition to nil
+		istio.Spec.MixerlessTelemetry.Enabled = nil
+		expectMissingFilter = true
+	}
+	return expectMissingFilter, nil
 }
 
 func WaitForMixerlessTelemetryFilter(
-	log logr.Logger, namespace, filtername string, expectMissing bool,
-	timeout, interval time.Duration) error {
+	namespace, filterName string, expectMissing bool, timeout, interval time.Duration) error {
 
 	return util.WaitForCondition(timeout, interval, func() (bool, error) {
 		_, err := testEnv.Dynamic.Resource(gvr.EnvoyFilter).Namespace(namespace).Get(
 			context.TODO(),
-			filtername,
+			filterName,
 			metav1.GetOptions{})
-		if err != nil {
-			// log.Error(err, "Get filtername error")
-		}
 		if k8sapierrors.IsNotFound(err) == expectMissing {
 			// filter state matches expected
 			return true, nil
@@ -472,34 +485,3 @@ func WaitForMixerlessTelemetryFilter(
 		return false, nil
 	})
 }
-
-//
-//
-//
-//
-//
-//	timer := time.After(timeout)
-//	ticker := time.Tick(interval)
-//	// Keep trying until we're timed out or got a result
-//	log.Info("Waiting for:", "filter", filtername, "expectMissing", expectMissing)
-//	for {
-//		select {
-//		// Got a timeout! fail with a timeout error
-//		case <-timer:
-//			return false, errors.NewWithDetails("Timeout waiting for expected filter state")
-//		// Got a tick, we should check on doSomething()
-//		case <-ticker:
-//			_, err := testEnv.Dynamic.Resource(gvr.EnvoyFilter).Namespace(namespace).Get(
-//				context.TODO(),
-//				filtername,
-//				metav1.GetOptions{})
-//			if k8sapierrors.IsNotFound(err) == expectMissing {
-//				// filter state matches expected
-//				return true, nil
-//			}
-//
-//			//TODO If expectedMissing is true we could be going from F -> Nil or Nil -> F
-//			// Need to make sure the state stays as expected for some minimum time
-//		}
-//	}
-//}
