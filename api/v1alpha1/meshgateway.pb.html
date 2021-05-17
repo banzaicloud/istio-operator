@@ -1,0 +1,145 @@
+---
+title: Istio Mesh Gateway Spec
+description: Istio Mesh Gateway descriptor
+layout: protoc-gen-docs
+generator: protoc-gen-docs
+schema: istio-operator.api.v1alpha1.MeshGatewaySpec
+number_of_entries: 3
+---
+<h2 id="MeshGatewaySpec">MeshGatewaySpec</h2>
+<section>
+<p>MeshGateway defines an Istio ingress or egress gateway</p>
+
+<table class="message-fields">
+<thead>
+<tr>
+<th>Field</th>
+<th>Type</th>
+<th>Description</th>
+<th>Required</th>
+</tr>
+</thead>
+<tbody>
+<tr id="MeshGatewaySpec-version">
+<td><code>version</code></td>
+<td><code>string</code></td>
+<td>
+<p>Contains the intended version for the Mesh Gateway.
++kubebuilder:validation:Pattern=^1.</p>
+
+</td>
+<td>
+Yes
+</td>
+</tr>
+<tr id="MeshGatewaySpec-Ports">
+<td><code>Ports</code></td>
+<td><code><a href="#k8s-io-api-core-v1-ServicePort">ServicePort[]</a></code></td>
+<td>
+<p>MeshGatewayConfiguration <code>json:&quot;,inline&quot;</code>
++kubebuilder:validation:MinItems=0</p>
+
+</td>
+<td>
+No
+</td>
+</tr>
+</tbody>
+</table>
+</section>
+<h2 id="MeshGatewayStatus">MeshGatewayStatus</h2>
+<section>
+
+</section>
+<h2 id="k8s-io-api-core-v1-ServicePort">k8s.io.api.core.v1.ServicePort</h2>
+<section>
+<p>ServicePort contains information on service&rsquo;s port.</p>
+
+<table class="message-fields">
+<thead>
+<tr>
+<th>Field</th>
+<th>Type</th>
+<th>Description</th>
+<th>Required</th>
+</tr>
+</thead>
+<tbody>
+<tr id="k8s-io-api-core-v1-ServicePort-name">
+<td><code>name</code></td>
+<td><code>string</code></td>
+<td>
+<p>The name of this port within the service. This must be a DNS_LABEL.
+All ports within a ServiceSpec must have unique names. When considering
+the endpoints for a Service, this must match the &lsquo;name&rsquo; field in the
+EndpointPort.
+Optional if only one ServicePort is defined on this service.
++optional</p>
+
+</td>
+<td>
+No
+</td>
+</tr>
+<tr id="k8s-io-api-core-v1-ServicePort-protocol">
+<td><code>protocol</code></td>
+<td><code>string</code></td>
+<td>
+<p>The IP protocol for this port. Supports &ldquo;TCP&rdquo;, &ldquo;UDP&rdquo;, and &ldquo;SCTP&rdquo;.
+Default is TCP.
++optional</p>
+
+</td>
+<td>
+No
+</td>
+</tr>
+<tr id="k8s-io-api-core-v1-ServicePort-port">
+<td><code>port</code></td>
+<td><code>int32</code></td>
+<td>
+<p>The port that will be exposed by this service.</p>
+
+</td>
+<td>
+No
+</td>
+</tr>
+<tr id="k8s-io-api-core-v1-ServicePort-targetPort">
+<td><code>targetPort</code></td>
+<td><code><a href="#k8s-io-apimachinery-pkg-util-intstr-IntOrString">IntOrString</a></code></td>
+<td>
+<p>Number or name of the port to access on the pods targeted by the service.
+Number must be in the range 1 to 65535. Name must be an IANA<em>SVC</em>NAME.
+If this is a string, it will be looked up as a named port in the
+target Pod&rsquo;s container ports. If this is not specified, the value
+of the &lsquo;port&rsquo; field is used (an identity map).
+This field is ignored for services with clusterIP=None, and should be
+omitted or set equal to the &lsquo;port&rsquo; field.
+More info: https://kubernetes.io/docs/concepts/services-networking/service/#defining-a-service
++optional</p>
+
+</td>
+<td>
+No
+</td>
+</tr>
+<tr id="k8s-io-api-core-v1-ServicePort-nodePort">
+<td><code>nodePort</code></td>
+<td><code>int32</code></td>
+<td>
+<p>The port on each node on which this service is exposed when type=NodePort or LoadBalancer.
+Usually assigned by the system. If specified, it will be allocated to the service
+if unused or else creation of the service will fail.
+Default is to auto-allocate a port if the ServiceType of this Service requires one.
+More info: https://kubernetes.io/docs/concepts/services-networking/service/#type-nodeport
++optional</p>
+
+</td>
+<td>
+No
+</td>
+</tr>
+</tbody>
+</table>
+</section>

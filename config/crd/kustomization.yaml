@@ -3,7 +3,6 @@
 # It should be run by config/default
 resources:
 - bases/istio-operator-crds.gen.yaml
-- bases/servicemesh.cisco.com_meshgateways.yaml
 # +kubebuilder:scaffold:crdkustomizeresource
 
 patchesStrategicMerge:
