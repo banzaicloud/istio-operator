@@ -93,8 +93,6 @@ var _ = Describe("E2E", func() {
 			// var resourcesFile string
 			var (
 				istio        v1beta1.Istio
-				filterBefore *bool
-				err          error
 				majorMinor   string
 			)
 			const timeout = 30 * time.Second
@@ -104,28 +102,11 @@ var _ = Describe("E2E", func() {
 				// get the istio object created in the OUTER JustBeforeEach
 				log.Info("Namespace: ", "Namespace", instance.Namespace)
 				log.Info("Name: ", "Name", instance.Name)
-				filterBefore, err = GetMixerlessTelemetryStatus(&istio, instance.Namespace, instance.Name)
-				Expect(err).NotTo(HaveOccurred())
-				log.Info("JustBeforeEach: ", "filterBefore", filterBefore)
+				Expect(GetIstioObject(&istio, instance.Namespace, instance.Name)).Should(Succeed())
 				version := istio.Spec.Version // get first 2 digits
 				versionParts := strings.SplitN(string(version), ".", 3)
 				majorMinor = fmt.Sprintf("%s.%s", versionParts[0], versionParts[1])
 				log.Info("Istio Version: ", "Version", majorMinor)
-
-			})
-
-			AfterEach(func() {
-				var filterNow *bool
-				filterNow, err = GetMixerlessTelemetryStatus(&istio, instance.Namespace, instance.Name)
-				Expect(err).NotTo(HaveOccurred())
-				// Only change back if filterBefore != filterNow
-				// complicated by the ability of the *bool to be nil
-				if (filterNow == nil && filterBefore != nil) || (filterNow != nil && filterBefore == nil) || (
-					filterNow != nil && filterBefore != nil && *filterNow != *filterBefore) {
-					log.Info("AfterEach: Restore", "filterBefore", filterBefore, "filterNow", filterNow)
-					err = SetMixerlessTelemetryState(&istio, filterBefore)
-					Expect(err).NotTo(HaveOccurred())
-				}
 			})
 
 			It("Transitions Filter through all states", func() {
