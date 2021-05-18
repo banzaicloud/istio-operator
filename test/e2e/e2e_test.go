@@ -17,8 +17,8 @@ limitations under the License.
 package e2e
 
 import (
-	"context"
 	"fmt"
+	"github.com/banzaicloud/istio-operator/pkg/util"
 	"path/filepath"
 	"strings"
 	"time"
@@ -93,10 +93,9 @@ var _ = Describe("E2E", func() {
 			// var resourcesFile string
 			var (
 				istio        v1beta1.Istio
-				filterBefore string
+				filterBefore *bool
 				err          error
-				statsname    string
-				tcpname      string
+				majorMinor   string
 			)
 
 			BeforeEach(func() {
@@ -111,85 +110,97 @@ var _ = Describe("E2E", func() {
 				Expect(err).NotTo(HaveOccurred())
 				log.Info("JustBeforeEach: ", "filterBefore", filterBefore)
 				version := istio.Spec.Version // get first 2 digits
-				verParts := strings.SplitN(string(version), ".", 3)
-				majMinor := fmt.Sprintf("%s.%s", verParts[0], verParts[1])
-				log.Info("Istio Version: ", "Version", majMinor)
-
-				// Names of the filters of interest
-				statsname = istio.WithRevision(fmt.Sprintf("mixerless-telemetry-stats-filter-%s", majMinor))
-				tcpname = istio.WithRevision(fmt.Sprintf("mixerless-telemetry-tcp-stats-filter-%s", majMinor))
-				log.Info("Filter Names: ", "Stats", statsname, "TCP", tcpname)
+				versionParts := strings.SplitN(string(version), ".", 3)
+				majorMinor = fmt.Sprintf("%s.%s", versionParts[0], versionParts[1])
+				log.Info("Istio Version: ", "Version", majorMinor)
 
 			})
 
 			AfterEach(func() {
-				var expectMissingFilter bool
-				if filterBefore != "" {
-					filterNow, err := GetMixerlessTelemetryStatus(&istio, instance.Namespace, instance.Name)
+				var filterNow *bool
+				filterNow, err = GetMixerlessTelemetryStatus(&istio, instance.Namespace, instance.Name)
+				Expect(err).NotTo(HaveOccurred())
+				// Only change back if filterBefore != filterNow
+				// complicated by the ability of the *bool to be nil
+				if (filterNow == nil && filterBefore != nil) || (filterNow != nil && filterBefore == nil) || (
+					filterNow != nil && filterBefore != nil && *filterNow != *filterBefore) {
+					log.Info("AfterEach: Restore", "filterBefore", filterBefore, "filterNow", filterNow)
+					err = SetMixerlessTelemetryState(&istio, filterBefore)
 					Expect(err).NotTo(HaveOccurred())
-					if filterNow != filterBefore {
-						log.Info("AfterEach: Restore", "filterBefore", filterBefore, "filterNow", filterNow)
-						expectMissingFilter, err = SetMixerlessTelemetryState(
-							&istio, instance.Namespace, instance.Name, filterBefore)
-						Expect(err).NotTo(HaveOccurred())
-						err = WaitForMixerlessTelemetryFilter(
-							istio.Namespace, statsname, expectMissingFilter, 300*time.Second, 5*time.Second)
-						Expect(err).NotTo(HaveOccurred())
-
-						err = WaitForMixerlessTelemetryFilter(
-							istio.Namespace, tcpname, expectMissingFilter, 300*time.Second, 5*time.Second)
-						Expect(err).NotTo(HaveOccurred())
-					}
 				}
 			})
 
 			It("Transitions Filter through all states", func() {
-				var (
-					err                 error
-					stateTransitions    string
-					previousState       string
-					expectMissingFilter bool
-				)
-				err = GetIstioObject(&istio, instance.Namespace, instance.Name)
+				// Names of the filters of interest
+				statsName := istio.WithRevision(fmt.Sprintf("mixerless-telemetry-stats-filter-%s", majorMinor))
+				tcpName := istio.WithRevision(fmt.Sprintf("mixerless-telemetry-tcp-stats-filter-%s", majorMinor))
+				log.Info("Filter Names: ", "Stats", statsName, "TCP", tcpName)
+
+				log.Info("Starting filter as true")
+				err := GetIstioObject(&istio, instance.Namespace, instance.Name)
+				Expect(err).NotTo(HaveOccurred())
+				err = SetMixerlessTelemetryState(&istio, util.BoolPointer(true))
+				Expect(err).NotTo(HaveOccurred())
+				// make sure change was applied or removed (loop)
+				err = WaitForMixerlessTelemetryFilter(
+					istio.Namespace, statsName, false, 300*time.Second, 5*time.Second)
+				Expect(err).NotTo(HaveOccurred())
+				err = WaitForMixerlessTelemetryFilter(
+					istio.Namespace, tcpName, false, 300*time.Second, 5*time.Second)
 				Expect(err).NotTo(HaveOccurred())
 
-				previousState = filterBefore
-				// logically step through True -> False -> Nil -> True -> Nil -> False -> True
-				// based on our starting value filterBefore
-				switch filterBefore {
-				case "T": // beginning state is true
-					stateTransitions = "FTNT"
-				case "F": // beginning state is false
-					stateTransitions = "TFTN"
-				case "N": // beginning state is nil
-					stateTransitions = "TFTN"
-				}
-				for i, state := range stateTransitions {
-					expectMissingFilter, err = SetMixerlessTelemetryState(
-						&istio, instance.Namespace, instance.Name, string(state))
-					Expect(err).NotTo(HaveOccurred())
-					if state == 'F' && previousState == "N" {
-						time.Sleep(15 * time.Second)
-					}
-					if state == 'N' && previousState == "F" {
-						time.Sleep(15 * time.Second)
-					}
-					// upload to cluster
-					log.Info("Transitioning to:",
-						"iteration", i, "state", string(state), "previous", previousState)
-					err = testEnv.Client.Update(context.TODO(), &istio)
-					Expect(err).NotTo(HaveOccurred())
+				log.Info("Transition filter true -> false")
+				err = GetIstioObject(&istio, instance.Namespace, instance.Name)
+				Expect(err).NotTo(HaveOccurred())
+				err = SetMixerlessTelemetryState(&istio, util.BoolPointer(false))
+				Expect(err).NotTo(HaveOccurred())
+				// make sure change was applied or removed (loop)
+				err = WaitForMixerlessTelemetryFilter(
+					istio.Namespace, statsName, true, 300*time.Second, 5*time.Second)
+				Expect(err).NotTo(HaveOccurred())
+				err = WaitForMixerlessTelemetryFilter(
+					istio.Namespace, tcpName, true, 300*time.Second, 5*time.Second)
+				Expect(err).NotTo(HaveOccurred())
 
-					// make sure change was applied or removed (loop)
-					err = WaitForMixerlessTelemetryFilter(
-						istio.Namespace, statsname, expectMissingFilter, 300*time.Second, 5*time.Second)
-					Expect(err).NotTo(HaveOccurred())
+				log.Info("Transition filter false -> true")
+				err = GetIstioObject(&istio, instance.Namespace, instance.Name)
+				Expect(err).NotTo(HaveOccurred())
+				err = SetMixerlessTelemetryState(&istio, util.BoolPointer(true))
+				Expect(err).NotTo(HaveOccurred())
+				// make sure change was applied or removed (loop)
+				err = WaitForMixerlessTelemetryFilter(
+					istio.Namespace, statsName, false, 300*time.Second, 5*time.Second)
+				Expect(err).NotTo(HaveOccurred())
+				err = WaitForMixerlessTelemetryFilter(
+					istio.Namespace, tcpName, false, 300*time.Second, 5*time.Second)
+				Expect(err).NotTo(HaveOccurred())
 
-					err = WaitForMixerlessTelemetryFilter(
-						istio.Namespace, tcpname, expectMissingFilter, 300*time.Second, 5*time.Second)
-					Expect(err).NotTo(HaveOccurred())
-					previousState = string(state)
-				}
+				log.Info("Transition filter true -> nil")
+				err = GetIstioObject(&istio, instance.Namespace, instance.Name)
+				Expect(err).NotTo(HaveOccurred())
+				err = SetMixerlessTelemetryState(&istio, nil)
+				Expect(err).NotTo(HaveOccurred())
+				// make sure change was applied or removed (loop)
+				err = WaitForMixerlessTelemetryFilter(
+					istio.Namespace, statsName, true, 300*time.Second, 5*time.Second)
+				Expect(err).NotTo(HaveOccurred())
+				err = WaitForMixerlessTelemetryFilter(
+					istio.Namespace, tcpName, true, 300*time.Second, 5*time.Second)
+				Expect(err).NotTo(HaveOccurred())
+
+				log.Info("Transition filter nil -> true")
+				err = GetIstioObject(&istio, instance.Namespace, instance.Name)
+				Expect(err).NotTo(HaveOccurred())
+				err = SetMixerlessTelemetryState(&istio, util.BoolPointer(true))
+				Expect(err).NotTo(HaveOccurred())
+				// make sure change was applied or removed (loop)
+				err = WaitForMixerlessTelemetryFilter(
+					istio.Namespace, statsName, false, 300*time.Second, 5*time.Second)
+				Expect(err).NotTo(HaveOccurred())
+				err = WaitForMixerlessTelemetryFilter(
+					istio.Namespace, tcpName, false, 300*time.Second, 5*time.Second)
+				Expect(err).NotTo(HaveOccurred())
+
 			})
 		})
 

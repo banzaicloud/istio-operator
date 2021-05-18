@@ -45,7 +45,6 @@ import (
 	istiov1beta1 "github.com/banzaicloud/istio-operator/pkg/apis/istio/v1beta1"
 	"github.com/banzaicloud/istio-operator/pkg/k8sutil/mgw"
 	"github.com/banzaicloud/istio-operator/pkg/resources/gvr"
-	pkgutil "github.com/banzaicloud/istio-operator/pkg/util"
 	"github.com/banzaicloud/istio-operator/test/e2e/util"
 )
 
@@ -434,50 +433,33 @@ func GetIstioObject(istio *istiov1beta1.Istio, namespace, name string) error {
 		istio)
 }
 
-func GetMixerlessTelemetryStatus(istio *istiov1beta1.Istio, namespace, name string) (string, error) {
-
+func GetMixerlessTelemetryStatus(istio *istiov1beta1.Istio, namespace, name string) (*bool, error) {
 	err := GetIstioObject(istio, namespace, name)
 	if err != nil {
-		return "", err
+		return nil, err
 	}
 	// query current state and return it
-	if istio.Spec.MixerlessTelemetry.Enabled == nil {
-		return "N", nil
-	}
-	if *istio.Spec.MixerlessTelemetry.Enabled {
-		return "T", nil
-	}
-	return "F", nil
+	return istio.Spec.MixerlessTelemetry.Enabled, nil
 }
 
-func SetMixerlessTelemetryState(istio *istiov1beta1.Istio, namespace, name, newState string) (bool, error) {
-	var expectMissingFilter bool
-	err := GetIstioObject(istio, namespace, name)
-	if err != nil {
-		return false, err
-	}
-	switch newState {
-	case "T": // transition to true
-		istio.Spec.MixerlessTelemetry.Enabled = pkgutil.BoolPointer(true)
-		expectMissingFilter = false
-	case "F": // transition to false
-		istio.Spec.MixerlessTelemetry.Enabled = pkgutil.BoolPointer(false)
-		expectMissingFilter = true
-	case "N": // transition to nil
-		istio.Spec.MixerlessTelemetry.Enabled = nil
-		expectMissingFilter = true
-	}
-	return expectMissingFilter, nil
+func SetMixerlessTelemetryState(istio *istiov1beta1.Istio, newState *bool) error {
+	istio.Spec.MixerlessTelemetry.Enabled = newState
+	// upload to cluster
+	testEnv.Log.Info("Transitioning to:", "newState", newState)
+	return testEnv.Client.Update(context.TODO(), istio)
 }
 
 func WaitForMixerlessTelemetryFilter(
 	namespace, filterName string, expectMissing bool, timeout, interval time.Duration) error {
-
 	return util.WaitForCondition(timeout, interval, func() (bool, error) {
 		_, err := testEnv.Dynamic.Resource(gvr.EnvoyFilter).Namespace(namespace).Get(
 			context.TODO(),
 			filterName,
 			metav1.GetOptions{})
+		if err != nil && !k8sapierrors.IsNotFound(err) {
+			// only expect "Not Found" Error. Bail out here if we get an unexpected error
+			return false, err
+		}
 		if k8sapierrors.IsNotFound(err) == expectMissing {
 			// filter state matches expected
 			return true, nil
