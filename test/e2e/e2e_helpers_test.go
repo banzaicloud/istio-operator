@@ -445,12 +445,12 @@ func GetMixerlessTelemetryStatus(istio *istiov1beta1.Istio, namespace, name stri
 func SetMixerlessTelemetryState(istio *istiov1beta1.Istio, newState *bool) error {
 	istio.Spec.MixerlessTelemetry.Enabled = newState
 	// upload to cluster
-	testEnv.Log.Info("Transitioning to:", "newState", newState)
+	testEnv.Log.Info("Updating cluster to:", "newState", newState)
 	return testEnv.Client.Update(context.TODO(), istio)
 }
 
 func WaitForMixerlessTelemetryFilter(
-	namespace, filterName string, expectMissing bool, timeout, interval time.Duration) error {
+	namespace, filterName string, filterShouldExist bool, timeout, interval time.Duration) error {
 	return util.WaitForCondition(timeout, interval, func() (bool, error) {
 		_, err := testEnv.Dynamic.Resource(gvr.EnvoyFilter).Namespace(namespace).Get(
 			context.TODO(),
@@ -460,10 +460,21 @@ func WaitForMixerlessTelemetryFilter(
 			// only expect "Not Found" Error. Bail out here if we get an unexpected error
 			return false, err
 		}
-		if k8sapierrors.IsNotFound(err) == expectMissing {
-			// filter state matches expected
+		if k8sapierrors.IsNotFound(err) != filterShouldExist {
+			// IsNotFound returns true if the error contains "Not found"
+			// which is the opposite fo filterShouldExist
 			return true, nil
 		}
 		return false, nil
 	})
+}
+
+func WaitForMixerlessTelemetryFilters(
+	namespace, filterName1 string, filterName2 string, filterShouldExist bool, timeout, interval time.Duration) error {
+	// check both filters sequentially. Usually, the first filter will wait the most.
+	err := WaitForMixerlessTelemetryFilter(namespace, filterName1, filterShouldExist, timeout, interval)
+	if err != nil {
+		return err
+	}
+	return WaitForMixerlessTelemetryFilter(namespace, filterName2, filterShouldExist, timeout, interval)
 }
