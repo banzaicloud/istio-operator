@@ -18,7 +18,6 @@ package e2e
 
 import (
 	"fmt"
-	"github.com/banzaicloud/istio-operator/pkg/util"
 	"path/filepath"
 	"strings"
 	"time"
@@ -28,6 +27,7 @@ import (
 	. "github.com/onsi/gomega"
 
 	"github.com/banzaicloud/istio-operator/pkg/apis/istio/v1beta1"
+	"github.com/banzaicloud/istio-operator/pkg/util"
 	"github.com/banzaicloud/istio-operator/test/e2e/util/resources"
 )
 
