@@ -22,13 +22,13 @@ endif
 
 .PHONY: e2e-test-dependencies
 e2e-test-dependencies:
-	./scripts/e2e-test/download-deps.sh
+	./test/e2e/scripts/download-deps.sh
 
 .PHONY: e2e-test-env
 e2e-test-env: e2e-test-dependencies
 	# There's an issue (https://github.com/banzaicloud/istio-operator/issues/643) with resource cleanup on
 	# k8s 1.20, so running the tests on 1.19.7 for now
-	env PATH=./bin:$${PATH} ./scripts/e2e-test/setup-env.sh 1.19.7 ${ISTIO_VERSION}
+	./test/e2e/scripts/setup-env.sh 1.19.7 ${ISTIO_VERSION}
 
 .PHONY: e2e-test-install-istio-operator
 e2e-test-install-istio-operator: export PATH:=./bin:${PATH}
