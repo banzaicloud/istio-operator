@@ -10,6 +10,8 @@ yq_version=3.4.0
 script_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" >/dev/null 2>&1 && pwd)"
 binpath=${script_dir}/../bin
 
+mkdir -p "${binpath}"
+
 function ensure-binary-version() {
     local bin_name=$1
     local bin_version=$2

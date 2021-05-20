@@ -51,9 +51,12 @@ e2e-test-install-istio-operator: docker-build
 	# start, so it might remove some flakiness.
 	kubectl wait pod --all-namespaces --all --for=condition=ready --timeout=60s
 
-.PHONY: e2e-test
-e2e-test: download-deps e2e-test-install-istio-operator
+.PHONY: e2e-test-run
+e2e-test-run:
 	env E2E_TEST_FAIL_FAST=${E2E_TEST_FAIL_FAST} \
 		E2E_LOG_DIR=${E2E_LOG_DIR} \
 		E2E_TEST_DUMP_SCRIPT=${PWD}/scripts/dump-cluster-state-and-logs.sh \
 			./test/e2e/scripts/run-tests.sh
+
+.PHONY: e2e-test
+e2e-test: download-deps e2e-test-install-istio-operator e2e-test-run
