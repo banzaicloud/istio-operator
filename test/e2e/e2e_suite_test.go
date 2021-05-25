@@ -43,7 +43,7 @@ func NewTestEnv() *TestEnv {
 	log := logf.Log.WithName("TestSuite")
 
 	return &TestEnv{
-		Log: log,
+		Log:     log,
 		Client:  getClient(),
 		Dynamic: getDynamicClient(),
 
@@ -59,7 +59,7 @@ func TestE2E(t *testing.T) {
 }
 
 var (
-	testEnv *TestEnv
+	testEnv            *TestEnv
 	clusterStateBefore ClusterResourceList
 )
 
