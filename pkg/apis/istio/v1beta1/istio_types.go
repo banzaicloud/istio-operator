@@ -38,12 +38,12 @@ const (
 
 	ManualInjectionLabelKey = "sidecar.istio.io/inject"
 
-	supportedIstioMinorVersionRegex = "^1.9"
+	supportedIstioMinorVersionRegex = "^1.10"
 )
 
 var (
-	SupportedIstioVersion = "1.9.5"
-	Version               = "0.9.5"
+	SupportedIstioVersion = "1.10.0"
+	Version               = "0.10.0"
 
 	DisableInjectionLabel = map[string]string{
 		ManualInjectionLabelKey: "false",
