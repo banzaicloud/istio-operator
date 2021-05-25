@@ -164,7 +164,6 @@ func (r *Reconciler) siConfig() string {
 	marshaledConfig, _ := yaml.Marshal(siConfig)
 	// this is a static config, so we don't have to deal with errors
 	return string(marshaledConfig)
-
 }
 
 func (r *Reconciler) templates() map[string]string {
@@ -180,6 +179,7 @@ metadata:
   annotations:
     {{- if eq (len $containers) 1 }}
     kubectl.kubernetes.io/default-logs-container: "{{ index $containers 0 }}"
+    kubectl.kubernetes.io/default-container: "{{ index $containers 0 }}"
     {{ end }}
 {{ if .Values.global.proxy_init.cniEnabled -}}
     {{- if not .Values.global.proxy_init.cniChained }}
@@ -257,6 +257,10 @@ containers:
 {{- end }}
   env:
 {{- if .Values.global.istiod.enabled }}
+   {{- if eq (env "PILOT_ENABLE_INBOUND_PASSTHROUGH" "true") "false" }}
+   - name: REWRITE_PROBE_LEGACY_LOCALHOST_DESTINATION
+     value: "true"
+   {{- end }}
   - name: JWT_POLICY
     value: {{ .Values.global.jwtPolicy }}
   - name: PILOT_CERT_PROVIDER
@@ -466,6 +470,11 @@ containers:
     name: istio-certs
     readOnly: true
   {{- end }}
+  {{- if (isset .ObjectMeta.Annotations ` + "`" + `sidecar.istio.io/istioCustomIdSecretName` + "`" + `) }}
+  - name: custom-id
+    mountPath: /etc/istio/custom-id
+    readOnly: true
+  {{- end }}
   - name: istio-podinfo
     mountPath: /etc/istio/pod
   {{- else }}
@@ -510,6 +519,12 @@ volumes:
 {{- if .Values.global.istiod.enabled }}
 - name: istio-data
   emptyDir: {}
+{{- if (isset .ObjectMeta.Annotations ` + "`" + `sidecar.istio.io/istioCustomIdSecretName` + "`" + `) }}
+- name: custom-id
+  secret:
+    optional: true
+    secretName: "{{ index .ObjectMeta.Annotations ` + "`" + `sidecar.istio.io/istioCustomIdSecretName` + "`" + ` }}"
+{{- end }}
 - name: istio-podinfo
   downwardAPI:
     items:
