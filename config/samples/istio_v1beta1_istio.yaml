@@ -5,7 +5,7 @@ metadata:
     controller-tools.k8s.io: "1.0"
   name: istio-sample-v19x
 spec:
-  version: "1.9.5"
+  version: "1.10.0"
   global: false
   meshPolicy:
     mtlsMode: PERMISSIVE
@@ -28,7 +28,7 @@ spec:
       enabled: false
   pilot:
     enabled: true
-    image: "gcr.io/istio-release/pilot:1.9.5"
+    image: "gcr.io/istio-release/pilot:1.10.0"
     replicaCount: 1
     minReplicas: 1
     maxReplicas: 5
@@ -104,7 +104,7 @@ spec:
   telemetry:
     enabled: false
   proxy:
-    image: "gcr.io/istio-release/proxyv2:1.9.5"
+    image: "gcr.io/istio-release/proxyv2:1.10.0"
     accessLogFile: "/dev/stdout"
     accessLogFormat: ""
     accessLogEncoding: "TEXT"
@@ -118,7 +118,7 @@ spec:
         cpu: 2000m
         memory: 1024Mi
   proxyInit:
-    image: "gcr.io/istio-release/proxyv2:1.9.5"
+    image: "gcr.io/istio-release/proxyv2:1.10.0"
   defaultPodDisruptionBudget:
     enabled: true
   outboundTrafficPolicy:
