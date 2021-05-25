@@ -20,7 +20,6 @@ import (
 	"crypto/md5"
 	"fmt"
 	"strconv"
-	"strings"
 
 	appsv1 "k8s.io/api/apps/v1"
 	apiv1 "k8s.io/api/core/v1"
@@ -34,7 +33,6 @@ import (
 	"github.com/banzaicloud/istio-operator/pkg/resources/base"
 	"github.com/banzaicloud/istio-operator/pkg/resources/templates"
 	"github.com/banzaicloud/istio-operator/pkg/resources/webhookcert"
-	"github.com/banzaicloud/istio-operator/pkg/trustbundle"
 	"github.com/banzaicloud/istio-operator/pkg/util"
 )
 
@@ -79,10 +77,6 @@ func (r *Reconciler) containerEnvs() []apiv1.EnvVar {
 		{
 			Name:  "PILOT_TRACE_SAMPLING",
 			Value: fmt.Sprintf("%.2f", r.Config.Spec.Pilot.TraceSampling),
-		},
-		{
-			Name:  "MESHNETWORKS_HASH",
-			Value: r.Config.Spec.GetMeshNetworksHash(),
 		},
 		{
 			Name:  "PILOT_ENABLE_PROTOCOL_SNIFFING_FOR_OUTBOUND",
@@ -153,6 +147,21 @@ func (r *Reconciler) containerEnvs() []apiv1.EnvVar {
 				Name:  "CACERT_CONFIG_NAME",
 				Value: r.Config.WithRevision("istio-ca-root-cert"),
 			},
+			{
+				Name:  "MESHCONFIG_CONFIGMAP_NAME",
+				Value: r.Config.WithRevision(base.IstioConfigMapName),
+			},
+			{
+				Name:  "INJECTOR_CONFIGMAP_NAME",
+				Value: r.Config.WithRevision("istio-sidecar-injector"),
+			},
+		}...)
+	} else {
+		envs = append(envs, []apiv1.EnvVar{
+			{
+				Name:  "MESHNETWORKS_HASH",
+				Value: r.Config.Spec.GetMeshNetworksHash(),
+			},
 		}...)
 	}
 
@@ -174,48 +183,19 @@ func (r *Reconciler) containerEnvs() []apiv1.EnvVar {
 
 	if util.PointerToBool(r.Config.Spec.Pilot.SPIFFE.OperatorEndpoints.Enabled) {
 		webhookCABundle, _ := webhookcert.GetWebhookCABundles(r.Client, r.operatorConfig.WebhookConfigurationName)
-		envs = append(envs, apiv1.EnvVar{
-			Name:  "WEBHOOK_CABUNDLE_HASH",
-			Value: fmt.Sprintf("%x", md5.Sum([]byte(webhookCABundle))),
-		})
+		envs = append(envs, []apiv1.EnvVar{
+			{
+				Name:  "WEBHOOK_CABUNDLE_HASH",
+				Value: fmt.Sprintf("%x", md5.Sum([]byte(webhookCABundle))),
+			},
+			{
+				Name:  "ISTIO_MULTIROOT_MESH",
+				Value: "true",
+			},
+		}...)
 	}
 
 	envs = k8sutil.MergeEnvVars(envs, r.Config.Spec.Pilot.AdditionalEnvVars)
-
-	envs = r.mergeSPIFFEOperatorEndpoints(envs)
-
-	return envs
-}
-
-func (r *Reconciler) mergeSPIFFEOperatorEndpoints(envs []apiv1.EnvVar) []apiv1.EnvVar {
-	if !util.PointerToBool(r.Config.Spec.Pilot.SPIFFE.OperatorEndpoints.Enabled) {
-		return envs
-	}
-
-	env := apiv1.EnvVar{
-		Name: "SPIFFE_BUNDLE_ENDPOINTS",
-	}
-
-	for i, e := range envs {
-		if e.Name == env.Name {
-			env = e
-			envs = append(envs[:i], envs[i+1:]...)
-			break
-		}
-	}
-
-	p := strings.Split(env.Value, "||")
-	if len(p) == 1 && p[0] == "" {
-		p = make([]string, 0)
-	}
-
-	for _, domain := range append(r.Config.Spec.TrustDomainAliases, r.Config.Spec.TrustDomain) {
-		p = append(p, fmt.Sprintf("%s|https://%s%s?trustDomain=%s&revision=%s", domain, r.operatorConfig.WebhookServiceAddress, trustbundle.WebhookEndpointPath, domain, r.Config.NamespacedRevision()))
-	}
-
-	env.Value = strings.Join(p, "||")
-
-	envs = append(envs, env)
 
 	return envs
 }
@@ -335,11 +315,21 @@ func (r *Reconciler) vaultENVInitContainer() apiv1.Container {
 }
 
 func (r *Reconciler) volumeMounts() []apiv1.VolumeMount {
-	vms := []apiv1.VolumeMount{
-		{
-			Name:      "config-volume",
-			MountPath: "/etc/istio/config",
-		},
+	vms := []apiv1.VolumeMount{}
+
+	if !util.PointerToBool(r.Config.Spec.Istiod.MultiControlPlaneSupport) {
+		vms = append(vms, []apiv1.VolumeMount{
+			{
+				Name:      "config-volume",
+				MountPath: "/etc/istio/config",
+				ReadOnly:  true,
+			},
+			{
+				Name:      "inject",
+				MountPath: "/var/lib/istio/inject",
+				ReadOnly:  true,
+			},
+		}...)
 	}
 
 	if util.PointerToBool(r.Config.Spec.Istiod.Enabled) {
@@ -364,18 +354,14 @@ func (r *Reconciler) volumeMounts() []apiv1.VolumeMount {
 				Name:      "local-certs",
 				MountPath: "/var/run/secrets/istio-dns",
 			},
-			{
-				Name:      "inject",
-				MountPath: "/var/lib/istio/inject",
-				ReadOnly:  true,
-			},
 		}...)
 
 		if util.PointerToBool(r.Config.Spec.Pilot.SPIFFE.OperatorEndpoints.Enabled) {
 			vms = append(vms, []apiv1.VolumeMount{
 				{
 					Name:      "operator-webhook-cabundle",
-					MountPath: "/var/ssl/certs",
+					MountPath: "/etc/ssl/certs/istio-operator.pem",
+					SubPath:   "cacert.pem",
 					ReadOnly:  true,
 				},
 			}...)
@@ -386,18 +372,33 @@ func (r *Reconciler) volumeMounts() []apiv1.VolumeMount {
 }
 
 func (r *Reconciler) volumes() []apiv1.Volume {
-	volumes := []apiv1.Volume{
-		{
-			Name: "config-volume",
-			VolumeSource: apiv1.VolumeSource{
-				ConfigMap: &apiv1.ConfigMapVolumeSource{
-					LocalObjectReference: apiv1.LocalObjectReference{
-						Name: r.Config.WithRevision(base.IstioConfigMapName),
+	volumes := []apiv1.Volume{}
+
+	if !util.PointerToBool(r.Config.Spec.Istiod.MultiControlPlaneSupport) {
+		volumes = append(volumes, []apiv1.Volume{
+			{
+				Name: "config-volume",
+				VolumeSource: apiv1.VolumeSource{
+					ConfigMap: &apiv1.ConfigMapVolumeSource{
+						LocalObjectReference: apiv1.LocalObjectReference{
+							Name: r.Config.WithRevision(base.IstioConfigMapName),
+						},
+						DefaultMode: util.IntPointer(420),
 					},
-					DefaultMode: util.IntPointer(420),
 				},
 			},
-		},
+			{
+				Name: "inject",
+				VolumeSource: apiv1.VolumeSource{
+					ConfigMap: &apiv1.ConfigMapVolumeSource{
+						LocalObjectReference: apiv1.LocalObjectReference{
+							Name: r.Config.WithRevision("istio-sidecar-injector"),
+						},
+						DefaultMode: util.IntPointer(420),
+					},
+				},
+			},
+		}...)
 	}
 
 	if util.PointerToBool(r.Config.Spec.Pilot.SPIFFE.OperatorEndpoints.Enabled) {
@@ -487,18 +488,6 @@ func (r *Reconciler) volumes() []apiv1.Volume {
 				},
 			})
 		}
-
-		volumes = append(volumes, apiv1.Volume{
-			Name: "inject",
-			VolumeSource: apiv1.VolumeSource{
-				ConfigMap: &apiv1.ConfigMapVolumeSource{
-					LocalObjectReference: apiv1.LocalObjectReference{
-						Name: r.Config.WithRevision("istio-sidecar-injector"),
-					},
-					DefaultMode: util.IntPointer(420),
-				},
-			},
-		})
 	}
 
 	return volumes
