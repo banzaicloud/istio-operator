@@ -32,6 +32,7 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/reconcile"
 
 	istiov1beta1 "github.com/banzaicloud/istio-operator/pkg/apis/istio/v1beta1"
+	"github.com/banzaicloud/istio-operator/pkg/config"
 )
 
 var (
@@ -69,7 +70,7 @@ func TestReconcile(t *testing.T) {
 	dynamic, err := dynamic.NewForConfig(mgr.GetConfig())
 	g.Expect(err).NotTo(gomega.HaveOccurred())
 
-	recFn, requests := SetupTestReconcile(newReconciler(mgr, dynamic))
+	recFn, requests := SetupTestReconcile(newReconciler(mgr, dynamic, config.Configuration{}))
 	g.Expect(add(mgr, recFn)).NotTo(gomega.HaveOccurred())
 
 	stopMgr, mgrStopped := StartTestManager(mgr, g)
