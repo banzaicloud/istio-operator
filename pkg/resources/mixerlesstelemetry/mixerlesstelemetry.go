@@ -29,12 +29,13 @@ import (
 )
 
 const (
-	componentName  = "mixerless-telemetry"
-	wasmRuntime    = "envoy.wasm.runtime.v8"
-	noWasmRuntime  = "envoy.wasm.runtime.null"
-	proxyVersion17 = "1.7"
-	proxyVersion18 = "1.8"
-	proxyVersion19 = "1.9"
+	componentName   = "mixerless-telemetry"
+	wasmRuntime     = "envoy.wasm.runtime.v8"
+	noWasmRuntime   = "envoy.wasm.runtime.null"
+	proxyVersion17  = "1.7"
+	proxyVersion18  = "1.8"
+	proxyVersion19  = "1.9"
+	proxyVersion110 = "1.10"
 )
 
 type Reconciler struct {
@@ -69,22 +70,22 @@ func (r *Reconciler) Reconcile(log logr.Logger) error {
 	}
 
 	drs := []resources.DynamicResourceWithDesiredState{
-		// delete deprecated 1.7 EnvoyFilters
-		// these lines can be removed when upgrading to 1.10
-		{DynamicResource: r.metaExchangeEnvoyFilter17, DesiredState: k8sutil.DesiredStateAbsent},
-		{DynamicResource: r.tcpMetaExchangeEnvoyFilter17, DesiredState: k8sutil.DesiredStateAbsent},
-		{DynamicResource: r.httpStatsFilter17, DesiredState: k8sutil.DesiredStateAbsent},
-		{DynamicResource: r.tcpStatsFilter17, DesiredState: k8sutil.DesiredStateAbsent},
-
-		{DynamicResource: r.metaExchangeEnvoyFilter18, DesiredState: exchangeFilterDesiredState},
-		{DynamicResource: r.tcpMetaExchangeEnvoyFilter18, DesiredState: exchangeFilterDesiredState},
-		{DynamicResource: r.httpStatsFilter18, DesiredState: statsFilterDesiredState},
-		{DynamicResource: r.tcpStatsFilter18, DesiredState: statsFilterDesiredState},
+		// delete deprecated 1.8 EnvoyFilters
+		// these lines can be removed when upgrading to 1.11
+		{DynamicResource: r.metaExchangeEnvoyFilter18, DesiredState: k8sutil.DesiredStateAbsent},
+		{DynamicResource: r.tcpMetaExchangeEnvoyFilter18, DesiredState: k8sutil.DesiredStateAbsent},
+		{DynamicResource: r.httpStatsFilter18, DesiredState: k8sutil.DesiredStateAbsent},
+		{DynamicResource: r.tcpStatsFilter18, DesiredState: k8sutil.DesiredStateAbsent},
 
 		{DynamicResource: r.metaExchangeEnvoyFilter19, DesiredState: exchangeFilterDesiredState},
 		{DynamicResource: r.tcpMetaExchangeEnvoyFilter19, DesiredState: exchangeFilterDesiredState},
 		{DynamicResource: r.httpStatsFilter19, DesiredState: statsFilterDesiredState},
 		{DynamicResource: r.tcpStatsFilter19, DesiredState: statsFilterDesiredState},
+
+		{DynamicResource: r.metaExchangeEnvoyFilter110, DesiredState: exchangeFilterDesiredState},
+		{DynamicResource: r.tcpMetaExchangeEnvoyFilter110, DesiredState: exchangeFilterDesiredState},
+		{DynamicResource: r.httpStatsFilter110, DesiredState: statsFilterDesiredState},
+		{DynamicResource: r.tcpStatsFilter110, DesiredState: statsFilterDesiredState},
 	}
 
 	for _, dr := range drs {
