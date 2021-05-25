@@ -81,3 +81,11 @@ func ObjectMetaClusterScope(name string, labels map[string]string, config runtim
 		},
 	}
 }
+
+func PrometheusScrapeAnnotations(port, path string) map[string]string {
+	return map[string]string{
+		"prometheus.io/scrape": "true",
+		"prometheus.io/port":   port,
+		"prometheus.io/path":   path,
+	}
+}

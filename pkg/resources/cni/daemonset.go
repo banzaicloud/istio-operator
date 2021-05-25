@@ -47,7 +47,7 @@ func (r *Reconciler) daemonSet() runtime.Object {
 			Template: apiv1.PodTemplateSpec{
 				ObjectMeta: metav1.ObjectMeta{
 					Labels:      util.MergeMultipleStringMaps(labels, r.Config.RevisionLabels(), v1beta1.DisableInjectionLabel),
-					Annotations: templates.DefaultDeployAnnotations(),
+					Annotations: util.MergeStringMaps(templates.DefaultDeployAnnotations(), templates.PrometheusScrapeAnnotations("15014", "/metrics")),
 				},
 				Spec: apiv1.PodSpec{
 					NodeSelector: map[string]string{
