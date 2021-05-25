@@ -61,7 +61,7 @@ func (r *Reconciler) deployment() runtime.Object {
 		args = append(args, fmt.Sprintf("--log_output_level=%s", util.PointerToString(r.Config.Spec.Logging.Level)))
 	}
 
-	var containers = make([]apiv1.Container, 0)
+	containers := make([]apiv1.Container, 0)
 	containers = append(containers, apiv1.Container{
 		Name:            "istio-proxy",
 		Image:           r.Config.Spec.Proxy.Image,
@@ -241,7 +241,7 @@ func (r *Reconciler) envVars() []apiv1.EnvVar {
 		})
 	}
 
-	meshConfig := base.MeshConfig(r.Config, false)
+	meshConfig := base.MeshConfig(r.Config, false, r.operatorConfig)
 	proxyConfig := meshConfig["defaultConfig"]
 	proxyConfigJSON, err := json.Marshal(proxyConfig)
 	if err == nil {

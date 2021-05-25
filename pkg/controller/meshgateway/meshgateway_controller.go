@@ -63,12 +63,12 @@ func Add(mgr manager.Manager, config config.Configuration) error {
 		return emperror.Wrap(err, "failed to create dynamic client")
 	}
 
-	return add(mgr, newReconciler(mgr, dynamic))
+	return add(mgr, newReconciler(mgr, dynamic, config))
 }
 
 // newReconciler returns a new reconcile.Reconciler
-func newReconciler(mgr manager.Manager, d dynamic.Interface) reconcile.Reconciler {
-	return &ReconcileMeshGateway{Client: mgr.GetClient(), dynamic: d, scheme: mgr.GetScheme()}
+func newReconciler(mgr manager.Manager, d dynamic.Interface, operatorConfig config.Configuration) reconcile.Reconciler {
+	return &ReconcileMeshGateway{Client: mgr.GetClient(), dynamic: d, scheme: mgr.GetScheme(), operatorConfig: operatorConfig}
 }
 
 // add adds a new Controller to mgr with r as the reconcile.Reconciler
@@ -156,6 +156,8 @@ type ReconcileMeshGateway struct {
 	client.Client
 	dynamic dynamic.Interface
 	scheme  *runtime.Scheme
+
+	operatorConfig config.Configuration
 }
 
 // +kubebuilder:rbac:groups=istio.banzaicloud.io,resources=meshgateways;meshgateways/finalizers,verbs=get;list;watch;create;update;patch;delete
@@ -210,7 +212,7 @@ func (r *ReconcileMeshGateway) Reconcile(request reconcile.Request) (reconcile.R
 		return reconcile.Result{}, errors.WithStack(err)
 	}
 
-	reconciler := gateways.New(r.Client, r.dynamic, istio, instance, r.scheme)
+	reconciler := gateways.New(r.Client, r.dynamic, istio, instance, r.scheme, r.operatorConfig)
 
 	var gatewayHasHostname bool
 	err = reconciler.Reconcile(log)
