@@ -139,13 +139,19 @@ func (r *Reconciler) clusterRole() runtime.Object {
 		{
 			APIGroups: []string{"networking.x-k8s.io"},
 			Resources: []string{"*"},
-			Verbs:     []string{"get", "watch", "list"},
+			Verbs:     []string{"get", "watch", "list", "update"},
 		},
 		// Needed for multicluster secret reading, possibly ingress certs in the future
 		{
 			APIGroups: []string{""},
 			Resources: []string{"secrets"},
 			Verbs:     []string{"get", "watch", "list"},
+		},
+		// Used for MCS serviceexport management
+		{
+			APIGroups: []string{"multicluster.x-k8s.io"},
+			Resources: []string{"serviceexports"},
+			Verbs:     []string{"get", "watch", "list", "create", "delete"},
 		},
 	}
 
@@ -170,7 +176,7 @@ func (r *Reconciler) clusterRole() runtime.Object {
 	}
 	rules = append(rules, rbacv1.PolicyRule{
 		// istio configuration
-		APIGroups: []string{"security.istio.io", "networking.istio.io"},
+		APIGroups: []string{"security.istio.io", "networking.istio.io", "telemetry.istio.io"},
 		Resources: []string{"*"},
 		Verbs:     verbs,
 	})

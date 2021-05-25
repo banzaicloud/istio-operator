@@ -253,6 +253,7 @@ rules:
   - get
   - list
   - watch
+  - update
 - apiGroups:
   - discovery.k8s.io
   resources:
@@ -289,6 +290,7 @@ rules:
   {{- end }}
   - networking.istio.io
   - security.istio.io
+  - telemetry.istio.io
   {{- if semverCompare "< 1.7.0" .Values.istioVersion }}
   - rbac.istio.io
   {{- end }}
@@ -296,6 +298,16 @@ rules:
   - '*'
   verbs:
   - '*'
+- apiGroups:
+  - multicluster.x-k8s.io
+  resources:
+  - serviceexports
+  verbs:
+  - get
+  - list
+  - watch
+  - create
+  - delete
 - apiGroups:
   - istio.banzaicloud.io
   resources:
