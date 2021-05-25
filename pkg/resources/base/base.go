@@ -22,6 +22,7 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
 	istiov1beta1 "github.com/banzaicloud/istio-operator/pkg/apis/istio/v1beta1"
+	"github.com/banzaicloud/istio-operator/pkg/config"
 	"github.com/banzaicloud/istio-operator/pkg/k8sutil"
 	"github.com/banzaicloud/istio-operator/pkg/resources"
 )
@@ -40,15 +41,19 @@ var istioReaderLabel = map[string]string{
 type Reconciler struct {
 	resources.Reconciler
 	remote bool
+
+	operatorConfig config.Configuration
 }
 
-func New(client client.Client, config *istiov1beta1.Istio, isRemote bool) *Reconciler {
+func New(client client.Client, config *istiov1beta1.Istio, isRemote bool, operatorConfig config.Configuration) *Reconciler {
 	return &Reconciler{
 		Reconciler: resources.Reconciler{
 			Client: client,
 			Config: config,
 		},
 		remote: isRemote,
+
+		operatorConfig: operatorConfig,
 	}
 }
 

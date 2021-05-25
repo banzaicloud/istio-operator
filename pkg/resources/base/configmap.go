@@ -24,7 +24,9 @@ import (
 	"k8s.io/apimachinery/pkg/runtime"
 
 	istiov1beta1 "github.com/banzaicloud/istio-operator/pkg/apis/istio/v1beta1"
+	"github.com/banzaicloud/istio-operator/pkg/config"
 	"github.com/banzaicloud/istio-operator/pkg/resources/templates"
+	"github.com/banzaicloud/istio-operator/pkg/trustbundle"
 	"github.com/banzaicloud/istio-operator/pkg/util"
 )
 
@@ -33,7 +35,7 @@ var cmLabels = map[string]string{
 }
 
 func (r *Reconciler) configMap() runtime.Object {
-	meshConfig := MeshConfig(r.Config, r.remote)
+	meshConfig := MeshConfig(r.Config, r.remote, r.operatorConfig)
 	marshaledConfig, _ := yaml.Marshal(meshConfig)
 
 	return &apiv1.ConfigMap{
@@ -45,7 +47,7 @@ func (r *Reconciler) configMap() runtime.Object {
 	}
 }
 
-func MeshConfig(config *istiov1beta1.Istio, remote bool) map[string]interface{} {
+func MeshConfig(config *istiov1beta1.Istio, remote bool, operatorConfig config.Configuration) map[string]interface{} {
 	defaultConfig := map[string]interface{}{
 		"configPath":             "./etc/istio/proxy",
 		"binaryPath":             "/usr/local/bin/envoy",
@@ -147,6 +149,14 @@ func MeshConfig(config *istiov1beta1.Istio, remote bool) map[string]interface{} 
 
 		if util.PointerToBool(config.Spec.Telemetry.SessionAffinityEnabled) {
 			meshConfig["sidecarToTelemetrySessionAffinity"] = util.PointerToBool(config.Spec.Telemetry.SessionAffinityEnabled)
+		}
+	}
+
+	if util.PointerToBool(config.Spec.Pilot.SPIFFE.OperatorEndpoints.Enabled) {
+		meshConfig["caCertificates"] = []map[string]interface{}{
+			{
+				"spiffeBundleUrl": fmt.Sprintf("https://%s%s?trustDomain=%s&revision=%s", operatorConfig.WebhookServiceAddress, trustbundle.WebhookEndpointPath, config.Spec.TrustDomain, config.NamespacedRevision()),
+			},
 		}
 	}
 

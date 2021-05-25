@@ -342,7 +342,7 @@ func (r *ReconcileIstio) reconcile(logger logr.Logger, config *istiov1beta1.Isti
 	config.Spec.SetMeshNetworks(meshNetworks)
 
 	reconcilers := []resources.ComponentReconciler{
-		base.New(r.Client, config, false),
+		base.New(r.Client, config, false, r.operatorConfig),
 		webhookcert.New(r.Client, config, r.operatorConfig),
 		citadel.New(citadel.Configuration{
 			DeployMeshWidePolicy: true,
