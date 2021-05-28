@@ -793,7 +793,7 @@ type IstioSpec struct {
 	// ExcludeInboundPorts the comma separated list of inbound ports to be excluded from redirection to Envoy
 	ExcludeInboundPorts string `json:"excludeInboundPorts,omitempty"`
 
-    // ExcludeOutboundPorts the comma separated list of outbound ports to be excluded from redirection to Envoy
+	// ExcludeOutboundPorts the comma separated list of outbound ports to be excluded from redirection to Envoy
 	ExcludeOutboundPorts string `json:"excludeOutboundPorts,omitempty"`
 
 	// List of namespaces to label with sidecar auto injection enabled
