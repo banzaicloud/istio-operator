@@ -56,6 +56,12 @@ type RemoteIstioSpec struct {
 	// ExcludeIPRanges the range where not to capture egress traffic
 	ExcludeIPRanges string `json:"excludeIPRanges,omitempty"`
 
+	// ExcludeInboundPorts the ports where not to capture egress traffic
+	ExcludeInboundPorts string `json:"excludeInboundPorts,omitempty"`
+	
+	// ExcludeOutboundPorts the ports where not to capture egress traffic
+	ExcludeOutboundPorts string `json:"excludeOutboundPorts,omitempty"`
+
 	// EnabledServices the Istio component services replicated to remote side
 	EnabledServices []IstioService `json:"enabledServices"`
 

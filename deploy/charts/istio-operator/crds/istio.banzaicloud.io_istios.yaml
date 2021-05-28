@@ -540,6 +540,10 @@ spec:
                   type: object
                 excludeIPRanges:
                   type: string
+                excludeOutboundPorts:
+                  type: string
+                excludeInboundPorts:
+                  type: string
                 galley:
                   properties:
                     additionalContainerArgs:

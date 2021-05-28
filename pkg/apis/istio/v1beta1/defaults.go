@@ -48,6 +48,8 @@ const (
 	defaultCoreDNSImage                    = "coredns/coredns:1.6.2"
 	defaultCoreDNSPluginImage              = defaultImageHub + "/coredns-plugin:0.2-istio-1.1"
 	defaultIncludeIPRanges                 = "*"
+	defaultExcludeInboundPorts             = ""
+	defaultExcludeOutboundPorts            = ""
 	defaultReplicaCount                    = 1
 	defaultMinReplicas                     = 1
 	defaultMaxReplicas                     = 5
@@ -157,6 +159,15 @@ func SetDefaults(config *Istio) {
 	if config.Spec.IncludeIPRanges == "" {
 		config.Spec.IncludeIPRanges = defaultIncludeIPRanges
 	}
+
+	if config.Spec.ExcludeOutboundPorts == nil {
+		config.Spec.ExcludeOutboundPorts = defaultExcludeOutboundPorts
+	}
+
+	if config.Spec.ExcludeInboundPorts == nil {
+		config.Spec.ExcludeInboundPorts = defaultExcludeInboundPorts
+	}
+
 	if config.Spec.MountMtlsCerts == nil {
 		config.Spec.MountMtlsCerts = util.BoolPointer(false)
 	}

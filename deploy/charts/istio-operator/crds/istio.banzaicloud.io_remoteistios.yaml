@@ -550,6 +550,10 @@ spec:
                   type: array
                 excludeIPRanges:
                   type: string
+                excludeOutboundPorts:
+                  type: string
+                excludeInboundPorts:
+                  type: string
                 includeIPRanges:
                   type: string
                 istioControlPlane:
