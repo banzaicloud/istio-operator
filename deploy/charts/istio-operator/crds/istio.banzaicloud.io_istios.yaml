@@ -2561,6 +2561,10 @@ spec:
                   type: array
                 includeIPRanges:
                   type: string
+                excludeOutboundPorts:
+                  type: string
+                excludeInboundPorts:
+                  type: string
                 istioCoreDNS:
                   properties:
                     affinity:

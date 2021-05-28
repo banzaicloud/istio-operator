@@ -552,6 +552,10 @@ spec:
                   type: string
                 includeIPRanges:
                   type: string
+                excludeOutboundPorts:
+                  type: string
+                excludeInboundPorts:
+                  type: string
                 istioControlPlane:
                   properties:
                     name:
