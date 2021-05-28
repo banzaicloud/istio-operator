@@ -157,7 +157,6 @@ func SetDefaults(config *Istio) {
 	if config.Spec.IncludeIPRanges == "" {
 		config.Spec.IncludeIPRanges = defaultIncludeIPRanges
 	}
-
 	if config.Spec.MountMtlsCerts == nil {
 		config.Spec.MountMtlsCerts = util.BoolPointer(false)
 	}
