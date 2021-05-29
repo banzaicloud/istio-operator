@@ -22,13 +22,13 @@ endif
 
 .PHONY: e2e-test-dependencies
 e2e-test-dependencies:
-	./scripts/e2e-test/download-deps.sh
+	./test/e2e/scripts/download-deps.sh
 
 .PHONY: e2e-test-env
 e2e-test-env: e2e-test-dependencies
 	# There's an issue (https://github.com/banzaicloud/istio-operator/issues/643) with resource cleanup on
 	# k8s 1.20, so running the tests on 1.19.7 for now
-	env PATH=./bin:$${PATH} ./scripts/e2e-test/setup-env.sh 1.19.7 ${ISTIO_VERSION}
+	./test/e2e/scripts/setup-env.sh 1.19.7 ${ISTIO_VERSION}
 
 .PHONY: e2e-test-install-istio-operator
 e2e-test-install-istio-operator: export PATH:=./bin:${PATH}
@@ -51,13 +51,12 @@ e2e-test-install-istio-operator: docker-build
 	# start, so it might remove some flakiness.
 	kubectl wait pod --all-namespaces --all --for=condition=ready --timeout=60s
 
-.PHONY: e2e-test
-e2e-test: download-deps e2e-test-install-istio-operator
-	mkdir -p ${E2E_LOG_DIR}
-	env E2E_TEST_FAIL_FAST=${E2E_TEST_FAIL_FAST} E2E_LOG_DIR=${E2E_LOG_DIR} \
+.PHONY: e2e-test-run
+e2e-test-run:
+	env E2E_TEST_FAIL_FAST=${E2E_TEST_FAIL_FAST} \
+		E2E_LOG_DIR=${E2E_LOG_DIR} \
 		E2E_TEST_DUMP_SCRIPT=${PWD}/scripts/dump-cluster-state-and-logs.sh \
-		bin/ginkgo ${E2E_TEST_GINKGO_ARGS} --randomizeSuites --randomizeAllSpecs --timeout 10m -v ./test/e2e/... \
-			| tee ${E2E_LOG_DIR}/e2e-test.log
+			./test/e2e/scripts/run-tests.sh
 
-    # TODO collect used docker images and compare with known list. This list can be used to preload the images into kind
-    # TODO  `kind export logs` and look for "ImageCreate" in containerd.log
+.PHONY: e2e-test
+e2e-test: download-deps e2e-test-install-istio-operator e2e-test-run
