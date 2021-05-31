@@ -34,9 +34,9 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/controller"
 	"sigs.k8s.io/controller-runtime/pkg/handler"
+	logf "sigs.k8s.io/controller-runtime/pkg/log"
 	"sigs.k8s.io/controller-runtime/pkg/manager"
 	"sigs.k8s.io/controller-runtime/pkg/reconcile"
-	logf "sigs.k8s.io/controller-runtime/pkg/runtime/log"
 	"sigs.k8s.io/controller-runtime/pkg/source"
 
 	istiov1beta1 "github.com/banzaicloud/istio-operator/pkg/apis/istio/v1beta1"
@@ -94,41 +94,41 @@ func add(mgr manager.Manager, r reconcile.Reconciler) error {
 	}
 
 	// Watch for Istio changes to trigger reconciliation for RemoteIstios
-	err = c.Watch(&source.Kind{Type: &istiov1beta1.Istio{TypeMeta: metav1.TypeMeta{Kind: "Istio", APIVersion: "istio.banzaicloud.io/v1beta1"}}}, &handler.EnqueueRequestsFromMapFunc{
-		ToRequests: handler.ToRequestsFunc(func(object handler.MapObject) []reconcile.Request {
-			return triggerRemoteIstios(mgr, object.Object, log)
-		}),
-	}, k8sutil.GetWatchPredicateForIstio())
+	err = c.Watch(&source.Kind{Type: &istiov1beta1.Istio{TypeMeta: metav1.TypeMeta{Kind: "Istio", APIVersion: "istio.banzaicloud.io/v1beta1"}}}, handler.EnqueueRequestsFromMapFunc(
+		func(object client.Object) []reconcile.Request {
+			return triggerRemoteIstios(mgr, object, log)
+		},
+	), k8sutil.GetWatchPredicateForIstio())
 	if err != nil {
 		return err
 	}
 
 	// Watch for changes to Istio service pods
-	err = c.Watch(&source.Kind{Type: &corev1.Pod{TypeMeta: metav1.TypeMeta{Kind: "Pod", APIVersion: "v1"}}}, &handler.EnqueueRequestsFromMapFunc{
-		ToRequests: handler.ToRequestsFunc(func(object handler.MapObject) []reconcile.Request {
+	err = c.Watch(&source.Kind{Type: &corev1.Pod{TypeMeta: metav1.TypeMeta{Kind: "Pod", APIVersion: "v1"}}}, handler.EnqueueRequestsFromMapFunc(
+		func(object client.Object) []reconcile.Request {
 			return triggerRemoteIstios(mgr, nil, log)
-		}),
-	}, k8sutil.GetWatchPredicateForIstioServicePods())
+		},
+	), k8sutil.GetWatchPredicateForIstioServicePods())
 	if err != nil {
 		return err
 	}
 
 	// Watch for changes to Ingress
-	err = c.Watch(&source.Kind{Type: &corev1.Service{TypeMeta: metav1.TypeMeta{Kind: "service", APIVersion: "v1"}}}, &handler.EnqueueRequestsFromMapFunc{
-		ToRequests: handler.ToRequestsFunc(func(object handler.MapObject) []reconcile.Request {
+	err = c.Watch(&source.Kind{Type: &corev1.Service{TypeMeta: metav1.TypeMeta{Kind: "service", APIVersion: "v1"}}}, handler.EnqueueRequestsFromMapFunc(
+		func(object client.Object) []reconcile.Request {
 			return triggerRemoteIstios(mgr, nil, log)
-		}),
-	}, k8sutil.GetWatchPredicateForIstioIngressGateway())
+		},
+	), k8sutil.GetWatchPredicateForIstioIngressGateway())
 	if err != nil {
 		return err
 	}
 
 	// Watch for namespace changes
-	err = c.Watch(&source.Kind{Type: &corev1.Namespace{TypeMeta: metav1.TypeMeta{Kind: "Namespace", APIVersion: "v1"}}}, &handler.EnqueueRequestsFromMapFunc{
-		ToRequests: handler.ToRequestsFunc(func(object handler.MapObject) []reconcile.Request {
+	err = c.Watch(&source.Kind{Type: &corev1.Namespace{TypeMeta: metav1.TypeMeta{Kind: "Namespace", APIVersion: "v1"}}}, handler.EnqueueRequestsFromMapFunc(
+		func(object client.Object) []reconcile.Request {
 			return triggerRemoteIstios(mgr, nil, log)
-		}),
-	})
+		},
+	))
 	if err != nil {
 		return err
 	}
@@ -160,10 +160,10 @@ type ReconcileRemoteConfig struct {
 
 // Reconcile reads that state of the cluster for a RemoteConfig object and makes changes based on the state read
 // and what is in the RemoteConfig.Spec
-func (r *ReconcileRemoteConfig) Reconcile(request reconcile.Request) (reconcile.Result, error) {
+func (r *ReconcileRemoteConfig) Reconcile(ctx context.Context, request reconcile.Request) (reconcile.Result, error) {
 	logger := log.WithValues("trigger", request.Namespace+"/"+request.Name, "correlationID", uuid.Must(uuid.NewV4()).String())
 	remoteConfig := &istiov1beta1.RemoteIstio{}
-	err := r.Get(context.TODO(), request.NamespacedName, remoteConfig)
+	err := r.Get(ctx, request.NamespacedName, remoteConfig)
 	if err != nil {
 		if !k8serrors.IsNotFound(err) {
 			// Error reading the object - requeue the request.

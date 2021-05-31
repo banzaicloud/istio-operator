@@ -31,12 +31,12 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
-func MustGetResource(t *testing.T, client client.Client, key client.ObjectKey, obj runtime.Object) {
-	require.NoError(t, client.Get(context.TODO(), key, obj))
+func MustGetResource(t *testing.T, c client.Client, key client.ObjectKey, obj runtime.Object) {
+	require.NoError(t, c.Get(context.TODO(), key, obj.(client.Object)))
 }
 
-func MustDeleteResources(t *testing.T, client client.Client, filename string) {
-	require.NoError(t, DeleteResources(client, filename))
+func MustDeleteResources(t *testing.T, c client.Client, filename string) {
+	require.NoError(t, DeleteResources(c, filename))
 }
 
 func DeleteResources(client client.Client, filename string) error {
@@ -208,7 +208,7 @@ func CreateResources(c client.Client, file string) error {
 }
 
 func createObject(ctx context.Context, c client.Client, obj runtime.Object) error {
-	err := c.Create(ctx, obj)
+	err := c.Create(ctx, obj.(client.Object))
 	return errors.WrapIfWithDetails(err, "can't create object", "objectKey", ObjectKey(obj))
 }
 
@@ -263,13 +263,13 @@ func processResources(c client.Client, file string, f func(context.Context, clie
 }
 
 func ensureObject(ctx context.Context, c client.Client, obj runtime.Object, mustExist bool) error {
-	existing := obj.DeepCopyObject()
+	existing := obj.DeepCopyObject().(client.Object)
 
 	objectKey := ObjectKey(existing)
 	err := c.Get(ctx, objectKey, existing)
 	if err != nil {
 		if !mustExist && k8serrors.IsNotFound(err) {
-			err := c.Create(ctx, obj)
+			err := c.Create(ctx, obj.(client.Object))
 			return errors.WrapIfWithDetails(err, "can't create object", "objectKey", objectKey)
 		}
 		return err

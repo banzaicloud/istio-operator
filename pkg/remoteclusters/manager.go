@@ -17,6 +17,7 @@ limitations under the License.
 package remoteclusters
 
 import (
+	"context"
 	"errors"
 	"sync"
 )
@@ -24,24 +25,24 @@ import (
 type Manager struct {
 	clusters map[string]*Cluster
 	mu       *sync.RWMutex
-	stop     <-chan struct{}
+	context  context.Context
 }
 
-func NewManager(stop <-chan struct{}) *Manager {
+func NewManager(ctx context.Context) *Manager {
 	mgr := &Manager{
 		clusters: make(map[string]*Cluster),
 		mu:       &sync.RWMutex{},
-		stop:     stop,
+		context:  ctx,
 	}
 
-	go mgr.waitForStop(stop)
+	go mgr.waitForStop(ctx)
 
 	return mgr
 }
 
-func (m *Manager) waitForStop(stop <-chan struct{}) {
+func (m *Manager) waitForStop(ctx context.Context) {
 	select {
-	case <-stop:
+	case <-ctx.Done():
 		for _, c := range m.clusters {
 			c.Shutdown()
 		}

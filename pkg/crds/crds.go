@@ -171,8 +171,8 @@ func (r *CRDReconciler) Reconcile(config *istiov1beta1.Istio, log logr.Logger) e
 			continue
 		}
 
-		crd := obj.DeepCopyObject()
-		current := obj.DeepCopyObject()
+		crd := obj.DeepCopyObject().(client.Object)
+		current := obj.DeepCopyObject().(client.Object)
 		err := k8sutil.SetResourceRevision(crd, r.revision)
 		if err != nil {
 			return emperror.Wrap(err, "could not set resource revision")
@@ -254,13 +254,13 @@ func GetWatchPredicateForCRDs() predicate.Funcs {
 			return false
 		},
 		DeleteFunc: func(e event.DeleteEvent) bool {
-			if e.Meta.GetLabels()[createdByLabel] == createdBy {
+			if e.Object.GetLabels()[createdByLabel] == createdBy {
 				return true
 			}
 			return true
 		},
 		UpdateFunc: func(e event.UpdateEvent) bool {
-			if e.MetaOld.GetLabels()[createdByLabel] == createdBy || e.MetaNew.GetLabels()[createdByLabel] == createdBy {
+			if e.ObjectOld.GetLabels()[createdByLabel] == createdBy || e.ObjectNew.GetLabels()[createdByLabel] == createdBy {
 				return true
 			}
 			return false

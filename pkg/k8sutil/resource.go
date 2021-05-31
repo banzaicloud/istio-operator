@@ -38,15 +38,12 @@ func Reconcile(log logr.Logger, client runtimeClient.Client, desired runtime.Obj
 	}
 
 	desiredType := reflect.TypeOf(desired)
-	var current = desired.DeepCopyObject()
-	var desiredCopy = desired.DeepCopyObject()
-	key, err := runtimeClient.ObjectKeyFromObject(current)
-	if err != nil {
-		return emperror.With(err, "kind", desiredType)
-	}
+	var current = desired.DeepCopyObject().(runtimeClient.Object)
+	var desiredCopy = desired.DeepCopyObject().(runtimeClient.Object)
+	key := runtimeClient.ObjectKeyFromObject(current)
 	log = log.WithValues("kind", desiredType, "name", key.Name)
 
-	err = client.Get(context.TODO(), key, current)
+	err := client.Get(context.TODO(), key, current)
 	if err != nil && !apierrors.IsNotFound(err) {
 		return emperror.WrapWith(err, "getting resource failed", "kind", desiredType, "name", key.Name)
 	}
@@ -66,7 +63,7 @@ func Reconcile(log logr.Logger, client runtimeClient.Client, desired runtime.Obj
 			if err := patch.DefaultAnnotator.SetLastAppliedAnnotation(desired); err != nil {
 				log.Error(err, "Failed to set last applied annotation", "desired", desired)
 			}
-			if err := client.Create(context.TODO(), desired); err != nil {
+			if err := client.Create(context.TODO(), desired.(runtimeClient.Object)); err != nil {
 				return emperror.WrapWith(err, "creating resource failed", "kind", desiredType, "name", key.Name)
 			}
 			if err := desiredState.AfterCreate(desired); err != nil {
@@ -119,7 +116,7 @@ func Reconcile(log logr.Logger, client runtimeClient.Client, desired runtime.Obj
 			metaAccessor.SetResourceVersion(desired, currentResourceVersion)
 			prepareResourceForUpdate(current, desired)
 
-			if err := client.Update(context.TODO(), desired); err != nil {
+			if err := client.Update(context.TODO(), desired.(runtimeClient.Object)); err != nil {
 				if apierrors.IsConflict(err) || apierrors.IsInvalid(err) {
 					should, err := desiredState.ShouldRecreate(current, desiredCopy)
 					if err != nil {

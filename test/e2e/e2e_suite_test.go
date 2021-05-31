@@ -25,7 +25,7 @@ import (
 	. "github.com/onsi/gomega"
 	"k8s.io/client-go/dynamic"
 	"sigs.k8s.io/controller-runtime/pkg/client"
-	logf "sigs.k8s.io/controller-runtime/pkg/runtime/log"
+	logf "sigs.k8s.io/controller-runtime/pkg/log"
 
 	"github.com/banzaicloud/istio-operator/pkg/util"
 	"github.com/banzaicloud/istio-operator/test/e2e/util/clusterstate"

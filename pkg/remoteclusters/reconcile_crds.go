@@ -75,7 +75,7 @@ func (c *Cluster) reconcileCRDs(remoteConfig *istiov1beta1.RemoteIstio, istio *i
 
 func (c *Cluster) waitForCRDs(crds []runtime.Object) error {
 	for _, crd := range crds {
-		crd := crd.DeepCopyObject()
+		crd := crd.DeepCopyObject().(client.Object)
 		metaAccessor := meta.NewAccessor()
 		crdName, err := metaAccessor.Name(crd)
 		if err != nil {

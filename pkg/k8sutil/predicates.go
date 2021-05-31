@@ -94,13 +94,13 @@ func GetWatchPredicateForIstioServicePods() predicate.Funcs {
 			return false
 		},
 		CreateFunc: func(e event.CreateEvent) bool {
-			if _, ok := e.Meta.GetLabels()["istio"]; ok {
+			if _, ok := e.Object.GetLabels()["istio"]; ok {
 				return true
 			}
 			return false
 		},
 		UpdateFunc: func(e event.UpdateEvent) bool {
-			if _, ok := e.MetaNew.GetLabels()["istio"]; ok {
+			if _, ok := e.ObjectNew.GetLabels()["istio"]; ok {
 				return true
 			}
 			return false
@@ -117,13 +117,13 @@ func GetWatchPredicateForIstioService(name string) predicate.Funcs {
 			return false
 		},
 		CreateFunc: func(e event.CreateEvent) bool {
-			if value, ok := e.Meta.GetLabels()["istio"]; ok && value == name {
+			if value, ok := e.Object.GetLabels()["istio"]; ok && value == name {
 				return true
 			}
 			return false
 		},
 		UpdateFunc: func(e event.UpdateEvent) bool {
-			if value, ok := e.MetaNew.GetLabels()["istio"]; ok && value == name {
+			if value, ok := e.ObjectNew.GetLabels()["istio"]; ok && value == name {
 				return true
 			}
 			return false
@@ -189,7 +189,7 @@ func GetWatchPredicateForOwnedResources(owner runtime.Object, isController bool,
 		},
 		UpdateFunc: func(e event.UpdateEvent) bool {
 			// If a namespace is updated, we need to reconcile to mutate the injection labels
-			if _, ok := e.MetaNew.(*corev1.Namespace); ok {
+			if _, ok := e.ObjectNew.(*corev1.Namespace); ok {
 				return true
 			}
 			related, object, err := ownerMatcher.Match(e.ObjectNew)

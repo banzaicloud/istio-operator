@@ -42,7 +42,7 @@ commands:
 jobs:
   build:
     docker:
-      - image: circleci/golang:1.14
+      - image: circleci/golang:1.16
 
     working_directory: /go/src/github.com/banzaicloud/istio-operator
     steps:

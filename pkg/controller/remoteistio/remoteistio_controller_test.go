@@ -53,14 +53,14 @@ func TestReconcile(t *testing.T) {
 	})
 	g.Expect(err).NotTo(gomega.HaveOccurred())
 	c = mgr.GetClient()
-	stop := make(<-chan struct{})
-	recFn, requests := SetupTestReconcile(newReconciler(mgr, remoteclusters.NewManager(stop), config.Configuration{}))
+	ctx, cancelFunc := context.WithCancel(context.Background())
+	recFn, requests := SetupTestReconcile(newReconciler(mgr, remoteclusters.NewManager(ctx), config.Configuration{}))
 	g.Expect(add(mgr, recFn)).NotTo(gomega.HaveOccurred())
 
-	stopMgr, mgrStopped := StartTestManager(mgr, g)
+	mgrStopped := StartTestManager(ctx, mgr, g)
 
 	defer func() {
-		close(stopMgr)
+		cancelFunc()
 		mgrStopped.Wait()
 	}()
 
