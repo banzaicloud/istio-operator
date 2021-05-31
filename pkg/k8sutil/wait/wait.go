@@ -22,7 +22,6 @@ import (
 	"strings"
 
 	"github.com/go-logr/logr"
-	"github.com/goph/emperror"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/runtime/schema"
 	"k8s.io/apimachinery/pkg/types"
@@ -108,17 +107,14 @@ func (c *ResourceConditionChecks) WaitForResources(id string, objects []runtime.
 }
 
 func (c *ResourceConditionChecks) waitForResourceConditions(object runtime.Object, log logr.Logger, checkFuncs ...ResourceConditionCheck) error {
-	resource := object.DeepCopyObject()
+	resource := object.DeepCopyObject().(client.Object)
 
-	key, err := client.ObjectKeyFromObject(resource)
-	if err != nil {
-		return emperror.Wrap(err, "failed to get object key")
-	}
+	key := client.ObjectKeyFromObject(resource)
 
 	log = log.WithValues(c.resourceDetails(resource)...)
 
 	log.V(1).Info("pending")
-	err = wait.ExponentialBackoff(c.backoff, func() (bool, error) {
+	err := wait.ExponentialBackoff(c.backoff, func() (bool, error) {
 		err := c.client.Get(context.Background(), types.NamespacedName{
 			Name:      key.Name,
 			Namespace: key.Namespace,
@@ -145,12 +141,10 @@ func (c *ResourceConditionChecks) waitForResourceConditions(object runtime.Objec
 func (c *ResourceConditionChecks) resourceDetails(desired runtime.Object) []interface{} {
 	values := make([]interface{}, 0)
 
-	key, err := client.ObjectKeyFromObject(desired)
-	if err == nil {
-		values = append(values, "name", key.Name)
-		if key.Namespace != "" {
-			values = append(values, "namespace", key.Namespace)
-		}
+	key := client.ObjectKeyFromObject(desired.(client.Object))
+	values = append(values, "name", key.Name)
+	if key.Namespace != "" {
+		values = append(values, "namespace", key.Namespace)
 	}
 
 	gvk := desired.GetObjectKind().GroupVersionKind()

@@ -18,6 +18,7 @@ package cert
 
 import (
 	"bytes"
+	"context"
 	cryptorand "crypto/rand"
 	"crypto/rsa"
 	"crypto/x509"
@@ -62,7 +63,7 @@ func (p *Provisioner) RegisterAfterGenerationFunc(f AfterCheckFunc) {
 	p.afterCheckFuncs = append(p.afterCheckFuncs, f)
 }
 
-func (p *Provisioner) Start(stop <-chan struct{}, trigger <-chan struct{}) error {
+func (p *Provisioner) Start(ctx context.Context, trigger <-chan struct{}) error {
 	check := func(triggered bool) {
 		generated, certificate, err := p.checkCert()
 		if err != nil {
@@ -85,7 +86,7 @@ func (p *Provisioner) Start(stop <-chan struct{}, trigger <-chan struct{}) error
 			check(true)
 		case <-timer:
 			check(false)
-		case <-stop:
+		case <-ctx.Done():
 			return nil
 		}
 	}

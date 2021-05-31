@@ -51,8 +51,8 @@ type Cluster struct {
 	k8sConfig      []byte
 	log            logr.Logger
 
-	stop          <-chan struct{}
-	stopper       chan<- struct{}
+	stop          context.Context
+	stopper       context.CancelFunc
 	initClient    sync.Once
 	initInformers sync.Once
 
@@ -68,14 +68,14 @@ type Cluster struct {
 }
 
 func NewCluster(name string, cfg config.Configuration, ctrl controller.Controller, cl client.Client, k8sConfig []byte, log logr.Logger) (*Cluster, error) {
-	stop := make(chan struct{})
+	ctx, cancel := context.WithCancel(context.Background())
 
 	cluster := &Cluster{
 		name:      name,
 		k8sConfig: k8sConfig,
 		log:       log.WithValues("cluster", name),
-		stop:      stop,
-		stopper:   stop,
+		stop:      ctx,
+		stopper:   cancel,
 		ctrl:      ctrl,
 		cl:        cl,
 	}
@@ -120,8 +120,8 @@ func (c *Cluster) namespaceInformer() error {
 
 	err = c.ctrl.Watch(&source.Informer{
 		Informer: namespaceInformer,
-	}, &handler.EnqueueRequestsFromMapFunc{
-		ToRequests: handler.ToRequestsFunc(func(object handler.MapObject) []reconcile.Request {
+	}, handler.EnqueueRequestsFromMapFunc(
+		func(object client.Object) []reconcile.Request {
 			return []reconcile.Request{
 				{
 					NamespacedName: types.NamespacedName{
@@ -130,8 +130,8 @@ func (c *Cluster) namespaceInformer() error {
 					},
 				},
 			}
-		}),
-	}, predicate.Funcs{
+		},
+	), predicate.Funcs{
 		CreateFunc: func(e event.CreateEvent) bool {
 			return true
 		},
@@ -165,8 +165,8 @@ func (c *Cluster) configMapInformer() error {
 
 	err = c.ctrl.Watch(&source.Informer{
 		Informer: configmapInformer,
-	}, &handler.EnqueueRequestsFromMapFunc{
-		ToRequests: handler.ToRequestsFunc(func(object handler.MapObject) []reconcile.Request {
+	}, handler.EnqueueRequestsFromMapFunc(
+		func(object client.Object) []reconcile.Request {
 			return []reconcile.Request{
 				{
 					NamespacedName: types.NamespacedName{
@@ -175,20 +175,19 @@ func (c *Cluster) configMapInformer() error {
 					},
 				},
 			}
-		}),
-	}, predicate.Funcs{
+		}), predicate.Funcs{
 		CreateFunc: func(e event.CreateEvent) bool {
 			return false
 		},
 		DeleteFunc: func(e event.DeleteEvent) bool {
-			if labels.SelectorFromValidatedSet(caRootConfigMapLabels).Matches(labels.Set(e.Meta.GetLabels())) {
+			if labels.SelectorFromValidatedSet(caRootConfigMapLabels).Matches(labels.Set(e.Object.GetLabels())) {
 				return true
 			}
 
 			return false
 		},
 		UpdateFunc: func(e event.UpdateEvent) bool {
-			if labels.SelectorFromValidatedSet(caRootConfigMapLabels).Matches(labels.Set(e.MetaOld.GetLabels())) {
+			if labels.SelectorFromValidatedSet(caRootConfigMapLabels).Matches(labels.Set(e.ObjectOld.GetLabels())) {
 				return true
 			}
 
@@ -215,8 +214,8 @@ func (c *Cluster) meshGatewayInformer() error {
 
 	err = c.ctrl.Watch(&source.Informer{
 		Informer: mgwInformer,
-	}, &handler.EnqueueRequestsFromMapFunc{
-		ToRequests: handler.ToRequestsFunc(func(object handler.MapObject) []reconcile.Request {
+	}, handler.EnqueueRequestsFromMapFunc(
+		func(object client.Object) []reconcile.Request {
 			return []reconcile.Request{
 				{
 					NamespacedName: types.NamespacedName{
@@ -225,8 +224,8 @@ func (c *Cluster) meshGatewayInformer() error {
 					},
 				},
 			}
-		}),
-	}, k8sutil.GetWatchPredicateForMeshGateway())
+		},
+	), k8sutil.GetWatchPredicateForMeshGateway())
 
 	if err != nil {
 		return emperror.Wrap(err, "could not set informer for MeshGateway")
@@ -348,7 +347,7 @@ func (c *Cluster) RemoveRemoteIstioComponents() error {
 
 func (c *Cluster) Shutdown() {
 	c.log.Info("shutdown remote cluster manager")
-	close(c.stopper)
+	c.stopper()
 }
 
 func (c *Cluster) getRestConfig(kubeconfig []byte) (*rest.Config, error) {

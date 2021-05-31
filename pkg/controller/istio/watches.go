@@ -30,6 +30,7 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/types"
+	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/event"
 	"sigs.k8s.io/controller-runtime/pkg/handler"
 	"sigs.k8s.io/controller-runtime/pkg/predicate"
@@ -83,7 +84,7 @@ func (r *ReconcileIstio) initWatches(watchCreatedResourcesEvents bool) error {
 
 	// Watch for changes to resources managed by the operator
 	for _, resource := range createdResourceTypes {
-		err = r.watchResource(resource)
+		err = r.watchResource(resource.(client.Object))
 		if err != nil {
 			return err
 		}
@@ -97,9 +98,9 @@ func (r *ReconcileIstio) watchMeshGateway() error {
 		&source.Kind{
 			Type: &istiov1beta1.MeshGateway{TypeMeta: metav1.TypeMeta{Kind: "MeshGateway", APIVersion: istiov1beta1.SchemeGroupVersion.String()}},
 		},
-		&handler.EnqueueRequestsFromMapFunc{
-			ToRequests: handler.ToRequestsFunc(func(object handler.MapObject) []reconcile.Request {
-				if mgw, ok := object.Object.(*istiov1beta1.MeshGateway); ok && mgw.Spec.IstioControlPlane != nil {
+		handler.EnqueueRequestsFromMapFunc(
+			func(object client.Object) []reconcile.Request {
+				if mgw, ok := object.(*istiov1beta1.MeshGateway); ok && mgw.Spec.IstioControlPlane != nil {
 					return []reconcile.Request{
 						{
 							NamespacedName: types.NamespacedName(*mgw.Spec.IstioControlPlane),
@@ -108,8 +109,8 @@ func (r *ReconcileIstio) watchMeshGateway() error {
 				}
 
 				return nil
-			}),
-		},
+			},
+		),
 		k8sutil.GetWatchPredicateForMeshGateway(),
 	)
 }
@@ -119,9 +120,9 @@ func (r *ReconcileIstio) watchNamespace() error {
 		&source.Kind{
 			Type: &corev1.Namespace{TypeMeta: metav1.TypeMeta{Kind: "Namespace", APIVersion: corev1.SchemeGroupVersion.String()}},
 		},
-		&handler.EnqueueRequestsFromMapFunc{
-			ToRequests: handler.ToRequestsFunc(func(object handler.MapObject) []reconcile.Request {
-				if revision, ok := object.Meta.GetLabels()[v1beta1.RevisionedAutoInjectionLabelKey]; ok {
+		handler.EnqueueRequestsFromMapFunc(
+			func(object client.Object) []reconcile.Request {
+				if revision, ok := object.GetLabels()[v1beta1.RevisionedAutoInjectionLabelKey]; ok {
 					nn := v1beta1.NamespacedNameFromRevision(revision)
 					if nn.Name == "" {
 						return nil
@@ -134,8 +135,8 @@ func (r *ReconcileIstio) watchNamespace() error {
 				}
 
 				return nil
-			}),
-		},
+			},
+		),
 	)
 }
 
@@ -169,9 +170,9 @@ func (r *ReconcileIstio) watchRemoteIstioConfig() error {
 				},
 			},
 		},
-		&handler.EnqueueRequestsFromMapFunc{
-			ToRequests: handler.ToRequestsFunc(func(object handler.MapObject) []reconcile.Request {
-				own := object.Meta.GetOwnerReferences()
+		handler.EnqueueRequestsFromMapFunc(
+			func(object client.Object) []reconcile.Request {
+				own := object.GetOwnerReferences()
 				if len(own) < 1 {
 					return nil
 				}
@@ -179,12 +180,12 @@ func (r *ReconcileIstio) watchRemoteIstioConfig() error {
 					{
 						NamespacedName: types.NamespacedName{
 							Name:      own[0].Name,
-							Namespace: object.Meta.GetNamespace(),
+							Namespace: object.GetNamespace(),
 						},
 					},
 				}
-			}),
-		},
+			},
+		),
 		k8sutil.GetWatchPredicateForRemoteIstioAvailability(),
 	)
 	if err != nil {
@@ -217,7 +218,7 @@ func (r *ReconcileIstio) watchIstioCoreDNSService() error {
 	return nil
 }
 
-func (r *ReconcileIstio) watchResource(resource runtime.Object) error {
+func (r *ReconcileIstio) watchResource(resource client.Object) error {
 	err := r.ctrl.Watch(
 		&source.Kind{
 			Type: resource,
@@ -250,15 +251,15 @@ func (r *ReconcileIstio) watchCRDs(nn types.NamespacedName) error {
 				},
 			},
 		},
-		&handler.EnqueueRequestsFromMapFunc{
-			ToRequests: handler.ToRequestsFunc(func(object handler.MapObject) []reconcile.Request {
+		handler.EnqueueRequestsFromMapFunc(
+			func(object client.Object) []reconcile.Request {
 				return []reconcile.Request{
 					{
 						NamespacedName: nn,
 					},
 				}
-			}),
-		},
+			},
+		),
 		crds.GetWatchPredicateForCRDs(),
 	)
 
@@ -275,15 +276,15 @@ func (r *ReconcileIstio) watchMeshWidePolicy(nn types.NamespacedName) error {
 				},
 			},
 		},
-		&handler.EnqueueRequestsFromMapFunc{
-			ToRequests: handler.ToRequestsFunc(func(object handler.MapObject) []reconcile.Request {
+		handler.EnqueueRequestsFromMapFunc(
+			func(object client.Object) []reconcile.Request {
 				return []reconcile.Request{
 					{
 						NamespacedName: nn,
 					},
 				}
-			}),
-		},
+			},
+		),
 		k8sutil.GetWatchPredicateForOwnedResources(&istiov1beta1.Istio{
 			TypeMeta: metav1.TypeMeta{
 				Kind:       "Istio",
@@ -305,8 +306,8 @@ func (r *ReconcileIstio) watchValidatingWebhookConfiguration() error {
 				},
 			},
 		},
-		&handler.EnqueueRequestsFromMapFunc{
-			ToRequests: handler.ToRequestsFunc(func(object handler.MapObject) []reconcile.Request {
+		handler.EnqueueRequestsFromMapFunc(
+			func(object client.Object) []reconcile.Request {
 				istios := &istiov1beta1.IstioList{}
 				names := make([]reconcile.Request, 0)
 				err := r.mgr.GetClient().List(context.Background(), istios)
@@ -325,8 +326,8 @@ func (r *ReconcileIstio) watchValidatingWebhookConfiguration() error {
 				}
 
 				return names
-			}),
-		},
+			},
+		),
 		predicate.Funcs{
 			UpdateFunc: func(e event.UpdateEvent) bool {
 				var ok bool

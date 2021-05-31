@@ -20,6 +20,7 @@ limitations under the License.
 package main
 
 import (
+	"context"
 	"flag"
 	"os"
 	"os/signal"
@@ -31,8 +32,8 @@ import (
 	_ "github.com/shurcooL/vfsgen"
 	_ "k8s.io/client-go/plugin/pkg/client/auth/gcp"
 	k8sConfig "sigs.k8s.io/controller-runtime/pkg/client/config"
+	logf "sigs.k8s.io/controller-runtime/pkg/log"
 	"sigs.k8s.io/controller-runtime/pkg/manager"
-	logf "sigs.k8s.io/controller-runtime/pkg/runtime/log"
 	"sigs.k8s.io/controller-runtime/pkg/webhook"
 
 	"github.com/banzaicloud/istio-operator/pkg/apis"
@@ -128,7 +129,7 @@ func main() {
 		os.Exit(1)
 	}
 
-	stop := setupSignalHandler(mgr, log, shutdownWaitDuration)
+	ctx := setupSignalHandler(log, shutdownWaitDuration)
 
 	operatorConfig := config.Configuration{
 		WebhookServiceAddress:    webhookServiceAddress,
@@ -137,7 +138,7 @@ func main() {
 
 	// Setup all Controllers
 	log.Info("setting up controller")
-	if err := controller.AddToManager(mgr, remoteclusters.NewManager(stop), operatorConfig); err != nil {
+	if err := controller.AddToManager(mgr, remoteclusters.NewManager(ctx), operatorConfig); err != nil {
 		log.Error(err, "unable to register controllers to the manager")
 		os.Exit(1)
 	}
@@ -162,7 +163,7 @@ func main() {
 
 	// Start the Cmd
 	log.Info("starting the Cmd.")
-	if err := mgr.Start(stop); err != nil {
+	if err := mgr.Start(ctx); err != nil {
 		log.Error(err, "unable to run the manager")
 		os.Exit(1)
 	}
@@ -199,8 +200,9 @@ func getWatchNamespace() (string, error) {
 	return watchNamespace, nil
 }
 
-func setupSignalHandler(mgr manager.Manager, log logr.Logger, shutdownWaitDuration time.Duration) (stopCh <-chan struct{}) {
-	stop := make(chan struct{})
+func setupSignalHandler(log logr.Logger, shutdownWaitDuration time.Duration) (ctx context.Context) {
+	ctx, cancel := context.WithCancel(context.Background())
+
 	c := make(chan os.Signal, 2)
 
 	signal.Notify(c, os.Interrupt, syscall.SIGTERM)
@@ -210,10 +212,10 @@ func setupSignalHandler(mgr manager.Manager, log logr.Logger, shutdownWaitDurati
 		// wait a bit for deletion requests to arrive
 		log.Info("wait a bit for CR deletion events to arrive", "waitSeconds", shutdownWaitDuration)
 		time.Sleep(shutdownWaitDuration)
-		close(stop)
+		cancel()
 		<-c
 		os.Exit(1) // second signal. Exit directly.
 	}()
 
-	return stop
+	return ctx
 }

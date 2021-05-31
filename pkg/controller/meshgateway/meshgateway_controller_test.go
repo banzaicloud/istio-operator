@@ -73,10 +73,11 @@ func TestReconcile(t *testing.T) {
 	recFn, requests := SetupTestReconcile(newReconciler(mgr, dynamic, config.Configuration{}))
 	g.Expect(add(mgr, recFn)).NotTo(gomega.HaveOccurred())
 
-	stopMgr, mgrStopped := StartTestManager(mgr, g)
+	ctx, cancelFunc := context.WithCancel(context.Background())
+	mgrStopped := StartTestManager(ctx, mgr, g)
 
 	defer func() {
-		close(stopMgr)
+		cancelFunc()
 		mgrStopped.Wait()
 	}()
 

@@ -51,7 +51,7 @@ func NewValidatingWebhookCertificateProvisioner(mgr manager.Manager, name string
 	}
 }
 
-func (m *ValidatingWebhookCertificateProvisioner) Start(stop <-chan struct{}) error {
+func (m *ValidatingWebhookCertificateProvisioner) Start(ctx context.Context) error {
 	err := m.getWHC()
 	if err != nil {
 		return err
@@ -85,7 +85,7 @@ func (m *ValidatingWebhookCertificateProvisioner) Start(stop <-chan struct{}) er
 
 	defer close(m.trigger)
 
-	return m.certProvisioner.Start(stop, m.trigger)
+	return m.certProvisioner.Start(ctx, m.trigger)
 }
 
 func (m *ValidatingWebhookCertificateProvisioner) getWHC() error {

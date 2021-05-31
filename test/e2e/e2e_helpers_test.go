@@ -316,7 +316,7 @@ func mkMinimalIstio(namespace, name string) *istiov1beta1.Istio {
 // ResourceExists checks if a resource exists in the cluster
 func ResourceExists(ctx context.Context, kubeClient client.Client, item runtime.Object, namespace, name string) func() bool {
 	return func() bool {
-		err := kubeClient.Get(ctx, types.NamespacedName{Name: name, Namespace: namespace}, item)
+		err := kubeClient.Get(ctx, types.NamespacedName{Name: name, Namespace: namespace}, item.(client.Object))
 		if err != nil && k8sapierrors.IsNotFound(err) {
 			return false
 		}

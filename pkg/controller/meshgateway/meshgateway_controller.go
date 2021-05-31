@@ -39,9 +39,9 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/controller"
 	"sigs.k8s.io/controller-runtime/pkg/handler"
+	logf "sigs.k8s.io/controller-runtime/pkg/log"
 	"sigs.k8s.io/controller-runtime/pkg/manager"
 	"sigs.k8s.io/controller-runtime/pkg/reconcile"
-	logf "sigs.k8s.io/controller-runtime/pkg/runtime/log"
 	"sigs.k8s.io/controller-runtime/pkg/source"
 
 	istiov1beta1 "github.com/banzaicloud/istio-operator/pkg/apis/istio/v1beta1"
@@ -96,7 +96,7 @@ func add(mgr manager.Manager, r reconcile.Reconciler) error {
 		&appsv1.Deployment{TypeMeta: metav1.TypeMeta{Kind: "Deployment", APIVersion: "v1"}},
 		&autoscalingv2beta2.HorizontalPodAutoscaler{TypeMeta: metav1.TypeMeta{Kind: "HorizontalPodAutoscaler", APIVersion: "v2beta2"}},
 	} {
-		err = c.Watch(&source.Kind{Type: t}, &handler.EnqueueRequestForOwner{
+		err = c.Watch(&source.Kind{Type: t.(client.Object)}, &handler.EnqueueRequestForOwner{
 			IsController: true,
 			OwnerType:    &istiov1beta1.MeshGateway{},
 		})
@@ -106,11 +106,11 @@ func add(mgr manager.Manager, r reconcile.Reconciler) error {
 	}
 
 	// Watch for Istio changes to trigger reconciliation for MeshGateways
-	err = c.Watch(&source.Kind{Type: &istiov1beta1.Istio{TypeMeta: metav1.TypeMeta{Kind: "Istio", APIVersion: istiov1beta1.SchemeGroupVersion.String()}}}, &handler.EnqueueRequestsFromMapFunc{
-		ToRequests: handler.ToRequestsFunc(func(object handler.MapObject) []reconcile.Request {
-			return triggerMeshGateways(mgr, object.Object, log)
-		}),
-	}, k8sutil.GetWatchPredicateForIstio())
+	err = c.Watch(&source.Kind{Type: &istiov1beta1.Istio{TypeMeta: metav1.TypeMeta{Kind: "Istio", APIVersion: istiov1beta1.SchemeGroupVersion.String()}}}, handler.EnqueueRequestsFromMapFunc(
+		func(object client.Object) []reconcile.Request {
+			return triggerMeshGateways(mgr, object, log)
+		},
+	), k8sutil.GetWatchPredicateForIstio())
 	if err != nil {
 		return err
 	}
@@ -165,7 +165,7 @@ type ReconcileMeshGateway struct {
 
 // Reconcile reads that state of the cluster for a MeshGateway object and makes changes based on the state read
 // and what is in the MeshGateway.Spec
-func (r *ReconcileMeshGateway) Reconcile(request reconcile.Request) (reconcile.Result, error) {
+func (r *ReconcileMeshGateway) Reconcile(ctx context.Context, request reconcile.Request) (reconcile.Result, error) {
 	logger := log.WithValues("trigger", request.Namespace+"/"+request.Name, "correlationID", uuid.Must(uuid.NewV4()).String())
 
 	// Fetch the MeshGateway instance

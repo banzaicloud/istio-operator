@@ -39,9 +39,9 @@ import (
 	"k8s.io/client-go/tools/record"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/controller"
+	logf "sigs.k8s.io/controller-runtime/pkg/log"
 	"sigs.k8s.io/controller-runtime/pkg/manager"
 	"sigs.k8s.io/controller-runtime/pkg/reconcile"
-	logf "sigs.k8s.io/controller-runtime/pkg/runtime/log"
 
 	istiov1beta1 "github.com/banzaicloud/istio-operator/pkg/apis/istio/v1beta1"
 	"github.com/banzaicloud/istio-operator/pkg/config"
@@ -192,11 +192,11 @@ type ReconcileComponent func(log logr.Logger, istio *istiov1beta1.Istio) error
 
 // Reconcile reads that state of the cluster for a Config object and makes changes based on the state read
 // and what is in the Config.Spec
-func (r *ReconcileIstio) Reconcile(request reconcile.Request) (reconcile.Result, error) {
+func (r *ReconcileIstio) Reconcile(ctx context.Context, request reconcile.Request) (reconcile.Result, error) {
 	logger := log.WithValues("trigger", request.Namespace+"/"+request.Name, "correlationID", uuid.Must(uuid.NewV4()).String())
 	// Fetch the Config instance
 	config := &istiov1beta1.Istio{}
-	err := r.Get(context.TODO(), request.NamespacedName, config)
+	err := r.Get(ctx, request.NamespacedName, config)
 	if err != nil {
 		if k8serrors.IsNotFound(err) {
 			// Object not found, return.  Created objects are automatically garbage collected.
