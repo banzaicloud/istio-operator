@@ -13,7 +13,10 @@ if [ -z "${kubernetes_version}" ] || [ -z "${istio_version}" ]; then
 fi
 
 readonly script_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" >/dev/null 2>&1 && pwd)"
-readonly scripts_dir=${script_dir}/..
+readonly repo_root=${script_dir}/../../../
+readonly scripts_dir=${repo_root}/scripts
+
+export PATH=${repo_root}/bin:${PATH}
 
 kind create cluster --image "kindest/node:v${kubernetes_version}"
 

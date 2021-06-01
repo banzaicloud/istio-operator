@@ -7,8 +7,8 @@ readonly HELM_VERSION=3.2.3
 readonly KIND_VERSION=0.10.0
 
 readonly script_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" >/dev/null 2>&1 && pwd)"
-readonly scripts_dir=${script_dir}/..
-readonly bin_path=${scripts_dir}/../bin
+readonly repo_root=${script_dir}/../../../
+readonly bin_path=${repo_root}/bin
 
 mkdir -p "${bin_path}"
 
