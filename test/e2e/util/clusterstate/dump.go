@@ -29,7 +29,7 @@ import (
 )
 
 type Dumper struct {
-	log logr.Logger
+	log     logr.Logger
 	dumpDir string
 }
 

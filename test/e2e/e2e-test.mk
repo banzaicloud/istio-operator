@@ -51,8 +51,8 @@ e2e-test-install-istio-operator: docker-build
 	# start, so it might remove some flakiness.
 	kubectl wait pod --all-namespaces --all --for=condition=ready --timeout=60s
 
-.PHONY: e2e-test
-e2e-test: download-deps e2e-test-install-istio-operator
+.PHONY: e2e-test-run
+e2e-test-run:
 	mkdir -p ${E2E_LOG_DIR}
 	env E2E_TEST_FAIL_FAST=${E2E_TEST_FAIL_FAST} E2E_LOG_DIR=${E2E_LOG_DIR} \
 		E2E_TEST_DUMP_SCRIPT=${PWD}/scripts/dump-cluster-state-and-logs.sh \
@@ -61,3 +61,6 @@ e2e-test: download-deps e2e-test-install-istio-operator
 
     # TODO collect used docker images and compare with known list. This list can be used to preload the images into kind
     # TODO  `kind export logs` and look for "ImageCreate" in containerd.log
+
+.PHONY: e2e-test
+e2e-test: download-deps e2e-test-install-istio-operator e2e-test-run
