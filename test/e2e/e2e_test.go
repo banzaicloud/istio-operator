@@ -19,6 +19,7 @@ package e2e
 import (
 	"fmt"
 	"path/filepath"
+	"runtime"
 	"time"
 
 	"github.com/go-logr/logr"
@@ -108,6 +109,10 @@ var _ = Describe("E2E", func() {
 			})
 
 			It("sets up working ingress", func() {
+				if runtime.GOOS != "linux" {
+					Skip("MetalLB based test only works on Linux")
+				}
+
 				meshGatewayAddress, err := GetMeshGatewayAddress(testNamespace, "mgw01", 300*time.Second, 100*time.Millisecond)
 				Expect(err).NotTo(HaveOccurred())
 
