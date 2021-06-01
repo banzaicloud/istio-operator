@@ -43,7 +43,7 @@ const (
 
 var (
 	SupportedIstioVersion = "1.9.5"
-	Version               = "0.9.5"
+	Version               = "0.9.6"
 
 	DisableInjectionLabel = map[string]string{
 		ManualInjectionLabelKey: "false",
@@ -789,6 +789,12 @@ type IstioSpec struct {
 
 	// ExcludeIPRanges the range where not to capture egress traffic
 	ExcludeIPRanges string `json:"excludeIPRanges,omitempty"`
+
+	// ExcludeInboundPorts the comma separated list of inbound ports to be excluded from redirection to Envoy
+	ExcludeInboundPorts string `json:"excludeInboundPorts,omitempty"`
+
+	// ExcludeOutboundPorts the comma separated list of outbound ports to be excluded from redirection to Envoy
+	ExcludeOutboundPorts string `json:"excludeOutboundPorts,omitempty"`
 
 	// List of namespaces to label with sidecar auto injection enabled
 	AutoInjectionNamespaces []string `json:"autoInjectionNamespaces,omitempty"`

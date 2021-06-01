@@ -9,6 +9,8 @@ spec:
   - "default"
   includeIPRanges: "*"
   excludeIPRanges: ""
+  excludeOutboundPorts: ""
+  excludeInboundPorts: ""
   enabledServices:
   - name: "istio-pilot"
     labelSelector: "istio=pilot"
