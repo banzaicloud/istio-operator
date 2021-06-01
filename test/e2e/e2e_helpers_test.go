@@ -424,6 +424,6 @@ func sortNamespacedNames(nns []types.NamespacedName) {
 }
 
 func testDataPath(description ginkgo.GinkgoTestDescription) string {
-       path := filepath.Join(description.ComponentTexts...)
-       return strings.ReplaceAll(path, " ", "_")
+	path := filepath.Join(description.ComponentTexts...)
+	return strings.ReplaceAll(path, " ", "_")
 }
