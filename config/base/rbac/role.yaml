@@ -286,8 +286,19 @@ rules:
   - patch
   - update
 - apiGroups:
+  - multicluster.x-k8s.io
+  resources:
+  - serviceexports
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - watch
+- apiGroups:
   - networking.istio.io
   - security.istio.io
+  - telemetry.istio.io
   resources:
   - '*'
   verbs:
@@ -314,6 +325,7 @@ rules:
   verbs:
   - get
   - list
+  - update
   - watch
 - apiGroups:
   - policy
