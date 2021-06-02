@@ -433,15 +433,6 @@ func GetIstioObject(istio *istiov1beta1.Istio, namespace, name string) error {
 		istio)
 }
 
-func GetMixerlessTelemetryStatus(istio *istiov1beta1.Istio, namespace, name string) (*bool, error) {
-	err := GetIstioObject(istio, namespace, name)
-	if err != nil {
-		return nil, err
-	}
-	// query current state and return it
-	return istio.Spec.MixerlessTelemetry.Enabled, nil
-}
-
 func SetMixerlessTelemetryState(istio *istiov1beta1.Istio, newState *bool) error {
 	istio.Spec.MixerlessTelemetry.Enabled = newState
 	// upload to cluster

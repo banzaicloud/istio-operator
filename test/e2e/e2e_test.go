@@ -90,7 +90,6 @@ var _ = Describe("E2E", func() {
 			})
 		})
 		Context("Mixerless Telemetry Stats Filter Test", func() {
-			// var resourcesFile string
 			var (
 				istio        v1beta1.Istio
 				majorMinor   string
