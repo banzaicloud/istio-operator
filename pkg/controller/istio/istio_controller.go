@@ -177,14 +177,15 @@ type ReconcileComponent func(log logr.Logger, istio *istiov1beta1.Istio) error
 // +kubebuilder:rbac:groups="coordination.k8s.io",resources=leases,verbs=get;list;create;update
 // +kubebuilder:rbac:groups="extensions;networking.k8s.io",resources=ingresses,verbs=get;list;watch
 // +kubebuilder:rbac:groups="extensions;networking.k8s.io",resources=ingresses/status,verbs=*
+// +kubebuilder:rbac:groups="multicluster.x-k8s.io",resources=serviceexports,verbs=get;list;watch;create;delete
 // +kubebuilder:rbac:groups="networking.k8s.io",resources=ingressclasses;ingresses,verbs=get;list;watch
 // +kubebuilder:rbac:groups="networking.k8s.io",resources=ingresses/status,verbs=*
-// +kubebuilder:rbac:groups="networking.x-k8s.io",resources=*,verbs=get;list;watch
+// +kubebuilder:rbac:groups="networking.x-k8s.io",resources=*,verbs=get;list;watch;update
 // +kubebuilder:rbac:groups="discovery.k8s.io",resources=endpointslices,verbs=get;list;watch
 
 // +kubebuilder:rbac:groups=istio.banzaicloud.io,resources=istios;istios/finalizers,verbs=get;list;watch;create;update;patch;delete
 // +kubebuilder:rbac:groups=istio.banzaicloud.io,resources=istios/status,verbs=get;update;patch
-// +kubebuilder:rbac:groups=networking.istio.io;security.istio.io,resources=*,verbs=*
+// +kubebuilder:rbac:groups=networking.istio.io;security.istio.io;telemetry.istio.io,resources=*,verbs=*
 // +kubebuilder:rbac:groups=admissionregistration.k8s.io,resources=validatingwebhookconfigurations;mutatingwebhookconfigurations,verbs=*
 // +kubebuilder:rbac:groups="",resources=secrets;services,verbs=get;list;watch;create;update;patch;delete
 // +kubebuilder:rbac:groups="authorization.k8s.io",resources=subjectaccessreviews,verbs=create
