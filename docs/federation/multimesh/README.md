@@ -19,7 +19,7 @@ That setup show that this solutions works not just in a multi-cluster, but also 
 ```bash
 ❯ git clone https://github.com/banzaicloud/istio-operator.git
 ❯ cd istio-operator
-❯ git checkout release-1.9
+❯ git checkout release-1.10
 ```
 
 ## Create the clusters on the Banzai Cloud Pipeline platform

@@ -19,3 +19,4 @@ Released:
 - [x] - Istio 1.7.x support
 - [x] - Istio 1.8.x support
 - [x] - Istio 1.9.x support
+- [x] - Istio 1.10.x support

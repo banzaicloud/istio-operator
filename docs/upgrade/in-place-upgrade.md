@@ -17,18 +17,18 @@ What happens is that once the operator discerns that the Custom Resource it's wa
 
 #### Requirements
 
-- Minikube v1.1.1+ or Kubernetes 1.17.0+
+- Kubernetes 1.18.0+
 - `KUBECONFIG` set to an existing Kubernetes cluster
 
-If you already have Istio 1.8.x installed on your cluster you can skip the next section and can jump right to [Deploy sample BookInfo application](#deploy-sample-bookinfo-application).
+If you already have Istio 1.9.x installed on your cluster you can skip the next section and can jump right to [Deploy sample BookInfo application](#deploy-sample-bookinfo-application).
 
-#### Install Istio 1.8.2
+#### Install Istio 1.9.5
 
-We install Istio with our operator, so first we need to check out the `release-1.8` branch of our operator (this branch supports Istio versions 1.8.x):
+We install Istio with our operator, so first we need to check out the `release-1.9` branch of our operator (this branch supports Istio versions 1.9.x):
 
 ```bash
 $ git clone git@github.com:banzaicloud/istio-operator.git
-$ git checkout release-1.8
+$ git checkout release-1.9
 ```
 
 **Install Istio Operator with make**
@@ -48,16 +48,16 @@ Alternatively, if you just can't let go of Helm completely, you can deploy the o
 
 ```bash
 $ helm repo add banzaicloud-stable https://kubernetes-charts.banzaicloud.com
-$ helm install istio-operator --create-namespace --namespace=istio-system --set-string operator.image.tag=0.8.6 --set-string istioVersion=1.8 banzaicloud-stable/istio-operator
+$ helm install istio-operator --create-namespace --namespace=istio-system --set-string operator.image.tag=0.9.5 --set-string istioVersion=1.9 banzaicloud-stable/istio-operator
 ```
 
-*Note: As of now, the `0.8.6` tag is the latest version of our operator to support Istio versions 1.8.x
+*Note: As of now, the `0.9.5` tag is the latest version of our operator to support Istio versions 1.9.x
 
 **Apply the Custom Resource**
 
 Once you've applied the Custom Resource to your cluster, the operator will start reconciling all of Istio's components.
 
-There are some sample Custom Resource configurations in the `config/samples` folder. To deploy Istio 1.8.2 with its default configuration options, use the following command:
+There are some sample Custom Resource configurations in the `config/samples` folder. To deploy Istio 1.9.5 with its default configuration options, use the following command:
 
 ```bash
 $ kubectl apply -n istio-system -f config/samples/istio_v1beta1_istio.yaml
@@ -73,23 +73,23 @@ istio-operator-controller-manager-0       2/2       Running   0          9m
 istiod-fc664fcbd-kgl2k                    2/2       Running   0          1m
 ```
 
-The `Istio` Custom Resource is showing `Available` in its status field and the Istio components are using `1.8.2` images :
+The `Istio` Custom Resource is showing `Available` in its status field and the Istio components are using `1.9.5` images :
 
 ```bash
 $ kubectl get -n istio-system istio -o yaml | grep "image:"
-    image: docker.io/istio/citadel:1.8.2
-    image: docker.io/istio/galley:1.8.2
-    image: docker.io/istio/pilot:1.8.2
-    image: docker.io/istio/proxyv2:1.8.2
-    image: docker.io/istio/sidecar_injector:1.8.2
+    image: docker.io/istio/citadel:1.9.5
+    image: docker.io/istio/galley:1.9.5
+    image: docker.io/istio/pilot:1.9.5
+    image: docker.io/istio/proxyv2:1.9.5
+    image: docker.io/istio/sidecar_injector:1.9.5
 ```
 
 #### Deploy sample BookInfo application
 
-Let's make sure that Istio 1.8.2 is properly installed with Istio's BookInfo application:
+Let's make sure that Istio 1.9.5 is properly installed with Istio's BookInfo application:
 
 ```bash
-$ kubectl -n default apply -f https://raw.githubusercontent.com/istio/istio/1.8.2/samples/bookinfo/platform/kube/bookinfo.yaml
+$ kubectl -n default apply -f https://raw.githubusercontent.com/istio/istio/1.9.5/samples/bookinfo/platform/kube/bookinfo.yaml
 service "details" created
 deployment.extensions "details-v1" created
 service "ratings" created
@@ -101,7 +101,7 @@ deployment.extensions "reviews-v3" created
 service "productpage" created
 deployment.extensions "productpage-v1" created
 
-$ kubectl -n default apply -f https://raw.githubusercontent.com/istio/istio/1.8.2/samples/bookinfo/networking/bookinfo-gateway.yaml
+$ kubectl -n default apply -f https://raw.githubusercontent.com/istio/istio/1.9.5/samples/bookinfo/networking/bookinfo-gateway.yaml
 gateway.networking.istio.io "bookinfo-gateway" created
 virtualservice.networking.istio.io "bookinfo" created
 ```
@@ -119,7 +119,7 @@ To install Istio 1.10.0, first we need to check out the `release-1.10` branch of
 
 ```bash
 $ git clone git@github.com:banzaicloud/istio-operator.git
-$ git checkout release-1.9
+$ git checkout release-1.10
 ```
 
 > If you installed Istio operator with `make` in the previous section go to to `Install Istio Operator with make`, if you installed it with `helm` go to `Install Istio Operator with helm`. If you haven't installed Istio operator so far you can choose whichever install option you like.
