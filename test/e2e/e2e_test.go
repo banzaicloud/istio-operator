@@ -19,6 +19,7 @@ package e2e
 import (
 	"fmt"
 	"path/filepath"
+	"runtime"
 	"strings"
 	"time"
 
