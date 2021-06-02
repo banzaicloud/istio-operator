@@ -32,7 +32,6 @@ const (
 	componentName   = "mixerless-telemetry"
 	wasmRuntime     = "envoy.wasm.runtime.v8"
 	noWasmRuntime   = "envoy.wasm.runtime.null"
-	proxyVersion17  = "1.7"
 	proxyVersion18  = "1.8"
 	proxyVersion19  = "1.9"
 	proxyVersion110 = "1.10"
