@@ -4,7 +4,7 @@ The steps are listed in this doc to perform an Istio in-place version upgrade wi
 
 ## Istio Control Plane Upgrade
 
-Let us suppose that we have a [Kubernetes](https://kubernetes.io/) cluster with Istio 1.8.2, and we would like to upgrade our Istio components to Istio version 1.10.0. Here are the steps we need to perform to accomplish this with the operator:
+Let us suppose that we have a [Kubernetes](https://kubernetes.io/) cluster with Istio 1.9.5, and we would like to upgrade our Istio components to Istio version 1.10.0. Here are the steps we need to perform to accomplish this with the operator:
 
 1. Deploy a version of the operator which supports Istio 1.9.x
 2. Apply a [Custom Resource](https://kubernetes.io/docs/concepts/extend-kubernetes/api-extension/custom-resources/) using Istio 1.10.0 components
@@ -115,7 +115,7 @@ $ open http://$INGRESS_HOST/productpage
 
 #### Install Istio 1.10.0
 
-To install Istio 1.10.0, first we need to check out the `release-1.9` branch of our operator (this branch supports the Istio 1.9.x versions):
+To install Istio 1.10.0, first we need to check out the `release-1.10` branch of our operator (this branch supports the Istio 1.10.x versions):
 
 ```bash
 $ git clone git@github.com:banzaicloud/istio-operator.git
@@ -146,13 +146,13 @@ $ helm repo add banzaicloud-stable https://kubernetes-charts.banzaicloud.com
 $ helm upgrade istio-operator --install --namespace=istio-system --set-string operator.image.tag=0.10.0 --set-string istioVersion=1.10.0 banzaicloud-stable/istio-operator
 ```
 
-*Note: As of now, the `0.10.0` tag is the latest version of our operator to support Istio versions 1.9.x*
+*Note: As of now, the `0.10.0` tag is the latest version of our operator to support Istio versions 1.10.x*
 
 *Note: In case you upgrade from an earlier chart version your Istio operator CRD definitions might be outdated in which case you should apply the [new CRDs](../../deploy/charts/istio-operator/crds) manually!*
 
 **Use the new Custom Resource**
 
-> If you've installed Istio 1.8.2 or earlier with the Istio operator, and if you check the logs of the operator pod at this point, you will see the following error message: `intended Istio version is unsupported by this version of the operator`. We need to update the Istio Custom Resource with Istio 1.9's components for the operator to be reconciled with the Istio control plane.
+> If you've installed Istio 1.9.5 or earlier with the Istio operator, and if you check the logs of the operator pod at this point, you will see the following error message: `intended Istio version is unsupported by this version of the operator`. We need to update the Istio Custom Resource with Istio 1.10's components for the operator to be reconciled with the Istio control plane.
 
 To deploy Istio 1.10.0 with its default configuration options, use the following command (please modify the sample CR to have the same name as the one on your cluster so that replace command can work):
 
