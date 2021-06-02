@@ -6,7 +6,7 @@ The steps are listed in this doc to perform an Istio in-place version upgrade wi
 
 Let us suppose that we have a [Kubernetes](https://kubernetes.io/) cluster with Istio 1.9.5, and we would like to upgrade our Istio components to Istio version 1.10.0. Here are the steps we need to perform to accomplish this with the operator:
 
-1. Deploy a version of the operator which supports Istio 1.9.x
+1. Deploy a version of the operator which supports Istio 1.10.x
 2. Apply a [Custom Resource](https://kubernetes.io/docs/concepts/extend-kubernetes/api-extension/custom-resources/) using Istio 1.10.0 components
 
 What happens is that once the operator discerns that the Custom Resource it's watching has changed, it reconciles all Istio-related components in order to perform a control plane upgrade.
