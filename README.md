@@ -99,7 +99,7 @@ Alternatively, if you just can’t let go of Helm completely, you can deploy the
 
 ```bash
 helm repo add banzaicloud-stable https://kubernetes-charts.banzaicloud.com/
-helm install istio-operator-v19x --create-namespace --namespace=istio-system banzaicloud-stable/istio-operator
+helm install istio-operator-v110x --create-namespace --namespace=istio-system banzaicloud-stable/istio-operator
 ```
 
 ### Installation with Kustomize
@@ -108,8 +108,8 @@ You can also have your own `kustomization.yaml` file with a reference to Istio o
 
 ```bash
 bases:
-  - github.com/banzaicloud/istio-operator/config?ref=release-1.9
-  - github.com/banzaicloud/istio-operator/config/overlays/auth-proxy-enabled?ref=release-1.9
+  - github.com/banzaicloud/istio-operator/config?ref=release-1.10
+  - github.com/banzaicloud/istio-operator/config/overlays/auth-proxy-enabled?ref=release-1.10
 ```
 
 ## Istio upgrade

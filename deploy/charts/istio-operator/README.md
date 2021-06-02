@@ -4,7 +4,7 @@
 
 ## Prerequisites
 
-- Kubernetes 1.17.0+
+- Kubernetes 1.18.0+
 
 ## Installing the chart
 
@@ -35,7 +35,7 @@ Parameter | Description | Default
 `operator.image.tag` | Operator container image tag | `0.10.0`
 `operator.image.pullPolicy` | Operator container image pull policy | `IfNotPresent`
 `operator.resources` | CPU/Memory resource requests/limits (YAML) | Memory: `256Mi`, CPU: `200m`
-`istioVersion` | Supported Istio version | `1.9`
+`istioVersion` | Supported Istio version | `1.10`
 `prometheusMetrics.enabled` | If true, use direct access for Prometheus metrics | `false`
 `prometheusMetrics.authProxy.enabled` | If true, use auth proxy for Prometheus metrics | `true`
 `prometheusMetrics.authProxy.image.repository` | Auth proxy container image repository | `gcr.io/kubebuilder/kube-rbac-proxy`

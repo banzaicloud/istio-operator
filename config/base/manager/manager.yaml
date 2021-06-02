@@ -39,7 +39,7 @@ spec:
       containers:
       - command:
         - /manager
-        image: banzaicloud/istio-operator:latest-1.9
+        image: banzaicloud/istio-operator:latest-1.10
         imagePullPolicy: Always
         name: manager
         env:

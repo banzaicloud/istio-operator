@@ -6,9 +6,9 @@
   "properties": {
     "gke": {
       "master": {
-        "version": "1.17"
+        "version": "1.18"
       },
-      "nodeVersion": "1.17",
+      "nodeVersion": "1.18",
       "nodePools": {
         "pool1": {
           "count": 1,

@@ -3,7 +3,7 @@ kind: Istio
 metadata:
   labels:
     controller-tools.k8s.io: "1.0"
-  name: multimesh-v19x
+  name: multimesh-v110x
 spec:
   version: "1.10.0"
   global: false
