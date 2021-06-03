@@ -426,21 +426,21 @@ func testDataPath(description ginkgo.GinkgoTestDescription) string {
 	return strings.ReplaceAll(path, " ", "_")
 }
 
-func GetIstioObject(istio *istiov1beta1.Istio, namespace, name string) error {
+func getIstioObject(istio *istiov1beta1.Istio, namespace, name string) error {
 	return testEnv.Client.Get(context.TODO(), client.ObjectKey{
 		Namespace: namespace,
 		Name:      name},
 		istio)
 }
 
-func SetMixerlessTelemetryState(istio *istiov1beta1.Istio, newState *bool) error {
+func setMixerlessTelemetryState(istio *istiov1beta1.Istio, newState *bool) error {
 	istio.Spec.MixerlessTelemetry.Enabled = newState
 	// upload to cluster
 	testEnv.Log.Info("Updating cluster to:", "newState", newState)
 	return testEnv.Client.Update(context.TODO(), istio)
 }
 
-func WaitForMixerlessTelemetryFilter(
+func waitForMixerlessTelemetryFilter(
 	namespace, filterName string, filterShouldExist bool, timeout, interval time.Duration) error {
 	return util.WaitForCondition(timeout, interval, func() (bool, error) {
 		_, err := testEnv.Dynamic.Resource(gvr.EnvoyFilter).Namespace(namespace).Get(
@@ -460,12 +460,12 @@ func WaitForMixerlessTelemetryFilter(
 	})
 }
 
-func WaitForMixerlessTelemetryFilters(
+func waitForMixerlessTelemetryFilters(
 	namespace, filterName1 string, filterName2 string, filterShouldExist bool, timeout, interval time.Duration) error {
 	// check both filters sequentially. Usually, the first filter will wait the most.
-	err := WaitForMixerlessTelemetryFilter(namespace, filterName1, filterShouldExist, timeout, interval)
+	err := waitForMixerlessTelemetryFilter(namespace, filterName1, filterShouldExist, timeout, interval)
 	if err != nil {
 		return err
 	}
-	return WaitForMixerlessTelemetryFilter(namespace, filterName2, filterShouldExist, timeout, interval)
+	return waitForMixerlessTelemetryFilter(namespace, filterName2, filterShouldExist, timeout, interval)
 }

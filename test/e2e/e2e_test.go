@@ -102,47 +102,47 @@ var _ = Describe("E2E", func() {
 				// get the istio object created in the OUTER JustBeforeEach
 				log.Info("Namespace: ", "Namespace", instance.Namespace)
 				log.Info("Name: ", "Name", instance.Name)
-				Expect(GetIstioObject(&istio, instance.Namespace, instance.Name)).Should(Succeed())
+				Expect(getIstioObject(&istio, instance.Namespace, instance.Name)).Should(Succeed())
 				version := istio.Spec.Version // get first 2 digits
 				versionParts := strings.SplitN(string(version), ".", 3)
 				majorMinor = fmt.Sprintf("%s.%s", versionParts[0], versionParts[1])
 				log.Info("Istio Version: ", "Version", majorMinor)
 			})
 
-			It("Transitions Filter through all states", func() {
+			It("Sets Filter to each state and restores to True", func() {
 				// Names of the filters of interest
 				statsName := istio.WithRevision(fmt.Sprintf("mixerless-telemetry-stats-filter-%s", majorMinor))
 				tcpName := istio.WithRevision(fmt.Sprintf("mixerless-telemetry-tcp-stats-filter-%s", majorMinor))
 				log.Info("Filter Names: ", "Stats", statsName, "TCP", tcpName)
 
 				log.Info("Starting filter as true")
-				Expect(GetIstioObject(&istio, instance.Namespace, instance.Name)).Should(Succeed())
-				Expect(SetMixerlessTelemetryState(&istio, util.BoolPointer(true))).Should(Succeed())
-				Expect(WaitForMixerlessTelemetryFilters(
+				Expect(getIstioObject(&istio, instance.Namespace, instance.Name)).Should(Succeed())
+				Expect(setMixerlessTelemetryState(&istio, util.BoolPointer(true))).Should(Succeed())
+				Expect(waitForMixerlessTelemetryFilters(
 					istio.Namespace, statsName, tcpName, true, timeout, interval)).Should(Succeed())
 
-				log.Info("Transition filter true -> false")
-				Expect(GetIstioObject(&istio, instance.Namespace, instance.Name)).Should(Succeed())
-				Expect(SetMixerlessTelemetryState(&istio, util.BoolPointer(false))).Should(Succeed())
-				Expect(WaitForMixerlessTelemetryFilters(
+				log.Info("Set filter to false")
+				Expect(getIstioObject(&istio, instance.Namespace, instance.Name)).Should(Succeed())
+				Expect(setMixerlessTelemetryState(&istio, util.BoolPointer(false))).Should(Succeed())
+				Expect(waitForMixerlessTelemetryFilters(
 					istio.Namespace, statsName, tcpName, false, timeout, interval)).Should(Succeed())
 
-				log.Info("Transition filter false -> true")
-				Expect(GetIstioObject(&istio, instance.Namespace, instance.Name)).Should(Succeed())
-				Expect(SetMixerlessTelemetryState(&istio, util.BoolPointer(true))).Should(Succeed())
-				Expect(WaitForMixerlessTelemetryFilters(
+				log.Info("Restore filter false -> true")
+				Expect(getIstioObject(&istio, instance.Namespace, instance.Name)).Should(Succeed())
+				Expect(setMixerlessTelemetryState(&istio, util.BoolPointer(true))).Should(Succeed())
+				Expect(waitForMixerlessTelemetryFilters(
 					istio.Namespace, statsName, tcpName, true, timeout, interval)).Should(Succeed())
 
-				log.Info("Transition filter true -> nil")
-				Expect(GetIstioObject(&istio, instance.Namespace, instance.Name)).Should(Succeed())
-				Expect(SetMixerlessTelemetryState(&istio, nil)).Should(Succeed())
-				Expect(WaitForMixerlessTelemetryFilters(
+				log.Info("Set filter to nil")
+				Expect(getIstioObject(&istio, instance.Namespace, instance.Name)).Should(Succeed())
+				Expect(setMixerlessTelemetryState(&istio, nil)).Should(Succeed())
+				Expect(waitForMixerlessTelemetryFilters(
 					istio.Namespace, statsName, tcpName, false, timeout, interval)).Should(Succeed())
 
-				log.Info("Transition filter nil -> true")
-				Expect(GetIstioObject(&istio, instance.Namespace, instance.Name)).Should(Succeed())
-				Expect(SetMixerlessTelemetryState(&istio, util.BoolPointer(true))).Should(Succeed())
-				Expect(WaitForMixerlessTelemetryFilters(
+				log.Info("Restore filter nil -> true")
+				Expect(getIstioObject(&istio, instance.Namespace, instance.Name)).Should(Succeed())
+				Expect(setMixerlessTelemetryState(&istio, util.BoolPointer(true))).Should(Succeed())
+				Expect(waitForMixerlessTelemetryFilters(
 					istio.Namespace, statsName, tcpName, true, timeout, interval)).Should(Succeed())
 
 			})
