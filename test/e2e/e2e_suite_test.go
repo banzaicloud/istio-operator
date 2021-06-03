@@ -23,7 +23,6 @@ import (
 	"github.com/go-logr/logr"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
-
 	"k8s.io/client-go/dynamic"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	logf "sigs.k8s.io/controller-runtime/pkg/runtime/log"
@@ -33,8 +32,8 @@ import (
 )
 
 type TestEnv struct {
-	Log     logr.Logger
-	Client  client.Client
+	Log           logr.Logger
+	Client        client.Client
 	DynamicClient dynamic.Interface
 
 	ClusterStateDumper *clusterstate.Dumper
@@ -44,8 +43,8 @@ func NewTestEnv() *TestEnv {
 	log := logf.Log.WithName("TestSuite")
 
 	return &TestEnv{
-		Log:     log,
-		Client:  getClient(),
+		Log:           log,
+		Client:        getClient(),
 		DynamicClient: getDynamicClient(),
 
 		ClusterStateDumper: clusterstate.NewDumper(log),

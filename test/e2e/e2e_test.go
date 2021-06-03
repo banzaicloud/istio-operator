@@ -23,17 +23,13 @@ import (
 	"runtime"
 	"time"
 
-
 	"github.com/go-logr/logr"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
-
-	//appsv1 "k8s.io/api/apps/v1"
 	"k8s.io/apimachinery/pkg/types"
 
 	"github.com/banzaicloud/istio-operator/pkg/apis/istio/v1beta1"
 	"github.com/banzaicloud/istio-operator/test/e2e/util/resources"
-
 )
 
 var _ = Describe("E2E", func() {
@@ -80,7 +76,7 @@ var _ = Describe("E2E", func() {
 
 	Describe("tests with minimal istio resource", func() {
 		// TODO: Unskipped when creating a PR
-		XContext("Istio resource", func() {
+		Context("Istio resource", func() {
 			It("should stay reconciled (Available)", func() {
 				isAvailableConsistently, err := IstioResourceIsAvailableConsistently(log, istioResourceNamespace, istioResourceName, 5*time.Second, 100*time.Millisecond)
 				if !isAvailableConsistently || err != nil {
@@ -99,7 +95,7 @@ var _ = Describe("E2E", func() {
 		Context("MeshGateway", func() {
 			const (
 				testNamespace = "test0001"
-				mgwName = "mgw01"
+				mgwName       = "mgw01"
 			)
 
 			var resourcesFile string
@@ -119,20 +115,17 @@ var _ = Describe("E2E", func() {
 			})
 
 			It("sets up working ingress", func() {
-				// Wait until mgw pod is created
-				time.Sleep(15 * time.Second)
-
 				// Construct object ObjectKey to make K8s API calls
 				mgwNamespacedName := types.NamespacedName{
 					Namespace: testNamespace,
-					Name: mgwName,
+					Name:      mgwName,
 				}
 
-				mgwDep, err := GetDeployment(context.TODO(), istioTestEnv.c, mgwNamespacedName)
+				mgwDep, err := WaitForDeployment(istioTestEnv.c, mgwNamespacedName, 300*time.Second, 100*time.Millisecond)
 				Expect(err).ShouldNot(HaveOccurred())
 
 				const (
-					mgwPodContainerAmount int = 1
+					mgwPodContainerAmount   int    = 1
 					istioProxyContainerName string = "istio-proxy"
 				)
 
@@ -153,11 +146,12 @@ var _ = Describe("E2E", func() {
 
 				// Will face MetalLB issues outside of Linux OS
 				if runtime.GOOS == "linux" {
-					meshGatewayAddress, err := GetMeshGatewayAddress(testNamespace, "mgw01", 300*time.Second, 100*time.Millisecond)
+					meshGatewayAddress, err := GetMeshGatewayAddress(testNamespace, "mgw01", 300*time.Second,
+						100*time.Millisecond)
 					Expect(err).NotTo(HaveOccurred())
 
-					Expect(URLIsAccessible(log, fmt.Sprintf("http://%s:8080/get", meshGatewayAddress), 30*time.Second, 100*time.Millisecond)).
-						To(Succeed())
+					Expect(URLIsAccessible(log, fmt.Sprintf("http://%s:8080/get", meshGatewayAddress), 30*time.Second,
+						100*time.Millisecond)).To(Succeed())
 				}
 			})
 		})
