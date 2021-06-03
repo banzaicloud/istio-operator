@@ -120,6 +120,7 @@ var _ = Describe("E2E", func() {
 					Name:      mgwName,
 				}
 
+
 				mgwDep, err := WaitForDeployment(istioTestEnv.c, mgwNamespacedName, 300*time.Second, 10*time.Second)
 				Expect(err).ShouldNot(HaveOccurred())
 
