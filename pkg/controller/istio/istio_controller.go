@@ -437,7 +437,7 @@ func (r *ReconcileIstio) checkMeshWidePolicyConflict(config *istiov1beta1.Istio,
 			logger.Info(warningMessage)
 			r.recorder.Event(
 				config,
-				"Warning",
+				corev1.EventTypeWarning,
 				"MeshWidePolicyConflict",
 				warningMessage,
 			)
