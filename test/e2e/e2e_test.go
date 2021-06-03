@@ -75,7 +75,6 @@ var _ = Describe("E2E", func() {
 	})
 
 	Describe("tests with minimal istio resource", func() {
-		// TODO: Unskipped when creating a PR
 		Context("Istio resource", func() {
 			It("should stay reconciled (Available)", func() {
 				isAvailableConsistently, err := IstioResourceIsAvailableConsistently(log, istioResourceNamespace, istioResourceName, 5*time.Second, 100*time.Millisecond)
@@ -121,7 +120,7 @@ var _ = Describe("E2E", func() {
 					Name:      mgwName,
 				}
 
-				mgwDep, err := WaitForDeployment(istioTestEnv.c, mgwNamespacedName, 300*time.Second, 100*time.Millisecond)
+				mgwDep, err := WaitForDeployment(istioTestEnv.c, mgwNamespacedName, 300*time.Second, 10*time.Second)
 				Expect(err).ShouldNot(HaveOccurred())
 
 				const (
