@@ -448,7 +448,7 @@ func GetUnstructuredObject(ctx context.Context, d dynamic.Interface, gvr schema.
 	return unstructuredObject, nil
 }
 
-// Get Deployment object with Kuberentes typed clients.
+// Get Deployment object with Kubernetes typed clients.
 func GetDeployment(ctx context.Context, c client.Client, resource types.NamespacedName) (*appsv1.Deployment, error){
 	dep := &appsv1.Deployment{}
 
@@ -458,6 +458,18 @@ func GetDeployment(ctx context.Context, c client.Client, resource types.Namespac
 	}
 
 	return dep, nil
+}
+
+// Get Service object with Kubernetes typed clients.
+func GetService(ctx context.Context, c client.Client, resource types.NamespacedName) (*corev1.Service, error){
+	svc := &corev1.Service{}
+
+	err := c.Get(ctx, resource, svc)
+	if err != nil{
+		return svc, err
+	}
+
+	return svc, nil
 }
 
 // Get a container list of given Deployment object.

@@ -97,7 +97,10 @@ var _ = Describe("E2E", func() {
 		})
 
 		Context("MeshGateway", func() {
-			const testNamespace = "test0001"
+			const (
+				testNamespace = "test0001"
+				mgwName = "mgw01"
+			)
 
 			var resourcesFile string
 
@@ -116,40 +119,38 @@ var _ = Describe("E2E", func() {
 			})
 
 			It("sets up working ingress", func() {
-				var err error
-				// Wait till all httpbin and mgw getting deployed
-				fmt.Print("Testing - sam")
-				time.Sleep(120 * time.Second)
+				// Wait until mgw pod is created
+				time.Sleep(15 * time.Second)
 
-				// TODO: Parametarize
-				exist := DeploymentExists(context.TODO(), istioTestEnv.c, testNamespace, "mgw01")()
-				Expect(exist).Should(BeTrue())
-
+				// Construct object ObjectKey to make K8s API calls
 				mgwNamespacedName := types.NamespacedName{
-					Namespace: "test0001",
-					Name: "mgw01",
+					Namespace: testNamespace,
+					Name: mgwName,
 				}
 
-
-				mgwDep, _ := GetDeployment(context.TODO(), istioTestEnv.c, mgwNamespacedName)
+				mgwDep, err := GetDeployment(context.TODO(), istioTestEnv.c, mgwNamespacedName)
+				Expect(err).ShouldNot(HaveOccurred())
 
 				const (
 					mgwPodContainerAmount int = 1
 					istioProxyContainerName string = "istio-proxy"
 				)
 
-				fmt.Println("-----get container number---")
+				// Validate if there one container only in mesh-gateway pod
 				containerList := GetContainersFromDeployment(mgwDep)
 				Expect(len(containerList)).Should(BeIdenticalTo(mgwPodContainerAmount))
 
-
-				fmt.Println("-----check image exist---")
+				// Check if the istio-proxy sidecar container exists in the pod
 				err = ContainerExists(containerList, istioProxyContainerName)
 				Expect(err).ShouldNot(HaveOccurred())
 
+				// Check if service is created that matches mesh-gateway's name in the same namespace
+				mgwSvc, err := GetService(context.TODO(), istioTestEnv.c, mgwNamespacedName)
+				Expect(err).ShouldNot(HaveOccurred())
 
+				// Validate if mgw Service label selector matches mgw Deployment's MatchLabels field
+				Expect(mgwSvc.Spec.Selector).Should(BeEquivalentTo(mgwDep.Spec.Selector.MatchLabels))
 
-				// end here
 				// Will face MetalLB issues outside of Linux OS
 				if runtime.GOOS == "linux" {
 					meshGatewayAddress, err := GetMeshGatewayAddress(testNamespace, "mgw01", 300*time.Second, 100*time.Millisecond)
