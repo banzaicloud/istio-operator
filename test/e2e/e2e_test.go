@@ -17,16 +17,23 @@ limitations under the License.
 package e2e
 
 import (
+	"context"
 	"fmt"
 	"path/filepath"
+	"runtime"
 	"time"
+
 
 	"github.com/go-logr/logr"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 
+	//appsv1 "k8s.io/api/apps/v1"
+	"k8s.io/apimachinery/pkg/types"
+
 	"github.com/banzaicloud/istio-operator/pkg/apis/istio/v1beta1"
 	"github.com/banzaicloud/istio-operator/test/e2e/util/resources"
+
 )
 
 var _ = Describe("E2E", func() {
@@ -44,14 +51,14 @@ var _ = Describe("E2E", func() {
 		log = testEnv.Log.WithName(getLoggerName(CurrentGinkgoTestDescription()))
 
 		var err error
-		clusterStateBeforeTests, err = listAllResources(testEnv.Dynamic)
+		clusterStateBeforeTests, err = listAllResources(testEnv.DynamicClient)
 		Expect(err).NotTo(HaveOccurred())
 
 		instance = mkMinimalIstio(istioResourceNamespace, istioResourceName)
 	})
 
 	JustBeforeEach(func() {
-		istioTestEnv = NewIstioTestEnv(log, testEnv.Client, testEnv.Dynamic, instance)
+		istioTestEnv = NewIstioTestEnv(log, testEnv.Client, testEnv.DynamicClient, instance)
 		istioTestEnv.Start()
 		istioTestEnv.WaitForIstioReconcile()
 	})
@@ -72,7 +79,8 @@ var _ = Describe("E2E", func() {
 	})
 
 	Describe("tests with minimal istio resource", func() {
-		Context("Istio resource", func() {
+		// TODO: Unskipped when creating a PR
+		XContext("Istio resource", func() {
 			It("should stay reconciled (Available)", func() {
 				isAvailableConsistently, err := IstioResourceIsAvailableConsistently(log, istioResourceNamespace, istioResourceName, 5*time.Second, 100*time.Millisecond)
 				if !isAvailableConsistently || err != nil {
@@ -108,11 +116,48 @@ var _ = Describe("E2E", func() {
 			})
 
 			It("sets up working ingress", func() {
-				meshGatewayAddress, err := GetMeshGatewayAddress(testNamespace, "mgw01", 300*time.Second, 100*time.Millisecond)
-				Expect(err).NotTo(HaveOccurred())
+				var err error
+				// Wait till all httpbin and mgw getting deployed
+				fmt.Print("Testing - sam")
+				time.Sleep(120 * time.Second)
 
-				Expect(URLIsAccessible(log, fmt.Sprintf("http://%s:8080/get", meshGatewayAddress), 30*time.Second, 100*time.Millisecond)).
-					To(Succeed())
+				// TODO: Parametarize
+				exist := DeploymentExists(context.TODO(), istioTestEnv.c, testNamespace, "mgw01")()
+				Expect(exist).Should(BeTrue())
+
+				mgwNamespacedName := types.NamespacedName{
+					Namespace: "test0001",
+					Name: "mgw01",
+				}
+
+
+				mgwDep, _ := GetDeployment(context.TODO(), istioTestEnv.c, mgwNamespacedName)
+
+				const (
+					mgwPodContainerAmount int = 1
+					istioProxyContainerName string = "istio-proxy"
+				)
+
+				fmt.Println("-----get container number---")
+				containerList := GetContainersFromDeployment(mgwDep)
+				Expect(len(containerList)).Should(BeIdenticalTo(mgwPodContainerAmount))
+
+
+				fmt.Println("-----check image exist---")
+				err = ContainerExists(containerList, istioProxyContainerName)
+				Expect(err).ShouldNot(HaveOccurred())
+
+
+
+				// end here
+				// Will face MetalLB issues outside of Linux OS
+				if runtime.GOOS == "linux" {
+					meshGatewayAddress, err := GetMeshGatewayAddress(testNamespace, "mgw01", 300*time.Second, 100*time.Millisecond)
+					Expect(err).NotTo(HaveOccurred())
+
+					Expect(URLIsAccessible(log, fmt.Sprintf("http://%s:8080/get", meshGatewayAddress), 30*time.Second, 100*time.Millisecond)).
+						To(Succeed())
+				}
 			})
 		})
 	})

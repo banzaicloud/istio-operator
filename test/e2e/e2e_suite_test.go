@@ -23,6 +23,7 @@ import (
 	"github.com/go-logr/logr"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
+
 	"k8s.io/client-go/dynamic"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	logf "sigs.k8s.io/controller-runtime/pkg/runtime/log"
@@ -34,7 +35,7 @@ import (
 type TestEnv struct {
 	Log     logr.Logger
 	Client  client.Client
-	Dynamic dynamic.Interface
+	DynamicClient dynamic.Interface
 
 	ClusterStateDumper *clusterstate.Dumper
 }
@@ -45,7 +46,7 @@ func NewTestEnv() *TestEnv {
 	return &TestEnv{
 		Log:     log,
 		Client:  getClient(),
-		Dynamic: getDynamicClient(),
+		DynamicClient: getDynamicClient(),
 
 		ClusterStateDumper: clusterstate.NewDumper(log),
 	}
@@ -69,14 +70,14 @@ var _ = BeforeSuite(func() {
 	err := waitForClientReady(testEnv.Client, 10*time.Second, 100*time.Millisecond)
 	Expect(err).NotTo(HaveOccurred())
 
-	clusterStateBefore, err = listAllResources(testEnv.Dynamic)
+	clusterStateBefore, err = listAllResources(testEnv.DynamicClient)
 	Expect(err).NotTo(HaveOccurred())
 })
 
 var _ = AfterSuite(func() {
 	log := testEnv.Log
 
-	clusterStateAfter, err := listAllResources(testEnv.Dynamic)
+	clusterStateAfter, err := listAllResources(testEnv.DynamicClient)
 	Expect(err).NotTo(HaveOccurred())
 
 	if !clusterIsClean(clusterStateBefore, clusterStateAfter) {
