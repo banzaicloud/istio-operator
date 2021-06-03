@@ -463,6 +463,15 @@ spec:
                           user:
                             type: string
                         type: object
+                      seccompProfile:
+                        properties:
+                          localhostProfile:
+                            type: string
+                          type:
+                            type: string
+                        required:
+                        - type
+                        type: object
                       windowsOptions:
                         properties:
                           gmsaCredentialSpec:
@@ -551,6 +560,10 @@ spec:
                   type: object
                 type: array
               excludeIPRanges:
+                type: string
+              excludeInboundPorts:
+                type: string
+              excludeOutboundPorts:
                 type: string
               includeIPRanges:
                 type: string
@@ -863,6 +876,15 @@ spec:
                             type: string
                           user:
                             type: string
+                        type: object
+                      seccompProfile:
+                        properties:
+                          localhostProfile:
+                            type: string
+                          type:
+                            type: string
+                        required:
+                        - type
                         type: object
                       windowsOptions:
                         properties:
@@ -1739,6 +1761,15 @@ spec:
                             type: string
                           user:
                             type: string
+                        type: object
+                      seccompProfile:
+                        properties:
+                          localhostProfile:
+                            type: string
+                          type:
+                            type: string
+                        required:
+                        - type
                         type: object
                       windowsOptions:
                         properties:
