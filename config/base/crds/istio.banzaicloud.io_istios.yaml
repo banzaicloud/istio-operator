@@ -478,6 +478,15 @@ spec:
                           user:
                             type: string
                         type: object
+                      seccompProfile:
+                        properties:
+                          localhostProfile:
+                            type: string
+                          type:
+                            type: string
+                        required:
+                        - type
+                        type: object
                       windowsOptions:
                         properties:
                           gmsaCredentialSpec:
@@ -541,6 +550,10 @@ spec:
                     type: object
                 type: object
               excludeIPRanges:
+                type: string
+              excludeInboundPorts:
+                type: string
+              excludeOutboundPorts:
                 type: string
               galley:
                 properties:
@@ -950,6 +963,15 @@ spec:
                             type: string
                           user:
                             type: string
+                        type: object
+                      seccompProfile:
+                        properties:
+                          localhostProfile:
+                            type: string
+                          type:
+                            type: string
+                        required:
+                        - type
                         type: object
                       windowsOptions:
                         properties:
@@ -1448,6 +1470,15 @@ spec:
                                 type: string
                               user:
                                 type: string
+                            type: object
+                          seccompProfile:
+                            properties:
+                              localhostProfile:
+                                type: string
+                              type:
+                                type: string
+                            required:
+                            - type
                             type: object
                           windowsOptions:
                             properties:
@@ -1965,6 +1996,15 @@ spec:
                                 type: string
                               user:
                                 type: string
+                            type: object
+                          seccompProfile:
+                            properties:
+                              localhostProfile:
+                                type: string
+                              type:
+                                type: string
+                            required:
+                            - type
                             type: object
                           windowsOptions:
                             properties:
@@ -2488,6 +2528,15 @@ spec:
                               user:
                                 type: string
                             type: object
+                          seccompProfile:
+                            properties:
+                              localhostProfile:
+                                type: string
+                              type:
+                                type: string
+                            required:
+                            - type
+                            type: object
                           windowsOptions:
                             properties:
                               gmsaCredentialSpec:
@@ -2911,6 +2960,15 @@ spec:
                             type: string
                           user:
                             type: string
+                        type: object
+                      seccompProfile:
+                        properties:
+                          localhostProfile:
+                            type: string
+                          type:
+                            type: string
+                        required:
+                        - type
                         type: object
                       windowsOptions:
                         properties:
@@ -3449,6 +3507,15 @@ spec:
                           user:
                             type: string
                         type: object
+                      seccompProfile:
+                        properties:
+                          localhostProfile:
+                            type: string
+                          type:
+                            type: string
+                        required:
+                        - type
+                        type: object
                       windowsOptions:
                         properties:
                           gmsaCredentialSpec:
@@ -3839,6 +3906,15 @@ spec:
                             type: string
                           user:
                             type: string
+                        type: object
+                      seccompProfile:
+                        properties:
+                          localhostProfile:
+                            type: string
+                          type:
+                            type: string
+                        required:
+                        - type
                         type: object
                       windowsOptions:
                         properties:
@@ -4295,6 +4371,15 @@ spec:
                           user:
                             type: string
                         type: object
+                      seccompProfile:
+                        properties:
+                          localhostProfile:
+                            type: string
+                          type:
+                            type: string
+                        required:
+                        - type
+                        type: object
                       windowsOptions:
                         properties:
                           gmsaCredentialSpec:
@@ -4743,6 +4828,15 @@ spec:
                           user:
                             type: string
                         type: object
+                      seccompProfile:
+                        properties:
+                          localhostProfile:
+                            type: string
+                          type:
+                            type: string
+                        required:
+                        - type
+                        type: object
                       windowsOptions:
                         properties:
                           gmsaCredentialSpec:
@@ -5072,6 +5166,15 @@ spec:
                             type: string
                           user:
                             type: string
+                        type: object
+                      seccompProfile:
+                        properties:
+                          localhostProfile:
+                            type: string
+                          type:
+                            type: string
+                        required:
+                        - type
                         type: object
                       windowsOptions:
                         properties:
@@ -5965,6 +6068,15 @@ spec:
                           user:
                             type: string
                         type: object
+                      seccompProfile:
+                        properties:
+                          localhostProfile:
+                            type: string
+                          type:
+                            type: string
+                        required:
+                        - type
+                        type: object
                       windowsOptions:
                         properties:
                           gmsaCredentialSpec:
@@ -6403,6 +6515,15 @@ spec:
                             type: string
                           user:
                             type: string
+                        type: object
+                      seccompProfile:
+                        properties:
+                          localhostProfile:
+                            type: string
+                          type:
+                            type: string
+                        required:
+                        - type
                         type: object
                       windowsOptions:
                         properties:
