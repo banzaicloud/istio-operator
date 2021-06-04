@@ -422,23 +422,10 @@ func sortNamespacedNames(nns []types.NamespacedName) {
 	})
 }
 
-// Note: This method is currently not being used in the E2E test.
-/*
-func testDataPath(description ginkgo.GinkgoTestDescription) string {
-	path := filepath.Join(description.ComponentTexts...)
-	return strings.ReplaceAll(path, " ", "_")
-}
-*/
-
 // Get unstructured object with Kuberentes dynamic clients.
-func GetUnstructuredObject(ctx context.Context, d dynamic.Interface, gvr schema.GroupVersionResource,
+func getUnstructuredObject(ctx context.Context, d dynamic.Interface, gvr schema.GroupVersionResource,
 	resource types.NamespacedName) (*unstructured.Unstructured, error) {
-	var (
-		unstructuredObject *unstructured.Unstructured
-		err                error
-	)
-
-	unstructuredObject, err = d.Resource(gvr).Namespace(resource.Namespace).Get(ctx, resource.Name, metav1.GetOptions{})
+	unstructuredObject, err := d.Resource(gvr).Namespace(resource.Namespace).Get(ctx, resource.Name, metav1.GetOptions{})
 	if err != nil {
 		return nil, err
 	}
@@ -447,7 +434,7 @@ func GetUnstructuredObject(ctx context.Context, d dynamic.Interface, gvr schema.
 }
 
 // Get Deployment object with Kubernetes typed clients.
-func GetDeployment(ctx context.Context, c client.Client, resource types.NamespacedName) (*appsv1.Deployment, error) {
+func getDeployment(ctx context.Context, c client.Client, resource types.NamespacedName) (*appsv1.Deployment, error) {
 	dep := &appsv1.Deployment{}
 
 	err := c.Get(ctx, resource, dep)
@@ -459,7 +446,7 @@ func GetDeployment(ctx context.Context, c client.Client, resource types.Namespac
 }
 
 // Get Service object with Kubernetes typed clients.
-func GetService(ctx context.Context, c client.Client, resource types.NamespacedName) (*corev1.Service, error) {
+func getService(ctx context.Context, c client.Client, resource types.NamespacedName) (*corev1.Service, error) {
 	svc := &corev1.Service{}
 
 	err := c.Get(ctx, resource, svc)
@@ -471,12 +458,12 @@ func GetService(ctx context.Context, c client.Client, resource types.NamespacedN
 }
 
 // Get a container list of given Deployment object.
-func GetContainersFromDeployment(dep *appsv1.Deployment) []corev1.Container {
+func getContainersFromDeployment(dep *appsv1.Deployment) []corev1.Container {
 	return dep.Spec.Template.Spec.Containers
 }
 
 // Validate if the container exists in given container list.
-func ContainerExists(containerList []corev1.Container, containerName string) error {
+func containerExists(containerList []corev1.Container, containerName string) error {
 	for _, container := range containerList {
 		if container.Name == containerName {
 			return nil
@@ -487,14 +474,14 @@ func ContainerExists(containerList []corev1.Container, containerName string) err
 }
 
 // Wait until the Deployment is available for being acquired through API calls.
-func WaitForDeployment(c client.Client, resource types.NamespacedName, timeout time.Duration,
+func waitForDeployment(c client.Client, resource types.NamespacedName, timeout time.Duration,
 	interval time.Duration) (*appsv1.Deployment, error) {
 	dep := &appsv1.Deployment{}
 
 	// Wait until Deployment is available
 	err := util.WaitForCondition(timeout, interval, func() (bool, error) {
 		var err error
-		dep, err = GetDeployment(context.TODO(), c, resource)
+		dep, err = getDeployment(context.TODO(), c, resource)
 		if err != nil {
 			return false, err
 		}

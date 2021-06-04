@@ -189,7 +189,7 @@ var _ = Describe("E2E", func() {
 				})
 
 				JustBeforeEach(func() {
-					mgwDep, err = WaitForDeployment(istioTestEnv.c, mgwNamespacedName, 300*time.Second, 100*time.Second)
+					mgwDep, err = waitForDeployment(istioTestEnv.c, mgwNamespacedName, 300*time.Second, 100*time.Second)
 					Expect(err).ShouldNot(HaveOccurred())
 				})
 
@@ -199,11 +199,11 @@ var _ = Describe("E2E", func() {
 						istioProxyContainerName string = "istio-proxy"
 					)
 					// Validate if there one container only in mesh-gateway pod
-					containerList := GetContainersFromDeployment(mgwDep)
+					containerList := getContainersFromDeployment(mgwDep)
 					Expect(len(containerList)).Should(BeIdenticalTo(mgwPodContainerAmount))
 
 					// Check if the istio-proxy sidecar container exists in the pod
-					err = ContainerExists(containerList, istioProxyContainerName)
+					err = containerExists(containerList, istioProxyContainerName)
 					Expect(err).ShouldNot(HaveOccurred())
 				})
 
@@ -225,12 +225,12 @@ var _ = Describe("E2E", func() {
 				})
 
 				JustBeforeEach(func() {
-					mgwDep, err := WaitForDeployment(istioTestEnv.c, mgwNamespacedName, 300*time.Second, 100*time.Second)
+					mgwDep, err := waitForDeployment(istioTestEnv.c, mgwNamespacedName, 300*time.Second, 100*time.Second)
 					Expect(err).ShouldNot(HaveOccurred())
 					mgwDeploymentMatchLabels = mgwDep.Spec.Selector.MatchLabels
 
 					// Check if service is created that matches mesh-gateway's name in the same namespace
-					mgwSvc, err = GetService(context.TODO(), istioTestEnv.c, mgwNamespacedName)
+					mgwSvc, err = getService(context.TODO(), istioTestEnv.c, mgwNamespacedName)
 					Expect(err).ShouldNot(HaveOccurred())
 					mgwSvcLabelSelector = mgwSvc.Spec.Selector
 				})
