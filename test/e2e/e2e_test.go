@@ -189,7 +189,7 @@ var _ = Describe("E2E", func() {
 				})
 
 				JustBeforeEach(func() {
-					mgwDep, err = WaitForDeployment(istioTestEnv.c, mgwNamespacedName, 300*time.Second, 10*time.Second)
+					mgwDep, err = WaitForDeployment(istioTestEnv.c, mgwNamespacedName, 300*time.Second, 100*time.Second)
 					Expect(err).ShouldNot(HaveOccurred())
 				})
 
@@ -225,7 +225,7 @@ var _ = Describe("E2E", func() {
 				})
 
 				JustBeforeEach(func() {
-					mgwDep, err := WaitForDeployment(istioTestEnv.c, mgwNamespacedName, 300*time.Second, 10*time.Second)
+					mgwDep, err := WaitForDeployment(istioTestEnv.c, mgwNamespacedName, 300*time.Second, 100*time.Second)
 					Expect(err).ShouldNot(HaveOccurred())
 					mgwDeploymentMatchLabels = mgwDep.Spec.Selector.MatchLabels
 
