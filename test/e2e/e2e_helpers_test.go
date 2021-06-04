@@ -36,7 +36,6 @@ import (
 	corev1 "k8s.io/api/core/v1"
 	k8sapierrors "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/runtime/schema"
 	"k8s.io/apimachinery/pkg/types"
@@ -420,17 +419,6 @@ func sortNamespacedNames(nns []types.NamespacedName) {
 		}
 		return false
 	})
-}
-
-// Get unstructured object with Kuberentes dynamic clients.
-func getUnstructuredObject(ctx context.Context, d dynamic.Interface, gvr schema.GroupVersionResource,
-	resource types.NamespacedName) (*unstructured.Unstructured, error) {
-	unstructuredObject, err := d.Resource(gvr).Namespace(resource.Namespace).Get(ctx, resource.Name, metav1.GetOptions{})
-	if err != nil {
-		return nil, err
-	}
-
-	return unstructuredObject, nil
 }
 
 // Get Deployment object with Kubernetes typed clients.
