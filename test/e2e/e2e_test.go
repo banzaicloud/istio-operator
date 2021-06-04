@@ -247,7 +247,7 @@ var _ = Describe("E2E", func() {
 						Skip("MetalLB based test only works on Linux")
 					}
 					meshGatewayAddress, err := GetMeshGatewayAddress(testNamespace, "mgw01", 300*time.Second,
-						100*time.Millisecond)
+						100*time.Second)
 					Expect(err).NotTo(HaveOccurred())
 
 					Expect(URLIsAccessible(log, fmt.Sprintf("http://%s:8080/get", meshGatewayAddress), 30*time.Second,
