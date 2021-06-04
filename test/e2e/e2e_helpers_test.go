@@ -21,7 +21,6 @@ import (
 	"io/ioutil"
 	"net/http"
 	"os"
-	"path/filepath"
 	"reflect"
 	"sort"
 	"strings"
@@ -425,10 +424,13 @@ func sortNamespacedNames(nns []types.NamespacedName) {
 	})
 }
 
+// Note: This method is currently not being used in the E2E test.
+/*
 func testDataPath(description ginkgo.GinkgoTestDescription) string {
 	path := filepath.Join(description.ComponentTexts...)
 	return strings.ReplaceAll(path, " ", "_")
 }
+*/
 
 // Get unstructured object with Kuberentes dynamic clients.
 func GetUnstructuredObject(ctx context.Context, d dynamic.Interface, gvr schema.GroupVersionResource,
