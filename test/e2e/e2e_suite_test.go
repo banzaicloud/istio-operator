@@ -1,12 +1,9 @@
 /*
 Copyright 2021 Banzai Cloud.
-
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
 You may obtain a copy of the License at
-
     http://www.apache.org/licenses/LICENSE-2.0
-
 Unless required by applicable law or agreed to in writing, software
 distributed under the License is distributed on an "AS IS" BASIS,
 WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -32,9 +29,9 @@ import (
 )
 
 type TestEnv struct {
-	Log     logr.Logger
-	Client  client.Client
-	Dynamic dynamic.Interface
+	Log           logr.Logger
+	Client        client.Client
+	DynamicClient dynamic.Interface
 
 	ClusterStateDumper *clusterstate.Dumper
 }
@@ -43,9 +40,9 @@ func NewTestEnv() *TestEnv {
 	log := logf.Log.WithName("TestSuite")
 
 	return &TestEnv{
-		Log:     log,
-		Client:  getClient(),
-		Dynamic: getDynamicClient(),
+		Log:           log,
+		Client:        getClient(),
+		DynamicClient: getDynamicClient(),
 
 		ClusterStateDumper: clusterstate.NewDumper(log),
 	}
@@ -69,14 +66,14 @@ var _ = BeforeSuite(func() {
 	err := waitForClientReady(testEnv.Client, 10*time.Second, 100*time.Millisecond)
 	Expect(err).NotTo(HaveOccurred())
 
-	clusterStateBefore, err = listAllResources(testEnv.Dynamic)
+	clusterStateBefore, err = listAllResources(testEnv.DynamicClient)
 	Expect(err).NotTo(HaveOccurred())
 })
 
 var _ = AfterSuite(func() {
 	log := testEnv.Log
 
-	clusterStateAfter, err := listAllResources(testEnv.Dynamic)
+	clusterStateAfter, err := listAllResources(testEnv.DynamicClient)
 	Expect(err).NotTo(HaveOccurred())
 
 	if !clusterIsClean(clusterStateBefore, clusterStateAfter) {
