@@ -65,12 +65,10 @@ func maybeCleanup(log logr.Logger, noCleanupMsg string, cleanup func()) {
 }
 
 type IstioTestEnv struct {
-	log logr.Logger
-
-	c     client.Client
-	d     dynamic.Interface
-	istio *istiov1beta1.Istio
-
+	log                logr.Logger
+	c                  client.Client
+	d                  dynamic.Interface
+	istio              *istiov1beta1.Istio
 	clusterStateBefore ClusterResourceList
 }
 
@@ -426,4 +424,48 @@ func sortNamespacedNames(nns []types.NamespacedName) {
 func testDataPath(description ginkgo.GinkgoTestDescription) string {
 	path := filepath.Join(description.ComponentTexts...)
 	return strings.ReplaceAll(path, " ", "_")
+}
+
+func getIstioObject(istio *istiov1beta1.Istio, namespace, name string) error {
+	return testEnv.Client.Get(context.TODO(), client.ObjectKey{
+		Namespace: namespace,
+		Name:      name},
+		istio)
+}
+
+func setMixerlessTelemetryState(istio *istiov1beta1.Istio, newState *bool) error {
+	istio.Spec.MixerlessTelemetry.Enabled = newState
+	// upload to cluster
+	testEnv.Log.Info("Updating cluster to:", "newState", newState)
+	return testEnv.Client.Update(context.TODO(), istio)
+}
+
+func waitForMixerlessTelemetryFilter(
+	namespace, filterName string, filterShouldExist bool, timeout, interval time.Duration) error {
+	return util.WaitForCondition(timeout, interval, func() (bool, error) {
+		_, err := testEnv.Dynamic.Resource(gvr.EnvoyFilter).Namespace(namespace).Get(
+			context.TODO(),
+			filterName,
+			metav1.GetOptions{})
+		if err != nil && !k8sapierrors.IsNotFound(err) {
+			// only expect "Not Found" Error. Bail out here if we get an unexpected error
+			return false, err
+		}
+		if k8sapierrors.IsNotFound(err) != filterShouldExist {
+			// IsNotFound returns true if the error contains "Not found"
+			// which is the opposite fo filterShouldExist
+			return true, nil
+		}
+		return false, nil
+	})
+}
+
+func waitForMixerlessTelemetryFilters(
+	namespace, filterName1 string, filterName2 string, filterShouldExist bool, timeout, interval time.Duration) error {
+	// check both filters sequentially. Usually, the first filter will wait the most.
+	err := waitForMixerlessTelemetryFilter(namespace, filterName1, filterShouldExist, timeout, interval)
+	if err != nil {
+		return err
+	}
+	return waitForMixerlessTelemetryFilter(namespace, filterName2, filterShouldExist, timeout, interval)
 }

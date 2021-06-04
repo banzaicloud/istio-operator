@@ -20,6 +20,7 @@ import (
 	"fmt"
 	"path/filepath"
 	"runtime"
+	"strings"
 	"time"
 
 	"github.com/go-logr/logr"
@@ -27,6 +28,7 @@ import (
 	. "github.com/onsi/gomega"
 
 	"github.com/banzaicloud/istio-operator/pkg/apis/istio/v1beta1"
+	"github.com/banzaicloud/istio-operator/pkg/util"
 	"github.com/banzaicloud/istio-operator/test/e2e/util/resources"
 )
 
@@ -86,6 +88,63 @@ var _ = Describe("E2E", func() {
 				Expect(isAvailableConsistently, err).Should(BeTrue())
 
 				// TODO Check that the expected CRDs, deployments, services, etc. are present
+			})
+		})
+		Context("Mixerless Telemetry Stats Filter Test", func() {
+			var (
+				istio        v1beta1.Istio
+				majorMinor   string
+			)
+			const timeout = 30 * time.Second
+			const interval = 1 * time.Second
+
+			JustBeforeEach(func() {
+				// get the istio object created in the OUTER JustBeforeEach
+				log.Info("Namespace: ", "Namespace", instance.Namespace)
+				log.Info("Name: ", "Name", instance.Name)
+				Expect(getIstioObject(&istio, instance.Namespace, instance.Name)).Should(Succeed())
+				version := istio.Spec.Version // get first 2 digits
+				versionParts := strings.SplitN(string(version), ".", 3)
+				majorMinor = fmt.Sprintf("%s.%s", versionParts[0], versionParts[1])
+				log.Info("Istio Version: ", "Version", majorMinor)
+			})
+
+			It("Sets Filter to each state and restores to True", func() {
+				// Names of the filters of interest
+				statsName := istio.WithRevision(fmt.Sprintf("mixerless-telemetry-stats-filter-%s", majorMinor))
+				tcpName := istio.WithRevision(fmt.Sprintf("mixerless-telemetry-tcp-stats-filter-%s", majorMinor))
+				log.Info("Filter Names: ", "Stats", statsName, "TCP", tcpName)
+
+				log.Info("Starting filter as true")
+				Expect(getIstioObject(&istio, instance.Namespace, instance.Name)).Should(Succeed())
+				Expect(setMixerlessTelemetryState(&istio, util.BoolPointer(true))).Should(Succeed())
+				Expect(waitForMixerlessTelemetryFilters(
+					istio.Namespace, statsName, tcpName, true, timeout, interval)).Should(Succeed())
+
+				log.Info("Set filter to false")
+				Expect(getIstioObject(&istio, instance.Namespace, instance.Name)).Should(Succeed())
+				Expect(setMixerlessTelemetryState(&istio, util.BoolPointer(false))).Should(Succeed())
+				Expect(waitForMixerlessTelemetryFilters(
+					istio.Namespace, statsName, tcpName, false, timeout, interval)).Should(Succeed())
+
+				log.Info("Restore filter false -> true")
+				Expect(getIstioObject(&istio, instance.Namespace, instance.Name)).Should(Succeed())
+				Expect(setMixerlessTelemetryState(&istio, util.BoolPointer(true))).Should(Succeed())
+				Expect(waitForMixerlessTelemetryFilters(
+					istio.Namespace, statsName, tcpName, true, timeout, interval)).Should(Succeed())
+
+				log.Info("Set filter to nil")
+				Expect(getIstioObject(&istio, instance.Namespace, instance.Name)).Should(Succeed())
+				Expect(setMixerlessTelemetryState(&istio, nil)).Should(Succeed())
+				Expect(waitForMixerlessTelemetryFilters(
+					istio.Namespace, statsName, tcpName, false, timeout, interval)).Should(Succeed())
+
+				log.Info("Restore filter nil -> true")
+				Expect(getIstioObject(&istio, instance.Namespace, instance.Name)).Should(Succeed())
+				Expect(setMixerlessTelemetryState(&istio, util.BoolPointer(true))).Should(Succeed())
+				Expect(waitForMixerlessTelemetryFilters(
+					istio.Namespace, statsName, tcpName, true, timeout, interval)).Should(Succeed())
+
 			})
 		})
 
