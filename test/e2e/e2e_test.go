@@ -242,7 +242,6 @@ var _ = Describe("E2E", func() {
 			})
 
 			Context("when mesh gateway address is created", func() {
-				// TODO: Add BeforeEach
 				It("should have accessible URI", func() {
 					if runtime.GOOS != "linux" {
 						Skip("MetalLB based test only works on Linux")
