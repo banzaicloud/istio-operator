@@ -17,10 +17,10 @@ limitations under the License.
 package e2e
 
 import (
+	"fmt"
 	"io/ioutil"
 	"net/http"
 	"os"
-	"path/filepath"
 	"reflect"
 	"sort"
 	"strings"
@@ -106,7 +106,7 @@ func (e *IstioTestEnv) Close() {
 func WaitForCleanup(log logr.Logger, expectedClusterState ClusterResourceList, timeout time.Duration, interval time.Duration) {
 	log.Info("Waiting for cleanup")
 	err := util.WaitForCondition(timeout, interval, func() (bool, error) {
-		currentClusterState, err := listAllResources(testEnv.Dynamic)
+		currentClusterState, err := listAllResources(testEnv.DynamicClient)
 		if err != nil {
 			return false, err
 		}
@@ -115,7 +115,7 @@ func WaitForCleanup(log logr.Logger, expectedClusterState ClusterResourceList, t
 	if err != nil {
 		// The err can be a timeout, in which case it's helpful to show the resources which were not cleaned up
 		log.Error(err, "Got error while waiting for cluster cleanup. Rechecking to give more detail.")
-		clusterStateAfter, err := listAllResources(testEnv.Dynamic)
+		clusterStateAfter, err := listAllResources(testEnv.DynamicClient)
 		gomega.Expect(err).NotTo(gomega.HaveOccurred())
 		gomega.Expect(clusterStateAfter).To(gomega.Equal(expectedClusterState))
 	} else {
@@ -132,7 +132,7 @@ func (e *IstioTestEnv) WaitForIstioReconcile() {
 
 func WaitForStatus(gvr schema.GroupVersionResource, namespace, name string, expectedStatus string, timeout time.Duration, interval time.Duration) error {
 	return util.WaitForCondition(timeout, interval, func() (bool, error) {
-		status, err := GetStatus(context.TODO(), testEnv.Dynamic, gvr, namespace, name)
+		status, err := GetStatus(context.TODO(), testEnv.DynamicClient, gvr, namespace, name)
 		if err != nil {
 			return false, err
 		}
@@ -179,7 +179,7 @@ func GetMeshGatewayAddress(mgw01Namespace string, mgw01Name string, timeout time
 	var meshGatewayAddresses []string
 	err := util.WaitForCondition(timeout, interval, func() (bool, error) {
 		var err error
-		status, err := GetStatus(context.TODO(), testEnv.Dynamic, gvr.MeshGateway, mgw01Namespace, mgw01Name)
+		status, err := GetStatus(context.TODO(), testEnv.DynamicClient, gvr.MeshGateway, mgw01Namespace, mgw01Name)
 		if err != nil {
 			return false, err
 		}
@@ -218,7 +218,7 @@ y:
 	for {
 		select {
 		case <-ticker.C:
-			status, err := GetStatus(context.TODO(), testEnv.Dynamic, gvr.Istio, namespace, name)
+			status, err := GetStatus(context.TODO(), testEnv.DynamicClient, gvr.Istio, namespace, name)
 			if err != nil {
 				return false, err
 			}
@@ -421,9 +421,66 @@ func sortNamespacedNames(nns []types.NamespacedName) {
 	})
 }
 
-func testDataPath(description ginkgo.GinkgoTestDescription) string {
-	path := filepath.Join(description.ComponentTexts...)
-	return strings.ReplaceAll(path, " ", "_")
+// Get Deployment object with Kubernetes typed clients.
+func getDeployment(ctx context.Context, c client.Client, resource types.NamespacedName) (*appsv1.Deployment, error) {
+	dep := &appsv1.Deployment{}
+
+	err := c.Get(ctx, resource, dep)
+	if err != nil {
+		return dep, err
+	}
+
+	return dep, nil
+}
+
+// Get Service object with Kubernetes typed clients.
+func getService(ctx context.Context, c client.Client, resource types.NamespacedName) (*corev1.Service, error) {
+	svc := &corev1.Service{}
+
+	err := c.Get(ctx, resource, svc)
+	if err != nil {
+		return svc, err
+	}
+
+	return svc, nil
+}
+
+// Get a container list of given Deployment object.
+func getContainersFromDeployment(dep *appsv1.Deployment) []corev1.Container {
+	return dep.Spec.Template.Spec.Containers
+}
+
+// Validate if the container exists in given container list.
+func containerExists(containerList []corev1.Container, containerName string) error {
+	for _, container := range containerList {
+		if container.Name == containerName {
+			return nil
+		}
+	}
+
+	return fmt.Errorf("%s does not exist in deployment", containerName)
+}
+
+// Wait until the Deployment is available for being acquired through API calls.
+func waitForDeployment(c client.Client, resource types.NamespacedName, timeout time.Duration,
+	interval time.Duration) (*appsv1.Deployment, error) {
+	dep := &appsv1.Deployment{}
+
+	// Wait until Deployment is available
+	err := util.WaitForCondition(timeout, interval, func() (bool, error) {
+		var err error
+		dep, err = getDeployment(context.TODO(), c, resource)
+		if err != nil {
+			return false, err
+		}
+
+		return true, nil
+	})
+	if err != nil {
+		return dep, err
+	}
+
+	return dep, nil
 }
 
 func getIstioObject(istio *istiov1beta1.Istio, namespace, name string) error {
@@ -443,7 +500,7 @@ func setMixerlessTelemetryState(istio *istiov1beta1.Istio, newState *bool) error
 func waitForMixerlessTelemetryFilter(
 	namespace, filterName string, filterShouldExist bool, timeout, interval time.Duration) error {
 	return util.WaitForCondition(timeout, interval, func() (bool, error) {
-		_, err := testEnv.Dynamic.Resource(gvr.EnvoyFilter).Namespace(namespace).Get(
+		_, err := testEnv.DynamicClient.Resource(gvr.EnvoyFilter).Namespace(namespace).Get(
 			context.TODO(),
 			filterName,
 			metav1.GetOptions{})

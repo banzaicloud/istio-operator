@@ -17,8 +17,8 @@ limitations under the License.
 package e2e
 
 import (
+	"context"
 	"fmt"
-	"path/filepath"
 	"runtime"
 	"strings"
 	"time"
@@ -26,6 +26,9 @@ import (
 	"github.com/go-logr/logr"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
+	appsv1 "k8s.io/api/apps/v1"
+	corev1 "k8s.io/api/core/v1"
+	"k8s.io/apimachinery/pkg/types"
 
 	"github.com/banzaicloud/istio-operator/pkg/apis/istio/v1beta1"
 	"github.com/banzaicloud/istio-operator/pkg/util"
@@ -47,14 +50,14 @@ var _ = Describe("E2E", func() {
 		log = testEnv.Log.WithName(getLoggerName(CurrentGinkgoTestDescription()))
 
 		var err error
-		clusterStateBeforeTests, err = listAllResources(testEnv.Dynamic)
+		clusterStateBeforeTests, err = listAllResources(testEnv.DynamicClient)
 		Expect(err).NotTo(HaveOccurred())
 
 		instance = mkMinimalIstio(istioResourceNamespace, istioResourceName)
 	})
 
 	JustBeforeEach(func() {
-		istioTestEnv = NewIstioTestEnv(log, testEnv.Client, testEnv.Dynamic, instance)
+		istioTestEnv = NewIstioTestEnv(log, testEnv.Client, testEnv.DynamicClient, instance)
 		istioTestEnv.Start()
 		istioTestEnv.WaitForIstioReconcile()
 	})
@@ -75,7 +78,7 @@ var _ = Describe("E2E", func() {
 	})
 
 	Describe("tests with minimal istio resource", func() {
-		Context("Istio resource", func() {
+		Context("when istio resource is created", func() {
 			It("should stay reconciled (Available)", func() {
 				isAvailableConsistently, err := IstioResourceIsAvailableConsistently(log, istioResourceNamespace, istioResourceName, 5*time.Second, 100*time.Millisecond)
 				if !isAvailableConsistently || err != nil {
@@ -95,8 +98,8 @@ var _ = Describe("E2E", func() {
 				istio        v1beta1.Istio
 				majorMinor   string
 			)
-			const timeout = 30 * time.Second
-			const interval = 1 * time.Second
+			const timeout = 120 * time.Second
+			const interval = 10 * time.Second
 
 			JustBeforeEach(func() {
 				// get the istio object created in the OUTER JustBeforeEach
@@ -148,35 +151,108 @@ var _ = Describe("E2E", func() {
 			})
 		})
 
-		Context("MeshGateway", func() {
-			const testNamespace = "test0001"
-
-			var resourcesFile string
+		Context("when mesh gateway is created in different namespace", func() {
+			var (
+				mgwFilePath   string
+				testNamespace string
+				mgwName       string
+				err           error
+			)
 
 			BeforeEach(func() {
-				resourcesFile = filepath.Join("testdata", testDataPath(CurrentGinkgoTestDescription())+".yaml")
+				mgwFilePath = "sample/mgw_sample.yaml"
+				testNamespace = "test0001"
+				mgwName = "mgw01"
 			})
 
 			JustBeforeEach(func() {
-				Expect(resources.CreateResources(testEnv.Client, resourcesFile)).To(Succeed())
+				Expect(resources.CreateResources(testEnv.Client, mgwFilePath)).To(Succeed())
 			})
 
 			AfterEach(func() {
 				maybeCleanup(log, "Test failed, not cleaning up", func() {
-					Expect(resources.DeleteResources(testEnv.Client, resourcesFile)).To(Succeed())
+					Expect(resources.DeleteResources(testEnv.Client, mgwFilePath)).To(Succeed())
 				})
 			})
 
-			It("sets up working ingress", func() {
-				if runtime.GOOS != "linux" {
-					Skip("MetalLB based test only works on Linux")
-				}
+			Context("when mgw deployment is created", func() {
+				var (
+					mgwNamespacedName types.NamespacedName
+					mgwDep            *appsv1.Deployment
+				)
 
-				meshGatewayAddress, err := GetMeshGatewayAddress(testNamespace, "mgw01", 300*time.Second, 100*time.Millisecond)
-				Expect(err).NotTo(HaveOccurred())
+				BeforeEach(func() {
+					mgwNamespacedName = types.NamespacedName{
+						Namespace: testNamespace,
+						Name:      mgwName,
+					}
+				})
 
-				Expect(URLIsAccessible(log, fmt.Sprintf("http://%s:8080/get", meshGatewayAddress), 30*time.Second, 100*time.Millisecond)).
-					To(Succeed())
+				JustBeforeEach(func() {
+					mgwDep, err = waitForDeployment(istioTestEnv.c, mgwNamespacedName, 300*time.Second, 100*time.Second)
+					Expect(err).ShouldNot(HaveOccurred())
+				})
+
+				It("should only have one istio-proxy sidecar running", func() {
+					const (
+						mgwPodContainerAmount   int    = 1
+						istioProxyContainerName string = "istio-proxy"
+					)
+					// Validate if there one container only in mesh-gateway pod
+					containerList := getContainersFromDeployment(mgwDep)
+					Expect(len(containerList)).Should(BeIdenticalTo(mgwPodContainerAmount))
+
+					// Check if the istio-proxy sidecar container exists in the pod
+					err = containerExists(containerList, istioProxyContainerName)
+					Expect(err).ShouldNot(HaveOccurred())
+				})
+
+			})
+
+			Context("when mgw service is created", func() {
+				var (
+					mgwNamespacedName        types.NamespacedName
+					mgwSvc                   *corev1.Service
+					mgwDeploymentMatchLabels map[string]string
+					mgwSvcLabelSelector      map[string]string
+				)
+
+				BeforeEach(func() {
+					mgwNamespacedName = types.NamespacedName{
+						Namespace: testNamespace,
+						Name:      mgwName,
+					}
+				})
+
+				JustBeforeEach(func() {
+					mgwDep, err := waitForDeployment(istioTestEnv.c, mgwNamespacedName, 300*time.Second, 100*time.Second)
+					Expect(err).ShouldNot(HaveOccurred())
+					mgwDeploymentMatchLabels = mgwDep.Spec.Selector.MatchLabels
+
+					// Check if service is created that matches mesh-gateway's name in the same namespace
+					mgwSvc, err = getService(context.TODO(), istioTestEnv.c, mgwNamespacedName)
+					Expect(err).ShouldNot(HaveOccurred())
+					mgwSvcLabelSelector = mgwSvc.Spec.Selector
+				})
+
+				It("should be pointed to the mesh gateway deployment", func() {
+					// Validate if mgw Service label selector matches mgw Deployment's MatchLabels field
+					Expect(mgwSvcLabelSelector).Should(BeEquivalentTo(mgwDeploymentMatchLabels))
+				})
+			})
+
+			Context("when mesh gateway address is created", func() {
+				It("should have accessible URI", func() {
+					if runtime.GOOS != "linux" {
+						Skip("MetalLB based test only works on Linux")
+					}
+					meshGatewayAddress, err := GetMeshGatewayAddress(testNamespace, "mgw01", 300*time.Second,
+						100*time.Second)
+					Expect(err).NotTo(HaveOccurred())
+
+					Expect(URLIsAccessible(log, fmt.Sprintf("http://%s:8080/get", meshGatewayAddress), 30*time.Second,
+						100*time.Millisecond)).To(Succeed())
+				})
 			})
 		})
 	})
