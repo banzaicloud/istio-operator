@@ -48,7 +48,7 @@ func NewChartReconciler(helmReconciler *templatereconciler.HelmReconciler) *Reco
 }
 
 func (rec *Reconciler) Name() string {
-	return ComponentName
+	return componentName
 }
 
 func (rec *Reconciler) Skipped(object runtime.Object) bool {
@@ -80,8 +80,8 @@ func (rec *Reconciler) ReleaseData(object runtime.Object) (*templatereconciler.R
 			Chart:       istio_discovery.Chart,
 			Values:      values,
 			Namespace:   controlPlane.Namespace,
-			ChartName:   ChartName,
-			ReleaseName: ReleaseName,
+			ChartName:   chartName,
+			ReleaseName: releaseName,
 		}, nil
 	}
 
