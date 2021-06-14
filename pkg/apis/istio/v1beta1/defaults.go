@@ -23,7 +23,7 @@ import (
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
 
-	"github.com/banzaicloud/istio-operator/pkg/util"
+	"github.com/banzaicloud/operator-tools/pkg/utils"
 )
 
 const (
@@ -94,11 +94,11 @@ var defaultProxyResources = &apiv1.ResourceRequirements{
 }
 
 var defaultSecurityContext = &apiv1.SecurityContext{
-	RunAsUser:                util.Int64Pointer(1337),
-	RunAsGroup:               util.Int64Pointer(1337),
-	RunAsNonRoot:             util.BoolPointer(true),
-	Privileged:               util.BoolPointer(false),
-	AllowPrivilegeEscalation: util.BoolPointer(false),
+	RunAsUser:                utils.IntPointer64(1337),
+	RunAsGroup:               utils.IntPointer64(1337),
+	RunAsNonRoot:             utils.BoolPointer(true),
+	Privileged:               utils.BoolPointer(false),
+	AllowPrivilegeEscalation: utils.BoolPointer(false),
 	Capabilities: &apiv1.Capabilities{
 		Drop: []apiv1.Capability{"ALL"},
 	},
@@ -135,7 +135,7 @@ func (config *Istio) SetDefaults() {
 func SetDefaults(config *Istio) {
 	// MeshPolicy config
 	if config.Spec.MeshPolicy.MTLSMode == "" {
-		if util.PointerToBool(config.Spec.MTLS) {
+		if utils.PointerToBool(config.Spec.MTLS) {
 			config.Spec.MeshPolicy.MTLSMode = STRICT
 		} else {
 			config.Spec.MeshPolicy.MTLSMode = defaultMeshPolicy
@@ -151,17 +151,17 @@ func SetDefaults(config *Istio) {
 	}
 
 	if config.Spec.AutoMTLS == nil {
-		config.Spec.AutoMTLS = util.BoolPointer(true)
+		config.Spec.AutoMTLS = utils.BoolPointer(true)
 	}
 
 	if config.Spec.IncludeIPRanges == "" {
 		config.Spec.IncludeIPRanges = defaultIncludeIPRanges
 	}
 	if config.Spec.MountMtlsCerts == nil {
-		config.Spec.MountMtlsCerts = util.BoolPointer(false)
+		config.Spec.MountMtlsCerts = utils.BoolPointer(false)
 	}
 	if config.Spec.Logging.Level == nil {
-		config.Spec.Logging.Level = util.StrPointer(defaultLogLevel)
+		config.Spec.Logging.Level = utils.StringPointer(defaultLogLevel)
 	}
 	if config.Spec.Proxy.Resources == nil {
 		if config.Spec.DefaultResources == nil {
@@ -176,19 +176,19 @@ func SetDefaults(config *Istio) {
 
 	// Istiod config
 	if config.Spec.Istiod.Enabled == nil {
-		config.Spec.Istiod.Enabled = util.BoolPointer(true)
+		config.Spec.Istiod.Enabled = utils.BoolPointer(true)
 	}
 	if config.Spec.Istiod.EnableAnalysis == nil {
-		config.Spec.Istiod.EnableAnalysis = util.BoolPointer(false)
+		config.Spec.Istiod.EnableAnalysis = utils.BoolPointer(false)
 	}
 	if config.Spec.Istiod.EnableStatus == nil {
-		config.Spec.Istiod.EnableStatus = util.BoolPointer(false)
+		config.Spec.Istiod.EnableStatus = utils.BoolPointer(false)
 	}
 	if config.Spec.Istiod.ExternalIstiod == nil {
 		config.Spec.Istiod.ExternalIstiod = &ExternalIstiodConfiguration{}
 	}
 	if config.Spec.Istiod.ExternalIstiod.Enabled == nil {
-		config.Spec.Istiod.ExternalIstiod.Enabled = util.BoolPointer(false)
+		config.Spec.Istiod.ExternalIstiod.Enabled = utils.BoolPointer(false)
 	}
 
 	if config.Spec.Istiod.CA == nil {
@@ -199,51 +199,51 @@ func SetDefaults(config *Istio) {
 	}
 
 	if config.Spec.Istiod.CA.Vault.Address == nil {
-		config.Spec.Istiod.CA.Vault.Address = util.StrPointer(defaultVaultAddress)
+		config.Spec.Istiod.CA.Vault.Address = utils.StringPointer(defaultVaultAddress)
 	}
 	if config.Spec.Istiod.CA.Vault.Role == nil {
-		config.Spec.Istiod.CA.Vault.Role = util.StrPointer(defaultVaultRole)
+		config.Spec.Istiod.CA.Vault.Role = utils.StringPointer(defaultVaultRole)
 	}
 	if config.Spec.Istiod.CA.Vault.CertPath == nil {
-		config.Spec.Istiod.CA.Vault.CertPath = util.StrPointer(defaultVaultCACertPath)
+		config.Spec.Istiod.CA.Vault.CertPath = utils.StringPointer(defaultVaultCACertPath)
 	}
 	if config.Spec.Istiod.CA.Vault.KeyPath == nil {
-		config.Spec.Istiod.CA.Vault.KeyPath = util.StrPointer(defaultVaultCAKeyPath)
+		config.Spec.Istiod.CA.Vault.KeyPath = utils.StringPointer(defaultVaultCAKeyPath)
 	}
 	if config.Spec.Istiod.CA.Vault.Enabled == nil {
-		config.Spec.Istiod.CA.Vault.Enabled = util.BoolPointer(false)
+		config.Spec.Istiod.CA.Vault.Enabled = utils.BoolPointer(false)
 	}
 	if config.Spec.Istiod.CA.Vault.VaultEnvImage == nil {
-		config.Spec.Istiod.CA.Vault.VaultEnvImage = util.StrPointer(defaultVaultEnvImage)
+		config.Spec.Istiod.CA.Vault.VaultEnvImage = utils.StringPointer(defaultVaultEnvImage)
 	}
 
 	// Pilot config
 	if config.Spec.Pilot.Enabled == nil {
-		config.Spec.Pilot.Enabled = util.BoolPointer(true)
+		config.Spec.Pilot.Enabled = utils.BoolPointer(true)
 	}
 	if config.Spec.Pilot.Image == nil {
-		config.Spec.Pilot.Image = util.StrPointer(defaultPilotImage)
+		config.Spec.Pilot.Image = utils.StringPointer(defaultPilotImage)
 	}
 	if config.Spec.Pilot.Sidecar == nil {
-		config.Spec.Pilot.Sidecar = util.BoolPointer(true)
+		config.Spec.Pilot.Sidecar = utils.BoolPointer(true)
 	}
 	if config.Spec.Pilot.ReplicaCount == nil {
-		config.Spec.Pilot.ReplicaCount = util.IntPointer(defaultReplicaCount)
+		config.Spec.Pilot.ReplicaCount = utils.IntPointer(defaultReplicaCount)
 	}
 	if config.Spec.Pilot.MinReplicas == nil {
-		config.Spec.Pilot.MinReplicas = util.IntPointer(defaultMinReplicas)
+		config.Spec.Pilot.MinReplicas = utils.IntPointer(defaultMinReplicas)
 	}
 	if config.Spec.Pilot.MaxReplicas == nil {
-		config.Spec.Pilot.MaxReplicas = util.IntPointer(defaultMaxReplicas)
+		config.Spec.Pilot.MaxReplicas = utils.IntPointer(defaultMaxReplicas)
 	}
 	if config.Spec.Pilot.TraceSampling == 0 {
 		config.Spec.Pilot.TraceSampling = defaultTraceSampling
 	}
 	if config.Spec.Pilot.EnableProtocolSniffingOutbound == nil {
-		config.Spec.Pilot.EnableProtocolSniffingOutbound = util.BoolPointer(true)
+		config.Spec.Pilot.EnableProtocolSniffingOutbound = utils.BoolPointer(true)
 	}
 	if config.Spec.Pilot.EnableProtocolSniffingInbound == nil {
-		config.Spec.Pilot.EnableProtocolSniffingInbound = util.BoolPointer(true)
+		config.Spec.Pilot.EnableProtocolSniffingInbound = utils.BoolPointer(true)
 	}
 	if config.Spec.Pilot.CertProvider == "" {
 		config.Spec.Pilot.CertProvider = PilotCertProviderTypeIstiod
@@ -258,36 +258,36 @@ func SetDefaults(config *Istio) {
 		config.Spec.Pilot.SPIFFE.OperatorEndpoints = &OperatorEndpointsConfiguration{}
 	}
 	if config.Spec.Pilot.SPIFFE.OperatorEndpoints.Enabled == nil {
-		config.Spec.Pilot.SPIFFE.OperatorEndpoints.Enabled = util.BoolPointer(false)
+		config.Spec.Pilot.SPIFFE.OperatorEndpoints.Enabled = utils.BoolPointer(false)
 	}
 	// Citadel config
 	if config.Spec.Citadel.Enabled == nil {
-		config.Spec.Citadel.Enabled = util.BoolPointer(false)
+		config.Spec.Citadel.Enabled = utils.BoolPointer(false)
 	}
 	if config.Spec.Citadel.Image == nil {
-		config.Spec.Citadel.Image = util.StrPointer(defaultCitadelImage)
+		config.Spec.Citadel.Image = utils.StringPointer(defaultCitadelImage)
 	}
 	if config.Spec.Citadel.EnableNamespacesByDefault == nil {
-		config.Spec.Citadel.EnableNamespacesByDefault = util.BoolPointer(true)
+		config.Spec.Citadel.EnableNamespacesByDefault = utils.BoolPointer(true)
 	}
 	// Galley config
 	if config.Spec.Galley.Enabled == nil {
-		config.Spec.Galley.Enabled = util.BoolPointer(false)
+		config.Spec.Galley.Enabled = utils.BoolPointer(false)
 	}
 	if config.Spec.Galley.Image == nil {
-		config.Spec.Galley.Image = util.StrPointer(defaultGalleyImage)
+		config.Spec.Galley.Image = utils.StringPointer(defaultGalleyImage)
 	}
 	if config.Spec.Galley.ReplicaCount == nil {
-		config.Spec.Galley.ReplicaCount = util.IntPointer(defaultReplicaCount)
+		config.Spec.Galley.ReplicaCount = utils.IntPointer(defaultReplicaCount)
 	}
 	if config.Spec.Galley.ConfigValidation == nil {
-		config.Spec.Galley.ConfigValidation = util.BoolPointer(true)
+		config.Spec.Galley.ConfigValidation = utils.BoolPointer(true)
 	}
 	if config.Spec.Galley.EnableServiceDiscovery == nil {
-		config.Spec.Galley.EnableServiceDiscovery = util.BoolPointer(false)
+		config.Spec.Galley.EnableServiceDiscovery = utils.BoolPointer(false)
 	}
 	if config.Spec.Galley.EnableAnalysis == nil {
-		config.Spec.Galley.EnableAnalysis = util.BoolPointer(false)
+		config.Spec.Galley.EnableAnalysis = utils.BoolPointer(false)
 	}
 	// Gateways config
 	ingress := &config.Spec.Gateways.Ingress
@@ -299,10 +299,10 @@ func SetDefaults(config *Istio) {
 		ingress.Ports = defaultIngressGatewayPorts
 	}
 	if ingress.CreateOnly == nil {
-		ingress.CreateOnly = util.BoolPointer(false)
+		ingress.CreateOnly = utils.BoolPointer(false)
 	}
 	if ingress.Enabled == nil {
-		ingress.Enabled = util.BoolPointer(false)
+		ingress.Enabled = utils.BoolPointer(false)
 	}
 	egress := &config.Spec.Gateways.Egress
 	egress.MeshGatewayConfiguration.SetDefaults()
@@ -313,10 +313,10 @@ func SetDefaults(config *Istio) {
 		egress.Ports = defaultEgressGatewayPorts
 	}
 	if egress.CreateOnly == nil {
-		egress.CreateOnly = util.BoolPointer(false)
+		egress.CreateOnly = utils.BoolPointer(false)
 	}
 	if egress.Enabled == nil {
-		egress.Enabled = util.BoolPointer(false)
+		egress.Enabled = utils.BoolPointer(false)
 	}
 	mexpgw := &config.Spec.Gateways.MeshExpansion
 	mexpgw.MeshGatewayConfiguration.SetDefaults()
@@ -327,66 +327,66 @@ func SetDefaults(config *Istio) {
 		mexpgw.Ports = defaultMeshExpansionGatewayPorts
 	}
 	if mexpgw.CreateOnly == nil {
-		mexpgw.CreateOnly = util.BoolPointer(false)
+		mexpgw.CreateOnly = utils.BoolPointer(false)
 	}
 	if mexpgw.Enabled == nil {
 		mexpgw.Enabled = config.Spec.MeshExpansion
 	}
 	if config.Spec.Gateways.K8sIngress.Enabled == nil {
-		config.Spec.Gateways.K8sIngress.Enabled = util.BoolPointer(false)
+		config.Spec.Gateways.K8sIngress.Enabled = utils.BoolPointer(false)
 	}
 	if config.Spec.Gateways.K8sIngress.EnableHttps == nil {
-		config.Spec.Gateways.K8sIngress.EnableHttps = util.BoolPointer(false)
+		config.Spec.Gateways.K8sIngress.EnableHttps = utils.BoolPointer(false)
 	}
 	if config.Spec.Gateways.Enabled == nil {
-		config.Spec.Gateways.Enabled = util.BoolPointer(util.PointerToBool(config.Spec.Gateways.Ingress.Enabled) || util.PointerToBool(config.Spec.Gateways.Egress.Enabled) || util.PointerToBool(config.Spec.Gateways.MeshExpansion.Enabled))
+		config.Spec.Gateways.Enabled = utils.BoolPointer(utils.PointerToBool(config.Spec.Gateways.Ingress.Enabled) || utils.PointerToBool(config.Spec.Gateways.Egress.Enabled) || utils.PointerToBool(config.Spec.Gateways.MeshExpansion.Enabled))
 	}
 	// Mixer config
 	if config.Spec.Mixer.Enabled == nil {
-		config.Spec.Mixer.Enabled = util.BoolPointer(false)
+		config.Spec.Mixer.Enabled = utils.BoolPointer(false)
 	}
 	if config.Spec.Mixer.Image == nil {
-		config.Spec.Mixer.Image = util.StrPointer(defaultMixerImage)
+		config.Spec.Mixer.Image = utils.StringPointer(defaultMixerImage)
 	}
 	if config.Spec.Mixer.ReplicaCount == nil {
-		config.Spec.Mixer.ReplicaCount = util.IntPointer(defaultReplicaCount)
+		config.Spec.Mixer.ReplicaCount = utils.IntPointer(defaultReplicaCount)
 	}
 	if config.Spec.Mixer.MinReplicas == nil {
-		config.Spec.Mixer.MinReplicas = util.IntPointer(defaultMinReplicas)
+		config.Spec.Mixer.MinReplicas = utils.IntPointer(defaultMinReplicas)
 	}
 	if config.Spec.Mixer.MaxReplicas == nil {
-		config.Spec.Mixer.MaxReplicas = util.IntPointer(defaultMaxReplicas)
+		config.Spec.Mixer.MaxReplicas = utils.IntPointer(defaultMaxReplicas)
 	}
 	if config.Spec.Mixer.ReportBatchMaxEntries == nil {
-		config.Spec.Mixer.ReportBatchMaxEntries = util.IntPointer(100)
+		config.Spec.Mixer.ReportBatchMaxEntries = utils.IntPointer(100)
 	}
 	if config.Spec.Mixer.ReportBatchMaxTime == nil {
-		config.Spec.Mixer.ReportBatchMaxTime = util.StrPointer("1s")
+		config.Spec.Mixer.ReportBatchMaxTime = utils.StringPointer("1s")
 	}
 	if config.Spec.Mixer.SessionAffinityEnabled == nil {
-		config.Spec.Mixer.SessionAffinityEnabled = util.BoolPointer(false)
+		config.Spec.Mixer.SessionAffinityEnabled = utils.BoolPointer(false)
 	}
 	if config.Spec.Mixer.StdioAdapterEnabled == nil {
-		config.Spec.Mixer.StdioAdapterEnabled = util.BoolPointer(false)
+		config.Spec.Mixer.StdioAdapterEnabled = utils.BoolPointer(false)
 	}
 	if config.Spec.Mixer.SecurityContext == nil {
 		config.Spec.Mixer.SecurityContext = defaultSecurityContext
 	}
 	// SidecarInjector config
 	if config.Spec.SidecarInjector.Enabled == nil {
-		config.Spec.SidecarInjector.Enabled = util.BoolPointer(false)
+		config.Spec.SidecarInjector.Enabled = utils.BoolPointer(false)
 	}
 	if config.Spec.SidecarInjector.AutoInjectionPolicyEnabled == nil {
-		config.Spec.SidecarInjector.AutoInjectionPolicyEnabled = util.BoolPointer(true)
+		config.Spec.SidecarInjector.AutoInjectionPolicyEnabled = utils.BoolPointer(true)
 	}
 	if config.Spec.SidecarInjector.Image == nil {
-		config.Spec.SidecarInjector.Image = util.StrPointer(defaultSidecarInjectorImage)
+		config.Spec.SidecarInjector.Image = utils.StringPointer(defaultSidecarInjectorImage)
 	}
 	if config.Spec.SidecarInjector.ReplicaCount == nil {
-		config.Spec.SidecarInjector.ReplicaCount = util.IntPointer(defaultReplicaCount)
+		config.Spec.SidecarInjector.ReplicaCount = utils.IntPointer(defaultReplicaCount)
 	}
 	if config.Spec.SidecarInjector.InitCNIConfiguration.Enabled == nil {
-		config.Spec.SidecarInjector.InitCNIConfiguration.Enabled = util.BoolPointer(false)
+		config.Spec.SidecarInjector.InitCNIConfiguration.Enabled = utils.BoolPointer(false)
 	}
 	if config.Spec.SidecarInjector.InitCNIConfiguration.Image == "" {
 		config.Spec.SidecarInjector.InitCNIConfiguration.Image = defaultInitCNIImage
@@ -404,39 +404,39 @@ func SetDefaults(config *Istio) {
 		config.Spec.SidecarInjector.InitCNIConfiguration.LogLevel = defaultInitCNILogLevel
 	}
 	if config.Spec.SidecarInjector.InitCNIConfiguration.Chained == nil {
-		config.Spec.SidecarInjector.InitCNIConfiguration.Chained = util.BoolPointer(true)
+		config.Spec.SidecarInjector.InitCNIConfiguration.Chained = utils.BoolPointer(true)
 	}
 	if config.Spec.SidecarInjector.RewriteAppHTTPProbe == nil {
-		config.Spec.SidecarInjector.RewriteAppHTTPProbe = util.BoolPointer(true)
+		config.Spec.SidecarInjector.RewriteAppHTTPProbe = utils.BoolPointer(true)
 	}
 	// Wasm Config
 	if config.Spec.ProxyWasm.Enabled == nil {
-		config.Spec.ProxyWasm.Enabled = util.BoolPointer(false)
+		config.Spec.ProxyWasm.Enabled = utils.BoolPointer(false)
 	}
 	// CNI repair config
 	if config.Spec.SidecarInjector.InitCNIConfiguration.Repair.Enabled == nil {
-		config.Spec.SidecarInjector.InitCNIConfiguration.Repair.Enabled = util.BoolPointer(true)
+		config.Spec.SidecarInjector.InitCNIConfiguration.Repair.Enabled = utils.BoolPointer(true)
 	}
 	if config.Spec.SidecarInjector.InitCNIConfiguration.Repair.Hub == nil {
-		config.Spec.SidecarInjector.InitCNIConfiguration.Repair.Hub = util.StrPointer("")
+		config.Spec.SidecarInjector.InitCNIConfiguration.Repair.Hub = utils.StringPointer("")
 	}
 	if config.Spec.SidecarInjector.InitCNIConfiguration.Repair.Tag == nil {
-		config.Spec.SidecarInjector.InitCNIConfiguration.Repair.Tag = util.StrPointer("")
+		config.Spec.SidecarInjector.InitCNIConfiguration.Repair.Tag = utils.StringPointer("")
 	}
 	if config.Spec.SidecarInjector.InitCNIConfiguration.Repair.LabelPods == nil {
-		config.Spec.SidecarInjector.InitCNIConfiguration.Repair.LabelPods = util.BoolPointer(true)
+		config.Spec.SidecarInjector.InitCNIConfiguration.Repair.LabelPods = utils.BoolPointer(true)
 	}
 	if config.Spec.SidecarInjector.InitCNIConfiguration.Repair.DeletePods == nil {
-		config.Spec.SidecarInjector.InitCNIConfiguration.Repair.DeletePods = util.BoolPointer(true)
+		config.Spec.SidecarInjector.InitCNIConfiguration.Repair.DeletePods = utils.BoolPointer(true)
 	}
 	if config.Spec.SidecarInjector.InitCNIConfiguration.Repair.InitContainerName == nil {
-		config.Spec.SidecarInjector.InitCNIConfiguration.Repair.InitContainerName = util.StrPointer(defaultInitCNIContainerName)
+		config.Spec.SidecarInjector.InitCNIConfiguration.Repair.InitContainerName = utils.StringPointer(defaultInitCNIContainerName)
 	}
 	if config.Spec.SidecarInjector.InitCNIConfiguration.Repair.BrokenPodLabelKey == nil {
-		config.Spec.SidecarInjector.InitCNIConfiguration.Repair.BrokenPodLabelKey = util.StrPointer(defaultInitCNIBrokenPodLabelKey)
+		config.Spec.SidecarInjector.InitCNIConfiguration.Repair.BrokenPodLabelKey = utils.StringPointer(defaultInitCNIBrokenPodLabelKey)
 	}
 	if config.Spec.SidecarInjector.InitCNIConfiguration.Repair.BrokenPodLabelValue == nil {
-		config.Spec.SidecarInjector.InitCNIConfiguration.Repair.BrokenPodLabelValue = util.StrPointer(defaultInitCNIBrokenPodLabelValue)
+		config.Spec.SidecarInjector.InitCNIConfiguration.Repair.BrokenPodLabelValue = utils.StringPointer(defaultInitCNIBrokenPodLabelValue)
 	}
 	if config.Spec.SidecarInjector.Init.Resources == nil {
 		config.Spec.SidecarInjector.Init.Resources = defaultInitResources
@@ -446,7 +446,7 @@ func SetDefaults(config *Istio) {
 	}
 	// SDS config
 	if config.Spec.SDS.Enabled == nil {
-		config.Spec.SDS.Enabled = util.BoolPointer(false)
+		config.Spec.SDS.Enabled = utils.BoolPointer(false)
 	}
 	if config.Spec.SDS.TokenAudience == "" {
 		config.Spec.SDS.TokenAudience = "istio-ca"
@@ -456,10 +456,10 @@ func SetDefaults(config *Istio) {
 	}
 	// NodeAgent config
 	if config.Spec.NodeAgent.Enabled == nil {
-		config.Spec.NodeAgent.Enabled = util.BoolPointer(false)
+		config.Spec.NodeAgent.Enabled = utils.BoolPointer(false)
 	}
 	if config.Spec.NodeAgent.Image == nil {
-		config.Spec.NodeAgent.Image = util.StrPointer(defaultNodeAgentImage)
+		config.Spec.NodeAgent.Image = utils.StringPointer(defaultNodeAgentImage)
 	}
 
 	if config.Spec.Gateways.Ingress.SDS.Image == "" {
@@ -477,13 +477,13 @@ func SetDefaults(config *Istio) {
 		config.Spec.ProxyInit.Image = defaultProxyInitImage
 	}
 	if config.Spec.Proxy.AccessLogFile == nil {
-		config.Spec.Proxy.AccessLogFile = util.StrPointer(defaultEnvoyAccessLogFile)
+		config.Spec.Proxy.AccessLogFile = utils.StringPointer(defaultEnvoyAccessLogFile)
 	}
 	if config.Spec.Proxy.AccessLogFormat == nil {
-		config.Spec.Proxy.AccessLogFormat = util.StrPointer(defaultEnvoyAccessLogFormat)
+		config.Spec.Proxy.AccessLogFormat = utils.StringPointer(defaultEnvoyAccessLogFormat)
 	}
 	if config.Spec.Proxy.AccessLogEncoding == nil {
-		config.Spec.Proxy.AccessLogEncoding = util.StrPointer(defaultEnvoyAccessLogEncoding)
+		config.Spec.Proxy.AccessLogEncoding = utils.StringPointer(defaultEnvoyAccessLogEncoding)
 	}
 	if config.Spec.Proxy.ComponentLogLevel == "" {
 		config.Spec.Proxy.ComponentLogLevel = "misc:error"
@@ -495,13 +495,13 @@ func SetDefaults(config *Istio) {
 		config.Spec.Proxy.DNSRefreshRate = "300s"
 	}
 	if config.Spec.Proxy.HoldApplicationUntilProxyStarts == nil {
-		config.Spec.Proxy.HoldApplicationUntilProxyStarts = util.BoolPointer(false)
+		config.Spec.Proxy.HoldApplicationUntilProxyStarts = utils.BoolPointer(false)
 	}
 	if config.Spec.Proxy.EnvoyStatsD.Enabled == nil {
-		config.Spec.Proxy.EnvoyStatsD.Enabled = util.BoolPointer(false)
+		config.Spec.Proxy.EnvoyStatsD.Enabled = utils.BoolPointer(false)
 	}
 	if config.Spec.Proxy.EnvoyMetricsService.Enabled == nil {
-		config.Spec.Proxy.EnvoyMetricsService.Enabled = util.BoolPointer(false)
+		config.Spec.Proxy.EnvoyMetricsService.Enabled = utils.BoolPointer(false)
 	}
 	if config.Spec.Proxy.EnvoyMetricsService.TLSSettings == nil {
 		config.Spec.Proxy.EnvoyMetricsService.TLSSettings = &TLSSettings{
@@ -516,7 +516,7 @@ func SetDefaults(config *Istio) {
 		}
 	}
 	if config.Spec.Proxy.EnvoyAccessLogService.Enabled == nil {
-		config.Spec.Proxy.EnvoyAccessLogService.Enabled = util.BoolPointer(false)
+		config.Spec.Proxy.EnvoyAccessLogService.Enabled = utils.BoolPointer(false)
 	}
 	if config.Spec.Proxy.EnvoyAccessLogService.TLSSettings == nil {
 		config.Spec.Proxy.EnvoyAccessLogService.TLSSettings = &TLSSettings{
@@ -531,13 +531,13 @@ func SetDefaults(config *Istio) {
 		}
 	}
 	if config.Spec.Proxy.ProtocolDetectionTimeout == nil {
-		config.Spec.Proxy.ProtocolDetectionTimeout = util.StrPointer("0")
+		config.Spec.Proxy.ProtocolDetectionTimeout = utils.StringPointer("0")
 	}
 	if config.Spec.Proxy.ClusterDomain == "" {
 		config.Spec.Proxy.ClusterDomain = "cluster.local"
 	}
 	if config.Spec.Proxy.EnableCoreDump == nil {
-		config.Spec.Proxy.EnableCoreDump = util.BoolPointer(false)
+		config.Spec.Proxy.EnableCoreDump = utils.BoolPointer(false)
 	}
 	if config.Spec.Proxy.CoreDumpImage == "" {
 		config.Spec.Proxy.CoreDumpImage = defaultProxyCoreDumpImage
@@ -551,7 +551,7 @@ func SetDefaults(config *Istio) {
 
 	// PDB config
 	if config.Spec.DefaultPodDisruptionBudget.Enabled == nil {
-		config.Spec.DefaultPodDisruptionBudget.Enabled = util.BoolPointer(false)
+		config.Spec.DefaultPodDisruptionBudget.Enabled = utils.BoolPointer(false)
 	}
 	// Outbound traffic policy config
 	if config.Spec.OutboundTrafficPolicy.Mode == "" {
@@ -559,7 +559,7 @@ func SetDefaults(config *Istio) {
 	}
 	// Tracing config
 	if config.Spec.Tracing.Enabled == nil {
-		config.Spec.Tracing.Enabled = util.BoolPointer(true)
+		config.Spec.Tracing.Enabled = utils.BoolPointer(true)
 	}
 	if config.Spec.Tracing.Tracer == "" {
 		config.Spec.Tracing.Tracer = TracerTypeZipkin
@@ -574,22 +574,22 @@ func SetDefaults(config *Istio) {
 	}
 	if config.Spec.Tracing.Tracer == TracerTypeStackdriver {
 		if config.Spec.Tracing.Strackdriver.Debug == nil {
-			config.Spec.Tracing.Strackdriver.Debug = util.BoolPointer(false)
+			config.Spec.Tracing.Strackdriver.Debug = utils.BoolPointer(false)
 		}
 		if config.Spec.Tracing.Strackdriver.MaxNumberOfAttributes == nil {
-			config.Spec.Tracing.Strackdriver.MaxNumberOfAttributes = util.IntPointer(200)
+			config.Spec.Tracing.Strackdriver.MaxNumberOfAttributes = utils.IntPointer(200)
 		}
 		if config.Spec.Tracing.Strackdriver.MaxNumberOfAnnotations == nil {
-			config.Spec.Tracing.Strackdriver.MaxNumberOfAnnotations = util.IntPointer(200)
+			config.Spec.Tracing.Strackdriver.MaxNumberOfAnnotations = utils.IntPointer(200)
 		}
 		if config.Spec.Tracing.Strackdriver.MaxNumberOfMessageEvents == nil {
-			config.Spec.Tracing.Strackdriver.MaxNumberOfMessageEvents = util.IntPointer(200)
+			config.Spec.Tracing.Strackdriver.MaxNumberOfMessageEvents = utils.IntPointer(200)
 		}
 	}
 
 	// Policy
 	if config.Spec.Policy.ChecksEnabled == nil {
-		config.Spec.Policy.ChecksEnabled = util.BoolPointer(false)
+		config.Spec.Policy.ChecksEnabled = utils.BoolPointer(false)
 	}
 	if config.Spec.Policy.Enabled == nil {
 		config.Spec.Policy.Enabled = config.Spec.Mixer.Enabled
@@ -683,22 +683,22 @@ func SetDefaults(config *Istio) {
 
 	// Istio CoreDNS for multi mesh support
 	if config.Spec.IstioCoreDNS.Enabled == nil {
-		config.Spec.IstioCoreDNS.Enabled = util.BoolPointer(false)
+		config.Spec.IstioCoreDNS.Enabled = utils.BoolPointer(false)
 	}
 	if config.Spec.IstioCoreDNS.Image == nil {
-		config.Spec.IstioCoreDNS.Image = util.StrPointer(defaultCoreDNSImage)
+		config.Spec.IstioCoreDNS.Image = utils.StringPointer(defaultCoreDNSImage)
 	}
 	if config.Spec.IstioCoreDNS.PluginImage == "" {
 		config.Spec.IstioCoreDNS.PluginImage = defaultCoreDNSPluginImage
 	}
 	if config.Spec.IstioCoreDNS.ReplicaCount == nil {
-		config.Spec.IstioCoreDNS.ReplicaCount = util.IntPointer(defaultReplicaCount)
+		config.Spec.IstioCoreDNS.ReplicaCount = utils.IntPointer(defaultReplicaCount)
 	}
 	if config.Spec.IstioCoreDNS.MinReplicas == nil {
-		config.Spec.IstioCoreDNS.MinReplicas = util.IntPointer(defaultMinReplicas)
+		config.Spec.IstioCoreDNS.MinReplicas = utils.IntPointer(defaultMinReplicas)
 	}
 	if config.Spec.IstioCoreDNS.MaxReplicas == nil {
-		config.Spec.IstioCoreDNS.MaxReplicas = util.IntPointer(defaultMaxReplicas)
+		config.Spec.IstioCoreDNS.MaxReplicas = utils.IntPointer(defaultMaxReplicas)
 	}
 	if config.Spec.IstioCoreDNS.SecurityContext == nil {
 		config.Spec.IstioCoreDNS.SecurityContext = defaultSecurityContext
@@ -709,16 +709,16 @@ func SetDefaults(config *Istio) {
 	}
 
 	if config.Spec.MeshExpansion == nil {
-		config.Spec.MeshExpansion = util.BoolPointer(false)
+		config.Spec.MeshExpansion = utils.BoolPointer(false)
 	}
 
 	if config.Spec.UseMCP == nil {
-		config.Spec.UseMCP = util.BoolPointer(false)
+		config.Spec.UseMCP = utils.BoolPointer(false)
 	}
 
 	if config.Spec.MixerlessTelemetry == nil {
 		config.Spec.MixerlessTelemetry = &MixerlessTelemetryConfiguration{
-			Enabled: util.BoolPointer(true),
+			Enabled: utils.BoolPointer(true),
 		}
 	}
 
@@ -727,7 +727,7 @@ func SetDefaults(config *Istio) {
 	}
 
 	if config.Spec.Proxy.UseMetadataExchangeFilter == nil {
-		config.Spec.Proxy.UseMetadataExchangeFilter = util.BoolPointer(false)
+		config.Spec.Proxy.UseMetadataExchangeFilter = utils.BoolPointer(false)
 	}
 
 	if config.Spec.JWTPolicy == "" {
@@ -749,9 +749,9 @@ func SetRemoteIstioDefaults(remoteconfig *RemoteIstio) {
 	}
 	// SidecarInjector config
 	if remoteconfig.Spec.SidecarInjector.ReplicaCount == nil {
-		remoteconfig.Spec.SidecarInjector.ReplicaCount = util.IntPointer(defaultReplicaCount)
+		remoteconfig.Spec.SidecarInjector.ReplicaCount = utils.IntPointer(defaultReplicaCount)
 	}
 	if remoteconfig.Spec.Proxy.UseMetadataExchangeFilter == nil {
-		remoteconfig.Spec.Proxy.UseMetadataExchangeFilter = util.BoolPointer(false)
+		remoteconfig.Spec.Proxy.UseMetadataExchangeFilter = utils.BoolPointer(false)
 	}
 }

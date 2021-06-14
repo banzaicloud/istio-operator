@@ -29,7 +29,7 @@ import (
 	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/apimachinery/pkg/util/intstr"
 
-	"github.com/banzaicloud/istio-operator/pkg/util"
+	"github.com/banzaicloud/operator-tools/pkg/utils"
 )
 
 const (
@@ -276,7 +276,7 @@ func (ps ServicePorts) Convert() []corev1.ServicePort {
 			NodePort: po.NodePort,
 		}
 		if po.TargetPort != nil {
-			port.TargetPort = intstr.FromInt(int(util.PointerToInt32(po.TargetPort)))
+			port.TargetPort = intstr.FromInt(int(utils.PointerToInt32(po.TargetPort)))
 		}
 		ports = append(ports, port)
 	}
@@ -1075,7 +1075,7 @@ func (c *Istio) GetCAAddress() string {
 
 func (c *Istio) GetDiscoveryHost(withClusterDomain bool) string {
 	svcName := "istio-pilot"
-	if util.PointerToBool(c.Spec.Istiod.Enabled) {
+	if utils.PointerToBool(c.Spec.Istiod.Enabled) {
 		svcName = "istiod"
 	}
 	if withClusterDomain {
@@ -1089,7 +1089,7 @@ func (c *Istio) GetDiscoveryAddress() string {
 }
 
 func (c *Istio) GetDiscoveryPort() int {
-	if util.PointerToBool(c.Spec.Istiod.Enabled) {
+	if utils.PointerToBool(c.Spec.Istiod.Enabled) {
 		return 15012
 	}
 	return 15011

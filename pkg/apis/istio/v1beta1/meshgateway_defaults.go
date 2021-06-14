@@ -19,37 +19,37 @@ package v1beta1
 import (
 	apiv1 "k8s.io/api/core/v1"
 
-	"github.com/banzaicloud/istio-operator/pkg/util"
+	"github.com/banzaicloud/operator-tools/pkg/utils"
 )
 
 func (c *MeshGatewayConfiguration) SetDefaults() {
 	if c.ReplicaCount == nil {
-		c.ReplicaCount = util.IntPointer(defaultReplicaCount)
+		c.ReplicaCount = utils.IntPointer(defaultReplicaCount)
 	}
 	if c.MinReplicas == nil {
-		c.MinReplicas = util.IntPointer(defaultReplicaCount)
+		c.MinReplicas = utils.IntPointer(defaultReplicaCount)
 	}
 	if c.MaxReplicas == nil {
-		c.MaxReplicas = util.IntPointer(defaultReplicaCount)
+		c.MaxReplicas = utils.IntPointer(defaultReplicaCount)
 	}
 	if c.Resources == nil {
 		c.Resources = defaultProxyResources
 	}
 	if c.SDS.Enabled == nil {
-		c.SDS.Enabled = util.BoolPointer(false)
+		c.SDS.Enabled = utils.BoolPointer(false)
 	}
 	if c.SDS.Image == "" {
 		c.SDS.Image = defaultNodeAgentImage
 	}
 	if c.RunAsRoot == nil {
-		c.RunAsRoot = util.BoolPointer(false)
+		c.RunAsRoot = utils.BoolPointer(false)
 	}
 	if c.SecurityContext == nil {
-		if util.PointerToBool(c.RunAsRoot) {
+		if utils.PointerToBool(c.RunAsRoot) {
 			c.SecurityContext = &apiv1.SecurityContext{
-				RunAsUser:    util.Int64Pointer(0),
-				RunAsGroup:   util.Int64Pointer(0),
-				RunAsNonRoot: util.BoolPointer(false),
+				RunAsUser:    utils.IntPointer64(0),
+				RunAsGroup:   utils.IntPointer64(0),
+				RunAsNonRoot: utils.BoolPointer(false),
 			}
 		} else {
 			c.SecurityContext = defaultSecurityContext
@@ -68,7 +68,7 @@ func (gw *MeshGateway) SetDefaults() {
 	}
 	// always turn off SDS for egress
 	if gw.Spec.Type == GatewayTypeEgress {
-		gw.Spec.SDS.Enabled = util.BoolPointer(false)
+		gw.Spec.SDS.Enabled = utils.BoolPointer(false)
 	}
 	if gw.Spec.Ports == nil {
 		gw.Spec.Ports = make([]ServicePort, 0)
@@ -78,7 +78,7 @@ func (gw *MeshGateway) SetDefaults() {
 }
 
 func (gw *MeshGateway) SetDefaultLabels() {
-	gw.Spec.Labels = util.MergeStringMaps(gw.GetDefaultLabels(), gw.Spec.Labels)
+	gw.Spec.Labels = MergeStringMaps(gw.GetDefaultLabels(), gw.Spec.Labels)
 }
 
 func (gw *MeshGateway) GetDefaultLabels() map[string]string {
