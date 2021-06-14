@@ -51,7 +51,15 @@ type IstioControlPlaneReconciler struct {
 	Scheme *runtime.Scheme
 }
 
+// +kubebuilder:rbac:groups="",resources=configmaps;secrets;services;serviceaccounts,verbs=get;list;watch;create;update;patch;delete
+// +kubebuilder:rbac:groups=admissionregistration.k8s.io,resources=validatingwebhookconfigurations;mutatingwebhookconfigurations,verbs=get;list;watch;create;update;patch;delete
+// +kubebuilder:rbac:groups="apps",resources=deployments;daemonsets,verbs=get;list;watch;create;update;patch;delete
+// +kubebuilder:rbac:groups="autoscaling",resources=horizontalpodautoscalers,verbs=get;list;watch;create;update;patch;delete
 // +kubebuilder:rbac:groups="coordination.k8s.io",resources=leases,verbs=get;list;create;update
+// +kubebuilder:rbac:groups="policy",resources=podsecuritypolicies;poddisruptionbudgets,verbs=get;list;watch;create;update;patch;delete
+// +kubebuilder:rbac:groups="rbac.authorization.k8s.io",resources=clusterroles;clusterrolebindings;roles;rolebindings,verbs=get;list;watch;create;update;patch;delete
+// +kubebuilder:rbac:groups="security.istio.io",resources=peerauthentications,verbs=get;list;watch;create;update;patch;delete
+// +kubebuilder:rbac:groups="networking.istio.io",resources=envoyfilters,verbs=get;list;watch;create;update;patch;delete
 // +kubebuilder:rbac:groups=servicemesh.cisco.com,resources=istiocontrolplanes,verbs=get;list;watch;create;update;patch;delete
 // +kubebuilder:rbac:groups=servicemesh.cisco.com,resources=istiocontrolplanes/status,verbs=get;update;patch
 
@@ -127,18 +135,19 @@ func (r *IstioControlPlaneReconciler) SetupWithManager(mgr ctrl.Manager) error {
 		Owns(&appsv1.Deployment{}, ctrlBuilder.WithPredicates(reconciler.SpecChangePredicate{})).
 		Owns(&appsv1.DaemonSet{}, ctrlBuilder.WithPredicates(reconciler.SpecChangePredicate{})).
 		Owns(&corev1.ConfigMap{}, ctrlBuilder.WithPredicates(reconciler.SpecChangePredicate{})).
+		Owns(&corev1.Secret{}, ctrlBuilder.WithPredicates(reconciler.SpecChangePredicate{})).
 		Owns(&corev1.Service{}, ctrlBuilder.WithPredicates(reconciler.SpecChangePredicate{})).
+		Owns(&corev1.ServiceAccount{}, ctrlBuilder.WithPredicates(reconciler.SpecChangePredicate{})).
 		Owns(&policyv1beta1.PodSecurityPolicy{}, ctrlBuilder.WithPredicates(reconciler.SpecChangePredicate{})).
 		Owns(&policyv1beta1.PodDisruptionBudget{}, ctrlBuilder.WithPredicates(reconciler.SpecChangePredicate{})).
 		Owns(&rbacv1.Role{}, ctrlBuilder.WithPredicates(reconciler.SpecChangePredicate{})).
 		Owns(&rbacv1.RoleBinding{}, ctrlBuilder.WithPredicates(reconciler.SpecChangePredicate{})).
 		Owns(&rbacv1.ClusterRole{}, ctrlBuilder.WithPredicates(reconciler.SpecChangePredicate{})).
 		Owns(&rbacv1.ClusterRoleBinding{}, ctrlBuilder.WithPredicates(reconciler.SpecChangePredicate{})).
-		Owns(&corev1.Secret{}, ctrlBuilder.WithPredicates(reconciler.SpecChangePredicate{})).
-		Owns(&istioclientv1alpha3.EnvoyFilter{}, ctrlBuilder.WithPredicates(reconciler.SpecChangePredicate{})).
-		Owns(&istioclientv1beta1.PeerAuthentication{}, ctrlBuilder.WithPredicates(reconciler.SpecChangePredicate{})).
 		Owns(&autoscalingv1.HorizontalPodAutoscaler{}, ctrlBuilder.WithPredicates(reconciler.SpecChangePredicate{})).
 		Owns(&admissionregistrationv1.MutatingWebhookConfiguration{}, ctrlBuilder.WithPredicates(reconciler.SpecChangePredicate{})).
 		Owns(&admissionregistrationv1.ValidatingWebhookConfiguration{}, ctrlBuilder.WithPredicates(reconciler.SpecChangePredicate{})).
+		Owns(&istioclientv1alpha3.EnvoyFilter{}, ctrlBuilder.WithPredicates(reconciler.SpecChangePredicate{})).
+		Owns(&istioclientv1beta1.PeerAuthentication{}, ctrlBuilder.WithPredicates(reconciler.SpecChangePredicate{})).
 		Complete(r)
 }
