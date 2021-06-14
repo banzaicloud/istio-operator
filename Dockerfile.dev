@@ -11,6 +11,7 @@ RUN mkdir -p /go/src/${PACKAGE}
 WORKDIR /go/src/${PACKAGE}
 
 COPY go.mod go.sum ./
+COPY pkg/apis/go.mod pkg/apis/go.mod
 RUN go mod download
 
 COPY pkg/    pkg/
