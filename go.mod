@@ -6,7 +6,8 @@ require (
 	emperror.dev/errors v0.8.0
 	github.com/Masterminds/semver/v3 v3.1.0
 	github.com/banzaicloud/istio-client-go v0.0.9
-	github.com/banzaicloud/k8s-objectmatcher v1.4.0
+	github.com/banzaicloud/istio-operator/pkg/apis v0.0.0
+	github.com/banzaicloud/k8s-objectmatcher v1.5.0
 	github.com/caddyserver/caddy v1.0.5
 	github.com/coreos/go-semver v0.3.0
 	github.com/ghodss/yaml v1.0.0
@@ -30,3 +31,5 @@ require (
 	k8s.io/client-go v0.20.2
 	sigs.k8s.io/controller-runtime v0.8.3
 )
+
+replace github.com/banzaicloud/istio-operator/pkg/apis => ./pkg/apis

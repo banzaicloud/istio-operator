@@ -65,10 +65,16 @@ license-cache: bin/licensei ## Generate license cache
 
 # Run tests
 .PHONY: test
-test: install-kubebuilder generate fmt vet manifests
+test: install-kubebuilder generate fmt vet manifests test-apis
 	env CGO_ENABLED=${TEST_CGO_ENABLED} \
 	    KUBEBUILDER_ASSETS="$${PWD}/bin/kubebuilder/bin" \
 	    go test ${TEST_GOARGS} ./pkg/... ./cmd/... -coverprofile cover.out
+
+test-apis:
+	cd pkg/apis && \
+	env CGO_ENABLED=${TEST_CGO_ENABLED} \
+	    KUBEBUILDER_ASSETS="$${PWD}/../../bin/kubebuilder/bin" \
+	    go test ${TEST_GOARGS} ./...
 
 # Build manager binary
 manager: generate fmt vet build
