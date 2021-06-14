@@ -21,13 +21,27 @@ import (
 
 	"github.com/go-logr/logr"
 	"github.com/pkg/errors"
+	admissionregistrationv1 "k8s.io/api/admissionregistration/v1"
+	appsv1 "k8s.io/api/apps/v1"
+	autoscalingv1 "k8s.io/api/autoscaling/v1"
+	corev1 "k8s.io/api/core/v1"
+	policyv1beta1 "k8s.io/api/policy/v1beta1"
+	rbacv1 "k8s.io/api/rbac/v1"
 	k8serrors "k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/runtime"
+	"k8s.io/client-go/discovery"
 	ctrl "sigs.k8s.io/controller-runtime"
+	ctrlBuilder "sigs.k8s.io/controller-runtime/pkg/builder"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/reconcile"
 
+	istioclientv1alpha3 "github.com/banzaicloud/istio-client-go/pkg/networking/v1alpha3"
+	istioclientv1beta1 "github.com/banzaicloud/istio-client-go/pkg/security/v1beta1"
 	servicemeshv1alpha1 "github.com/banzaicloud/istio-operator/v2/api/v1alpha1"
+	"github.com/banzaicloud/istio-operator/v2/internal/components/base"
+	discovery_component "github.com/banzaicloud/istio-operator/v2/internal/components/discovery"
+	"github.com/banzaicloud/operator-tools/pkg/helm/templatereconciler"
+	"github.com/banzaicloud/operator-tools/pkg/reconciler"
 )
 
 // IstioControlPlaneReconciler reconciles a IstioControlPlane object
@@ -75,11 +89,56 @@ func (r *IstioControlPlaneReconciler) Reconcile(ctx context.Context, req ctrl.Re
 		}, nil
 	}
 
+	config, err := ctrl.GetConfig()
+	if err != nil {
+		return ctrl.Result{}, err
+	}
+	var d discovery.DiscoveryInterface
+	if d, err = discovery.NewDiscoveryClientForConfig(config); err != nil {
+		return ctrl.Result{}, err
+	}
+
+	baseReconciler := base.NewChartReconciler(
+		templatereconciler.NewHelmReconciler(r.Client, r.Scheme, r.Log.WithName("base"), d, []reconciler.NativeReconcilerOpt{
+			reconciler.NativeReconcilerSetControllerRef(),
+		}),
+	)
+	_, err = baseReconciler.Reconcile(icp)
+	if err != nil {
+		return ctrl.Result{}, err
+	}
+
+	discoveryReconciler := discovery_component.NewChartReconciler(
+		templatereconciler.NewHelmReconciler(r.Client, r.Scheme, r.Log.WithName("discovery"), d, []reconciler.NativeReconcilerOpt{
+			reconciler.NativeReconcilerSetControllerRef(),
+		}),
+	)
+	_, err = discoveryReconciler.Reconcile(icp)
+	if err != nil {
+		return ctrl.Result{}, err
+	}
+
 	return ctrl.Result{}, nil
 }
 
 func (r *IstioControlPlaneReconciler) SetupWithManager(mgr ctrl.Manager) error {
 	return ctrl.NewControllerManagedBy(mgr).
 		For(&servicemeshv1alpha1.IstioControlPlane{}).
+		Owns(&appsv1.Deployment{}, ctrlBuilder.WithPredicates(reconciler.SpecChangePredicate{})).
+		Owns(&appsv1.DaemonSet{}, ctrlBuilder.WithPredicates(reconciler.SpecChangePredicate{})).
+		Owns(&corev1.ConfigMap{}, ctrlBuilder.WithPredicates(reconciler.SpecChangePredicate{})).
+		Owns(&corev1.Service{}, ctrlBuilder.WithPredicates(reconciler.SpecChangePredicate{})).
+		Owns(&policyv1beta1.PodSecurityPolicy{}, ctrlBuilder.WithPredicates(reconciler.SpecChangePredicate{})).
+		Owns(&policyv1beta1.PodDisruptionBudget{}, ctrlBuilder.WithPredicates(reconciler.SpecChangePredicate{})).
+		Owns(&rbacv1.Role{}, ctrlBuilder.WithPredicates(reconciler.SpecChangePredicate{})).
+		Owns(&rbacv1.RoleBinding{}, ctrlBuilder.WithPredicates(reconciler.SpecChangePredicate{})).
+		Owns(&rbacv1.ClusterRole{}, ctrlBuilder.WithPredicates(reconciler.SpecChangePredicate{})).
+		Owns(&rbacv1.ClusterRoleBinding{}, ctrlBuilder.WithPredicates(reconciler.SpecChangePredicate{})).
+		Owns(&corev1.Secret{}, ctrlBuilder.WithPredicates(reconciler.SpecChangePredicate{})).
+		Owns(&istioclientv1alpha3.EnvoyFilter{}, ctrlBuilder.WithPredicates(reconciler.SpecChangePredicate{})).
+		Owns(&istioclientv1beta1.PeerAuthentication{}, ctrlBuilder.WithPredicates(reconciler.SpecChangePredicate{})).
+		Owns(&autoscalingv1.HorizontalPodAutoscaler{}, ctrlBuilder.WithPredicates(reconciler.SpecChangePredicate{})).
+		Owns(&admissionregistrationv1.MutatingWebhookConfiguration{}, ctrlBuilder.WithPredicates(reconciler.SpecChangePredicate{})).
+		Owns(&admissionregistrationv1.ValidatingWebhookConfiguration{}, ctrlBuilder.WithPredicates(reconciler.SpecChangePredicate{})).
 		Complete(r)
 }

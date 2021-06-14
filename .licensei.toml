@@ -7,12 +7,20 @@ approved = [
 ]
 
 ignored = [
+  "github.com/ghodss/yaml",
   "github.com/gogo/protobuf",
   "google.golang.org/protobuf",
   "sigs.k8s.io/yaml",
   "gopkg.in/fsnotify.v1",
 
   "github.com/davecgh/go-spew", # ISC license
+  "github.com/xeipuuv/gojsonpointer", # Apache2
+  "github.com/xeipuuv/gojsonreference", # Apache2
+  "github.com/xeipuuv/gojsonschema", # Apache2
+
+  # Unsupported VCS
+  "cloud.google.com/go",
+  "google.golang.org/api",
 ]
 
 [header]
@@ -21,6 +29,7 @@ ignoreFiles = [
   "*.gen.go",
   "*.gogen.go",
   "static/generate.go",
+  "generated.go",
   "zz_generated.deepcopy.go",
 ]
 
