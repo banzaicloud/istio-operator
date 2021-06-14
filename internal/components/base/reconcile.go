@@ -30,9 +30,9 @@ import (
 )
 
 const (
-	ComponentName = "base"
-	ChartName     = "base"
-	ReleaseName   = "istio-operator-base"
+	componentName = "base"
+	chartName     = "base"
+	releaseName   = "istio-operator-base"
 )
 
 var _ templatereconciler.Component = &Reconciler{}
