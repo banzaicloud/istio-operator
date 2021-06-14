@@ -14,4 +14,6 @@ ignored = [
   "github.com/inconshreveable/mousetrap",
 
   "github.com/davecgh/go-spew", # ISC license
+
+  "github.com/banzaicloud/istio-operator/pkg/apis",
 ]
