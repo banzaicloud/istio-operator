@@ -17,11 +17,12 @@ package main
 
 import (
 	"net/http"
+	"os"
 	"path"
 	"path/filepath"
 	"runtime"
+	"time"
 
-	"github.com/banzaicloud/istio-operator/pkg/util"
 	"github.com/shurcooL/vfsgen"
 )
 
@@ -37,8 +38,9 @@ func getRepoRoot() string {
 func main() {
 	var err error
 	err = vfsgen.Generate(
-		util.ZeroModTimeFileSystem{
-			http.Dir(path.Join(getRepoRoot(), "deploy/charts/istio-operator"))},
+		ZeroModTimeFileSystem{
+			http.Dir(path.Join(getRepoRoot(), "deploy/charts/istio-operator")),
+		},
 		vfsgen.Options{
 			Filename:     "static/charts/istio_operator/chart.gogen.go",
 			PackageName:  "istio_operator",
@@ -48,3 +50,32 @@ func main() {
 		panic(err)
 	}
 }
+
+// ZeroModTimeFileSystem is an http.FileSystem wrapper.
+// It exposes a filesystem exactly like Source, except
+// all file modification times are changed to zero.
+type ZeroModTimeFileSystem struct {
+	Source http.FileSystem
+}
+
+func (fs ZeroModTimeFileSystem) Open(name string) (http.File, error) {
+	f, err := fs.Source.Open(name)
+
+	return file{f}, err
+}
+
+type file struct {
+	http.File
+}
+
+func (f file) Stat() (os.FileInfo, error) {
+	fi, err := f.File.Stat()
+
+	return fileInfo{fi}, err
+}
+
+type fileInfo struct {
+	os.FileInfo
+}
+
+func (fi fileInfo) ModTime() time.Time { return time.Time{} }
