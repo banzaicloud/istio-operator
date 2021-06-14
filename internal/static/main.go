@@ -61,7 +61,6 @@ func main() {
 
 	for _, dir := range charts {
 		path := filepath.Join(chartsPath, dir)
-		// tmpPath := filepath.Join(filepath.Join(getRepoRoot(), "charts/tmp"), dir)
 
 		chartDir := http.Dir(path)
 		staticPath := filepath.Join(getRepoRoot(), "internal/static/gen/charts", dir)
