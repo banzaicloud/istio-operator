@@ -18,6 +18,7 @@ package controllers
 
 import (
 	"context"
+	"sync"
 
 	"github.com/go-logr/logr"
 	"github.com/pkg/errors"
@@ -48,8 +49,10 @@ import (
 // IstioControlPlaneReconciler reconciles a IstioControlPlane object
 type IstioControlPlaneReconciler struct {
 	client.Client
-	Log    logr.Logger
-	Scheme *runtime.Scheme
+	Log              logr.Logger
+	Scheme           *runtime.Scheme
+	watchersInitOnce sync.Once
+	builder          *ctrlBuilder.Builder
 }
 
 // +kubebuilder:rbac:groups="",resources=namespaces,verbs=get;list;watch;update;patch
@@ -119,6 +122,13 @@ func (r *IstioControlPlaneReconciler) Reconcile(ctx context.Context, req ctrl.Re
 		return ctrl.Result{}, err
 	}
 
+	r.watchersInitOnce.Do(func() {
+		err = r.watchIstioCRs()
+		if err != nil {
+			logger.Error(err, "unable to watch Istio Custom Resources")
+		}
+	})
+
 	discoveryReconciler := discovery_component.NewChartReconciler(
 		templatereconciler.NewHelmReconciler(r.Client, r.Scheme, r.Log.WithName("discovery"), d, []reconciler.NativeReconcilerOpt{
 			reconciler.NativeReconcilerSetControllerRef(),
@@ -133,7 +143,9 @@ func (r *IstioControlPlaneReconciler) Reconcile(ctx context.Context, req ctrl.Re
 }
 
 func (r *IstioControlPlaneReconciler) SetupWithManager(mgr ctrl.Manager) error {
-	return ctrl.NewControllerManagedBy(mgr).
+	r.builder = ctrl.NewControllerManagedBy(mgr)
+
+	return r.builder.
 		For(&servicemeshv1alpha1.IstioControlPlane{
 			TypeMeta: metav1.TypeMeta{
 				Kind:       "IstioControlPlane",
@@ -230,6 +242,11 @@ func (r *IstioControlPlaneReconciler) SetupWithManager(mgr ctrl.Manager) error {
 				APIVersion: admissionregistrationv1.SchemeGroupVersion.String(),
 			},
 		}, ctrlBuilder.WithPredicates(reconciler.SpecChangePredicate{})).
+		Complete(r)
+}
+
+func (r *IstioControlPlaneReconciler) watchIstioCRs() error {
+	return r.builder.
 		Owns(&istioclientv1alpha3.EnvoyFilter{
 			TypeMeta: metav1.TypeMeta{
 				Kind:       "EnvoyFilter",
