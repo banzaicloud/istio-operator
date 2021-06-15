@@ -28,6 +28,7 @@ import (
 	policyv1beta1 "k8s.io/api/policy/v1beta1"
 	rbacv1 "k8s.io/api/rbac/v1"
 	k8serrors "k8s.io/apimachinery/pkg/api/errors"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/client-go/discovery"
 	ctrl "sigs.k8s.io/controller-runtime"
@@ -51,7 +52,15 @@ type IstioControlPlaneReconciler struct {
 	Scheme *runtime.Scheme
 }
 
+// +kubebuilder:rbac:groups="",resources=configmaps;secrets;services;serviceaccounts,verbs=get;list;watch;create;update;patch;delete
+// +kubebuilder:rbac:groups=admissionregistration.k8s.io,resources=validatingwebhookconfigurations;mutatingwebhookconfigurations,verbs=get;list;watch;create;update;patch;delete
+// +kubebuilder:rbac:groups="apps",resources=deployments;daemonsets,verbs=get;list;watch;create;update;patch;delete
+// +kubebuilder:rbac:groups="autoscaling",resources=horizontalpodautoscalers,verbs=get;list;watch;create;update;patch;delete
 // +kubebuilder:rbac:groups="coordination.k8s.io",resources=leases,verbs=get;list;create;update
+// +kubebuilder:rbac:groups="policy",resources=podsecuritypolicies;poddisruptionbudgets,verbs=get;list;watch;create;update;patch;delete
+// +kubebuilder:rbac:groups="rbac.authorization.k8s.io",resources=clusterroles;clusterrolebindings;roles;rolebindings,verbs=get;list;watch;create;update;patch;delete
+// +kubebuilder:rbac:groups="security.istio.io",resources=peerauthentications,verbs=get;list;watch;create;update;patch;delete
+// +kubebuilder:rbac:groups="networking.istio.io",resources=envoyfilters,verbs=get;list;watch;create;update;patch;delete
 // +kubebuilder:rbac:groups=servicemesh.cisco.com,resources=istiocontrolplanes,verbs=get;list;watch;create;update;patch;delete
 // +kubebuilder:rbac:groups=servicemesh.cisco.com,resources=istiocontrolplanes/status,verbs=get;update;patch
 
@@ -123,22 +132,113 @@ func (r *IstioControlPlaneReconciler) Reconcile(ctx context.Context, req ctrl.Re
 
 func (r *IstioControlPlaneReconciler) SetupWithManager(mgr ctrl.Manager) error {
 	return ctrl.NewControllerManagedBy(mgr).
-		For(&servicemeshv1alpha1.IstioControlPlane{}).
-		Owns(&appsv1.Deployment{}, ctrlBuilder.WithPredicates(reconciler.SpecChangePredicate{})).
-		Owns(&appsv1.DaemonSet{}, ctrlBuilder.WithPredicates(reconciler.SpecChangePredicate{})).
-		Owns(&corev1.ConfigMap{}, ctrlBuilder.WithPredicates(reconciler.SpecChangePredicate{})).
-		Owns(&corev1.Service{}, ctrlBuilder.WithPredicates(reconciler.SpecChangePredicate{})).
-		Owns(&policyv1beta1.PodSecurityPolicy{}, ctrlBuilder.WithPredicates(reconciler.SpecChangePredicate{})).
-		Owns(&policyv1beta1.PodDisruptionBudget{}, ctrlBuilder.WithPredicates(reconciler.SpecChangePredicate{})).
-		Owns(&rbacv1.Role{}, ctrlBuilder.WithPredicates(reconciler.SpecChangePredicate{})).
-		Owns(&rbacv1.RoleBinding{}, ctrlBuilder.WithPredicates(reconciler.SpecChangePredicate{})).
-		Owns(&rbacv1.ClusterRole{}, ctrlBuilder.WithPredicates(reconciler.SpecChangePredicate{})).
-		Owns(&rbacv1.ClusterRoleBinding{}, ctrlBuilder.WithPredicates(reconciler.SpecChangePredicate{})).
-		Owns(&corev1.Secret{}, ctrlBuilder.WithPredicates(reconciler.SpecChangePredicate{})).
-		Owns(&istioclientv1alpha3.EnvoyFilter{}, ctrlBuilder.WithPredicates(reconciler.SpecChangePredicate{})).
-		Owns(&istioclientv1beta1.PeerAuthentication{}, ctrlBuilder.WithPredicates(reconciler.SpecChangePredicate{})).
-		Owns(&autoscalingv1.HorizontalPodAutoscaler{}, ctrlBuilder.WithPredicates(reconciler.SpecChangePredicate{})).
-		Owns(&admissionregistrationv1.MutatingWebhookConfiguration{}, ctrlBuilder.WithPredicates(reconciler.SpecChangePredicate{})).
-		Owns(&admissionregistrationv1.ValidatingWebhookConfiguration{}, ctrlBuilder.WithPredicates(reconciler.SpecChangePredicate{})).
+		For(&servicemeshv1alpha1.IstioControlPlane{
+			TypeMeta: metav1.TypeMeta{
+				Kind:       "IstioControlPlane",
+				APIVersion: servicemeshv1alpha1.SchemeBuilder.GroupVersion.String(),
+			},
+		}).
+		Owns(&appsv1.Deployment{
+			TypeMeta: metav1.TypeMeta{
+				Kind:       "Deployment",
+				APIVersion: appsv1.SchemeGroupVersion.String(),
+			},
+		}, ctrlBuilder.WithPredicates(reconciler.SpecChangePredicate{})).
+		Owns(&appsv1.DaemonSet{
+			TypeMeta: metav1.TypeMeta{
+				Kind:       "DaemonSet",
+				APIVersion: appsv1.SchemeGroupVersion.String(),
+			},
+		}, ctrlBuilder.WithPredicates(reconciler.SpecChangePredicate{})).
+		Owns(&corev1.ConfigMap{
+			TypeMeta: metav1.TypeMeta{
+				Kind:       "ConfigMap",
+				APIVersion: corev1.SchemeGroupVersion.String(),
+			},
+		}, ctrlBuilder.WithPredicates(reconciler.SpecChangePredicate{})).
+		Owns(&corev1.Secret{
+			TypeMeta: metav1.TypeMeta{
+				Kind:       "Secret",
+				APIVersion: corev1.SchemeGroupVersion.String(),
+			},
+		}, ctrlBuilder.WithPredicates(reconciler.SpecChangePredicate{})).
+		Owns(&corev1.Service{
+			TypeMeta: metav1.TypeMeta{
+				Kind:       "Service",
+				APIVersion: corev1.SchemeGroupVersion.String(),
+			},
+		}, ctrlBuilder.WithPredicates(reconciler.SpecChangePredicate{})).
+		Owns(&corev1.ServiceAccount{
+			TypeMeta: metav1.TypeMeta{
+				Kind:       "ServiceAccount",
+				APIVersion: corev1.SchemeGroupVersion.String(),
+			},
+		}, ctrlBuilder.WithPredicates(reconciler.SpecChangePredicate{})).
+		Owns(&policyv1beta1.PodSecurityPolicy{
+			TypeMeta: metav1.TypeMeta{
+				Kind:       "PodSecurityPolicy",
+				APIVersion: policyv1beta1.SchemeGroupVersion.String(),
+			},
+		}, ctrlBuilder.WithPredicates(reconciler.SpecChangePredicate{})).
+		Owns(&policyv1beta1.PodDisruptionBudget{
+			TypeMeta: metav1.TypeMeta{
+				Kind:       "PodDisruptionBudget",
+				APIVersion: policyv1beta1.SchemeGroupVersion.String(),
+			},
+		}, ctrlBuilder.WithPredicates(reconciler.SpecChangePredicate{})).
+		Owns(&rbacv1.Role{
+			TypeMeta: metav1.TypeMeta{
+				Kind:       "Role",
+				APIVersion: rbacv1.SchemeGroupVersion.String(),
+			},
+		}, ctrlBuilder.WithPredicates(reconciler.SpecChangePredicate{})).
+		Owns(&rbacv1.RoleBinding{
+			TypeMeta: metav1.TypeMeta{
+				Kind:       "RoleBinding",
+				APIVersion: rbacv1.SchemeGroupVersion.String(),
+			},
+		}, ctrlBuilder.WithPredicates(reconciler.SpecChangePredicate{})).
+		Owns(&rbacv1.ClusterRole{
+			TypeMeta: metav1.TypeMeta{
+				Kind:       "ClusterRole",
+				APIVersion: rbacv1.SchemeGroupVersion.String(),
+			},
+		}, ctrlBuilder.WithPredicates(reconciler.SpecChangePredicate{})).
+		Owns(&rbacv1.ClusterRoleBinding{
+			TypeMeta: metav1.TypeMeta{
+				Kind:       "ClusterRoleBinding",
+				APIVersion: rbacv1.SchemeGroupVersion.String(),
+			},
+		}, ctrlBuilder.WithPredicates(reconciler.SpecChangePredicate{})).
+		Owns(&autoscalingv1.HorizontalPodAutoscaler{
+			TypeMeta: metav1.TypeMeta{
+				Kind:       "HorizontalPodAutoscaler",
+				APIVersion: autoscalingv1.SchemeGroupVersion.String(),
+			},
+		}, ctrlBuilder.WithPredicates(reconciler.SpecChangePredicate{})).
+		Owns(&admissionregistrationv1.MutatingWebhookConfiguration{
+			TypeMeta: metav1.TypeMeta{
+				Kind:       "MutatingWebhookConfiguration",
+				APIVersion: admissionregistrationv1.SchemeGroupVersion.String(),
+			},
+		}, ctrlBuilder.WithPredicates(reconciler.SpecChangePredicate{})).
+		Owns(&admissionregistrationv1.ValidatingWebhookConfiguration{
+			TypeMeta: metav1.TypeMeta{
+				Kind:       "ValidatingWebhookConfiguration",
+				APIVersion: admissionregistrationv1.SchemeGroupVersion.String(),
+			},
+		}, ctrlBuilder.WithPredicates(reconciler.SpecChangePredicate{})).
+		Owns(&istioclientv1alpha3.EnvoyFilter{
+			TypeMeta: metav1.TypeMeta{
+				Kind:       "EnvoyFilter",
+				APIVersion: istioclientv1alpha3.SchemeGroupVersion.String(),
+			},
+		}, ctrlBuilder.WithPredicates(reconciler.SpecChangePredicate{})).
+		Owns(&istioclientv1beta1.PeerAuthentication{
+			TypeMeta: metav1.TypeMeta{
+				Kind:       "PeerAuthentication",
+				APIVersion: istioclientv1beta1.SchemeGroupVersion.String(),
+			},
+		}, ctrlBuilder.WithPredicates(reconciler.SpecChangePredicate{})).
 		Complete(r)
 }
