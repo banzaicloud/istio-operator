@@ -10,6 +10,7 @@ rules:
   - ""
   resources:
   - configmaps
+  - endpoints
   - secrets
   - serviceaccounts
   - services
@@ -30,6 +31,16 @@ rules:
   - list
   - patch
   - update
+  - watch
+- apiGroups:
+  - ""
+  resources:
+  - nodes
+  - pods
+  - replicationcontrollers
+  verbs:
+  - get
+  - list
   - watch
 - apiGroups:
   - admissionregistration.k8s.io
@@ -70,6 +81,39 @@ rules:
   - update
   - watch
 - apiGroups:
+  - apps
+  resources:
+  - replicasets
+  verbs:
+  - get
+  - list
+  - watch
+- apiGroups:
+  - authentication.istio.io
+  - config.istio.io
+  - rbac.istio.io
+  - security.istio.io
+  - telemetry.istio.io
+  resources:
+  - '*'
+  verbs:
+  - get
+  - list
+  - update
+  - watch
+- apiGroups:
+  - authentication.k8s.io
+  resources:
+  - tokenreviews
+  verbs:
+  - create
+- apiGroups:
+  - authorization.k8s.io
+  resources:
+  - subjectaccessreviews
+  verbs:
+  - create
+- apiGroups:
   - autoscaling
   resources:
   - horizontalpodautoscalers
@@ -82,6 +126,26 @@ rules:
   - update
   - watch
 - apiGroups:
+  - certificates.k8s.io
+  resources:
+  - certificatesigningrequests
+  - certificatesigningrequests/approval
+  - certificatesigningrequests/status
+  verbs:
+  - create
+  - delete
+  - get
+  - update
+  - watch
+- apiGroups:
+  - certificates.k8s.io
+  resourceNames:
+  - kubernetes.io/legacy-unknown
+  resources:
+  - signers
+  verbs:
+  - approve
+- apiGroups:
   - coordination.k8s.io
   resources:
   - leases
@@ -91,15 +155,71 @@ rules:
   - list
   - update
 - apiGroups:
+  - discovery.k8s.io
+  resources:
+  - endpointslices
+  verbs:
+  - get
+  - list
+  - watch
+- apiGroups:
+  - extensions
+  resources:
+  - ingresses
+  verbs:
+  - get
+  - list
+  - watch
+- apiGroups:
+  - extensions
+  resources:
+  - ingresses/status
+  verbs:
+  - '*'
+- apiGroups:
+  - multicluster.x-k8s.io
+  resources:
+  - serviceexports
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - watch
+- apiGroups:
   - networking.istio.io
   resources:
-  - envoyfilters
+  - '*'
   verbs:
   - create
   - delete
   - get
   - list
   - patch
+  - update
+  - watch
+- apiGroups:
+  - networking.k8s.io
+  resources:
+  - ingressclasses
+  - ingresses
+  verbs:
+  - get
+  - list
+  - watch
+- apiGroups:
+  - networking.k8s.io
+  resources:
+  - ingresses/status
+  verbs:
+  - '*'
+- apiGroups:
+  - networking.x-k8s.io
+  resources:
+  - '*'
+  verbs:
+  - get
+  - list
   - update
   - watch
 - apiGroups:
@@ -122,18 +242,6 @@ rules:
   - clusterroles
   - rolebindings
   - roles
-  verbs:
-  - create
-  - delete
-  - get
-  - list
-  - patch
-  - update
-  - watch
-- apiGroups:
-  - security.istio.io
-  resources:
-  - peerauthentications
   verbs:
   - create
   - delete
