@@ -13,5 +13,3 @@ require (
 	k8s.io/client-go v0.19.2
 	sigs.k8s.io/controller-runtime v0.6.2
 )
-
-replace github.com/banzaicloud/istio-operator => ../..
