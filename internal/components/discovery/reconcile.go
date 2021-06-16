@@ -23,7 +23,7 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/reconcile"
 
 	"github.com/banzaicloud/istio-operator/v2/api/v1alpha1"
-	istio_discovery "github.com/banzaicloud/istio-operator/v2/internal/static/gen/charts/istio-control/istio-discovery"
+	istiodiscovery "github.com/banzaicloud/istio-operator/v2/static/gen/charts/istio-control/istio-discovery"
 	"github.com/banzaicloud/operator-tools/pkg/helm"
 	"github.com/banzaicloud/operator-tools/pkg/helm/templatereconciler"
 	"github.com/banzaicloud/operator-tools/pkg/types"
@@ -77,7 +77,7 @@ func (rec *Reconciler) ReleaseData(object runtime.Object) (*templatereconciler.R
 		}
 
 		return &templatereconciler.ReleaseData{
-			Chart:       istio_discovery.Chart,
+			Chart:       istiodiscovery.Chart,
 			Values:      values,
 			Namespace:   controlPlane.Namespace,
 			ChartName:   chartName,

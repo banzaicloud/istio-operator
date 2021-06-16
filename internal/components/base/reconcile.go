@@ -23,7 +23,7 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/reconcile"
 
 	"github.com/banzaicloud/istio-operator/v2/api/v1alpha1"
-	"github.com/banzaicloud/istio-operator/v2/internal/static/gen/charts/base"
+	"github.com/banzaicloud/istio-operator/v2/static/gen/charts/base"
 	"github.com/banzaicloud/operator-tools/pkg/helm"
 	"github.com/banzaicloud/operator-tools/pkg/helm/templatereconciler"
 	"github.com/banzaicloud/operator-tools/pkg/types"

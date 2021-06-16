@@ -26,6 +26,8 @@ import (
 	"strings"
 
 	"github.com/shurcooL/vfsgen"
+
+	"github.com/banzaicloud/istio-operator/v2/static/util"
 )
 
 var charts = []string{
@@ -35,10 +37,12 @@ var charts = []string{
 
 //go:generate go run main.go
 func main() {
-	crds := http.Dir(filepath.Join(getRepoRoot(), "config/crd/bases"))
+	crds := util.ZeroModTimeFileSystem{
+		Source: http.Dir(filepath.Join(getRepoRoot(), "config/crd/bases")),
+	}
 
 	err := vfsgen.Generate(crds, vfsgen.Options{
-		Filename:     filepath.Join(getRepoRoot(), "internal/static/gen/crds/generated.go"),
+		Filename:     filepath.Join(getRepoRoot(), "static/gen/crds/generated.go"),
 		PackageName:  "crds",
 		VariableName: "Root",
 	})
@@ -46,24 +50,15 @@ func main() {
 		panic(fmt.Sprintf("failed to generate crds vfs: %+v", err))
 	}
 
-	license := http.Dir(filepath.Join(getRepoRoot(), "license"))
-
-	err = vfsgen.Generate(license, vfsgen.Options{
-		Filename:     filepath.Join(getRepoRoot(), "internal/static/gen/license/generated.go"),
-		PackageName:  "license",
-		VariableName: "Root",
-	})
-	if err != nil {
-		panic(fmt.Sprintf("failed to generate license vfs: %+v", err))
-	}
-
 	chartsPath := filepath.Join(getRepoRoot(), "deploy/charts")
 
 	for _, dir := range charts {
-		path := filepath.Join(chartsPath, dir)
+		actualChartPath := filepath.Join(chartsPath, dir)
 
-		chartDir := http.Dir(path)
-		staticPath := filepath.Join(getRepoRoot(), "internal/static/gen/charts", dir)
+		chartDir := util.ZeroModTimeFileSystem{
+			Source: http.Dir(actualChartPath),
+		}
+		staticPath := filepath.Join(getRepoRoot(), "static/gen/charts", dir)
 		if err := os.MkdirAll(staticPath, 0755); err != nil {
 			panic(fmt.Errorf("failed to create directory for charts: %w", err))
 		}
@@ -87,5 +82,5 @@ func getRepoRoot() string {
 
 	dir := filepath.Dir(filename)
 
-	return filepath.Dir(path.Join(dir, ".."))
+	return filepath.Dir(path.Join(dir, "."))
 }
