@@ -112,7 +112,7 @@ func (rec *Reconciler) values(object runtime.Object) (helm.Strimap, error) {
 				"remotePilotAddress": "",
 			},
 			"base": helm.Strimap{
-				"enableCRDTemplates":    true,
+				"enableCRDTemplates":    false,
 				"validationURL":         "",
 				"enableIstioConfigCRDs": true,
 			},
