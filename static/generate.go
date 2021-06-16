@@ -50,19 +50,6 @@ func main() {
 		panic(fmt.Sprintf("failed to generate crds vfs: %+v", err))
 	}
 
-	license := util.ZeroModTimeFileSystem{
-		Source: http.Dir(filepath.Join(getRepoRoot(), "license")),
-	}
-
-	err = vfsgen.Generate(license, vfsgen.Options{
-		Filename:     filepath.Join(getRepoRoot(), "static/gen/license/generated.go"),
-		PackageName:  "license",
-		VariableName: "Root",
-	})
-	if err != nil {
-		panic(fmt.Sprintf("failed to generate license vfs: %+v", err))
-	}
-
 	chartsPath := filepath.Join(getRepoRoot(), "deploy/charts")
 
 	for _, dir := range charts {
