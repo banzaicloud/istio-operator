@@ -23,6 +23,7 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/reconcile"
 
 	"github.com/banzaicloud/istio-operator/v2/api/v1alpha1"
+	"github.com/banzaicloud/istio-operator/v2/internal/util"
 	istiodiscovery "github.com/banzaicloud/istio-operator/v2/static/gen/charts/istio-control/istio-discovery"
 	"github.com/banzaicloud/operator-tools/pkg/helm"
 	"github.com/banzaicloud/operator-tools/pkg/helm/templatereconciler"
@@ -99,13 +100,18 @@ func (rec *Reconciler) IsOptional() bool {
 func (rec *Reconciler) RegisterWatches(builder *controllerruntime.Builder) {}
 
 func (rec *Reconciler) values(object runtime.Object) (helm.Strimap, error) {
-	if _, ok := object.(*v1alpha1.IstioControlPlane); ok {
-		return helm.Strimap{
-			"global": helm.Strimap{
-				"jwtPolicy": "first-party-jwt",
-			},
-		}, nil
+	icp, ok := object.(*v1alpha1.IstioControlPlane)
+	if !ok {
+		return nil, errors.WrapIff(errors.NewPlain("object cannot be converted to an IstioControlPlane"), "%+v", object)
 	}
 
-	return nil, errors.WrapIff(errors.NewPlain("object cannot be converted to an IstioControlPlane"), "%+v", object)
+	var meshConfigStriMap helm.Strimap
+	err := util.ProtoFieldToStriMap(icp.Spec.MeshConfig, &meshConfigStriMap)
+	if err != nil {
+		return nil, errors.WrapIff(errors.NewPlain("meshConfig cannot be converted into a map[string]interface{}"), "%+v", icp.Spec.MeshConfig)
+	}
+
+	return helm.Strimap{
+		"meshConfig": meshConfigStriMap,
+	}, nil
 }
