@@ -4,7 +4,7 @@ description: Istio Mesh Gateway descriptor
 layout: protoc-gen-docs
 generator: protoc-gen-docs
 schema: istio-operator.api.v1alpha1.MeshGatewaySpec
-number_of_entries: 10
+number_of_entries: 15
 ---
 <h2 id="MeshGatewaySpec">MeshGatewaySpec</h2>
 <section>
@@ -36,6 +36,7 @@ Yes
 <td><code>MeshGatewayConfiguration</code></td>
 <td><code><a href="#MeshGatewayConfiguration">MeshGatewayConfiguration</a></code></td>
 <td>
+
 </td>
 <td>
 No
@@ -113,7 +114,8 @@ No
 <td><code>LoadBalancerIP</code></td>
 <td><code>string</code></td>
 <td>
-<p>+kubebuilder:validation:Enum=ClusterIP;NodePort;LoadBalancer
+<p>TODO! ServiceType missing from proto
++kubebuilder:validation:Enum=ClusterIP;NodePort;LoadBalancer
 k8s.io.api.core.v1.ServiceType ServiceType = 1 [(gogoproto.jsontag) = &ldquo;serviceType,omitempty&rdquo;];</p>
 
 </td>
@@ -141,13 +143,23 @@ No
 No
 </td>
 </tr>
+<tr id="MeshGatewayConfiguration-SDS">
+<td><code>SDS</code></td>
+<td><code><a href="#GatewaySDSConfiguration">GatewaySDSConfiguration</a></code></td>
+<td>
+<p>TODO! ServiceExternalTrafficPolicy missing from proto
++kubebuilder:validation:Enum=Local;Cluster
+ServiceExternalTrafficPolicy corev1.ServiceExternalTrafficPolicyType <code>json:&quot;serviceExternalTrafficPolicy,omitempty&quot;</code></p>
+
+</td>
+<td>
+No
+</td>
+</tr>
 <tr id="MeshGatewayConfiguration-RequestedNetworkView">
 <td><code>RequestedNetworkView</code></td>
 <td><code>string</code></td>
 <td>
-<p>+kubebuilder:validation:Enum=Local;Cluster
-ServiceExternalTrafficPolicy corev1.ServiceExternalTrafficPolicyType <code>json:&quot;serviceExternalTrafficPolicy,omitempty&quot;</code>
-SDS                          GatewaySDSConfiguration                 <code>json:&quot;sds,omitempty&quot;</code></p>
 
 </td>
 <td>
@@ -159,6 +171,17 @@ No
 <td><code><a href="#k8s-io-api-core-v1-EnvVar">EnvVar[]</a></code></td>
 <td>
 <p>If present will be appended to the environment variables of the container</p>
+
+</td>
+<td>
+No
+</td>
+</tr>
+<tr id="MeshGatewayConfiguration-RunAsRoot">
+<td><code>RunAsRoot</code></td>
+<td><code>bool</code></td>
+<td>
+<p>Whether to run the gateway in a privileged container</p>
 
 </td>
 <td>
@@ -240,14 +263,105 @@ No
 </tr>
 </thead>
 <tbody>
+<tr id="BaseK8sResourceConfiguration-Resources">
+<td><code>Resources</code></td>
+<td><code><a href="#k8s-io-api-core-v1-ResourceRequirements">ResourceRequirements</a></code></td>
+<td>
+
+</td>
+<td>
+No
+</td>
+</tr>
+<tr id="BaseK8sResourceConfiguration-NodeSelector">
+<td><code>NodeSelector</code></td>
+<td><code>map&lt;string,&nbsp;string&gt;</code></td>
+<td>
+
+</td>
+<td>
+No
+</td>
+</tr>
+<tr id="BaseK8sResourceConfiguration-Affinity">
+<td><code>Affinity</code></td>
+<td><code><a href="#k8s-io-api-core-v1-Affinity">Affinity</a></code></td>
+<td>
+
+</td>
+<td>
+No
+</td>
+</tr>
+<tr id="BaseK8sResourceConfiguration-Tolerations">
+<td><code>Tolerations</code></td>
+<td><code><a href="#k8s-io-api-core-v1-Toleration">Toleration[]</a></code></td>
+<td>
+
+</td>
+<td>
+No
+</td>
+</tr>
 <tr id="BaseK8sResourceConfiguration-PodAnnotations">
 <td><code>PodAnnotations</code></td>
 <td><code>map&lt;string,&nbsp;string&gt;</code></td>
 <td>
-<p>Resources       *corev1.ResourceRequirements <code>json:&quot;resources,omitempty&quot;</code>
-NodeSelector    map[string]string            <code>json:&quot;nodeSelector,omitempty&quot;</code>
-Affinity        *corev1.Affinity             <code>json:&quot;affinity,omitempty&quot;</code>
-Tolerations     []corev1.Toleration          <code>json:&quot;tolerations,omitempty&quot;</code></p>
+
+</td>
+<td>
+No
+</td>
+</tr>
+<tr id="BaseK8sResourceConfiguration-SecurityContext">
+<td><code>SecurityContext</code></td>
+<td><code><a href="#k8s-io-api-core-v1-SecurityContext">SecurityContext</a></code></td>
+<td>
+
+</td>
+<td>
+No
+</td>
+</tr>
+</tbody>
+</table>
+</section>
+<h2 id="GatewaySDSConfiguration">GatewaySDSConfiguration</h2>
+<section>
+<table class="message-fields">
+<thead>
+<tr>
+<th>Field</th>
+<th>Type</th>
+<th>Description</th>
+<th>Required</th>
+</tr>
+</thead>
+<tbody>
+<tr id="GatewaySDSConfiguration-Enabled">
+<td><code>Enabled</code></td>
+<td><code>bool</code></td>
+<td>
+
+</td>
+<td>
+No
+</td>
+</tr>
+<tr id="GatewaySDSConfiguration-Image">
+<td><code>Image</code></td>
+<td><code>string</code></td>
+<td>
+
+</td>
+<td>
+No
+</td>
+</tr>
+<tr id="GatewaySDSConfiguration-Resources">
+<td><code>Resources</code></td>
+<td><code><a href="#k8s-io-api-core-v1-ResourceRequirements">ResourceRequirements</a></code></td>
+<td>
 
 </td>
 <td>
@@ -384,6 +498,358 @@ No
 <td><code><a href="#k8s-io-api-core-v1-EnvVarSource">EnvVarSource</a></code></td>
 <td>
 <p>Source for the environment variable&rsquo;s value. Cannot be used if value is not empty.
++optional</p>
+
+</td>
+<td>
+No
+</td>
+</tr>
+</tbody>
+</table>
+</section>
+<h2 id="k8s-io-api-core-v1-ResourceRequirements">k8s.io.api.core.v1.ResourceRequirements</h2>
+<section>
+<p>ResourceRequirements describes the compute resource requirements.</p>
+
+<table class="message-fields">
+<thead>
+<tr>
+<th>Field</th>
+<th>Type</th>
+<th>Description</th>
+<th>Required</th>
+</tr>
+</thead>
+<tbody>
+<tr id="k8s-io-api-core-v1-ResourceRequirements-limits">
+<td><code>limits</code></td>
+<td><code>map&lt;string,&nbsp;<a href="#k8s-io-apimachinery-pkg-api-resource-Quantity">Quantity</a>&gt;</code></td>
+<td>
+<p>Limits describes the maximum amount of compute resources allowed.
+More info: https://kubernetes.io/docs/concepts/configuration/manage-compute-resources-container/
++optional</p>
+
+</td>
+<td>
+No
+</td>
+</tr>
+<tr id="k8s-io-api-core-v1-ResourceRequirements-requests">
+<td><code>requests</code></td>
+<td><code>map&lt;string,&nbsp;<a href="#k8s-io-apimachinery-pkg-api-resource-Quantity">Quantity</a>&gt;</code></td>
+<td>
+<p>Requests describes the minimum amount of compute resources required.
+If Requests is omitted for a container, it defaults to Limits if that is explicitly specified,
+otherwise to an implementation-defined value.
+More info: https://kubernetes.io/docs/concepts/configuration/manage-compute-resources-container/
++optional</p>
+
+</td>
+<td>
+No
+</td>
+</tr>
+</tbody>
+</table>
+</section>
+<h2 id="k8s-io-api-core-v1-Affinity">k8s.io.api.core.v1.Affinity</h2>
+<section>
+<p>Affinity is a group of affinity scheduling rules.</p>
+
+<table class="message-fields">
+<thead>
+<tr>
+<th>Field</th>
+<th>Type</th>
+<th>Description</th>
+<th>Required</th>
+</tr>
+</thead>
+<tbody>
+<tr id="k8s-io-api-core-v1-Affinity-nodeAffinity">
+<td><code>nodeAffinity</code></td>
+<td><code><a href="#k8s-io-api-core-v1-NodeAffinity">NodeAffinity</a></code></td>
+<td>
+<p>Describes node affinity scheduling rules for the pod.
++optional</p>
+
+</td>
+<td>
+No
+</td>
+</tr>
+<tr id="k8s-io-api-core-v1-Affinity-podAffinity">
+<td><code>podAffinity</code></td>
+<td><code><a href="#k8s-io-api-core-v1-PodAffinity">PodAffinity</a></code></td>
+<td>
+<p>Describes pod affinity scheduling rules (e.g. co-locate this pod in the same node, zone, etc. as some other pod(s)).
++optional</p>
+
+</td>
+<td>
+No
+</td>
+</tr>
+<tr id="k8s-io-api-core-v1-Affinity-podAntiAffinity">
+<td><code>podAntiAffinity</code></td>
+<td><code><a href="#k8s-io-api-core-v1-PodAntiAffinity">PodAntiAffinity</a></code></td>
+<td>
+<p>Describes pod anti-affinity scheduling rules (e.g. avoid putting this pod in the same node, zone, etc. as some other pod(s)).
++optional</p>
+
+</td>
+<td>
+No
+</td>
+</tr>
+</tbody>
+</table>
+</section>
+<h2 id="k8s-io-api-core-v1-Toleration">k8s.io.api.core.v1.Toleration</h2>
+<section>
+<p>The pod this Toleration is attached to tolerates any taint that matches
+the triple <key,value,effect> using the matching operator <operator>.</p>
+
+<table class="message-fields">
+<thead>
+<tr>
+<th>Field</th>
+<th>Type</th>
+<th>Description</th>
+<th>Required</th>
+</tr>
+</thead>
+<tbody>
+<tr id="k8s-io-api-core-v1-Toleration-key">
+<td><code>key</code></td>
+<td><code>string</code></td>
+<td>
+<p>Key is the taint key that the toleration applies to. Empty means match all taint keys.
+If the key is empty, operator must be Exists; this combination means to match all values and all keys.
++optional</p>
+
+</td>
+<td>
+No
+</td>
+</tr>
+<tr id="k8s-io-api-core-v1-Toleration-operator">
+<td><code>operator</code></td>
+<td><code>string</code></td>
+<td>
+<p>Operator represents a key&rsquo;s relationship to the value.
+Valid operators are Exists and Equal. Defaults to Equal.
+Exists is equivalent to wildcard for value, so that a pod can
+tolerate all taints of a particular category.
++optional</p>
+
+</td>
+<td>
+No
+</td>
+</tr>
+<tr id="k8s-io-api-core-v1-Toleration-value">
+<td><code>value</code></td>
+<td><code>string</code></td>
+<td>
+<p>Value is the taint value the toleration matches to.
+If the operator is Exists, the value should be empty, otherwise just a regular string.
++optional</p>
+
+</td>
+<td>
+No
+</td>
+</tr>
+<tr id="k8s-io-api-core-v1-Toleration-effect">
+<td><code>effect</code></td>
+<td><code>string</code></td>
+<td>
+<p>Effect indicates the taint effect to match. Empty means match all taint effects.
+When specified, allowed values are NoSchedule, PreferNoSchedule and NoExecute.
++optional</p>
+
+</td>
+<td>
+No
+</td>
+</tr>
+<tr id="k8s-io-api-core-v1-Toleration-tolerationSeconds">
+<td><code>tolerationSeconds</code></td>
+<td><code>int64</code></td>
+<td>
+<p>TolerationSeconds represents the period of time the toleration (which must be
+of effect NoExecute, otherwise this field is ignored) tolerates the taint. By default,
+it is not set, which means tolerate the taint forever (do not evict). Zero and
+negative values will be treated as 0 (evict immediately) by the system.
++optional</p>
+
+</td>
+<td>
+No
+</td>
+</tr>
+</tbody>
+</table>
+</section>
+<h2 id="k8s-io-api-core-v1-SecurityContext">k8s.io.api.core.v1.SecurityContext</h2>
+<section>
+<p>SecurityContext holds security configuration that will be applied to a container.
+Some fields are present in both SecurityContext and PodSecurityContext.  When both
+are set, the values in SecurityContext take precedence.</p>
+
+<table class="message-fields">
+<thead>
+<tr>
+<th>Field</th>
+<th>Type</th>
+<th>Description</th>
+<th>Required</th>
+</tr>
+</thead>
+<tbody>
+<tr id="k8s-io-api-core-v1-SecurityContext-capabilities">
+<td><code>capabilities</code></td>
+<td><code><a href="#k8s-io-api-core-v1-Capabilities">Capabilities</a></code></td>
+<td>
+<p>The capabilities to add/drop when running containers.
+Defaults to the default set of capabilities granted by the container runtime.
++optional</p>
+
+</td>
+<td>
+No
+</td>
+</tr>
+<tr id="k8s-io-api-core-v1-SecurityContext-privileged">
+<td><code>privileged</code></td>
+<td><code>bool</code></td>
+<td>
+<p>Run container in privileged mode.
+Processes in privileged containers are essentially equivalent to root on the host.
+Defaults to false.
++optional</p>
+
+</td>
+<td>
+No
+</td>
+</tr>
+<tr id="k8s-io-api-core-v1-SecurityContext-seLinuxOptions">
+<td><code>seLinuxOptions</code></td>
+<td><code><a href="#k8s-io-api-core-v1-SELinuxOptions">SELinuxOptions</a></code></td>
+<td>
+<p>The SELinux context to be applied to the container.
+If unspecified, the container runtime will allocate a random SELinux context for each
+container.  May also be set in PodSecurityContext.  If set in both SecurityContext and
+PodSecurityContext, the value specified in SecurityContext takes precedence.
++optional</p>
+
+</td>
+<td>
+No
+</td>
+</tr>
+<tr id="k8s-io-api-core-v1-SecurityContext-windowsOptions">
+<td><code>windowsOptions</code></td>
+<td><code><a href="#k8s-io-api-core-v1-WindowsSecurityContextOptions">WindowsSecurityContextOptions</a></code></td>
+<td>
+<p>The Windows specific settings applied to all containers.
+If unspecified, the options from the PodSecurityContext will be used.
+If set in both SecurityContext and PodSecurityContext, the value specified in SecurityContext takes precedence.
++optional</p>
+
+</td>
+<td>
+No
+</td>
+</tr>
+<tr id="k8s-io-api-core-v1-SecurityContext-runAsUser">
+<td><code>runAsUser</code></td>
+<td><code>int64</code></td>
+<td>
+<p>The UID to run the entrypoint of the container process.
+Defaults to user specified in image metadata if unspecified.
+May also be set in PodSecurityContext.  If set in both SecurityContext and
+PodSecurityContext, the value specified in SecurityContext takes precedence.
++optional</p>
+
+</td>
+<td>
+No
+</td>
+</tr>
+<tr id="k8s-io-api-core-v1-SecurityContext-runAsGroup">
+<td><code>runAsGroup</code></td>
+<td><code>int64</code></td>
+<td>
+<p>The GID to run the entrypoint of the container process.
+Uses runtime default if unset.
+May also be set in PodSecurityContext.  If set in both SecurityContext and
+PodSecurityContext, the value specified in SecurityContext takes precedence.
++optional</p>
+
+</td>
+<td>
+No
+</td>
+</tr>
+<tr id="k8s-io-api-core-v1-SecurityContext-runAsNonRoot">
+<td><code>runAsNonRoot</code></td>
+<td><code>bool</code></td>
+<td>
+<p>Indicates that the container must run as a non-root user.
+If true, the Kubelet will validate the image at runtime to ensure that it
+does not run as UID 0 (root) and fail to start the container if it does.
+If unset or false, no such validation will be performed.
+May also be set in PodSecurityContext.  If set in both SecurityContext and
+PodSecurityContext, the value specified in SecurityContext takes precedence.
++optional</p>
+
+</td>
+<td>
+No
+</td>
+</tr>
+<tr id="k8s-io-api-core-v1-SecurityContext-readOnlyRootFilesystem">
+<td><code>readOnlyRootFilesystem</code></td>
+<td><code>bool</code></td>
+<td>
+<p>Whether this container has a read-only root filesystem.
+Default is false.
++optional</p>
+
+</td>
+<td>
+No
+</td>
+</tr>
+<tr id="k8s-io-api-core-v1-SecurityContext-allowPrivilegeEscalation">
+<td><code>allowPrivilegeEscalation</code></td>
+<td><code>bool</code></td>
+<td>
+<p>AllowPrivilegeEscalation controls whether a process can gain more
+privileges than its parent process. This bool directly controls if
+the no<em>new</em>privs flag will be set on the container process.
+AllowPrivilegeEscalation is true always when the container is:
+1) run as Privileged
+2) has CAP<em>SYS</em>ADMIN
++optional</p>
+
+</td>
+<td>
+No
+</td>
+</tr>
+<tr id="k8s-io-api-core-v1-SecurityContext-procMount">
+<td><code>procMount</code></td>
+<td><code>string</code></td>
+<td>
+<p>procMount denotes the type of proc mount to use for the containers.
+The default is DefaultProcMount which uses the container runtime defaults for
+readonly paths and masked paths.
+This requires the ProcMountType feature flag to be enabled.
 +optional</p>
 
 </td>

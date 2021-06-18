@@ -64,6 +64,17 @@ func (this *BaseK8SResourceConfiguration) UnmarshalJSON(b []byte) error {
 	return MeshgatewayUnmarshaler.Unmarshal(bytes.NewReader(b), this)
 }
 
+// MarshalJSON is a custom marshaler for GatewaySDSConfiguration
+func (this *GatewaySDSConfiguration) MarshalJSON() ([]byte, error) {
+	str, err := MeshgatewayMarshaler.MarshalToString(this)
+	return []byte(str), err
+}
+
+// UnmarshalJSON is a custom unmarshaler for GatewaySDSConfiguration
+func (this *GatewaySDSConfiguration) UnmarshalJSON(b []byte) error {
+	return MeshgatewayUnmarshaler.Unmarshal(bytes.NewReader(b), this)
+}
+
 // MarshalJSON is a custom marshaler for ServicePort
 func (this *ServicePort) MarshalJSON() ([]byte, error) {
 	str, err := MeshgatewayMarshaler.MarshalToString(this)
