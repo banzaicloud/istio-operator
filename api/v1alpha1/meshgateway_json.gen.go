@@ -42,14 +42,14 @@ func (this *ServicePort) UnmarshalJSON(b []byte) error {
 	return MeshgatewayUnmarshaler.Unmarshal(bytes.NewReader(b), this)
 }
 
-// MarshalJSON is a custom marshaler for Almafa
-func (this *Almafa) MarshalJSON() ([]byte, error) {
+// MarshalJSON is a custom marshaler for MeshGatewayConfiguration
+func (this *MeshGatewayConfiguration) MarshalJSON() ([]byte, error) {
 	str, err := MeshgatewayMarshaler.MarshalToString(this)
 	return []byte(str), err
 }
 
-// UnmarshalJSON is a custom unmarshaler for Almafa
-func (this *Almafa) UnmarshalJSON(b []byte) error {
+// UnmarshalJSON is a custom unmarshaler for MeshGatewayConfiguration
+func (this *MeshGatewayConfiguration) UnmarshalJSON(b []byte) error {
 	return MeshgatewayUnmarshaler.Unmarshal(bytes.NewReader(b), this)
 }
 

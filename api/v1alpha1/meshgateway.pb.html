@@ -32,12 +32,20 @@ number_of_entries: 5
 Yes
 </td>
 </tr>
+<tr id="MeshGatewaySpec-MeshGatewayConfiguration">
+<td><code>MeshGatewayConfiguration</code></td>
+<td><code><a href="#MeshGatewayConfiguration">MeshGatewayConfiguration</a></code></td>
+<td>
+</td>
+<td>
+No
+</td>
+</tr>
 <tr id="MeshGatewaySpec-ports">
 <td><code>ports</code></td>
 <td><code><a href="#ServicePort">ServicePort[]</a></code></td>
 <td>
-<p>MeshGatewayConfiguration <code>json:&quot;,inline&quot;</code>
-+kubebuilder:validation:MinItems=0</p>
+<p>+kubebuilder:validation:MinItems=0</p>
 
 </td>
 <td>
@@ -82,7 +90,7 @@ No
 </tbody>
 </table>
 </section>
-<h2 id="Almafa">Almafa</h2>
+<h2 id="MeshGatewayConfiguration">MeshGatewayConfiguration</h2>
 <section>
 <table class="message-fields">
 <thead>
@@ -94,10 +102,15 @@ No
 </tr>
 </thead>
 <tbody>
-<tr id="Almafa-asd">
-<td><code>asd</code></td>
+<tr id="MeshGatewayConfiguration-LoadBalancerIP">
+<td><code>LoadBalancerIP</code></td>
 <td><code>string</code></td>
 <td>
+<p>BaseK8sResourceConfigurationWithHPAWithoutImage <code>json:&quot;,inline&quot;</code>
+Labels                                          map[string]string <code>json:&quot;labels,omitempty&quot;</code>
+// +kubebuilder:validation:Enum=ClusterIP;NodePort;LoadBalancer
+ServiceType        corev1.ServiceType <code>json:&quot;serviceType,omitempty&quot;</code></p>
+
 </td>
 <td>
 No
