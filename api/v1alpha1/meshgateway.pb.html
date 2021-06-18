@@ -110,13 +110,21 @@ No
 No
 </td>
 </tr>
+<tr id="MeshGatewayConfiguration-ServiceType">
+<td><code>ServiceType</code></td>
+<td><code>string</code></td>
+<td>
+<p>+kubebuilder:validation:Enum=ClusterIP;NodePort;LoadBalancer;ExternalName</p>
+
+</td>
+<td>
+No
+</td>
+</tr>
 <tr id="MeshGatewayConfiguration-LoadBalancerIP">
 <td><code>LoadBalancerIP</code></td>
 <td><code>string</code></td>
 <td>
-<p>TODO! ServiceType missing from proto
-+kubebuilder:validation:Enum=ClusterIP;NodePort;LoadBalancer
-k8s.io.api.core.v1.ServiceType ServiceType = 1 [(gogoproto.jsontag) = &ldquo;serviceType,omitempty&rdquo;];</p>
 
 </td>
 <td>
@@ -143,13 +151,21 @@ No
 No
 </td>
 </tr>
+<tr id="MeshGatewayConfiguration-ServiceExternalTrafficPolicyType">
+<td><code>ServiceExternalTrafficPolicyType</code></td>
+<td><code>string</code></td>
+<td>
+<p>+kubebuilder:validation:Enum=Local;Cluster</p>
+
+</td>
+<td>
+No
+</td>
+</tr>
 <tr id="MeshGatewayConfiguration-SDS">
 <td><code>SDS</code></td>
 <td><code><a href="#GatewaySDSConfiguration">GatewaySDSConfiguration</a></code></td>
 <td>
-<p>TODO! ServiceExternalTrafficPolicy missing from proto
-+kubebuilder:validation:Enum=Local;Cluster
-ServiceExternalTrafficPolicy corev1.ServiceExternalTrafficPolicyType <code>json:&quot;serviceExternalTrafficPolicy,omitempty&quot;</code></p>
 
 </td>
 <td>

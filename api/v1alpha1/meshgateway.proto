@@ -67,25 +67,24 @@ message MeshGatewayConfiguration {
     BaseK8sResourceConfigurationWithHPAWithoutImage BaseK8sResourceConfigurationWithHPAWithoutImage = 1 [(gogoproto.nullable) = false, (gogoproto.embed) = true, (gogoproto.jsontag) = ",inline"];
     //
 	map<string, string> Labels = 2 [(gogoproto.jsontag) = "labels,omitempty"];
-    // TODO! ServiceType missing from proto
-	// +kubebuilder:validation:Enum=ClusterIP;NodePort;LoadBalancer
-	// k8s.io.api.core.v1.ServiceType ServiceType = 1 [(gogoproto.jsontag) = "serviceType,omitempty"];
+	// +kubebuilder:validation:Enum=ClusterIP;NodePort;LoadBalancer;ExternalName
+	string ServiceType = 3 [(gogoproto.customtype) = "k8s.io/api/core/v1.ServiceType", (gogoproto.nullable) = false, (gogoproto.jsontag) = "serviceType,omitempty"];
     // 
-	string LoadBalancerIP = 3 [(gogoproto.jsontag) = "loadBalancerIP,omitempty"];
+	string LoadBalancerIP = 4 [(gogoproto.jsontag) = "loadBalancerIP,omitempty"];
     //
-    map<string, string> ServiceAnnotations = 4 [(gogoproto.jsontag) = "serviceAnnotations,omitempty"];
+    map<string, string> ServiceAnnotations = 5 [(gogoproto.jsontag) = "serviceAnnotations,omitempty"];
     //
-    map<string, string> ServiceLabels = 5 [(gogoproto.jsontag) = "serviceLabels,omitempty"];
-    // TODO! ServiceExternalTrafficPolicy missing from proto
+    map<string, string> ServiceLabels = 6 [(gogoproto.jsontag) = "serviceLabels,omitempty"];
 	// +kubebuilder:validation:Enum=Local;Cluster
-	// ServiceExternalTrafficPolicy corev1.ServiceExternalTrafficPolicyType `json:"serviceExternalTrafficPolicy,omitempty"`
-	GatewaySDSConfiguration SDS = 6 [(gogoproto.jsontag) = "sds,omitempty"];
+    string ServiceExternalTrafficPolicyType = 7 [(gogoproto.customtype) = "k8s.io/api/core/v1.ServiceExternalTrafficPolicyType", (gogoproto.nullable) = false, (gogoproto.jsontag) = "serviceExternalTrafficPolicyType,omitempty"];
+	// 
+	GatewaySDSConfiguration SDS = 8 [(gogoproto.jsontag) = "sds,omitempty"];
     //
-	string RequestedNetworkView = 7 [(gogoproto.jsontag) = "requestedNetworkView,omitempty"];
+	string RequestedNetworkView = 9 [(gogoproto.jsontag) = "requestedNetworkView,omitempty"];
 	// If present will be appended to the environment variables of the container
-    repeated k8s.io.api.core.v1.EnvVar AdditionalEnvVars = 8 [(gogoproto.nullable) = false, (gogoproto.jsontag) = "additionalEnvVars,omitempty"];
+    repeated k8s.io.api.core.v1.EnvVar AdditionalEnvVars = 10 [(gogoproto.nullable) = false, (gogoproto.jsontag) = "additionalEnvVars,omitempty"];
 	// Whether to run the gateway in a privileged container
-	bool RunAsRoot = 9 [(gogoproto.jsontag) = "runAsRoot,omitempty"];
+	bool RunAsRoot = 11 [(gogoproto.jsontag) = "runAsRoot,omitempty"];
 }
 
 // TODO: move these to seperate protos
