@@ -148,4 +148,18 @@ message NamespacedName {
 // +k8s:deepcopy-gen=true
 // -->
 message MeshGatewayStatus {
+    //
+    ConfigState Status = 1 [(gogoproto.jsontag) = "Status,omitempty"];
+	//
+    repeated string GatewayAddress = 2 [(gogoproto.jsontag) = "GatewayAddress,omitempty"];
+    //
+    string ErrorMessage = 3 [(gogoproto.jsontag) = "ErrorMessage,omitempty"];
+}
+
+enum ConfigState {
+    Created = 0;
+	ReconcileFailed = 1;
+	Reconciling = 2;
+	Available = 3;
+	Unmanaged = 4;
 }
