@@ -14,7 +14,7 @@
 
 syntax = "proto3";
 
-import "mesh/v1alpha1/config.proto";
+import "api/v1alpha1/common.proto";
 import "gogoproto/gogo.proto";
 import "google/api/field_behavior.proto";
 import "k8s.io/api/core/v1/generated.proto";
@@ -87,60 +87,9 @@ message MeshGatewayConfiguration {
 	bool RunAsRoot = 11 [(gogoproto.jsontag) = "runAsRoot,omitempty"];
 }
 
-// TODO: move these to seperate protos
-message BaseK8sResourceConfigurationWithHPAWithoutImage {
-    // +kubebuilder:validation:Minimum=0
-    int32 ReplicaCount = 1 [(gogoproto.nullable) = true, (gogoproto.jsontag) = "replicaCount,omitempty"];
-	// +kubebuilder:validation:Minimum=0
-    int32 MinReplicas = 2 [(gogoproto.nullable) = true, (gogoproto.jsontag) = "minReplicas,omitempty"];
-	// +kubebuilder:validation:Minimum=0
-    int32 MaxReplicas = 3 [(gogoproto.nullable) = true, (gogoproto.jsontag) = "maxReplicas,omitempty"];
-    //
-    BaseK8sResourceConfiguration BaseK8sResourceConfiguration = 4 [(gogoproto.nullable) = false, (gogoproto.embed) = true, (gogoproto.jsontag) = ",inline"];
-}
-
-message BaseK8sResourceConfiguration {
-    //
-    k8s.io.api.core.v1.ResourceRequirements Resources = 1 [(gogoproto.jsontag) = "resources,omitempty"];
-    //
-	map<string,string> NodeSelector = 2 [(gogoproto.jsontag) = "nodeSelector,omitempty"];
-    //
-	k8s.io.api.core.v1.Affinity Affinity = 3 [(gogoproto.jsontag) = "affinity,omitempty"];
-    //
-	repeated k8s.io.api.core.v1.Toleration Tolerations = 4 [(gogoproto.nullable) = false, (gogoproto.jsontag) = "tolerations,omitempty"];
-    //
-	map<string,string> PodAnnotations = 5 [(gogoproto.jsontag) = "podAnnotations,omitempty"];
-    //
-	k8s.io.api.core.v1.SecurityContext SecurityContext = 6 [(gogoproto.jsontag) = "securityContext,omitempty"];
-}
-
-message GatewaySDSConfiguration {
-    //
-    bool Enabled = 1 [(gogoproto.jsontag) = "enabled,omitempty"];
-    //
-    string Image = 2 [(gogoproto.jsontag) = "image,omitempty"];
-    //
-    k8s.io.api.core.v1.ResourceRequirements Resources = 3 [(gogoproto.jsontag) = "resources,omitempty"];
-}
-
-// TODO: GatewayTargetPort to pointer
-message ServicePort {
-    //
-    int32 GatewayTargetPort = 1 [(gogoproto.nullable) = true, (gogoproto.jsontag) = "targetPort,omitempty"];
-    // 
-    k8s.io.api.core.v1.ServicePort ServicePort = 2 [(gogoproto.nullable) = false, (gogoproto.jsontag) = ",inline", (gogoproto.embed) = true];
-}
-
 enum GatewayType {
     Ingress = 0;
     Egress = 1;
-}
-
-message NamespacedName {
-    // Name of the referenced Kubernetes resource
-    string name = 1 [(gogoproto.jsontag) = "name,omitempty"];
-    // Namespace of the referenced Kubernetes resource
-    string namespace = 2  [(gogoproto.jsontag) = "namespace,omitempty"];;
 }
 
 // <!-- go code generation tags

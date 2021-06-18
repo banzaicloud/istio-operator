@@ -9,7 +9,6 @@ import (
 	_ "github.com/gogo/protobuf/gogoproto"
 	github_com_gogo_protobuf_jsonpb "github.com/gogo/protobuf/jsonpb"
 	proto "github.com/gogo/protobuf/proto"
-	_ "istio.io/api/mesh/v1alpha1"
 	_ "istio.io/gogo-genproto/googleapis/google/api"
 	_ "k8s.io/api/core/v1"
 	math "math"
@@ -39,61 +38,6 @@ func (this *MeshGatewayConfiguration) MarshalJSON() ([]byte, error) {
 
 // UnmarshalJSON is a custom unmarshaler for MeshGatewayConfiguration
 func (this *MeshGatewayConfiguration) UnmarshalJSON(b []byte) error {
-	return MeshgatewayUnmarshaler.Unmarshal(bytes.NewReader(b), this)
-}
-
-// MarshalJSON is a custom marshaler for BaseK8SResourceConfigurationWithHPAWithoutImage
-func (this *BaseK8SResourceConfigurationWithHPAWithoutImage) MarshalJSON() ([]byte, error) {
-	str, err := MeshgatewayMarshaler.MarshalToString(this)
-	return []byte(str), err
-}
-
-// UnmarshalJSON is a custom unmarshaler for BaseK8SResourceConfigurationWithHPAWithoutImage
-func (this *BaseK8SResourceConfigurationWithHPAWithoutImage) UnmarshalJSON(b []byte) error {
-	return MeshgatewayUnmarshaler.Unmarshal(bytes.NewReader(b), this)
-}
-
-// MarshalJSON is a custom marshaler for BaseK8SResourceConfiguration
-func (this *BaseK8SResourceConfiguration) MarshalJSON() ([]byte, error) {
-	str, err := MeshgatewayMarshaler.MarshalToString(this)
-	return []byte(str), err
-}
-
-// UnmarshalJSON is a custom unmarshaler for BaseK8SResourceConfiguration
-func (this *BaseK8SResourceConfiguration) UnmarshalJSON(b []byte) error {
-	return MeshgatewayUnmarshaler.Unmarshal(bytes.NewReader(b), this)
-}
-
-// MarshalJSON is a custom marshaler for GatewaySDSConfiguration
-func (this *GatewaySDSConfiguration) MarshalJSON() ([]byte, error) {
-	str, err := MeshgatewayMarshaler.MarshalToString(this)
-	return []byte(str), err
-}
-
-// UnmarshalJSON is a custom unmarshaler for GatewaySDSConfiguration
-func (this *GatewaySDSConfiguration) UnmarshalJSON(b []byte) error {
-	return MeshgatewayUnmarshaler.Unmarshal(bytes.NewReader(b), this)
-}
-
-// MarshalJSON is a custom marshaler for ServicePort
-func (this *ServicePort) MarshalJSON() ([]byte, error) {
-	str, err := MeshgatewayMarshaler.MarshalToString(this)
-	return []byte(str), err
-}
-
-// UnmarshalJSON is a custom unmarshaler for ServicePort
-func (this *ServicePort) UnmarshalJSON(b []byte) error {
-	return MeshgatewayUnmarshaler.Unmarshal(bytes.NewReader(b), this)
-}
-
-// MarshalJSON is a custom marshaler for NamespacedName
-func (this *NamespacedName) MarshalJSON() ([]byte, error) {
-	str, err := MeshgatewayMarshaler.MarshalToString(this)
-	return []byte(str), err
-}
-
-// UnmarshalJSON is a custom unmarshaler for NamespacedName
-func (this *NamespacedName) UnmarshalJSON(b []byte) error {
 	return MeshgatewayUnmarshaler.Unmarshal(bytes.NewReader(b), this)
 }
 
