@@ -52,17 +52,25 @@ message MeshGatewaySpec {
     // Contains the intended version for the Mesh Gateway.
     // +kubebuilder:validation:Pattern=^1.
     string version = 1 [(gogoproto.jsontag) = "version", (google.api.field_behavior) = REQUIRED];
-    // // Defines mesh-wide settings for the Istio control plane.
-    // istio.mesh.v1alpha1.MeshConfig mesh_config = 2;
-
+    
     // MeshGatewayConfiguration `json:",inline"`
     // +kubebuilder:validation:MinItems=0
-    repeated k8s.io.api.core.v1.ServicePort Ports = 2 [(gogoproto.jsontag) = "ports"];
+    repeated ServicePort ports = 2 [(gogoproto.nullable) = false, (gogoproto.jsontag) = "ports"];
     // // +kubebuilder:validation:Enum=ingress;egress
     // Type GatewayType `json:"type"`
     // // Istio CR to which this gateway belongs to
     // IstioControlPlane *NamespacedName `json:"istioControlPlane,omitempty"`
+}
 
+message ServicePort {
+    //
+    int32 GatewayTargetPort = 1 [(gogoproto.nullable) = true, (gogoproto.jsontag) = "targetPort,omitempty"];
+    // 
+    k8s.io.api.core.v1.ServicePort ServicePort = 2 [(gogoproto.nullable) = false, (gogoproto.jsontag) = ",inline", (gogoproto.embed) = true];
+}
+
+message Almafa {
+    string asd = 1;
 }
 
 // <!-- go code generation tags

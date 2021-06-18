@@ -4,7 +4,7 @@ description: Istio Mesh Gateway descriptor
 layout: protoc-gen-docs
 generator: protoc-gen-docs
 schema: istio-operator.api.v1alpha1.MeshGatewaySpec
-number_of_entries: 3
+number_of_entries: 5
 ---
 <h2 id="MeshGatewaySpec">MeshGatewaySpec</h2>
 <section>
@@ -32,13 +32,72 @@ number_of_entries: 3
 Yes
 </td>
 </tr>
-<tr id="MeshGatewaySpec-Ports">
-<td><code>Ports</code></td>
-<td><code><a href="#k8s-io-api-core-v1-ServicePort">ServicePort[]</a></code></td>
+<tr id="MeshGatewaySpec-ports">
+<td><code>ports</code></td>
+<td><code><a href="#ServicePort">ServicePort[]</a></code></td>
 <td>
 <p>MeshGatewayConfiguration <code>json:&quot;,inline&quot;</code>
 +kubebuilder:validation:MinItems=0</p>
 
+</td>
+<td>
+No
+</td>
+</tr>
+</tbody>
+</table>
+</section>
+<h2 id="ServicePort">ServicePort</h2>
+<section>
+<table class="message-fields">
+<thead>
+<tr>
+<th>Field</th>
+<th>Type</th>
+<th>Description</th>
+<th>Required</th>
+</tr>
+</thead>
+<tbody>
+<tr id="ServicePort-GatewayTargetPort">
+<td><code>GatewayTargetPort</code></td>
+<td><code>int32</code></td>
+<td>
+
+</td>
+<td>
+No
+</td>
+</tr>
+<tr id="ServicePort-ServicePort">
+<td><code>ServicePort</code></td>
+<td><code><a href="#k8s-io-api-core-v1-ServicePort">ServicePort</a></code></td>
+<td>
+
+</td>
+<td>
+No
+</td>
+</tr>
+</tbody>
+</table>
+</section>
+<h2 id="Almafa">Almafa</h2>
+<section>
+<table class="message-fields">
+<thead>
+<tr>
+<th>Field</th>
+<th>Type</th>
+<th>Description</th>
+<th>Required</th>
+</tr>
+</thead>
+<tbody>
+<tr id="Almafa-asd">
+<td><code>asd</code></td>
+<td><code>string</code></td>
+<td>
 </td>
 <td>
 No
