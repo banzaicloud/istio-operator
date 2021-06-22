@@ -1,8 +1,11 @@
 apiVersion: servicemesh.cisco.com/v1alpha1
 kind: MeshGateway
 metadata:
-  name: meshgateway-sample-v110x
+  name: meshgateway-sample
 spec:
+  istioControlPlane:
+      name: cp-v110x
+      namespace: istio-system
   type: ingress
   replicaCount: 1
   minReplicas: 1
