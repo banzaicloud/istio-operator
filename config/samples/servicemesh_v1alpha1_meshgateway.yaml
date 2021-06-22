@@ -1,7 +1,42 @@
 apiVersion: servicemesh.cisco.com/v1alpha1
 kind: MeshGateway
 metadata:
-  name: meshgateway-sample
+  name: meshgateway-sample-v110x
 spec:
-  # Add fields here
-  foo: bar
+  type: ingress
+  replicaCount: 1
+  minReplicas: 1
+  maxReplicas: 5
+  serviceType: "LoadBalancer"
+  loadBalancerIP: ""
+  serviceAnnotations: {}
+  serviceLabels: {}
+  serviceExternalTrafficPolicy: "Cluster"
+  runAsRoot: false
+  ports:
+    - port: 15021
+      targetPort: 15021
+      name: status-port
+    - port: 80
+      targetPort: 8080
+      name: http2
+    - port: 443
+      targetPort: 8443
+      name: https
+    - port: 15443
+      targetPort: 15443
+      name: tls
+#   additionalEnvVars:
+#   - name: ADDITIONAL_VARIABLE
+#     value: "value"
+#   - name: META_POD_NAME
+#     valueFrom:
+#       fieldRef:
+#         fieldPath: metadata.name
+  resources:
+    requests:
+      cpu: 100m
+      memory: 128Mi
+    limits:
+      cpu: 2000m
+      memory: 1024Mi

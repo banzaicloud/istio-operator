@@ -2265,43 +2265,6 @@ spec:
                     description: Whether to run the gateway in a privileged container.
                     nullable: true
                     type: boolean
-                  SDS:
-                    description: Secret Discovery Service configuration for the gateway.
-                    properties:
-                      Enabled:
-                        description: Flags if Gateway Secret Discovery Service is
-                          enabled or not.
-                        nullable: true
-                        type: boolean
-                      Image:
-                        description: Container image to use for SDS.
-                        format: string
-                        type: string
-                      Resources:
-                        description: Standard Kubernetes memory and CPU resource requirements.
-                        properties:
-                          limits:
-                            additionalProperties:
-                              properties:
-                                string:
-                                  format: string
-                                  type: string
-                              type: object
-                            description: Limits describes the maximum amount of compute
-                              resources allowed.
-                            type: object
-                          requests:
-                            additionalProperties:
-                              properties:
-                                string:
-                                  format: string
-                                  type: string
-                              type: object
-                            description: Requests describes the minimum amount of
-                              compute resources required.
-                            type: object
-                        type: object
-                    type: object
                   ServiceAnnotations:
                     additionalProperties:
                       format: string
@@ -2389,13 +2352,10 @@ spec:
                 - ingress
                 - egress
                 type: string
-              version:
-                description: Contains the intended version for the Mesh Gateway.
-                format: string
-                pattern: ^1.
-                type: string
             required:
-            - version
+            - type
+            - ports
+            - istioControlPlane
             type: object
           status:
             type: object

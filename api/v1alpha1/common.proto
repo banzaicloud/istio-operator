@@ -59,15 +59,6 @@ message BaseK8sResourceConfiguration {
 	k8s.io.api.core.v1.SecurityContext SecurityContext = 6 [(gogoproto.jsontag) = "securityContext,omitempty"];
 }
 
-message GatewaySDSConfiguration {
-    // Flags if Gateway Secret Discovery Service is enabled or not
-    google.protobuf.BoolValue Enabled = 1 [(gogoproto.wktpointer) = true, (gogoproto.jsontag) = "enabled,omitempty"];
-    // Container image to use for SDS
-    string Image = 2 [(gogoproto.jsontag) = "image,omitempty"];
-    // Standard Kubernetes memory and CPU resource requirements
-    k8s.io.api.core.v1.ResourceRequirements Resources = 3 [(gogoproto.jsontag) = "resources,omitempty"];
-}
-
 message ServicePort {
     // Target port to use
     google.protobuf.Int32Value GatewayTargetPort = 1 [(gogoproto.wktpointer) = true, (gogoproto.jsontag) = "targetPort,omitempty"];

@@ -50,26 +50,23 @@ option go_package = "github.com/banzaicloud/istio-operator/v2/api/v1alpha1";
 // +k8s:deepcopy-gen=true
 // -->
 message MeshGatewaySpec {
-    // Contains the intended version for the Mesh Gateway.
-    // +kubebuilder:validation:Pattern=^1.
-    string version = 1 [(gogoproto.jsontag) = "version", (google.api.field_behavior) = REQUIRED];
     // General Mesh gateway configuration
-    MeshGatewayConfiguration MeshGwConfiguration = 2 [(gogoproto.nullable) = false, (gogoproto.embed) = true, (gogoproto.jsontag) = ",inline"];
+    MeshGatewayConfiguration MeshGwConfiguration = 1 [(gogoproto.nullable) = false, (gogoproto.embed) = true, (gogoproto.jsontag) = ",inline"];
     // Service ports to open for the gateway
     // +kubebuilder:validation:MinItems=0
-    repeated ServicePort ports = 3 [(gogoproto.nullable) = false, (gogoproto.jsontag) = "ports"];
+    repeated ServicePort ports = 2 [(gogoproto.nullable) = false, (gogoproto.jsontag) = "ports", (google.api.field_behavior) = REQUIRED];
     // Type of gateway, either ingress or egress
     // +kubebuilder:validation:Enum=ingress;egress
-    GatewayType type = 4  [(gogoproto.jsontag) = "type"];
+    GatewayType type = 3  [(gogoproto.jsontag) = "type", (google.api.field_behavior) = REQUIRED];
     // Istio CR to which this gateway belongs to
-    NamespacedName istioControlPlane = 5 [(gogoproto.jsontag) = "istioControlPlane,omitempty"];
+    NamespacedName istioControlPlane = 4 [(gogoproto.jsontag) = "istioControlPlane", (google.api.field_behavior) = REQUIRED];
 }
 
 message MeshGatewayConfiguration {
     // Standard Kubernetes resource configuration
     BaseK8sResourceConfigurationWithHPAWithoutImage BaseK8sResourceConfigWithHPAWithoutImage = 1 [(gogoproto.nullable) = false, (gogoproto.embed) = true, (gogoproto.jsontag) = ",inline"];
     // Labels to attach to the mesh gateway
-	map<string, string> Labels = 2 [(gogoproto.jsontag) = "labels,omitempty"];
+    map<string, string> Labels = 2 [(gogoproto.jsontag) = "labels,omitempty"];
     // Kubernetes Service Type for the gateway
 	// +kubebuilder:validation:Enum=ClusterIP;NodePort;LoadBalancer;ExternalName
 	string ServiceType = 3 [(gogoproto.customtype) = "k8s.io/api/core/v1.ServiceType", (gogoproto.nullable) = false, (gogoproto.jsontag) = "serviceType,omitempty"];
@@ -82,9 +79,7 @@ message MeshGatewayConfiguration {
     // Kubernetes External Traffic Policy Type for the gateway service
 	// +kubebuilder:validation:Enum=Local;Cluster
     string ServiceExternalTrafficPolicyType = 7 [(gogoproto.customtype) = "k8s.io/api/core/v1.ServiceExternalTrafficPolicyType", (gogoproto.nullable) = false, (gogoproto.jsontag) = "serviceExternalTrafficPolicyType,omitempty"];
-	// Secret Discovery Service configuration for the gateway
-	GatewaySDSConfiguration SDS = 8 [(gogoproto.nullable) = false, (gogoproto.jsontag) = "sds,omitempty"];
-    // Specifies the networks that the proxy wants to see
+	// Specifies the networks that the proxy wants to see
 	string RequestedNetworkView = 9 [(gogoproto.jsontag) = "requestedNetworkView,omitempty"];
 	// If present will be appended to the environment variables of the container
     repeated k8s.io.api.core.v1.EnvVar AdditionalEnvVars = 10 [(gogoproto.nullable) = false, (gogoproto.jsontag) = "additionalEnvVars,omitempty"];

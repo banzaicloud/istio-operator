@@ -4,7 +4,7 @@ description: Istio Mesh Gateway descriptor
 layout: protoc-gen-docs
 generator: protoc-gen-docs
 schema: istio-operator.api.v1alpha1.MeshGatewaySpec
-number_of_entries: 10
+number_of_entries: 9
 ---
 <h2 id="MeshGatewaySpec">MeshGatewaySpec</h2>
 <section>
@@ -20,18 +20,6 @@ number_of_entries: 10
 </tr>
 </thead>
 <tbody>
-<tr id="MeshGatewaySpec-version">
-<td><code>version</code></td>
-<td><code>string</code></td>
-<td>
-<p>Contains the intended version for the Mesh Gateway.
-+kubebuilder:validation:Pattern=^1.</p>
-
-</td>
-<td>
-Yes
-</td>
-</tr>
 <tr id="MeshGatewaySpec-MeshGwConfiguration">
 <td><code>MeshGwConfiguration</code></td>
 <td><code><a href="#MeshGatewayConfiguration">MeshGatewayConfiguration</a></code></td>
@@ -52,7 +40,7 @@ No
 
 </td>
 <td>
-No
+Yes
 </td>
 </tr>
 <tr id="MeshGatewaySpec-type">
@@ -64,7 +52,7 @@ No
 
 </td>
 <td>
-No
+Yes
 </td>
 </tr>
 <tr id="MeshGatewaySpec-istioControlPlane">
@@ -75,7 +63,7 @@ No
 
 </td>
 <td>
-No
+Yes
 </td>
 </tr>
 </tbody>
@@ -166,17 +154,6 @@ No
 <td>
 <p>Kubernetes External Traffic Policy Type for the gateway service
 +kubebuilder:validation:Enum=Local;Cluster</p>
-
-</td>
-<td>
-No
-</td>
-</tr>
-<tr id="MeshGatewayConfiguration-SDS">
-<td><code>SDS</code></td>
-<td><code><a href="#GatewaySDSConfiguration">GatewaySDSConfiguration</a></code></td>
-<td>
-<p>Secret Discovery Service configuration for the gateway</p>
 
 </td>
 <td>
@@ -395,54 +372,6 @@ No
 <td><code><a href="#BaseK8sResourceConfiguration">BaseK8sResourceConfiguration</a></code></td>
 <td>
 <p>Standard Kubernetes resource configuration</p>
-
-</td>
-<td>
-No
-</td>
-</tr>
-</tbody>
-</table>
-</section>
-<h2 id="GatewaySDSConfiguration">GatewaySDSConfiguration</h2>
-<section>
-<table class="message-fields">
-<thead>
-<tr>
-<th>Field</th>
-<th>Type</th>
-<th>Description</th>
-<th>Required</th>
-</tr>
-</thead>
-<tbody>
-<tr id="GatewaySDSConfiguration-Enabled">
-<td><code>Enabled</code></td>
-<td><code><a href="https://developers.google.com/protocol-buffers/docs/reference/google.protobuf#boolvalue">BoolValue</a></code></td>
-<td>
-<p>Flags if Gateway Secret Discovery Service is enabled or not</p>
-
-</td>
-<td>
-No
-</td>
-</tr>
-<tr id="GatewaySDSConfiguration-Image">
-<td><code>Image</code></td>
-<td><code>string</code></td>
-<td>
-<p>Container image to use for SDS</p>
-
-</td>
-<td>
-No
-</td>
-</tr>
-<tr id="GatewaySDSConfiguration-Resources">
-<td><code>Resources</code></td>
-<td><code><a href="#k8s-io-api-core-v1-ResourceRequirements">ResourceRequirements</a></code></td>
-<td>
-<p>Standard Kubernetes memory and CPU resource requirements</p>
 
 </td>
 <td>
