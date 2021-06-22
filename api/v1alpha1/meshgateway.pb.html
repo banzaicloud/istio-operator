@@ -32,10 +32,11 @@ number_of_entries: 10
 Yes
 </td>
 </tr>
-<tr id="MeshGatewaySpec-MeshGatewayConfiguration">
-<td><code>MeshGatewayConfiguration</code></td>
+<tr id="MeshGatewaySpec-MeshGwConfiguration">
+<td><code>MeshGwConfiguration</code></td>
 <td><code><a href="#MeshGatewayConfiguration">MeshGatewayConfiguration</a></code></td>
 <td>
+<p>General Mesh gateway configuration</p>
 
 </td>
 <td>
@@ -46,7 +47,8 @@ No
 <td><code>ports</code></td>
 <td><code><a href="#ServicePort">ServicePort[]</a></code></td>
 <td>
-<p>+kubebuilder:validation:MinItems=0</p>
+<p>Service ports to open for the gateway
++kubebuilder:validation:MinItems=0</p>
 
 </td>
 <td>
@@ -57,7 +59,8 @@ No
 <td><code>type</code></td>
 <td><code><a href="#GatewayType">GatewayType</a></code></td>
 <td>
-<p>+kubebuilder:validation:Enum=ingress;egress</p>
+<p>Type of gateway, either ingress or egress
++kubebuilder:validation:Enum=ingress;egress</p>
 
 </td>
 <td>
@@ -90,10 +93,11 @@ No
 </tr>
 </thead>
 <tbody>
-<tr id="MeshGatewayConfiguration-BaseK8sResourceConfigurationWithHPAWithoutImage">
-<td><code>BaseK8sResourceConfigurationWithHPAWithoutImage</code></td>
+<tr id="MeshGatewayConfiguration-BaseK8sResourceConfigWithHPAWithoutImage">
+<td><code>BaseK8sResourceConfigWithHPAWithoutImage</code></td>
 <td><code><a href="#BaseK8sResourceConfigurationWithHPAWithoutImage">BaseK8sResourceConfigurationWithHPAWithoutImage</a></code></td>
 <td>
+<p>Standard Kubernetes resource configuration</p>
 
 </td>
 <td>
@@ -104,6 +108,7 @@ No
 <td><code>Labels</code></td>
 <td><code>map&lt;string,&nbsp;string&gt;</code></td>
 <td>
+<p>Labels to attach to the mesh gateway</p>
 
 </td>
 <td>
@@ -114,7 +119,8 @@ No
 <td><code>ServiceType</code></td>
 <td><code>string</code></td>
 <td>
-<p>+kubebuilder:validation:Enum=ClusterIP;NodePort;LoadBalancer;ExternalName</p>
+<p>Kubernetes Service Type for the gateway
++kubebuilder:validation:Enum=ClusterIP;NodePort;LoadBalancer;ExternalName</p>
 
 </td>
 <td>
@@ -125,6 +131,7 @@ No
 <td><code>LoadBalancerIP</code></td>
 <td><code>string</code></td>
 <td>
+<p>Load Balancer IP override</p>
 
 </td>
 <td>
@@ -135,6 +142,7 @@ No
 <td><code>ServiceAnnotations</code></td>
 <td><code>map&lt;string,&nbsp;string&gt;</code></td>
 <td>
+<p>Annotations to add to the gateway service</p>
 
 </td>
 <td>
@@ -145,6 +153,7 @@ No
 <td><code>ServiceLabels</code></td>
 <td><code>map&lt;string,&nbsp;string&gt;</code></td>
 <td>
+<p>Labels to attach to the gateway service</p>
 
 </td>
 <td>
@@ -155,7 +164,8 @@ No
 <td><code>ServiceExternalTrafficPolicyType</code></td>
 <td><code>string</code></td>
 <td>
-<p>+kubebuilder:validation:Enum=Local;Cluster</p>
+<p>Kubernetes External Traffic Policy Type for the gateway service
++kubebuilder:validation:Enum=Local;Cluster</p>
 
 </td>
 <td>
@@ -166,6 +176,7 @@ No
 <td><code>SDS</code></td>
 <td><code><a href="#GatewaySDSConfiguration">GatewaySDSConfiguration</a></code></td>
 <td>
+<p>Secret Discovery Service configuration for the gateway</p>
 
 </td>
 <td>
@@ -176,6 +187,7 @@ No
 <td><code>RequestedNetworkView</code></td>
 <td><code>string</code></td>
 <td>
+<p>Specifies the networks that the proxy wants to see</p>
 
 </td>
 <td>
@@ -224,6 +236,7 @@ No
 <td><code>Status</code></td>
 <td><code><a href="#ConfigState">ConfigState</a></code></td>
 <td>
+<p>Reconciliation status of the mesh gateway</p>
 
 </td>
 <td>
@@ -234,6 +247,7 @@ No
 <td><code>GatewayAddress</code></td>
 <td><code>string[]</code></td>
 <td>
+<p>Current address for the gateway</p>
 
 </td>
 <td>
@@ -244,6 +258,7 @@ No
 <td><code>ErrorMessage</code></td>
 <td><code>string</code></td>
 <td>
+<p>Reconciliation error message if any</p>
 
 </td>
 <td>
@@ -271,6 +286,7 @@ No
 <td><code>GatewayTargetPort</code></td>
 <td><code>int32</code></td>
 <td>
+<p>Target port to use</p>
 
 </td>
 <td>
@@ -281,6 +297,7 @@ No
 <td><code>ServicePort</code></td>
 <td><code><a href="#k8s-io-api-core-v1-ServicePort">ServicePort</a></code></td>
 <td>
+<p>Standard Kubernetes service port configuration</p>
 
 </td>
 <td>
@@ -343,7 +360,8 @@ No
 <td><code>ReplicaCount</code></td>
 <td><code>int32</code></td>
 <td>
-<p>+kubebuilder:validation:Minimum=0</p>
+<p>Standard Kubernetes replica count configuration
++kubebuilder:validation:Minimum=0</p>
 
 </td>
 <td>
@@ -354,7 +372,8 @@ No
 <td><code>MinReplicas</code></td>
 <td><code>int32</code></td>
 <td>
-<p>+kubebuilder:validation:Minimum=0</p>
+<p>Standard Kubernetes minimum replicas configuration
++kubebuilder:validation:Minimum=0</p>
 
 </td>
 <td>
@@ -365,17 +384,19 @@ No
 <td><code>MaxReplicas</code></td>
 <td><code>int32</code></td>
 <td>
-<p>+kubebuilder:validation:Minimum=0</p>
+<p>Standard Kubernetes maximum replicas configuration
++kubebuilder:validation:Minimum=0</p>
 
 </td>
 <td>
 No
 </td>
 </tr>
-<tr id="BaseK8sResourceConfigurationWithHPAWithoutImage-BaseK8sResourceConfiguration">
-<td><code>BaseK8sResourceConfiguration</code></td>
+<tr id="BaseK8sResourceConfigurationWithHPAWithoutImage-BaseK8sResourceConfig">
+<td><code>BaseK8sResourceConfig</code></td>
 <td><code><a href="#BaseK8sResourceConfiguration">BaseK8sResourceConfiguration</a></code></td>
 <td>
+<p>Standard Kubernetes resource configuration</p>
 
 </td>
 <td>
@@ -401,6 +422,7 @@ No
 <td><code>Enabled</code></td>
 <td><code>bool</code></td>
 <td>
+<p>Flags if Gateway Secret Discovery Service is enabled or not</p>
 
 </td>
 <td>
@@ -411,6 +433,7 @@ No
 <td><code>Image</code></td>
 <td><code>string</code></td>
 <td>
+<p>Container image to use for SDS</p>
 
 </td>
 <td>
@@ -421,6 +444,7 @@ No
 <td><code>Resources</code></td>
 <td><code><a href="#k8s-io-api-core-v1-ResourceRequirements">ResourceRequirements</a></code></td>
 <td>
+<p>Standard Kubernetes memory and CPU resource requirements</p>
 
 </td>
 <td>

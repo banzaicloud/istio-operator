@@ -1534,6 +1534,7 @@ spec:
             description: MeshGateway defines an Istio ingress or egress gateway.
             properties:
               MeshGwConfiguration:
+                description: General Mesh gateway configuration.
                 properties:
                   AdditionalEnvVars:
                     description: If present will be appended to the environment variables
@@ -1639,10 +1640,13 @@ spec:
                       type: object
                     type: array
                   BaseK8sResourceConfigWithHPAWithoutImage:
+                    description: Standard Kubernetes resource configuration.
                     properties:
                       BaseK8sResourceConfig:
+                        description: Standard Kubernetes resource configuration.
                         properties:
                           Affinity:
+                            description: Standard Kubernetes affinity configuration.
                             properties:
                               nodeAffinity:
                                 description: Describes node affinity scheduling rules
@@ -2062,13 +2066,17 @@ spec:
                             additionalProperties:
                               format: string
                               type: string
+                            description: Standard Kubernetes node selector configuration.
                             type: object
                           PodAnnotations:
                             additionalProperties:
                               format: string
                               type: string
+                            description: Standard Kubernetes pod annotation configuration.
                             type: object
                           Resources:
+                            description: Standard Kubernetes memory and CPU resource
+                              requirements.
                             properties:
                               limits:
                                 additionalProperties:
@@ -2092,6 +2100,7 @@ spec:
                                 type: object
                             type: object
                           SecurityContext:
+                            description: Standard Kubernetes security context configuration.
                             properties:
                               allowPrivilegeEscalation:
                                 description: |-
@@ -2190,6 +2199,7 @@ spec:
                                 type: object
                             type: object
                           Tolerations:
+                            description: Standard Kubernetes toleration configuration.
                             items:
                               properties:
                                 effect:
@@ -2222,14 +2232,17 @@ spec:
                             type: array
                         type: object
                       MaxReplicas:
+                        description: Standard Kubernetes maximum replicas configuration.
                         format: int32
                         minimum: 0
                         type: integer
                       MinReplicas:
+                        description: Standard Kubernetes minimum replicas configuration.
                         format: int32
                         minimum: 0
                         type: integer
                       ReplicaCount:
+                        description: Standard Kubernetes replica count configuration.
                         format: int32
                         minimum: 0
                         type: integer
@@ -2238,24 +2251,32 @@ spec:
                     additionalProperties:
                       format: string
                       type: string
+                    description: Labels to attach to the mesh gateway.
                     type: object
                   LoadBalancerIP:
+                    description: Load Balancer IP override.
                     format: string
                     type: string
                   RequestedNetworkView:
+                    description: Specifies the networks that the proxy wants to see.
                     format: string
                     type: string
                   RunAsRoot:
                     description: Whether to run the gateway in a privileged container.
                     type: boolean
                   SDS:
+                    description: Secret Discovery Service configuration for the gateway.
                     properties:
                       Enabled:
+                        description: Flags if Gateway Secret Discovery Service is
+                          enabled or not.
                         type: boolean
                       Image:
+                        description: Container image to use for SDS.
                         format: string
                         type: string
                       Resources:
+                        description: Standard Kubernetes memory and CPU resource requirements.
                         properties:
                           limits:
                             additionalProperties:
@@ -2283,8 +2304,11 @@ spec:
                     additionalProperties:
                       format: string
                       type: string
+                    description: Annotations to add to the gateway service.
                     type: object
                   ServiceExternalTrafficPolicyType:
+                    description: Kubernetes External Traffic Policy Type for the gateway
+                      service.
                     enum:
                     - Local
                     - Cluster
@@ -2294,8 +2318,10 @@ spec:
                     additionalProperties:
                       format: string
                       type: string
+                    description: Labels to attach to the gateway service.
                     type: object
                   ServiceType:
+                    description: Kubernetes Service Type for the gateway.
                     enum:
                     - ClusterIP
                     - NodePort
@@ -2317,12 +2343,15 @@ spec:
                     type: string
                 type: object
               ports:
+                description: Service ports to open for the gateway.
                 items:
                   properties:
                     GatewayTargetPort:
+                      description: Target port to use.
                       format: int32
                       type: integer
                     ServicePort:
+                      description: Standard Kubernetes service port configuration.
                       properties:
                         name:
                           description: The name of this port within the service.
@@ -2353,6 +2382,7 @@ spec:
                 minItems: 0
                 type: array
               type:
+                description: Type of gateway, either ingress or egress.
                 enum:
                 - ingress
                 - egress
