@@ -2353,9 +2353,9 @@ spec:
                 - egress
                 type: string
             required:
+            - istioControlPlane
             - type
             - ports
-            - istioControlPlane
             type: object
           status:
             type: object
