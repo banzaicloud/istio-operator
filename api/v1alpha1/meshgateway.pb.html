@@ -207,7 +207,7 @@ No
 </tr>
 <tr id="MeshGatewayConfiguration-RunAsRoot">
 <td><code>RunAsRoot</code></td>
-<td><code>bool</code></td>
+<td><code><a href="https://developers.google.com/protocol-buffers/docs/reference/google.protobuf#boolvalue">BoolValue</a></code></td>
 <td>
 <p>Whether to run the gateway in a privileged container</p>
 
@@ -270,8 +270,6 @@ No
 </section>
 <h2 id="ServicePort">ServicePort</h2>
 <section>
-<p>TODO: GatewayTargetPort to pointer</p>
-
 <table class="message-fields">
 <thead>
 <tr>
@@ -284,7 +282,7 @@ No
 <tbody>
 <tr id="ServicePort-GatewayTargetPort">
 <td><code>GatewayTargetPort</code></td>
-<td><code>int32</code></td>
+<td><code><a href="https://developers.google.com/protocol-buffers/docs/reference/google.protobuf#int32value">Int32Value</a></code></td>
 <td>
 <p>Target port to use</p>
 
@@ -358,7 +356,7 @@ No
 <tbody>
 <tr id="BaseK8sResourceConfigurationWithHPAWithoutImage-ReplicaCount">
 <td><code>ReplicaCount</code></td>
-<td><code>int32</code></td>
+<td><code><a href="https://developers.google.com/protocol-buffers/docs/reference/google.protobuf#int32value">Int32Value</a></code></td>
 <td>
 <p>Standard Kubernetes replica count configuration
 +kubebuilder:validation:Minimum=0</p>
@@ -370,7 +368,7 @@ No
 </tr>
 <tr id="BaseK8sResourceConfigurationWithHPAWithoutImage-MinReplicas">
 <td><code>MinReplicas</code></td>
-<td><code>int32</code></td>
+<td><code><a href="https://developers.google.com/protocol-buffers/docs/reference/google.protobuf#int32value">Int32Value</a></code></td>
 <td>
 <p>Standard Kubernetes minimum replicas configuration
 +kubebuilder:validation:Minimum=0</p>
@@ -382,7 +380,7 @@ No
 </tr>
 <tr id="BaseK8sResourceConfigurationWithHPAWithoutImage-MaxReplicas">
 <td><code>MaxReplicas</code></td>
-<td><code>int32</code></td>
+<td><code><a href="https://developers.google.com/protocol-buffers/docs/reference/google.protobuf#int32value">Int32Value</a></code></td>
 <td>
 <p>Standard Kubernetes maximum replicas configuration
 +kubebuilder:validation:Minimum=0</p>
@@ -420,7 +418,7 @@ No
 <tbody>
 <tr id="GatewaySDSConfiguration-Enabled">
 <td><code>Enabled</code></td>
-<td><code>bool</code></td>
+<td><code><a href="https://developers.google.com/protocol-buffers/docs/reference/google.protobuf#boolvalue">BoolValue</a></code></td>
 <td>
 <p>Flags if Gateway Secret Discovery Service is enabled or not</p>
 

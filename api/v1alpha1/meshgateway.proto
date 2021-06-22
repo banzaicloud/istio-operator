@@ -14,6 +14,7 @@
 
 syntax = "proto3";
 
+import "google/protobuf/wrappers.proto";
 import "api/v1alpha1/common.proto";
 import "gogoproto/gogo.proto";
 import "google/api/field_behavior.proto";
@@ -82,13 +83,13 @@ message MeshGatewayConfiguration {
 	// +kubebuilder:validation:Enum=Local;Cluster
     string ServiceExternalTrafficPolicyType = 7 [(gogoproto.customtype) = "k8s.io/api/core/v1.ServiceExternalTrafficPolicyType", (gogoproto.nullable) = false, (gogoproto.jsontag) = "serviceExternalTrafficPolicyType,omitempty"];
 	// Secret Discovery Service configuration for the gateway
-	GatewaySDSConfiguration SDS = 8 [(gogoproto.jsontag) = "sds,omitempty"];
+	GatewaySDSConfiguration SDS = 8 [(gogoproto.nullable) = false, (gogoproto.jsontag) = "sds,omitempty"];
     // Specifies the networks that the proxy wants to see
 	string RequestedNetworkView = 9 [(gogoproto.jsontag) = "requestedNetworkView,omitempty"];
 	// If present will be appended to the environment variables of the container
     repeated k8s.io.api.core.v1.EnvVar AdditionalEnvVars = 10 [(gogoproto.nullable) = false, (gogoproto.jsontag) = "additionalEnvVars,omitempty"];
 	// Whether to run the gateway in a privileged container
-	bool RunAsRoot = 11 [(gogoproto.jsontag) = "runAsRoot,omitempty"];
+	google.protobuf.BoolValue RunAsRoot = 11 [(gogoproto.wktpointer) = true, (gogoproto.jsontag) = "runAsRoot,omitempty"];
 }
 
 enum GatewayType {

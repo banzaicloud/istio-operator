@@ -2233,18 +2233,18 @@ spec:
                         type: object
                       MaxReplicas:
                         description: Standard Kubernetes maximum replicas configuration.
-                        format: int32
                         minimum: 0
+                        nullable: true
                         type: integer
                       MinReplicas:
                         description: Standard Kubernetes minimum replicas configuration.
-                        format: int32
                         minimum: 0
+                        nullable: true
                         type: integer
                       ReplicaCount:
                         description: Standard Kubernetes replica count configuration.
-                        format: int32
                         minimum: 0
+                        nullable: true
                         type: integer
                     type: object
                   Labels:
@@ -2263,6 +2263,7 @@ spec:
                     type: string
                   RunAsRoot:
                     description: Whether to run the gateway in a privileged container.
+                    nullable: true
                     type: boolean
                   SDS:
                     description: Secret Discovery Service configuration for the gateway.
@@ -2270,6 +2271,7 @@ spec:
                       Enabled:
                         description: Flags if Gateway Secret Discovery Service is
                           enabled or not.
+                        nullable: true
                         type: boolean
                       Image:
                         description: Container image to use for SDS.
@@ -2348,7 +2350,7 @@ spec:
                   properties:
                     GatewayTargetPort:
                       description: Target port to use.
-                      format: int32
+                      nullable: true
                       type: integer
                     ServicePort:
                       description: Standard Kubernetes service port configuration.
