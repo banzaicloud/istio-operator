@@ -1,0 +1,503 @@
+---
+title: Istio Mesh Gateway Spec
+description: Istio Mesh Gateway descriptor
+layout: protoc-gen-docs
+generator: protoc-gen-docs
+schema: istio-operator.api.v1alpha1.MeshGatewaySpec
+number_of_entries: 9
+---
+<h2 id="MeshGatewaySpec">MeshGatewaySpec</h2>
+<section>
+<p>MeshGateway defines an Istio ingress or egress gateway</p>
+
+<table class="message-fields">
+<thead>
+<tr>
+<th>Field</th>
+<th>Type</th>
+<th>Description</th>
+<th>Required</th>
+</tr>
+</thead>
+<tbody>
+<tr id="MeshGatewaySpec-MeshGwConfiguration">
+<td><code>MeshGwConfiguration</code></td>
+<td><code><a href="#MeshGatewayConfiguration">MeshGatewayConfiguration</a></code></td>
+<td>
+<p>General Mesh gateway configuration</p>
+
+</td>
+<td>
+No
+</td>
+</tr>
+<tr id="MeshGatewaySpec-ports">
+<td><code>ports</code></td>
+<td><code><a href="#ServicePort">ServicePort[]</a></code></td>
+<td>
+<p>Service ports to open for the gateway
++kubebuilder:validation:MinItems=0</p>
+
+</td>
+<td>
+Yes
+</td>
+</tr>
+<tr id="MeshGatewaySpec-type">
+<td><code>type</code></td>
+<td><code><a href="#GatewayType">GatewayType</a></code></td>
+<td>
+<p>Type of gateway, either ingress or egress
++kubebuilder:validation:Enum=ingress;egress</p>
+
+</td>
+<td>
+Yes
+</td>
+</tr>
+<tr id="MeshGatewaySpec-istioControlPlane">
+<td><code>istioControlPlane</code></td>
+<td><code><a href="#NamespacedName">NamespacedName</a></code></td>
+<td>
+<p>Istio CR to which this gateway belongs to</p>
+
+</td>
+<td>
+Yes
+</td>
+</tr>
+</tbody>
+</table>
+</section>
+<h2 id="MeshGatewayConfiguration">MeshGatewayConfiguration</h2>
+<section>
+<table class="message-fields">
+<thead>
+<tr>
+<th>Field</th>
+<th>Type</th>
+<th>Description</th>
+<th>Required</th>
+</tr>
+</thead>
+<tbody>
+<tr id="MeshGatewayConfiguration-BaseK8sResourceConfigWithHPAWithoutImage">
+<td><code>BaseK8sResourceConfigWithHPAWithoutImage</code></td>
+<td><code><a href="#BaseK8sResourceConfigurationWithHPAWithoutImage">BaseK8sResourceConfigurationWithHPAWithoutImage</a></code></td>
+<td>
+<p>Standard Kubernetes resource configuration</p>
+
+</td>
+<td>
+No
+</td>
+</tr>
+<tr id="MeshGatewayConfiguration-Labels">
+<td><code>Labels</code></td>
+<td><code>map&lt;string,&nbsp;string&gt;</code></td>
+<td>
+<p>Labels to attach to the mesh gateway</p>
+
+</td>
+<td>
+No
+</td>
+</tr>
+<tr id="MeshGatewayConfiguration-ServiceType">
+<td><code>ServiceType</code></td>
+<td><code>string</code></td>
+<td>
+<p>Kubernetes Service Type for the gateway
++kubebuilder:validation:Enum=ClusterIP;NodePort;LoadBalancer;ExternalName</p>
+
+</td>
+<td>
+No
+</td>
+</tr>
+<tr id="MeshGatewayConfiguration-LoadBalancerIP">
+<td><code>LoadBalancerIP</code></td>
+<td><code>string</code></td>
+<td>
+<p>Load Balancer IP override</p>
+
+</td>
+<td>
+No
+</td>
+</tr>
+<tr id="MeshGatewayConfiguration-ServiceAnnotations">
+<td><code>ServiceAnnotations</code></td>
+<td><code>map&lt;string,&nbsp;string&gt;</code></td>
+<td>
+<p>Annotations to add to the gateway service</p>
+
+</td>
+<td>
+No
+</td>
+</tr>
+<tr id="MeshGatewayConfiguration-ServiceLabels">
+<td><code>ServiceLabels</code></td>
+<td><code>map&lt;string,&nbsp;string&gt;</code></td>
+<td>
+<p>Labels to attach to the gateway service</p>
+
+</td>
+<td>
+No
+</td>
+</tr>
+<tr id="MeshGatewayConfiguration-ServiceExternalTrafficPolicyType">
+<td><code>ServiceExternalTrafficPolicyType</code></td>
+<td><code>string</code></td>
+<td>
+<p>Kubernetes External Traffic Policy Type for the gateway service
++kubebuilder:validation:Enum=Local;Cluster</p>
+
+</td>
+<td>
+No
+</td>
+</tr>
+<tr id="MeshGatewayConfiguration-RequestedNetworkView">
+<td><code>RequestedNetworkView</code></td>
+<td><code>string</code></td>
+<td>
+<p>Specifies the networks that the proxy wants to see</p>
+
+</td>
+<td>
+No
+</td>
+</tr>
+<tr id="MeshGatewayConfiguration-AdditionalEnvVars">
+<td><code>AdditionalEnvVars</code></td>
+<td><code><a href="#k8s-io-api-core-v1-EnvVar">EnvVar[]</a></code></td>
+<td>
+<p>If present will be appended to the environment variables of the container</p>
+
+</td>
+<td>
+No
+</td>
+</tr>
+<tr id="MeshGatewayConfiguration-RunAsRoot">
+<td><code>RunAsRoot</code></td>
+<td><code><a href="https://developers.google.com/protocol-buffers/docs/reference/google.protobuf#boolvalue">BoolValue</a></code></td>
+<td>
+<p>Whether to run the gateway in a privileged container</p>
+
+</td>
+<td>
+No
+</td>
+</tr>
+</tbody>
+</table>
+</section>
+<h2 id="MeshGatewayStatus">MeshGatewayStatus</h2>
+<section>
+
+<table class="message-fields">
+<thead>
+<tr>
+<th>Field</th>
+<th>Type</th>
+<th>Description</th>
+<th>Required</th>
+</tr>
+</thead>
+<tbody>
+<tr id="MeshGatewayStatus-Status">
+<td><code>Status</code></td>
+<td><code><a href="#ConfigState">ConfigState</a></code></td>
+<td>
+<p>Reconciliation status of the mesh gateway</p>
+
+</td>
+<td>
+No
+</td>
+</tr>
+<tr id="MeshGatewayStatus-GatewayAddress">
+<td><code>GatewayAddress</code></td>
+<td><code>string[]</code></td>
+<td>
+<p>Current address for the gateway</p>
+
+</td>
+<td>
+No
+</td>
+</tr>
+<tr id="MeshGatewayStatus-ErrorMessage">
+<td><code>ErrorMessage</code></td>
+<td><code>string</code></td>
+<td>
+<p>Reconciliation error message if any</p>
+
+</td>
+<td>
+No
+</td>
+</tr>
+</tbody>
+</table>
+</section>
+<h2 id="ServicePort">ServicePort</h2>
+<section>
+<table class="message-fields">
+<thead>
+<tr>
+<th>Field</th>
+<th>Type</th>
+<th>Description</th>
+<th>Required</th>
+</tr>
+</thead>
+<tbody>
+<tr id="ServicePort-GatewayTargetPort">
+<td><code>GatewayTargetPort</code></td>
+<td><code><a href="https://developers.google.com/protocol-buffers/docs/reference/google.protobuf#int32value">Int32Value</a></code></td>
+<td>
+<p>Target port to use</p>
+
+</td>
+<td>
+No
+</td>
+</tr>
+<tr id="ServicePort-ServicePort">
+<td><code>ServicePort</code></td>
+<td><code><a href="#k8s-io-api-core-v1-ServicePort">ServicePort</a></code></td>
+<td>
+<p>Standard Kubernetes service port configuration</p>
+
+</td>
+<td>
+No
+</td>
+</tr>
+</tbody>
+</table>
+</section>
+<h2 id="NamespacedName">NamespacedName</h2>
+<section>
+<table class="message-fields">
+<thead>
+<tr>
+<th>Field</th>
+<th>Type</th>
+<th>Description</th>
+<th>Required</th>
+</tr>
+</thead>
+<tbody>
+<tr id="NamespacedName-name">
+<td><code>name</code></td>
+<td><code>string</code></td>
+<td>
+<p>Name of the referenced Kubernetes resource</p>
+
+</td>
+<td>
+No
+</td>
+</tr>
+<tr id="NamespacedName-namespace">
+<td><code>namespace</code></td>
+<td><code>string</code></td>
+<td>
+<p>Namespace of the referenced Kubernetes resource</p>
+
+</td>
+<td>
+No
+</td>
+</tr>
+</tbody>
+</table>
+</section>
+<h2 id="BaseK8sResourceConfigurationWithHPAWithoutImage">BaseK8sResourceConfigurationWithHPAWithoutImage</h2>
+<section>
+<table class="message-fields">
+<thead>
+<tr>
+<th>Field</th>
+<th>Type</th>
+<th>Description</th>
+<th>Required</th>
+</tr>
+</thead>
+<tbody>
+<tr id="BaseK8sResourceConfigurationWithHPAWithoutImage-ReplicaCount">
+<td><code>ReplicaCount</code></td>
+<td><code><a href="https://developers.google.com/protocol-buffers/docs/reference/google.protobuf#int32value">Int32Value</a></code></td>
+<td>
+<p>Standard Kubernetes replica count configuration
++kubebuilder:validation:Minimum=0</p>
+
+</td>
+<td>
+No
+</td>
+</tr>
+<tr id="BaseK8sResourceConfigurationWithHPAWithoutImage-MinReplicas">
+<td><code>MinReplicas</code></td>
+<td><code><a href="https://developers.google.com/protocol-buffers/docs/reference/google.protobuf#int32value">Int32Value</a></code></td>
+<td>
+<p>Standard Kubernetes minimum replicas configuration
++kubebuilder:validation:Minimum=0</p>
+
+</td>
+<td>
+No
+</td>
+</tr>
+<tr id="BaseK8sResourceConfigurationWithHPAWithoutImage-MaxReplicas">
+<td><code>MaxReplicas</code></td>
+<td><code><a href="https://developers.google.com/protocol-buffers/docs/reference/google.protobuf#int32value">Int32Value</a></code></td>
+<td>
+<p>Standard Kubernetes maximum replicas configuration
++kubebuilder:validation:Minimum=0</p>
+
+</td>
+<td>
+No
+</td>
+</tr>
+<tr id="BaseK8sResourceConfigurationWithHPAWithoutImage-BaseK8sResourceConfig">
+<td><code>BaseK8sResourceConfig</code></td>
+<td><code><a href="#BaseK8sResourceConfiguration">BaseK8sResourceConfiguration</a></code></td>
+<td>
+<p>Standard Kubernetes resource configuration</p>
+
+</td>
+<td>
+No
+</td>
+</tr>
+</tbody>
+</table>
+</section>
+<h2 id="k8s-io-api-core-v1-EnvVar">k8s.io.api.core.v1.EnvVar</h2>
+<section>
+<p>EnvVar represents an environment variable present in a Container.</p>
+
+<table class="message-fields">
+<thead>
+<tr>
+<th>Field</th>
+<th>Type</th>
+<th>Description</th>
+<th>Required</th>
+</tr>
+</thead>
+<tbody>
+<tr id="k8s-io-api-core-v1-EnvVar-name">
+<td><code>name</code></td>
+<td><code>string</code></td>
+<td>
+<p>Name of the environment variable. Must be a C_IDENTIFIER.</p>
+
+</td>
+<td>
+No
+</td>
+</tr>
+<tr id="k8s-io-api-core-v1-EnvVar-value">
+<td><code>value</code></td>
+<td><code>string</code></td>
+<td>
+<p>Variable references $(VAR<em>NAME) are expanded
+using the previous defined environment variables in the container and
+any service environment variables. If a variable cannot be resolved,
+the reference in the input string will be unchanged. The $(VAR</em>NAME)
+syntax can be escaped with a double $$, ie: $$(VAR_NAME). Escaped
+references will never be expanded, regardless of whether the variable
+exists or not.
+Defaults to &ldquo;&rdquo;.
++optional</p>
+
+</td>
+<td>
+No
+</td>
+</tr>
+<tr id="k8s-io-api-core-v1-EnvVar-valueFrom">
+<td><code>valueFrom</code></td>
+<td><code><a href="#k8s-io-api-core-v1-EnvVarSource">EnvVarSource</a></code></td>
+<td>
+<p>Source for the environment variable&rsquo;s value. Cannot be used if value is not empty.
++optional</p>
+
+</td>
+<td>
+No
+</td>
+</tr>
+</tbody>
+</table>
+</section>
+<h2 id="GatewayType">GatewayType</h2>
+<section>
+<table class="enum-values">
+<thead>
+<tr>
+<th>Name</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr id="GatewayType-Ingress">
+<td><code>Ingress</code></td>
+<td>
+</td>
+</tr>
+<tr id="GatewayType-Egress">
+<td><code>Egress</code></td>
+<td>
+</td>
+</tr>
+</tbody>
+</table>
+</section>
+<h2 id="ConfigState">ConfigState</h2>
+<section>
+<table class="enum-values">
+<thead>
+<tr>
+<th>Name</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr id="ConfigState-Created">
+<td><code>Created</code></td>
+<td>
+</td>
+</tr>
+<tr id="ConfigState-ReconcileFailed">
+<td><code>ReconcileFailed</code></td>
+<td>
+</td>
+</tr>
+<tr id="ConfigState-Reconciling">
+<td><code>Reconciling</code></td>
+<td>
+</td>
+</tr>
+<tr id="ConfigState-Available">
+<td><code>Available</code></td>
+<td>
+</td>
+</tr>
+<tr id="ConfigState-Unmanaged">
+<td><code>Unmanaged</code></td>
+<td>
+</td>
+</tr>
+</tbody>
+</table>
+</section>

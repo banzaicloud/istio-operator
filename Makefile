@@ -115,7 +115,7 @@ endif
 generate: download-deps update-istio-deps
 	cd build && ../bin/buf generate --path api
 	cd api/v1alpha1 && ../../bin/controller-gen object:headerFile="../../hack/boilerplate.go.txt" paths="./..."
-	go run static/generate.go
+	cd static && go run generate.go
 
 # Check that code generation was checked in to git
 check-generate: generate

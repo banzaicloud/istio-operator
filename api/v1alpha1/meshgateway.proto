@@ -1,0 +1,114 @@
+// Copyright 2021 Cisco Systems, Inc. and/or its affiliates.
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//     http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+syntax = "proto3";
+
+import "google/protobuf/wrappers.proto";
+import "api/v1alpha1/common.proto";
+import "gogoproto/gogo.proto";
+import "google/api/field_behavior.proto";
+import "k8s.io/api/core/v1/generated.proto";
+
+// $schema: istio-operator.api.v1alpha1.MeshGatewaySpec
+// $title: Istio Mesh Gateway Spec
+// $description: Istio Mesh Gateway descriptor
+
+package istio_operator.v2.api.v1alpha1;
+
+option go_package = "github.com/banzaicloud/istio-operator/v2/api/v1alpha1";
+
+// MeshGateway defines an Istio ingress or egress gateway
+//
+// <!-- crd generation tags
+// +cue-gen:MeshGateway:groupName:servicemesh.cisco.com
+// +cue-gen:MeshGateway:version:v1alpha1
+// +cue-gen:MeshGateway:storageVersion
+// +cue-gen:MeshGateway:annotations:helm.sh/resource-policy=keep
+// +cue-gen:MeshGateway:subresource:status
+// +cue-gen:MeshGateway:scope:Namespaced
+// +cue-gen:MeshGateway:resource:shortNames=mgw,meshgw
+// +cue-gen:MeshGateway:printerColumn:name=Age,type=date,JSONPath=.metadata.creationTimestamp,description="CreationTimestamp is a timestamp
+// representing the server time when this object was created. It is not guaranteed to be set in happens-before order across separate operations.
+// Clients may not set this value. It is represented in RFC3339 form and is in UTC.
+// Populated by the system. Read-only. Null for lists. More info: https://git.k8s.io/community/contributors/devel/api-conventions.md#metadata"
+// +cue-gen:MeshGateway:preserveUnknownFields:false
+// -->
+//
+// <!-- go code generation tags
+// +genclient
+// +k8s:deepcopy-gen=true
+// -->
+message MeshGatewaySpec {
+    // General Mesh gateway configuration
+    MeshGatewayConfiguration MeshGwConfiguration = 1 [(gogoproto.nullable) = false, (gogoproto.embed) = true, (gogoproto.jsontag) = ",inline"];
+    // Service ports to open for the gateway
+    // +kubebuilder:validation:MinItems=0
+    repeated ServicePort ports = 2 [(gogoproto.nullable) = false, (gogoproto.jsontag) = "ports", (google.api.field_behavior) = REQUIRED];
+    // Type of gateway, either ingress or egress
+    // +kubebuilder:validation:Enum=ingress;egress
+    GatewayType type = 3  [(gogoproto.jsontag) = "type", (google.api.field_behavior) = REQUIRED];
+    // Istio CR to which this gateway belongs to
+    NamespacedName istioControlPlane = 4 [(gogoproto.jsontag) = "istioControlPlane", (google.api.field_behavior) = REQUIRED];
+}
+
+message MeshGatewayConfiguration {
+    // Standard Kubernetes resource configuration
+    BaseK8sResourceConfigurationWithHPAWithoutImage BaseK8sResourceConfigWithHPAWithoutImage = 1 [(gogoproto.nullable) = false, (gogoproto.embed) = true, (gogoproto.jsontag) = ",inline"];
+    // Labels to attach to the mesh gateway
+    map<string, string> Labels = 2 [(gogoproto.jsontag) = "labels,omitempty"];
+    // Kubernetes Service Type for the gateway
+    // +kubebuilder:validation:Enum=ClusterIP;NodePort;LoadBalancer;ExternalName
+    string ServiceType = 3 [(gogoproto.customtype) = "k8s.io/api/core/v1.ServiceType", (gogoproto.nullable) = false, (gogoproto.jsontag) = "serviceType,omitempty"];
+    // Load Balancer IP override
+    string LoadBalancerIP = 4 [(gogoproto.jsontag) = "loadBalancerIP,omitempty"];
+    // Annotations to add to the gateway service
+    map<string, string> ServiceAnnotations = 5 [(gogoproto.jsontag) = "serviceAnnotations,omitempty"];
+    // Labels to attach to the gateway service
+    map<string, string> ServiceLabels = 6 [(gogoproto.jsontag) = "serviceLabels,omitempty"];
+    // Kubernetes External Traffic Policy Type for the gateway service
+    // +kubebuilder:validation:Enum=Local;Cluster
+    string ServiceExternalTrafficPolicyType = 7 [(gogoproto.customtype) = "k8s.io/api/core/v1.ServiceExternalTrafficPolicyType", (gogoproto.nullable) = false, (gogoproto.jsontag) = "serviceExternalTrafficPolicyType,omitempty"];
+    // Specifies the networks that the proxy wants to see
+    string RequestedNetworkView = 9 [(gogoproto.jsontag) = "requestedNetworkView,omitempty"];
+    // If present will be appended to the environment variables of the container
+    repeated k8s.io.api.core.v1.EnvVar AdditionalEnvVars = 10 [(gogoproto.nullable) = false, (gogoproto.jsontag) = "additionalEnvVars,omitempty"];
+    // Whether to run the gateway in a privileged container
+    google.protobuf.BoolValue RunAsRoot = 11 [(gogoproto.wktpointer) = true, (gogoproto.jsontag) = "runAsRoot,omitempty"];
+}
+
+enum GatewayType {
+    Ingress = 0;
+    Egress = 1;
+}
+
+// <!-- go code generation tags
+// +genclient
+// +k8s:deepcopy-gen=true
+// -->
+message MeshGatewayStatus {
+    // Reconciliation status of the mesh gateway
+    ConfigState Status = 1 [(gogoproto.jsontag) = "Status,omitempty"];
+    // Current address for the gateway
+    repeated string GatewayAddress = 2 [(gogoproto.jsontag) = "GatewayAddress,omitempty"];
+    // Reconciliation error message if any
+    string ErrorMessage = 3 [(gogoproto.jsontag) = "ErrorMessage,omitempty"];
+}
+
+enum ConfigState {
+    Created = 0;
+    ReconcileFailed = 1;
+    Reconciling = 2;
+    Available = 3;
+    Unmanaged = 4;
+}

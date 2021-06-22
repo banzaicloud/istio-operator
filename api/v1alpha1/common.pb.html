@@ -1,0 +1,667 @@
+---
+title: istio_operator.v2.api.v1alpha1
+layout: protoc-gen-docs
+generator: protoc-gen-docs
+number_of_entries: 9
+---
+<h2 id="NamespacedName">NamespacedName</h2>
+<section>
+<table class="message-fields">
+<thead>
+<tr>
+<th>Field</th>
+<th>Type</th>
+<th>Description</th>
+<th>Required</th>
+</tr>
+</thead>
+<tbody>
+<tr id="NamespacedName-name">
+<td><code>name</code></td>
+<td><code>string</code></td>
+<td>
+<p>Name of the referenced Kubernetes resource</p>
+
+</td>
+<td>
+No
+</td>
+</tr>
+<tr id="NamespacedName-namespace">
+<td><code>namespace</code></td>
+<td><code>string</code></td>
+<td>
+<p>Namespace of the referenced Kubernetes resource</p>
+
+</td>
+<td>
+No
+</td>
+</tr>
+</tbody>
+</table>
+</section>
+<h2 id="BaseK8sResourceConfigurationWithHPAWithoutImage">BaseK8sResourceConfigurationWithHPAWithoutImage</h2>
+<section>
+<table class="message-fields">
+<thead>
+<tr>
+<th>Field</th>
+<th>Type</th>
+<th>Description</th>
+<th>Required</th>
+</tr>
+</thead>
+<tbody>
+<tr id="BaseK8sResourceConfigurationWithHPAWithoutImage-ReplicaCount">
+<td><code>ReplicaCount</code></td>
+<td><code><a href="https://developers.google.com/protocol-buffers/docs/reference/google.protobuf#int32value">Int32Value</a></code></td>
+<td>
+<p>Standard Kubernetes replica count configuration
++kubebuilder:validation:Minimum=0</p>
+
+</td>
+<td>
+No
+</td>
+</tr>
+<tr id="BaseK8sResourceConfigurationWithHPAWithoutImage-MinReplicas">
+<td><code>MinReplicas</code></td>
+<td><code><a href="https://developers.google.com/protocol-buffers/docs/reference/google.protobuf#int32value">Int32Value</a></code></td>
+<td>
+<p>Standard Kubernetes minimum replicas configuration
++kubebuilder:validation:Minimum=0</p>
+
+</td>
+<td>
+No
+</td>
+</tr>
+<tr id="BaseK8sResourceConfigurationWithHPAWithoutImage-MaxReplicas">
+<td><code>MaxReplicas</code></td>
+<td><code><a href="https://developers.google.com/protocol-buffers/docs/reference/google.protobuf#int32value">Int32Value</a></code></td>
+<td>
+<p>Standard Kubernetes maximum replicas configuration
++kubebuilder:validation:Minimum=0</p>
+
+</td>
+<td>
+No
+</td>
+</tr>
+<tr id="BaseK8sResourceConfigurationWithHPAWithoutImage-BaseK8sResourceConfig">
+<td><code>BaseK8sResourceConfig</code></td>
+<td><code><a href="#BaseK8sResourceConfiguration">BaseK8sResourceConfiguration</a></code></td>
+<td>
+<p>Standard Kubernetes resource configuration</p>
+
+</td>
+<td>
+No
+</td>
+</tr>
+</tbody>
+</table>
+</section>
+<h2 id="BaseK8sResourceConfiguration">BaseK8sResourceConfiguration</h2>
+<section>
+<table class="message-fields">
+<thead>
+<tr>
+<th>Field</th>
+<th>Type</th>
+<th>Description</th>
+<th>Required</th>
+</tr>
+</thead>
+<tbody>
+<tr id="BaseK8sResourceConfiguration-Resources">
+<td><code>Resources</code></td>
+<td><code><a href="#k8s-io-api-core-v1-ResourceRequirements">ResourceRequirements</a></code></td>
+<td>
+<p>Standard Kubernetes memory and CPU resource requirements</p>
+
+</td>
+<td>
+No
+</td>
+</tr>
+<tr id="BaseK8sResourceConfiguration-NodeSelector">
+<td><code>NodeSelector</code></td>
+<td><code>map&lt;string,&nbsp;string&gt;</code></td>
+<td>
+<p>Standard Kubernetes node selector configuration</p>
+
+</td>
+<td>
+No
+</td>
+</tr>
+<tr id="BaseK8sResourceConfiguration-Affinity">
+<td><code>Affinity</code></td>
+<td><code><a href="#k8s-io-api-core-v1-Affinity">Affinity</a></code></td>
+<td>
+<p>Standard Kubernetes affinity configuration</p>
+
+</td>
+<td>
+No
+</td>
+</tr>
+<tr id="BaseK8sResourceConfiguration-Tolerations">
+<td><code>Tolerations</code></td>
+<td><code><a href="#k8s-io-api-core-v1-Toleration">Toleration[]</a></code></td>
+<td>
+<p>Standard Kubernetes toleration configuration</p>
+
+</td>
+<td>
+No
+</td>
+</tr>
+<tr id="BaseK8sResourceConfiguration-PodAnnotations">
+<td><code>PodAnnotations</code></td>
+<td><code>map&lt;string,&nbsp;string&gt;</code></td>
+<td>
+<p>Standard Kubernetes pod annotation configuration</p>
+
+</td>
+<td>
+No
+</td>
+</tr>
+<tr id="BaseK8sResourceConfiguration-SecurityContext">
+<td><code>SecurityContext</code></td>
+<td><code><a href="#k8s-io-api-core-v1-SecurityContext">SecurityContext</a></code></td>
+<td>
+<p>Standard Kubernetes security context configuration</p>
+
+</td>
+<td>
+No
+</td>
+</tr>
+</tbody>
+</table>
+</section>
+<h2 id="ServicePort">ServicePort</h2>
+<section>
+<table class="message-fields">
+<thead>
+<tr>
+<th>Field</th>
+<th>Type</th>
+<th>Description</th>
+<th>Required</th>
+</tr>
+</thead>
+<tbody>
+<tr id="ServicePort-GatewayTargetPort">
+<td><code>GatewayTargetPort</code></td>
+<td><code><a href="https://developers.google.com/protocol-buffers/docs/reference/google.protobuf#int32value">Int32Value</a></code></td>
+<td>
+<p>Target port to use</p>
+
+</td>
+<td>
+No
+</td>
+</tr>
+<tr id="ServicePort-ServicePort">
+<td><code>ServicePort</code></td>
+<td><code><a href="#k8s-io-api-core-v1-ServicePort">ServicePort</a></code></td>
+<td>
+<p>Standard Kubernetes service port configuration</p>
+
+</td>
+<td>
+No
+</td>
+</tr>
+</tbody>
+</table>
+</section>
+<h2 id="k8s-io-api-core-v1-ResourceRequirements">k8s.io.api.core.v1.ResourceRequirements</h2>
+<section>
+<p>ResourceRequirements describes the compute resource requirements.</p>
+
+<table class="message-fields">
+<thead>
+<tr>
+<th>Field</th>
+<th>Type</th>
+<th>Description</th>
+<th>Required</th>
+</tr>
+</thead>
+<tbody>
+<tr id="k8s-io-api-core-v1-ResourceRequirements-limits">
+<td><code>limits</code></td>
+<td><code>map&lt;string,&nbsp;<a href="#k8s-io-apimachinery-pkg-api-resource-Quantity">Quantity</a>&gt;</code></td>
+<td>
+<p>Limits describes the maximum amount of compute resources allowed.
+More info: https://kubernetes.io/docs/concepts/configuration/manage-compute-resources-container/
++optional</p>
+
+</td>
+<td>
+No
+</td>
+</tr>
+<tr id="k8s-io-api-core-v1-ResourceRequirements-requests">
+<td><code>requests</code></td>
+<td><code>map&lt;string,&nbsp;<a href="#k8s-io-apimachinery-pkg-api-resource-Quantity">Quantity</a>&gt;</code></td>
+<td>
+<p>Requests describes the minimum amount of compute resources required.
+If Requests is omitted for a container, it defaults to Limits if that is explicitly specified,
+otherwise to an implementation-defined value.
+More info: https://kubernetes.io/docs/concepts/configuration/manage-compute-resources-container/
++optional</p>
+
+</td>
+<td>
+No
+</td>
+</tr>
+</tbody>
+</table>
+</section>
+<h2 id="k8s-io-api-core-v1-Affinity">k8s.io.api.core.v1.Affinity</h2>
+<section>
+<p>Affinity is a group of affinity scheduling rules.</p>
+
+<table class="message-fields">
+<thead>
+<tr>
+<th>Field</th>
+<th>Type</th>
+<th>Description</th>
+<th>Required</th>
+</tr>
+</thead>
+<tbody>
+<tr id="k8s-io-api-core-v1-Affinity-nodeAffinity">
+<td><code>nodeAffinity</code></td>
+<td><code><a href="#k8s-io-api-core-v1-NodeAffinity">NodeAffinity</a></code></td>
+<td>
+<p>Describes node affinity scheduling rules for the pod.
++optional</p>
+
+</td>
+<td>
+No
+</td>
+</tr>
+<tr id="k8s-io-api-core-v1-Affinity-podAffinity">
+<td><code>podAffinity</code></td>
+<td><code><a href="#k8s-io-api-core-v1-PodAffinity">PodAffinity</a></code></td>
+<td>
+<p>Describes pod affinity scheduling rules (e.g. co-locate this pod in the same node, zone, etc. as some other pod(s)).
++optional</p>
+
+</td>
+<td>
+No
+</td>
+</tr>
+<tr id="k8s-io-api-core-v1-Affinity-podAntiAffinity">
+<td><code>podAntiAffinity</code></td>
+<td><code><a href="#k8s-io-api-core-v1-PodAntiAffinity">PodAntiAffinity</a></code></td>
+<td>
+<p>Describes pod anti-affinity scheduling rules (e.g. avoid putting this pod in the same node, zone, etc. as some other pod(s)).
++optional</p>
+
+</td>
+<td>
+No
+</td>
+</tr>
+</tbody>
+</table>
+</section>
+<h2 id="k8s-io-api-core-v1-Toleration">k8s.io.api.core.v1.Toleration</h2>
+<section>
+<p>The pod this Toleration is attached to tolerates any taint that matches
+the triple <key,value,effect> using the matching operator <operator>.</p>
+
+<table class="message-fields">
+<thead>
+<tr>
+<th>Field</th>
+<th>Type</th>
+<th>Description</th>
+<th>Required</th>
+</tr>
+</thead>
+<tbody>
+<tr id="k8s-io-api-core-v1-Toleration-key">
+<td><code>key</code></td>
+<td><code>string</code></td>
+<td>
+<p>Key is the taint key that the toleration applies to. Empty means match all taint keys.
+If the key is empty, operator must be Exists; this combination means to match all values and all keys.
++optional</p>
+
+</td>
+<td>
+No
+</td>
+</tr>
+<tr id="k8s-io-api-core-v1-Toleration-operator">
+<td><code>operator</code></td>
+<td><code>string</code></td>
+<td>
+<p>Operator represents a key&rsquo;s relationship to the value.
+Valid operators are Exists and Equal. Defaults to Equal.
+Exists is equivalent to wildcard for value, so that a pod can
+tolerate all taints of a particular category.
++optional</p>
+
+</td>
+<td>
+No
+</td>
+</tr>
+<tr id="k8s-io-api-core-v1-Toleration-value">
+<td><code>value</code></td>
+<td><code>string</code></td>
+<td>
+<p>Value is the taint value the toleration matches to.
+If the operator is Exists, the value should be empty, otherwise just a regular string.
++optional</p>
+
+</td>
+<td>
+No
+</td>
+</tr>
+<tr id="k8s-io-api-core-v1-Toleration-effect">
+<td><code>effect</code></td>
+<td><code>string</code></td>
+<td>
+<p>Effect indicates the taint effect to match. Empty means match all taint effects.
+When specified, allowed values are NoSchedule, PreferNoSchedule and NoExecute.
++optional</p>
+
+</td>
+<td>
+No
+</td>
+</tr>
+<tr id="k8s-io-api-core-v1-Toleration-tolerationSeconds">
+<td><code>tolerationSeconds</code></td>
+<td><code>int64</code></td>
+<td>
+<p>TolerationSeconds represents the period of time the toleration (which must be
+of effect NoExecute, otherwise this field is ignored) tolerates the taint. By default,
+it is not set, which means tolerate the taint forever (do not evict). Zero and
+negative values will be treated as 0 (evict immediately) by the system.
++optional</p>
+
+</td>
+<td>
+No
+</td>
+</tr>
+</tbody>
+</table>
+</section>
+<h2 id="k8s-io-api-core-v1-SecurityContext">k8s.io.api.core.v1.SecurityContext</h2>
+<section>
+<p>SecurityContext holds security configuration that will be applied to a container.
+Some fields are present in both SecurityContext and PodSecurityContext.  When both
+are set, the values in SecurityContext take precedence.</p>
+
+<table class="message-fields">
+<thead>
+<tr>
+<th>Field</th>
+<th>Type</th>
+<th>Description</th>
+<th>Required</th>
+</tr>
+</thead>
+<tbody>
+<tr id="k8s-io-api-core-v1-SecurityContext-capabilities">
+<td><code>capabilities</code></td>
+<td><code><a href="#k8s-io-api-core-v1-Capabilities">Capabilities</a></code></td>
+<td>
+<p>The capabilities to add/drop when running containers.
+Defaults to the default set of capabilities granted by the container runtime.
++optional</p>
+
+</td>
+<td>
+No
+</td>
+</tr>
+<tr id="k8s-io-api-core-v1-SecurityContext-privileged">
+<td><code>privileged</code></td>
+<td><code>bool</code></td>
+<td>
+<p>Run container in privileged mode.
+Processes in privileged containers are essentially equivalent to root on the host.
+Defaults to false.
++optional</p>
+
+</td>
+<td>
+No
+</td>
+</tr>
+<tr id="k8s-io-api-core-v1-SecurityContext-seLinuxOptions">
+<td><code>seLinuxOptions</code></td>
+<td><code><a href="#k8s-io-api-core-v1-SELinuxOptions">SELinuxOptions</a></code></td>
+<td>
+<p>The SELinux context to be applied to the container.
+If unspecified, the container runtime will allocate a random SELinux context for each
+container.  May also be set in PodSecurityContext.  If set in both SecurityContext and
+PodSecurityContext, the value specified in SecurityContext takes precedence.
++optional</p>
+
+</td>
+<td>
+No
+</td>
+</tr>
+<tr id="k8s-io-api-core-v1-SecurityContext-windowsOptions">
+<td><code>windowsOptions</code></td>
+<td><code><a href="#k8s-io-api-core-v1-WindowsSecurityContextOptions">WindowsSecurityContextOptions</a></code></td>
+<td>
+<p>The Windows specific settings applied to all containers.
+If unspecified, the options from the PodSecurityContext will be used.
+If set in both SecurityContext and PodSecurityContext, the value specified in SecurityContext takes precedence.
++optional</p>
+
+</td>
+<td>
+No
+</td>
+</tr>
+<tr id="k8s-io-api-core-v1-SecurityContext-runAsUser">
+<td><code>runAsUser</code></td>
+<td><code>int64</code></td>
+<td>
+<p>The UID to run the entrypoint of the container process.
+Defaults to user specified in image metadata if unspecified.
+May also be set in PodSecurityContext.  If set in both SecurityContext and
+PodSecurityContext, the value specified in SecurityContext takes precedence.
++optional</p>
+
+</td>
+<td>
+No
+</td>
+</tr>
+<tr id="k8s-io-api-core-v1-SecurityContext-runAsGroup">
+<td><code>runAsGroup</code></td>
+<td><code>int64</code></td>
+<td>
+<p>The GID to run the entrypoint of the container process.
+Uses runtime default if unset.
+May also be set in PodSecurityContext.  If set in both SecurityContext and
+PodSecurityContext, the value specified in SecurityContext takes precedence.
++optional</p>
+
+</td>
+<td>
+No
+</td>
+</tr>
+<tr id="k8s-io-api-core-v1-SecurityContext-runAsNonRoot">
+<td><code>runAsNonRoot</code></td>
+<td><code>bool</code></td>
+<td>
+<p>Indicates that the container must run as a non-root user.
+If true, the Kubelet will validate the image at runtime to ensure that it
+does not run as UID 0 (root) and fail to start the container if it does.
+If unset or false, no such validation will be performed.
+May also be set in PodSecurityContext.  If set in both SecurityContext and
+PodSecurityContext, the value specified in SecurityContext takes precedence.
++optional</p>
+
+</td>
+<td>
+No
+</td>
+</tr>
+<tr id="k8s-io-api-core-v1-SecurityContext-readOnlyRootFilesystem">
+<td><code>readOnlyRootFilesystem</code></td>
+<td><code>bool</code></td>
+<td>
+<p>Whether this container has a read-only root filesystem.
+Default is false.
++optional</p>
+
+</td>
+<td>
+No
+</td>
+</tr>
+<tr id="k8s-io-api-core-v1-SecurityContext-allowPrivilegeEscalation">
+<td><code>allowPrivilegeEscalation</code></td>
+<td><code>bool</code></td>
+<td>
+<p>AllowPrivilegeEscalation controls whether a process can gain more
+privileges than its parent process. This bool directly controls if
+the no<em>new</em>privs flag will be set on the container process.
+AllowPrivilegeEscalation is true always when the container is:
+1) run as Privileged
+2) has CAP<em>SYS</em>ADMIN
++optional</p>
+
+</td>
+<td>
+No
+</td>
+</tr>
+<tr id="k8s-io-api-core-v1-SecurityContext-procMount">
+<td><code>procMount</code></td>
+<td><code>string</code></td>
+<td>
+<p>procMount denotes the type of proc mount to use for the containers.
+The default is DefaultProcMount which uses the container runtime defaults for
+readonly paths and masked paths.
+This requires the ProcMountType feature flag to be enabled.
++optional</p>
+
+</td>
+<td>
+No
+</td>
+</tr>
+</tbody>
+</table>
+</section>
+<h2 id="k8s-io-api-core-v1-ServicePort">k8s.io.api.core.v1.ServicePort</h2>
+<section>
+<p>ServicePort contains information on service&rsquo;s port.</p>
+
+<table class="message-fields">
+<thead>
+<tr>
+<th>Field</th>
+<th>Type</th>
+<th>Description</th>
+<th>Required</th>
+</tr>
+</thead>
+<tbody>
+<tr id="k8s-io-api-core-v1-ServicePort-name">
+<td><code>name</code></td>
+<td><code>string</code></td>
+<td>
+<p>The name of this port within the service. This must be a DNS_LABEL.
+All ports within a ServiceSpec must have unique names. When considering
+the endpoints for a Service, this must match the &lsquo;name&rsquo; field in the
+EndpointPort.
+Optional if only one ServicePort is defined on this service.
++optional</p>
+
+</td>
+<td>
+No
+</td>
+</tr>
+<tr id="k8s-io-api-core-v1-ServicePort-protocol">
+<td><code>protocol</code></td>
+<td><code>string</code></td>
+<td>
+<p>The IP protocol for this port. Supports &ldquo;TCP&rdquo;, &ldquo;UDP&rdquo;, and &ldquo;SCTP&rdquo;.
+Default is TCP.
++optional</p>
+
+</td>
+<td>
+No
+</td>
+</tr>
+<tr id="k8s-io-api-core-v1-ServicePort-port">
+<td><code>port</code></td>
+<td><code>int32</code></td>
+<td>
+<p>The port that will be exposed by this service.</p>
+
+</td>
+<td>
+No
+</td>
+</tr>
+<tr id="k8s-io-api-core-v1-ServicePort-targetPort">
+<td><code>targetPort</code></td>
+<td><code><a href="#k8s-io-apimachinery-pkg-util-intstr-IntOrString">IntOrString</a></code></td>
+<td>
+<p>Number or name of the port to access on the pods targeted by the service.
+Number must be in the range 1 to 65535. Name must be an IANA<em>SVC</em>NAME.
+If this is a string, it will be looked up as a named port in the
+target Pod&rsquo;s container ports. If this is not specified, the value
+of the &lsquo;port&rsquo; field is used (an identity map).
+This field is ignored for services with clusterIP=None, and should be
+omitted or set equal to the &lsquo;port&rsquo; field.
+More info: https://kubernetes.io/docs/concepts/services-networking/service/#defining-a-service
++optional</p>
+
+</td>
+<td>
+No
+</td>
+</tr>
+<tr id="k8s-io-api-core-v1-ServicePort-nodePort">
+<td><code>nodePort</code></td>
+<td><code>int32</code></td>
+<td>
+<p>The port on each node on which this service is exposed when type=NodePort or LoadBalancer.
+Usually assigned by the system. If specified, it will be allocated to the service
+if unused or else creation of the service will fail.
+Default is to auto-allocate a port if the ServiceType of this Service requires one.
+More info: https://kubernetes.io/docs/concepts/services-networking/service/#type-nodeport
++optional</p>
+
+</td>
+<td>
+No
+</td>
+</tr>
+</tbody>
+</table>
+</section>

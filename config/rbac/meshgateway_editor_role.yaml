@@ -1,0 +1,24 @@
+# permissions for end users to edit meshgateways.
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: meshgateway-editor-role
+rules:
+- apiGroups:
+  - servicemesh.cisco.com
+  resources:
+  - meshgateways
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
+- apiGroups:
+  - servicemesh.cisco.com
+  resources:
+  - meshgateways/status
+  verbs:
+  - get
