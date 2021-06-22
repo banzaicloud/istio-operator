@@ -27,7 +27,7 @@ message NamespacedName {
     // Name of the referenced Kubernetes resource
     string name = 1 [(gogoproto.jsontag) = "name,omitempty"];
     // Namespace of the referenced Kubernetes resource
-    string namespace = 2  [(gogoproto.jsontag) = "namespace,omitempty"];;
+    string namespace = 2  [(gogoproto.jsontag) = "namespace,omitempty"];
 }
 
 message BaseK8sResourceConfigurationWithHPAWithoutImage {
