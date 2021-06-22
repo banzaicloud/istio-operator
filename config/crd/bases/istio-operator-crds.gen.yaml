@@ -1533,37 +1533,830 @@ spec:
           spec:
             description: MeshGateway defines an Istio ingress or egress gateway.
             properties:
-              Ports:
-                description: MeshGatewayConfiguration `json:",inline"`.
+              MeshGwConfiguration:
+                properties:
+                  AdditionalEnvVars:
+                    description: If present will be appended to the environment variables
+                      of the container.
+                    items:
+                      properties:
+                        name:
+                          description: Name of the environment variable.
+                          format: string
+                          type: string
+                        value:
+                          description: |-
+                            Variable references $(VAR_NAME) are expanded
+                            using the previous defined environment variables in the container and
+                            any service environment variables.
+                          format: string
+                          type: string
+                        valueFrom:
+                          description: Source for the environment variable's value.
+                          properties:
+                            configMapKeyRef:
+                              description: Selects a key of a ConfigMap.
+                              properties:
+                                key:
+                                  description: The key to select.
+                                  format: string
+                                  type: string
+                                localObjectReference:
+                                  description: The ConfigMap to select from.
+                                  properties:
+                                    name:
+                                      description: Name of the referent.
+                                      format: string
+                                      type: string
+                                  type: object
+                                optional:
+                                  description: Specify whether the ConfigMap or its
+                                    key must be defined.
+                                  type: boolean
+                              type: object
+                            fieldRef:
+                              description: |-
+                                Selects a field of the pod: supports metadata.name, metadata.namespace, metadata.labels, metadata.annotations,
+                                spec.nodeName, spec.serviceAccountName, status.hostIP, status.podIP.
+                              properties:
+                                apiVersion:
+                                  description: Version of the schema the FieldPath
+                                    is written in terms of, defaults to "v1".
+                                  format: string
+                                  type: string
+                                fieldPath:
+                                  description: Path of the field to select in the
+                                    specified API version.
+                                  format: string
+                                  type: string
+                              type: object
+                            resourceFieldRef:
+                              description: |-
+                                Selects a resource of the container: only resources limits and requests
+                                (limits.cpu, limits.memory, limits.ephemeral-storage, requests.cpu, requests.memory and requests.ephemeral-storage) are currently supported.
+                              properties:
+                                containerName:
+                                  description: 'Container name: required for volumes,
+                                    optional for env vars.'
+                                  format: string
+                                  type: string
+                                divisor:
+                                  anyOf:
+                                  - type: integer
+                                  - type: string
+                                  description: Specifies the output format of the
+                                    exposed resources, defaults to "1".
+                                  pattern: ^(\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))(([KMGTPE]i)|[numkMGTPE]|([eE](\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))))?$
+                                  x-kubernetes-int-or-string: true
+                                resource:
+                                  description: 'Required: resource to select.'
+                                  format: string
+                                  type: string
+                              type: object
+                            secretKeyRef:
+                              description: Selects a key of a secret in the pod's
+                                namespace.
+                              properties:
+                                key:
+                                  description: The key of the secret to select from.
+                                  format: string
+                                  type: string
+                                localObjectReference:
+                                  description: The name of the secret in the pod's
+                                    namespace to select from.
+                                  properties:
+                                    name:
+                                      description: Name of the referent.
+                                      format: string
+                                      type: string
+                                  type: object
+                                optional:
+                                  description: Specify whether the Secret or its key
+                                    must be defined.
+                                  type: boolean
+                              type: object
+                          type: object
+                      type: object
+                    type: array
+                  BaseK8sResourceConfigWithHPAWithoutImage:
+                    properties:
+                      BaseK8sResourceConfig:
+                        properties:
+                          Affinity:
+                            properties:
+                              nodeAffinity:
+                                description: Describes node affinity scheduling rules
+                                  for the pod.
+                                properties:
+                                  preferredDuringSchedulingIgnoredDuringExecution:
+                                    description: |-
+                                      The scheduler will prefer to schedule pods to nodes that satisfy
+                                      the affinity expressions specified by this field, but it may choose
+                                      a node that violates one or more of the expressions.
+                                    items:
+                                      properties:
+                                        preference:
+                                          description: A node selector term, associated
+                                            with the corresponding weight.
+                                          properties:
+                                            matchExpressions:
+                                              description: A list of node selector
+                                                requirements by node's labels.
+                                              items:
+                                                properties:
+                                                  key:
+                                                    description: The label key that
+                                                      the selector applies to.
+                                                    format: string
+                                                    type: string
+                                                  operator:
+                                                    description: Represents a key's
+                                                      relationship to a set of values.
+                                                    format: string
+                                                    type: string
+                                                  values:
+                                                    description: An array of string
+                                                      values.
+                                                    items:
+                                                      format: string
+                                                      type: string
+                                                    type: array
+                                                type: object
+                                              type: array
+                                            matchFields:
+                                              description: A list of node selector
+                                                requirements by node's fields.
+                                              items:
+                                                properties:
+                                                  key:
+                                                    description: The label key that
+                                                      the selector applies to.
+                                                    format: string
+                                                    type: string
+                                                  operator:
+                                                    description: Represents a key's
+                                                      relationship to a set of values.
+                                                    format: string
+                                                    type: string
+                                                  values:
+                                                    description: An array of string
+                                                      values.
+                                                    items:
+                                                      format: string
+                                                      type: string
+                                                    type: array
+                                                type: object
+                                              type: array
+                                          type: object
+                                        weight:
+                                          description: Weight associated with matching
+                                            the corresponding nodeSelectorTerm, in
+                                            the range 1-100.
+                                          format: int32
+                                          type: integer
+                                      type: object
+                                    type: array
+                                  requiredDuringSchedulingIgnoredDuringExecution:
+                                    description: |-
+                                      If the affinity requirements specified by this field are not met at
+                                      scheduling time, the pod will not be scheduled onto the node.
+                                    properties:
+                                      nodeSelectorTerms:
+                                        description: Required.
+                                        items:
+                                          properties:
+                                            matchExpressions:
+                                              description: A list of node selector
+                                                requirements by node's labels.
+                                              items:
+                                                properties:
+                                                  key:
+                                                    description: The label key that
+                                                      the selector applies to.
+                                                    format: string
+                                                    type: string
+                                                  operator:
+                                                    description: Represents a key's
+                                                      relationship to a set of values.
+                                                    format: string
+                                                    type: string
+                                                  values:
+                                                    description: An array of string
+                                                      values.
+                                                    items:
+                                                      format: string
+                                                      type: string
+                                                    type: array
+                                                type: object
+                                              type: array
+                                            matchFields:
+                                              description: A list of node selector
+                                                requirements by node's fields.
+                                              items:
+                                                properties:
+                                                  key:
+                                                    description: The label key that
+                                                      the selector applies to.
+                                                    format: string
+                                                    type: string
+                                                  operator:
+                                                    description: Represents a key's
+                                                      relationship to a set of values.
+                                                    format: string
+                                                    type: string
+                                                  values:
+                                                    description: An array of string
+                                                      values.
+                                                    items:
+                                                      format: string
+                                                      type: string
+                                                    type: array
+                                                type: object
+                                              type: array
+                                          type: object
+                                        type: array
+                                    type: object
+                                type: object
+                              podAffinity:
+                                description: Describes pod affinity scheduling rules
+                                  (e.g.
+                                properties:
+                                  preferredDuringSchedulingIgnoredDuringExecution:
+                                    description: |-
+                                      The scheduler will prefer to schedule pods to nodes that satisfy
+                                      the affinity expressions specified by this field, but it may choose
+                                      a node that violates one or more of the expressions.
+                                    items:
+                                      properties:
+                                        podAffinityTerm:
+                                          description: Required.
+                                          properties:
+                                            labelSelector:
+                                              description: A label query over a set
+                                                of resources, in this case pods.
+                                              properties:
+                                                matchExpressions:
+                                                  description: matchExpressions is
+                                                    a list of label selector requirements.
+                                                  items:
+                                                    properties:
+                                                      key:
+                                                        description: key is the label
+                                                          key that the selector applies
+                                                          to.
+                                                        format: string
+                                                        type: string
+                                                      operator:
+                                                        description: operator represents
+                                                          a key's relationship to
+                                                          a set of values.
+                                                        format: string
+                                                        type: string
+                                                      values:
+                                                        description: values is an
+                                                          array of string values.
+                                                        items:
+                                                          format: string
+                                                          type: string
+                                                        type: array
+                                                    type: object
+                                                  type: array
+                                                matchLabels:
+                                                  additionalProperties:
+                                                    format: string
+                                                    type: string
+                                                  description: matchLabels is a map
+                                                    of {key,value} pairs.
+                                                  type: object
+                                              type: object
+                                            namespaces:
+                                              description: |-
+                                                namespaces specifies which namespaces the labelSelector applies to (matches against);
+                                                null or empty list means "this pod's namespace".
+                                              items:
+                                                format: string
+                                                type: string
+                                              type: array
+                                            topologyKey:
+                                              description: |-
+                                                This pod should be co-located (affinity) or not co-located (anti-affinity) with the pods matching
+                                                the labelSelector in the specified namespaces, where co-located is defined as running on a node
+                                                whose value of the label with key topologyKey matches that of any node on which any of the
+                                                selected pods is running.
+                                              format: string
+                                              type: string
+                                          type: object
+                                        weight:
+                                          description: |-
+                                            weight associated with matching the corresponding podAffinityTerm,
+                                            in the range 1-100.
+                                          format: int32
+                                          type: integer
+                                      type: object
+                                    type: array
+                                  requiredDuringSchedulingIgnoredDuringExecution:
+                                    description: |-
+                                      If the affinity requirements specified by this field are not met at
+                                      scheduling time, the pod will not be scheduled onto the node.
+                                    items:
+                                      properties:
+                                        labelSelector:
+                                          description: A label query over a set of
+                                            resources, in this case pods.
+                                          properties:
+                                            matchExpressions:
+                                              description: matchExpressions is a list
+                                                of label selector requirements.
+                                              items:
+                                                properties:
+                                                  key:
+                                                    description: key is the label
+                                                      key that the selector applies
+                                                      to.
+                                                    format: string
+                                                    type: string
+                                                  operator:
+                                                    description: operator represents
+                                                      a key's relationship to a set
+                                                      of values.
+                                                    format: string
+                                                    type: string
+                                                  values:
+                                                    description: values is an array
+                                                      of string values.
+                                                    items:
+                                                      format: string
+                                                      type: string
+                                                    type: array
+                                                type: object
+                                              type: array
+                                            matchLabels:
+                                              additionalProperties:
+                                                format: string
+                                                type: string
+                                              description: matchLabels is a map of
+                                                {key,value} pairs.
+                                              type: object
+                                          type: object
+                                        namespaces:
+                                          description: |-
+                                            namespaces specifies which namespaces the labelSelector applies to (matches against);
+                                            null or empty list means "this pod's namespace".
+                                          items:
+                                            format: string
+                                            type: string
+                                          type: array
+                                        topologyKey:
+                                          description: |-
+                                            This pod should be co-located (affinity) or not co-located (anti-affinity) with the pods matching
+                                            the labelSelector in the specified namespaces, where co-located is defined as running on a node
+                                            whose value of the label with key topologyKey matches that of any node on which any of the
+                                            selected pods is running.
+                                          format: string
+                                          type: string
+                                      type: object
+                                    type: array
+                                type: object
+                              podAntiAffinity:
+                                description: Describes pod anti-affinity scheduling
+                                  rules (e.g.
+                                properties:
+                                  preferredDuringSchedulingIgnoredDuringExecution:
+                                    description: |-
+                                      The scheduler will prefer to schedule pods to nodes that satisfy
+                                      the anti-affinity expressions specified by this field, but it may choose
+                                      a node that violates one or more of the expressions.
+                                    items:
+                                      properties:
+                                        podAffinityTerm:
+                                          description: Required.
+                                          properties:
+                                            labelSelector:
+                                              description: A label query over a set
+                                                of resources, in this case pods.
+                                              properties:
+                                                matchExpressions:
+                                                  description: matchExpressions is
+                                                    a list of label selector requirements.
+                                                  items:
+                                                    properties:
+                                                      key:
+                                                        description: key is the label
+                                                          key that the selector applies
+                                                          to.
+                                                        format: string
+                                                        type: string
+                                                      operator:
+                                                        description: operator represents
+                                                          a key's relationship to
+                                                          a set of values.
+                                                        format: string
+                                                        type: string
+                                                      values:
+                                                        description: values is an
+                                                          array of string values.
+                                                        items:
+                                                          format: string
+                                                          type: string
+                                                        type: array
+                                                    type: object
+                                                  type: array
+                                                matchLabels:
+                                                  additionalProperties:
+                                                    format: string
+                                                    type: string
+                                                  description: matchLabels is a map
+                                                    of {key,value} pairs.
+                                                  type: object
+                                              type: object
+                                            namespaces:
+                                              description: |-
+                                                namespaces specifies which namespaces the labelSelector applies to (matches against);
+                                                null or empty list means "this pod's namespace".
+                                              items:
+                                                format: string
+                                                type: string
+                                              type: array
+                                            topologyKey:
+                                              description: |-
+                                                This pod should be co-located (affinity) or not co-located (anti-affinity) with the pods matching
+                                                the labelSelector in the specified namespaces, where co-located is defined as running on a node
+                                                whose value of the label with key topologyKey matches that of any node on which any of the
+                                                selected pods is running.
+                                              format: string
+                                              type: string
+                                          type: object
+                                        weight:
+                                          description: |-
+                                            weight associated with matching the corresponding podAffinityTerm,
+                                            in the range 1-100.
+                                          format: int32
+                                          type: integer
+                                      type: object
+                                    type: array
+                                  requiredDuringSchedulingIgnoredDuringExecution:
+                                    description: |-
+                                      If the anti-affinity requirements specified by this field are not met at
+                                      scheduling time, the pod will not be scheduled onto the node.
+                                    items:
+                                      properties:
+                                        labelSelector:
+                                          description: A label query over a set of
+                                            resources, in this case pods.
+                                          properties:
+                                            matchExpressions:
+                                              description: matchExpressions is a list
+                                                of label selector requirements.
+                                              items:
+                                                properties:
+                                                  key:
+                                                    description: key is the label
+                                                      key that the selector applies
+                                                      to.
+                                                    format: string
+                                                    type: string
+                                                  operator:
+                                                    description: operator represents
+                                                      a key's relationship to a set
+                                                      of values.
+                                                    format: string
+                                                    type: string
+                                                  values:
+                                                    description: values is an array
+                                                      of string values.
+                                                    items:
+                                                      format: string
+                                                      type: string
+                                                    type: array
+                                                type: object
+                                              type: array
+                                            matchLabels:
+                                              additionalProperties:
+                                                format: string
+                                                type: string
+                                              description: matchLabels is a map of
+                                                {key,value} pairs.
+                                              type: object
+                                          type: object
+                                        namespaces:
+                                          description: |-
+                                            namespaces specifies which namespaces the labelSelector applies to (matches against);
+                                            null or empty list means "this pod's namespace".
+                                          items:
+                                            format: string
+                                            type: string
+                                          type: array
+                                        topologyKey:
+                                          description: |-
+                                            This pod should be co-located (affinity) or not co-located (anti-affinity) with the pods matching
+                                            the labelSelector in the specified namespaces, where co-located is defined as running on a node
+                                            whose value of the label with key topologyKey matches that of any node on which any of the
+                                            selected pods is running.
+                                          format: string
+                                          type: string
+                                      type: object
+                                    type: array
+                                type: object
+                            type: object
+                          NodeSelector:
+                            additionalProperties:
+                              format: string
+                              type: string
+                            type: object
+                          PodAnnotations:
+                            additionalProperties:
+                              format: string
+                              type: string
+                            type: object
+                          Resources:
+                            properties:
+                              limits:
+                                additionalProperties:
+                                  properties:
+                                    string:
+                                      format: string
+                                      type: string
+                                  type: object
+                                description: Limits describes the maximum amount of
+                                  compute resources allowed.
+                                type: object
+                              requests:
+                                additionalProperties:
+                                  properties:
+                                    string:
+                                      format: string
+                                      type: string
+                                  type: object
+                                description: Requests describes the minimum amount
+                                  of compute resources required.
+                                type: object
+                            type: object
+                          SecurityContext:
+                            properties:
+                              allowPrivilegeEscalation:
+                                description: |-
+                                  AllowPrivilegeEscalation controls whether a process can gain more
+                                  privileges than its parent process.
+                                type: boolean
+                              capabilities:
+                                description: The capabilities to add/drop when running
+                                  containers.
+                                properties:
+                                  add:
+                                    description: Added capabilities.
+                                    items:
+                                      format: string
+                                      type: string
+                                    type: array
+                                  drop:
+                                    description: Removed capabilities.
+                                    items:
+                                      format: string
+                                      type: string
+                                    type: array
+                                type: object
+                              privileged:
+                                description: Run container in privileged mode.
+                                type: boolean
+                              procMount:
+                                description: procMount denotes the type of proc mount
+                                  to use for the containers.
+                                format: string
+                                type: string
+                              readOnlyRootFilesystem:
+                                description: Whether this container has a read-only
+                                  root filesystem.
+                                type: boolean
+                              runAsGroup:
+                                description: The GID to run the entrypoint of the
+                                  container process.
+                                format: int64
+                                type: integer
+                              runAsNonRoot:
+                                description: Indicates that the container must run
+                                  as a non-root user.
+                                type: boolean
+                              runAsUser:
+                                description: The UID to run the entrypoint of the
+                                  container process.
+                                format: int64
+                                type: integer
+                              seLinuxOptions:
+                                description: The SELinux context to be applied to
+                                  the container.
+                                properties:
+                                  level:
+                                    description: Level is SELinux level label that
+                                      applies to the container.
+                                    format: string
+                                    type: string
+                                  role:
+                                    description: Role is a SELinux role label that
+                                      applies to the container.
+                                    format: string
+                                    type: string
+                                  type:
+                                    description: Type is a SELinux type label that
+                                      applies to the container.
+                                    format: string
+                                    type: string
+                                  user:
+                                    description: User is a SELinux user label that
+                                      applies to the container.
+                                    format: string
+                                    type: string
+                                type: object
+                              windowsOptions:
+                                description: The Windows specific settings applied
+                                  to all containers.
+                                properties:
+                                  gmsaCredentialSpec:
+                                    description: |-
+                                      GMSACredentialSpec is where the GMSA admission webhook
+                                      (https://github.com/kubernetes-sigs/windows-gmsa) inlines the contents of the
+                                      GMSA credential spec named by the GMSACredentialSpecName field.
+                                    format: string
+                                    type: string
+                                  gmsaCredentialSpecName:
+                                    description: GMSACredentialSpecName is the name
+                                      of the GMSA credential spec to use.
+                                    format: string
+                                    type: string
+                                  runAsUserName:
+                                    description: The UserName in Windows to run the
+                                      entrypoint of the container process.
+                                    format: string
+                                    type: string
+                                type: object
+                            type: object
+                          Tolerations:
+                            items:
+                              properties:
+                                effect:
+                                  description: Effect indicates the taint effect to
+                                    match.
+                                  format: string
+                                  type: string
+                                key:
+                                  description: Key is the taint key that the toleration
+                                    applies to.
+                                  format: string
+                                  type: string
+                                operator:
+                                  description: Operator represents a key's relationship
+                                    to the value.
+                                  format: string
+                                  type: string
+                                tolerationSeconds:
+                                  description: |-
+                                    TolerationSeconds represents the period of time the toleration (which must be
+                                    of effect NoExecute, otherwise this field is ignored) tolerates the taint.
+                                  format: int64
+                                  type: integer
+                                value:
+                                  description: Value is the taint value the toleration
+                                    matches to.
+                                  format: string
+                                  type: string
+                              type: object
+                            type: array
+                        type: object
+                      MaxReplicas:
+                        format: int32
+                        minimum: 0
+                        type: integer
+                      MinReplicas:
+                        format: int32
+                        minimum: 0
+                        type: integer
+                      ReplicaCount:
+                        format: int32
+                        minimum: 0
+                        type: integer
+                    type: object
+                  Labels:
+                    additionalProperties:
+                      format: string
+                      type: string
+                    type: object
+                  LoadBalancerIP:
+                    format: string
+                    type: string
+                  RequestedNetworkView:
+                    format: string
+                    type: string
+                  RunAsRoot:
+                    description: Whether to run the gateway in a privileged container.
+                    type: boolean
+                  SDS:
+                    properties:
+                      Enabled:
+                        type: boolean
+                      Image:
+                        format: string
+                        type: string
+                      Resources:
+                        properties:
+                          limits:
+                            additionalProperties:
+                              properties:
+                                string:
+                                  format: string
+                                  type: string
+                              type: object
+                            description: Limits describes the maximum amount of compute
+                              resources allowed.
+                            type: object
+                          requests:
+                            additionalProperties:
+                              properties:
+                                string:
+                                  format: string
+                                  type: string
+                              type: object
+                            description: Requests describes the minimum amount of
+                              compute resources required.
+                            type: object
+                        type: object
+                    type: object
+                  ServiceAnnotations:
+                    additionalProperties:
+                      format: string
+                      type: string
+                    type: object
+                  ServiceExternalTrafficPolicyType:
+                    enum:
+                    - Local
+                    - Cluster
+                    format: string
+                    type: string
+                  ServiceLabels:
+                    additionalProperties:
+                      format: string
+                      type: string
+                    type: object
+                  ServiceType:
+                    enum:
+                    - ClusterIP
+                    - NodePort
+                    - LoadBalancer
+                    - ExternalName
+                    format: string
+                    type: string
+                type: object
+              istioControlPlane:
+                description: Istio CR to which this gateway belongs to.
+                properties:
+                  name:
+                    description: Name of the referenced Kubernetes resource.
+                    format: string
+                    type: string
+                  namespace:
+                    description: Namespace of the referenced Kubernetes resource.
+                    format: string
+                    type: string
+                type: object
+              ports:
                 items:
                   properties:
-                    name:
-                      description: The name of this port within the service.
-                      format: string
-                      type: string
-                    nodePort:
-                      description: The port on each node on which this service is
-                        exposed when type=NodePort or LoadBalancer.
+                    GatewayTargetPort:
                       format: int32
                       type: integer
-                    port:
-                      description: The port that will be exposed by this service.
-                      format: int32
-                      type: integer
-                    protocol:
-                      description: The IP protocol for this port.
-                      format: string
-                      type: string
-                    targetPort:
-                      anyOf:
-                      - type: integer
-                      - type: string
-                      description: Number or name of the port to access on the pods
-                        targeted by the service.
-                      x-kubernetes-int-or-string: true
+                    ServicePort:
+                      properties:
+                        name:
+                          description: The name of this port within the service.
+                          format: string
+                          type: string
+                        nodePort:
+                          description: The port on each node on which this service
+                            is exposed when type=NodePort or LoadBalancer.
+                          format: int32
+                          type: integer
+                        port:
+                          description: The port that will be exposed by this service.
+                          format: int32
+                          type: integer
+                        protocol:
+                          description: The IP protocol for this port.
+                          format: string
+                          type: string
+                        targetPort:
+                          anyOf:
+                          - type: integer
+                          - type: string
+                          description: Number or name of the port to access on the
+                            pods targeted by the service.
+                          x-kubernetes-int-or-string: true
+                      type: object
                   type: object
                 minItems: 0
                 type: array
+              type:
+                enum:
+                - ingress
+                - egress
+                type: string
               version:
                 description: Contains the intended version for the Mesh Gateway.
                 format: string

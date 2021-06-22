@@ -53,7 +53,7 @@ message MeshGatewaySpec {
     // +kubebuilder:validation:Pattern=^1.
     string version = 1 [(gogoproto.jsontag) = "version", (google.api.field_behavior) = REQUIRED];
     // 
-    MeshGatewayConfiguration MeshGatewayConfiguration = 2 [(gogoproto.nullable) = false, (gogoproto.embed) = true, (gogoproto.jsontag) = ",inline"];
+    MeshGatewayConfiguration MeshGwConfiguration = 2 [(gogoproto.nullable) = false, (gogoproto.embed) = true, (gogoproto.jsontag) = ",inline"];
     // +kubebuilder:validation:MinItems=0
     repeated ServicePort ports = 3 [(gogoproto.nullable) = false, (gogoproto.jsontag) = "ports"];
     // +kubebuilder:validation:Enum=ingress;egress
@@ -64,7 +64,7 @@ message MeshGatewaySpec {
 
 message MeshGatewayConfiguration {
     //
-    BaseK8sResourceConfigurationWithHPAWithoutImage BaseK8sResourceConfigurationWithHPAWithoutImage = 1 [(gogoproto.nullable) = false, (gogoproto.embed) = true, (gogoproto.jsontag) = ",inline"];
+    BaseK8sResourceConfigurationWithHPAWithoutImage BaseK8sResourceConfigWithHPAWithoutImage = 1 [(gogoproto.nullable) = false, (gogoproto.embed) = true, (gogoproto.jsontag) = ",inline"];
     //
 	map<string, string> Labels = 2 [(gogoproto.jsontag) = "labels,omitempty"];
 	// +kubebuilder:validation:Enum=ClusterIP;NodePort;LoadBalancer;ExternalName

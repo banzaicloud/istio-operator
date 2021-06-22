@@ -37,7 +37,7 @@ message BaseK8sResourceConfigurationWithHPAWithoutImage {
 	// +kubebuilder:validation:Minimum=0
     int32 MaxReplicas = 3 [(gogoproto.nullable) = true, (gogoproto.jsontag) = "maxReplicas,omitempty"];
     //
-    BaseK8sResourceConfiguration BaseK8sResourceConfiguration = 4 [(gogoproto.nullable) = false, (gogoproto.embed) = true, (gogoproto.jsontag) = ",inline"];
+    BaseK8sResourceConfiguration BaseK8sResourceConfig = 4 [(gogoproto.nullable) = false, (gogoproto.embed) = true, (gogoproto.jsontag) = ",inline"];
 }
 
 message BaseK8sResourceConfiguration {
