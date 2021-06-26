@@ -21,6 +21,7 @@ limitations under the License.
 package v1beta1
 
 import (
+	"github.com/banzaicloud/operator-tools/pkg/resources"
 	"k8s.io/api/core/v1"
 	apiextensionsv1 "k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -819,6 +820,13 @@ func (in *IstioSpec) DeepCopyInto(out *IstioSpec) {
 		in, out := &in.ImagePullSecrets, &out.ImagePullSecrets
 		*out = make([]v1.LocalObjectReference, len(*in))
 		copy(*out, *in)
+	}
+	if in.K8SOverlays != nil {
+		in, out := &in.K8SOverlays, &out.K8SOverlays
+		*out = make([]resources.K8SResourceOverlay, len(*in))
+		for i := range *in {
+			(*in)[i].DeepCopyInto(&(*out)[i])
+		}
 	}
 }
 
