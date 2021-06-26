@@ -19,6 +19,7 @@ package citadel
 import (
 	"github.com/go-logr/logr"
 	"github.com/goph/emperror"
+	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/client-go/dynamic"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
@@ -53,11 +54,12 @@ type Reconciler struct {
 	configuration Configuration
 }
 
-func New(configuration Configuration, client client.Client, dc dynamic.Interface, config *istiov1beta1.Istio) *Reconciler {
+func New(configuration Configuration, client client.Client, dc dynamic.Interface, config *istiov1beta1.Istio, scheme *runtime.Scheme) *Reconciler {
 	return &Reconciler{
 		Reconciler: resources.Reconciler{
 			Client: client,
 			Config: config,
+			Scheme: scheme,
 		},
 		dynamic:       dc,
 		configuration: configuration,
@@ -87,6 +89,11 @@ func (r *Reconciler) Reconcile(log logr.Logger) error {
 		pdbDesiredState = k8sutil.DesiredStateAbsent
 	}
 
+	overlays, err := k8sutil.GetObjectModifiersForOverlays(r.Scheme, r.Config.Spec.K8SOverlays)
+	if err != nil {
+		return emperror.WrapWith(err, "could not get k8s overlay object modifiers")
+	}
+
 	for _, res := range []resources.ResourceWithDesiredState{
 		{Resource: r.serviceAccount, DesiredState: citadelDesiredState},
 		{Resource: r.clusterRole, DesiredState: citadelDesiredState},
@@ -96,7 +103,7 @@ func (r *Reconciler) Reconcile(log logr.Logger) error {
 		{Resource: r.podDisruptionBudget, DesiredState: pdbDesiredState},
 	} {
 		o := res.Resource()
-		err := k8sutil.Reconcile(log, r.Client, o, res.DesiredState)
+		err := k8sutil.ReconcileWithObjectModifiers(log, r.Client, o, res.DesiredState, k8sutil.CombineObjectModifiers([]k8sutil.ObjectModifierFunc{k8sutil.GetGVKObjectModifier(r.Scheme)}, overlays))
 		if err != nil {
 			return emperror.WrapWith(err, "failed to reconcile resource", "resource", o.GetObjectKind().GroupVersionKind())
 		}
@@ -133,7 +140,7 @@ func (r *Reconciler) Reconcile(log logr.Logger) error {
 
 	for _, dr := range drs {
 		o := dr.DynamicResource()
-		err := o.Reconcile(log, r.dynamic, dr.DesiredState)
+		err := o.ReconcileWithObjectModifiers(log, r.dynamic, dr.DesiredState, overlays)
 		if err != nil {
 			return emperror.WrapWith(err, "failed to reconcile dynamic resource", "resource", o.Gvr)
 		}

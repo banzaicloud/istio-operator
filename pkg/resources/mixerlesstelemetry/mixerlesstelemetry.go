@@ -19,6 +19,7 @@ package mixerlesstelemetry
 import (
 	"github.com/go-logr/logr"
 	"github.com/goph/emperror"
+	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/client-go/dynamic"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
@@ -42,11 +43,12 @@ type Reconciler struct {
 	dynamic dynamic.Interface
 }
 
-func New(client client.Client, dc dynamic.Interface, config *istiov1beta1.Istio) *Reconciler {
+func New(client client.Client, dc dynamic.Interface, config *istiov1beta1.Istio, scheme *runtime.Scheme) *Reconciler {
 	return &Reconciler{
 		Reconciler: resources.Reconciler{
 			Client: client,
 			Config: config,
+			Scheme: scheme,
 		},
 		dynamic: dc,
 	}
@@ -66,6 +68,11 @@ func (r *Reconciler) Reconcile(log logr.Logger) error {
 
 	if util.PointerToBool(r.Config.Spec.Proxy.UseMetadataExchangeFilter) {
 		exchangeFilterDesiredState = k8sutil.DesiredStatePresent
+	}
+
+	overlays, err := k8sutil.GetObjectModifiersForOverlays(r.Scheme, r.Config.Spec.K8SOverlays)
+	if err != nil {
+		return emperror.WrapWith(err, "could not get k8s overlay object modifiers")
 	}
 
 	drs := []resources.DynamicResourceWithDesiredState{
@@ -89,7 +96,7 @@ func (r *Reconciler) Reconcile(log logr.Logger) error {
 
 	for _, dr := range drs {
 		o := dr.DynamicResource()
-		err := o.Reconcile(log, r.dynamic, dr.DesiredState)
+		err := o.ReconcileWithObjectModifiers(log, r.dynamic, dr.DesiredState, overlays)
 		if err != nil {
 			return emperror.WrapWith(err, "failed to reconcile dynamic resource", "resource", o.Gvr)
 		}
