@@ -78,6 +78,8 @@ github.com/banzaicloud/istio-client-go v0.0.9/go.mod h1:rpnEYYGHzisx8nARl2d30Oq3
 github.com/banzaicloud/k8s-objectmatcher v1.5.0/go.mod h1:9MWY5HsM/OaTmoTirczhlO8UALbH722WgdpaaR7Y8OE=
 github.com/banzaicloud/operator-tools v0.21.1 h1:EHgUFmrrXr2g4+LSS6Zeo82KBdOxiUzH68fFbR7pRHE=
 github.com/banzaicloud/operator-tools v0.21.1/go.mod h1:rbGr9Ud1uQs9KDWDWe6r/gLQdrr1wtBtTP9uo9Aw5Ss=
+github.com/banzaicloud/operator-tools v0.21.3 h1:oBKktSiR/Q5jQS7cgwZLwnMSl4XO3YhULYeutsjxtvs=
+github.com/banzaicloud/operator-tools v0.21.3/go.mod h1:rbGr9Ud1uQs9KDWDWe6r/gLQdrr1wtBtTP9uo9Aw5Ss=
 github.com/beorn7/perks v0.0.0-20160804104726-4c0e84591b9a/go.mod h1:Dwedo/Wpr24TaqPxmxbtue+5NUziq4I4S80YR8gNf3Q=
 github.com/beorn7/perks v0.0.0-20180321164747-3a771d992973/go.mod h1:Dwedo/Wpr24TaqPxmxbtue+5NUziq4I4S80YR8gNf3Q=
 github.com/beorn7/perks v1.0.0/go.mod h1:KWe93zE9D1o94FZ5RNwFwVgaQK1VOXiVxmqh+CedLV8=
