@@ -19,6 +19,7 @@ package istiocoredns
 import (
 	"github.com/go-logr/logr"
 	"github.com/goph/emperror"
+	"k8s.io/apimachinery/pkg/runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
 	istiov1beta1 "github.com/banzaicloud/istio-operator/pkg/apis/istio/v1beta1"
@@ -52,11 +53,12 @@ type Reconciler struct {
 	resources.Reconciler
 }
 
-func New(client client.Client, config *istiov1beta1.Istio) *Reconciler {
+func New(client client.Client, config *istiov1beta1.Istio, scheme *runtime.Scheme) *Reconciler {
 	return &Reconciler{
 		Reconciler: resources.Reconciler{
 			Client: client,
 			Config: config,
+			Scheme: scheme,
 		},
 	}
 }
@@ -73,6 +75,11 @@ func (r *Reconciler) Reconcile(log logr.Logger) error {
 		desiredState = k8sutil.DesiredStateAbsent
 	}
 
+	overlays, err := k8sutil.GetObjectModifiersForOverlays(r.Scheme, r.Config.Spec.K8SOverlays)
+	if err != nil {
+		return emperror.WrapWith(err, "could not get k8s overlay object modifiers")
+	}
+
 	for _, res := range []resources.Resource{
 		r.serviceAccount,
 		r.clusterRole,
@@ -84,13 +91,13 @@ func (r *Reconciler) Reconcile(log logr.Logger) error {
 		r.deployment,
 	} {
 		o := res()
-		err := k8sutil.Reconcile(log, r.Client, o, desiredState)
+		err := k8sutil.ReconcileWithObjectModifiers(log, r.Client, o, desiredState, k8sutil.CombineObjectModifiers([]k8sutil.ObjectModifierFunc{k8sutil.GetGVKObjectModifier(r.Scheme)}, overlays))
 		if err != nil {
 			return emperror.WrapWith(err, "failed to reconcile resource", "resource", o.GetObjectKind().GroupVersionKind())
 		}
 	}
 
-	err := r.reconcileCoreDNSConfigMap(log, desiredState)
+	err = r.reconcileCoreDNSConfigMap(log, desiredState)
 	if err != nil {
 		return emperror.WrapWith(err, "failed to update coredns configmap")
 	}

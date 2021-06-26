@@ -40,11 +40,12 @@ type Reconciler struct {
 	operatorConfig config.Configuration
 }
 
-func New(client client.Client, config *istiov1beta1.Istio, operatorConfig config.Configuration) *Reconciler {
+func New(client client.Client, config *istiov1beta1.Istio, operatorConfig config.Configuration, scheme *runtime.Scheme) *Reconciler {
 	return &Reconciler{
 		Reconciler: resources.Reconciler{
 			Client: client,
 			Config: config,
+			Scheme: scheme,
 		},
 		operatorConfig: operatorConfig,
 	}
@@ -65,11 +66,16 @@ func (r *Reconciler) Reconcile(log logr.Logger) error {
 		return emperror.Wrap(err, "could not generate operator webhook cabundle configmap")
 	}
 
+	overlays, err := k8sutil.GetObjectModifiersForOverlays(r.Scheme, r.Config.Spec.K8SOverlays)
+	if err != nil {
+		return emperror.WrapWith(err, "could not get k8s overlay object modifiers")
+	}
+
 	for _, res := range []resources.Resource{
 		func() runtime.Object { return cm },
 	} {
 		o := res()
-		err := k8sutil.Reconcile(log, r.Client, o, desired)
+		err := k8sutil.ReconcileWithObjectModifiers(log, r.Client, o, desired, k8sutil.CombineObjectModifiers([]k8sutil.ObjectModifierFunc{k8sutil.GetGVKObjectModifier(r.Scheme)}, overlays))
 		if err != nil {
 			return emperror.WrapWith(err, "failed to reconcile resource", "resource", o.GetObjectKind().GroupVersionKind())
 		}

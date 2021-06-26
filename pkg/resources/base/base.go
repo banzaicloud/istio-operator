@@ -19,6 +19,7 @@ package base
 import (
 	"github.com/go-logr/logr"
 	"github.com/goph/emperror"
+	"k8s.io/apimachinery/pkg/runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
 	istiov1beta1 "github.com/banzaicloud/istio-operator/pkg/apis/istio/v1beta1"
@@ -45,11 +46,12 @@ type Reconciler struct {
 	operatorConfig config.Configuration
 }
 
-func New(client client.Client, config *istiov1beta1.Istio, isRemote bool, operatorConfig config.Configuration) *Reconciler {
+func New(client client.Client, config *istiov1beta1.Istio, isRemote bool, operatorConfig config.Configuration, scheme *runtime.Scheme) *Reconciler {
 	return &Reconciler{
 		Reconciler: resources.Reconciler{
 			Client: client,
 			Config: config,
+			Scheme: scheme,
 		},
 		remote: isRemote,
 
@@ -62,6 +64,11 @@ func (r *Reconciler) Reconcile(log logr.Logger) error {
 
 	log.Info("Reconciling")
 
+	overlays, err := k8sutil.GetObjectModifiersForOverlays(r.Scheme, r.Config.Spec.K8SOverlays)
+	if err != nil {
+		return emperror.WrapWith(err, "could not get k8s overlay object modifiers")
+	}
+
 	for _, res := range []resources.Resource{
 		r.serviceAccountReader,
 		r.clusterRoleReader,
@@ -69,7 +76,7 @@ func (r *Reconciler) Reconcile(log logr.Logger) error {
 		r.configMap,
 	} {
 		o := res()
-		err := k8sutil.Reconcile(log, r.Client, o, k8sutil.DesiredStatePresent)
+		err := k8sutil.ReconcileWithObjectModifiers(log, r.Client, o, k8sutil.DesiredStatePresent, k8sutil.CombineObjectModifiers([]k8sutil.ObjectModifierFunc{k8sutil.GetGVKObjectModifier(r.Scheme)}, overlays))
 		if err != nil {
 			return emperror.WrapWith(err, "failed to reconcile resource", "resource", o.GetObjectKind().GroupVersionKind())
 		}

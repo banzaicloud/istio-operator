@@ -343,22 +343,22 @@ func (r *ReconcileIstio) reconcile(logger logr.Logger, config *istiov1beta1.Isti
 	config.Spec.SetMeshNetworks(meshNetworks)
 
 	reconcilers := []resources.ComponentReconciler{
-		base.New(r.Client, config, false, r.operatorConfig),
-		webhookcert.New(r.Client, config, r.operatorConfig),
+		base.New(r.Client, config, false, r.operatorConfig, r.mgr.GetScheme()),
+		webhookcert.New(r.Client, config, r.operatorConfig, r.mgr.GetScheme()),
 		citadel.New(citadel.Configuration{
 			DeployMeshWidePolicy: true,
-		}, r.Client, r.dynamic, config),
-		galley.New(r.Client, config),
-		sidecarinjector.New(r.Client, config),
-		pilot.New(r.Client, r.dynamic, config),
-		istiod.New(r.Client, r.dynamic, config, r.mgr.GetScheme(), r.operatorConfig),
-		cni.New(r.Client, config),
-		nodeagent.New(r.Client, config),
-		istiocoredns.New(r.Client, config),
-		mixerlesstelemetry.New(r.Client, r.dynamic, config),
-		ingressgateway.New(r.Client, r.dynamic, config, false),
-		egressgateway.New(r.Client, r.dynamic, config, false),
-		meshexpansion.New(r.Client, r.dynamic, config, false),
+		}, r.Client, r.dynamic, config, r.mgr.GetScheme()),
+		galley.New(r.Client, config, r.mgr.GetScheme()),
+		sidecarinjector.New(r.Client, config, r.mgr.GetScheme()),
+		pilot.New(r.Client, r.dynamic, config, r.mgr.GetScheme()),
+		istiod.New(r.Client, r.dynamic, config, r.operatorConfig, r.mgr.GetScheme()),
+		cni.New(r.Client, config, r.mgr.GetScheme()),
+		nodeagent.New(r.Client, config, r.mgr.GetScheme()),
+		istiocoredns.New(r.Client, config, r.mgr.GetScheme()),
+		mixerlesstelemetry.New(r.Client, r.dynamic, config, r.mgr.GetScheme()),
+		ingressgateway.New(r.Client, r.dynamic, config, false, r.mgr.GetScheme()),
+		egressgateway.New(r.Client, r.dynamic, config, false, r.mgr.GetScheme()),
+		meshexpansion.New(r.Client, r.dynamic, config, false, r.mgr.GetScheme()),
 	}
 
 	for _, rec := range reconcilers {

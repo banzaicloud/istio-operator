@@ -8,6 +8,7 @@ require (
 	github.com/banzaicloud/istio-client-go v0.0.9
 	github.com/banzaicloud/istio-operator/pkg/apis v0.0.0
 	github.com/banzaicloud/k8s-objectmatcher v1.5.0
+	github.com/banzaicloud/operator-tools v0.21.3
 	github.com/caddyserver/caddy v1.0.5
 	github.com/coreos/go-semver v0.3.0
 	github.com/ghodss/yaml v1.0.0

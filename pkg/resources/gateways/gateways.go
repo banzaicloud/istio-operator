@@ -43,7 +43,6 @@ type Reconciler struct {
 	resources.Reconciler
 	gw      *istiov1beta1.MeshGateway
 	dynamic dynamic.Interface
-	scheme  *runtime.Scheme
 
 	operatorConfig config.Configuration
 }
@@ -53,10 +52,10 @@ func New(client client.Client, dc dynamic.Interface, config *istiov1beta1.Istio,
 		Reconciler: resources.Reconciler{
 			Client: client,
 			Config: config,
+			Scheme: scheme,
 		},
 		gw:      gw,
 		dynamic: dc,
-		scheme:  scheme,
 
 		operatorConfig: operatorConfig,
 	}
@@ -83,7 +82,7 @@ func (r *Reconciler) Reconcile(log logr.Logger) error {
 	}
 
 	// add specific desired state to support re-creation
-	deploymentDesiredState := k8sutil.NewRecreateAwareDeploymentDesiredState(r.Client, r.scheme, log, r.labels())
+	deploymentDesiredState := k8sutil.NewRecreateAwareDeploymentDesiredState(r.Client, r.Scheme, log, r.labels())
 
 	for _, res := range []resources.ResourceWithDesiredState{
 		{Resource: r.serviceAccount, DesiredState: k8sutil.DesiredStatePresent},
