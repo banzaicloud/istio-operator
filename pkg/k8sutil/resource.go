@@ -33,13 +33,22 @@ import (
 )
 
 func Reconcile(log logr.Logger, client runtimeClient.Client, desired runtime.Object, desiredState DesiredState) error {
+	return ReconcileWithObjectModifiers(log, client, desired, desiredState, nil)
+}
+
+func ReconcileWithObjectModifiers(log logr.Logger, client runtimeClient.Client, desired runtime.Object, desiredState DesiredState, objectModifiers []ObjectModifierFunc) error {
 	if desiredState == nil {
 		desiredState = DesiredStatePresent
 	}
 
+	desired, err := RunObjectModifiers(desired, objectModifiers)
+	if err != nil {
+		return err
+	}
+
 	desiredType := reflect.TypeOf(desired)
-	var current = desired.DeepCopyObject()
-	var desiredCopy = desired.DeepCopyObject()
+	current := desired.DeepCopyObject()
+	desiredCopy := desired.DeepCopyObject()
 	key, err := runtimeClient.ObjectKeyFromObject(current)
 	if err != nil {
 		return emperror.With(err, "kind", desiredType)
@@ -220,7 +229,7 @@ func IsObjectChanged(oldObj, newObj runtime.Object, ignoreStatusChange bool) (bo
 
 // ReconcileNamespaceLabelsIgnoreNotFound patches namespaces by adding/removing labels, returns without error if namespace is not found
 func ReconcileNamespaceLabelsIgnoreNotFound(log logr.Logger, client runtimeClient.Client, namespace string, labels map[string]string, labelsToRemove []string, customLabelsToIgnoreReconcile ...string) error {
-	var ns = &corev1.Namespace{}
+	ns := &corev1.Namespace{}
 	err := client.Get(context.TODO(), runtimeClient.ObjectKey{Name: namespace}, ns)
 	if err != nil {
 		if apierrors.IsNotFound(err) {

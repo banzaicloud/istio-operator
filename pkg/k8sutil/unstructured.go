@@ -20,7 +20,6 @@ import (
 	"context"
 	"reflect"
 
-	patch "github.com/banzaicloud/k8s-objectmatcher/patch"
 	"github.com/go-logr/logr"
 	"github.com/goph/emperror"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
@@ -28,6 +27,8 @@ import (
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/apimachinery/pkg/runtime/schema"
 	"k8s.io/client-go/dynamic"
+
+	patch "github.com/banzaicloud/k8s-objectmatcher/patch"
 
 	istiov1beta1 "github.com/banzaicloud/istio-operator/pkg/apis/istio/v1beta1"
 	"github.com/banzaicloud/istio-operator/pkg/util"
@@ -44,10 +45,21 @@ type DynamicObject struct {
 }
 
 func (d *DynamicObject) Reconcile(log logr.Logger, client dynamic.Interface, desiredState DesiredState) error {
+	return d.ReconcileWithObjectModifiers(log, client, desiredState, nil)
+}
+
+func (d *DynamicObject) ReconcileWithObjectModifiers(log logr.Logger, client dynamic.Interface, desiredState DesiredState, objectModifiers []ObjectModifierFunc) error {
 	if desiredState == nil {
 		desiredState = DesiredStatePresent
 	}
 	desired := d.unstructured()
+
+	modified, err := RunObjectModifiers(desired, objectModifiers)
+	if err != nil {
+		return err
+	}
+	desired = modified.(*unstructured.Unstructured)
+
 	desiredType := reflect.TypeOf(desired)
 	log = log.WithValues("type", reflect.TypeOf(d), "name", d.Name)
 	current, err := client.Resource(d.Gvr).Namespace(d.Namespace).Get(context.Background(), d.Name, metav1.GetOptions{})
