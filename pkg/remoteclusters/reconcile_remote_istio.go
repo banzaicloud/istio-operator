@@ -33,16 +33,16 @@ func (c *Cluster) reconcileComponents(remoteConfig *istiov1beta1.RemoteIstio, is
 	c.log.Info("reconciling components")
 
 	reconcilers := []resources.ComponentReconciler{
-		base.New(c.ctrlRuntimeClient, c.istioConfig, true),
+		base.New(c.ctrlRuntimeClient, c.istioConfig, true, c.mgr.GetScheme()),
 		citadel.New(citadel.Configuration{
 			DeployMeshWidePolicy: false,
-		}, c.ctrlRuntimeClient, c.dynamicClient, c.istioConfig),
-		nodeagent.New(c.ctrlRuntimeClient, c.istioConfig),
-		cni.New(c.ctrlRuntimeClient, c.istioConfig),
-		sidecarinjector.New(c.ctrlRuntimeClient, c.istioConfig),
-		ingressgateway.New(c.ctrlRuntimeClient, c.dynamicClient, c.istioConfig, true),
-		egressgateway.New(c.ctrlRuntimeClient, c.dynamicClient, c.istioConfig, true),
-		meshexpansion.New(c.ctrlRuntimeClient, c.dynamicClient, c.istioConfig, true),
+		}, c.ctrlRuntimeClient, c.dynamicClient, c.istioConfig, c.mgr.GetScheme()),
+		nodeagent.New(c.ctrlRuntimeClient, c.istioConfig, c.mgr.GetScheme()),
+		cni.New(c.ctrlRuntimeClient, c.istioConfig, c.mgr.GetScheme()),
+		sidecarinjector.New(c.ctrlRuntimeClient, c.istioConfig, c.mgr.GetScheme()),
+		ingressgateway.New(c.ctrlRuntimeClient, c.dynamicClient, c.istioConfig, true, c.mgr.GetScheme()),
+		egressgateway.New(c.ctrlRuntimeClient, c.dynamicClient, c.istioConfig, true, c.mgr.GetScheme()),
+		meshexpansion.New(c.ctrlRuntimeClient, c.dynamicClient, c.istioConfig, true, c.mgr.GetScheme()),
 	}
 
 	for _, rec := range reconcilers {
