@@ -30,6 +30,7 @@ import (
 	"k8s.io/apimachinery/pkg/util/intstr"
 
 	"github.com/banzaicloud/istio-operator/pkg/util"
+	"github.com/banzaicloud/operator-tools/pkg/resources"
 )
 
 const (
@@ -967,6 +968,9 @@ type IstioSpec struct {
 
 	// ImagePullSecrets is an optional list of references to secrets to use for pulling any of the images.
 	ImagePullSecrets []corev1.LocalObjectReference `json:"imagePullSecrets,omitempty"`
+
+	// K8SOverlays conaints overlay patches for k8s resources
+	K8SOverlays []resources.K8SResourceOverlay `json:"k8sResourceOverlays,omitempty"`
 }
 
 type MultiMeshConfiguration struct {
