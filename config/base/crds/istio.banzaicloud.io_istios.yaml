@@ -3042,6 +3042,40 @@ spec:
                 - third-party-jwt
                 - first-party-jwt
                 type: string
+              k8sResourceOverlays:
+                items:
+                  properties:
+                    groupVersionKind:
+                      properties:
+                        group:
+                          type: string
+                        kind:
+                          type: string
+                        version:
+                          type: string
+                      type: object
+                    objectKey:
+                      properties:
+                        name:
+                          type: string
+                        namespace:
+                          type: string
+                      type: object
+                    patches:
+                      items:
+                        properties:
+                          parseValue:
+                            type: boolean
+                          path:
+                            type: string
+                          type:
+                            type: string
+                          value:
+                            type: string
+                        type: object
+                      type: array
+                  type: object
+                type: array
               localityLB:
                 properties:
                   distribute:
