@@ -33,17 +33,26 @@ import (
 )
 
 func Reconcile(log logr.Logger, client runtimeClient.Client, desired runtime.Object, desiredState DesiredState) error {
+	return ReconcileWithObjectModifiers(log, client, desired, desiredState, nil)
+}
+
+func ReconcileWithObjectModifiers(log logr.Logger, client runtimeClient.Client, desired runtime.Object, desiredState DesiredState, objectModifiers []ObjectModifierFunc) error {
 	if desiredState == nil {
 		desiredState = DesiredStatePresent
 	}
 
+	desired, err := RunObjectModifiers(desired, objectModifiers)
+	if err != nil {
+		return err
+	}
+
 	desiredType := reflect.TypeOf(desired)
-	var current = desired.DeepCopyObject().(runtimeClient.Object)
-	var desiredCopy = desired.DeepCopyObject().(runtimeClient.Object)
+	current := desired.DeepCopyObject().(runtimeClient.Object)
+	desiredCopy := desired.DeepCopyObject().(runtimeClient.Object)
 	key := runtimeClient.ObjectKeyFromObject(current)
 	log = log.WithValues("kind", desiredType, "name", key.Name)
 
-	err := client.Get(context.TODO(), key, current)
+	err = client.Get(context.TODO(), key, current)
 	if err != nil && !apierrors.IsNotFound(err) {
 		return emperror.WrapWith(err, "getting resource failed", "kind", desiredType, "name", key.Name)
 	}
@@ -217,7 +226,7 @@ func IsObjectChanged(oldObj, newObj runtime.Object, ignoreStatusChange bool) (bo
 
 // ReconcileNamespaceLabelsIgnoreNotFound patches namespaces by adding/removing labels, returns without error if namespace is not found
 func ReconcileNamespaceLabelsIgnoreNotFound(log logr.Logger, client runtimeClient.Client, namespace string, labels map[string]string, labelsToRemove []string, customLabelsToIgnoreReconcile ...string) error {
-	var ns = &corev1.Namespace{}
+	ns := &corev1.Namespace{}
 	err := client.Get(context.TODO(), runtimeClient.ObjectKey{Name: namespace}, ns)
 	if err != nil {
 		if apierrors.IsNotFound(err) {
