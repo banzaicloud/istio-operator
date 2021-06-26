@@ -28,6 +28,7 @@ import (
 type Reconciler struct {
 	client.Client
 	Config *istiov1beta1.Istio
+	Scheme *runtime.Scheme
 }
 
 type ComponentReconciler interface {

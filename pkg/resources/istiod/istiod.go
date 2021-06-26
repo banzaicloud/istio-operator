@@ -59,19 +59,18 @@ var pilotLabelSelector = map[string]string{
 type Reconciler struct {
 	resources.Reconciler
 	dynamic dynamic.Interface
-	scheme  *runtime.Scheme
 
 	operatorConfig config.Configuration
 }
 
-func New(client client.Client, dc dynamic.Interface, config *istiov1beta1.Istio, scheme *runtime.Scheme, operatorConfig config.Configuration) *Reconciler {
+func New(client client.Client, dc dynamic.Interface, config *istiov1beta1.Istio, operatorConfig config.Configuration, scheme *runtime.Scheme) *Reconciler {
 	return &Reconciler{
 		Reconciler: resources.Reconciler{
 			Client: client,
 			Config: config,
+			Scheme: scheme,
 		},
 		dynamic: dc,
-		scheme:  scheme,
 
 		operatorConfig: operatorConfig,
 	}
@@ -99,7 +98,12 @@ func (r *Reconciler) Reconcile(log logr.Logger) error {
 	deploymentDesiredState := istiodDesiredState
 	// add specific desired state to support re-creation
 	if deploymentDesiredState == k8sutil.DesiredStatePresent {
-		deploymentDesiredState = k8sutil.NewRecreateAwareDeploymentDesiredState(r.Client, r.scheme, log, util.MergeStringMaps(pilotLabelSelector, r.Config.RevisionLabels()))
+		deploymentDesiredState = k8sutil.NewRecreateAwareDeploymentDesiredState(r.Client, r.Scheme, log, util.MergeStringMaps(pilotLabelSelector, r.Config.RevisionLabels()))
+	}
+
+	overlays, err := k8sutil.GetObjectModifiersForOverlays(r.Scheme, r.Config.Spec.K8SOverlays)
+	if err != nil {
+		return emperror.WrapWith(err, "could not get k8s overlay object modifiers")
 	}
 
 	for _, res := range []resources.ResourceWithDesiredState{
@@ -115,7 +119,7 @@ func (r *Reconciler) Reconcile(log logr.Logger) error {
 		{Resource: r.validatingWebhook, DesiredState: istiodDesiredState},
 	} {
 		o := res.Resource()
-		err := k8sutil.Reconcile(log, r.Client, o, res.DesiredState)
+		err := k8sutil.ReconcileWithObjectModifiers(log, r.Client, o, res.DesiredState, k8sutil.CombineObjectModifiers([]k8sutil.ObjectModifierFunc{k8sutil.GetGVKObjectModifier(r.Scheme)}, overlays))
 		if err != nil {
 			return emperror.WrapWith(err, "failed to reconcile resource", "resource", o.GetObjectKind().GroupVersionKind())
 		}
@@ -136,7 +140,7 @@ func (r *Reconciler) Reconcile(log logr.Logger) error {
 		{DynamicResource: r.meshExpansionVirtualService, DesiredState: meshExpansionDesiredState},
 	} {
 		o := dr.DynamicResource()
-		err := o.Reconcile(log, r.dynamic, dr.DesiredState)
+		err := o.ReconcileWithObjectModifiers(log, r.dynamic, dr.DesiredState, overlays)
 		if err != nil {
 			return emperror.WrapWith(err, "failed to reconcile dynamic resource", "resource", o.Gvr)
 		}
