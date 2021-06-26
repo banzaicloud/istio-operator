@@ -8,10 +8,12 @@ require (
 	github.com/banzaicloud/istio-client-go v0.0.9
 	github.com/banzaicloud/istio-operator/pkg/apis v0.0.0
 	github.com/banzaicloud/k8s-objectmatcher v1.5.0
+	github.com/banzaicloud/operator-tools v0.21.3
 	github.com/caddyserver/caddy v1.0.5
 	github.com/coreos/go-semver v0.3.0
 	github.com/ghodss/yaml v1.0.0
 	github.com/go-logr/logr v0.3.0
+	github.com/go-logr/zapr v0.2.0 // indirect
 	github.com/gofrs/uuid v3.2.0+incompatible
 	github.com/goph/emperror v0.17.2
 	github.com/lestrrat-go/jwx v1.0.6
