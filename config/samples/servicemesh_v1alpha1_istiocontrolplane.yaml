@@ -10,6 +10,8 @@ spec:
     requests:
       cpu: 10m
   mountMtlsCerts: false
+  sds:
+    tokenAudience: "istio-ca"
   meshConfig:
     proxyListenPort: 15001
     connectTimeout: 10s

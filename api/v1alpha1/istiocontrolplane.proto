@@ -62,8 +62,11 @@ message IstioControlPlaneSpec {
     k8s.io.api.core.v1.ResourceRequirements defaultResources = 3 [(gogoproto.jsontag) = "defaultResources"];
     // Use the user-specified, secret volume mounted key and certs for Pilot and workloads.
     google.protobuf.BoolValue mountMtlsCerts = 4 [(gogoproto.wktpointer) = true, (gogoproto.jsontag) = "mountMtlsCerts"];
+    // If SDS is configured, mTLS certificates for the sidecars will be distributed through the
+    // SecretDiscoveryService instead of using K8S secrets to mount the certificates.
+    SDSConfiguration sds = 5 [(gogoproto.jsontag) = "sds"];
     // Defines mesh-wide settings for the Istio control plane.
-    istio.mesh.v1alpha1.MeshConfig mesh_config = 5;
+    istio.mesh.v1alpha1.MeshConfig mesh_config = 6;
 }
 
 // Comma-separated minimum per-scope logging level of messages to output, in the form of <scope>:<level>,<scope>:<level>
@@ -72,6 +75,14 @@ message IstioControlPlaneSpec {
 message LoggingConfiguration {
     // +kubebuilder:validation:Pattern=`^([a-zA-Z]+:[a-zA-Z]+,?)+$`
     string level = 1 [(gogoproto.jsontag) = "level"];
+}
+
+// SDSConfiguration defines Secret Discovery Service config options
+message SDSConfiguration {
+    // The JWT token for SDS and the aud field of such JWT. See RFC 7519, section 4.1.3.
+    // When a CSR is sent from Citadel Agent to the CA (e.g. Citadel), this aud is to make sure the
+    // 	JWT is intended for the CA.
+    string tokenAudience = 1 [(gogoproto.jsontag) = "tokenAudience"];
 }
 
 // <!-- go code generation tags

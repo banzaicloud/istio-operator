@@ -1422,6 +1422,15 @@ spec:
                   certs for Pilot and workloads.
                 nullable: true
                 type: boolean
+              sds:
+                description: |-
+                  If SDS is configured, mTLS certificates for the sidecars will be distributed through the
+                  SecretDiscoveryService instead of using K8S secrets to mount the certificates.
+                properties:
+                  tokenAudience:
+                    description: The JWT token for SDS and the aud field of such JWT.
+                    type: string
+                type: object
               version:
                 description: Contains the intended version for the Istio control plane.
                 pattern: ^1.
