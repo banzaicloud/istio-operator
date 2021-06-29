@@ -14,6 +14,7 @@
 
 syntax = "proto3";
 
+import "k8s.io/api/core/v1/generated.proto";
 import "mesh/v1alpha1/config.proto";
 import "gogoproto/gogo.proto";
 import "google/api/field_behavior.proto";
@@ -54,10 +55,15 @@ message IstioControlPlaneSpec {
     string version = 1 [(gogoproto.jsontag) = "version", (google.api.field_behavior) = REQUIRED];
     // Logging configurations.
     LoggingConfiguration logging = 2 [(gogoproto.jsontag) = "logging"];
+    // A minimal set of requested resources to applied to all deployments so that
+    // Horizontal Pod Autoscaler will be able to function (if set).
+    // Each component can overwrite these default values by adding its own resources
+    // block in the relevant section below and setting the desired resources values.
+    k8s.io.api.core.v1.ResourceRequirements defaultResources = 3 [(gogoproto.jsontag) = "defaultResources"];
     // Use the user-specified, secret volume mounted key and certs for Pilot and workloads.
-    google.protobuf.BoolValue mountMtlsCerts = 3 [(gogoproto.wktpointer) = true, (gogoproto.jsontag) = "mountMtlsCerts"];
+    google.protobuf.BoolValue mountMtlsCerts = 4 [(gogoproto.wktpointer) = true, (gogoproto.jsontag) = "mountMtlsCerts"];
     // Defines mesh-wide settings for the Istio control plane.
-    istio.mesh.v1alpha1.MeshConfig mesh_config = 4;
+    istio.mesh.v1alpha1.MeshConfig mesh_config = 5;
 }
 
 // Comma-separated minimum per-scope logging level of messages to output, in the form of <scope>:<level>,<scope>:<level>

@@ -6,6 +6,9 @@ spec:
   version: 1.10.0-rc.0
   logging:
     level: "default:info"
+  defaultResources:
+    requests:
+      cpu: 10m
   mountMtlsCerts: false
   meshConfig:
     proxyListenPort: 15001

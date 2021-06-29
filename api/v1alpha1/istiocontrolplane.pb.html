@@ -4,7 +4,7 @@ description: Istio control plane descriptor
 layout: protoc-gen-docs
 generator: protoc-gen-docs
 schema: istio-operator.api.v1alpha1.IstioControlPlaneSpec
-number_of_entries: 3
+number_of_entries: 4
 ---
 <h2 id="IstioControlPlaneSpec">IstioControlPlaneSpec</h2>
 <section>
@@ -37,6 +37,20 @@ Yes
 <td><code><a href="#LoggingConfiguration">LoggingConfiguration</a></code></td>
 <td>
 <p>Logging configurations.</p>
+
+</td>
+<td>
+No
+</td>
+</tr>
+<tr id="IstioControlPlaneSpec-defaultResources">
+<td><code>defaultResources</code></td>
+<td><code><a href="#k8s-io-api-core-v1-ResourceRequirements">ResourceRequirements</a></code></td>
+<td>
+<p>A minimal set of requested resources to applied to all deployments so that
+Horizontal Pod Autoscaler will be able to function (if set).
+Each component can overwrite these default values by adding its own resources
+block in the relevant section below and setting the desired resources values.</p>
 
 </td>
 <td>
@@ -101,4 +115,49 @@ No
 <h2 id="IstioControlPlaneStatus">IstioControlPlaneStatus</h2>
 <section>
 
+</section>
+<h2 id="k8s-io-api-core-v1-ResourceRequirements">k8s.io.api.core.v1.ResourceRequirements</h2>
+<section>
+<p>ResourceRequirements describes the compute resource requirements.</p>
+
+<table class="message-fields">
+<thead>
+<tr>
+<th>Field</th>
+<th>Type</th>
+<th>Description</th>
+<th>Required</th>
+</tr>
+</thead>
+<tbody>
+<tr id="k8s-io-api-core-v1-ResourceRequirements-limits">
+<td><code>limits</code></td>
+<td><code>map&lt;string,&nbsp;<a href="#k8s-io-apimachinery-pkg-api-resource-Quantity">Quantity</a>&gt;</code></td>
+<td>
+<p>Limits describes the maximum amount of compute resources allowed.
+More info: https://kubernetes.io/docs/concepts/configuration/manage-compute-resources-container/
++optional</p>
+
+</td>
+<td>
+No
+</td>
+</tr>
+<tr id="k8s-io-api-core-v1-ResourceRequirements-requests">
+<td><code>requests</code></td>
+<td><code>map&lt;string,&nbsp;<a href="#k8s-io-apimachinery-pkg-api-resource-Quantity">Quantity</a>&gt;</code></td>
+<td>
+<p>Requests describes the minimum amount of compute resources required.
+If Requests is omitted for a container, it defaults to Limits if that is explicitly specified,
+otherwise to an implementation-defined value.
+More info: https://kubernetes.io/docs/concepts/configuration/manage-compute-resources-container/
++optional</p>
+
+</td>
+<td>
+No
+</td>
+</tr>
+</tbody>
+</table>
 </section>
