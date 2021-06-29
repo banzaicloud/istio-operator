@@ -51,8 +51,18 @@ message IstioControlPlaneSpec {
     // Contains the intended version for the Istio control plane.
     // +kubebuilder:validation:Pattern=^1.
     string version = 1 [(gogoproto.jsontag) = "version", (google.api.field_behavior) = REQUIRED];
+    // Logging configurations.
+    LoggingConfiguration logging = 2 [(gogoproto.jsontag) = "logging"];
     // Defines mesh-wide settings for the Istio control plane.
-    istio.mesh.v1alpha1.MeshConfig mesh_config = 2;
+    istio.mesh.v1alpha1.MeshConfig mesh_config = 3;
+}
+
+// Comma-separated minimum per-scope logging level of messages to output, in the form of <scope>:<level>,<scope>:<level>
+// The control plane has different scopes depending on component, but can configure default log level across all components
+// If empty, default scope and level will be used as configured in code
+message LoggingConfiguration {
+    // +kubebuilder:validation:Pattern=`^([a-zA-Z]+:[a-zA-Z]+,?)+$`
+    string level = 1 [(gogoproto.jsontag) = "level"];
 }
 
 // <!-- go code generation tags

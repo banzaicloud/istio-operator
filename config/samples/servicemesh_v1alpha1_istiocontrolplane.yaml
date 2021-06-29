@@ -4,6 +4,8 @@ metadata:
   name: icp-v10x-sample
 spec:
   version: 1.10.0-rc.0
+  logging:
+    level: "default:info"
   meshConfig:
     proxyListenPort: 15001
     connectTimeout: 10s

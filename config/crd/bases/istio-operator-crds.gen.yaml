@@ -33,6 +33,13 @@ spec:
           spec:
             description: IstioControlPlane defines an Istio control plane.
             properties:
+              logging:
+                description: Logging configurations.
+                properties:
+                  level:
+                    pattern: ^([a-zA-Z]+:[a-zA-Z]+,?)+$
+                    type: string
+                type: object
               meshConfig:
                 description: Defines mesh-wide settings for the Istio control plane.
                 properties:

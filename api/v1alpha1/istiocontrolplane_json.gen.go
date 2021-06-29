@@ -30,6 +30,17 @@ func (this *IstioControlPlaneSpec) UnmarshalJSON(b []byte) error {
 	return IstiocontrolplaneUnmarshaler.Unmarshal(bytes.NewReader(b), this)
 }
 
+// MarshalJSON is a custom marshaler for LoggingConfiguration
+func (this *LoggingConfiguration) MarshalJSON() ([]byte, error) {
+	str, err := IstiocontrolplaneMarshaler.MarshalToString(this)
+	return []byte(str), err
+}
+
+// UnmarshalJSON is a custom unmarshaler for LoggingConfiguration
+func (this *LoggingConfiguration) UnmarshalJSON(b []byte) error {
+	return IstiocontrolplaneUnmarshaler.Unmarshal(bytes.NewReader(b), this)
+}
+
 // MarshalJSON is a custom marshaler for IstioControlPlaneStatus
 func (this *IstioControlPlaneStatus) MarshalJSON() ([]byte, error) {
 	str, err := IstiocontrolplaneMarshaler.MarshalToString(this)

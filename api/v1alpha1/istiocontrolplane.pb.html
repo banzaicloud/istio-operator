@@ -4,7 +4,7 @@ description: Istio control plane descriptor
 layout: protoc-gen-docs
 generator: protoc-gen-docs
 schema: istio-operator.api.v1alpha1.IstioControlPlaneSpec
-number_of_entries: 2
+number_of_entries: 3
 ---
 <h2 id="IstioControlPlaneSpec">IstioControlPlaneSpec</h2>
 <section>
@@ -32,11 +32,52 @@ number_of_entries: 2
 Yes
 </td>
 </tr>
+<tr id="IstioControlPlaneSpec-logging">
+<td><code>logging</code></td>
+<td><code><a href="#LoggingConfiguration">LoggingConfiguration</a></code></td>
+<td>
+<p>Logging configurations.</p>
+
+</td>
+<td>
+No
+</td>
+</tr>
 <tr id="IstioControlPlaneSpec-mesh_config">
 <td><code>meshConfig</code></td>
 <td><code><a href="https://istio.io/docs/reference/config/istio.mesh.v1alpha1.html#MeshConfig">MeshConfig</a></code></td>
 <td>
 <p>Defines mesh-wide settings for the Istio control plane.</p>
+
+</td>
+<td>
+No
+</td>
+</tr>
+</tbody>
+</table>
+</section>
+<h2 id="LoggingConfiguration">LoggingConfiguration</h2>
+<section>
+<p>Comma-separated minimum per-scope logging level of messages to output, in the form of <scope>:<level>,<scope>:<level>
+The control plane has different scopes depending on component, but can configure default log level across all components
+If empty, default scope and level will be used as configured in code</p>
+
+<table class="message-fields">
+<thead>
+<tr>
+<th>Field</th>
+<th>Type</th>
+<th>Description</th>
+<th>Required</th>
+</tr>
+</thead>
+<tbody>
+<tr id="LoggingConfiguration-level">
+<td><code>level</code></td>
+<td><code>string</code></td>
+<td>
+<p>+kubebuilder:validation:Pattern=<code>^([a-zA-Z]+:[a-zA-Z]+,?)+$</code></p>
 
 </td>
 <td>
