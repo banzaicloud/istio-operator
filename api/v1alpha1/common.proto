@@ -33,35 +33,30 @@ message NamespacedName {
 message BaseK8sResourceConfigurationWithHPAWithoutImage {
     // Standard Kubernetes replica count configuration
     // +kubebuilder:validation:Minimum=0
-    google.protobuf.Int32Value ReplicaCount = 1 [(gogoproto.wktpointer) = true, (gogoproto.jsontag) = "replicaCount,omitempty"];
+    google.protobuf.Int32Value replicaCount = 1 [(gogoproto.wktpointer) = true];
     // Standard Kubernetes minimum replicas configuration
     // +kubebuilder:validation:Minimum=0
-    google.protobuf.Int32Value MinReplicas = 2 [(gogoproto.wktpointer) = true, (gogoproto.jsontag) = "minReplicas,omitempty"];
+    google.protobuf.Int32Value minReplicas = 2 [(gogoproto.wktpointer) = true];
     // Standard Kubernetes maximum replicas configuration
     // +kubebuilder:validation:Minimum=0
-    google.protobuf.Int32Value MaxReplicas = 3 [(gogoproto.wktpointer) = true, (gogoproto.jsontag) = "maxReplicas,omitempty"];
+    google.protobuf.Int32Value maxReplicas = 3 [(gogoproto.wktpointer) = true];
     // Standard Kubernetes resource configuration
     BaseK8sResourceConfiguration BaseK8sResourceConfig = 4 [(gogoproto.nullable) = false, (gogoproto.embed) = true, (gogoproto.jsontag) = ",inline"];
 }
 
 message BaseK8sResourceConfiguration {
     // Standard Kubernetes memory and CPU resource requirements
-    k8s.io.api.core.v1.ResourceRequirements Resources = 1 [(gogoproto.jsontag) = "resources,omitempty"];
+    k8s.io.api.core.v1.ResourceRequirements resources = 1;
     // Standard Kubernetes node selector configuration
-    map<string,string> NodeSelector = 2 [(gogoproto.jsontag) = "nodeSelector,omitempty"];
+    map<string,string> nodeSelector = 2;
     // Standard Kubernetes affinity configuration
-    k8s.io.api.core.v1.Affinity Affinity = 3 [(gogoproto.jsontag) = "affinity,omitempty"];
+    k8s.io.api.core.v1.Affinity affinity = 3;
     // Standard Kubernetes toleration configuration
-    repeated k8s.io.api.core.v1.Toleration Tolerations = 4 [(gogoproto.nullable) = false, (gogoproto.jsontag) = "tolerations,omitempty"];
+    repeated k8s.io.api.core.v1.Toleration tolerations = 4 [(gogoproto.nullable) = false];
     // Standard Kubernetes pod annotation configuration
-    map<string,string> PodAnnotations = 5 [(gogoproto.jsontag) = "podAnnotations,omitempty"];
+    map<string,string> podAnnotations = 5;
     // Standard Kubernetes security context configuration
-    k8s.io.api.core.v1.SecurityContext SecurityContext = 6 [(gogoproto.jsontag) = "securityContext,omitempty"];
+    k8s.io.api.core.v1.SecurityContext securityContext = 6;
 }
 
-message ServicePort {
-    // Target port to use
-    google.protobuf.Int32Value GatewayTargetPort = 1 [(gogoproto.wktpointer) = true, (gogoproto.jsontag) = "targetPort,omitempty"];
-    // Standard Kubernetes service port configuration
-    k8s.io.api.core.v1.ServicePort ServicePort = 2 [(gogoproto.nullable) = false, (gogoproto.jsontag) = ",inline", (gogoproto.embed) = true];
-}
+

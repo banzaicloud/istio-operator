@@ -54,7 +54,7 @@ message MeshGatewaySpec {
     MeshGatewayConfiguration MeshGwConfiguration = 1 [(gogoproto.nullable) = false, (gogoproto.embed) = true, (gogoproto.jsontag) = ",inline"];
     // Service ports to open for the gateway
     // +kubebuilder:validation:MinItems=0
-    repeated ServicePort ports = 2 [(gogoproto.nullable) = false, (gogoproto.jsontag) = "ports", (google.api.field_behavior) = REQUIRED];
+    repeated k8s.io.api.core.v1.ServicePort ports = 2 [(gogoproto.nullable) = false, (gogoproto.jsontag) = "ports", (google.api.field_behavior) = REQUIRED];
     // Type of gateway, either ingress or egress
     // +kubebuilder:validation:Enum=ingress;egress
     GatewayType type = 3  [(gogoproto.jsontag) = "type", (google.api.field_behavior) = REQUIRED];
@@ -66,25 +66,25 @@ message MeshGatewayConfiguration {
     // Standard Kubernetes resource configuration
     BaseK8sResourceConfigurationWithHPAWithoutImage BaseK8sResourceConfigWithHPAWithoutImage = 1 [(gogoproto.nullable) = false, (gogoproto.embed) = true, (gogoproto.jsontag) = ",inline"];
     // Labels to attach to the mesh gateway
-    map<string, string> Labels = 2 [(gogoproto.jsontag) = "labels,omitempty"];
+    map<string, string> labels = 2;
     // Kubernetes Service Type for the gateway
     // +kubebuilder:validation:Enum=ClusterIP;NodePort;LoadBalancer;ExternalName
-    string ServiceType = 3 [(gogoproto.customtype) = "k8s.io/api/core/v1.ServiceType", (gogoproto.nullable) = false, (gogoproto.jsontag) = "serviceType,omitempty"];
+    string serviceType = 3 [(gogoproto.customtype) = "k8s.io/api/core/v1.ServiceType", (gogoproto.nullable) = false];
     // Load Balancer IP override
-    string LoadBalancerIP = 4 [(gogoproto.jsontag) = "loadBalancerIP,omitempty"];
+    string loadBalancerIP = 4;
     // Annotations to add to the gateway service
-    map<string, string> ServiceAnnotations = 5 [(gogoproto.jsontag) = "serviceAnnotations,omitempty"];
+    map<string, string> serviceAnnotations = 5;
     // Labels to attach to the gateway service
-    map<string, string> ServiceLabels = 6 [(gogoproto.jsontag) = "serviceLabels,omitempty"];
+    map<string, string> serviceLabels = 6;
     // Kubernetes External Traffic Policy Type for the gateway service
     // +kubebuilder:validation:Enum=Local;Cluster
-    string ServiceExternalTrafficPolicyType = 7 [(gogoproto.customtype) = "k8s.io/api/core/v1.ServiceExternalTrafficPolicyType", (gogoproto.nullable) = false, (gogoproto.jsontag) = "serviceExternalTrafficPolicyType,omitempty"];
+    string serviceExternalTrafficPolicyType = 7 [(gogoproto.customtype) = "k8s.io/api/core/v1.ServiceExternalTrafficPolicyType", (gogoproto.nullable) = false];
     // Specifies the networks that the proxy wants to see
-    string RequestedNetworkView = 9 [(gogoproto.jsontag) = "requestedNetworkView,omitempty"];
+    string requestedNetworkView = 9;
     // If present will be appended to the environment variables of the container
-    repeated k8s.io.api.core.v1.EnvVar AdditionalEnvVars = 10 [(gogoproto.nullable) = false, (gogoproto.jsontag) = "additionalEnvVars,omitempty"];
+    repeated k8s.io.api.core.v1.EnvVar additionalEnvVars = 10 [(gogoproto.nullable) = false];
     // Whether to run the gateway in a privileged container
-    google.protobuf.BoolValue RunAsRoot = 11 [(gogoproto.wktpointer) = true, (gogoproto.jsontag) = "runAsRoot,omitempty"];
+    google.protobuf.BoolValue runAsRoot = 11 [(gogoproto.wktpointer) = true];
 }
 
 enum GatewayType {
@@ -98,11 +98,11 @@ enum GatewayType {
 // -->
 message MeshGatewayStatus {
     // Reconciliation status of the mesh gateway
-    ConfigState Status = 1 [(gogoproto.jsontag) = "Status,omitempty"];
+    ConfigState Status = 1;
     // Current address for the gateway
-    repeated string GatewayAddress = 2 [(gogoproto.jsontag) = "GatewayAddress,omitempty"];
+    repeated string GatewayAddress = 2;
     // Reconciliation error message if any
-    string ErrorMessage = 3 [(gogoproto.jsontag) = "ErrorMessage,omitempty"];
+    string ErrorMessage = 3;
 }
 
 enum ConfigState {
