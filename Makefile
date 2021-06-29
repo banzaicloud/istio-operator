@@ -6,7 +6,7 @@ GOLANGCI_VERSION = 1.39.0
 LICENSEI_VERSION = 0.3.1
 KUBEBUILDER_VERSION = 2.3.2
 KUSTOMIZE_VERSION = 4.1.2
-ISTIO_VERSION = 1.10.0-rc.0
+ISTIO_VERSION = 1.10.0
 BUF_VERSION = 0.41.0
 
 PATH := $(PATH):$(PWD)/bin
@@ -54,9 +54,11 @@ test: install-kubebuilder
 	KUBEBUILDER_ASSETS="$${PWD}/bin/kubebuilder/bin" go test ./... -coverprofile cover.out
 
 # Build manager binary
-manager: generate fmt vet build
+.PHONY: manager
+manager: generate manifests fmt vet build
 
 # Build manager binary
+.PHONY: build
 build:
 	go build -o bin/manager main.go
 
