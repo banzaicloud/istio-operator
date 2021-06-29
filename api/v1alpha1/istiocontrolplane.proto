@@ -17,6 +17,7 @@ syntax = "proto3";
 import "mesh/v1alpha1/config.proto";
 import "gogoproto/gogo.proto";
 import "google/api/field_behavior.proto";
+import "google/protobuf/wrappers.proto";
 
 // $schema: istio-operator.api.v1alpha1.IstioControlPlaneSpec
 // $title: Istio ControlPlane Spec
@@ -53,8 +54,10 @@ message IstioControlPlaneSpec {
     string version = 1 [(gogoproto.jsontag) = "version", (google.api.field_behavior) = REQUIRED];
     // Logging configurations.
     LoggingConfiguration logging = 2 [(gogoproto.jsontag) = "logging"];
+    // Use the user-specified, secret volume mounted key and certs for Pilot and workloads.
+    google.protobuf.BoolValue mountMtlsCerts = 3 [(gogoproto.wktpointer) = true, (gogoproto.jsontag) = "mountMtlsCerts"];
     // Defines mesh-wide settings for the Istio control plane.
-    istio.mesh.v1alpha1.MeshConfig mesh_config = 3;
+    istio.mesh.v1alpha1.MeshConfig mesh_config = 4;
 }
 
 // Comma-separated minimum per-scope logging level of messages to output, in the form of <scope>:<level>,<scope>:<level>

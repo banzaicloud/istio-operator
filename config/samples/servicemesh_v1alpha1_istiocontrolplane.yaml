@@ -6,6 +6,7 @@ spec:
   version: 1.10.0-rc.0
   logging:
     level: "default:info"
+  mountMtlsCerts: false
   meshConfig:
     proxyListenPort: 15001
     connectTimeout: 10s

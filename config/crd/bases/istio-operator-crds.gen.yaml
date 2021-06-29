@@ -1391,6 +1391,11 @@ spec:
                     nullable: true
                     type: boolean
                 type: object
+              mountMtlsCerts:
+                description: Use the user-specified, secret volume mounted key and
+                  certs for Pilot and workloads.
+                nullable: true
+                type: boolean
               version:
                 description: Contains the intended version for the Istio control plane.
                 pattern: ^1.
