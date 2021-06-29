@@ -53,17 +53,6 @@ func (this *BaseK8SResourceConfiguration) UnmarshalJSON(b []byte) error {
 	return CommonUnmarshaler.Unmarshal(bytes.NewReader(b), this)
 }
 
-// MarshalJSON is a custom marshaler for ServicePort
-func (this *ServicePort) MarshalJSON() ([]byte, error) {
-	str, err := CommonMarshaler.MarshalToString(this)
-	return []byte(str), err
-}
-
-// UnmarshalJSON is a custom unmarshaler for ServicePort
-func (this *ServicePort) UnmarshalJSON(b []byte) error {
-	return CommonUnmarshaler.Unmarshal(bytes.NewReader(b), this)
-}
-
 var (
 	CommonMarshaler   = &github_com_gogo_protobuf_jsonpb.Marshaler{}
 	CommonUnmarshaler = &github_com_gogo_protobuf_jsonpb.Unmarshaler{AllowUnknownFields: true}
