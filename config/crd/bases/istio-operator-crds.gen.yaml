@@ -1281,6 +1281,20 @@ spec:
                         - ALLOW_ANY
                         type: string
                     type: object
+                  pathNormalization:
+                    description: |-
+                      ProxyPathNormalization configures how URL paths in incoming and outgoing HTTP requests are
+                      normalized by the sidecars and gateways.
+                    properties:
+                      normalization:
+                        enum:
+                        - DEFAULT
+                        - NONE
+                        - BASE
+                        - MERGE_SLASHES
+                        - DECODE_AND_MERGE_SLASHES
+                        type: string
+                    type: object
                   protocolDetectionTimeout:
                     description: |-
                       Automatic protocol detection uses a set of heuristics to
