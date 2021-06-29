@@ -22,6 +22,8 @@ import (
 
 	"github.com/go-logr/logr"
 	"github.com/pkg/errors"
+	istionetworkingv1alpha3 "istio.io/client-go/pkg/apis/networking/v1alpha3"
+	istiosecurityv1beta1 "istio.io/client-go/pkg/apis/security/v1beta1"
 	admissionregistrationv1 "k8s.io/api/admissionregistration/v1"
 	appsv1 "k8s.io/api/apps/v1"
 	autoscalingv1 "k8s.io/api/autoscaling/v1"
@@ -37,8 +39,6 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/reconcile"
 
-	istioclientv1alpha3 "github.com/banzaicloud/istio-client-go/pkg/networking/v1alpha3"
-	istioclientv1beta1 "github.com/banzaicloud/istio-client-go/pkg/security/v1beta1"
 	servicemeshv1alpha1 "github.com/banzaicloud/istio-operator/v2/api/v1alpha1"
 	"github.com/banzaicloud/istio-operator/v2/internal/components/base"
 	discovery_component "github.com/banzaicloud/istio-operator/v2/internal/components/discovery"
@@ -260,16 +260,16 @@ func (r *IstioControlPlaneReconciler) SetupWithManager(mgr ctrl.Manager) error {
 
 func (r *IstioControlPlaneReconciler) watchIstioCRs() error {
 	return r.builder.
-		Owns(&istioclientv1alpha3.EnvoyFilter{
+		Owns(&istionetworkingv1alpha3.EnvoyFilter{
 			TypeMeta: metav1.TypeMeta{
 				Kind:       "EnvoyFilter",
-				APIVersion: istioclientv1alpha3.SchemeGroupVersion.String(),
+				APIVersion: istionetworkingv1alpha3.SchemeGroupVersion.String(),
 			},
 		}, ctrlBuilder.WithPredicates(reconciler.SpecChangePredicate{})).
-		Owns(&istioclientv1beta1.PeerAuthentication{
+		Owns(&istiosecurityv1beta1.PeerAuthentication{
 			TypeMeta: metav1.TypeMeta{
 				Kind:       "PeerAuthentication",
-				APIVersion: istioclientv1beta1.SchemeGroupVersion.String(),
+				APIVersion: istiosecurityv1beta1.SchemeGroupVersion.String(),
 			},
 		}, ctrlBuilder.WithPredicates(reconciler.SpecChangePredicate{})).
 		Complete(r)

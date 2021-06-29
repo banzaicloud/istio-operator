@@ -20,14 +20,13 @@ import (
 	"flag"
 	"os"
 
+	istionetworkingv1alpha3 "istio.io/client-go/pkg/apis/networking/v1alpha3"
+	istiosecurityv1beta1 "istio.io/client-go/pkg/apis/security/v1beta1"
 	"k8s.io/apimachinery/pkg/runtime"
 	clientgoscheme "k8s.io/client-go/kubernetes/scheme"
 	_ "k8s.io/client-go/plugin/pkg/client/auth/gcp"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/log/zap"
-
-	istioclientv1alpha3 "github.com/banzaicloud/istio-client-go/pkg/networking/v1alpha3"
-	istioclientv1beta1 "github.com/banzaicloud/istio-client-go/pkg/security/v1beta1"
 
 	// +kubebuilder:scaffold:imports
 	servicemeshv1alpha1 "github.com/banzaicloud/istio-operator/v2/api/v1alpha1"
@@ -41,8 +40,8 @@ var (
 
 func init() {
 	_ = clientgoscheme.AddToScheme(scheme)
-	_ = istioclientv1alpha3.AddToScheme(scheme)
-	_ = istioclientv1beta1.AddToScheme(scheme)
+	_ = istionetworkingv1alpha3.AddToScheme(scheme)
+	_ = istiosecurityv1beta1.AddToScheme(scheme)
 
 	_ = servicemeshv1alpha1.AddToScheme(scheme)
 	// +kubebuilder:scaffold:scheme
