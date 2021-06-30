@@ -71,6 +71,7 @@ spec:
   proxyWasm:
     enabled: false
   watchOneNamespace: false
+  priorityClassName: ""
   meshConfig:
     proxyListenPort: 15001
     connectTimeout: 10s

@@ -77,8 +77,17 @@ message IstioControlPlaneSpec {
     // Whether to restrict the applications namespace the controller manages.
     // If not set, controller watches all namespaces
     google.protobuf.BoolValue watchOneNamespace = 10 [(gogoproto.wktpointer) = true, (gogoproto.jsontag) = "watchOneNamespace"];
+    // Prior to Kubernetes v1.17.0 it was not allowed to use the system-cluster-critical and system-node-critical
+    // PriorityClass outside of the kube-system namespace, so it is advised to create your own PriorityClass
+    // and use its name here
+    // On Kubernetes >=v1.17.0 it is possible to configure system-cluster-critical and
+    // system-node-critical PriorityClass in order to make sure your Istio pods
+    // will not be killed because of low priority class.
+    // Refer to https://kubernetes.io/docs/concepts/configuration/pod-priority-preemption/#priorityclass
+    // for more detail.
+    string priorityClassName = 11 [(gogoproto.jsontag) = "priorityClassName"];
     // Defines mesh-wide settings for the Istio control plane.
-    istio.mesh.v1alpha1.MeshConfig mesh_config = 11;
+    istio.mesh.v1alpha1.MeshConfig mesh_config = 12;
 }
 
 // Comma-separated minimum per-scope logging level of messages to output, in the form of <scope>:<level>,<scope>:<level>

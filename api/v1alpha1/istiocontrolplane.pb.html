@@ -136,6 +136,24 @@ If not set, controller watches all namespaces</p>
 No
 </td>
 </tr>
+<tr id="IstioControlPlaneSpec-priorityClassName">
+<td><code>priorityClassName</code></td>
+<td><code>string</code></td>
+<td>
+<p>Prior to Kubernetes v1.17.0 it was not allowed to use the system-cluster-critical and system-node-critical
+PriorityClass outside of the kube-system namespace, so it is advised to create your own PriorityClass
+and use its name here
+On Kubernetes &gt;=v1.17.0 it is possible to configure system-cluster-critical and
+system-node-critical PriorityClass in order to make sure your Istio pods
+will not be killed because of low priority class.
+Refer to https://kubernetes.io/docs/concepts/configuration/pod-priority-preemption/#priorityclass
+for more detail.</p>
+
+</td>
+<td>
+No
+</td>
+</tr>
 <tr id="IstioControlPlaneSpec-mesh_config">
 <td><code>meshConfig</code></td>
 <td><code><a href="https://istio.io/docs/reference/config/istio.mesh.v1alpha1.html#MeshConfig">MeshConfig</a></code></td>
