@@ -89,8 +89,12 @@ message IstioControlPlaneSpec {
     // Enable pod disruption budget for the control plane, which is used to ensure Istio control plane
     // components are gradually upgraded or recovered
     PDBConfiguration defaultPodDisruptionBudget = 12 [(gogoproto.jsontag) = "defaultPodDisruptionBudget"];
+    // ImagePullPolicy describes a policy for if/when to pull a container image.
+    // TODO: change to k8s.io.api.core.v1.PullPolicy when k8s proto is updated
+    // +kubebuilder:validation:Enum="";Always;Never;IfNotPresent
+    string imagePullPolicy = 13 [(gogoproto.jsontag) = "imagePullPolicy"];
     // Defines mesh-wide settings for the Istio control plane.
-    istio.mesh.v1alpha1.MeshConfig mesh_config = 13;
+    istio.mesh.v1alpha1.MeshConfig mesh_config = 14;
 }
 
 // Comma-separated minimum per-scope logging level of messages to output, in the form of <scope>:<level>,<scope>:<level>

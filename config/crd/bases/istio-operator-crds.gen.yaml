@@ -68,6 +68,15 @@ spec:
                       resources required.
                     type: object
                 type: object
+              imagePullPolicy:
+                description: ImagePullPolicy describes a policy for if/when to pull
+                  a container image.
+                enum:
+                - ""
+                - Always
+                - Never
+                - IfNotPresent
+                type: string
               istiod:
                 description: Istiod configuration.
                 properties:

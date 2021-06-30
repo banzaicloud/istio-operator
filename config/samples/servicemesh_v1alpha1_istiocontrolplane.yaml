@@ -74,6 +74,7 @@ spec:
   priorityClassName: ""
   defaultPodDisruptionBudget:
     enabled: true
+  imagePullPolicy: ""
   meshConfig:
     proxyListenPort: 15001
     connectTimeout: 10s
