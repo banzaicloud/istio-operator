@@ -10,6 +10,33 @@ spec:
     requests:
       cpu: 10m
   mountMtlsCerts: false
+  istiod:
+    k8sConfig:
+      minReplicas: 1
+      maxReplicas: 5
+      replicaCount: 1
+      image: "gcr.io/istio-release/pilot:1.10.0"
+      resources:
+        requests:
+          cpu: 500m
+          memory: 2048Mi
+      nodeSelector: {}
+      affinity: {}
+      tolerations: []
+      podAnnotations: {}
+      securityContext: {}
+    enableAnalysis: false
+    enableStatus: false
+    externalIstiod:
+      enabled: false
+    traceSampling: 1.0
+    enableProtocolSniffingOutbound: true
+    enableProtocolSniffingInbound: true
+    certProvider: istiod
+    additionalEnvVars: []
+    spiffe:
+      operatorEndpoints:
+        enabled: false
   sds:
     tokenAudience: "istio-ca"
   meshConfig:

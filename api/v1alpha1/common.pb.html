@@ -2,7 +2,7 @@
 title: istio_operator.v2.api.v1alpha1
 layout: protoc-gen-docs
 generator: protoc-gen-docs
-number_of_entries: 7
+number_of_entries: 10
 ---
 <h2 id="NamespacedName">NamespacedName</h2>
 <section>
@@ -32,6 +32,131 @@ No
 <td><code>string</code></td>
 <td>
 <p>Namespace of the referenced Kubernetes resource</p>
+
+</td>
+<td>
+No
+</td>
+</tr>
+</tbody>
+</table>
+</section>
+<h2 id="BaseK8sResourceConfigurationWithImage">BaseK8sResourceConfigurationWithImage</h2>
+<section>
+<table class="message-fields">
+<thead>
+<tr>
+<th>Field</th>
+<th>Type</th>
+<th>Description</th>
+<th>Required</th>
+</tr>
+</thead>
+<tbody>
+<tr id="BaseK8sResourceConfigurationWithImage-image">
+<td><code>image</code></td>
+<td><code>string</code></td>
+<td>
+<p>Standard Kubernetes container image configuration</p>
+
+</td>
+<td>
+No
+</td>
+</tr>
+<tr id="BaseK8sResourceConfigurationWithImage-baseK8sResourceConfiguration">
+<td><code>baseK8sResourceConfiguration</code></td>
+<td><code><a href="#BaseK8sResourceConfiguration">BaseK8sResourceConfiguration</a></code></td>
+<td>
+<p>Standard Kubernetes resource configuration</p>
+
+</td>
+<td>
+No
+</td>
+</tr>
+</tbody>
+</table>
+</section>
+<h2 id="BaseK8sResourceConfigurationWithReplicas">BaseK8sResourceConfigurationWithReplicas</h2>
+<section>
+<table class="message-fields">
+<thead>
+<tr>
+<th>Field</th>
+<th>Type</th>
+<th>Description</th>
+<th>Required</th>
+</tr>
+</thead>
+<tbody>
+<tr id="BaseK8sResourceConfigurationWithReplicas-replicaCount">
+<td><code>replicaCount</code></td>
+<td><code><a href="https://developers.google.com/protocol-buffers/docs/reference/google.protobuf#int32value">Int32Value</a></code></td>
+<td>
+<p>Standard Kubernetes replica count configuration
++kubebuilder:validation:Minimum=0</p>
+
+</td>
+<td>
+No
+</td>
+</tr>
+<tr id="BaseK8sResourceConfigurationWithReplicas-baseK8sResourceConfigurationWithImage">
+<td><code>baseK8sResourceConfigurationWithImage</code></td>
+<td><code><a href="#BaseK8sResourceConfigurationWithImage">BaseK8sResourceConfigurationWithImage</a></code></td>
+<td>
+<p>Standard Kubernetes resource configuration</p>
+
+</td>
+<td>
+No
+</td>
+</tr>
+</tbody>
+</table>
+</section>
+<h2 id="BaseK8sResourceConfigurationWithHPA">BaseK8sResourceConfigurationWithHPA</h2>
+<section>
+<table class="message-fields">
+<thead>
+<tr>
+<th>Field</th>
+<th>Type</th>
+<th>Description</th>
+<th>Required</th>
+</tr>
+</thead>
+<tbody>
+<tr id="BaseK8sResourceConfigurationWithHPA-minReplicas">
+<td><code>minReplicas</code></td>
+<td><code><a href="https://developers.google.com/protocol-buffers/docs/reference/google.protobuf#int32value">Int32Value</a></code></td>
+<td>
+<p>Standard Kubernetes minimum replicas configuration
++kubebuilder:validation:Minimum=0</p>
+
+</td>
+<td>
+No
+</td>
+</tr>
+<tr id="BaseK8sResourceConfigurationWithHPA-maxReplicas">
+<td><code>maxReplicas</code></td>
+<td><code><a href="https://developers.google.com/protocol-buffers/docs/reference/google.protobuf#int32value">Int32Value</a></code></td>
+<td>
+<p>Standard Kubernetes maximum replicas configuration
++kubebuilder:validation:Minimum=0</p>
+
+</td>
+<td>
+No
+</td>
+</tr>
+<tr id="BaseK8sResourceConfigurationWithHPA-baseK8sResourceConfigurationWithReplicas">
+<td><code>baseK8sResourceConfigurationWithReplicas</code></td>
+<td><code><a href="#BaseK8sResourceConfigurationWithReplicas">BaseK8sResourceConfigurationWithReplicas</a></code></td>
+<td>
+<p>Standard Kubernetes resource configuration</p>
 
 </td>
 <td>

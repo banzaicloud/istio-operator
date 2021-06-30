@@ -30,6 +30,32 @@ message NamespacedName {
     string namespace = 2  [(gogoproto.jsontag) = "namespace,omitempty"];
 }
 
+message BaseK8sResourceConfigurationWithImage {
+    // Standard Kubernetes container image configuration
+    string image = 1 [(gogoproto.jsontag) = "image"];
+    // Standard Kubernetes resource configuration
+    BaseK8sResourceConfiguration baseK8sResourceConfiguration = 2 [(gogoproto.nullable) = false, (gogoproto.embed) = true, (gogoproto.jsontag) = ",inline"];
+}
+
+message BaseK8sResourceConfigurationWithReplicas {
+    // Standard Kubernetes replica count configuration
+    // +kubebuilder:validation:Minimum=0
+    google.protobuf.Int32Value replicaCount = 1 [(gogoproto.wktpointer) = true];
+    // Standard Kubernetes resource configuration
+    BaseK8sResourceConfigurationWithImage baseK8sResourceConfigurationWithImage = 2 [(gogoproto.nullable) = false, (gogoproto.embed) = true, (gogoproto.jsontag) = ",inline"];
+}
+
+message BaseK8sResourceConfigurationWithHPA {
+    // Standard Kubernetes minimum replicas configuration
+    // +kubebuilder:validation:Minimum=0
+    google.protobuf.Int32Value minReplicas = 1 [(gogoproto.wktpointer) = true];
+    // Standard Kubernetes maximum replicas configuration
+    // +kubebuilder:validation:Minimum=0
+    google.protobuf.Int32Value maxReplicas = 2 [(gogoproto.wktpointer) = true];
+    // Standard Kubernetes resource configuration
+    BaseK8sResourceConfigurationWithReplicas baseK8sResourceConfigurationWithReplicas = 3 [(gogoproto.nullable) = false, (gogoproto.embed) = true, (gogoproto.jsontag) = ",inline"];
+}
+
 message BaseK8sResourceConfigurationWithHPAWithoutImage {
     // Standard Kubernetes replica count configuration
     // +kubebuilder:validation:Minimum=0

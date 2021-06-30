@@ -84,6 +84,170 @@ func (m *NamespacedName) GetNamespace() string {
 	return ""
 }
 
+type BaseK8SResourceConfigurationWithImage struct {
+	// Standard Kubernetes container image configuration
+	Image string `protobuf:"bytes,1,opt,name=image,proto3" json:"image"`
+	// Standard Kubernetes resource configuration
+	BaseK8SResourceConfiguration `protobuf:"bytes,2,opt,name=baseK8sResourceConfiguration,proto3,embedded=baseK8sResourceConfiguration" json:",inline"`
+	XXX_NoUnkeyedLiteral         struct{} `json:"-"`
+	XXX_unrecognized             []byte   `json:"-"`
+	XXX_sizecache                int32    `json:"-"`
+}
+
+func (m *BaseK8SResourceConfigurationWithImage) Reset()         { *m = BaseK8SResourceConfigurationWithImage{} }
+func (m *BaseK8SResourceConfigurationWithImage) String() string { return proto.CompactTextString(m) }
+func (*BaseK8SResourceConfigurationWithImage) ProtoMessage()    {}
+func (*BaseK8SResourceConfigurationWithImage) Descriptor() ([]byte, []int) {
+	return fileDescriptor_53057eb05156167c, []int{1}
+}
+func (m *BaseK8SResourceConfigurationWithImage) XXX_Unmarshal(b []byte) error {
+	return m.Unmarshal(b)
+}
+func (m *BaseK8SResourceConfigurationWithImage) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	if deterministic {
+		return xxx_messageInfo_BaseK8SResourceConfigurationWithImage.Marshal(b, m, deterministic)
+	} else {
+		b = b[:cap(b)]
+		n, err := m.MarshalToSizedBuffer(b)
+		if err != nil {
+			return nil, err
+		}
+		return b[:n], nil
+	}
+}
+func (m *BaseK8SResourceConfigurationWithImage) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_BaseK8SResourceConfigurationWithImage.Merge(m, src)
+}
+func (m *BaseK8SResourceConfigurationWithImage) XXX_Size() int {
+	return m.Size()
+}
+func (m *BaseK8SResourceConfigurationWithImage) XXX_DiscardUnknown() {
+	xxx_messageInfo_BaseK8SResourceConfigurationWithImage.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_BaseK8SResourceConfigurationWithImage proto.InternalMessageInfo
+
+func (m *BaseK8SResourceConfigurationWithImage) GetImage() string {
+	if m != nil {
+		return m.Image
+	}
+	return ""
+}
+
+type BaseK8SResourceConfigurationWithReplicas struct {
+	// Standard Kubernetes replica count configuration
+	// +kubebuilder:validation:Minimum=0
+	ReplicaCount *int32 `protobuf:"bytes,1,opt,name=replicaCount,proto3,wktptr" json:"replicaCount,omitempty"`
+	// Standard Kubernetes resource configuration
+	BaseK8SResourceConfigurationWithImage `protobuf:"bytes,2,opt,name=baseK8sResourceConfigurationWithImage,proto3,embedded=baseK8sResourceConfigurationWithImage" json:",inline"`
+	XXX_NoUnkeyedLiteral                  struct{} `json:"-"`
+	XXX_unrecognized                      []byte   `json:"-"`
+	XXX_sizecache                         int32    `json:"-"`
+}
+
+func (m *BaseK8SResourceConfigurationWithReplicas) Reset() {
+	*m = BaseK8SResourceConfigurationWithReplicas{}
+}
+func (m *BaseK8SResourceConfigurationWithReplicas) String() string { return proto.CompactTextString(m) }
+func (*BaseK8SResourceConfigurationWithReplicas) ProtoMessage()    {}
+func (*BaseK8SResourceConfigurationWithReplicas) Descriptor() ([]byte, []int) {
+	return fileDescriptor_53057eb05156167c, []int{2}
+}
+func (m *BaseK8SResourceConfigurationWithReplicas) XXX_Unmarshal(b []byte) error {
+	return m.Unmarshal(b)
+}
+func (m *BaseK8SResourceConfigurationWithReplicas) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	if deterministic {
+		return xxx_messageInfo_BaseK8SResourceConfigurationWithReplicas.Marshal(b, m, deterministic)
+	} else {
+		b = b[:cap(b)]
+		n, err := m.MarshalToSizedBuffer(b)
+		if err != nil {
+			return nil, err
+		}
+		return b[:n], nil
+	}
+}
+func (m *BaseK8SResourceConfigurationWithReplicas) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_BaseK8SResourceConfigurationWithReplicas.Merge(m, src)
+}
+func (m *BaseK8SResourceConfigurationWithReplicas) XXX_Size() int {
+	return m.Size()
+}
+func (m *BaseK8SResourceConfigurationWithReplicas) XXX_DiscardUnknown() {
+	xxx_messageInfo_BaseK8SResourceConfigurationWithReplicas.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_BaseK8SResourceConfigurationWithReplicas proto.InternalMessageInfo
+
+func (m *BaseK8SResourceConfigurationWithReplicas) GetReplicaCount() *int32 {
+	if m != nil {
+		return m.ReplicaCount
+	}
+	return nil
+}
+
+type BaseK8SResourceConfigurationWithHPA struct {
+	// Standard Kubernetes minimum replicas configuration
+	// +kubebuilder:validation:Minimum=0
+	MinReplicas *int32 `protobuf:"bytes,1,opt,name=minReplicas,proto3,wktptr" json:"minReplicas,omitempty"`
+	// Standard Kubernetes maximum replicas configuration
+	// +kubebuilder:validation:Minimum=0
+	MaxReplicas *int32 `protobuf:"bytes,2,opt,name=maxReplicas,proto3,wktptr" json:"maxReplicas,omitempty"`
+	// Standard Kubernetes resource configuration
+	BaseK8SResourceConfigurationWithReplicas `protobuf:"bytes,3,opt,name=baseK8sResourceConfigurationWithReplicas,proto3,embedded=baseK8sResourceConfigurationWithReplicas" json:",inline"`
+	XXX_NoUnkeyedLiteral                     struct{} `json:"-"`
+	XXX_unrecognized                         []byte   `json:"-"`
+	XXX_sizecache                            int32    `json:"-"`
+}
+
+func (m *BaseK8SResourceConfigurationWithHPA) Reset()         { *m = BaseK8SResourceConfigurationWithHPA{} }
+func (m *BaseK8SResourceConfigurationWithHPA) String() string { return proto.CompactTextString(m) }
+func (*BaseK8SResourceConfigurationWithHPA) ProtoMessage()    {}
+func (*BaseK8SResourceConfigurationWithHPA) Descriptor() ([]byte, []int) {
+	return fileDescriptor_53057eb05156167c, []int{3}
+}
+func (m *BaseK8SResourceConfigurationWithHPA) XXX_Unmarshal(b []byte) error {
+	return m.Unmarshal(b)
+}
+func (m *BaseK8SResourceConfigurationWithHPA) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	if deterministic {
+		return xxx_messageInfo_BaseK8SResourceConfigurationWithHPA.Marshal(b, m, deterministic)
+	} else {
+		b = b[:cap(b)]
+		n, err := m.MarshalToSizedBuffer(b)
+		if err != nil {
+			return nil, err
+		}
+		return b[:n], nil
+	}
+}
+func (m *BaseK8SResourceConfigurationWithHPA) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_BaseK8SResourceConfigurationWithHPA.Merge(m, src)
+}
+func (m *BaseK8SResourceConfigurationWithHPA) XXX_Size() int {
+	return m.Size()
+}
+func (m *BaseK8SResourceConfigurationWithHPA) XXX_DiscardUnknown() {
+	xxx_messageInfo_BaseK8SResourceConfigurationWithHPA.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_BaseK8SResourceConfigurationWithHPA proto.InternalMessageInfo
+
+func (m *BaseK8SResourceConfigurationWithHPA) GetMinReplicas() *int32 {
+	if m != nil {
+		return m.MinReplicas
+	}
+	return nil
+}
+
+func (m *BaseK8SResourceConfigurationWithHPA) GetMaxReplicas() *int32 {
+	if m != nil {
+		return m.MaxReplicas
+	}
+	return nil
+}
+
 type BaseK8SResourceConfigurationWithHPAWithoutImage struct {
 	// Standard Kubernetes replica count configuration
 	// +kubebuilder:validation:Minimum=0
@@ -109,7 +273,7 @@ func (m *BaseK8SResourceConfigurationWithHPAWithoutImage) String() string {
 }
 func (*BaseK8SResourceConfigurationWithHPAWithoutImage) ProtoMessage() {}
 func (*BaseK8SResourceConfigurationWithHPAWithoutImage) Descriptor() ([]byte, []int) {
-	return fileDescriptor_53057eb05156167c, []int{1}
+	return fileDescriptor_53057eb05156167c, []int{4}
 }
 func (m *BaseK8SResourceConfigurationWithHPAWithoutImage) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
@@ -181,7 +345,7 @@ func (m *BaseK8SResourceConfiguration) Reset()         { *m = BaseK8SResourceCon
 func (m *BaseK8SResourceConfiguration) String() string { return proto.CompactTextString(m) }
 func (*BaseK8SResourceConfiguration) ProtoMessage()    {}
 func (*BaseK8SResourceConfiguration) Descriptor() ([]byte, []int) {
-	return fileDescriptor_53057eb05156167c, []int{2}
+	return fileDescriptor_53057eb05156167c, []int{5}
 }
 func (m *BaseK8SResourceConfiguration) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
@@ -254,6 +418,9 @@ func (m *BaseK8SResourceConfiguration) GetSecurityContext() *v1.SecurityContext 
 
 func init() {
 	proto.RegisterType((*NamespacedName)(nil), "istio_operator.v2.api.v1alpha1.NamespacedName")
+	proto.RegisterType((*BaseK8SResourceConfigurationWithImage)(nil), "istio_operator.v2.api.v1alpha1.BaseK8sResourceConfigurationWithImage")
+	proto.RegisterType((*BaseK8SResourceConfigurationWithReplicas)(nil), "istio_operator.v2.api.v1alpha1.BaseK8sResourceConfigurationWithReplicas")
+	proto.RegisterType((*BaseK8SResourceConfigurationWithHPA)(nil), "istio_operator.v2.api.v1alpha1.BaseK8sResourceConfigurationWithHPA")
 	proto.RegisterType((*BaseK8SResourceConfigurationWithHPAWithoutImage)(nil), "istio_operator.v2.api.v1alpha1.BaseK8sResourceConfigurationWithHPAWithoutImage")
 	proto.RegisterType((*BaseK8SResourceConfiguration)(nil), "istio_operator.v2.api.v1alpha1.BaseK8sResourceConfiguration")
 	proto.RegisterMapType((map[string]string)(nil), "istio_operator.v2.api.v1alpha1.BaseK8sResourceConfiguration.NodeSelectorEntry")
@@ -263,49 +430,56 @@ func init() {
 func init() { proto.RegisterFile("api/v1alpha1/common.proto", fileDescriptor_53057eb05156167c) }
 
 var fileDescriptor_53057eb05156167c = []byte{
-	// 658 bytes of a gzipped FileDescriptorProto
-	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0xa4, 0x54, 0xc1, 0x4e, 0xdb, 0x4a,
-	0x14, 0x7d, 0x26, 0x81, 0xf7, 0x98, 0x20, 0xde, 0x7b, 0x03, 0x55, 0xd3, 0x14, 0x25, 0x28, 0x95,
-	0x2a, 0x16, 0x74, 0xac, 0x04, 0x21, 0x45, 0x55, 0xa5, 0x2a, 0x89, 0x40, 0x45, 0x55, 0x11, 0x32,
-	0x55, 0x2b, 0x75, 0x83, 0x26, 0xce, 0x8d, 0x33, 0xc2, 0x9e, 0xeb, 0x8e, 0xc7, 0x29, 0xe9, 0x0f,
-	0x74, 0xd3, 0x8f, 0xe8, 0xb6, 0x7f, 0xc2, 0x92, 0x2f, 0x48, 0x2b, 0x96, 0x7c, 0x45, 0xe5, 0xb1,
-	0x13, 0x12, 0x1a, 0x21, 0x2a, 0x56, 0xb9, 0x1e, 0x9f, 0x73, 0xee, 0xb9, 0x27, 0xd7, 0x43, 0x1e,
-	0xf1, 0x50, 0xd8, 0x83, 0x1a, 0xf7, 0xc3, 0x3e, 0xaf, 0xd9, 0x2e, 0x06, 0x01, 0x4a, 0x16, 0x2a,
-	0xd4, 0x48, 0xcb, 0x22, 0xd2, 0x02, 0x4f, 0x30, 0x04, 0xc5, 0x35, 0x2a, 0x36, 0xa8, 0x33, 0x1e,
-	0x0a, 0x36, 0x06, 0x97, 0xca, 0x1e, 0xa2, 0xe7, 0x83, 0x6d, 0xd0, 0x9d, 0xb8, 0x67, 0x7f, 0x52,
-	0x3c, 0x0c, 0x41, 0x45, 0x29, 0xbf, 0xb4, 0xee, 0xa1, 0x87, 0xa6, 0xb4, 0x93, 0x2a, 0x3b, 0xad,
-	0x64, 0xac, 0xa4, 0x6f, 0x4f, 0x80, 0xdf, 0x3d, 0xe9, 0x40, 0x9f, 0x0f, 0x04, 0xaa, 0x0c, 0x50,
-	0x3d, 0x6d, 0x44, 0x4c, 0xa0, 0x01, 0xb8, 0xa8, 0xc0, 0x1e, 0xd4, 0x6c, 0x0f, 0x64, 0x62, 0x02,
-	0xba, 0x29, 0xa6, 0x8a, 0x64, 0xf5, 0x90, 0x07, 0x10, 0x85, 0xdc, 0x85, 0x6e, 0x52, 0xd1, 0xa7,
-	0x24, 0x2f, 0x79, 0x00, 0x45, 0x6b, 0xd3, 0xda, 0x5a, 0x6e, 0xd1, 0xab, 0x51, 0x65, 0x35, 0x79,
-	0xde, 0xc6, 0x40, 0x68, 0x08, 0x42, 0x3d, 0x74, 0xcc, 0x7b, 0xba, 0x4b, 0x96, 0xe5, 0x98, 0x59,
-	0x5c, 0x30, 0xe0, 0x87, 0x57, 0xa3, 0xca, 0xda, 0xe4, 0x70, 0x8a, 0x71, 0x8d, 0xac, 0x7e, 0xcd,
-	0x11, 0xbb, 0xc5, 0x23, 0x78, 0xdd, 0x88, 0x1c, 0x88, 0x30, 0x56, 0x2e, 0xb4, 0x51, 0xf6, 0x84,
-	0x17, 0x2b, 0xae, 0x05, 0xca, 0xf7, 0x42, 0xf7, 0x5f, 0x1d, 0x35, 0x93, 0x1f, 0x8c, 0xf5, 0x41,
-	0xc0, 0x3d, 0xa0, 0x7b, 0x64, 0x45, 0x41, 0xe8, 0x0b, 0x97, 0xb7, 0x31, 0x96, 0xda, 0x58, 0x2b,
-	0xd4, 0x1f, 0xb3, 0x34, 0x00, 0x36, 0x8e, 0x8d, 0x1d, 0x48, 0xbd, 0x53, 0x7f, 0xc7, 0xfd, 0x18,
-	0x5a, 0xf9, 0x6f, 0x3f, 0x2a, 0x96, 0x33, 0x43, 0xa3, 0x6d, 0x52, 0x08, 0x84, 0x74, 0xd2, 0xa3,
-	0xc8, 0x78, 0xbe, 0x93, 0xca, 0x34, 0xcb, 0x88, 0xf0, 0xb3, 0x89, 0x48, 0xee, 0xee, 0x22, 0xd7,
-	0x2c, 0xfa, 0xc5, 0x22, 0x0f, 0xe6, 0x86, 0x50, 0xcc, 0x1b, 0xbd, 0x17, 0xec, 0xf6, 0x8d, 0x61,
-	0xb7, 0x25, 0xd8, 0x5a, 0x3b, 0x1f, 0x55, 0xfe, 0xba, 0x18, 0x55, 0xac, 0xab, 0x51, 0xe5, 0xef,
-	0x6d, 0x21, 0x7d, 0x21, 0xc1, 0x99, 0xdf, 0xaf, 0xfa, 0x7d, 0x91, 0x6c, 0xdc, 0x26, 0x46, 0xf7,
-	0xc9, 0xb2, 0xca, 0x5e, 0x44, 0x59, 0xf0, 0x5b, 0x2c, 0x5d, 0x2c, 0x63, 0x29, 0x59, 0x2c, 0x36,
-	0xa8, 0xb1, 0x31, 0xdb, 0x81, 0x8f, 0xb1, 0x50, 0x10, 0x80, 0xd4, 0x91, 0x73, 0x4d, 0xa5, 0x8a,
-	0xac, 0x48, 0xec, 0xc2, 0x31, 0xf8, 0xe0, 0x6a, 0x54, 0xc5, 0x85, 0xcd, 0xdc, 0x56, 0xa1, 0x7e,
-	0x78, 0x9f, 0x41, 0xd9, 0xe1, 0x94, 0xe0, 0x9e, 0xd4, 0x6a, 0xe8, 0xcc, 0xf4, 0xa0, 0x0d, 0xf2,
-	0x0f, 0xef, 0xf5, 0x84, 0x14, 0x7a, 0x98, 0xfd, 0x51, 0x1b, 0xf3, 0xac, 0x37, 0x33, 0x8c, 0x33,
-	0x41, 0xd3, 0x7d, 0x52, 0xd0, 0xe8, 0x43, 0xda, 0x27, 0x2a, 0xe6, 0x8d, 0xd9, 0xf2, 0x3c, 0xf2,
-	0xdb, 0x09, 0xac, 0x95, 0x4f, 0x72, 0x77, 0xa6, 0x89, 0xf4, 0x8c, 0xac, 0x86, 0xd8, 0x6d, 0x4a,
-	0x89, 0x3a, 0x93, 0x5a, 0x34, 0x52, 0x47, 0xf7, 0x9a, 0xfb, 0x68, 0x46, 0x32, 0x9d, 0xfc, 0x46,
-	0x1f, 0xfa, 0x86, 0xfc, 0x1b, 0x81, 0x1b, 0x2b, 0xa1, 0x87, 0x6d, 0x94, 0x1a, 0xce, 0x74, 0x71,
-	0xc9, 0x44, 0xf0, 0x64, 0xde, 0x14, 0xc7, 0xb3, 0x50, 0xe7, 0x26, 0xb7, 0xf4, 0x92, 0xfc, 0xff,
-	0x5b, 0xda, 0xf4, 0x3f, 0x92, 0x3b, 0x85, 0x61, 0x7a, 0x53, 0x38, 0x49, 0x49, 0xd7, 0xc9, 0xe2,
-	0x20, 0x59, 0xfa, 0xf4, 0x42, 0x70, 0xd2, 0x87, 0xe7, 0x0b, 0x0d, 0xab, 0xd4, 0x24, 0x6b, 0x73,
-	0x6c, 0xff, 0x89, 0x44, 0xab, 0x7d, 0x7e, 0x59, 0xb6, 0x2e, 0x2e, 0xcb, 0xd6, 0xcf, 0xcb, 0xb2,
-	0xf5, 0x61, 0xd7, 0x13, 0xba, 0x1f, 0x77, 0x98, 0x8b, 0x81, 0xdd, 0xe1, 0xf2, 0x33, 0x17, 0xae,
-	0x8f, 0x71, 0xd7, 0x36, 0xc1, 0x3e, 0x1b, 0x07, 0x6b, 0x0f, 0xea, 0xf6, 0xf4, 0xc5, 0xdc, 0x59,
-	0x32, 0x9f, 0xe8, 0xce, 0xaf, 0x00, 0x00, 0x00, 0xff, 0xff, 0x75, 0x2b, 0xc2, 0x8e, 0xaf, 0x05,
-	0x00, 0x00,
+	// 775 bytes of a gzipped FileDescriptorProto
+	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0xb4, 0x56, 0xcd, 0x6e, 0xd3, 0x4a,
+	0x14, 0xbe, 0xce, 0x4f, 0xef, 0xcd, 0xa4, 0xea, 0xbd, 0x77, 0x5a, 0x44, 0x08, 0x55, 0x5c, 0xa5,
+	0x2a, 0xca, 0xa2, 0xd8, 0x4a, 0xaa, 0x4a, 0x11, 0x42, 0x42, 0x49, 0xd4, 0xaa, 0x15, 0xa2, 0xaa,
+	0x5c, 0x04, 0x12, 0x9b, 0x6a, 0xec, 0x4c, 0x9c, 0x51, 0xed, 0x19, 0x33, 0x1e, 0x87, 0x86, 0x17,
+	0x60, 0xc3, 0x96, 0x3d, 0x0b, 0x36, 0xec, 0xd8, 0xf2, 0x06, 0x5d, 0xf6, 0x09, 0x42, 0xd5, 0x65,
+	0x78, 0x09, 0xe4, 0xbf, 0x34, 0x29, 0x56, 0x1a, 0x48, 0x59, 0xf9, 0x78, 0xfc, 0x7d, 0xdf, 0x39,
+	0xe7, 0x3b, 0xe3, 0xb1, 0xc1, 0x3d, 0xe4, 0x10, 0xb5, 0x57, 0x45, 0x96, 0xd3, 0x45, 0x55, 0xd5,
+	0x60, 0xb6, 0xcd, 0xa8, 0xe2, 0x70, 0x26, 0x18, 0x2c, 0x11, 0x57, 0x10, 0x76, 0xcc, 0x1c, 0xcc,
+	0x91, 0x60, 0x5c, 0xe9, 0xd5, 0x14, 0xe4, 0x10, 0x25, 0x06, 0x17, 0x4b, 0x26, 0x63, 0xa6, 0x85,
+	0xd5, 0x00, 0xad, 0x7b, 0x1d, 0xf5, 0x0d, 0x47, 0x8e, 0x83, 0xb9, 0x1b, 0xf2, 0x8b, 0x2b, 0x26,
+	0x33, 0x59, 0x10, 0xaa, 0x7e, 0x14, 0xad, 0xca, 0x11, 0xcb, 0xcf, 0xdb, 0x21, 0xd8, 0x6a, 0x1f,
+	0xeb, 0xb8, 0x8b, 0x7a, 0x84, 0xf1, 0x08, 0x50, 0x3e, 0xa9, 0xbb, 0x0a, 0x61, 0x01, 0xc0, 0x60,
+	0x1c, 0xab, 0xbd, 0xaa, 0x6a, 0x62, 0xea, 0x17, 0x81, 0xdb, 0x21, 0xa6, 0xcc, 0xc0, 0xd2, 0x01,
+	0xb2, 0xb1, 0xeb, 0x20, 0x03, 0xb7, 0xfd, 0x08, 0x3e, 0x00, 0x19, 0x8a, 0x6c, 0x5c, 0x90, 0xd6,
+	0xa4, 0x4a, 0xae, 0x09, 0x87, 0x03, 0x79, 0xc9, 0xbf, 0xdf, 0x64, 0x36, 0x11, 0xd8, 0x76, 0x44,
+	0x5f, 0x0b, 0x9e, 0xc3, 0x6d, 0x90, 0xa3, 0x31, 0xb3, 0x90, 0x0a, 0xc0, 0x77, 0x87, 0x03, 0x79,
+	0x79, 0xb4, 0x38, 0xc6, 0xb8, 0x42, 0x96, 0x2f, 0x24, 0xb0, 0xd1, 0x44, 0x2e, 0x7e, 0x5a, 0x77,
+	0x35, 0xec, 0x32, 0x8f, 0x1b, 0xb8, 0xc5, 0x68, 0x87, 0x98, 0x1e, 0x47, 0x82, 0x30, 0xfa, 0x92,
+	0x88, 0xee, 0xbe, 0x8d, 0x4c, 0x0c, 0x65, 0x90, 0x25, 0x7e, 0x10, 0x55, 0x92, 0x1b, 0x0e, 0xe4,
+	0x70, 0x41, 0x0b, 0x2f, 0xf0, 0x83, 0x04, 0x56, 0xf5, 0x29, 0x52, 0x41, 0x55, 0xf9, 0xda, 0x63,
+	0x65, 0xba, 0xfd, 0xca, 0xb4, 0x72, 0x9a, 0xcb, 0x67, 0x03, 0xf9, 0xaf, 0xf3, 0x81, 0x2c, 0x0d,
+	0x07, 0xf2, 0xdf, 0x9b, 0x84, 0x5a, 0x84, 0x62, 0x6d, 0x6a, 0xda, 0xf2, 0xa7, 0x14, 0xa8, 0xdc,
+	0xd4, 0xa2, 0x86, 0x1d, 0x8b, 0x18, 0xc8, 0x85, 0x3b, 0x60, 0x91, 0x87, 0x71, 0x8b, 0x79, 0x54,
+	0x04, 0xcd, 0xe6, 0x6b, 0xf7, 0x95, 0x70, 0xb8, 0x4a, 0xbc, 0x25, 0x94, 0x7d, 0x2a, 0xb6, 0x6a,
+	0x2f, 0x90, 0xe5, 0xe1, 0x66, 0xe6, 0xe3, 0x37, 0x59, 0xd2, 0x26, 0x68, 0xf0, 0x8b, 0x04, 0x36,
+	0xf4, 0x59, 0x6c, 0x8d, 0x4c, 0xd9, 0x99, 0xc7, 0x94, 0x91, 0x58, 0xb2, 0x3b, 0xb3, 0x15, 0x52,
+	0xfe, 0x9e, 0x02, 0xeb, 0x37, 0x65, 0xd9, 0x3b, 0x6c, 0xc0, 0x16, 0xc8, 0xdb, 0x84, 0xc6, 0x86,
+	0xcd, 0x6e, 0xd0, 0x38, 0x2b, 0x10, 0x41, 0xa7, 0x23, 0x91, 0xd4, 0xec, 0x22, 0x57, 0x2c, 0xf8,
+	0x55, 0x02, 0x15, 0x7d, 0xc6, 0xc1, 0x16, 0xd2, 0x41, 0x8a, 0xbd, 0x79, 0x7d, 0x8e, 0xf5, 0x92,
+	0xad, 0x9e, 0xb9, 0x9c, 0xf2, 0xfb, 0x34, 0x50, 0x67, 0x70, 0xdb, 0xbf, 0x30, 0x4f, 0x84, 0x6f,
+	0xe0, 0x2d, 0xed, 0xcd, 0x6b, 0x03, 0x4c, 0xdd, 0xc6, 0x00, 0xd3, 0xbf, 0x35, 0xc0, 0x77, 0x12,
+	0xb8, 0x93, 0x68, 0x42, 0x21, 0xf3, 0xa7, 0x8e, 0x8a, 0xe4, 0x7c, 0xe5, 0xcf, 0x59, 0xb0, 0x3a,
+	0x4d, 0x0c, 0xee, 0x82, 0x1c, 0x8f, 0x1e, 0xc4, 0x7b, 0xbe, 0xa2, 0x84, 0x07, 0x7a, 0x50, 0x92,
+	0x7f, 0xa0, 0x2b, 0xbd, 0xaa, 0x12, 0xb3, 0x35, 0xfc, 0xda, 0x23, 0x1c, 0xdb, 0x98, 0x0a, 0x57,
+	0xbb, 0xa2, 0x42, 0x0e, 0x16, 0x29, 0x6b, 0xe3, 0x23, 0x6c, 0x61, 0x43, 0x30, 0x5e, 0x48, 0xad,
+	0xa5, 0x2b, 0xf9, 0xda, 0xc1, 0x3c, 0x8d, 0x2a, 0x07, 0x63, 0x82, 0x3b, 0x54, 0xf0, 0xbe, 0x36,
+	0x91, 0x03, 0xd6, 0xc1, 0x3f, 0xa8, 0xd3, 0x21, 0x94, 0x88, 0x7e, 0x34, 0xa8, 0xd5, 0xa4, 0xd2,
+	0x1b, 0x11, 0x46, 0x1b, 0xa1, 0xe1, 0x2e, 0xc8, 0x0b, 0x66, 0xe1, 0x30, 0x8f, 0x5b, 0xc8, 0x04,
+	0xc5, 0x96, 0x92, 0xc8, 0xcf, 0x47, 0xb0, 0x66, 0xc6, 0xf7, 0x5d, 0x1b, 0x27, 0xc2, 0x53, 0xb0,
+	0xe4, 0xb0, 0x76, 0x83, 0x52, 0x26, 0x22, 0xa9, 0x6c, 0x20, 0x75, 0x38, 0x57, 0xdf, 0x87, 0x13,
+	0x92, 0x61, 0xe7, 0xd7, 0xf2, 0xc0, 0x67, 0xe0, 0x5f, 0x17, 0x1b, 0x1e, 0x27, 0xa2, 0xdf, 0x62,
+	0x54, 0xe0, 0x53, 0x51, 0x58, 0x08, 0x2c, 0x58, 0x4f, 0xea, 0xe2, 0x68, 0x12, 0xaa, 0x5d, 0xe7,
+	0x16, 0x9f, 0x80, 0xff, 0x7f, 0x72, 0x1b, 0xfe, 0x07, 0xd2, 0x27, 0xb8, 0x1f, 0x7e, 0x17, 0x35,
+	0x3f, 0x84, 0x2b, 0x20, 0xdb, 0xf3, 0x37, 0x7d, 0xf8, 0x21, 0xd6, 0xc2, 0x9b, 0x47, 0xa9, 0xba,
+	0x54, 0x6c, 0x80, 0xe5, 0x84, 0xb2, 0x7f, 0x45, 0xa2, 0xd9, 0x3a, 0xbb, 0x2c, 0x49, 0xe7, 0x97,
+	0x25, 0xe9, 0xe2, 0xb2, 0x24, 0xbd, 0xda, 0x36, 0x89, 0xe8, 0x7a, 0xba, 0x62, 0x30, 0x5b, 0xd5,
+	0x11, 0x7d, 0x8b, 0x88, 0x61, 0x31, 0xaf, 0xad, 0x06, 0xc6, 0x3e, 0x8c, 0x8d, 0x55, 0x7b, 0x35,
+	0x75, 0xfc, 0x87, 0x48, 0x5f, 0x08, 0x5e, 0xd1, 0xad, 0x1f, 0x01, 0x00, 0x00, 0xff, 0xff, 0x12,
+	0x94, 0xcb, 0x5c, 0x27, 0x09, 0x00, 0x00,
 }
 
 func (m *NamespacedName) Marshal() (dAtA []byte, err error) {
@@ -349,6 +523,154 @@ func (m *NamespacedName) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 	return len(dAtA) - i, nil
 }
 
+func (m *BaseK8SResourceConfigurationWithImage) Marshal() (dAtA []byte, err error) {
+	size := m.Size()
+	dAtA = make([]byte, size)
+	n, err := m.MarshalToSizedBuffer(dAtA[:size])
+	if err != nil {
+		return nil, err
+	}
+	return dAtA[:n], nil
+}
+
+func (m *BaseK8SResourceConfigurationWithImage) MarshalTo(dAtA []byte) (int, error) {
+	size := m.Size()
+	return m.MarshalToSizedBuffer(dAtA[:size])
+}
+
+func (m *BaseK8SResourceConfigurationWithImage) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+	i := len(dAtA)
+	_ = i
+	var l int
+	_ = l
+	if m.XXX_unrecognized != nil {
+		i -= len(m.XXX_unrecognized)
+		copy(dAtA[i:], m.XXX_unrecognized)
+	}
+	{
+		size, err := m.BaseK8SResourceConfiguration.MarshalToSizedBuffer(dAtA[:i])
+		if err != nil {
+			return 0, err
+		}
+		i -= size
+		i = encodeVarintCommon(dAtA, i, uint64(size))
+	}
+	i--
+	dAtA[i] = 0x12
+	if len(m.Image) > 0 {
+		i -= len(m.Image)
+		copy(dAtA[i:], m.Image)
+		i = encodeVarintCommon(dAtA, i, uint64(len(m.Image)))
+		i--
+		dAtA[i] = 0xa
+	}
+	return len(dAtA) - i, nil
+}
+
+func (m *BaseK8SResourceConfigurationWithReplicas) Marshal() (dAtA []byte, err error) {
+	size := m.Size()
+	dAtA = make([]byte, size)
+	n, err := m.MarshalToSizedBuffer(dAtA[:size])
+	if err != nil {
+		return nil, err
+	}
+	return dAtA[:n], nil
+}
+
+func (m *BaseK8SResourceConfigurationWithReplicas) MarshalTo(dAtA []byte) (int, error) {
+	size := m.Size()
+	return m.MarshalToSizedBuffer(dAtA[:size])
+}
+
+func (m *BaseK8SResourceConfigurationWithReplicas) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+	i := len(dAtA)
+	_ = i
+	var l int
+	_ = l
+	if m.XXX_unrecognized != nil {
+		i -= len(m.XXX_unrecognized)
+		copy(dAtA[i:], m.XXX_unrecognized)
+	}
+	{
+		size, err := m.BaseK8SResourceConfigurationWithImage.MarshalToSizedBuffer(dAtA[:i])
+		if err != nil {
+			return 0, err
+		}
+		i -= size
+		i = encodeVarintCommon(dAtA, i, uint64(size))
+	}
+	i--
+	dAtA[i] = 0x12
+	if m.ReplicaCount != nil {
+		n3, err3 := github_com_gogo_protobuf_types.StdInt32MarshalTo(*m.ReplicaCount, dAtA[i-github_com_gogo_protobuf_types.SizeOfStdInt32(*m.ReplicaCount):])
+		if err3 != nil {
+			return 0, err3
+		}
+		i -= n3
+		i = encodeVarintCommon(dAtA, i, uint64(n3))
+		i--
+		dAtA[i] = 0xa
+	}
+	return len(dAtA) - i, nil
+}
+
+func (m *BaseK8SResourceConfigurationWithHPA) Marshal() (dAtA []byte, err error) {
+	size := m.Size()
+	dAtA = make([]byte, size)
+	n, err := m.MarshalToSizedBuffer(dAtA[:size])
+	if err != nil {
+		return nil, err
+	}
+	return dAtA[:n], nil
+}
+
+func (m *BaseK8SResourceConfigurationWithHPA) MarshalTo(dAtA []byte) (int, error) {
+	size := m.Size()
+	return m.MarshalToSizedBuffer(dAtA[:size])
+}
+
+func (m *BaseK8SResourceConfigurationWithHPA) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+	i := len(dAtA)
+	_ = i
+	var l int
+	_ = l
+	if m.XXX_unrecognized != nil {
+		i -= len(m.XXX_unrecognized)
+		copy(dAtA[i:], m.XXX_unrecognized)
+	}
+	{
+		size, err := m.BaseK8SResourceConfigurationWithReplicas.MarshalToSizedBuffer(dAtA[:i])
+		if err != nil {
+			return 0, err
+		}
+		i -= size
+		i = encodeVarintCommon(dAtA, i, uint64(size))
+	}
+	i--
+	dAtA[i] = 0x1a
+	if m.MaxReplicas != nil {
+		n5, err5 := github_com_gogo_protobuf_types.StdInt32MarshalTo(*m.MaxReplicas, dAtA[i-github_com_gogo_protobuf_types.SizeOfStdInt32(*m.MaxReplicas):])
+		if err5 != nil {
+			return 0, err5
+		}
+		i -= n5
+		i = encodeVarintCommon(dAtA, i, uint64(n5))
+		i--
+		dAtA[i] = 0x12
+	}
+	if m.MinReplicas != nil {
+		n6, err6 := github_com_gogo_protobuf_types.StdInt32MarshalTo(*m.MinReplicas, dAtA[i-github_com_gogo_protobuf_types.SizeOfStdInt32(*m.MinReplicas):])
+		if err6 != nil {
+			return 0, err6
+		}
+		i -= n6
+		i = encodeVarintCommon(dAtA, i, uint64(n6))
+		i--
+		dAtA[i] = 0xa
+	}
+	return len(dAtA) - i, nil
+}
+
 func (m *BaseK8SResourceConfigurationWithHPAWithoutImage) Marshal() (dAtA []byte, err error) {
 	size := m.Size()
 	dAtA = make([]byte, size)
@@ -384,32 +706,32 @@ func (m *BaseK8SResourceConfigurationWithHPAWithoutImage) MarshalToSizedBuffer(d
 	i--
 	dAtA[i] = 0x22
 	if m.MaxReplicas != nil {
-		n2, err2 := github_com_gogo_protobuf_types.StdInt32MarshalTo(*m.MaxReplicas, dAtA[i-github_com_gogo_protobuf_types.SizeOfStdInt32(*m.MaxReplicas):])
-		if err2 != nil {
-			return 0, err2
+		n8, err8 := github_com_gogo_protobuf_types.StdInt32MarshalTo(*m.MaxReplicas, dAtA[i-github_com_gogo_protobuf_types.SizeOfStdInt32(*m.MaxReplicas):])
+		if err8 != nil {
+			return 0, err8
 		}
-		i -= n2
-		i = encodeVarintCommon(dAtA, i, uint64(n2))
+		i -= n8
+		i = encodeVarintCommon(dAtA, i, uint64(n8))
 		i--
 		dAtA[i] = 0x1a
 	}
 	if m.MinReplicas != nil {
-		n3, err3 := github_com_gogo_protobuf_types.StdInt32MarshalTo(*m.MinReplicas, dAtA[i-github_com_gogo_protobuf_types.SizeOfStdInt32(*m.MinReplicas):])
-		if err3 != nil {
-			return 0, err3
+		n9, err9 := github_com_gogo_protobuf_types.StdInt32MarshalTo(*m.MinReplicas, dAtA[i-github_com_gogo_protobuf_types.SizeOfStdInt32(*m.MinReplicas):])
+		if err9 != nil {
+			return 0, err9
 		}
-		i -= n3
-		i = encodeVarintCommon(dAtA, i, uint64(n3))
+		i -= n9
+		i = encodeVarintCommon(dAtA, i, uint64(n9))
 		i--
 		dAtA[i] = 0x12
 	}
 	if m.ReplicaCount != nil {
-		n4, err4 := github_com_gogo_protobuf_types.StdInt32MarshalTo(*m.ReplicaCount, dAtA[i-github_com_gogo_protobuf_types.SizeOfStdInt32(*m.ReplicaCount):])
-		if err4 != nil {
-			return 0, err4
+		n10, err10 := github_com_gogo_protobuf_types.StdInt32MarshalTo(*m.ReplicaCount, dAtA[i-github_com_gogo_protobuf_types.SizeOfStdInt32(*m.ReplicaCount):])
+		if err10 != nil {
+			return 0, err10
 		}
-		i -= n4
-		i = encodeVarintCommon(dAtA, i, uint64(n4))
+		i -= n10
+		i = encodeVarintCommon(dAtA, i, uint64(n10))
 		i--
 		dAtA[i] = 0xa
 	}
@@ -556,6 +878,64 @@ func (m *NamespacedName) Size() (n int) {
 	if l > 0 {
 		n += 1 + l + sovCommon(uint64(l))
 	}
+	if m.XXX_unrecognized != nil {
+		n += len(m.XXX_unrecognized)
+	}
+	return n
+}
+
+func (m *BaseK8SResourceConfigurationWithImage) Size() (n int) {
+	if m == nil {
+		return 0
+	}
+	var l int
+	_ = l
+	l = len(m.Image)
+	if l > 0 {
+		n += 1 + l + sovCommon(uint64(l))
+	}
+	l = m.BaseK8SResourceConfiguration.Size()
+	n += 1 + l + sovCommon(uint64(l))
+	if m.XXX_unrecognized != nil {
+		n += len(m.XXX_unrecognized)
+	}
+	return n
+}
+
+func (m *BaseK8SResourceConfigurationWithReplicas) Size() (n int) {
+	if m == nil {
+		return 0
+	}
+	var l int
+	_ = l
+	if m.ReplicaCount != nil {
+		l = github_com_gogo_protobuf_types.SizeOfStdInt32(*m.ReplicaCount)
+		n += 1 + l + sovCommon(uint64(l))
+	}
+	l = m.BaseK8SResourceConfigurationWithImage.Size()
+	n += 1 + l + sovCommon(uint64(l))
+	if m.XXX_unrecognized != nil {
+		n += len(m.XXX_unrecognized)
+	}
+	return n
+}
+
+func (m *BaseK8SResourceConfigurationWithHPA) Size() (n int) {
+	if m == nil {
+		return 0
+	}
+	var l int
+	_ = l
+	if m.MinReplicas != nil {
+		l = github_com_gogo_protobuf_types.SizeOfStdInt32(*m.MinReplicas)
+		n += 1 + l + sovCommon(uint64(l))
+	}
+	if m.MaxReplicas != nil {
+		l = github_com_gogo_protobuf_types.SizeOfStdInt32(*m.MaxReplicas)
+		n += 1 + l + sovCommon(uint64(l))
+	}
+	l = m.BaseK8SResourceConfigurationWithReplicas.Size()
+	n += 1 + l + sovCommon(uint64(l))
 	if m.XXX_unrecognized != nil {
 		n += len(m.XXX_unrecognized)
 	}
@@ -732,6 +1112,398 @@ func (m *NamespacedName) Unmarshal(dAtA []byte) error {
 				return io.ErrUnexpectedEOF
 			}
 			m.Namespace = string(dAtA[iNdEx:postIndex])
+			iNdEx = postIndex
+		default:
+			iNdEx = preIndex
+			skippy, err := skipCommon(dAtA[iNdEx:])
+			if err != nil {
+				return err
+			}
+			if (skippy < 0) || (iNdEx+skippy) < 0 {
+				return ErrInvalidLengthCommon
+			}
+			if (iNdEx + skippy) > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.XXX_unrecognized = append(m.XXX_unrecognized, dAtA[iNdEx:iNdEx+skippy]...)
+			iNdEx += skippy
+		}
+	}
+
+	if iNdEx > l {
+		return io.ErrUnexpectedEOF
+	}
+	return nil
+}
+func (m *BaseK8SResourceConfigurationWithImage) Unmarshal(dAtA []byte) error {
+	l := len(dAtA)
+	iNdEx := 0
+	for iNdEx < l {
+		preIndex := iNdEx
+		var wire uint64
+		for shift := uint(0); ; shift += 7 {
+			if shift >= 64 {
+				return ErrIntOverflowCommon
+			}
+			if iNdEx >= l {
+				return io.ErrUnexpectedEOF
+			}
+			b := dAtA[iNdEx]
+			iNdEx++
+			wire |= uint64(b&0x7F) << shift
+			if b < 0x80 {
+				break
+			}
+		}
+		fieldNum := int32(wire >> 3)
+		wireType := int(wire & 0x7)
+		if wireType == 4 {
+			return fmt.Errorf("proto: BaseK8sResourceConfigurationWithImage: wiretype end group for non-group")
+		}
+		if fieldNum <= 0 {
+			return fmt.Errorf("proto: BaseK8sResourceConfigurationWithImage: illegal tag %d (wire type %d)", fieldNum, wire)
+		}
+		switch fieldNum {
+		case 1:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field Image", wireType)
+			}
+			var stringLen uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowCommon
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				stringLen |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			intStringLen := int(stringLen)
+			if intStringLen < 0 {
+				return ErrInvalidLengthCommon
+			}
+			postIndex := iNdEx + intStringLen
+			if postIndex < 0 {
+				return ErrInvalidLengthCommon
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.Image = string(dAtA[iNdEx:postIndex])
+			iNdEx = postIndex
+		case 2:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field BaseK8SResourceConfiguration", wireType)
+			}
+			var msglen int
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowCommon
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				msglen |= int(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			if msglen < 0 {
+				return ErrInvalidLengthCommon
+			}
+			postIndex := iNdEx + msglen
+			if postIndex < 0 {
+				return ErrInvalidLengthCommon
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			if err := m.BaseK8SResourceConfiguration.Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
+				return err
+			}
+			iNdEx = postIndex
+		default:
+			iNdEx = preIndex
+			skippy, err := skipCommon(dAtA[iNdEx:])
+			if err != nil {
+				return err
+			}
+			if (skippy < 0) || (iNdEx+skippy) < 0 {
+				return ErrInvalidLengthCommon
+			}
+			if (iNdEx + skippy) > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.XXX_unrecognized = append(m.XXX_unrecognized, dAtA[iNdEx:iNdEx+skippy]...)
+			iNdEx += skippy
+		}
+	}
+
+	if iNdEx > l {
+		return io.ErrUnexpectedEOF
+	}
+	return nil
+}
+func (m *BaseK8SResourceConfigurationWithReplicas) Unmarshal(dAtA []byte) error {
+	l := len(dAtA)
+	iNdEx := 0
+	for iNdEx < l {
+		preIndex := iNdEx
+		var wire uint64
+		for shift := uint(0); ; shift += 7 {
+			if shift >= 64 {
+				return ErrIntOverflowCommon
+			}
+			if iNdEx >= l {
+				return io.ErrUnexpectedEOF
+			}
+			b := dAtA[iNdEx]
+			iNdEx++
+			wire |= uint64(b&0x7F) << shift
+			if b < 0x80 {
+				break
+			}
+		}
+		fieldNum := int32(wire >> 3)
+		wireType := int(wire & 0x7)
+		if wireType == 4 {
+			return fmt.Errorf("proto: BaseK8sResourceConfigurationWithReplicas: wiretype end group for non-group")
+		}
+		if fieldNum <= 0 {
+			return fmt.Errorf("proto: BaseK8sResourceConfigurationWithReplicas: illegal tag %d (wire type %d)", fieldNum, wire)
+		}
+		switch fieldNum {
+		case 1:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field ReplicaCount", wireType)
+			}
+			var msglen int
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowCommon
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				msglen |= int(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			if msglen < 0 {
+				return ErrInvalidLengthCommon
+			}
+			postIndex := iNdEx + msglen
+			if postIndex < 0 {
+				return ErrInvalidLengthCommon
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			if m.ReplicaCount == nil {
+				m.ReplicaCount = new(int32)
+			}
+			if err := github_com_gogo_protobuf_types.StdInt32Unmarshal(m.ReplicaCount, dAtA[iNdEx:postIndex]); err != nil {
+				return err
+			}
+			iNdEx = postIndex
+		case 2:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field BaseK8SResourceConfigurationWithImage", wireType)
+			}
+			var msglen int
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowCommon
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				msglen |= int(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			if msglen < 0 {
+				return ErrInvalidLengthCommon
+			}
+			postIndex := iNdEx + msglen
+			if postIndex < 0 {
+				return ErrInvalidLengthCommon
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			if err := m.BaseK8SResourceConfigurationWithImage.Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
+				return err
+			}
+			iNdEx = postIndex
+		default:
+			iNdEx = preIndex
+			skippy, err := skipCommon(dAtA[iNdEx:])
+			if err != nil {
+				return err
+			}
+			if (skippy < 0) || (iNdEx+skippy) < 0 {
+				return ErrInvalidLengthCommon
+			}
+			if (iNdEx + skippy) > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.XXX_unrecognized = append(m.XXX_unrecognized, dAtA[iNdEx:iNdEx+skippy]...)
+			iNdEx += skippy
+		}
+	}
+
+	if iNdEx > l {
+		return io.ErrUnexpectedEOF
+	}
+	return nil
+}
+func (m *BaseK8SResourceConfigurationWithHPA) Unmarshal(dAtA []byte) error {
+	l := len(dAtA)
+	iNdEx := 0
+	for iNdEx < l {
+		preIndex := iNdEx
+		var wire uint64
+		for shift := uint(0); ; shift += 7 {
+			if shift >= 64 {
+				return ErrIntOverflowCommon
+			}
+			if iNdEx >= l {
+				return io.ErrUnexpectedEOF
+			}
+			b := dAtA[iNdEx]
+			iNdEx++
+			wire |= uint64(b&0x7F) << shift
+			if b < 0x80 {
+				break
+			}
+		}
+		fieldNum := int32(wire >> 3)
+		wireType := int(wire & 0x7)
+		if wireType == 4 {
+			return fmt.Errorf("proto: BaseK8sResourceConfigurationWithHPA: wiretype end group for non-group")
+		}
+		if fieldNum <= 0 {
+			return fmt.Errorf("proto: BaseK8sResourceConfigurationWithHPA: illegal tag %d (wire type %d)", fieldNum, wire)
+		}
+		switch fieldNum {
+		case 1:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field MinReplicas", wireType)
+			}
+			var msglen int
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowCommon
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				msglen |= int(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			if msglen < 0 {
+				return ErrInvalidLengthCommon
+			}
+			postIndex := iNdEx + msglen
+			if postIndex < 0 {
+				return ErrInvalidLengthCommon
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			if m.MinReplicas == nil {
+				m.MinReplicas = new(int32)
+			}
+			if err := github_com_gogo_protobuf_types.StdInt32Unmarshal(m.MinReplicas, dAtA[iNdEx:postIndex]); err != nil {
+				return err
+			}
+			iNdEx = postIndex
+		case 2:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field MaxReplicas", wireType)
+			}
+			var msglen int
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowCommon
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				msglen |= int(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			if msglen < 0 {
+				return ErrInvalidLengthCommon
+			}
+			postIndex := iNdEx + msglen
+			if postIndex < 0 {
+				return ErrInvalidLengthCommon
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			if m.MaxReplicas == nil {
+				m.MaxReplicas = new(int32)
+			}
+			if err := github_com_gogo_protobuf_types.StdInt32Unmarshal(m.MaxReplicas, dAtA[iNdEx:postIndex]); err != nil {
+				return err
+			}
+			iNdEx = postIndex
+		case 3:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field BaseK8SResourceConfigurationWithReplicas", wireType)
+			}
+			var msglen int
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowCommon
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				msglen |= int(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			if msglen < 0 {
+				return ErrInvalidLengthCommon
+			}
+			postIndex := iNdEx + msglen
+			if postIndex < 0 {
+				return ErrInvalidLengthCommon
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			if err := m.BaseK8SResourceConfigurationWithReplicas.Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
+				return err
+			}
 			iNdEx = postIndex
 		default:
 			iNdEx = preIndex

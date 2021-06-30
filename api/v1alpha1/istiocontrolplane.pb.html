@@ -4,7 +4,7 @@ description: Istio control plane descriptor
 layout: protoc-gen-docs
 generator: protoc-gen-docs
 schema: istio-operator.api.v1alpha1.IstioControlPlaneSpec
-number_of_entries: 5
+number_of_entries: 12
 ---
 <h2 id="IstioControlPlaneSpec">IstioControlPlaneSpec</h2>
 <section>
@@ -62,6 +62,17 @@ No
 <td><code><a href="https://developers.google.com/protocol-buffers/docs/reference/google.protobuf#boolvalue">BoolValue</a></code></td>
 <td>
 <p>Use the user-specified, secret volume mounted key and certs for Pilot and workloads.</p>
+
+</td>
+<td>
+No
+</td>
+</tr>
+<tr id="IstioControlPlaneSpec-istiod">
+<td><code>istiod</code></td>
+<td><code><a href="#IstiodConfiguration">IstiodConfiguration</a></code></td>
+<td>
+<p>Istiod configuration.</p>
 
 </td>
 <td>
@@ -154,6 +165,213 @@ No
 </tbody>
 </table>
 </section>
+<h2 id="IstiodConfiguration">IstiodConfiguration</h2>
+<section>
+<p>IstiodConfiguration defines config options for Istiod</p>
+
+<table class="message-fields">
+<thead>
+<tr>
+<th>Field</th>
+<th>Type</th>
+<th>Description</th>
+<th>Required</th>
+</tr>
+</thead>
+<tbody>
+<tr id="IstiodConfiguration-k8sConfig">
+<td><code>k8sConfig</code></td>
+<td><code><a href="#BaseK8sResourceConfigurationWithHPA">BaseK8sResourceConfigurationWithHPA</a></code></td>
+<td>
+<p>Standard Kubernetes resource configuration</p>
+
+</td>
+<td>
+No
+</td>
+</tr>
+<tr id="IstiodConfiguration-enableAnalysis">
+<td><code>enableAnalysis</code></td>
+<td><code><a href="https://developers.google.com/protocol-buffers/docs/reference/google.protobuf#boolvalue">BoolValue</a></code></td>
+<td>
+<p>If enabled, pilot will run Istio analyzers and write analysis errors to the Status field of any Istio Resources</p>
+
+</td>
+<td>
+No
+</td>
+</tr>
+<tr id="IstiodConfiguration-enableStatus">
+<td><code>enableStatus</code></td>
+<td><code><a href="https://developers.google.com/protocol-buffers/docs/reference/google.protobuf#boolvalue">BoolValue</a></code></td>
+<td>
+<p>If enabled, pilot will update the CRD Status field of all Istio resources with reconciliation status</p>
+
+</td>
+<td>
+No
+</td>
+</tr>
+<tr id="IstiodConfiguration-externalIstiod">
+<td><code>externalIstiod</code></td>
+<td><code><a href="#ExternalIstiodConfiguration">ExternalIstiodConfiguration</a></code></td>
+<td>
+<p>Settings for local istiod to control remote clusters as well</p>
+
+</td>
+<td>
+No
+</td>
+</tr>
+<tr id="IstiodConfiguration-traceSampling">
+<td><code>traceSampling</code></td>
+<td><code><a href="https://developers.google.com/protocol-buffers/docs/reference/google.protobuf#floatvalue">FloatValue</a></code></td>
+<td>
+</td>
+<td>
+No
+</td>
+</tr>
+<tr id="IstiodConfiguration-enableProtocolSniffingOutbound">
+<td><code>enableProtocolSniffingOutbound</code></td>
+<td><code><a href="https://developers.google.com/protocol-buffers/docs/reference/google.protobuf#boolvalue">BoolValue</a></code></td>
+<td>
+<p>If enabled, protocol sniffing will be used for outbound listeners whose port protocol is not specified or unsupported</p>
+
+</td>
+<td>
+No
+</td>
+</tr>
+<tr id="IstiodConfiguration-enableProtocolSniffingInbound">
+<td><code>enableProtocolSniffingInbound</code></td>
+<td><code><a href="https://developers.google.com/protocol-buffers/docs/reference/google.protobuf#boolvalue">BoolValue</a></code></td>
+<td>
+<p>If enabled, protocol sniffing will be used for inbound listeners whose port protocol is not specified or unsupported</p>
+
+</td>
+<td>
+No
+</td>
+</tr>
+<tr id="IstiodConfiguration-certProvider">
+<td><code>certProvider</code></td>
+<td><code><a href="#PilotCertProviderType">PilotCertProviderType</a></code></td>
+<td>
+<p>Configure the certificate provider for control plane communication.
+Currently, two providers are supported: &ldquo;kubernetes&rdquo; and &ldquo;istiod&rdquo;.
+As some platforms may not have kubernetes signing APIs,
+Istiod is the default
++kubebuilder:validation:Enum=kubernetes;istiod</p>
+
+</td>
+<td>
+No
+</td>
+</tr>
+<tr id="IstiodConfiguration-additionalEnvVars">
+<td><code>additionalEnvVars</code></td>
+<td><code><a href="#k8s-io-api-core-v1-EnvVar">EnvVar[]</a></code></td>
+<td>
+<p>If present will be appended to the environment variables of the container</p>
+
+</td>
+<td>
+No
+</td>
+</tr>
+<tr id="IstiodConfiguration-spiffe">
+<td><code>spiffe</code></td>
+<td><code><a href="#SPIFFEConfiguration">SPIFFEConfiguration</a></code></td>
+<td>
+<p>SPIFFE configuration of Pilot</p>
+
+</td>
+<td>
+No
+</td>
+</tr>
+</tbody>
+</table>
+</section>
+<h2 id="ExternalIstiodConfiguration">ExternalIstiodConfiguration</h2>
+<section>
+<p>ExternalIstiodConfiguration defines settings for local istiod to control remote clusters as well</p>
+
+<table class="message-fields">
+<thead>
+<tr>
+<th>Field</th>
+<th>Type</th>
+<th>Description</th>
+<th>Required</th>
+</tr>
+</thead>
+<tbody>
+<tr id="ExternalIstiodConfiguration-enabled">
+<td><code>enabled</code></td>
+<td><code><a href="https://developers.google.com/protocol-buffers/docs/reference/google.protobuf#boolvalue">BoolValue</a></code></td>
+<td>
+</td>
+<td>
+No
+</td>
+</tr>
+</tbody>
+</table>
+</section>
+<h2 id="SPIFFEConfiguration">SPIFFEConfiguration</h2>
+<section>
+<p>SPIFFEConfiguration is for SPIFFE configuration of Pilot</p>
+
+<table class="message-fields">
+<thead>
+<tr>
+<th>Field</th>
+<th>Type</th>
+<th>Description</th>
+<th>Required</th>
+</tr>
+</thead>
+<tbody>
+<tr id="SPIFFEConfiguration-operatorEndpoints">
+<td><code>operatorEndpoints</code></td>
+<td><code><a href="#OperatorEndpointsConfiguration">OperatorEndpointsConfiguration</a></code></td>
+<td>
+</td>
+<td>
+No
+</td>
+</tr>
+</tbody>
+</table>
+</section>
+<h2 id="OperatorEndpointsConfiguration">OperatorEndpointsConfiguration</h2>
+<section>
+<p>OperatorEndpointsConfiguration defines config options for automatic SPIFFE endpoints</p>
+
+<table class="message-fields">
+<thead>
+<tr>
+<th>Field</th>
+<th>Type</th>
+<th>Description</th>
+<th>Required</th>
+</tr>
+</thead>
+<tbody>
+<tr id="OperatorEndpointsConfiguration-enabled">
+<td><code>enabled</code></td>
+<td><code><a href="https://developers.google.com/protocol-buffers/docs/reference/google.protobuf#boolvalue">BoolValue</a></code></td>
+<td>
+</td>
+<td>
+No
+</td>
+</tr>
+</tbody>
+</table>
+</section>
 <h2 id="IstioControlPlaneStatus">IstioControlPlaneStatus</h2>
 <section>
 
@@ -198,6 +416,138 @@ More info: https://kubernetes.io/docs/concepts/configuration/manage-compute-reso
 </td>
 <td>
 No
+</td>
+</tr>
+</tbody>
+</table>
+</section>
+<h2 id="BaseK8sResourceConfigurationWithHPA">BaseK8sResourceConfigurationWithHPA</h2>
+<section>
+<table class="message-fields">
+<thead>
+<tr>
+<th>Field</th>
+<th>Type</th>
+<th>Description</th>
+<th>Required</th>
+</tr>
+</thead>
+<tbody>
+<tr id="BaseK8sResourceConfigurationWithHPA-minReplicas">
+<td><code>minReplicas</code></td>
+<td><code><a href="https://developers.google.com/protocol-buffers/docs/reference/google.protobuf#int32value">Int32Value</a></code></td>
+<td>
+<p>Standard Kubernetes minimum replicas configuration
++kubebuilder:validation:Minimum=0</p>
+
+</td>
+<td>
+No
+</td>
+</tr>
+<tr id="BaseK8sResourceConfigurationWithHPA-maxReplicas">
+<td><code>maxReplicas</code></td>
+<td><code><a href="https://developers.google.com/protocol-buffers/docs/reference/google.protobuf#int32value">Int32Value</a></code></td>
+<td>
+<p>Standard Kubernetes maximum replicas configuration
++kubebuilder:validation:Minimum=0</p>
+
+</td>
+<td>
+No
+</td>
+</tr>
+<tr id="BaseK8sResourceConfigurationWithHPA-baseK8sResourceConfigurationWithReplicas">
+<td><code>baseK8sResourceConfigurationWithReplicas</code></td>
+<td><code><a href="#BaseK8sResourceConfigurationWithReplicas">BaseK8sResourceConfigurationWithReplicas</a></code></td>
+<td>
+<p>Standard Kubernetes resource configuration</p>
+
+</td>
+<td>
+No
+</td>
+</tr>
+</tbody>
+</table>
+</section>
+<h2 id="k8s-io-api-core-v1-EnvVar">k8s.io.api.core.v1.EnvVar</h2>
+<section>
+<p>EnvVar represents an environment variable present in a Container.</p>
+
+<table class="message-fields">
+<thead>
+<tr>
+<th>Field</th>
+<th>Type</th>
+<th>Description</th>
+<th>Required</th>
+</tr>
+</thead>
+<tbody>
+<tr id="k8s-io-api-core-v1-EnvVar-name">
+<td><code>name</code></td>
+<td><code>string</code></td>
+<td>
+<p>Name of the environment variable. Must be a C_IDENTIFIER.</p>
+
+</td>
+<td>
+No
+</td>
+</tr>
+<tr id="k8s-io-api-core-v1-EnvVar-value">
+<td><code>value</code></td>
+<td><code>string</code></td>
+<td>
+<p>Variable references $(VAR<em>NAME) are expanded
+using the previous defined environment variables in the container and
+any service environment variables. If a variable cannot be resolved,
+the reference in the input string will be unchanged. The $(VAR</em>NAME)
+syntax can be escaped with a double $$, ie: $$(VAR_NAME). Escaped
+references will never be expanded, regardless of whether the variable
+exists or not.
+Defaults to &ldquo;&rdquo;.
++optional</p>
+
+</td>
+<td>
+No
+</td>
+</tr>
+<tr id="k8s-io-api-core-v1-EnvVar-valueFrom">
+<td><code>valueFrom</code></td>
+<td><code><a href="#k8s-io-api-core-v1-EnvVarSource">EnvVarSource</a></code></td>
+<td>
+<p>Source for the environment variable&rsquo;s value. Cannot be used if value is not empty.
++optional</p>
+
+</td>
+<td>
+No
+</td>
+</tr>
+</tbody>
+</table>
+</section>
+<h2 id="PilotCertProviderType">PilotCertProviderType</h2>
+<section>
+<table class="enum-values">
+<thead>
+<tr>
+<th>Name</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr id="PilotCertProviderType-Kubernetes">
+<td><code>Kubernetes</code></td>
+<td>
+</td>
+</tr>
+<tr id="PilotCertProviderType-Istiod">
+<td><code>Istiod</code></td>
+<td>
 </td>
 </tr>
 </tbody>

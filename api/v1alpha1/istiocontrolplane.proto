@@ -14,6 +14,7 @@
 
 syntax = "proto3";
 
+import "api/v1alpha1/common.proto";
 import "k8s.io/api/core/v1/generated.proto";
 import "mesh/v1alpha1/config.proto";
 import "gogoproto/gogo.proto";
@@ -62,11 +63,13 @@ message IstioControlPlaneSpec {
     k8s.io.api.core.v1.ResourceRequirements defaultResources = 3 [(gogoproto.jsontag) = "defaultResources"];
     // Use the user-specified, secret volume mounted key and certs for Pilot and workloads.
     google.protobuf.BoolValue mountMtlsCerts = 4 [(gogoproto.wktpointer) = true, (gogoproto.jsontag) = "mountMtlsCerts"];
+    // Istiod configuration.
+    IstiodConfiguration istiod = 5 [(gogoproto.jsontag) = "istiod"];
     // If SDS is configured, mTLS certificates for the sidecars will be distributed through the
     // SecretDiscoveryService instead of using K8S secrets to mount the certificates.
-    SDSConfiguration sds = 5 [(gogoproto.jsontag) = "sds"];
+    SDSConfiguration sds = 6 [(gogoproto.jsontag) = "sds"];
     // Defines mesh-wide settings for the Istio control plane.
-    istio.mesh.v1alpha1.MeshConfig mesh_config = 6;
+    istio.mesh.v1alpha1.MeshConfig mesh_config = 7;
 }
 
 // Comma-separated minimum per-scope logging level of messages to output, in the form of <scope>:<level>,<scope>:<level>
@@ -83,6 +86,53 @@ message SDSConfiguration {
     // When a CSR is sent from Citadel Agent to the CA (e.g. Citadel), this aud is to make sure the
     // 	JWT is intended for the CA.
     string tokenAudience = 1 [(gogoproto.jsontag) = "tokenAudience"];
+}
+
+// IstiodConfiguration defines config options for Istiod
+message IstiodConfiguration {
+    // Standard Kubernetes resource configuration
+    BaseK8sResourceConfigurationWithHPA k8sConfig = 1 [(gogoproto.jsontag) = "k8sConfig"];
+    // If enabled, pilot will run Istio analyzers and write analysis errors to the Status field of any Istio Resources
+    google.protobuf.BoolValue enableAnalysis = 2 [(gogoproto.wktpointer) = true, (gogoproto.jsontag) = "enableAnalysis"];
+    // If enabled, pilot will update the CRD Status field of all Istio resources with reconciliation status
+    google.protobuf.BoolValue enableStatus = 3 [(gogoproto.wktpointer) = true, (gogoproto.jsontag) = "enableStatus"];
+    // Settings for local istiod to control remote clusters as well
+    ExternalIstiodConfiguration externalIstiod = 4 [(gogoproto.jsontag) = "externalIstiod"];
+    google.protobuf.FloatValue traceSampling = 5 [(gogoproto.wktpointer) = true];
+    // If enabled, protocol sniffing will be used for outbound listeners whose port protocol is not specified or unsupported
+    google.protobuf.BoolValue enableProtocolSniffingOutbound = 6 [(gogoproto.wktpointer) = true, (gogoproto.jsontag) = "enableProtocolSniffingOutbound"];
+    // If enabled, protocol sniffing will be used for inbound listeners whose port protocol is not specified or unsupported
+    google.protobuf.BoolValue enableProtocolSniffingInbound = 7 [(gogoproto.wktpointer) = true, (gogoproto.jsontag) = "enableProtocolSniffingInbound"];
+    // Configure the certificate provider for control plane communication.
+    // Currently, two providers are supported: "kubernetes" and "istiod".
+    // As some platforms may not have kubernetes signing APIs,
+    // Istiod is the default
+    // +kubebuilder:validation:Enum=kubernetes;istiod
+    PilotCertProviderType certProvider = 8 [(gogoproto.jsontag) = "certProvider"];
+    // If present will be appended to the environment variables of the container
+    repeated k8s.io.api.core.v1.EnvVar additionalEnvVars = 9 [(gogoproto.nullable) = false];
+    // SPIFFE configuration of Pilot
+    SPIFFEConfiguration spiffe = 10 [(gogoproto.jsontag) = "spiffe"];
+}
+
+// ExternalIstiodConfiguration defines settings for local istiod to control remote clusters as well
+message ExternalIstiodConfiguration {
+    google.protobuf.BoolValue enabled = 1 [(gogoproto.wktpointer) = true, (gogoproto.jsontag) = "enabled"];
+}
+
+enum PilotCertProviderType {
+    Kubernetes = 0;
+    Istiod = 1;
+}
+
+// SPIFFEConfiguration is for SPIFFE configuration of Pilot
+message SPIFFEConfiguration {
+    OperatorEndpointsConfiguration operatorEndpoints = 1 [(gogoproto.jsontag) = "operatorEndpoints"];
+}
+
+// OperatorEndpointsConfiguration defines config options for automatic SPIFFE endpoints
+message OperatorEndpointsConfiguration {
+    google.protobuf.BoolValue enabled = 1 [(gogoproto.wktpointer) = true, (gogoproto.jsontag) = "enabled"];
 }
 
 // <!-- go code generation tags

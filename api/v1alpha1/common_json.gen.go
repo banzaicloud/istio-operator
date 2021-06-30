@@ -31,6 +31,39 @@ func (this *NamespacedName) UnmarshalJSON(b []byte) error {
 	return CommonUnmarshaler.Unmarshal(bytes.NewReader(b), this)
 }
 
+// MarshalJSON is a custom marshaler for BaseK8SResourceConfigurationWithImage
+func (this *BaseK8SResourceConfigurationWithImage) MarshalJSON() ([]byte, error) {
+	str, err := CommonMarshaler.MarshalToString(this)
+	return []byte(str), err
+}
+
+// UnmarshalJSON is a custom unmarshaler for BaseK8SResourceConfigurationWithImage
+func (this *BaseK8SResourceConfigurationWithImage) UnmarshalJSON(b []byte) error {
+	return CommonUnmarshaler.Unmarshal(bytes.NewReader(b), this)
+}
+
+// MarshalJSON is a custom marshaler for BaseK8SResourceConfigurationWithReplicas
+func (this *BaseK8SResourceConfigurationWithReplicas) MarshalJSON() ([]byte, error) {
+	str, err := CommonMarshaler.MarshalToString(this)
+	return []byte(str), err
+}
+
+// UnmarshalJSON is a custom unmarshaler for BaseK8SResourceConfigurationWithReplicas
+func (this *BaseK8SResourceConfigurationWithReplicas) UnmarshalJSON(b []byte) error {
+	return CommonUnmarshaler.Unmarshal(bytes.NewReader(b), this)
+}
+
+// MarshalJSON is a custom marshaler for BaseK8SResourceConfigurationWithHPA
+func (this *BaseK8SResourceConfigurationWithHPA) MarshalJSON() ([]byte, error) {
+	str, err := CommonMarshaler.MarshalToString(this)
+	return []byte(str), err
+}
+
+// UnmarshalJSON is a custom unmarshaler for BaseK8SResourceConfigurationWithHPA
+func (this *BaseK8SResourceConfigurationWithHPA) UnmarshalJSON(b []byte) error {
+	return CommonUnmarshaler.Unmarshal(bytes.NewReader(b), this)
+}
+
 // MarshalJSON is a custom marshaler for BaseK8SResourceConfigurationWithHPAWithoutImage
 func (this *BaseK8SResourceConfigurationWithHPAWithoutImage) MarshalJSON() ([]byte, error) {
 	str, err := CommonMarshaler.MarshalToString(this)
