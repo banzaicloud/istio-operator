@@ -2377,6 +2377,11 @@ spec:
                 description: Contains the intended version for the Istio control plane.
                 pattern: ^1.
                 type: string
+              watchOneNamespace:
+                description: Whether to restrict the applications namespace the controller
+                  manages.
+                nullable: true
+                type: boolean
             required:
             - version
             type: object

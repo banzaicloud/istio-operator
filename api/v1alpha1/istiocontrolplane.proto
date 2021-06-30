@@ -74,8 +74,11 @@ message IstioControlPlaneSpec {
     SDSConfiguration sds = 8 [(gogoproto.jsontag) = "sds"];
     // ProxyWasm configuration options.
     ProxyWasmConfiguration proxyWasm = 9 [(gogoproto.jsontag) = "proxyWasm"];
+    // Whether to restrict the applications namespace the controller manages.
+    // If not set, controller watches all namespaces
+    google.protobuf.BoolValue watchOneNamespace = 10 [(gogoproto.wktpointer) = true, (gogoproto.jsontag) = "watchOneNamespace"];
     // Defines mesh-wide settings for the Istio control plane.
-    istio.mesh.v1alpha1.MeshConfig mesh_config = 10;
+    istio.mesh.v1alpha1.MeshConfig mesh_config = 11;
 }
 
 // Comma-separated minimum per-scope logging level of messages to output, in the form of <scope>:<level>,<scope>:<level>

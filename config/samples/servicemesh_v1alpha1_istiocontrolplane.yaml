@@ -70,6 +70,7 @@ spec:
     tokenAudience: "istio-ca"
   proxyWasm:
     enabled: false
+  watchOneNamespace: false
   meshConfig:
     proxyListenPort: 15001
     connectTimeout: 10s
