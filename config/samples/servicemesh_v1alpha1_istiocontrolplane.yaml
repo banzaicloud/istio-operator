@@ -37,6 +37,26 @@ spec:
     spiffe:
       operatorEndpoints:
         enabled: false
+  proxy:
+    image: "gcr.io/istio-release/proxyv2:1.10.0"
+    privileged: false
+    enableCoreDump: false
+    logLevel: "warning"
+    componentLogLevel: "misc:error"
+    clusterDomain: "cluster.local"
+    holdApplicationUntilProxyStarts: false
+    lifecycle: {}
+    resources:
+      requests:
+        cpu: 100m
+        memory: 128Mi
+      limits:
+        cpu: 2000m
+        memory: 1024Mi
+    includeIPRanges: "*"
+    excludeIPRanges: ""
+    excludeInboundPorts: ""
+    excludeOutboundPorts: ""
   sds:
     tokenAudience: "istio-ca"
   proxyWasm:

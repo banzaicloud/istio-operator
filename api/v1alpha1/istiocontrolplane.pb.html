@@ -4,7 +4,7 @@ description: Istio control plane descriptor
 layout: protoc-gen-docs
 generator: protoc-gen-docs
 schema: istio-operator.api.v1alpha1.IstioControlPlaneSpec
-number_of_entries: 13
+number_of_entries: 16
 ---
 <h2 id="IstioControlPlaneSpec">IstioControlPlaneSpec</h2>
 <section>
@@ -73,6 +73,17 @@ No
 <td><code><a href="#IstiodConfiguration">IstiodConfiguration</a></code></td>
 <td>
 <p>Istiod configuration.</p>
+
+</td>
+<td>
+No
+</td>
+</tr>
+<tr id="IstioControlPlaneSpec-proxy">
+<td><code>proxy</code></td>
+<td><code><a href="#ProxyConfiguration">ProxyConfiguration</a></code></td>
+<td>
+<p>Proxy configuration options.</p>
 
 </td>
 <td>
@@ -167,6 +178,165 @@ No
 <p>The JWT token for SDS and the aud field of such JWT. See RFC 7519, section 4.1.3.
 When a CSR is sent from Citadel Agent to the CA (e.g. Citadel), this aud is to make sure the
 	JWT is intended for the CA.</p>
+
+</td>
+<td>
+No
+</td>
+</tr>
+</tbody>
+</table>
+</section>
+<h2 id="ProxyConfiguration">ProxyConfiguration</h2>
+<section>
+<p>ProxyConfiguration defines config options for Proxy</p>
+
+<table class="message-fields">
+<thead>
+<tr>
+<th>Field</th>
+<th>Type</th>
+<th>Description</th>
+<th>Required</th>
+</tr>
+</thead>
+<tbody>
+<tr id="ProxyConfiguration-image">
+<td><code>image</code></td>
+<td><code>string</code></td>
+<td>
+</td>
+<td>
+No
+</td>
+</tr>
+<tr id="ProxyConfiguration-privileged">
+<td><code>privileged</code></td>
+<td><code><a href="https://developers.google.com/protocol-buffers/docs/reference/google.protobuf#boolvalue">BoolValue</a></code></td>
+<td>
+<p>If set to true, istio-proxy container will have privileged securityContext</p>
+
+</td>
+<td>
+No
+</td>
+</tr>
+<tr id="ProxyConfiguration-enableCoreDump">
+<td><code>enableCoreDump</code></td>
+<td><code><a href="https://developers.google.com/protocol-buffers/docs/reference/google.protobuf#boolvalue">BoolValue</a></code></td>
+<td>
+<p>If set, newly injected sidecars will have core dumps enabled.</p>
+
+</td>
+<td>
+No
+</td>
+</tr>
+<tr id="ProxyConfiguration-logLevel">
+<td><code>logLevel</code></td>
+<td><code><a href="#ProxyLogLevel">ProxyLogLevel</a></code></td>
+<td>
+<p>Log level for proxy, applies to gateways and sidecars. If left empty, &ldquo;warning&rdquo; is used.
+Expected values are: trace|debug|info|warning|error|critical|off
++kubebuilder:validation:Enum=trace;debug;info;warning;error;critical;off</p>
+
+</td>
+<td>
+No
+</td>
+</tr>
+<tr id="ProxyConfiguration-componentLogLevel">
+<td><code>componentLogLevel</code></td>
+<td><code>string</code></td>
+<td>
+<p>Per Component log level for proxy, applies to gateways and sidecars. If a component level is
+not set, then the &ldquo;LogLevel&rdquo; will be used. If left empty, &ldquo;misc:error&rdquo; is used.</p>
+
+</td>
+<td>
+No
+</td>
+</tr>
+<tr id="ProxyConfiguration-clusterDomain">
+<td><code>clusterDomain</code></td>
+<td><code>string</code></td>
+<td>
+<p>cluster domain. Default value is &ldquo;cluster.local&rdquo;</p>
+
+</td>
+<td>
+No
+</td>
+</tr>
+<tr id="ProxyConfiguration-holdApplicationUntilProxyStarts">
+<td><code>holdApplicationUntilProxyStarts</code></td>
+<td><code><a href="https://developers.google.com/protocol-buffers/docs/reference/google.protobuf#boolvalue">BoolValue</a></code></td>
+<td>
+<p>Controls if sidecar is injected at the front of the container list and blocks
+the start of the other containers until the proxy is ready
+Default value is &lsquo;false&rsquo;.</p>
+
+</td>
+<td>
+No
+</td>
+</tr>
+<tr id="ProxyConfiguration-lifecycle">
+<td><code>lifecycle</code></td>
+<td><code><a href="#k8s-io-api-core-v1-Lifecycle">Lifecycle</a></code></td>
+<td>
+</td>
+<td>
+No
+</td>
+</tr>
+<tr id="ProxyConfiguration-resources">
+<td><code>resources</code></td>
+<td><code><a href="#k8s-io-api-core-v1-ResourceRequirements">ResourceRequirements</a></code></td>
+<td>
+</td>
+<td>
+No
+</td>
+</tr>
+<tr id="ProxyConfiguration-includeIPRanges">
+<td><code>includeIPRanges</code></td>
+<td><code>string</code></td>
+<td>
+<p>IncludeIPRanges the range where to capture egress traffic</p>
+
+</td>
+<td>
+No
+</td>
+</tr>
+<tr id="ProxyConfiguration-excludeIPRanges">
+<td><code>excludeIPRanges</code></td>
+<td><code>string</code></td>
+<td>
+<p>ExcludeIPRanges the range where not to capture egress traffic</p>
+
+</td>
+<td>
+No
+</td>
+</tr>
+<tr id="ProxyConfiguration-excludeInboundPorts">
+<td><code>excludeInboundPorts</code></td>
+<td><code>string</code></td>
+<td>
+<p>ExcludeInboundPorts the comma separated list of inbound ports to be excluded from redirection to Envoy</p>
+
+</td>
+<td>
+No
+</td>
+</tr>
+<tr id="ProxyConfiguration-excludeOutboundPorts">
+<td><code>excludeOutboundPorts</code></td>
+<td><code>string</code></td>
+<td>
+<p>ExcludeOutboundPorts the comma separated list of outbound ports to be excluded from redirection to Envoy</p>
 
 </td>
 <td>
@@ -458,6 +628,61 @@ No
 </tbody>
 </table>
 </section>
+<h2 id="k8s-io-api-core-v1-Lifecycle">k8s.io.api.core.v1.Lifecycle</h2>
+<section>
+<p>Lifecycle describes actions that the management system should take in response to container lifecycle
+events. For the PostStart and PreStop lifecycle handlers, management of the container blocks
+until the action is complete, unless the container process fails, in which case the handler is aborted.</p>
+
+<table class="message-fields">
+<thead>
+<tr>
+<th>Field</th>
+<th>Type</th>
+<th>Description</th>
+<th>Required</th>
+</tr>
+</thead>
+<tbody>
+<tr id="k8s-io-api-core-v1-Lifecycle-postStart">
+<td><code>postStart</code></td>
+<td><code><a href="#k8s-io-api-core-v1-Handler">Handler</a></code></td>
+<td>
+<p>PostStart is called immediately after a container is created. If the handler fails,
+the container is terminated and restarted according to its restart policy.
+Other management of the container blocks until the hook completes.
+More info: https://kubernetes.io/docs/concepts/containers/container-lifecycle-hooks/#container-hooks
++optional</p>
+
+</td>
+<td>
+No
+</td>
+</tr>
+<tr id="k8s-io-api-core-v1-Lifecycle-preStop">
+<td><code>preStop</code></td>
+<td><code><a href="#k8s-io-api-core-v1-Handler">Handler</a></code></td>
+<td>
+<p>PreStop is called immediately before a container is terminated due to an
+API request or management event such as liveness probe failure,
+preemption, resource contention, etc. The handler is not called if the
+container crashes or exits. The reason for termination is passed to the
+handler. The Pod&rsquo;s termination grace period countdown begins before the
+PreStop hooked is executed. Regardless of the outcome of the handler, the
+container will eventually terminate within the Pod&rsquo;s termination grace
+period. Other management of the container blocks until the hook completes
+or until the termination grace period is reached.
+More info: https://kubernetes.io/docs/concepts/containers/container-lifecycle-hooks/#container-hooks
++optional</p>
+
+</td>
+<td>
+No
+</td>
+</tr>
+</tbody>
+</table>
+</section>
 <h2 id="BaseK8sResourceConfigurationWithHPA">BaseK8sResourceConfigurationWithHPA</h2>
 <section>
 <table class="message-fields">
@@ -562,6 +787,54 @@ No
 </td>
 <td>
 No
+</td>
+</tr>
+</tbody>
+</table>
+</section>
+<h2 id="ProxyLogLevel">ProxyLogLevel</h2>
+<section>
+<table class="enum-values">
+<thead>
+<tr>
+<th>Name</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr id="ProxyLogLevel-Trace">
+<td><code>Trace</code></td>
+<td>
+</td>
+</tr>
+<tr id="ProxyLogLevel-Debug">
+<td><code>Debug</code></td>
+<td>
+</td>
+</tr>
+<tr id="ProxyLogLevel-Info">
+<td><code>Info</code></td>
+<td>
+</td>
+</tr>
+<tr id="ProxyLogLevel-Warning">
+<td><code>Warning</code></td>
+<td>
+</td>
+</tr>
+<tr id="ProxyLogLevel-Error">
+<td><code>Error</code></td>
+<td>
+</td>
+</tr>
+<tr id="ProxyLogLevel-Critical">
+<td><code>Critical</code></td>
+<td>
+</td>
+</tr>
+<tr id="ProxyLogLevel-Off">
+<td><code>Off</code></td>
+<td>
 </td>
 </tr>
 </tbody>

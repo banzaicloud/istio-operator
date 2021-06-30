@@ -28,6 +28,46 @@ var _ = math.Inf
 // proto package needs to be updated.
 const _ = proto.GoGoProtoPackageIsVersion3 // please upgrade the proto package
 
+type ProxyLogLevel int32
+
+const (
+	ProxyLogLevel_Trace    ProxyLogLevel = 0
+	ProxyLogLevel_Debug    ProxyLogLevel = 1
+	ProxyLogLevel_Info     ProxyLogLevel = 2
+	ProxyLogLevel_Warning  ProxyLogLevel = 3
+	ProxyLogLevel_Error    ProxyLogLevel = 4
+	ProxyLogLevel_Critical ProxyLogLevel = 5
+	ProxyLogLevel_Off      ProxyLogLevel = 6
+)
+
+var ProxyLogLevel_name = map[int32]string{
+	0: "Trace",
+	1: "Debug",
+	2: "Info",
+	3: "Warning",
+	4: "Error",
+	5: "Critical",
+	6: "Off",
+}
+
+var ProxyLogLevel_value = map[string]int32{
+	"Trace":    0,
+	"Debug":    1,
+	"Info":     2,
+	"Warning":  3,
+	"Error":    4,
+	"Critical": 5,
+	"Off":      6,
+}
+
+func (x ProxyLogLevel) String() string {
+	return proto.EnumName(ProxyLogLevel_name, int32(x))
+}
+
+func (ProxyLogLevel) EnumDescriptor() ([]byte, []int) {
+	return fileDescriptor_6817de833805cb8b, []int{0}
+}
+
 type PilotCertProviderType int32
 
 const (
@@ -50,7 +90,7 @@ func (x PilotCertProviderType) String() string {
 }
 
 func (PilotCertProviderType) EnumDescriptor() ([]byte, []int) {
-	return fileDescriptor_6817de833805cb8b, []int{0}
+	return fileDescriptor_6817de833805cb8b, []int{1}
 }
 
 // IstioControlPlane defines an Istio control plane
@@ -89,13 +129,15 @@ type IstioControlPlaneSpec struct {
 	MountMtlsCerts *bool `protobuf:"bytes,4,opt,name=mountMtlsCerts,proto3,wktptr" json:"mountMtlsCerts"`
 	// Istiod configuration.
 	Istiod *IstiodConfiguration `protobuf:"bytes,5,opt,name=istiod,proto3" json:"istiod"`
+	// Proxy configuration options.
+	Proxy *ProxyConfiguration `protobuf:"bytes,6,opt,name=proxy,proto3" json:"proxy"`
 	// If SDS is configured, mTLS certificates for the sidecars will be distributed through the
 	// SecretDiscoveryService instead of using K8S secrets to mount the certificates.
-	Sds *SDSConfiguration `protobuf:"bytes,6,opt,name=sds,proto3" json:"sds"`
+	Sds *SDSConfiguration `protobuf:"bytes,7,opt,name=sds,proto3" json:"sds"`
 	// ProxyWasm configuration options.
-	ProxyWasm *ProxyWasmConfiguration `protobuf:"bytes,7,opt,name=proxyWasm,proto3" json:"proxyWasm"`
+	ProxyWasm *ProxyWasmConfiguration `protobuf:"bytes,8,opt,name=proxyWasm,proto3" json:"proxyWasm"`
 	// Defines mesh-wide settings for the Istio control plane.
-	MeshConfig           *v1alpha1.MeshConfig `protobuf:"bytes,8,opt,name=mesh_config,json=meshConfig,proto3" json:"mesh_config,omitempty"`
+	MeshConfig           *v1alpha1.MeshConfig `protobuf:"bytes,9,opt,name=mesh_config,json=meshConfig,proto3" json:"mesh_config,omitempty"`
 	XXX_NoUnkeyedLiteral struct{}             `json:"-"`
 	XXX_unrecognized     []byte               `json:"-"`
 	XXX_sizecache        int32                `json:"-"`
@@ -165,6 +207,13 @@ func (m *IstioControlPlaneSpec) GetMountMtlsCerts() *bool {
 func (m *IstioControlPlaneSpec) GetIstiod() *IstiodConfiguration {
 	if m != nil {
 		return m.Istiod
+	}
+	return nil
+}
+
+func (m *IstioControlPlaneSpec) GetProxy() *ProxyConfiguration {
+	if m != nil {
+		return m.Proxy
 	}
 	return nil
 }
@@ -292,6 +341,165 @@ func (m *SDSConfiguration) GetTokenAudience() string {
 	return ""
 }
 
+// ProxyConfiguration defines config options for Proxy
+type ProxyConfiguration struct {
+	Image string `protobuf:"bytes,1,opt,name=image,proto3" json:"image"`
+	// If set to true, istio-proxy container will have privileged securityContext
+	Privileged *bool `protobuf:"bytes,2,opt,name=privileged,proto3,wktptr" json:"privileged"`
+	// If set, newly injected sidecars will have core dumps enabled.
+	EnableCoreDump *bool `protobuf:"bytes,3,opt,name=enableCoreDump,proto3,wktptr" json:"enableCoreDump"`
+	// Log level for proxy, applies to gateways and sidecars. If left empty, "warning" is used.
+	// Expected values are: trace|debug|info|warning|error|critical|off
+	// +kubebuilder:validation:Enum=trace;debug;info;warning;error;critical;off
+	LogLevel ProxyLogLevel `protobuf:"varint,4,opt,name=logLevel,proto3,enum=istio_operator.v2.api.v1alpha1.ProxyLogLevel" json:"logLevel"`
+	// Per Component log level for proxy, applies to gateways and sidecars. If a component level is
+	// not set, then the "LogLevel" will be used. If left empty, "misc:error" is used.
+	ComponentLogLevel string `protobuf:"bytes,5,opt,name=componentLogLevel,proto3" json:"componentLogLevel"`
+	// cluster domain. Default value is "cluster.local"
+	ClusterDomain string `protobuf:"bytes,6,opt,name=clusterDomain,proto3" json:"clusterDomain"`
+	// Controls if sidecar is injected at the front of the container list and blocks
+	// the start of the other containers until the proxy is ready
+	// Default value is 'false'.
+	HoldApplicationUntilProxyStarts *bool                    `protobuf:"bytes,7,opt,name=holdApplicationUntilProxyStarts,proto3,wktptr" json:"holdApplicationUntilProxyStarts"`
+	Lifecycle                       *v1.Lifecycle            `protobuf:"bytes,8,opt,name=lifecycle,proto3" json:"lifecycle"`
+	Resources                       *v1.ResourceRequirements `protobuf:"bytes,9,opt,name=resources,proto3" json:"resources"`
+	// IncludeIPRanges the range where to capture egress traffic
+	IncludeIPRanges string `protobuf:"bytes,10,opt,name=includeIPRanges,proto3" json:"includeIPRanges"`
+	// ExcludeIPRanges the range where not to capture egress traffic
+	ExcludeIPRanges string `protobuf:"bytes,11,opt,name=excludeIPRanges,proto3" json:"excludeIPRanges"`
+	// ExcludeInboundPorts the comma separated list of inbound ports to be excluded from redirection to Envoy
+	ExcludeInboundPorts string `protobuf:"bytes,12,opt,name=excludeInboundPorts,proto3" json:"excludeInboundPorts"`
+	// ExcludeOutboundPorts the comma separated list of outbound ports to be excluded from redirection to Envoy
+	ExcludeOutboundPorts string   `protobuf:"bytes,13,opt,name=excludeOutboundPorts,proto3" json:"excludeOutboundPorts"`
+	XXX_NoUnkeyedLiteral struct{} `json:"-"`
+	XXX_unrecognized     []byte   `json:"-"`
+	XXX_sizecache        int32    `json:"-"`
+}
+
+func (m *ProxyConfiguration) Reset()         { *m = ProxyConfiguration{} }
+func (m *ProxyConfiguration) String() string { return proto.CompactTextString(m) }
+func (*ProxyConfiguration) ProtoMessage()    {}
+func (*ProxyConfiguration) Descriptor() ([]byte, []int) {
+	return fileDescriptor_6817de833805cb8b, []int{3}
+}
+func (m *ProxyConfiguration) XXX_Unmarshal(b []byte) error {
+	return m.Unmarshal(b)
+}
+func (m *ProxyConfiguration) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	if deterministic {
+		return xxx_messageInfo_ProxyConfiguration.Marshal(b, m, deterministic)
+	} else {
+		b = b[:cap(b)]
+		n, err := m.MarshalToSizedBuffer(b)
+		if err != nil {
+			return nil, err
+		}
+		return b[:n], nil
+	}
+}
+func (m *ProxyConfiguration) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_ProxyConfiguration.Merge(m, src)
+}
+func (m *ProxyConfiguration) XXX_Size() int {
+	return m.Size()
+}
+func (m *ProxyConfiguration) XXX_DiscardUnknown() {
+	xxx_messageInfo_ProxyConfiguration.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_ProxyConfiguration proto.InternalMessageInfo
+
+func (m *ProxyConfiguration) GetImage() string {
+	if m != nil {
+		return m.Image
+	}
+	return ""
+}
+
+func (m *ProxyConfiguration) GetPrivileged() *bool {
+	if m != nil {
+		return m.Privileged
+	}
+	return nil
+}
+
+func (m *ProxyConfiguration) GetEnableCoreDump() *bool {
+	if m != nil {
+		return m.EnableCoreDump
+	}
+	return nil
+}
+
+func (m *ProxyConfiguration) GetLogLevel() ProxyLogLevel {
+	if m != nil {
+		return m.LogLevel
+	}
+	return ProxyLogLevel_Trace
+}
+
+func (m *ProxyConfiguration) GetComponentLogLevel() string {
+	if m != nil {
+		return m.ComponentLogLevel
+	}
+	return ""
+}
+
+func (m *ProxyConfiguration) GetClusterDomain() string {
+	if m != nil {
+		return m.ClusterDomain
+	}
+	return ""
+}
+
+func (m *ProxyConfiguration) GetHoldApplicationUntilProxyStarts() *bool {
+	if m != nil {
+		return m.HoldApplicationUntilProxyStarts
+	}
+	return nil
+}
+
+func (m *ProxyConfiguration) GetLifecycle() *v1.Lifecycle {
+	if m != nil {
+		return m.Lifecycle
+	}
+	return nil
+}
+
+func (m *ProxyConfiguration) GetResources() *v1.ResourceRequirements {
+	if m != nil {
+		return m.Resources
+	}
+	return nil
+}
+
+func (m *ProxyConfiguration) GetIncludeIPRanges() string {
+	if m != nil {
+		return m.IncludeIPRanges
+	}
+	return ""
+}
+
+func (m *ProxyConfiguration) GetExcludeIPRanges() string {
+	if m != nil {
+		return m.ExcludeIPRanges
+	}
+	return ""
+}
+
+func (m *ProxyConfiguration) GetExcludeInboundPorts() string {
+	if m != nil {
+		return m.ExcludeInboundPorts
+	}
+	return ""
+}
+
+func (m *ProxyConfiguration) GetExcludeOutboundPorts() string {
+	if m != nil {
+		return m.ExcludeOutboundPorts
+	}
+	return ""
+}
+
 // IstiodConfiguration defines config options for Istiod
 type IstiodConfiguration struct {
 	// Standard Kubernetes resource configuration
@@ -326,7 +534,7 @@ func (m *IstiodConfiguration) Reset()         { *m = IstiodConfiguration{} }
 func (m *IstiodConfiguration) String() string { return proto.CompactTextString(m) }
 func (*IstiodConfiguration) ProtoMessage()    {}
 func (*IstiodConfiguration) Descriptor() ([]byte, []int) {
-	return fileDescriptor_6817de833805cb8b, []int{3}
+	return fileDescriptor_6817de833805cb8b, []int{4}
 }
 func (m *IstiodConfiguration) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
@@ -437,7 +645,7 @@ func (m *ExternalIstiodConfiguration) Reset()         { *m = ExternalIstiodConfi
 func (m *ExternalIstiodConfiguration) String() string { return proto.CompactTextString(m) }
 func (*ExternalIstiodConfiguration) ProtoMessage()    {}
 func (*ExternalIstiodConfiguration) Descriptor() ([]byte, []int) {
-	return fileDescriptor_6817de833805cb8b, []int{4}
+	return fileDescriptor_6817de833805cb8b, []int{5}
 }
 func (m *ExternalIstiodConfiguration) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
@@ -485,7 +693,7 @@ func (m *SPIFFEConfiguration) Reset()         { *m = SPIFFEConfiguration{} }
 func (m *SPIFFEConfiguration) String() string { return proto.CompactTextString(m) }
 func (*SPIFFEConfiguration) ProtoMessage()    {}
 func (*SPIFFEConfiguration) Descriptor() ([]byte, []int) {
-	return fileDescriptor_6817de833805cb8b, []int{5}
+	return fileDescriptor_6817de833805cb8b, []int{6}
 }
 func (m *SPIFFEConfiguration) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
@@ -533,7 +741,7 @@ func (m *OperatorEndpointsConfiguration) Reset()         { *m = OperatorEndpoint
 func (m *OperatorEndpointsConfiguration) String() string { return proto.CompactTextString(m) }
 func (*OperatorEndpointsConfiguration) ProtoMessage()    {}
 func (*OperatorEndpointsConfiguration) Descriptor() ([]byte, []int) {
-	return fileDescriptor_6817de833805cb8b, []int{6}
+	return fileDescriptor_6817de833805cb8b, []int{7}
 }
 func (m *OperatorEndpointsConfiguration) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
@@ -581,7 +789,7 @@ func (m *ProxyWasmConfiguration) Reset()         { *m = ProxyWasmConfiguration{}
 func (m *ProxyWasmConfiguration) String() string { return proto.CompactTextString(m) }
 func (*ProxyWasmConfiguration) ProtoMessage()    {}
 func (*ProxyWasmConfiguration) Descriptor() ([]byte, []int) {
-	return fileDescriptor_6817de833805cb8b, []int{7}
+	return fileDescriptor_6817de833805cb8b, []int{8}
 }
 func (m *ProxyWasmConfiguration) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
@@ -631,7 +839,7 @@ func (m *IstioControlPlaneStatus) Reset()         { *m = IstioControlPlaneStatus
 func (m *IstioControlPlaneStatus) String() string { return proto.CompactTextString(m) }
 func (*IstioControlPlaneStatus) ProtoMessage()    {}
 func (*IstioControlPlaneStatus) Descriptor() ([]byte, []int) {
-	return fileDescriptor_6817de833805cb8b, []int{8}
+	return fileDescriptor_6817de833805cb8b, []int{9}
 }
 func (m *IstioControlPlaneStatus) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
@@ -661,10 +869,12 @@ func (m *IstioControlPlaneStatus) XXX_DiscardUnknown() {
 var xxx_messageInfo_IstioControlPlaneStatus proto.InternalMessageInfo
 
 func init() {
+	proto.RegisterEnum("istio_operator.v2.api.v1alpha1.ProxyLogLevel", ProxyLogLevel_name, ProxyLogLevel_value)
 	proto.RegisterEnum("istio_operator.v2.api.v1alpha1.PilotCertProviderType", PilotCertProviderType_name, PilotCertProviderType_value)
 	proto.RegisterType((*IstioControlPlaneSpec)(nil), "istio_operator.v2.api.v1alpha1.IstioControlPlaneSpec")
 	proto.RegisterType((*LoggingConfiguration)(nil), "istio_operator.v2.api.v1alpha1.LoggingConfiguration")
 	proto.RegisterType((*SDSConfiguration)(nil), "istio_operator.v2.api.v1alpha1.SDSConfiguration")
+	proto.RegisterType((*ProxyConfiguration)(nil), "istio_operator.v2.api.v1alpha1.ProxyConfiguration")
 	proto.RegisterType((*IstiodConfiguration)(nil), "istio_operator.v2.api.v1alpha1.IstiodConfiguration")
 	proto.RegisterType((*ExternalIstiodConfiguration)(nil), "istio_operator.v2.api.v1alpha1.ExternalIstiodConfiguration")
 	proto.RegisterType((*SPIFFEConfiguration)(nil), "istio_operator.v2.api.v1alpha1.SPIFFEConfiguration")
@@ -678,72 +888,96 @@ func init() {
 }
 
 var fileDescriptor_6817de833805cb8b = []byte{
-	// 1035 bytes of a gzipped FileDescriptorProto
-	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0xac, 0x96, 0xdf, 0x6e, 0xdb, 0xb6,
-	0x17, 0xc7, 0xab, 0xe6, 0x8f, 0x1b, 0xa6, 0x49, 0x13, 0x36, 0xe9, 0xcf, 0x4d, 0xf1, 0xb3, 0x02,
-	0x63, 0x1b, 0xb2, 0x01, 0x93, 0x97, 0x64, 0x5d, 0x03, 0x0c, 0x18, 0x16, 0x7b, 0xc9, 0x16, 0x64,
-	0x5d, 0x0d, 0xb9, 0x68, 0x80, 0xee, 0x22, 0xa0, 0x25, 0x5a, 0xe6, 0x42, 0x93, 0x1a, 0x49, 0xa9,
-	0xcd, 0x6e, 0x77, 0x31, 0x60, 0xaf, 0xb0, 0x9b, 0x5d, 0xee, 0x01, 0xf6, 0x10, 0xbd, 0xdc, 0x13,
-	0x68, 0x43, 0x2e, 0xf5, 0x14, 0x83, 0x48, 0xa9, 0x89, 0x6c, 0xc3, 0xda, 0x45, 0x6f, 0x24, 0xf2,
-	0xf0, 0x9c, 0x0f, 0x79, 0xbe, 0x3c, 0xa4, 0x04, 0xde, 0x43, 0x21, 0x69, 0xc5, 0xbb, 0x88, 0x86,
-	0x43, 0xb4, 0xdb, 0x22, 0x52, 0x11, 0xee, 0x71, 0xa6, 0x04, 0xa7, 0x21, 0x45, 0x0c, 0x3b, 0xa1,
-	0xe0, 0x8a, 0xc3, 0x86, 0x1e, 0x38, 0xe7, 0x21, 0x16, 0x48, 0x71, 0xe1, 0xc4, 0x7b, 0x0e, 0x0a,
-	0x89, 0x53, 0xc4, 0x6d, 0x3d, 0x2c, 0x51, 0x3c, 0x3e, 0x1a, 0x71, 0x66, 0x42, 0xb7, 0x9a, 0x17,
-	0x07, 0xd2, 0x21, 0xbc, 0x95, 0x79, 0x78, 0x5c, 0xe0, 0x56, 0xbc, 0xdb, 0x0a, 0x30, 0xcb, 0x40,
-	0xd8, 0xcf, 0x7d, 0xb6, 0x46, 0x58, 0x0e, 0x6f, 0xc6, 0xb3, 0x01, 0x09, 0xf2, 0xb1, 0x8d, 0x80,
-	0x07, 0x5c, 0x37, 0x5b, 0x59, 0x2b, 0xb7, 0xda, 0x01, 0xe7, 0x01, 0xc5, 0x9a, 0x3a, 0x20, 0x98,
-	0xfa, 0xe7, 0x7d, 0x3c, 0x44, 0x31, 0xe1, 0x22, 0x77, 0x68, 0xe4, 0x0e, 0xba, 0xd7, 0x8f, 0x06,
-	0xad, 0x57, 0x02, 0x85, 0x21, 0x16, 0xd2, 0x8c, 0x37, 0xff, 0x5c, 0x00, 0x9b, 0x27, 0x59, 0x52,
-	0x1d, 0x93, 0x6d, 0x37, 0xcb, 0xb6, 0x17, 0x62, 0x0f, 0x7e, 0x08, 0x6a, 0x31, 0x16, 0x92, 0x70,
-	0x56, 0xb7, 0xb6, 0xad, 0x9d, 0xa5, 0xf6, 0xbd, 0xab, 0x43, 0xeb, 0x76, 0x9a, 0xd8, 0x85, 0xd9,
-	0x2d, 0x1a, 0xf0, 0x7b, 0x50, 0xa3, 0x3c, 0x08, 0x08, 0x0b, 0xea, 0xb7, 0xb7, 0xad, 0x9d, 0xe5,
-	0xbd, 0x4f, 0x9d, 0xd9, 0x42, 0x39, 0xdf, 0x1a, 0xf7, 0x8e, 0xce, 0x30, 0x12, 0x48, 0x11, 0xce,
-	0xda, 0xcb, 0x19, 0x3c, 0x07, 0xb9, 0x45, 0x03, 0xfe, 0x00, 0xd6, 0x7c, 0x3c, 0x40, 0x11, 0x55,
-	0x2e, 0x96, 0x3c, 0x12, 0x1e, 0x96, 0xf5, 0x39, 0x3d, 0xcb, 0x8e, 0x63, 0x34, 0xd5, 0xe8, 0x4c,
-	0x53, 0x27, 0xde, 0x75, 0x0a, 0x27, 0x17, 0xff, 0x18, 0x11, 0x81, 0x47, 0x98, 0x29, 0xd9, 0xde,
-	0x48, 0x13, 0x7b, 0x82, 0xe2, 0x4e, 0x58, 0xe0, 0x4b, 0xb0, 0x3a, 0xe2, 0x11, 0x53, 0x4f, 0x15,
-	0x95, 0x1d, 0x2c, 0x94, 0xac, 0xcf, 0xeb, 0x99, 0xb6, 0x1c, 0x23, 0xa3, 0x53, 0xc8, 0xe8, 0xb4,
-	0x39, 0xa7, 0x2f, 0x10, 0x8d, 0x70, 0xfb, 0x41, 0x9a, 0xd8, 0x63, 0x51, 0xbf, 0xff, 0x6d, 0x5b,
-	0xee, 0x98, 0x0d, 0x9e, 0x81, 0x45, 0x2d, 0x8a, 0x5f, 0x5f, 0xd0, 0xcc, 0xfd, 0x2a, 0x8d, 0xf4,
-	0xb6, 0xf8, 0x65, 0x89, 0x40, 0x9a, 0xd8, 0x39, 0xc6, 0xcd, 0xdf, 0xf0, 0x14, 0xcc, 0x49, 0x5f,
-	0xd6, 0x17, 0x35, 0xf5, 0x93, 0x2a, 0x6a, 0xef, 0xab, 0x5e, 0x19, 0x59, 0x4b, 0x13, 0x3b, 0x03,
-	0xb8, 0xd9, 0x03, 0x7a, 0x60, 0x29, 0x14, 0xfc, 0xf5, 0xe5, 0x19, 0x92, 0xa3, 0x7a, 0x4d, 0x23,
-	0x3f, 0xab, 0x42, 0x76, 0x8b, 0x80, 0x32, 0x78, 0x25, 0x4d, 0xec, 0x6b, 0x98, 0x7b, 0xdd, 0x84,
-	0x5f, 0x82, 0xe5, 0xac, 0xd2, 0xcf, 0x4d, 0x81, 0xd7, 0xef, 0xe8, 0x69, 0x6c, 0x33, 0x8d, 0x93,
-	0x8d, 0x5c, 0xb3, 0x9f, 0x62, 0x39, 0x34, 0x58, 0x17, 0x8c, 0xde, 0xb6, 0x9b, 0x4f, 0xc0, 0xc6,
-	0xb4, 0x12, 0x82, 0x36, 0x58, 0xa0, 0x38, 0xc6, 0x34, 0x2f, 0xd9, 0xa5, 0x34, 0xb1, 0x8d, 0xc1,
-	0x35, 0xaf, 0xe6, 0x29, 0x58, 0x1b, 0x57, 0x00, 0x3e, 0x01, 0x2b, 0x8a, 0x5f, 0x60, 0x76, 0x18,
-	0xf9, 0x04, 0x33, 0x0f, 0xe7, 0xc1, 0xeb, 0x69, 0x62, 0x97, 0x07, 0xdc, 0x72, 0xb7, 0xf9, 0xc7,
-	0x1d, 0x70, 0x7f, 0xca, 0x2e, 0xc1, 0x10, 0x2c, 0x5d, 0x1c, 0x48, 0x63, 0xd3, 0xb0, 0xe5, 0xbd,
-	0x4e, 0x95, 0x88, 0x6d, 0x24, 0xf1, 0xe9, 0x81, 0x2c, 0x6a, 0xb1, 0x04, 0x3c, 0x23, 0x6a, 0xf8,
-	0x4d, 0xf7, 0xd0, 0x28, 0xfa, 0x96, 0xec, 0x5e, 0x37, 0xb3, 0xc2, 0xc5, 0x0c, 0xf5, 0x29, 0x3e,
-	0x64, 0x88, 0x5e, 0x4a, 0x22, 0xf3, 0x83, 0x58, 0x59, 0xb8, 0xe5, 0x28, 0x53, 0xb8, 0x65, 0x1b,
-	0x7c, 0x0e, 0xee, 0x1a, 0x4b, 0x4f, 0x21, 0x15, 0x15, 0x87, 0x6f, 0x16, 0x39, 0x3b, 0x6e, 0xa5,
-	0x18, 0xcd, 0x2d, 0x59, 0xe0, 0x2b, 0xb0, 0x8a, 0x5f, 0x2b, 0x2c, 0x18, 0xa2, 0x46, 0xc2, 0xfc,
-	0xa8, 0x7d, 0x5e, 0x25, 0xd4, 0x51, 0x29, 0xaa, 0x5c, 0x72, 0x50, 0xa7, 0x54, 0x72, 0x70, 0xc7,
-	0xfa, 0xf0, 0x6b, 0xb0, 0xa2, 0x04, 0xf2, 0x70, 0x0f, 0x8d, 0x42, 0x9a, 0x5d, 0x59, 0xe6, 0x38,
-	0x3e, 0x9a, 0xc8, 0xe7, 0x98, 0x72, 0xa4, 0x4c, 0x42, 0xf3, 0x3a, 0x81, 0x72, 0x1c, 0xfc, 0xd5,
-	0x02, 0x0d, 0x93, 0x52, 0x37, 0x0b, 0xf1, 0x38, 0xed, 0x31, 0x32, 0x18, 0x10, 0x16, 0x3c, 0x8b,
-	0x54, 0x9f, 0x47, 0xcc, 0xcf, 0xcf, 0xe4, 0x2c, 0xa9, 0x3e, 0x48, 0x13, 0xbb, 0x82, 0xa2, 0xe7,
-	0xae, 0xf0, 0x81, 0xbf, 0x58, 0xe0, 0xff, 0xd3, 0x5d, 0x4e, 0x98, 0x59, 0x4b, 0xad, 0x72, 0x2d,
-	0xef, 0xa7, 0x89, 0x3d, 0x1b, 0xa2, 0x97, 0x32, 0xdb, 0x05, 0x5e, 0x80, 0xbb, 0x1e, 0x16, 0xaa,
-	0x2b, 0x78, 0x4c, 0x7c, 0x2c, 0xf4, 0xe9, 0x5e, 0xdd, 0x7b, 0x5c, 0x79, 0x89, 0x10, 0xca, 0x55,
-	0xe7, 0x46, 0xe0, 0xf3, 0xcb, 0x10, 0xb7, 0xd7, 0xb2, 0x4a, 0xba, 0x89, 0x73, 0x4b, 0x3d, 0xf8,
-	0x1d, 0x58, 0x47, 0xbe, 0x4f, 0xb2, 0xcd, 0x47, 0xf4, 0x88, 0xc5, 0x2f, 0x90, 0x90, 0xf5, 0xa5,
-	0xed, 0x39, 0x9d, 0xe9, 0x94, 0xaf, 0x83, 0x71, 0x69, 0xcf, 0xbf, 0x49, 0xec, 0x5b, 0xee, 0x64,
-	0x68, 0x76, 0x49, 0xcb, 0x90, 0x0c, 0x06, 0xb8, 0x0e, 0xfe, 0xdb, 0x25, 0xdd, 0xeb, 0x9e, 0x1c,
-	0x1f, 0x1f, 0x4d, 0xb9, 0xa4, 0x0d, 0xc6, 0xcd, 0xdf, 0x4d, 0x1f, 0x3c, 0x9a, 0x51, 0xb8, 0xf0,
-	0x08, 0xd4, 0x8c, 0xaa, 0x7e, 0x7e, 0x5f, 0xcc, 0xda, 0xa7, 0x7b, 0xd9, 0x77, 0x32, 0x77, 0xd7,
-	0x3b, 0x52, 0x74, 0x9a, 0xbf, 0x59, 0xe0, 0xfe, 0x94, 0x15, 0xc1, 0x9f, 0x2d, 0xb0, 0x5e, 0xa4,
-	0x70, 0xc4, 0xfc, 0x90, 0x13, 0xa6, 0x64, 0x3e, 0xd3, 0x17, 0x55, 0x29, 0x3e, 0x1b, 0x0f, 0x2c,
-	0x67, 0xbb, 0x99, 0x26, 0xf6, 0x24, 0xdc, 0x9d, 0x34, 0x35, 0x03, 0xd0, 0x98, 0xcd, 0x7a, 0x57,
-	0x32, 0x9c, 0x83, 0x07, 0xd3, 0xbf, 0x49, 0xef, 0x6a, 0x82, 0x87, 0xe0, 0x7f, 0x93, 0x3f, 0x4d,
-	0xfa, 0x5e, 0xfb, 0x68, 0x1f, 0x6c, 0x4e, 0x2d, 0x65, 0xb8, 0x0a, 0xc0, 0x69, 0xd4, 0xc7, 0x82,
-	0x61, 0x85, 0xe5, 0xda, 0x2d, 0x08, 0xc0, 0xa2, 0xa9, 0x84, 0x35, 0xab, 0xdd, 0x79, 0x73, 0xd5,
-	0xb0, 0xfe, 0xba, 0x6a, 0x58, 0xff, 0x5c, 0x35, 0xac, 0x97, 0x8f, 0x03, 0xa2, 0x86, 0x51, 0xdf,
-	0xf1, 0xf8, 0xa8, 0xd5, 0x47, 0xec, 0x27, 0x44, 0x3c, 0xca, 0x23, 0xdf, 0xfc, 0x95, 0x7e, 0x5c,
-	0xe8, 0xda, 0x8a, 0xf7, 0x5a, 0x37, 0x7f, 0x37, 0xfb, 0x8b, 0x3a, 0x85, 0xfd, 0x7f, 0x03, 0x00,
-	0x00, 0xff, 0xff, 0xac, 0x5a, 0x3b, 0x95, 0xcb, 0x0a, 0x00, 0x00,
+	// 1415 bytes of a gzipped FileDescriptorProto
+	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0xac, 0x57, 0xdd, 0x6e, 0xdb, 0x36,
+	0x14, 0xae, 0x9a, 0x1f, 0xc7, 0xcc, 0x4f, 0x1d, 0x26, 0x6d, 0xdd, 0x14, 0x8d, 0x0a, 0x63, 0x3f,
+	0x5d, 0x81, 0xca, 0x4b, 0xba, 0xae, 0x05, 0x86, 0x0d, 0x8b, 0x9d, 0x74, 0xcb, 0x92, 0xb6, 0x06,
+	0xdd, 0x36, 0x40, 0x07, 0x2c, 0xa0, 0x25, 0x5a, 0xe1, 0x42, 0x93, 0x1a, 0x25, 0xb9, 0xcd, 0x2e,
+	0xb7, 0x8b, 0x61, 0x03, 0xf6, 0x04, 0xbb, 0xd9, 0xe5, 0x1e, 0xa5, 0x97, 0x7b, 0x02, 0x6d, 0xc8,
+	0xa5, 0x9e, 0x62, 0x20, 0x25, 0xd9, 0x96, 0x6d, 0xd8, 0x19, 0xd0, 0x1b, 0x8b, 0x3c, 0xe7, 0x7c,
+	0x1f, 0x79, 0xce, 0xe1, 0x39, 0xa4, 0xc1, 0x7b, 0xd8, 0xa3, 0xd5, 0xee, 0x16, 0x66, 0xde, 0x09,
+	0xde, 0xaa, 0x52, 0x3f, 0xa0, 0xc2, 0x16, 0x3c, 0x90, 0x82, 0x79, 0x0c, 0x73, 0x62, 0x79, 0x52,
+	0x04, 0x02, 0x6e, 0x6a, 0xc5, 0xb1, 0xf0, 0x88, 0xc4, 0x81, 0x90, 0x56, 0x77, 0xdb, 0xc2, 0x1e,
+	0xb5, 0x32, 0xdc, 0xc6, 0x8d, 0x1c, 0x8b, 0x2d, 0x3a, 0x1d, 0xc1, 0x13, 0xe8, 0x46, 0xe5, 0xf4,
+	0x91, 0x6f, 0x51, 0x51, 0x55, 0x16, 0xb6, 0x90, 0xa4, 0xda, 0xdd, 0xaa, 0xba, 0x84, 0x2b, 0x22,
+	0xe2, 0xa4, 0x36, 0x1b, 0x1d, 0xe2, 0x9f, 0x0c, 0xe2, 0x79, 0x9b, 0xba, 0xa9, 0x6e, 0xdd, 0x15,
+	0xae, 0xd0, 0xc3, 0xaa, 0x1a, 0xa5, 0x52, 0xd3, 0x15, 0xc2, 0x65, 0x44, 0xb3, 0xb6, 0x29, 0x61,
+	0xce, 0x71, 0x8b, 0x9c, 0xe0, 0x2e, 0x15, 0x32, 0x35, 0xd8, 0x4c, 0x0d, 0xf4, 0xac, 0x15, 0xb6,
+	0xab, 0xaf, 0x25, 0xf6, 0x3c, 0x22, 0xfd, 0x44, 0x5f, 0xf9, 0x75, 0x1e, 0x5c, 0xdd, 0x57, 0x4e,
+	0xd5, 0x13, 0x6f, 0x1b, 0xca, 0xdb, 0xa6, 0x47, 0x6c, 0xf8, 0x11, 0x28, 0x74, 0x89, 0xf4, 0xa9,
+	0xe0, 0x65, 0xe3, 0xb6, 0x71, 0xa7, 0x58, 0xbb, 0x72, 0xbe, 0x63, 0x5c, 0x8e, 0x23, 0x33, 0x13,
+	0xa3, 0x6c, 0x00, 0xbf, 0x05, 0x05, 0x26, 0x5c, 0x97, 0x72, 0xb7, 0x7c, 0xf9, 0xb6, 0x71, 0x67,
+	0x71, 0xfb, 0x13, 0x6b, 0x72, 0xa0, 0xac, 0xc3, 0xc4, 0xbc, 0xae, 0x3d, 0x0c, 0x25, 0x0e, 0xa8,
+	0xe0, 0xb5, 0x45, 0x45, 0x9e, 0x12, 0xa1, 0x6c, 0x00, 0xbf, 0x07, 0x25, 0x87, 0xb4, 0x71, 0xc8,
+	0x02, 0x44, 0x7c, 0x11, 0x4a, 0x9b, 0xf8, 0xe5, 0x19, 0xbd, 0xca, 0x1d, 0x2b, 0x89, 0xa9, 0xa6,
+	0x56, 0x31, 0xb5, 0xba, 0x5b, 0x56, 0x66, 0x84, 0xc8, 0x0f, 0x21, 0x95, 0xa4, 0x43, 0x78, 0xe0,
+	0xd7, 0xd6, 0xe3, 0xc8, 0x1c, 0x61, 0x41, 0x23, 0x12, 0xf8, 0x0a, 0xac, 0x74, 0x44, 0xc8, 0x83,
+	0x27, 0x01, 0xf3, 0xeb, 0x44, 0x06, 0x7e, 0x79, 0x56, 0xaf, 0xb4, 0x61, 0x25, 0x61, 0xb4, 0xb2,
+	0x30, 0x5a, 0x35, 0x21, 0xd8, 0x4b, 0xcc, 0x42, 0x52, 0xbb, 0x16, 0x47, 0xe6, 0x10, 0xea, 0xcf,
+	0x7f, 0x4c, 0x03, 0x0d, 0xc9, 0xe0, 0x11, 0x98, 0xd7, 0x41, 0x71, 0xca, 0x73, 0x9a, 0xf3, 0xfe,
+	0xb4, 0x18, 0xe9, 0xb4, 0x38, 0xf9, 0x10, 0x81, 0x38, 0x32, 0x53, 0x1a, 0x94, 0x7e, 0x61, 0x13,
+	0xcc, 0x79, 0x52, 0xbc, 0x39, 0x2b, 0xcf, 0x6b, 0xde, 0xed, 0x69, 0xbc, 0x0d, 0x65, 0x9c, 0xa7,
+	0x2d, 0xc6, 0x91, 0x99, 0x90, 0xa0, 0xe4, 0x03, 0x0f, 0xc0, 0x8c, 0xef, 0xf8, 0xe5, 0x82, 0xa6,
+	0xfc, 0x78, 0x1a, 0x65, 0x73, 0xb7, 0x99, 0x27, 0x2c, 0xc4, 0x91, 0xa9, 0x08, 0x90, 0xfa, 0x81,
+	0x36, 0x28, 0x6a, 0xd6, 0x23, 0xec, 0x77, 0xca, 0x0b, 0x9a, 0xf2, 0xd3, 0x0b, 0xed, 0x52, 0x01,
+	0xf2, 0xc4, 0xcb, 0x71, 0x64, 0xf6, 0xc9, 0x50, 0x7f, 0x08, 0xbf, 0x04, 0x8b, 0xaa, 0x7c, 0x8e,
+	0x93, 0xaa, 0x29, 0x17, 0xf5, 0x32, 0x66, 0xb2, 0x8c, 0xa5, 0x34, 0x7d, 0xee, 0x27, 0xc4, 0x3f,
+	0x49, 0x68, 0x11, 0xe8, 0xf4, 0xc6, 0x95, 0x87, 0x60, 0x7d, 0xdc, 0xb9, 0x84, 0x26, 0x98, 0x63,
+	0xa4, 0x4b, 0x58, 0x5a, 0x07, 0x3a, 0x58, 0x5a, 0x80, 0x92, 0x4f, 0xe5, 0x00, 0x94, 0x86, 0x23,
+	0x00, 0x1f, 0x82, 0xe5, 0x40, 0x9c, 0x12, 0xbe, 0x13, 0x3a, 0x94, 0x70, 0x9b, 0xa4, 0xe0, 0xd5,
+	0x38, 0x32, 0xf3, 0x0a, 0x94, 0x9f, 0x56, 0x7e, 0x5a, 0x00, 0x70, 0x34, 0x45, 0x6a, 0x13, 0xb4,
+	0x83, 0x5d, 0x32, 0xb8, 0x09, 0x2d, 0x40, 0xc9, 0x07, 0x3e, 0x05, 0xc0, 0x93, 0xb4, 0x4b, 0x19,
+	0x71, 0x89, 0x93, 0xd6, 0xe1, 0xa4, 0x73, 0x0b, 0xe3, 0xc8, 0x1c, 0x40, 0xe8, 0x33, 0x3b, 0x30,
+	0x57, 0xb5, 0x40, 0x38, 0x6e, 0x31, 0x52, 0x17, 0x92, 0xec, 0x86, 0x1d, 0x2f, 0xad, 0xba, 0xa9,
+	0xb5, 0x90, 0x47, 0x25, 0xb5, 0x90, 0x97, 0xc1, 0x23, 0xb0, 0xc0, 0x84, 0x7b, 0xa8, 0x83, 0xaa,
+	0x2a, 0x6c, 0x65, 0xfb, 0xde, 0x85, 0xce, 0xc3, 0x61, 0x0a, 0xaa, 0x2d, 0xc5, 0x91, 0xd9, 0xa3,
+	0x40, 0xbd, 0x11, 0xac, 0x83, 0x55, 0x5b, 0x74, 0x3c, 0xc1, 0x09, 0x0f, 0x32, 0x63, 0x5d, 0x6f,
+	0xc5, 0xda, 0xd5, 0x38, 0x32, 0x47, 0x95, 0x68, 0x54, 0xa4, 0x52, 0x67, 0xb3, 0xd0, 0x0f, 0x88,
+	0xdc, 0x15, 0x1d, 0x4c, 0xb9, 0x2e, 0xac, 0x34, 0x75, 0x39, 0x05, 0xca, 0x4f, 0xe1, 0xef, 0x06,
+	0x30, 0x4f, 0x04, 0x73, 0x76, 0x3c, 0x8f, 0x51, 0x5b, 0xe7, 0xed, 0x05, 0x0f, 0x28, 0xd3, 0x7b,
+	0x6f, 0x06, 0x58, 0x35, 0x94, 0xc2, 0xd4, 0x20, 0x7e, 0x18, 0x47, 0xe6, 0x34, 0x1a, 0x1d, 0xd5,
+	0x69, 0x46, 0xf0, 0x1b, 0x50, 0x64, 0xb4, 0x4d, 0xec, 0x33, 0x9b, 0x91, 0xb4, 0xee, 0x6e, 0x8d,
+	0xeb, 0x99, 0x87, 0x99, 0x51, 0x52, 0x5e, 0x3d, 0x0c, 0xea, 0x0f, 0xe1, 0x0b, 0x50, 0x94, 0xbd,
+	0xfe, 0x5b, 0xfc, 0x9f, 0xfd, 0x57, 0xd3, 0xf6, 0xe0, 0xa8, 0x3f, 0x84, 0x9f, 0x83, 0x2b, 0x94,
+	0xdb, 0x2c, 0x74, 0xc8, 0x7e, 0x03, 0x61, 0xee, 0x12, 0xbf, 0x0c, 0x74, 0xb4, 0xd7, 0xe2, 0xc8,
+	0x1c, 0x56, 0xa1, 0x61, 0x81, 0x82, 0x93, 0x37, 0x79, 0xf8, 0x62, 0x1f, 0x3e, 0xa4, 0x42, 0xc3,
+	0x02, 0xb8, 0x0f, 0xd6, 0x32, 0x11, 0x6f, 0x89, 0x90, 0x3b, 0x0d, 0xa1, 0x72, 0xb4, 0xa4, 0x29,
+	0xae, 0xc7, 0x91, 0x39, 0x4e, 0x8d, 0xc6, 0x09, 0xe1, 0x21, 0x58, 0x4f, 0xc5, 0xcf, 0xc2, 0x60,
+	0x80, 0x6b, 0x59, 0x73, 0x95, 0xe3, 0xc8, 0x1c, 0xab, 0x47, 0x63, 0xa5, 0x95, 0xbf, 0x16, 0xc0,
+	0xda, 0x98, 0xfe, 0x0f, 0x3d, 0x50, 0x3c, 0x7d, 0xe4, 0x27, 0x32, 0xdd, 0x09, 0x16, 0xb7, 0xeb,
+	0xd3, 0x2a, 0xa7, 0x86, 0x7d, 0x72, 0xf0, 0xc8, 0xcf, 0x12, 0x93, 0x23, 0x3c, 0xa2, 0xc1, 0xc9,
+	0xd7, 0x8d, 0x9d, 0x24, 0x41, 0x3d, 0x66, 0xd4, 0x1f, 0xf6, 0xdb, 0xc0, 0x0e, 0xc7, 0xec, 0xcc,
+	0xa7, 0xfe, 0x05, 0x5a, 0xcb, 0x40, 0x1b, 0xc8, 0x50, 0x83, 0x6d, 0x20, 0x93, 0xc1, 0xe7, 0x60,
+	0x29, 0x91, 0x34, 0x03, 0x1c, 0x84, 0xfe, 0x05, 0x1a, 0x8c, 0xba, 0xc8, 0x73, 0x18, 0xcd, 0x9b,
+	0x93, 0xc0, 0xd7, 0x60, 0x85, 0xbc, 0x09, 0x88, 0xe4, 0x98, 0x25, 0x21, 0x4c, 0x2f, 0xf1, 0xcf,
+	0xa6, 0x05, 0x6a, 0x2f, 0x87, 0xca, 0xdf, 0x3b, 0x50, 0xbb, 0x94, 0x33, 0x40, 0x43, 0x73, 0xf8,
+	0x15, 0x58, 0x0e, 0x24, 0xb6, 0x49, 0x13, 0x77, 0x3c, 0xa6, 0x1e, 0x43, 0xc9, 0x45, 0x7f, 0x73,
+	0xc4, 0x9f, 0xc7, 0x4c, 0xe0, 0x20, 0x71, 0x68, 0x56, 0x3b, 0x90, 0xc7, 0xc1, 0xdf, 0x0c, 0xb0,
+	0x99, 0xb8, 0xd4, 0x50, 0x10, 0x5b, 0xb0, 0x26, 0xa7, 0xed, 0x36, 0xe5, 0x6e, 0x76, 0x4a, 0xd2,
+	0xbb, 0x7e, 0x52, 0xa8, 0x3e, 0x88, 0x23, 0x73, 0x0a, 0x8b, 0x5e, 0x7b, 0x8a, 0x0d, 0xfc, 0xc5,
+	0x00, 0xb7, 0xc6, 0x9b, 0xa4, 0xe7, 0xff, 0x02, 0x2d, 0xed, 0xfd, 0x38, 0x32, 0x27, 0x93, 0xe8,
+	0xad, 0x4c, 0x36, 0x81, 0xa7, 0x60, 0xc9, 0x26, 0x32, 0x68, 0x48, 0xd1, 0xa5, 0x0e, 0x91, 0xba,
+	0xa3, 0xad, 0x6c, 0x3f, 0x98, 0x7a, 0x73, 0x50, 0x26, 0x82, 0xfa, 0x00, 0xf0, 0xf9, 0x99, 0x47,
+	0x6a, 0x25, 0x75, 0x92, 0x06, 0xe9, 0x50, 0x6e, 0x06, 0x9f, 0x82, 0x55, 0xec, 0x38, 0x54, 0x25,
+	0x1f, 0xb3, 0x3d, 0xde, 0x7d, 0x89, 0xa5, 0xea, 0x7b, 0x33, 0xda, 0xd3, 0x31, 0x7d, 0x2f, 0x31,
+	0xa9, 0xcd, 0xbe, 0x8d, 0xcc, 0x4b, 0x68, 0x14, 0xaa, 0x9e, 0x7f, 0xbe, 0x47, 0xdb, 0x6d, 0xa2,
+	0xfb, 0xdb, 0x05, 0x9e, 0x7f, 0xcd, 0xc6, 0xfe, 0xe3, 0xc7, 0x7b, 0x63, 0x9e, 0x7f, 0x09, 0x0d,
+	0x4a, 0xbf, 0x15, 0x07, 0xdc, 0x9c, 0x70, 0x70, 0xe1, 0x1e, 0x28, 0x24, 0x51, 0x75, 0xd2, 0x7e,
+	0x31, 0x29, 0x4f, 0x57, 0xd4, 0x0b, 0x3c, 0x35, 0xd7, 0x19, 0xc9, 0x26, 0x95, 0x3f, 0x0c, 0xb0,
+	0x36, 0x66, 0x47, 0xf0, 0x67, 0x03, 0xac, 0x66, 0x2e, 0xec, 0x71, 0xc7, 0x13, 0x94, 0x07, 0x7e,
+	0xba, 0xd2, 0x17, 0xd3, 0x5c, 0x7c, 0x36, 0x0c, 0xcc, 0x7b, 0xab, 0x6f, 0xec, 0x11, 0x72, 0x34,
+	0x2a, 0xaa, 0xb8, 0x60, 0x73, 0x32, 0xd7, 0xbb, 0x0a, 0xc3, 0x31, 0xb8, 0x36, 0xfe, 0x61, 0xfa,
+	0xae, 0x16, 0xb8, 0x01, 0xae, 0x8f, 0xfe, 0x1d, 0xd3, 0x7d, 0xed, 0xee, 0x77, 0x60, 0x39, 0xf7,
+	0x08, 0x82, 0x45, 0x30, 0xf7, 0x5c, 0xf5, 0x8d, 0xd2, 0x25, 0x35, 0xdc, 0x25, 0xad, 0xd0, 0x2d,
+	0x19, 0x70, 0x01, 0xcc, 0xee, 0xf3, 0xb6, 0x28, 0x5d, 0x86, 0x8b, 0xa0, 0x70, 0x84, 0x25, 0xa7,
+	0xdc, 0x2d, 0xcd, 0x28, 0x8b, 0x3d, 0x29, 0x85, 0x2c, 0xcd, 0xc2, 0x25, 0xb0, 0x50, 0x97, 0x34,
+	0xa0, 0x36, 0x66, 0xa5, 0x39, 0x58, 0x00, 0x33, 0xcf, 0xda, 0xed, 0xd2, 0xfc, 0xdd, 0xfb, 0xe0,
+	0xea, 0xd8, 0x52, 0x81, 0x2b, 0x00, 0x1c, 0x84, 0x2d, 0x22, 0x39, 0x09, 0x88, 0x5f, 0xba, 0x04,
+	0x01, 0x98, 0x4f, 0x4e, 0x5a, 0xc9, 0xa8, 0xd5, 0xdf, 0x9e, 0x6f, 0x1a, 0x7f, 0x9f, 0x6f, 0x1a,
+	0xff, 0x9e, 0x6f, 0x1a, 0xaf, 0x1e, 0xb8, 0x34, 0x38, 0x09, 0x5b, 0x96, 0x2d, 0x3a, 0xd5, 0x16,
+	0xe6, 0x3f, 0x62, 0x6a, 0x33, 0x11, 0x3a, 0xc9, 0xff, 0xe9, 0x7b, 0x59, 0xde, 0xaa, 0xdd, 0xed,
+	0xea, 0xe0, 0x1f, 0xe5, 0xd6, 0xbc, 0x0e, 0xd1, 0xfd, 0xff, 0x02, 0x00, 0x00, 0xff, 0xff, 0xfa,
+	0x35, 0x5c, 0xe4, 0x85, 0x0f, 0x00, 0x00,
 }
 
 func (m *IstioControlPlaneSpec) Marshal() (dAtA []byte, err error) {
@@ -780,7 +1014,7 @@ func (m *IstioControlPlaneSpec) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 			i = encodeVarintIstiocontrolplane(dAtA, i, uint64(size))
 		}
 		i--
-		dAtA[i] = 0x42
+		dAtA[i] = 0x4a
 	}
 	if m.ProxyWasm != nil {
 		{
@@ -792,11 +1026,23 @@ func (m *IstioControlPlaneSpec) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 			i = encodeVarintIstiocontrolplane(dAtA, i, uint64(size))
 		}
 		i--
-		dAtA[i] = 0x3a
+		dAtA[i] = 0x42
 	}
 	if m.Sds != nil {
 		{
 			size, err := m.Sds.MarshalToSizedBuffer(dAtA[:i])
+			if err != nil {
+				return 0, err
+			}
+			i -= size
+			i = encodeVarintIstiocontrolplane(dAtA, i, uint64(size))
+		}
+		i--
+		dAtA[i] = 0x3a
+	}
+	if m.Proxy != nil {
+		{
+			size, err := m.Proxy.MarshalToSizedBuffer(dAtA[:i])
 			if err != nil {
 				return 0, err
 			}
@@ -819,12 +1065,12 @@ func (m *IstioControlPlaneSpec) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 		dAtA[i] = 0x2a
 	}
 	if m.MountMtlsCerts != nil {
-		n5, err5 := github_com_gogo_protobuf_types.StdBoolMarshalTo(*m.MountMtlsCerts, dAtA[i-github_com_gogo_protobuf_types.SizeOfStdBool(*m.MountMtlsCerts):])
-		if err5 != nil {
-			return 0, err5
+		n6, err6 := github_com_gogo_protobuf_types.StdBoolMarshalTo(*m.MountMtlsCerts, dAtA[i-github_com_gogo_protobuf_types.SizeOfStdBool(*m.MountMtlsCerts):])
+		if err6 != nil {
+			return 0, err6
 		}
-		i -= n5
-		i = encodeVarintIstiocontrolplane(dAtA, i, uint64(n5))
+		i -= n6
+		i = encodeVarintIstiocontrolplane(dAtA, i, uint64(n6))
 		i--
 		dAtA[i] = 0x22
 	}
@@ -930,6 +1176,141 @@ func (m *SDSConfiguration) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 	return len(dAtA) - i, nil
 }
 
+func (m *ProxyConfiguration) Marshal() (dAtA []byte, err error) {
+	size := m.Size()
+	dAtA = make([]byte, size)
+	n, err := m.MarshalToSizedBuffer(dAtA[:size])
+	if err != nil {
+		return nil, err
+	}
+	return dAtA[:n], nil
+}
+
+func (m *ProxyConfiguration) MarshalTo(dAtA []byte) (int, error) {
+	size := m.Size()
+	return m.MarshalToSizedBuffer(dAtA[:size])
+}
+
+func (m *ProxyConfiguration) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+	i := len(dAtA)
+	_ = i
+	var l int
+	_ = l
+	if m.XXX_unrecognized != nil {
+		i -= len(m.XXX_unrecognized)
+		copy(dAtA[i:], m.XXX_unrecognized)
+	}
+	if len(m.ExcludeOutboundPorts) > 0 {
+		i -= len(m.ExcludeOutboundPorts)
+		copy(dAtA[i:], m.ExcludeOutboundPorts)
+		i = encodeVarintIstiocontrolplane(dAtA, i, uint64(len(m.ExcludeOutboundPorts)))
+		i--
+		dAtA[i] = 0x6a
+	}
+	if len(m.ExcludeInboundPorts) > 0 {
+		i -= len(m.ExcludeInboundPorts)
+		copy(dAtA[i:], m.ExcludeInboundPorts)
+		i = encodeVarintIstiocontrolplane(dAtA, i, uint64(len(m.ExcludeInboundPorts)))
+		i--
+		dAtA[i] = 0x62
+	}
+	if len(m.ExcludeIPRanges) > 0 {
+		i -= len(m.ExcludeIPRanges)
+		copy(dAtA[i:], m.ExcludeIPRanges)
+		i = encodeVarintIstiocontrolplane(dAtA, i, uint64(len(m.ExcludeIPRanges)))
+		i--
+		dAtA[i] = 0x5a
+	}
+	if len(m.IncludeIPRanges) > 0 {
+		i -= len(m.IncludeIPRanges)
+		copy(dAtA[i:], m.IncludeIPRanges)
+		i = encodeVarintIstiocontrolplane(dAtA, i, uint64(len(m.IncludeIPRanges)))
+		i--
+		dAtA[i] = 0x52
+	}
+	if m.Resources != nil {
+		{
+			size, err := m.Resources.MarshalToSizedBuffer(dAtA[:i])
+			if err != nil {
+				return 0, err
+			}
+			i -= size
+			i = encodeVarintIstiocontrolplane(dAtA, i, uint64(size))
+		}
+		i--
+		dAtA[i] = 0x4a
+	}
+	if m.Lifecycle != nil {
+		{
+			size, err := m.Lifecycle.MarshalToSizedBuffer(dAtA[:i])
+			if err != nil {
+				return 0, err
+			}
+			i -= size
+			i = encodeVarintIstiocontrolplane(dAtA, i, uint64(size))
+		}
+		i--
+		dAtA[i] = 0x42
+	}
+	if m.HoldApplicationUntilProxyStarts != nil {
+		n11, err11 := github_com_gogo_protobuf_types.StdBoolMarshalTo(*m.HoldApplicationUntilProxyStarts, dAtA[i-github_com_gogo_protobuf_types.SizeOfStdBool(*m.HoldApplicationUntilProxyStarts):])
+		if err11 != nil {
+			return 0, err11
+		}
+		i -= n11
+		i = encodeVarintIstiocontrolplane(dAtA, i, uint64(n11))
+		i--
+		dAtA[i] = 0x3a
+	}
+	if len(m.ClusterDomain) > 0 {
+		i -= len(m.ClusterDomain)
+		copy(dAtA[i:], m.ClusterDomain)
+		i = encodeVarintIstiocontrolplane(dAtA, i, uint64(len(m.ClusterDomain)))
+		i--
+		dAtA[i] = 0x32
+	}
+	if len(m.ComponentLogLevel) > 0 {
+		i -= len(m.ComponentLogLevel)
+		copy(dAtA[i:], m.ComponentLogLevel)
+		i = encodeVarintIstiocontrolplane(dAtA, i, uint64(len(m.ComponentLogLevel)))
+		i--
+		dAtA[i] = 0x2a
+	}
+	if m.LogLevel != 0 {
+		i = encodeVarintIstiocontrolplane(dAtA, i, uint64(m.LogLevel))
+		i--
+		dAtA[i] = 0x20
+	}
+	if m.EnableCoreDump != nil {
+		n12, err12 := github_com_gogo_protobuf_types.StdBoolMarshalTo(*m.EnableCoreDump, dAtA[i-github_com_gogo_protobuf_types.SizeOfStdBool(*m.EnableCoreDump):])
+		if err12 != nil {
+			return 0, err12
+		}
+		i -= n12
+		i = encodeVarintIstiocontrolplane(dAtA, i, uint64(n12))
+		i--
+		dAtA[i] = 0x1a
+	}
+	if m.Privileged != nil {
+		n13, err13 := github_com_gogo_protobuf_types.StdBoolMarshalTo(*m.Privileged, dAtA[i-github_com_gogo_protobuf_types.SizeOfStdBool(*m.Privileged):])
+		if err13 != nil {
+			return 0, err13
+		}
+		i -= n13
+		i = encodeVarintIstiocontrolplane(dAtA, i, uint64(n13))
+		i--
+		dAtA[i] = 0x12
+	}
+	if len(m.Image) > 0 {
+		i -= len(m.Image)
+		copy(dAtA[i:], m.Image)
+		i = encodeVarintIstiocontrolplane(dAtA, i, uint64(len(m.Image)))
+		i--
+		dAtA[i] = 0xa
+	}
+	return len(dAtA) - i, nil
+}
+
 func (m *IstiodConfiguration) Marshal() (dAtA []byte, err error) {
 	size := m.Size()
 	dAtA = make([]byte, size)
@@ -986,32 +1367,32 @@ func (m *IstiodConfiguration) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 		dAtA[i] = 0x40
 	}
 	if m.EnableProtocolSniffingInbound != nil {
-		n9, err9 := github_com_gogo_protobuf_types.StdBoolMarshalTo(*m.EnableProtocolSniffingInbound, dAtA[i-github_com_gogo_protobuf_types.SizeOfStdBool(*m.EnableProtocolSniffingInbound):])
-		if err9 != nil {
-			return 0, err9
+		n15, err15 := github_com_gogo_protobuf_types.StdBoolMarshalTo(*m.EnableProtocolSniffingInbound, dAtA[i-github_com_gogo_protobuf_types.SizeOfStdBool(*m.EnableProtocolSniffingInbound):])
+		if err15 != nil {
+			return 0, err15
 		}
-		i -= n9
-		i = encodeVarintIstiocontrolplane(dAtA, i, uint64(n9))
+		i -= n15
+		i = encodeVarintIstiocontrolplane(dAtA, i, uint64(n15))
 		i--
 		dAtA[i] = 0x3a
 	}
 	if m.EnableProtocolSniffingOutbound != nil {
-		n10, err10 := github_com_gogo_protobuf_types.StdBoolMarshalTo(*m.EnableProtocolSniffingOutbound, dAtA[i-github_com_gogo_protobuf_types.SizeOfStdBool(*m.EnableProtocolSniffingOutbound):])
-		if err10 != nil {
-			return 0, err10
+		n16, err16 := github_com_gogo_protobuf_types.StdBoolMarshalTo(*m.EnableProtocolSniffingOutbound, dAtA[i-github_com_gogo_protobuf_types.SizeOfStdBool(*m.EnableProtocolSniffingOutbound):])
+		if err16 != nil {
+			return 0, err16
 		}
-		i -= n10
-		i = encodeVarintIstiocontrolplane(dAtA, i, uint64(n10))
+		i -= n16
+		i = encodeVarintIstiocontrolplane(dAtA, i, uint64(n16))
 		i--
 		dAtA[i] = 0x32
 	}
 	if m.TraceSampling != nil {
-		n11, err11 := github_com_gogo_protobuf_types.StdFloatMarshalTo(*m.TraceSampling, dAtA[i-github_com_gogo_protobuf_types.SizeOfStdFloat(*m.TraceSampling):])
-		if err11 != nil {
-			return 0, err11
+		n17, err17 := github_com_gogo_protobuf_types.StdFloatMarshalTo(*m.TraceSampling, dAtA[i-github_com_gogo_protobuf_types.SizeOfStdFloat(*m.TraceSampling):])
+		if err17 != nil {
+			return 0, err17
 		}
-		i -= n11
-		i = encodeVarintIstiocontrolplane(dAtA, i, uint64(n11))
+		i -= n17
+		i = encodeVarintIstiocontrolplane(dAtA, i, uint64(n17))
 		i--
 		dAtA[i] = 0x2a
 	}
@@ -1028,22 +1409,22 @@ func (m *IstiodConfiguration) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 		dAtA[i] = 0x22
 	}
 	if m.EnableStatus != nil {
-		n13, err13 := github_com_gogo_protobuf_types.StdBoolMarshalTo(*m.EnableStatus, dAtA[i-github_com_gogo_protobuf_types.SizeOfStdBool(*m.EnableStatus):])
-		if err13 != nil {
-			return 0, err13
+		n19, err19 := github_com_gogo_protobuf_types.StdBoolMarshalTo(*m.EnableStatus, dAtA[i-github_com_gogo_protobuf_types.SizeOfStdBool(*m.EnableStatus):])
+		if err19 != nil {
+			return 0, err19
 		}
-		i -= n13
-		i = encodeVarintIstiocontrolplane(dAtA, i, uint64(n13))
+		i -= n19
+		i = encodeVarintIstiocontrolplane(dAtA, i, uint64(n19))
 		i--
 		dAtA[i] = 0x1a
 	}
 	if m.EnableAnalysis != nil {
-		n14, err14 := github_com_gogo_protobuf_types.StdBoolMarshalTo(*m.EnableAnalysis, dAtA[i-github_com_gogo_protobuf_types.SizeOfStdBool(*m.EnableAnalysis):])
-		if err14 != nil {
-			return 0, err14
+		n20, err20 := github_com_gogo_protobuf_types.StdBoolMarshalTo(*m.EnableAnalysis, dAtA[i-github_com_gogo_protobuf_types.SizeOfStdBool(*m.EnableAnalysis):])
+		if err20 != nil {
+			return 0, err20
 		}
-		i -= n14
-		i = encodeVarintIstiocontrolplane(dAtA, i, uint64(n14))
+		i -= n20
+		i = encodeVarintIstiocontrolplane(dAtA, i, uint64(n20))
 		i--
 		dAtA[i] = 0x12
 	}
@@ -1087,12 +1468,12 @@ func (m *ExternalIstiodConfiguration) MarshalToSizedBuffer(dAtA []byte) (int, er
 		copy(dAtA[i:], m.XXX_unrecognized)
 	}
 	if m.Enabled != nil {
-		n16, err16 := github_com_gogo_protobuf_types.StdBoolMarshalTo(*m.Enabled, dAtA[i-github_com_gogo_protobuf_types.SizeOfStdBool(*m.Enabled):])
-		if err16 != nil {
-			return 0, err16
+		n22, err22 := github_com_gogo_protobuf_types.StdBoolMarshalTo(*m.Enabled, dAtA[i-github_com_gogo_protobuf_types.SizeOfStdBool(*m.Enabled):])
+		if err22 != nil {
+			return 0, err22
 		}
-		i -= n16
-		i = encodeVarintIstiocontrolplane(dAtA, i, uint64(n16))
+		i -= n22
+		i = encodeVarintIstiocontrolplane(dAtA, i, uint64(n22))
 		i--
 		dAtA[i] = 0xa
 	}
@@ -1163,12 +1544,12 @@ func (m *OperatorEndpointsConfiguration) MarshalToSizedBuffer(dAtA []byte) (int,
 		copy(dAtA[i:], m.XXX_unrecognized)
 	}
 	if m.Enabled != nil {
-		n18, err18 := github_com_gogo_protobuf_types.StdBoolMarshalTo(*m.Enabled, dAtA[i-github_com_gogo_protobuf_types.SizeOfStdBool(*m.Enabled):])
-		if err18 != nil {
-			return 0, err18
+		n24, err24 := github_com_gogo_protobuf_types.StdBoolMarshalTo(*m.Enabled, dAtA[i-github_com_gogo_protobuf_types.SizeOfStdBool(*m.Enabled):])
+		if err24 != nil {
+			return 0, err24
 		}
-		i -= n18
-		i = encodeVarintIstiocontrolplane(dAtA, i, uint64(n18))
+		i -= n24
+		i = encodeVarintIstiocontrolplane(dAtA, i, uint64(n24))
 		i--
 		dAtA[i] = 0xa
 	}
@@ -1200,12 +1581,12 @@ func (m *ProxyWasmConfiguration) MarshalToSizedBuffer(dAtA []byte) (int, error) 
 		copy(dAtA[i:], m.XXX_unrecognized)
 	}
 	if m.Enabled != nil {
-		n19, err19 := github_com_gogo_protobuf_types.StdBoolMarshalTo(*m.Enabled, dAtA[i-github_com_gogo_protobuf_types.SizeOfStdBool(*m.Enabled):])
-		if err19 != nil {
-			return 0, err19
+		n25, err25 := github_com_gogo_protobuf_types.StdBoolMarshalTo(*m.Enabled, dAtA[i-github_com_gogo_protobuf_types.SizeOfStdBool(*m.Enabled):])
+		if err25 != nil {
+			return 0, err25
 		}
-		i -= n19
-		i = encodeVarintIstiocontrolplane(dAtA, i, uint64(n19))
+		i -= n25
+		i = encodeVarintIstiocontrolplane(dAtA, i, uint64(n25))
 		i--
 		dAtA[i] = 0xa
 	}
@@ -1276,6 +1657,10 @@ func (m *IstioControlPlaneSpec) Size() (n int) {
 		l = m.Istiod.Size()
 		n += 1 + l + sovIstiocontrolplane(uint64(l))
 	}
+	if m.Proxy != nil {
+		l = m.Proxy.Size()
+		n += 1 + l + sovIstiocontrolplane(uint64(l))
+	}
 	if m.Sds != nil {
 		l = m.Sds.Size()
 		n += 1 + l + sovIstiocontrolplane(uint64(l))
@@ -1317,6 +1702,69 @@ func (m *SDSConfiguration) Size() (n int) {
 	var l int
 	_ = l
 	l = len(m.TokenAudience)
+	if l > 0 {
+		n += 1 + l + sovIstiocontrolplane(uint64(l))
+	}
+	if m.XXX_unrecognized != nil {
+		n += len(m.XXX_unrecognized)
+	}
+	return n
+}
+
+func (m *ProxyConfiguration) Size() (n int) {
+	if m == nil {
+		return 0
+	}
+	var l int
+	_ = l
+	l = len(m.Image)
+	if l > 0 {
+		n += 1 + l + sovIstiocontrolplane(uint64(l))
+	}
+	if m.Privileged != nil {
+		l = github_com_gogo_protobuf_types.SizeOfStdBool(*m.Privileged)
+		n += 1 + l + sovIstiocontrolplane(uint64(l))
+	}
+	if m.EnableCoreDump != nil {
+		l = github_com_gogo_protobuf_types.SizeOfStdBool(*m.EnableCoreDump)
+		n += 1 + l + sovIstiocontrolplane(uint64(l))
+	}
+	if m.LogLevel != 0 {
+		n += 1 + sovIstiocontrolplane(uint64(m.LogLevel))
+	}
+	l = len(m.ComponentLogLevel)
+	if l > 0 {
+		n += 1 + l + sovIstiocontrolplane(uint64(l))
+	}
+	l = len(m.ClusterDomain)
+	if l > 0 {
+		n += 1 + l + sovIstiocontrolplane(uint64(l))
+	}
+	if m.HoldApplicationUntilProxyStarts != nil {
+		l = github_com_gogo_protobuf_types.SizeOfStdBool(*m.HoldApplicationUntilProxyStarts)
+		n += 1 + l + sovIstiocontrolplane(uint64(l))
+	}
+	if m.Lifecycle != nil {
+		l = m.Lifecycle.Size()
+		n += 1 + l + sovIstiocontrolplane(uint64(l))
+	}
+	if m.Resources != nil {
+		l = m.Resources.Size()
+		n += 1 + l + sovIstiocontrolplane(uint64(l))
+	}
+	l = len(m.IncludeIPRanges)
+	if l > 0 {
+		n += 1 + l + sovIstiocontrolplane(uint64(l))
+	}
+	l = len(m.ExcludeIPRanges)
+	if l > 0 {
+		n += 1 + l + sovIstiocontrolplane(uint64(l))
+	}
+	l = len(m.ExcludeInboundPorts)
+	if l > 0 {
+		n += 1 + l + sovIstiocontrolplane(uint64(l))
+	}
+	l = len(m.ExcludeOutboundPorts)
 	if l > 0 {
 		n += 1 + l + sovIstiocontrolplane(uint64(l))
 	}
@@ -1668,6 +2116,42 @@ func (m *IstioControlPlaneSpec) Unmarshal(dAtA []byte) error {
 			iNdEx = postIndex
 		case 6:
 			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field Proxy", wireType)
+			}
+			var msglen int
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowIstiocontrolplane
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				msglen |= int(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			if msglen < 0 {
+				return ErrInvalidLengthIstiocontrolplane
+			}
+			postIndex := iNdEx + msglen
+			if postIndex < 0 {
+				return ErrInvalidLengthIstiocontrolplane
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			if m.Proxy == nil {
+				m.Proxy = &ProxyConfiguration{}
+			}
+			if err := m.Proxy.Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
+				return err
+			}
+			iNdEx = postIndex
+		case 7:
+			if wireType != 2 {
 				return fmt.Errorf("proto: wrong wireType = %d for field Sds", wireType)
 			}
 			var msglen int
@@ -1702,7 +2186,7 @@ func (m *IstioControlPlaneSpec) Unmarshal(dAtA []byte) error {
 				return err
 			}
 			iNdEx = postIndex
-		case 7:
+		case 8:
 			if wireType != 2 {
 				return fmt.Errorf("proto: wrong wireType = %d for field ProxyWasm", wireType)
 			}
@@ -1738,7 +2222,7 @@ func (m *IstioControlPlaneSpec) Unmarshal(dAtA []byte) error {
 				return err
 			}
 			iNdEx = postIndex
-		case 8:
+		case 9:
 			if wireType != 2 {
 				return fmt.Errorf("proto: wrong wireType = %d for field MeshConfig", wireType)
 			}
@@ -1939,6 +2423,480 @@ func (m *SDSConfiguration) Unmarshal(dAtA []byte) error {
 				return io.ErrUnexpectedEOF
 			}
 			m.TokenAudience = string(dAtA[iNdEx:postIndex])
+			iNdEx = postIndex
+		default:
+			iNdEx = preIndex
+			skippy, err := skipIstiocontrolplane(dAtA[iNdEx:])
+			if err != nil {
+				return err
+			}
+			if (skippy < 0) || (iNdEx+skippy) < 0 {
+				return ErrInvalidLengthIstiocontrolplane
+			}
+			if (iNdEx + skippy) > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.XXX_unrecognized = append(m.XXX_unrecognized, dAtA[iNdEx:iNdEx+skippy]...)
+			iNdEx += skippy
+		}
+	}
+
+	if iNdEx > l {
+		return io.ErrUnexpectedEOF
+	}
+	return nil
+}
+func (m *ProxyConfiguration) Unmarshal(dAtA []byte) error {
+	l := len(dAtA)
+	iNdEx := 0
+	for iNdEx < l {
+		preIndex := iNdEx
+		var wire uint64
+		for shift := uint(0); ; shift += 7 {
+			if shift >= 64 {
+				return ErrIntOverflowIstiocontrolplane
+			}
+			if iNdEx >= l {
+				return io.ErrUnexpectedEOF
+			}
+			b := dAtA[iNdEx]
+			iNdEx++
+			wire |= uint64(b&0x7F) << shift
+			if b < 0x80 {
+				break
+			}
+		}
+		fieldNum := int32(wire >> 3)
+		wireType := int(wire & 0x7)
+		if wireType == 4 {
+			return fmt.Errorf("proto: ProxyConfiguration: wiretype end group for non-group")
+		}
+		if fieldNum <= 0 {
+			return fmt.Errorf("proto: ProxyConfiguration: illegal tag %d (wire type %d)", fieldNum, wire)
+		}
+		switch fieldNum {
+		case 1:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field Image", wireType)
+			}
+			var stringLen uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowIstiocontrolplane
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				stringLen |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			intStringLen := int(stringLen)
+			if intStringLen < 0 {
+				return ErrInvalidLengthIstiocontrolplane
+			}
+			postIndex := iNdEx + intStringLen
+			if postIndex < 0 {
+				return ErrInvalidLengthIstiocontrolplane
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.Image = string(dAtA[iNdEx:postIndex])
+			iNdEx = postIndex
+		case 2:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field Privileged", wireType)
+			}
+			var msglen int
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowIstiocontrolplane
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				msglen |= int(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			if msglen < 0 {
+				return ErrInvalidLengthIstiocontrolplane
+			}
+			postIndex := iNdEx + msglen
+			if postIndex < 0 {
+				return ErrInvalidLengthIstiocontrolplane
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			if m.Privileged == nil {
+				m.Privileged = new(bool)
+			}
+			if err := github_com_gogo_protobuf_types.StdBoolUnmarshal(m.Privileged, dAtA[iNdEx:postIndex]); err != nil {
+				return err
+			}
+			iNdEx = postIndex
+		case 3:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field EnableCoreDump", wireType)
+			}
+			var msglen int
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowIstiocontrolplane
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				msglen |= int(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			if msglen < 0 {
+				return ErrInvalidLengthIstiocontrolplane
+			}
+			postIndex := iNdEx + msglen
+			if postIndex < 0 {
+				return ErrInvalidLengthIstiocontrolplane
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			if m.EnableCoreDump == nil {
+				m.EnableCoreDump = new(bool)
+			}
+			if err := github_com_gogo_protobuf_types.StdBoolUnmarshal(m.EnableCoreDump, dAtA[iNdEx:postIndex]); err != nil {
+				return err
+			}
+			iNdEx = postIndex
+		case 4:
+			if wireType != 0 {
+				return fmt.Errorf("proto: wrong wireType = %d for field LogLevel", wireType)
+			}
+			m.LogLevel = 0
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowIstiocontrolplane
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				m.LogLevel |= ProxyLogLevel(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+		case 5:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field ComponentLogLevel", wireType)
+			}
+			var stringLen uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowIstiocontrolplane
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				stringLen |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			intStringLen := int(stringLen)
+			if intStringLen < 0 {
+				return ErrInvalidLengthIstiocontrolplane
+			}
+			postIndex := iNdEx + intStringLen
+			if postIndex < 0 {
+				return ErrInvalidLengthIstiocontrolplane
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.ComponentLogLevel = string(dAtA[iNdEx:postIndex])
+			iNdEx = postIndex
+		case 6:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field ClusterDomain", wireType)
+			}
+			var stringLen uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowIstiocontrolplane
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				stringLen |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			intStringLen := int(stringLen)
+			if intStringLen < 0 {
+				return ErrInvalidLengthIstiocontrolplane
+			}
+			postIndex := iNdEx + intStringLen
+			if postIndex < 0 {
+				return ErrInvalidLengthIstiocontrolplane
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.ClusterDomain = string(dAtA[iNdEx:postIndex])
+			iNdEx = postIndex
+		case 7:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field HoldApplicationUntilProxyStarts", wireType)
+			}
+			var msglen int
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowIstiocontrolplane
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				msglen |= int(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			if msglen < 0 {
+				return ErrInvalidLengthIstiocontrolplane
+			}
+			postIndex := iNdEx + msglen
+			if postIndex < 0 {
+				return ErrInvalidLengthIstiocontrolplane
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			if m.HoldApplicationUntilProxyStarts == nil {
+				m.HoldApplicationUntilProxyStarts = new(bool)
+			}
+			if err := github_com_gogo_protobuf_types.StdBoolUnmarshal(m.HoldApplicationUntilProxyStarts, dAtA[iNdEx:postIndex]); err != nil {
+				return err
+			}
+			iNdEx = postIndex
+		case 8:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field Lifecycle", wireType)
+			}
+			var msglen int
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowIstiocontrolplane
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				msglen |= int(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			if msglen < 0 {
+				return ErrInvalidLengthIstiocontrolplane
+			}
+			postIndex := iNdEx + msglen
+			if postIndex < 0 {
+				return ErrInvalidLengthIstiocontrolplane
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			if m.Lifecycle == nil {
+				m.Lifecycle = &v1.Lifecycle{}
+			}
+			if err := m.Lifecycle.Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
+				return err
+			}
+			iNdEx = postIndex
+		case 9:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field Resources", wireType)
+			}
+			var msglen int
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowIstiocontrolplane
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				msglen |= int(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			if msglen < 0 {
+				return ErrInvalidLengthIstiocontrolplane
+			}
+			postIndex := iNdEx + msglen
+			if postIndex < 0 {
+				return ErrInvalidLengthIstiocontrolplane
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			if m.Resources == nil {
+				m.Resources = &v1.ResourceRequirements{}
+			}
+			if err := m.Resources.Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
+				return err
+			}
+			iNdEx = postIndex
+		case 10:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field IncludeIPRanges", wireType)
+			}
+			var stringLen uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowIstiocontrolplane
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				stringLen |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			intStringLen := int(stringLen)
+			if intStringLen < 0 {
+				return ErrInvalidLengthIstiocontrolplane
+			}
+			postIndex := iNdEx + intStringLen
+			if postIndex < 0 {
+				return ErrInvalidLengthIstiocontrolplane
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.IncludeIPRanges = string(dAtA[iNdEx:postIndex])
+			iNdEx = postIndex
+		case 11:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field ExcludeIPRanges", wireType)
+			}
+			var stringLen uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowIstiocontrolplane
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				stringLen |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			intStringLen := int(stringLen)
+			if intStringLen < 0 {
+				return ErrInvalidLengthIstiocontrolplane
+			}
+			postIndex := iNdEx + intStringLen
+			if postIndex < 0 {
+				return ErrInvalidLengthIstiocontrolplane
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.ExcludeIPRanges = string(dAtA[iNdEx:postIndex])
+			iNdEx = postIndex
+		case 12:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field ExcludeInboundPorts", wireType)
+			}
+			var stringLen uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowIstiocontrolplane
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				stringLen |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			intStringLen := int(stringLen)
+			if intStringLen < 0 {
+				return ErrInvalidLengthIstiocontrolplane
+			}
+			postIndex := iNdEx + intStringLen
+			if postIndex < 0 {
+				return ErrInvalidLengthIstiocontrolplane
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.ExcludeInboundPorts = string(dAtA[iNdEx:postIndex])
+			iNdEx = postIndex
+		case 13:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field ExcludeOutboundPorts", wireType)
+			}
+			var stringLen uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowIstiocontrolplane
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				stringLen |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			intStringLen := int(stringLen)
+			if intStringLen < 0 {
+				return ErrInvalidLengthIstiocontrolplane
+			}
+			postIndex := iNdEx + intStringLen
+			if postIndex < 0 {
+				return ErrInvalidLengthIstiocontrolplane
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.ExcludeOutboundPorts = string(dAtA[iNdEx:postIndex])
 			iNdEx = postIndex
 		default:
 			iNdEx = preIndex

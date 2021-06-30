@@ -2111,6 +2111,223 @@ spec:
                   certs for Pilot and workloads.
                 nullable: true
                 type: boolean
+              proxy:
+                description: Proxy configuration options.
+                properties:
+                  clusterDomain:
+                    description: cluster domain.
+                    type: string
+                  componentLogLevel:
+                    description: Per Component log level for proxy, applies to gateways
+                      and sidecars.
+                    type: string
+                  enableCoreDump:
+                    description: If set, newly injected sidecars will have core dumps
+                      enabled.
+                    nullable: true
+                    type: boolean
+                  excludeIPRanges:
+                    description: ExcludeIPRanges the range where not to capture egress
+                      traffic.
+                    type: string
+                  excludeInboundPorts:
+                    description: ExcludeInboundPorts the comma separated list of inbound
+                      ports to be excluded from redirection to Envoy.
+                    type: string
+                  excludeOutboundPorts:
+                    description: ExcludeOutboundPorts the comma separated list of
+                      outbound ports to be excluded from redirection to Envoy.
+                    type: string
+                  holdApplicationUntilProxyStarts:
+                    description: |-
+                      Controls if sidecar is injected at the front of the container list and blocks
+                      the start of the other containers until the proxy is ready
+                      Default value is 'false'.
+                    nullable: true
+                    type: boolean
+                  image:
+                    type: string
+                  includeIPRanges:
+                    description: IncludeIPRanges the range where to capture egress
+                      traffic.
+                    type: string
+                  lifecycle:
+                    properties:
+                      postStart:
+                        description: PostStart is called immediately after a container
+                          is created.
+                        properties:
+                          exec:
+                            description: One and only one of the following should
+                              be specified.
+                            properties:
+                              command:
+                                description: |-
+                                  Command is the command line to execute inside the container, the working directory for the
+                                  command  is root ('/') in the container's filesystem.
+                                items:
+                                  type: string
+                                type: array
+                            type: object
+                          httpGet:
+                            description: HTTPGet specifies the http request to perform.
+                            properties:
+                              host:
+                                description: Host name to connect to, defaults to
+                                  the pod IP.
+                                type: string
+                              httpHeaders:
+                                description: Custom headers to set in the request.
+                                items:
+                                  properties:
+                                    name:
+                                      description: The header field name.
+                                      type: string
+                                    value:
+                                      description: The header field value.
+                                      type: string
+                                  type: object
+                                type: array
+                              path:
+                                description: Path to access on the HTTP server.
+                                type: string
+                              port:
+                                anyOf:
+                                - type: integer
+                                - type: string
+                                description: Name or number of the port to access
+                                  on the container.
+                                x-kubernetes-int-or-string: true
+                              scheme:
+                                description: Scheme to use for connecting to the host.
+                                type: string
+                            type: object
+                          tcpSocket:
+                            description: TCPSocket specifies an action involving a
+                              TCP port.
+                            properties:
+                              host:
+                                description: 'Optional: Host name to connect to, defaults
+                                  to the pod IP.'
+                                type: string
+                              port:
+                                anyOf:
+                                - type: integer
+                                - type: string
+                                description: Number or name of the port to access
+                                  on the container.
+                                x-kubernetes-int-or-string: true
+                            type: object
+                        type: object
+                      preStop:
+                        description: |-
+                          PreStop is called immediately before a container is terminated due to an
+                          API request or management event such as liveness probe failure,
+                          preemption, resource contention, etc.
+                        properties:
+                          exec:
+                            description: One and only one of the following should
+                              be specified.
+                            properties:
+                              command:
+                                description: |-
+                                  Command is the command line to execute inside the container, the working directory for the
+                                  command  is root ('/') in the container's filesystem.
+                                items:
+                                  type: string
+                                type: array
+                            type: object
+                          httpGet:
+                            description: HTTPGet specifies the http request to perform.
+                            properties:
+                              host:
+                                description: Host name to connect to, defaults to
+                                  the pod IP.
+                                type: string
+                              httpHeaders:
+                                description: Custom headers to set in the request.
+                                items:
+                                  properties:
+                                    name:
+                                      description: The header field name.
+                                      type: string
+                                    value:
+                                      description: The header field value.
+                                      type: string
+                                  type: object
+                                type: array
+                              path:
+                                description: Path to access on the HTTP server.
+                                type: string
+                              port:
+                                anyOf:
+                                - type: integer
+                                - type: string
+                                description: Name or number of the port to access
+                                  on the container.
+                                x-kubernetes-int-or-string: true
+                              scheme:
+                                description: Scheme to use for connecting to the host.
+                                type: string
+                            type: object
+                          tcpSocket:
+                            description: TCPSocket specifies an action involving a
+                              TCP port.
+                            properties:
+                              host:
+                                description: 'Optional: Host name to connect to, defaults
+                                  to the pod IP.'
+                                type: string
+                              port:
+                                anyOf:
+                                - type: integer
+                                - type: string
+                                description: Number or name of the port to access
+                                  on the container.
+                                x-kubernetes-int-or-string: true
+                            type: object
+                        type: object
+                    type: object
+                  logLevel:
+                    description: Log level for proxy, applies to gateways and sidecars.
+                    enum:
+                    - trace
+                    - debug
+                    - info
+                    - warning
+                    - error
+                    - critical
+                    - "off"
+                    type: string
+                  privileged:
+                    description: If set to true, istio-proxy container will have privileged
+                      securityContext.
+                    nullable: true
+                    type: boolean
+                  resources:
+                    properties:
+                      limits:
+                        additionalProperties:
+                          anyOf:
+                          - type: integer
+                          - type: string
+                          pattern: ^(\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))(([KMGTPE]i)|[numkMGTPE]|([eE](\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))))?$
+                          x-kubernetes-int-or-string: true
+                        description: Limits describes the maximum amount of compute
+                          resources allowed.
+                        type: object
+                      requests:
+                        additionalProperties:
+                          anyOf:
+                          - type: integer
+                          - type: string
+                          pattern: ^(\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))(([KMGTPE]i)|[numkMGTPE]|([eE](\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))))?$
+                          x-kubernetes-int-or-string: true
+                        description: Requests describes the minimum amount of compute
+                          resources required.
+                        type: object
+                    type: object
+                type: object
               proxyWasm:
                 description: ProxyWasm configuration options.
                 properties:

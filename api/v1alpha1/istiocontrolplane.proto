@@ -65,13 +65,15 @@ message IstioControlPlaneSpec {
     google.protobuf.BoolValue mountMtlsCerts = 4 [(gogoproto.wktpointer) = true, (gogoproto.jsontag) = "mountMtlsCerts"];
     // Istiod configuration.
     IstiodConfiguration istiod = 5 [(gogoproto.jsontag) = "istiod"];
+    // Proxy configuration options.
+    ProxyConfiguration proxy = 6 [(gogoproto.jsontag) = "proxy"];
     // If SDS is configured, mTLS certificates for the sidecars will be distributed through the
     // SecretDiscoveryService instead of using K8S secrets to mount the certificates.
-    SDSConfiguration sds = 6 [(gogoproto.jsontag) = "sds"];
+    SDSConfiguration sds = 7 [(gogoproto.jsontag) = "sds"];
     // ProxyWasm configuration options.
-    ProxyWasmConfiguration proxyWasm = 7 [(gogoproto.jsontag) = "proxyWasm"];
+    ProxyWasmConfiguration proxyWasm = 8 [(gogoproto.jsontag) = "proxyWasm"];
     // Defines mesh-wide settings for the Istio control plane.
-    istio.mesh.v1alpha1.MeshConfig mesh_config = 8;
+    istio.mesh.v1alpha1.MeshConfig mesh_config = 9;
 }
 
 // Comma-separated minimum per-scope logging level of messages to output, in the form of <scope>:<level>,<scope>:<level>
@@ -88,6 +90,48 @@ message SDSConfiguration {
     // When a CSR is sent from Citadel Agent to the CA (e.g. Citadel), this aud is to make sure the
     // 	JWT is intended for the CA.
     string tokenAudience = 1 [(gogoproto.jsontag) = "tokenAudience"];
+}
+
+// ProxyConfiguration defines config options for Proxy
+message ProxyConfiguration {
+    string image = 1 [(gogoproto.jsontag) = "image"];
+    // If set to true, istio-proxy container will have privileged securityContext
+    google.protobuf.BoolValue privileged = 2 [(gogoproto.wktpointer) = true, (gogoproto.jsontag) = "privileged"];
+    // If set, newly injected sidecars will have core dumps enabled.
+    google.protobuf.BoolValue enableCoreDump = 3 [(gogoproto.wktpointer) = true, (gogoproto.jsontag) = "enableCoreDump"];
+    // Log level for proxy, applies to gateways and sidecars. If left empty, "warning" is used.
+    // Expected values are: trace|debug|info|warning|error|critical|off
+    // +kubebuilder:validation:Enum=trace;debug;info;warning;error;critical;off
+    ProxyLogLevel logLevel = 4 [(gogoproto.jsontag) = "logLevel"];
+    // Per Component log level for proxy, applies to gateways and sidecars. If a component level is
+    // not set, then the "LogLevel" will be used. If left empty, "misc:error" is used.
+    string componentLogLevel = 5 [(gogoproto.jsontag) = "componentLogLevel"];
+    // cluster domain. Default value is "cluster.local"
+    string clusterDomain = 6 [(gogoproto.jsontag) = "clusterDomain"];
+    // Controls if sidecar is injected at the front of the container list and blocks
+    // the start of the other containers until the proxy is ready
+    // Default value is 'false'.
+    google.protobuf.BoolValue holdApplicationUntilProxyStarts = 7 [(gogoproto.wktpointer) = true, (gogoproto.jsontag) = "holdApplicationUntilProxyStarts"];
+    k8s.io.api.core.v1.Lifecycle lifecycle = 8 [(gogoproto.jsontag) = "lifecycle"];
+    k8s.io.api.core.v1.ResourceRequirements resources = 9 [(gogoproto.jsontag) = "resources"];
+    // IncludeIPRanges the range where to capture egress traffic
+    string includeIPRanges = 10 [(gogoproto.jsontag) = "includeIPRanges"];
+    // ExcludeIPRanges the range where not to capture egress traffic
+    string excludeIPRanges = 11 [(gogoproto.jsontag) = "excludeIPRanges"];
+    // ExcludeInboundPorts the comma separated list of inbound ports to be excluded from redirection to Envoy
+    string excludeInboundPorts = 12 [(gogoproto.jsontag) = "excludeInboundPorts"];
+    // ExcludeOutboundPorts the comma separated list of outbound ports to be excluded from redirection to Envoy
+    string excludeOutboundPorts = 13 [(gogoproto.jsontag) = "excludeOutboundPorts"];
+}
+
+enum ProxyLogLevel {
+    Trace = 0;
+    Debug = 1;
+    Info = 2;
+    Warning = 3;
+    Error = 4;
+    Critical = 5;
+    Off = 6;
 }
 
 // IstiodConfiguration defines config options for Istiod
