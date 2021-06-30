@@ -67,13 +67,15 @@ message IstioControlPlaneSpec {
     IstiodConfiguration istiod = 5 [(gogoproto.jsontag) = "istiod"];
     // Proxy configuration options.
     ProxyConfiguration proxy = 6 [(gogoproto.jsontag) = "proxy"];
+    // Proxy Init configuration options.
+    ProxyInitConfiguration proxyInit = 7 [(gogoproto.jsontag) = "proxyInit"];
     // If SDS is configured, mTLS certificates for the sidecars will be distributed through the
     // SecretDiscoveryService instead of using K8S secrets to mount the certificates.
-    SDSConfiguration sds = 7 [(gogoproto.jsontag) = "sds"];
+    SDSConfiguration sds = 8 [(gogoproto.jsontag) = "sds"];
     // ProxyWasm configuration options.
-    ProxyWasmConfiguration proxyWasm = 8 [(gogoproto.jsontag) = "proxyWasm"];
+    ProxyWasmConfiguration proxyWasm = 9 [(gogoproto.jsontag) = "proxyWasm"];
     // Defines mesh-wide settings for the Istio control plane.
-    istio.mesh.v1alpha1.MeshConfig mesh_config = 9;
+    istio.mesh.v1alpha1.MeshConfig mesh_config = 10;
 }
 
 // Comma-separated minimum per-scope logging level of messages to output, in the form of <scope>:<level>,<scope>:<level>
@@ -132,6 +134,12 @@ enum ProxyLogLevel {
     Error = 4;
     Critical = 5;
     Off = 6;
+}
+
+// ProxyInitConfiguration defines config options for Proxy Init containers
+message ProxyInitConfiguration {
+    string image = 1 [(gogoproto.jsontag) = "image"];
+    k8s.io.api.core.v1.ResourceRequirements resources = 2 [(gogoproto.jsontag) = "resources"];
 }
 
 // IstiodConfiguration defines config options for Istiod

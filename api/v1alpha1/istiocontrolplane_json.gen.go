@@ -65,6 +65,17 @@ func (this *ProxyConfiguration) UnmarshalJSON(b []byte) error {
 	return IstiocontrolplaneUnmarshaler.Unmarshal(bytes.NewReader(b), this)
 }
 
+// MarshalJSON is a custom marshaler for ProxyInitConfiguration
+func (this *ProxyInitConfiguration) MarshalJSON() ([]byte, error) {
+	str, err := IstiocontrolplaneMarshaler.MarshalToString(this)
+	return []byte(str), err
+}
+
+// UnmarshalJSON is a custom unmarshaler for ProxyInitConfiguration
+func (this *ProxyInitConfiguration) UnmarshalJSON(b []byte) error {
+	return IstiocontrolplaneUnmarshaler.Unmarshal(bytes.NewReader(b), this)
+}
+
 // MarshalJSON is a custom marshaler for IstiodConfiguration
 func (this *IstiodConfiguration) MarshalJSON() ([]byte, error) {
 	str, err := IstiocontrolplaneMarshaler.MarshalToString(this)

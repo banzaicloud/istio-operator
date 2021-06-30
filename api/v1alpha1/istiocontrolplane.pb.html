@@ -4,7 +4,7 @@ description: Istio control plane descriptor
 layout: protoc-gen-docs
 generator: protoc-gen-docs
 schema: istio-operator.api.v1alpha1.IstioControlPlaneSpec
-number_of_entries: 16
+number_of_entries: 17
 ---
 <h2 id="IstioControlPlaneSpec">IstioControlPlaneSpec</h2>
 <section>
@@ -84,6 +84,17 @@ No
 <td><code><a href="#ProxyConfiguration">ProxyConfiguration</a></code></td>
 <td>
 <p>Proxy configuration options.</p>
+
+</td>
+<td>
+No
+</td>
+</tr>
+<tr id="IstioControlPlaneSpec-proxyInit">
+<td><code>proxyInit</code></td>
+<td><code><a href="#ProxyInitConfiguration">ProxyInitConfiguration</a></code></td>
+<td>
+<p>Proxy Init configuration options.</p>
 
 </td>
 <td>
@@ -338,6 +349,41 @@ No
 <td>
 <p>ExcludeOutboundPorts the comma separated list of outbound ports to be excluded from redirection to Envoy</p>
 
+</td>
+<td>
+No
+</td>
+</tr>
+</tbody>
+</table>
+</section>
+<h2 id="ProxyInitConfiguration">ProxyInitConfiguration</h2>
+<section>
+<p>ProxyInitConfiguration defines config options for Proxy Init containers</p>
+
+<table class="message-fields">
+<thead>
+<tr>
+<th>Field</th>
+<th>Type</th>
+<th>Description</th>
+<th>Required</th>
+</tr>
+</thead>
+<tbody>
+<tr id="ProxyInitConfiguration-image">
+<td><code>image</code></td>
+<td><code>string</code></td>
+<td>
+</td>
+<td>
+No
+</td>
+</tr>
+<tr id="ProxyInitConfiguration-resources">
+<td><code>resources</code></td>
+<td><code><a href="#k8s-io-api-core-v1-ResourceRequirements">ResourceRequirements</a></code></td>
+<td>
 </td>
 <td>
 No
