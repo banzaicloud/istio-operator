@@ -2111,6 +2111,13 @@ spec:
                   certs for Pilot and workloads.
                 nullable: true
                 type: boolean
+              proxyWasm:
+                description: ProxyWasm configuration options.
+                properties:
+                  enabled:
+                    nullable: true
+                    type: boolean
+                type: object
               sds:
                 description: |-
                   If SDS is configured, mTLS certificates for the sidecars will be distributed through the

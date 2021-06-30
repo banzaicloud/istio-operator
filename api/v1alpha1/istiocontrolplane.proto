@@ -68,8 +68,10 @@ message IstioControlPlaneSpec {
     // If SDS is configured, mTLS certificates for the sidecars will be distributed through the
     // SecretDiscoveryService instead of using K8S secrets to mount the certificates.
     SDSConfiguration sds = 6 [(gogoproto.jsontag) = "sds"];
+    // ProxyWasm configuration options.
+    ProxyWasmConfiguration proxyWasm = 7 [(gogoproto.jsontag) = "proxyWasm"];
     // Defines mesh-wide settings for the Istio control plane.
-    istio.mesh.v1alpha1.MeshConfig mesh_config = 7;
+    istio.mesh.v1alpha1.MeshConfig mesh_config = 8;
 }
 
 // Comma-separated minimum per-scope logging level of messages to output, in the form of <scope>:<level>,<scope>:<level>
@@ -132,6 +134,12 @@ message SPIFFEConfiguration {
 
 // OperatorEndpointsConfiguration defines config options for automatic SPIFFE endpoints
 message OperatorEndpointsConfiguration {
+    google.protobuf.BoolValue enabled = 1 [(gogoproto.wktpointer) = true, (gogoproto.jsontag) = "enabled"];
+}
+
+
+// ProxyWasmConfiguration defines config options for Envoy wasm
+message ProxyWasmConfiguration {
     google.protobuf.BoolValue enabled = 1 [(gogoproto.wktpointer) = true, (gogoproto.jsontag) = "enabled"];
 }
 

@@ -4,7 +4,7 @@ description: Istio control plane descriptor
 layout: protoc-gen-docs
 generator: protoc-gen-docs
 schema: istio-operator.api.v1alpha1.IstioControlPlaneSpec
-number_of_entries: 12
+number_of_entries: 13
 ---
 <h2 id="IstioControlPlaneSpec">IstioControlPlaneSpec</h2>
 <section>
@@ -85,6 +85,17 @@ No
 <td>
 <p>If SDS is configured, mTLS certificates for the sidecars will be distributed through the
 SecretDiscoveryService instead of using K8S secrets to mount the certificates.</p>
+
+</td>
+<td>
+No
+</td>
+</tr>
+<tr id="IstioControlPlaneSpec-proxyWasm">
+<td><code>proxyWasm</code></td>
+<td><code><a href="#ProxyWasmConfiguration">ProxyWasmConfiguration</a></code></td>
+<td>
+<p>ProxyWasm configuration options.</p>
 
 </td>
 <td>
@@ -361,6 +372,32 @@ No
 </thead>
 <tbody>
 <tr id="OperatorEndpointsConfiguration-enabled">
+<td><code>enabled</code></td>
+<td><code><a href="https://developers.google.com/protocol-buffers/docs/reference/google.protobuf#boolvalue">BoolValue</a></code></td>
+<td>
+</td>
+<td>
+No
+</td>
+</tr>
+</tbody>
+</table>
+</section>
+<h2 id="ProxyWasmConfiguration">ProxyWasmConfiguration</h2>
+<section>
+<p>ProxyWasmConfiguration defines config options for Envoy wasm</p>
+
+<table class="message-fields">
+<thead>
+<tr>
+<th>Field</th>
+<th>Type</th>
+<th>Description</th>
+<th>Required</th>
+</tr>
+</thead>
+<tbody>
+<tr id="ProxyWasmConfiguration-enabled">
 <td><code>enabled</code></td>
 <td><code><a href="https://developers.google.com/protocol-buffers/docs/reference/google.protobuf#boolvalue">BoolValue</a></code></td>
 <td>

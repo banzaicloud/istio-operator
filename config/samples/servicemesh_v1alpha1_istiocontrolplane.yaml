@@ -39,6 +39,8 @@ spec:
         enabled: false
   sds:
     tokenAudience: "istio-ca"
+  proxyWasm:
+    enabled: false
   meshConfig:
     proxyListenPort: 15001
     connectTimeout: 10s
