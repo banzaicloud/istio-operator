@@ -33,6 +33,15 @@ spec:
           spec:
             description: IstioControlPlane defines an Istio control plane.
             properties:
+              defaultPodDisruptionBudget:
+                description: |-
+                  Enable pod disruption budget for the control plane, which is used to ensure Istio control plane
+                  components are gradually upgraded or recovered.
+                properties:
+                  enabled:
+                    nullable: true
+                    type: boolean
+                type: object
               defaultResources:
                 description: |-
                   A minimal set of requested resources to applied to all deployments so that

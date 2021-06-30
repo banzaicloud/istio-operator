@@ -4,7 +4,7 @@ description: Istio control plane descriptor
 layout: protoc-gen-docs
 generator: protoc-gen-docs
 schema: istio-operator.api.v1alpha1.IstioControlPlaneSpec
-number_of_entries: 17
+number_of_entries: 18
 ---
 <h2 id="IstioControlPlaneSpec">IstioControlPlaneSpec</h2>
 <section>
@@ -148,6 +148,18 @@ system-node-critical PriorityClass in order to make sure your Istio pods
 will not be killed because of low priority class.
 Refer to https://kubernetes.io/docs/concepts/configuration/pod-priority-preemption/#priorityclass
 for more detail.</p>
+
+</td>
+<td>
+No
+</td>
+</tr>
+<tr id="IstioControlPlaneSpec-defaultPodDisruptionBudget">
+<td><code>defaultPodDisruptionBudget</code></td>
+<td><code><a href="#PDBConfiguration">PDBConfiguration</a></code></td>
+<td>
+<p>Enable pod disruption budget for the control plane, which is used to ensure Istio control plane
+components are gradually upgraded or recovered</p>
 
 </td>
 <td>
@@ -644,6 +656,32 @@ No
 </thead>
 <tbody>
 <tr id="ProxyWasmConfiguration-enabled">
+<td><code>enabled</code></td>
+<td><code><a href="https://developers.google.com/protocol-buffers/docs/reference/google.protobuf#boolvalue">BoolValue</a></code></td>
+<td>
+</td>
+<td>
+No
+</td>
+</tr>
+</tbody>
+</table>
+</section>
+<h2 id="PDBConfiguration">PDBConfiguration</h2>
+<section>
+<p>PDBConfiguration holds Pod Disruption Budget related config options</p>
+
+<table class="message-fields">
+<thead>
+<tr>
+<th>Field</th>
+<th>Type</th>
+<th>Description</th>
+<th>Required</th>
+</tr>
+</thead>
+<tbody>
+<tr id="PDBConfiguration-enabled">
 <td><code>enabled</code></td>
 <td><code><a href="https://developers.google.com/protocol-buffers/docs/reference/google.protobuf#boolvalue">BoolValue</a></code></td>
 <td>

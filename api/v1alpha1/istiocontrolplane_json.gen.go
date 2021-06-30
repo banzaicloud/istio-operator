@@ -131,6 +131,17 @@ func (this *ProxyWasmConfiguration) UnmarshalJSON(b []byte) error {
 	return IstiocontrolplaneUnmarshaler.Unmarshal(bytes.NewReader(b), this)
 }
 
+// MarshalJSON is a custom marshaler for PDBConfiguration
+func (this *PDBConfiguration) MarshalJSON() ([]byte, error) {
+	str, err := IstiocontrolplaneMarshaler.MarshalToString(this)
+	return []byte(str), err
+}
+
+// UnmarshalJSON is a custom unmarshaler for PDBConfiguration
+func (this *PDBConfiguration) UnmarshalJSON(b []byte) error {
+	return IstiocontrolplaneUnmarshaler.Unmarshal(bytes.NewReader(b), this)
+}
+
 // MarshalJSON is a custom marshaler for IstioControlPlaneStatus
 func (this *IstioControlPlaneStatus) MarshalJSON() ([]byte, error) {
 	str, err := IstiocontrolplaneMarshaler.MarshalToString(this)

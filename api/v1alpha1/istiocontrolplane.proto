@@ -86,8 +86,11 @@ message IstioControlPlaneSpec {
     // Refer to https://kubernetes.io/docs/concepts/configuration/pod-priority-preemption/#priorityclass
     // for more detail.
     string priorityClassName = 11 [(gogoproto.jsontag) = "priorityClassName"];
+    // Enable pod disruption budget for the control plane, which is used to ensure Istio control plane
+    // components are gradually upgraded or recovered
+    PDBConfiguration defaultPodDisruptionBudget = 12 [(gogoproto.jsontag) = "defaultPodDisruptionBudget"];
     // Defines mesh-wide settings for the Istio control plane.
-    istio.mesh.v1alpha1.MeshConfig mesh_config = 12;
+    istio.mesh.v1alpha1.MeshConfig mesh_config = 13;
 }
 
 // Comma-separated minimum per-scope logging level of messages to output, in the form of <scope>:<level>,<scope>:<level>
@@ -204,6 +207,11 @@ message OperatorEndpointsConfiguration {
 
 // ProxyWasmConfiguration defines config options for Envoy wasm
 message ProxyWasmConfiguration {
+    google.protobuf.BoolValue enabled = 1 [(gogoproto.wktpointer) = true, (gogoproto.jsontag) = "enabled"];
+}
+
+// PDBConfiguration holds Pod Disruption Budget related config options
+message PDBConfiguration {
     google.protobuf.BoolValue enabled = 1 [(gogoproto.wktpointer) = true, (gogoproto.jsontag) = "enabled"];
 }
 
