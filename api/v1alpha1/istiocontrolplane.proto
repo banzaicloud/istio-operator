@@ -95,8 +95,12 @@ message IstioControlPlaneSpec {
     // TODO: change to k8s.io.api.core.v1.PullPolicy when k8s proto is updated
     // +kubebuilder:validation:Enum="";Always;Never;IfNotPresent
     string imagePullPolicy = 14 [(gogoproto.jsontag) = "imagePullPolicy"];
+    // Configure the policy for validating JWT.
+    // Currently, two options are supported: "third-party-jwt" and "first-party-jwt".
+    // +kubebuilder:validation:Enum=third-party-jwt;first-party-jwt
+    JWTPolicyType jwtPolicy = 15 [(gogoproto.jsontag) = "jwtPolicy"];
     // Defines mesh-wide settings for the Istio control plane.
-    istio.mesh.v1alpha1.MeshConfig mesh_config = 15;
+    istio.mesh.v1alpha1.MeshConfig mesh_config = 16;
 }
 
 // Comma-separated minimum per-scope logging level of messages to output, in the form of <scope>:<level>,<scope>:<level>
@@ -222,6 +226,11 @@ message ProxyWasmConfiguration {
 // PDBConfiguration holds Pod Disruption Budget related config options
 message PDBConfiguration {
     google.protobuf.BoolValue enabled = 1 [(gogoproto.wktpointer) = true, (gogoproto.jsontag) = "enabled"];
+}
+
+enum JWTPolicyType {
+    ThirdPartyJWT = 0;
+    FirstPartyJWT = 1;
 }
 
 // <!-- go code generation tags

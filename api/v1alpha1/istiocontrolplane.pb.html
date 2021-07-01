@@ -4,7 +4,7 @@ description: Istio control plane descriptor
 layout: protoc-gen-docs
 generator: protoc-gen-docs
 schema: istio-operator.api.v1alpha1.IstioControlPlaneSpec
-number_of_entries: 19
+number_of_entries: 20
 ---
 <h2 id="IstioControlPlaneSpec">IstioControlPlaneSpec</h2>
 <section>
@@ -184,6 +184,19 @@ No
 <p>ImagePullPolicy describes a policy for if/when to pull a container image.
 TODO: change to k8s.io.api.core.v1.PullPolicy when k8s proto is updated
 +kubebuilder:validation:Enum=&ldquo;&rdquo;;Always;Never;IfNotPresent</p>
+
+</td>
+<td>
+No
+</td>
+</tr>
+<tr id="IstioControlPlaneSpec-jwtPolicy">
+<td><code>jwtPolicy</code></td>
+<td><code><a href="#JWTPolicyType">JWTPolicyType</a></code></td>
+<td>
+<p>Configure the policy for validating JWT.
+Currently, two options are supported: &ldquo;third-party-jwt&rdquo; and &ldquo;first-party-jwt&rdquo;.
++kubebuilder:validation:Enum=third-party-jwt;first-party-jwt</p>
 
 </td>
 <td>
@@ -1019,6 +1032,29 @@ No
 </tr>
 <tr id="PilotCertProviderType-Istiod">
 <td><code>Istiod</code></td>
+<td>
+</td>
+</tr>
+</tbody>
+</table>
+</section>
+<h2 id="JWTPolicyType">JWTPolicyType</h2>
+<section>
+<table class="enum-values">
+<thead>
+<tr>
+<th>Name</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr id="JWTPolicyType-ThirdPartyJWT">
+<td><code>ThirdPartyJWT</code></td>
+<td>
+</td>
+</tr>
+<tr id="JWTPolicyType-FirstPartyJWT">
+<td><code>FirstPartyJWT</code></td>
 <td>
 </td>
 </tr>

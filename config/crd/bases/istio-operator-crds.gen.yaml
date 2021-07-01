@@ -766,6 +766,12 @@ spec:
                     nullable: true
                     type: number
                 type: object
+              jwtPolicy:
+                description: Configure the policy for validating JWT.
+                enum:
+                - third-party-jwt
+                - first-party-jwt
+                type: string
               logging:
                 description: Logging configurations.
                 properties:
