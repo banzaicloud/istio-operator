@@ -77,6 +77,7 @@ spec:
   defaultPodDisruptionBudget:
     enabled: true
   imagePullPolicy: ""
+  imagePullSecrets: []
   jwtPolicy: "third-party-jwt"
   caAddress: ""
   httpProxyEnvs:
