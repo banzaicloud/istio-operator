@@ -4,7 +4,7 @@ description: Istio control plane descriptor
 layout: protoc-gen-docs
 generator: protoc-gen-docs
 schema: istio-operator.api.v1alpha1.IstioControlPlaneSpec
-number_of_entries: 20
+number_of_entries: 21
 ---
 <h2 id="IstioControlPlaneSpec">IstioControlPlaneSpec</h2>
 <section>
@@ -209,6 +209,17 @@ No
 <td>
 <p>The customized CA address to retrieve certificates for the pods in the cluster.
 CSR clients such as the Istio Agent and ingress gateways can use this to specify the CA endpoint.</p>
+
+</td>
+<td>
+No
+</td>
+</tr>
+<tr id="IstioControlPlaneSpec-httpProxyEnvs">
+<td><code>httpProxyEnvs</code></td>
+<td><code><a href="#HTTPProxyEnvsConfiguration">HTTPProxyEnvsConfiguration</a></code></td>
+<td>
+<p>Upstream HTTP proxy properties to be injected as environment variables to the pod containers.</p>
 
 </td>
 <td>
@@ -757,6 +768,48 @@ No
 <tr id="PDBConfiguration-enabled">
 <td><code>enabled</code></td>
 <td><code><a href="https://developers.google.com/protocol-buffers/docs/reference/google.protobuf#boolvalue">BoolValue</a></code></td>
+<td>
+</td>
+<td>
+No
+</td>
+</tr>
+</tbody>
+</table>
+</section>
+<h2 id="HTTPProxyEnvsConfiguration">HTTPProxyEnvsConfiguration</h2>
+<section>
+<table class="message-fields">
+<thead>
+<tr>
+<th>Field</th>
+<th>Type</th>
+<th>Description</th>
+<th>Required</th>
+</tr>
+</thead>
+<tbody>
+<tr id="HTTPProxyEnvsConfiguration-httpProxy">
+<td><code>httpProxy</code></td>
+<td><code>string</code></td>
+<td>
+</td>
+<td>
+No
+</td>
+</tr>
+<tr id="HTTPProxyEnvsConfiguration-httpsProxy">
+<td><code>httpsProxy</code></td>
+<td><code>string</code></td>
+<td>
+</td>
+<td>
+No
+</td>
+</tr>
+<tr id="HTTPProxyEnvsConfiguration-noProxy">
+<td><code>noProxy</code></td>
+<td><code>string</code></td>
 <td>
 </td>
 <td>

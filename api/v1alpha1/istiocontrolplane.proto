@@ -102,8 +102,10 @@ message IstioControlPlaneSpec {
     // The customized CA address to retrieve certificates for the pods in the cluster.
     // CSR clients such as the Istio Agent and ingress gateways can use this to specify the CA endpoint.
     string caAddress = 16 [(gogoproto.jsontag) = "caAddress"];
+    // Upstream HTTP proxy properties to be injected as environment variables to the pod containers.
+    HTTPProxyEnvsConfiguration httpProxyEnvs = 17 [(gogoproto.jsontag) = "httpProxyEnvs"];
     // Defines mesh-wide settings for the Istio control plane.
-    istio.mesh.v1alpha1.MeshConfig mesh_config = 17;
+    istio.mesh.v1alpha1.MeshConfig mesh_config = 18;
 }
 
 // Comma-separated minimum per-scope logging level of messages to output, in the form of <scope>:<level>,<scope>:<level>
@@ -234,6 +236,12 @@ message PDBConfiguration {
 enum JWTPolicyType {
     ThirdPartyJWT = 0;
     FirstPartyJWT = 1;
+}
+
+message HTTPProxyEnvsConfiguration {
+    string httpProxy = 1 [(gogoproto.jsontag) = "httpProxy"];
+    string httpsProxy = 2 [(gogoproto.jsontag) = "httpsProxy"];
+    string noProxy = 3 [(gogoproto.jsontag) = "noProxy"];
 }
 
 // <!-- go code generation tags

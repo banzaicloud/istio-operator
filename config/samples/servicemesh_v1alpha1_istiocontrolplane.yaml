@@ -79,6 +79,10 @@ spec:
   imagePullPolicy: ""
   jwtPolicy: "third-party-jwt"
   caAddress: ""
+  httpProxyEnvs:
+    httpProxy: ""
+    httpsProxy: ""
+    noProxy: ""
   meshConfig:
     proxyListenPort: 15001
     connectTimeout: 10s
