@@ -99,8 +99,11 @@ message IstioControlPlaneSpec {
     // Currently, two options are supported: "third-party-jwt" and "first-party-jwt".
     // +kubebuilder:validation:Enum=third-party-jwt;first-party-jwt
     JWTPolicyType jwtPolicy = 15 [(gogoproto.jsontag) = "jwtPolicy"];
+    // The customized CA address to retrieve certificates for the pods in the cluster.
+    // CSR clients such as the Istio Agent and ingress gateways can use this to specify the CA endpoint.
+    string caAddress = 16 [(gogoproto.jsontag) = "caAddress"];
     // Defines mesh-wide settings for the Istio control plane.
-    istio.mesh.v1alpha1.MeshConfig mesh_config = 16;
+    istio.mesh.v1alpha1.MeshConfig mesh_config = 17;
 }
 
 // Comma-separated minimum per-scope logging level of messages to output, in the form of <scope>:<level>,<scope>:<level>

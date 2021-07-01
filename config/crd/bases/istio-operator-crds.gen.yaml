@@ -33,6 +33,10 @@ spec:
           spec:
             description: IstioControlPlane defines an Istio control plane.
             properties:
+              caAddress:
+                description: The customized CA address to retrieve certificates for
+                  the pods in the cluster.
+                type: string
               defaultPodDisruptionBudget:
                 description: |-
                   Enable pod disruption budget for the control plane, which is used to ensure Istio control plane

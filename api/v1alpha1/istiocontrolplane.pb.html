@@ -203,6 +203,18 @@ Currently, two options are supported: &ldquo;third-party-jwt&rdquo; and &ldquo;f
 No
 </td>
 </tr>
+<tr id="IstioControlPlaneSpec-caAddress">
+<td><code>caAddress</code></td>
+<td><code>string</code></td>
+<td>
+<p>The customized CA address to retrieve certificates for the pods in the cluster.
+CSR clients such as the Istio Agent and ingress gateways can use this to specify the CA endpoint.</p>
+
+</td>
+<td>
+No
+</td>
+</tr>
 <tr id="IstioControlPlaneSpec-mesh_config">
 <td><code>meshConfig</code></td>
 <td><code><a href="https://istio.io/docs/reference/config/istio.mesh.v1alpha1.html#MeshConfig">MeshConfig</a></code></td>
