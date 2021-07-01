@@ -4,7 +4,7 @@ description: Istio control plane descriptor
 layout: protoc-gen-docs
 generator: protoc-gen-docs
 schema: istio-operator.api.v1alpha1.IstioControlPlaneSpec
-number_of_entries: 18
+number_of_entries: 19
 ---
 <h2 id="IstioControlPlaneSpec">IstioControlPlaneSpec</h2>
 <section>
@@ -95,6 +95,17 @@ No
 <td><code><a href="#ProxyInitConfiguration">ProxyInitConfiguration</a></code></td>
 <td>
 <p>Proxy Init configuration options.</p>
+
+</td>
+<td>
+No
+</td>
+</tr>
+<tr id="IstioControlPlaneSpec-telemetryV2">
+<td><code>telemetryV2</code></td>
+<td><code><a href="#TelemetryV2Configuration">TelemetryV2Configuration</a></code></td>
+<td>
+<p>Telemetry V2 configuration.</p>
 
 </td>
 <td>
@@ -643,6 +654,30 @@ No
 </thead>
 <tbody>
 <tr id="OperatorEndpointsConfiguration-enabled">
+<td><code>enabled</code></td>
+<td><code><a href="https://developers.google.com/protocol-buffers/docs/reference/google.protobuf#boolvalue">BoolValue</a></code></td>
+<td>
+</td>
+<td>
+No
+</td>
+</tr>
+</tbody>
+</table>
+</section>
+<h2 id="TelemetryV2Configuration">TelemetryV2Configuration</h2>
+<section>
+<table class="message-fields">
+<thead>
+<tr>
+<th>Field</th>
+<th>Type</th>
+<th>Description</th>
+<th>Required</th>
+</tr>
+</thead>
+<tbody>
+<tr id="TelemetryV2Configuration-enabled">
 <td><code>enabled</code></td>
 <td><code><a href="https://developers.google.com/protocol-buffers/docs/reference/google.protobuf#boolvalue">BoolValue</a></code></td>
 <td>

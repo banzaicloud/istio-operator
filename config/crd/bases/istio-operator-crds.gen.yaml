@@ -2400,6 +2400,13 @@ spec:
                     description: The JWT token for SDS and the aud field of such JWT.
                     type: string
                 type: object
+              telemetryV2:
+                description: Telemetry V2 configuration.
+                properties:
+                  enabled:
+                    nullable: true
+                    type: boolean
+                type: object
               version:
                 description: Contains the intended version for the Istio control plane.
                 pattern: ^1.

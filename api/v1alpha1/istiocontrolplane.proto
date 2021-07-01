@@ -69,14 +69,16 @@ message IstioControlPlaneSpec {
     ProxyConfiguration proxy = 6 [(gogoproto.jsontag) = "proxy"];
     // Proxy Init configuration options.
     ProxyInitConfiguration proxyInit = 7 [(gogoproto.jsontag) = "proxyInit"];
+    // Telemetry V2 configuration.
+    TelemetryV2Configuration telemetryV2 = 8 [(gogoproto.jsontag) = "telemetryV2"];
     // If SDS is configured, mTLS certificates for the sidecars will be distributed through the
     // SecretDiscoveryService instead of using K8S secrets to mount the certificates.
-    SDSConfiguration sds = 8 [(gogoproto.jsontag) = "sds"];
+    SDSConfiguration sds = 9 [(gogoproto.jsontag) = "sds"];
     // ProxyWasm configuration options.
-    ProxyWasmConfiguration proxyWasm = 9 [(gogoproto.jsontag) = "proxyWasm"];
+    ProxyWasmConfiguration proxyWasm = 10 [(gogoproto.jsontag) = "proxyWasm"];
     // Whether to restrict the applications namespace the controller manages.
     // If not set, controller watches all namespaces
-    google.protobuf.BoolValue watchOneNamespace = 10 [(gogoproto.wktpointer) = true, (gogoproto.jsontag) = "watchOneNamespace"];
+    google.protobuf.BoolValue watchOneNamespace = 11 [(gogoproto.wktpointer) = true, (gogoproto.jsontag) = "watchOneNamespace"];
     // Prior to Kubernetes v1.17.0 it was not allowed to use the system-cluster-critical and system-node-critical
     // PriorityClass outside of the kube-system namespace, so it is advised to create your own PriorityClass
     // and use its name here
@@ -85,16 +87,16 @@ message IstioControlPlaneSpec {
     // will not be killed because of low priority class.
     // Refer to https://kubernetes.io/docs/concepts/configuration/pod-priority-preemption/#priorityclass
     // for more detail.
-    string priorityClassName = 11 [(gogoproto.jsontag) = "priorityClassName"];
+    string priorityClassName = 12 [(gogoproto.jsontag) = "priorityClassName"];
     // Enable pod disruption budget for the control plane, which is used to ensure Istio control plane
     // components are gradually upgraded or recovered
-    PDBConfiguration defaultPodDisruptionBudget = 12 [(gogoproto.jsontag) = "defaultPodDisruptionBudget"];
+    PDBConfiguration defaultPodDisruptionBudget = 13 [(gogoproto.jsontag) = "defaultPodDisruptionBudget"];
     // ImagePullPolicy describes a policy for if/when to pull a container image.
     // TODO: change to k8s.io.api.core.v1.PullPolicy when k8s proto is updated
     // +kubebuilder:validation:Enum="";Always;Never;IfNotPresent
-    string imagePullPolicy = 13 [(gogoproto.jsontag) = "imagePullPolicy"];
+    string imagePullPolicy = 14 [(gogoproto.jsontag) = "imagePullPolicy"];
     // Defines mesh-wide settings for the Istio control plane.
-    istio.mesh.v1alpha1.MeshConfig mesh_config = 14;
+    istio.mesh.v1alpha1.MeshConfig mesh_config = 15;
 }
 
 // Comma-separated minimum per-scope logging level of messages to output, in the form of <scope>:<level>,<scope>:<level>
@@ -208,6 +210,9 @@ message OperatorEndpointsConfiguration {
     google.protobuf.BoolValue enabled = 1 [(gogoproto.wktpointer) = true, (gogoproto.jsontag) = "enabled"];
 }
 
+message TelemetryV2Configuration {
+    google.protobuf.BoolValue enabled = 1 [(gogoproto.wktpointer) = true, (gogoproto.jsontag) = "enabled"];
+}
 
 // ProxyWasmConfiguration defines config options for Envoy wasm
 message ProxyWasmConfiguration {

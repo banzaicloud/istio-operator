@@ -66,6 +66,8 @@ spec:
       requests:
         cpu: 10m
         memory: 10Mi
+  telemetryV2:
+    enabled: true
   sds:
     tokenAudience: "istio-ca"
   proxyWasm:
