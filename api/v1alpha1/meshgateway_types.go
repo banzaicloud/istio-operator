@@ -25,9 +25,9 @@ import (
 // MeshGateway is the Schema for the meshgateways API
 type MeshGateway struct {
 	metav1.TypeMeta   `json:",inline"`
-	metav1.ObjectMeta `json:"metadata,omitempty"`
+	metav1.ObjectMeta `json:"metadata,omitempty" protobuf:"bytes,1,opt,name=metadata"`
 
-	Spec   MeshGatewaySpec   `json:"spec,omitempty"`
+	Spec   MeshGatewaySpec   `json:"spec,omitempty" protobuf:"bytes,2,opt,name=spec"`
 	Status MeshGatewayStatus `json:"status,omitempty"`
 }
 
@@ -36,8 +36,8 @@ type MeshGateway struct {
 // MeshGatewayList contains a list of MeshGateway
 type MeshGatewayList struct {
 	metav1.TypeMeta `json:",inline"`
-	metav1.ListMeta `json:"metadata,omitempty"`
-	Items           []MeshGateway `json:"items"`
+	metav1.ListMeta `json:"metadata,omitempty" protobuf:"bytes,1,opt,name=metadata"`
+	Items           []MeshGateway `json:"items" protobuf:"bytes,2,rep,name=items"`
 }
 
 func init() {
