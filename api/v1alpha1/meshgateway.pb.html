@@ -4,7 +4,7 @@ description: Istio Mesh Gateway descriptor
 layout: protoc-gen-docs
 generator: protoc-gen-docs
 schema: istio-operator.api.v1alpha1.MeshGatewaySpec
-number_of_entries: 9
+number_of_entries: 11
 ---
 <h2 id="MeshGatewaySpec">MeshGatewaySpec</h2>
 <section>
@@ -20,27 +20,37 @@ number_of_entries: 9
 </tr>
 </thead>
 <tbody>
-<tr id="MeshGatewaySpec-MeshGwConfiguration">
-<td><code>MeshGwConfiguration</code></td>
-<td><code><a href="#MeshGatewayConfiguration">MeshGatewayConfiguration</a></code></td>
+<tr id="MeshGatewaySpec-deployment">
+<td><code>deployment</code></td>
+<td><code><a href="#BaseKubernetesResourceConfig">BaseKubernetesResourceConfig</a></code></td>
 <td>
-<p>General Mesh gateway configuration</p>
+<p>Deployment spec</p>
 
 </td>
 <td>
 No
 </td>
 </tr>
-<tr id="MeshGatewaySpec-ports">
-<td><code>ports</code></td>
-<td><code><a href="#k8s-io-api-core-v1-ServicePort">ServicePort[]</a></code></td>
+<tr id="MeshGatewaySpec-service">
+<td><code>service</code></td>
+<td><code><a href="#Service">Service</a></code></td>
 <td>
-<p>Service ports to open for the gateway
-+kubebuilder:validation:MinItems=0</p>
+<p>Service spec</p>
 
 </td>
 <td>
-Yes
+No
+</td>
+</tr>
+<tr id="MeshGatewaySpec-runAsRoot">
+<td><code>runAsRoot</code></td>
+<td><code><a href="https://developers.google.com/protocol-buffers/docs/reference/google.protobuf#boolvalue">BoolValue</a></code></td>
+<td>
+<p>Whether to run the gateway in a privileged container</p>
+
+</td>
+<td>
+No
 </td>
 </tr>
 <tr id="MeshGatewaySpec-type">
@@ -66,10 +76,21 @@ Yes
 Yes
 </td>
 </tr>
+<tr id="MeshGatewaySpec-k8sResourceOverlays">
+<td><code>k8sResourceOverlays</code></td>
+<td><code><a href="#K8sResourceOverlayPatch">K8sResourceOverlayPatch[]</a></code></td>
+<td>
+<p>K8s resource overlay patches</p>
+
+</td>
+<td>
+No
+</td>
+</tr>
 </tbody>
 </table>
 </section>
-<h2 id="MeshGatewayConfiguration">MeshGatewayConfiguration</h2>
+<h2 id="K8sResourceOverlayPatch">K8sResourceOverlayPatch</h2>
 <section>
 <table class="message-fields">
 <thead>
@@ -81,113 +102,28 @@ Yes
 </tr>
 </thead>
 <tbody>
-<tr id="MeshGatewayConfiguration-BaseK8sResourceConfigWithHPAWithoutImage">
-<td><code>BaseK8sResourceConfigWithHPAWithoutImage</code></td>
-<td><code><a href="#BaseK8sResourceConfigurationWithHPAWithoutImage">BaseK8sResourceConfigurationWithHPAWithoutImage</a></code></td>
+<tr id="K8sResourceOverlayPatch-groupVersionKind">
+<td><code>groupVersionKind</code></td>
+<td><code><a href="#K8sResourceOverlayPatch-GroupVersionKind">GroupVersionKind</a></code></td>
 <td>
-<p>Standard Kubernetes resource configuration</p>
-
 </td>
 <td>
 No
 </td>
 </tr>
-<tr id="MeshGatewayConfiguration-labels">
-<td><code>labels</code></td>
-<td><code>map&lt;string,&nbsp;string&gt;</code></td>
+<tr id="K8sResourceOverlayPatch-objectKey">
+<td><code>objectKey</code></td>
+<td><code><a href="#NamespacedName">NamespacedName</a></code></td>
 <td>
-<p>Labels to attach to the mesh gateway</p>
-
 </td>
 <td>
 No
 </td>
 </tr>
-<tr id="MeshGatewayConfiguration-serviceType">
-<td><code>serviceType</code></td>
-<td><code>string</code></td>
+<tr id="K8sResourceOverlayPatch-patches">
+<td><code>patches</code></td>
+<td><code><a href="#K8sResourceOverlayPatch-Patch">Patch[]</a></code></td>
 <td>
-<p>Kubernetes Service Type for the gateway
-+kubebuilder:validation:Enum=ClusterIP;NodePort;LoadBalancer;ExternalName</p>
-
-</td>
-<td>
-No
-</td>
-</tr>
-<tr id="MeshGatewayConfiguration-loadBalancerIP">
-<td><code>loadBalancerIP</code></td>
-<td><code>string</code></td>
-<td>
-<p>Load Balancer IP override</p>
-
-</td>
-<td>
-No
-</td>
-</tr>
-<tr id="MeshGatewayConfiguration-serviceAnnotations">
-<td><code>serviceAnnotations</code></td>
-<td><code>map&lt;string,&nbsp;string&gt;</code></td>
-<td>
-<p>Annotations to add to the gateway service</p>
-
-</td>
-<td>
-No
-</td>
-</tr>
-<tr id="MeshGatewayConfiguration-serviceLabels">
-<td><code>serviceLabels</code></td>
-<td><code>map&lt;string,&nbsp;string&gt;</code></td>
-<td>
-<p>Labels to attach to the gateway service</p>
-
-</td>
-<td>
-No
-</td>
-</tr>
-<tr id="MeshGatewayConfiguration-serviceExternalTrafficPolicyType">
-<td><code>serviceExternalTrafficPolicyType</code></td>
-<td><code>string</code></td>
-<td>
-<p>Kubernetes External Traffic Policy Type for the gateway service
-+kubebuilder:validation:Enum=Local;Cluster</p>
-
-</td>
-<td>
-No
-</td>
-</tr>
-<tr id="MeshGatewayConfiguration-requestedNetworkView">
-<td><code>requestedNetworkView</code></td>
-<td><code>string</code></td>
-<td>
-<p>Specifies the networks that the proxy wants to see</p>
-
-</td>
-<td>
-No
-</td>
-</tr>
-<tr id="MeshGatewayConfiguration-additionalEnvVars">
-<td><code>additionalEnvVars</code></td>
-<td><code><a href="#k8s-io-api-core-v1-EnvVar">EnvVar[]</a></code></td>
-<td>
-<p>If present will be appended to the environment variables of the container</p>
-
-</td>
-<td>
-No
-</td>
-</tr>
-<tr id="MeshGatewayConfiguration-runAsRoot">
-<td><code>runAsRoot</code></td>
-<td><code><a href="https://developers.google.com/protocol-buffers/docs/reference/google.protobuf#boolvalue">BoolValue</a></code></td>
-<td>
-<p>Whether to run the gateway in a privileged container</p>
-
 </td>
 <td>
 No
@@ -245,9 +181,268 @@ No
 </tbody>
 </table>
 </section>
-<h2 id="k8s-io-api-core-v1-ServicePort">k8s.io.api.core.v1.ServicePort</h2>
+<h2 id="K8sResourceOverlayPatch-GroupVersionKind">K8sResourceOverlayPatch.GroupVersionKind</h2>
 <section>
-<p>ServicePort contains information on service&rsquo;s port.</p>
+<table class="message-fields">
+<thead>
+<tr>
+<th>Field</th>
+<th>Type</th>
+<th>Description</th>
+<th>Required</th>
+</tr>
+</thead>
+<tbody>
+<tr id="K8sResourceOverlayPatch-GroupVersionKind-kind">
+<td><code>kind</code></td>
+<td><code>string</code></td>
+<td>
+</td>
+<td>
+No
+</td>
+</tr>
+<tr id="K8sResourceOverlayPatch-GroupVersionKind-version">
+<td><code>version</code></td>
+<td><code>string</code></td>
+<td>
+</td>
+<td>
+No
+</td>
+</tr>
+<tr id="K8sResourceOverlayPatch-GroupVersionKind-group">
+<td><code>group</code></td>
+<td><code>string</code></td>
+<td>
+</td>
+<td>
+No
+</td>
+</tr>
+</tbody>
+</table>
+</section>
+<h2 id="K8sResourceOverlayPatch-Patch">K8sResourceOverlayPatch.Patch</h2>
+<section>
+<table class="message-fields">
+<thead>
+<tr>
+<th>Field</th>
+<th>Type</th>
+<th>Description</th>
+<th>Required</th>
+</tr>
+</thead>
+<tbody>
+<tr id="K8sResourceOverlayPatch-Patch-path">
+<td><code>path</code></td>
+<td><code>string</code></td>
+<td>
+</td>
+<td>
+No
+</td>
+</tr>
+<tr id="K8sResourceOverlayPatch-Patch-value">
+<td><code>value</code></td>
+<td><code>string</code></td>
+<td>
+</td>
+<td>
+No
+</td>
+</tr>
+<tr id="K8sResourceOverlayPatch-Patch-parseValue">
+<td><code>parseValue</code></td>
+<td><code>bool</code></td>
+<td>
+</td>
+<td>
+No
+</td>
+</tr>
+<tr id="K8sResourceOverlayPatch-Patch-type">
+<td><code>type</code></td>
+<td><code><a href="#K8sResourceOverlayPatch-Type">Type</a></code></td>
+<td>
+</td>
+<td>
+No
+</td>
+</tr>
+</tbody>
+</table>
+</section>
+<h2 id="BaseKubernetesResourceConfig">BaseKubernetesResourceConfig</h2>
+<section>
+<table class="message-fields">
+<thead>
+<tr>
+<th>Field</th>
+<th>Type</th>
+<th>Description</th>
+<th>Required</th>
+</tr>
+</thead>
+<tbody>
+<tr id="BaseKubernetesResourceConfig-metadata">
+<td><code>metadata</code></td>
+<td><code><a href="#K8sObjectMeta">K8sObjectMeta</a></code></td>
+<td>
+<p>Generic k8s resource metadata</p>
+
+</td>
+<td>
+No
+</td>
+</tr>
+<tr id="BaseKubernetesResourceConfig-env">
+<td><code>env</code></td>
+<td><code><a href="#k8s-io-api-core-v1-EnvVar">EnvVar[]</a></code></td>
+<td>
+<p>If present will be appended to the environment variables of the container</p>
+
+</td>
+<td>
+No
+</td>
+</tr>
+<tr id="BaseKubernetesResourceConfig-resources">
+<td><code>resources</code></td>
+<td><code><a href="#ResourceRequirements">ResourceRequirements</a></code></td>
+<td>
+<p>Standard Kubernetes resource configuration, memory and CPU resource requirements</p>
+
+</td>
+<td>
+No
+</td>
+</tr>
+<tr id="BaseKubernetesResourceConfig-nodeSelector">
+<td><code>nodeSelector</code></td>
+<td><code>map&lt;string,&nbsp;string&gt;</code></td>
+<td>
+<p>Standard Kubernetes node selector configuration</p>
+
+</td>
+<td>
+No
+</td>
+</tr>
+<tr id="BaseKubernetesResourceConfig-affinity">
+<td><code>affinity</code></td>
+<td><code><a href="#k8s-io-api-core-v1-Affinity">Affinity</a></code></td>
+<td>
+<p>Standard Kubernetes affinity configuration</p>
+
+</td>
+<td>
+No
+</td>
+</tr>
+<tr id="BaseKubernetesResourceConfig-securityContext">
+<td><code>securityContext</code></td>
+<td><code><a href="#k8s-io-api-core-v1-SecurityContext">SecurityContext</a></code></td>
+<td>
+<p>Standard Kubernetes security context configuration</p>
+
+</td>
+<td>
+No
+</td>
+</tr>
+<tr id="BaseKubernetesResourceConfig-imagePullPolicy">
+<td><code>imagePullPolicy</code></td>
+<td><code>string</code></td>
+<td>
+<p>Image pull policy.
+One of Always, Never, IfNotPresent.
+Defaults to Always if :latest tag is specified, or IfNotPresent otherwise.
++optional</p>
+
+</td>
+<td>
+No
+</td>
+</tr>
+<tr id="BaseKubernetesResourceConfig-priorityClassName">
+<td><code>priorityClassName</code></td>
+<td><code>string</code></td>
+<td>
+<p>If specified, indicates the pod&rsquo;s priority. &ldquo;system-node-critical&rdquo; and
+&ldquo;system-cluster-critical&rdquo; are two special keywords which indicate the
+highest priorities with the former being the highest priority. Any other
+name must be defined by creating a PriorityClass object with that name.
+If not specified, the pod priority will be default or zero if there is no
+default.
++optional</p>
+
+</td>
+<td>
+No
+</td>
+</tr>
+<tr id="BaseKubernetesResourceConfig-tolerations">
+<td><code>tolerations</code></td>
+<td><code><a href="#k8s-io-api-core-v1-Toleration">Toleration[]</a></code></td>
+<td>
+<p>google.protobuf.Int32Value replicaCount = 1 [(gogoproto.wktpointer) = true];
+If specified, the pod&rsquo;s tolerations.
++optional</p>
+
+</td>
+<td>
+No
+</td>
+</tr>
+<tr id="BaseKubernetesResourceConfig-volumes">
+<td><code>volumes</code></td>
+<td><code><a href="#k8s-io-api-core-v1-Volume">Volume[]</a></code></td>
+<td>
+<p>List of volumes that can be mounted by containers belonging to the pod.
+More info: https://kubernetes.io/docs/concepts/storage/volumes
++optional
++patchMergeKey=name
++patchStrategy=merge,retainKeys</p>
+
+</td>
+<td>
+No
+</td>
+</tr>
+<tr id="BaseKubernetesResourceConfig-volumeMounts">
+<td><code>volumeMounts</code></td>
+<td><code><a href="#k8s-io-api-core-v1-VolumeMount">VolumeMount[]</a></code></td>
+<td>
+<p>Pod volumes to mount into the container&rsquo;s filesystem.
+Cannot be updated.
++optional
++patchMergeKey=mountPath
++patchStrategy=merge</p>
+
+</td>
+<td>
+No
+</td>
+</tr>
+<tr id="BaseKubernetesResourceConfig-replicas">
+<td><code>replicas</code></td>
+<td><code><a href="#Replicas">Replicas</a></code></td>
+<td>
+<p>Replica configuration</p>
+
+</td>
+<td>
+No
+</td>
+</tr>
+</tbody>
+</table>
+</section>
+<h2 id="Service">Service</h2>
+<section>
+<p>ServiceSpec describes the attributes that a user creates on a service.</p>
 
 <table class="message-fields">
 <thead>
@@ -259,15 +454,62 @@ No
 </tr>
 </thead>
 <tbody>
-<tr id="k8s-io-api-core-v1-ServicePort-name">
-<td><code>name</code></td>
+<tr id="Service-metadata">
+<td><code>metadata</code></td>
+<td><code><a href="#K8sObjectMeta">K8sObjectMeta</a></code></td>
+<td>
+</td>
+<td>
+No
+</td>
+</tr>
+<tr id="Service-ports">
+<td><code>ports</code></td>
+<td><code><a href="#ServicePort">ServicePort[]</a></code></td>
+<td>
+<p>The list of ports that are exposed by this service.
+More info: https://kubernetes.io/docs/concepts/services-networking/service/#virtual-ips-and-service-proxies
++patchMergeKey=port
++patchStrategy=merge
++listType=map
++listMapKey=port
++listMapKey=protocol</p>
+
+</td>
+<td>
+No
+</td>
+</tr>
+<tr id="Service-selector">
+<td><code>selector</code></td>
+<td><code>map&lt;string,&nbsp;string&gt;</code></td>
+<td>
+<p>Route service traffic to pods with label keys and values matching this
+selector. If empty or not present, the service is assumed to have an
+external process managing its endpoints, which Kubernetes will not
+modify. Only applies to types ClusterIP, NodePort, and LoadBalancer.
+Ignored if type is ExternalName.
+More info: https://kubernetes.io/docs/concepts/services-networking/service/
++optional</p>
+
+</td>
+<td>
+No
+</td>
+</tr>
+<tr id="Service-clusterIP">
+<td><code>clusterIP</code></td>
 <td><code>string</code></td>
 <td>
-<p>The name of this port within the service. This must be a DNS_LABEL.
-All ports within a ServiceSpec must have unique names. When considering
-the endpoints for a Service, this must match the &lsquo;name&rsquo; field in the
-EndpointPort.
-Optional if only one ServicePort is defined on this service.
+<p>clusterIP is the IP address of the service and is usually assigned
+randomly by the master. If an address is specified manually and is not in
+use by others, it will be allocated to the service; otherwise, creation
+of the service will fail. This field can not be changed through updates.
+Valid values are &ldquo;None&rdquo;, empty string (&ldquo;&rdquo;), or a valid IP address. &ldquo;None&rdquo;
+can be specified for headless services when proxying is not required.
+Only applies to types ClusterIP, NodePort, and LoadBalancer. Ignored if
+type is ExternalName.
+More info: https://kubernetes.io/docs/concepts/services-networking/service/#virtual-ips-and-service-proxies
 +optional</p>
 
 </td>
@@ -275,12 +517,24 @@ Optional if only one ServicePort is defined on this service.
 No
 </td>
 </tr>
-<tr id="k8s-io-api-core-v1-ServicePort-protocol">
-<td><code>protocol</code></td>
+<tr id="Service-type">
+<td><code>type</code></td>
 <td><code>string</code></td>
 <td>
-<p>The IP protocol for this port. Supports &ldquo;TCP&rdquo;, &ldquo;UDP&rdquo;, and &ldquo;SCTP&rdquo;.
-Default is TCP.
+<p>type determines how the Service is exposed. Defaults to ClusterIP. Valid
+options are ExternalName, ClusterIP, NodePort, and LoadBalancer.
+&ldquo;ExternalName&rdquo; maps to the specified externalName.
+&ldquo;ClusterIP&rdquo; allocates a cluster-internal IP address for load-balancing to
+endpoints. Endpoints are determined by the selector or if that is not
+specified, by manual construction of an Endpoints object. If clusterIP is
+&ldquo;None&rdquo;, no virtual IP is allocated and the endpoints are published as a
+set of endpoints rather than a stable IP.
+&ldquo;NodePort&rdquo; builds on ClusterIP and allocates a port on every node which
+routes to the clusterIP.
+&ldquo;LoadBalancer&rdquo; builds on NodePort and creates an
+external load-balancer (if supported in the current cloud) which routes
+to the clusterIP.
+More info: https://kubernetes.io/docs/concepts/services-networking/service/#publishing-services-service-types
 +optional</p>
 
 </td>
@@ -288,29 +542,15 @@ Default is TCP.
 No
 </td>
 </tr>
-<tr id="k8s-io-api-core-v1-ServicePort-port">
-<td><code>port</code></td>
-<td><code>int32</code></td>
+<tr id="Service-externalIPs">
+<td><code>externalIPs</code></td>
+<td><code>string[]</code></td>
 <td>
-<p>The port that will be exposed by this service.</p>
-
-</td>
-<td>
-No
-</td>
-</tr>
-<tr id="k8s-io-api-core-v1-ServicePort-targetPort">
-<td><code>targetPort</code></td>
-<td><code><a href="#k8s-io-apimachinery-pkg-util-intstr-IntOrString">IntOrString</a></code></td>
-<td>
-<p>Number or name of the port to access on the pods targeted by the service.
-Number must be in the range 1 to 65535. Name must be an IANA<em>SVC</em>NAME.
-If this is a string, it will be looked up as a named port in the
-target Pod&rsquo;s container ports. If this is not specified, the value
-of the &lsquo;port&rsquo; field is used (an identity map).
-This field is ignored for services with clusterIP=None, and should be
-omitted or set equal to the &lsquo;port&rsquo; field.
-More info: https://kubernetes.io/docs/concepts/services-networking/service/#defining-a-service
+<p>externalIPs is a list of IP addresses for which nodes in the cluster
+will also accept traffic for this service.  These IPs are not managed by
+Kubernetes.  The user is responsible for ensuring that traffic arrives
+at a node with this IP.  A common example is external load-balancers
+that are not part of the Kubernetes system.
 +optional</p>
 
 </td>
@@ -318,15 +558,141 @@ More info: https://kubernetes.io/docs/concepts/services-networking/service/#defi
 No
 </td>
 </tr>
-<tr id="k8s-io-api-core-v1-ServicePort-nodePort">
-<td><code>nodePort</code></td>
+<tr id="Service-sessionAffinity">
+<td><code>sessionAffinity</code></td>
+<td><code>string</code></td>
+<td>
+<p>Supports &ldquo;ClientIP&rdquo; and &ldquo;None&rdquo;. Used to maintain session affinity.
+Enable client IP based session affinity.
+Must be ClientIP or None.
+Defaults to None.
+More info: https://kubernetes.io/docs/concepts/services-networking/service/#virtual-ips-and-service-proxies
++optional</p>
+
+</td>
+<td>
+No
+</td>
+</tr>
+<tr id="Service-loadBalancerIP">
+<td><code>loadBalancerIP</code></td>
+<td><code>string</code></td>
+<td>
+<p>Only applies to Service Type: LoadBalancer
+LoadBalancer will get created with the IP specified in this field.
+This feature depends on whether the underlying cloud-provider supports specifying
+the loadBalancerIP when a load balancer is created.
+This field will be ignored if the cloud-provider does not support the feature.
++optional</p>
+
+</td>
+<td>
+No
+</td>
+</tr>
+<tr id="Service-loadBalancerSourceRanges">
+<td><code>loadBalancerSourceRanges</code></td>
+<td><code>string[]</code></td>
+<td>
+<p>If specified and supported by the platform, this will restrict traffic through the cloud-provider
+load-balancer will be restricted to the specified client IPs. This field will be ignored if the
+cloud-provider does not support the feature.&rdquo;
+More info: https://kubernetes.io/docs/tasks/access-application-cluster/configure-cloud-provider-firewall/
++optional</p>
+
+</td>
+<td>
+No
+</td>
+</tr>
+<tr id="Service-externalName">
+<td><code>externalName</code></td>
+<td><code>string</code></td>
+<td>
+<p>externalName is the external reference that kubedns or equivalent will
+return as a CNAME record for this service. No proxying will be involved.
+Must be a valid RFC-1123 hostname (https://tools.ietf.org/html/rfc1123)
+and requires Type to be ExternalName.
++optional</p>
+
+</td>
+<td>
+No
+</td>
+</tr>
+<tr id="Service-externalTrafficPolicy">
+<td><code>externalTrafficPolicy</code></td>
+<td><code>string</code></td>
+<td>
+<p>externalTrafficPolicy denotes if this Service desires to route external
+traffic to node-local or cluster-wide endpoints. &ldquo;Local&rdquo; preserves the
+client source IP and avoids a second hop for LoadBalancer and Nodeport
+type services, but risks potentially imbalanced traffic spreading.
+&ldquo;Cluster&rdquo; obscures the client source IP and may cause a second hop to
+another node, but should have good overall load-spreading.
++optional</p>
+
+</td>
+<td>
+No
+</td>
+</tr>
+<tr id="Service-healthCheckNodePort">
+<td><code>healthCheckNodePort</code></td>
 <td><code>int32</code></td>
 <td>
-<p>The port on each node on which this service is exposed when type=NodePort or LoadBalancer.
-Usually assigned by the system. If specified, it will be allocated to the service
-if unused or else creation of the service will fail.
-Default is to auto-allocate a port if the ServiceType of this Service requires one.
-More info: https://kubernetes.io/docs/concepts/services-networking/service/#type-nodeport
+<p>healthCheckNodePort specifies the healthcheck nodePort for the service.
+If not specified, HealthCheckNodePort is created by the service api
+backend with the allocated nodePort. Will use user-specified nodePort value
+if specified by the client. Only effects when Type is set to LoadBalancer
+and ExternalTrafficPolicy is set to Local.
++optional</p>
+
+</td>
+<td>
+No
+</td>
+</tr>
+<tr id="Service-publishNotReadyAddresses">
+<td><code>publishNotReadyAddresses</code></td>
+<td><code>bool</code></td>
+<td>
+<p>publishNotReadyAddresses, when set to true, indicates that DNS implementations
+must publish the notReadyAddresses of subsets for the Endpoints associated with
+the Service. The default value is false.
+The primary use case for setting this field is to use a StatefulSet&rsquo;s Headless Service
+to propagate SRV records for its Pods without respect to their readiness for purpose
+of peer discovery.
++optional</p>
+
+</td>
+<td>
+No
+</td>
+</tr>
+<tr id="Service-sessionAffinityConfig">
+<td><code>sessionAffinityConfig</code></td>
+<td><code><a href="#k8s-io-api-core-v1-SessionAffinityConfig">SessionAffinityConfig</a></code></td>
+<td>
+<p>sessionAffinityConfig contains the configurations of session affinity.
++optional</p>
+
+</td>
+<td>
+No
+</td>
+</tr>
+<tr id="Service-ipFamily">
+<td><code>ipFamily</code></td>
+<td><code>string</code></td>
+<td>
+<p>ipFamily specifies whether this Service has a preference for a particular IP family (e.g. IPv4 vs.
+IPv6).  If a specific IP family is requested, the clusterIP field will be allocated from that family, if it is
+available in the cluster.  If no IP family is requested, the cluster&rsquo;s primary IP family will be used.
+Other IP fields (loadBalancerIP, loadBalancerSourceRanges, externalIPs) and controllers which
+allocate external load-balancers should use the same IP family.  Endpoints for this Service will be of
+this family.  This field is immutable after creation. Assigning a ServiceIPFamily not available in the
+cluster (e.g. IPv6 in IPv4 only cluster) is an error condition and will fail during clusterIP assignment.
 +optional</p>
 
 </td>
@@ -374,122 +740,29 @@ No
 </tbody>
 </table>
 </section>
-<h2 id="BaseK8sResourceConfigurationWithHPAWithoutImage">BaseK8sResourceConfigurationWithHPAWithoutImage</h2>
+<h2 id="K8sResourceOverlayPatch-Type">K8sResourceOverlayPatch.Type</h2>
 <section>
-<table class="message-fields">
+<table class="enum-values">
 <thead>
 <tr>
-<th>Field</th>
-<th>Type</th>
+<th>Name</th>
 <th>Description</th>
-<th>Required</th>
 </tr>
 </thead>
 <tbody>
-<tr id="BaseK8sResourceConfigurationWithHPAWithoutImage-replicaCount">
-<td><code>replicaCount</code></td>
-<td><code><a href="https://developers.google.com/protocol-buffers/docs/reference/google.protobuf#int32value">Int32Value</a></code></td>
+<tr id="K8sResourceOverlayPatch-Type-unspecified">
+<td><code>unspecified</code></td>
 <td>
-<p>Standard Kubernetes replica count configuration
-+kubebuilder:validation:Minimum=0</p>
-
-</td>
-<td>
-No
 </td>
 </tr>
-<tr id="BaseK8sResourceConfigurationWithHPAWithoutImage-minReplicas">
-<td><code>minReplicas</code></td>
-<td><code><a href="https://developers.google.com/protocol-buffers/docs/reference/google.protobuf#int32value">Int32Value</a></code></td>
+<tr id="K8sResourceOverlayPatch-Type-replace">
+<td><code>replace</code></td>
 <td>
-<p>Standard Kubernetes minimum replicas configuration
-+kubebuilder:validation:Minimum=0</p>
-
-</td>
-<td>
-No
 </td>
 </tr>
-<tr id="BaseK8sResourceConfigurationWithHPAWithoutImage-maxReplicas">
-<td><code>maxReplicas</code></td>
-<td><code><a href="https://developers.google.com/protocol-buffers/docs/reference/google.protobuf#int32value">Int32Value</a></code></td>
+<tr id="K8sResourceOverlayPatch-Type-remove">
+<td><code>remove</code></td>
 <td>
-<p>Standard Kubernetes maximum replicas configuration
-+kubebuilder:validation:Minimum=0</p>
-
-</td>
-<td>
-No
-</td>
-</tr>
-<tr id="BaseK8sResourceConfigurationWithHPAWithoutImage-BaseK8sResourceConfig">
-<td><code>BaseK8sResourceConfig</code></td>
-<td><code><a href="#BaseK8sResourceConfiguration">BaseK8sResourceConfiguration</a></code></td>
-<td>
-<p>Standard Kubernetes resource configuration</p>
-
-</td>
-<td>
-No
-</td>
-</tr>
-</tbody>
-</table>
-</section>
-<h2 id="k8s-io-api-core-v1-EnvVar">k8s.io.api.core.v1.EnvVar</h2>
-<section>
-<p>EnvVar represents an environment variable present in a Container.</p>
-
-<table class="message-fields">
-<thead>
-<tr>
-<th>Field</th>
-<th>Type</th>
-<th>Description</th>
-<th>Required</th>
-</tr>
-</thead>
-<tbody>
-<tr id="k8s-io-api-core-v1-EnvVar-name">
-<td><code>name</code></td>
-<td><code>string</code></td>
-<td>
-<p>Name of the environment variable. Must be a C_IDENTIFIER.</p>
-
-</td>
-<td>
-No
-</td>
-</tr>
-<tr id="k8s-io-api-core-v1-EnvVar-value">
-<td><code>value</code></td>
-<td><code>string</code></td>
-<td>
-<p>Variable references $(VAR<em>NAME) are expanded
-using the previous defined environment variables in the container and
-any service environment variables. If a variable cannot be resolved,
-the reference in the input string will be unchanged. The $(VAR</em>NAME)
-syntax can be escaped with a double $$, ie: $$(VAR_NAME). Escaped
-references will never be expanded, regardless of whether the variable
-exists or not.
-Defaults to &ldquo;&rdquo;.
-+optional</p>
-
-</td>
-<td>
-No
-</td>
-</tr>
-<tr id="k8s-io-api-core-v1-EnvVar-valueFrom">
-<td><code>valueFrom</code></td>
-<td><code><a href="#k8s-io-api-core-v1-EnvVarSource">EnvVarSource</a></code></td>
-<td>
-<p>Source for the environment variable&rsquo;s value. Cannot be used if value is not empty.
-+optional</p>
-
-</td>
-<td>
-No
 </td>
 </tr>
 </tbody>
@@ -505,13 +778,18 @@ No
 </tr>
 </thead>
 <tbody>
-<tr id="GatewayType-Ingress">
-<td><code>Ingress</code></td>
+<tr id="GatewayType-unspecified">
+<td><code>unspecified</code></td>
 <td>
 </td>
 </tr>
-<tr id="GatewayType-Egress">
-<td><code>Egress</code></td>
+<tr id="GatewayType-ingress">
+<td><code>ingress</code></td>
+<td>
+</td>
+</tr>
+<tr id="GatewayType-egress">
+<td><code>egress</code></td>
 <td>
 </td>
 </tr>
@@ -528,6 +806,11 @@ No
 </tr>
 </thead>
 <tbody>
+<tr id="ConfigState-Unspecified">
+<td><code>Unspecified</code></td>
+<td>
+</td>
+</tr>
 <tr id="ConfigState-Created">
 <td><code>Created</code></td>
 <td>
