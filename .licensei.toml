@@ -24,6 +24,10 @@ ignored = [
 ]
 
 [header]
+ignorePaths = [
+    "build"
+]
+
 ignoreFiles = [
   "*.pb.go",
   "*.gen.go",
