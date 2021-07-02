@@ -50,46 +50,55 @@ option go_package = "github.com/banzaicloud/istio-operator/v2/api/v1alpha1";
 // +k8s:deepcopy-gen=true
 // -->
 message MeshGatewaySpec {
-    // General Mesh gateway configuration
-    MeshGatewayConfiguration MeshGwConfiguration = 1 [(gogoproto.nullable) = false, (gogoproto.embed) = true, (gogoproto.jsontag) = ",inline"];
-    // Service ports to open for the gateway
-    // +kubebuilder:validation:MinItems=0
-    repeated k8s.io.api.core.v1.ServicePort ports = 2 [(gogoproto.nullable) = false, (gogoproto.jsontag) = "ports", (google.api.field_behavior) = REQUIRED];
+    // Deployment spec
+    BaseKubernetesResourceConfig deployment = 1;
+
+    // Service spec
+    Service service = 2;
+
+    // Whether to run the gateway in a privileged container
+    google.protobuf.BoolValue runAsRoot = 3 [(gogoproto.wktpointer) = true];
+
     // Type of gateway, either ingress or egress
     // +kubebuilder:validation:Enum=ingress;egress
-    GatewayType type = 3  [(gogoproto.jsontag) = "type", (google.api.field_behavior) = REQUIRED];
+    GatewayType type = 4 [(google.api.field_behavior) = REQUIRED];
+
     // Istio CR to which this gateway belongs to
-    NamespacedName istioControlPlane = 4 [(gogoproto.jsontag) = "istioControlPlane", (google.api.field_behavior) = REQUIRED];
+    NamespacedName istioControlPlane = 5 [(google.api.field_behavior) = REQUIRED];
+
+    // K8s resource overlay patches
+    repeated K8sResourceOverlayPatch k8sResourceOverlays = 6;
 }
 
-message MeshGatewayConfiguration {
-    // Standard Kubernetes resource configuration
-    BaseK8sResourceConfigurationWithHPAWithoutImage BaseK8sResourceConfigWithHPAWithoutImage = 1 [(gogoproto.nullable) = false, (gogoproto.embed) = true, (gogoproto.jsontag) = ",inline"];
-    // Labels to attach to the mesh gateway
-    map<string, string> labels = 2;
-    // Kubernetes Service Type for the gateway
-    // +kubebuilder:validation:Enum=ClusterIP;NodePort;LoadBalancer;ExternalName
-    string serviceType = 3 [(gogoproto.customtype) = "k8s.io/api/core/v1.ServiceType", (gogoproto.nullable) = false];
-    // Load Balancer IP override
-    string loadBalancerIP = 4;
-    // Annotations to add to the gateway service
-    map<string, string> serviceAnnotations = 5;
-    // Labels to attach to the gateway service
-    map<string, string> serviceLabels = 6;
-    // Kubernetes External Traffic Policy Type for the gateway service
-    // +kubebuilder:validation:Enum=Local;Cluster
-    string serviceExternalTrafficPolicyType = 7 [(gogoproto.customtype) = "k8s.io/api/core/v1.ServiceExternalTrafficPolicyType", (gogoproto.nullable) = false];
-    // Specifies the networks that the proxy wants to see
-    string requestedNetworkView = 9;
-    // If present will be appended to the environment variables of the container
-    repeated k8s.io.api.core.v1.EnvVar additionalEnvVars = 10 [(gogoproto.nullable) = false];
-    // Whether to run the gateway in a privileged container
-    google.protobuf.BoolValue runAsRoot = 11 [(gogoproto.wktpointer) = true];
+message K8sResourceOverlayPatch {
+    message GroupVersionKind {
+        string kind = 1;
+        string version = 2;
+        string group = 3;
+    }
+
+    enum Type {
+        unspecified = 0;
+        replace = 1;
+        remove = 2;
+    }
+
+    message Patch {
+        string path = 1;
+        string value = 2;
+        bool parseValue = 3;
+        Type type = 4;
+    }
+
+    GroupVersionKind groupVersionKind = 1 [(gogoproto.nullable) = false];
+    NamespacedName objectKey = 2;
+    repeated Patch patches = 3 [(gogoproto.nullable) = false];
 }
 
 enum GatewayType {
-    Ingress = 0;
-    Egress = 1;
+    unspecified = 0;
+    ingress = 1;
+    egress = 2;
 }
 
 // <!-- go code generation tags
@@ -99,16 +108,19 @@ enum GatewayType {
 message MeshGatewayStatus {
     // Reconciliation status of the mesh gateway
     ConfigState Status = 1;
+
     // Current address for the gateway
     repeated string GatewayAddress = 2;
+
     // Reconciliation error message if any
     string ErrorMessage = 3;
 }
 
 enum ConfigState {
-    Created = 0;
-    ReconcileFailed = 1;
-    Reconciling = 2;
-    Available = 3;
-    Unmanaged = 4;
+    Unspecified = 0;
+    Created = 1;
+    ReconcileFailed = 2;
+    Reconciling = 3;
+    Available = 4;
+    Unmanaged = 5;
 }
