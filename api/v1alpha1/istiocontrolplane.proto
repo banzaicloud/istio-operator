@@ -93,13 +93,13 @@ message IstioControlPlaneSpec {
     PDBConfiguration defaultPodDisruptionBudget = 13 [(gogoproto.jsontag) = "defaultPodDisruptionBudget"];
     // ImagePullPolicy describes a policy for if/when to pull a container image.
     // TODO: change to k8s.io.api.core.v1.PullPolicy when k8s proto is updated
-    // +kubebuilder:validation:Enum="";Always;Never;IfNotPresent
+    // +kubebuilder:validation:Enum="";ALWAYS;NEVER;IF_NOT_PRESENT
     string imagePullPolicy = 14 [(gogoproto.jsontag) = "imagePullPolicy"];
     // ImagePullSecrets is an optional list of references to secrets to use for pulling any of the images.
     repeated k8s.io.api.core.v1.LocalObjectReference imagePullSecrets = 15 [(gogoproto.jsontag) = "imagePullSecrets"];
     // Configure the policy for validating JWT.
     // Currently, two options are supported: "third-party-jwt" and "first-party-jwt".
-    // +kubebuilder:validation:Enum=third-party-jwt;first-party-jwt
+    // +kubebuilder:validation:Enum=THIRD_PARTY_JWT;FIRST_PARTY_JWT
     JWTPolicyType jwtPolicy = 16 [(gogoproto.jsontag) = "jwtPolicy"];
     // The customized CA address to retrieve certificates for the pods in the cluster.
     // CSR clients such as the Istio Agent and ingress gateways can use this to specify the CA endpoint.
@@ -135,7 +135,7 @@ message ProxyConfiguration {
     google.protobuf.BoolValue enableCoreDump = 3 [(gogoproto.wktpointer) = true, (gogoproto.jsontag) = "enableCoreDump"];
     // Log level for proxy, applies to gateways and sidecars. If left empty, "warning" is used.
     // Expected values are: trace|debug|info|warning|error|critical|off
-    // +kubebuilder:validation:Enum=trace;debug;info;warning;error;critical;off
+    // +kubebuilder:validation:Enum=TRACE;DEBUG;INFO;WARNING;ERROR;CRITICAL;OFF
     ProxyLogLevel logLevel = 4 [(gogoproto.jsontag) = "logLevel"];
     // Per Component log level for proxy, applies to gateways and sidecars. If a component level is
     // not set, then the "LogLevel" will be used. If left empty, "misc:error" is used.
@@ -159,13 +159,14 @@ message ProxyConfiguration {
 }
 
 enum ProxyLogLevel {
-    Trace = 0;
-    Debug = 1;
-    Info = 2;
-    Warning = 3;
-    Error = 4;
-    Critical = 5;
-    Off = 6;
+    UNSPECIFIED = 0;
+    TRACE = 1;
+    DEBUG = 2;
+    INFO = 3;
+    WARNING = 4;
+    ERROR = 5;
+    CRITICAL = 6;
+    OFF = 7;
 }
 
 // ProxyInitConfiguration defines config options for Proxy Init containers
@@ -193,7 +194,7 @@ message IstiodConfiguration {
     // Currently, two providers are supported: "kubernetes" and "istiod".
     // As some platforms may not have kubernetes signing APIs,
     // Istiod is the default
-    // +kubebuilder:validation:Enum=kubernetes;istiod
+    // +kubebuilder:validation:Enum=KUBERNETES;ISTIOD
     PilotCertProviderType certProvider = 8 [(gogoproto.jsontag) = "certProvider"];
     // If present will be appended to the environment variables of the container
     repeated k8s.io.api.core.v1.EnvVar additionalEnvVars = 9 [(gogoproto.nullable) = false];
@@ -207,8 +208,9 @@ message ExternalIstiodConfiguration {
 }
 
 enum PilotCertProviderType {
-    Kubernetes = 0;
-    Istiod = 1;
+    UNSPECIFIED = 0;
+    KUBERNETES = 1;
+    ISTIOD = 2;
 }
 
 // SPIFFEConfiguration is for SPIFFE configuration of Pilot
@@ -236,8 +238,9 @@ message PDBConfiguration {
 }
 
 enum JWTPolicyType {
-    ThirdPartyJWT = 0;
-    FirstPartyJWT = 1;
+    UNSPECIFIED = 0;
+    THIRD_PARTY_JWT = 1;
+    FIRST_PARTY_JWT = 2;
 }
 
 message HTTPProxyEnvsConfiguration {

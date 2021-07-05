@@ -86,9 +86,9 @@ spec:
                   a container image.
                 enum:
                 - ""
-                - Always
-                - Never
-                - IfNotPresent
+                - ALWAYS
+                - NEVER
+                - IF_NOT_PRESENT
                 type: string
               imagePullSecrets:
                 description: ImagePullSecrets is an optional list of references to
@@ -200,8 +200,8 @@ spec:
                     description: Configure the certificate provider for control plane
                       communication.
                     enum:
-                    - kubernetes
-                    - istiod
+                    - KUBERNETES
+                    - ISTIOD
                     type: string
                   deployment:
                     description: Deployment spec.
@@ -1895,8 +1895,8 @@ spec:
               jwtPolicy:
                 description: Configure the policy for validating JWT.
                 enum:
-                - third-party-jwt
-                - first-party-jwt
+                - THIRD_PARTY_JWT
+                - FIRST_PARTY_JWT
                 type: string
               logging:
                 description: Logging configurations.
@@ -3450,13 +3450,13 @@ spec:
                   logLevel:
                     description: Log level for proxy, applies to gateways and sidecars.
                     enum:
-                    - trace
-                    - debug
-                    - info
-                    - warning
-                    - error
-                    - critical
-                    - "off"
+                    - TRACE
+                    - DEBUG
+                    - INFO
+                    - WARNING
+                    - ERROR
+                    - CRITICAL
+                    - "OFF"
                     type: string
                   privileged:
                     description: If set to true, istio-proxy container will have privileged

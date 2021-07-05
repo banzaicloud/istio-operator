@@ -33,7 +33,7 @@ spec:
     traceSampling: 1.0
     enableProtocolSniffingOutbound: true
     enableProtocolSniffingInbound: true
-    certProvider: istiod
+    certProvider: ISTIOD
     additionalEnvVars: []
     spiffe:
       operatorEndpoints:
@@ -42,7 +42,7 @@ spec:
     image: "gcr.io/istio-release/proxyv2:1.10.0"
     privileged: false
     enableCoreDump: false
-    logLevel: "warning"
+    logLevel: "WARNING"
     componentLogLevel: "misc:error"
     clusterDomain: "cluster.local"
     holdApplicationUntilProxyStarts: false
@@ -79,7 +79,7 @@ spec:
     enabled: true
   imagePullPolicy: ""
   imagePullSecrets: []
-  jwtPolicy: "third-party-jwt"
+  jwtPolicy: "THIRD_PARTY_JWT"
   caAddress: ""
   httpProxyEnvs:
     httpProxy: ""
