@@ -249,10 +249,11 @@ message ServicePort {
     // The IP protocol for this port. Supports "TCP", "UDP", and "SCTP".
     // Default is TCP.
     // +optional
+    // +kubebuilder:default=TCP
     string protocol = 2;
 
     // The port that will be exposed by this service.
-    int32 port = 3;
+    int32 port = 3 [(google.api.field_behavior) = REQUIRED];
 
     // Number or name of the port to access on the pods targeted by the service.
     // Number must be in the range 1 to 65535. Name must be an IANA_SVC_NAME.

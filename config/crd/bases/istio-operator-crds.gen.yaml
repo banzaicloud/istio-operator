@@ -3187,6 +3187,7 @@ spec:
                           format: int32
                           type: integer
                         protocol:
+                          default: TCP
                           description: The IP protocol for this port.
                           type: string
                         targetPort:
@@ -3196,6 +3197,8 @@ spec:
                           description: Number or name of the port to access on the
                             pods targeted by the service.
                           x-kubernetes-int-or-string: true
+                      required:
+                      - port
                       type: object
                     type: array
                     x-kubernetes-list-map-keys:
