@@ -4,7 +4,7 @@ set -euo pipefail
 
 code_generator_version=0.20.2
 controller_gen_version=0.5.0
-istio_deps_version=1.10.0-bzc
+istio_deps_version=1.10.0-bzc.1
 gogo_protobuf_version=1.3.2
 
 script_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" >/dev/null 2>&1 && pwd)"
@@ -26,9 +26,6 @@ function ensure-binary-version() {
         BUILD_DIR=$(mktemp -d)
         pushd "${BUILD_DIR}"
         go mod init foobar
-        if [ ${bin_name} == "cue-gen" ]; then
-            go mod edit -replace cuelang.org/go=github.com/waynz0r/cue@v0.2.3-0.20210629110240-49370731dc3c
-        fi
         GOBIN=${PWD} go get "${download_location}"
         mkdir -p "${binpath}"
         mv "${bin_name}" "${binpath}/${target_name}"

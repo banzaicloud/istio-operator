@@ -1,6 +1,7 @@
 run:
   skip-dirs:
     - .gen
+    - build
   skip-files:
     - ".*zz_.*\\.go$"
 

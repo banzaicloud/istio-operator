@@ -11,10 +11,11 @@ spec:
       cpu: 10m
   mountMtlsCerts: false
   istiod:
-    k8sConfig:
-      minReplicas: 1
-      maxReplicas: 5
-      replicaCount: 1
+    deployment:
+      replicas:
+        min: 1
+        max: 5
+        count: 1
       image: "gcr.io/istio-release/pilot:1.10.0"
       resources:
         requests:

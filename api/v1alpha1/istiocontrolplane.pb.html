@@ -519,11 +519,11 @@ No
 </tr>
 </thead>
 <tbody>
-<tr id="IstiodConfiguration-k8sConfig">
-<td><code>k8sConfig</code></td>
-<td><code><a href="#BaseK8sResourceConfigurationWithHPA">BaseK8sResourceConfigurationWithHPA</a></code></td>
+<tr id="IstiodConfiguration-deployment">
+<td><code>deployment</code></td>
+<td><code><a href="#BaseKubernetesResourceConfig">BaseKubernetesResourceConfig</a></code></td>
 <td>
-<p>Standard Kubernetes resource configuration</p>
+<p>Deployment spec</p>
 
 </td>
 <td>
@@ -966,7 +966,7 @@ No
 </tbody>
 </table>
 </section>
-<h2 id="BaseK8sResourceConfigurationWithHPA">BaseK8sResourceConfigurationWithHPA</h2>
+<h2 id="BaseKubernetesResourceConfig">BaseKubernetesResourceConfig</h2>
 <section>
 <table class="message-fields">
 <thead>
@@ -978,35 +978,162 @@ No
 </tr>
 </thead>
 <tbody>
-<tr id="BaseK8sResourceConfigurationWithHPA-minReplicas">
-<td><code>minReplicas</code></td>
-<td><code><a href="https://developers.google.com/protocol-buffers/docs/reference/google.protobuf#int32value">Int32Value</a></code></td>
+<tr id="BaseKubernetesResourceConfig-metadata">
+<td><code>metadata</code></td>
+<td><code><a href="#K8sObjectMeta">K8sObjectMeta</a></code></td>
 <td>
-<p>Standard Kubernetes minimum replicas configuration
-+kubebuilder:validation:Minimum=0</p>
+<p>Generic k8s resource metadata</p>
 
 </td>
 <td>
 No
 </td>
 </tr>
-<tr id="BaseK8sResourceConfigurationWithHPA-maxReplicas">
-<td><code>maxReplicas</code></td>
-<td><code><a href="https://developers.google.com/protocol-buffers/docs/reference/google.protobuf#int32value">Int32Value</a></code></td>
+<tr id="BaseKubernetesResourceConfig-image">
+<td><code>image</code></td>
+<td><code>string</code></td>
 <td>
-<p>Standard Kubernetes maximum replicas configuration
-+kubebuilder:validation:Minimum=0</p>
+<p>Standard Kubernetes container image configuration</p>
 
 </td>
 <td>
 No
 </td>
 </tr>
-<tr id="BaseK8sResourceConfigurationWithHPA-baseK8sResourceConfigurationWithReplicas">
-<td><code>baseK8sResourceConfigurationWithReplicas</code></td>
-<td><code><a href="#BaseK8sResourceConfigurationWithReplicas">BaseK8sResourceConfigurationWithReplicas</a></code></td>
+<tr id="BaseKubernetesResourceConfig-env">
+<td><code>env</code></td>
+<td><code><a href="#k8s-io-api-core-v1-EnvVar">EnvVar[]</a></code></td>
 <td>
-<p>Standard Kubernetes resource configuration</p>
+<p>If present will be appended to the environment variables of the container</p>
+
+</td>
+<td>
+No
+</td>
+</tr>
+<tr id="BaseKubernetesResourceConfig-resources">
+<td><code>resources</code></td>
+<td><code><a href="#ResourceRequirements">ResourceRequirements</a></code></td>
+<td>
+<p>Standard Kubernetes resource configuration, memory and CPU resource requirements</p>
+
+</td>
+<td>
+No
+</td>
+</tr>
+<tr id="BaseKubernetesResourceConfig-nodeSelector">
+<td><code>nodeSelector</code></td>
+<td><code>map&lt;string,&nbsp;string&gt;</code></td>
+<td>
+<p>Standard Kubernetes node selector configuration</p>
+
+</td>
+<td>
+No
+</td>
+</tr>
+<tr id="BaseKubernetesResourceConfig-affinity">
+<td><code>affinity</code></td>
+<td><code><a href="#k8s-io-api-core-v1-Affinity">Affinity</a></code></td>
+<td>
+<p>Standard Kubernetes affinity configuration</p>
+
+</td>
+<td>
+No
+</td>
+</tr>
+<tr id="BaseKubernetesResourceConfig-securityContext">
+<td><code>securityContext</code></td>
+<td><code><a href="#k8s-io-api-core-v1-SecurityContext">SecurityContext</a></code></td>
+<td>
+<p>Standard Kubernetes security context configuration</p>
+
+</td>
+<td>
+No
+</td>
+</tr>
+<tr id="BaseKubernetesResourceConfig-imagePullPolicy">
+<td><code>imagePullPolicy</code></td>
+<td><code>string</code></td>
+<td>
+<p>Image pull policy.
+One of Always, Never, IfNotPresent.
+Defaults to Always if :latest tag is specified, or IfNotPresent otherwise.
++optional</p>
+
+</td>
+<td>
+No
+</td>
+</tr>
+<tr id="BaseKubernetesResourceConfig-priorityClassName">
+<td><code>priorityClassName</code></td>
+<td><code>string</code></td>
+<td>
+<p>If specified, indicates the pod&rsquo;s priority. &ldquo;system-node-critical&rdquo; and
+&ldquo;system-cluster-critical&rdquo; are two special keywords which indicate the
+highest priorities with the former being the highest priority. Any other
+name must be defined by creating a PriorityClass object with that name.
+If not specified, the pod priority will be default or zero if there is no
+default.
++optional</p>
+
+</td>
+<td>
+No
+</td>
+</tr>
+<tr id="BaseKubernetesResourceConfig-tolerations">
+<td><code>tolerations</code></td>
+<td><code><a href="#k8s-io-api-core-v1-Toleration">Toleration[]</a></code></td>
+<td>
+<p>google.protobuf.Int32Value replicaCount = 1 [(gogoproto.wktpointer) = true];
+If specified, the pod&rsquo;s tolerations.
++optional</p>
+
+</td>
+<td>
+No
+</td>
+</tr>
+<tr id="BaseKubernetesResourceConfig-volumes">
+<td><code>volumes</code></td>
+<td><code><a href="#k8s-io-api-core-v1-Volume">Volume[]</a></code></td>
+<td>
+<p>List of volumes that can be mounted by containers belonging to the pod.
+More info: https://kubernetes.io/docs/concepts/storage/volumes
++optional
++patchMergeKey=name
++patchStrategy=merge,retainKeys</p>
+
+</td>
+<td>
+No
+</td>
+</tr>
+<tr id="BaseKubernetesResourceConfig-volumeMounts">
+<td><code>volumeMounts</code></td>
+<td><code><a href="#k8s-io-api-core-v1-VolumeMount">VolumeMount[]</a></code></td>
+<td>
+<p>Pod volumes to mount into the container&rsquo;s filesystem.
+Cannot be updated.
++optional
++patchMergeKey=mountPath
++patchStrategy=merge</p>
+
+</td>
+<td>
+No
+</td>
+</tr>
+<tr id="BaseKubernetesResourceConfig-replicas">
+<td><code>replicas</code></td>
+<td><code><a href="#Replicas">Replicas</a></code></td>
+<td>
+<p>Replica configuration</p>
 
 </td>
 <td>

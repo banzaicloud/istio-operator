@@ -11,8 +11,7 @@ import (
 	github_com_gogo_protobuf_types "github.com/gogo/protobuf/types"
 	io "io"
 	_ "istio.io/gogo-genproto/googleapis/google/api"
-	k8s_io_api_core_v1 "k8s.io/api/core/v1"
-	v1 "k8s.io/api/core/v1"
+	_ "k8s.io/api/core/v1"
 	math "math"
 	math_bits "math/bits"
 )
@@ -31,18 +30,21 @@ const _ = proto.GoGoProtoPackageIsVersion3 // please upgrade the proto package
 type GatewayType int32
 
 const (
-	GatewayType_Ingress GatewayType = 0
-	GatewayType_Egress  GatewayType = 1
+	GatewayType_unspecified GatewayType = 0
+	GatewayType_ingress     GatewayType = 1
+	GatewayType_egress      GatewayType = 2
 )
 
 var GatewayType_name = map[int32]string{
-	0: "Ingress",
-	1: "Egress",
+	0: "unspecified",
+	1: "ingress",
+	2: "egress",
 }
 
 var GatewayType_value = map[string]int32{
-	"Ingress": 0,
-	"Egress":  1,
+	"unspecified": 0,
+	"ingress":     1,
+	"egress":      2,
 }
 
 func (x GatewayType) String() string {
@@ -56,27 +58,30 @@ func (GatewayType) EnumDescriptor() ([]byte, []int) {
 type ConfigState int32
 
 const (
-	ConfigState_Created         ConfigState = 0
-	ConfigState_ReconcileFailed ConfigState = 1
-	ConfigState_Reconciling     ConfigState = 2
-	ConfigState_Available       ConfigState = 3
-	ConfigState_Unmanaged       ConfigState = 4
+	ConfigState_Unspecified     ConfigState = 0
+	ConfigState_Created         ConfigState = 1
+	ConfigState_ReconcileFailed ConfigState = 2
+	ConfigState_Reconciling     ConfigState = 3
+	ConfigState_Available       ConfigState = 4
+	ConfigState_Unmanaged       ConfigState = 5
 )
 
 var ConfigState_name = map[int32]string{
-	0: "Created",
-	1: "ReconcileFailed",
-	2: "Reconciling",
-	3: "Available",
-	4: "Unmanaged",
+	0: "Unspecified",
+	1: "Created",
+	2: "ReconcileFailed",
+	3: "Reconciling",
+	4: "Available",
+	5: "Unmanaged",
 }
 
 var ConfigState_value = map[string]int32{
-	"Created":         0,
-	"ReconcileFailed": 1,
-	"Reconciling":     2,
-	"Available":       3,
-	"Unmanaged":       4,
+	"Unspecified":     0,
+	"Created":         1,
+	"ReconcileFailed": 2,
+	"Reconciling":     3,
+	"Available":       4,
+	"Unmanaged":       5,
 }
 
 func (x ConfigState) String() string {
@@ -85,6 +90,34 @@ func (x ConfigState) String() string {
 
 func (ConfigState) EnumDescriptor() ([]byte, []int) {
 	return fileDescriptor_fdd75a369aea761c, []int{1}
+}
+
+type K8SResourceOverlayPatch_Type int32
+
+const (
+	K8SResourceOverlayPatch_unspecified K8SResourceOverlayPatch_Type = 0
+	K8SResourceOverlayPatch_replace     K8SResourceOverlayPatch_Type = 1
+	K8SResourceOverlayPatch_remove      K8SResourceOverlayPatch_Type = 2
+)
+
+var K8SResourceOverlayPatch_Type_name = map[int32]string{
+	0: "unspecified",
+	1: "replace",
+	2: "remove",
+}
+
+var K8SResourceOverlayPatch_Type_value = map[string]int32{
+	"unspecified": 0,
+	"replace":     1,
+	"remove":      2,
+}
+
+func (x K8SResourceOverlayPatch_Type) String() string {
+	return proto.EnumName(K8SResourceOverlayPatch_Type_name, int32(x))
+}
+
+func (K8SResourceOverlayPatch_Type) EnumDescriptor() ([]byte, []int) {
+	return fileDescriptor_fdd75a369aea761c, []int{1, 0}
 }
 
 // MeshGateway defines an Istio ingress or egress gateway
@@ -109,19 +142,22 @@ func (ConfigState) EnumDescriptor() ([]byte, []int) {
 // +k8s:deepcopy-gen=true
 // -->
 type MeshGatewaySpec struct {
-	// General Mesh gateway configuration
-	MeshGatewayConfiguration `protobuf:"bytes,1,opt,name=MeshGwConfiguration,proto3,embedded=MeshGwConfiguration" json:",inline"`
-	// Service ports to open for the gateway
-	// +kubebuilder:validation:MinItems=0
-	Ports []v1.ServicePort `protobuf:"bytes,2,rep,name=ports,proto3" json:"ports"`
+	// Deployment spec
+	Deployment *BaseKubernetesResourceConfig `protobuf:"bytes,1,opt,name=deployment,proto3" json:"deployment,omitempty"`
+	// Service spec
+	Service *Service `protobuf:"bytes,2,opt,name=service,proto3" json:"service,omitempty"`
+	// Whether to run the gateway in a privileged container
+	RunAsRoot *bool `protobuf:"bytes,3,opt,name=runAsRoot,proto3,wktptr" json:"runAsRoot,omitempty"`
 	// Type of gateway, either ingress or egress
 	// +kubebuilder:validation:Enum=ingress;egress
-	Type GatewayType `protobuf:"varint,3,opt,name=type,proto3,enum=istio_operator.v2.api.v1alpha1.GatewayType" json:"type"`
+	Type GatewayType `protobuf:"varint,4,opt,name=type,proto3,enum=istio_operator.v2.api.v1alpha1.GatewayType" json:"type,omitempty"`
 	// Istio CR to which this gateway belongs to
-	IstioControlPlane    *NamespacedName `protobuf:"bytes,4,opt,name=istioControlPlane,proto3" json:"istioControlPlane"`
-	XXX_NoUnkeyedLiteral struct{}        `json:"-"`
-	XXX_unrecognized     []byte          `json:"-"`
-	XXX_sizecache        int32           `json:"-"`
+	IstioControlPlane *NamespacedName `protobuf:"bytes,5,opt,name=istioControlPlane,proto3" json:"istioControlPlane,omitempty"`
+	// K8s resource overlay patches
+	K8SResourceOverlays  []*K8SResourceOverlayPatch `protobuf:"bytes,6,rep,name=k8sResourceOverlays,proto3" json:"k8sResourceOverlays,omitempty"`
+	XXX_NoUnkeyedLiteral struct{}                   `json:"-"`
+	XXX_unrecognized     []byte                     `json:"-"`
+	XXX_sizecache        int32                      `json:"-"`
 }
 
 func (m *MeshGatewaySpec) Reset()         { *m = MeshGatewaySpec{} }
@@ -157,9 +193,23 @@ func (m *MeshGatewaySpec) XXX_DiscardUnknown() {
 
 var xxx_messageInfo_MeshGatewaySpec proto.InternalMessageInfo
 
-func (m *MeshGatewaySpec) GetPorts() []v1.ServicePort {
+func (m *MeshGatewaySpec) GetDeployment() *BaseKubernetesResourceConfig {
 	if m != nil {
-		return m.Ports
+		return m.Deployment
+	}
+	return nil
+}
+
+func (m *MeshGatewaySpec) GetService() *Service {
+	if m != nil {
+		return m.Service
+	}
+	return nil
+}
+
+func (m *MeshGatewaySpec) GetRunAsRoot() *bool {
+	if m != nil {
+		return m.RunAsRoot
 	}
 	return nil
 }
@@ -168,7 +218,7 @@ func (m *MeshGatewaySpec) GetType() GatewayType {
 	if m != nil {
 		return m.Type
 	}
-	return GatewayType_Ingress
+	return GatewayType_unspecified
 }
 
 func (m *MeshGatewaySpec) GetIstioControlPlane() *NamespacedName {
@@ -178,46 +228,34 @@ func (m *MeshGatewaySpec) GetIstioControlPlane() *NamespacedName {
 	return nil
 }
 
-type MeshGatewayConfiguration struct {
-	// Standard Kubernetes resource configuration
-	BaseK8SResourceConfigurationWithHPAWithoutImage `protobuf:"bytes,1,opt,name=BaseK8sResourceConfigWithHPAWithoutImage,proto3,embedded=BaseK8sResourceConfigWithHPAWithoutImage" json:",inline"`
-	// Labels to attach to the mesh gateway
-	Labels map[string]string `protobuf:"bytes,2,rep,name=labels,proto3" json:"labels,omitempty" protobuf_key:"bytes,1,opt,name=key,proto3" protobuf_val:"bytes,2,opt,name=value,proto3"`
-	// Kubernetes Service Type for the gateway
-	// +kubebuilder:validation:Enum=ClusterIP;NodePort;LoadBalancer;ExternalName
-	ServiceType k8s_io_api_core_v1.ServiceType `protobuf:"bytes,3,opt,name=serviceType,proto3,customtype=k8s.io/api/core/v1.ServiceType" json:"serviceType"`
-	// Load Balancer IP override
-	LoadBalancerIP string `protobuf:"bytes,4,opt,name=loadBalancerIP,proto3" json:"loadBalancerIP,omitempty"`
-	// Annotations to add to the gateway service
-	ServiceAnnotations map[string]string `protobuf:"bytes,5,rep,name=serviceAnnotations,proto3" json:"serviceAnnotations,omitempty" protobuf_key:"bytes,1,opt,name=key,proto3" protobuf_val:"bytes,2,opt,name=value,proto3"`
-	// Labels to attach to the gateway service
-	ServiceLabels map[string]string `protobuf:"bytes,6,rep,name=serviceLabels,proto3" json:"serviceLabels,omitempty" protobuf_key:"bytes,1,opt,name=key,proto3" protobuf_val:"bytes,2,opt,name=value,proto3"`
-	// Kubernetes External Traffic Policy Type for the gateway service
-	// +kubebuilder:validation:Enum=Local;Cluster
-	ServiceExternalTrafficPolicyType k8s_io_api_core_v1.ServiceExternalTrafficPolicyType `protobuf:"bytes,7,opt,name=serviceExternalTrafficPolicyType,proto3,customtype=k8s.io/api/core/v1.ServiceExternalTrafficPolicyType" json:"serviceExternalTrafficPolicyType"`
-	// Specifies the networks that the proxy wants to see
-	RequestedNetworkView string `protobuf:"bytes,9,opt,name=requestedNetworkView,proto3" json:"requestedNetworkView,omitempty"`
-	// If present will be appended to the environment variables of the container
-	AdditionalEnvVars []v1.EnvVar `protobuf:"bytes,10,rep,name=additionalEnvVars,proto3" json:"additionalEnvVars"`
-	// Whether to run the gateway in a privileged container
-	RunAsRoot            *bool    `protobuf:"bytes,11,opt,name=runAsRoot,proto3,wktptr" json:"runAsRoot,omitempty"`
-	XXX_NoUnkeyedLiteral struct{} `json:"-"`
-	XXX_unrecognized     []byte   `json:"-"`
-	XXX_sizecache        int32    `json:"-"`
+func (m *MeshGatewaySpec) GetK8SResourceOverlays() []*K8SResourceOverlayPatch {
+	if m != nil {
+		return m.K8SResourceOverlays
+	}
+	return nil
 }
 
-func (m *MeshGatewayConfiguration) Reset()         { *m = MeshGatewayConfiguration{} }
-func (m *MeshGatewayConfiguration) String() string { return proto.CompactTextString(m) }
-func (*MeshGatewayConfiguration) ProtoMessage()    {}
-func (*MeshGatewayConfiguration) Descriptor() ([]byte, []int) {
+type K8SResourceOverlayPatch struct {
+	GroupVersionKind     K8SResourceOverlayPatch_GroupVersionKind `protobuf:"bytes,1,opt,name=groupVersionKind,proto3" json:"groupVersionKind"`
+	ObjectKey            *NamespacedName                          `protobuf:"bytes,2,opt,name=objectKey,proto3" json:"objectKey,omitempty"`
+	Patches              []K8SResourceOverlayPatch_Patch          `protobuf:"bytes,3,rep,name=patches,proto3" json:"patches"`
+	XXX_NoUnkeyedLiteral struct{}                                 `json:"-"`
+	XXX_unrecognized     []byte                                   `json:"-"`
+	XXX_sizecache        int32                                    `json:"-"`
+}
+
+func (m *K8SResourceOverlayPatch) Reset()         { *m = K8SResourceOverlayPatch{} }
+func (m *K8SResourceOverlayPatch) String() string { return proto.CompactTextString(m) }
+func (*K8SResourceOverlayPatch) ProtoMessage()    {}
+func (*K8SResourceOverlayPatch) Descriptor() ([]byte, []int) {
 	return fileDescriptor_fdd75a369aea761c, []int{1}
 }
-func (m *MeshGatewayConfiguration) XXX_Unmarshal(b []byte) error {
+func (m *K8SResourceOverlayPatch) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
 }
-func (m *MeshGatewayConfiguration) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+func (m *K8SResourceOverlayPatch) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
 	if deterministic {
-		return xxx_messageInfo_MeshGatewayConfiguration.Marshal(b, m, deterministic)
+		return xxx_messageInfo_K8SResourceOverlayPatch.Marshal(b, m, deterministic)
 	} else {
 		b = b[:cap(b)]
 		n, err := m.MarshalToSizedBuffer(b)
@@ -227,65 +265,173 @@ func (m *MeshGatewayConfiguration) XXX_Marshal(b []byte, deterministic bool) ([]
 		return b[:n], nil
 	}
 }
-func (m *MeshGatewayConfiguration) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_MeshGatewayConfiguration.Merge(m, src)
+func (m *K8SResourceOverlayPatch) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_K8SResourceOverlayPatch.Merge(m, src)
 }
-func (m *MeshGatewayConfiguration) XXX_Size() int {
+func (m *K8SResourceOverlayPatch) XXX_Size() int {
 	return m.Size()
 }
-func (m *MeshGatewayConfiguration) XXX_DiscardUnknown() {
-	xxx_messageInfo_MeshGatewayConfiguration.DiscardUnknown(m)
+func (m *K8SResourceOverlayPatch) XXX_DiscardUnknown() {
+	xxx_messageInfo_K8SResourceOverlayPatch.DiscardUnknown(m)
 }
 
-var xxx_messageInfo_MeshGatewayConfiguration proto.InternalMessageInfo
+var xxx_messageInfo_K8SResourceOverlayPatch proto.InternalMessageInfo
 
-func (m *MeshGatewayConfiguration) GetLabels() map[string]string {
+func (m *K8SResourceOverlayPatch) GetGroupVersionKind() K8SResourceOverlayPatch_GroupVersionKind {
 	if m != nil {
-		return m.Labels
+		return m.GroupVersionKind
+	}
+	return K8SResourceOverlayPatch_GroupVersionKind{}
+}
+
+func (m *K8SResourceOverlayPatch) GetObjectKey() *NamespacedName {
+	if m != nil {
+		return m.ObjectKey
 	}
 	return nil
 }
 
-func (m *MeshGatewayConfiguration) GetLoadBalancerIP() string {
+func (m *K8SResourceOverlayPatch) GetPatches() []K8SResourceOverlayPatch_Patch {
 	if m != nil {
-		return m.LoadBalancerIP
+		return m.Patches
+	}
+	return nil
+}
+
+type K8SResourceOverlayPatch_GroupVersionKind struct {
+	Kind                 string   `protobuf:"bytes,1,opt,name=kind,proto3" json:"kind,omitempty"`
+	Version              string   `protobuf:"bytes,2,opt,name=version,proto3" json:"version,omitempty"`
+	Group                string   `protobuf:"bytes,3,opt,name=group,proto3" json:"group,omitempty"`
+	XXX_NoUnkeyedLiteral struct{} `json:"-"`
+	XXX_unrecognized     []byte   `json:"-"`
+	XXX_sizecache        int32    `json:"-"`
+}
+
+func (m *K8SResourceOverlayPatch_GroupVersionKind) Reset() {
+	*m = K8SResourceOverlayPatch_GroupVersionKind{}
+}
+func (m *K8SResourceOverlayPatch_GroupVersionKind) String() string { return proto.CompactTextString(m) }
+func (*K8SResourceOverlayPatch_GroupVersionKind) ProtoMessage()    {}
+func (*K8SResourceOverlayPatch_GroupVersionKind) Descriptor() ([]byte, []int) {
+	return fileDescriptor_fdd75a369aea761c, []int{1, 0}
+}
+func (m *K8SResourceOverlayPatch_GroupVersionKind) XXX_Unmarshal(b []byte) error {
+	return m.Unmarshal(b)
+}
+func (m *K8SResourceOverlayPatch_GroupVersionKind) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	if deterministic {
+		return xxx_messageInfo_K8SResourceOverlayPatch_GroupVersionKind.Marshal(b, m, deterministic)
+	} else {
+		b = b[:cap(b)]
+		n, err := m.MarshalToSizedBuffer(b)
+		if err != nil {
+			return nil, err
+		}
+		return b[:n], nil
+	}
+}
+func (m *K8SResourceOverlayPatch_GroupVersionKind) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_K8SResourceOverlayPatch_GroupVersionKind.Merge(m, src)
+}
+func (m *K8SResourceOverlayPatch_GroupVersionKind) XXX_Size() int {
+	return m.Size()
+}
+func (m *K8SResourceOverlayPatch_GroupVersionKind) XXX_DiscardUnknown() {
+	xxx_messageInfo_K8SResourceOverlayPatch_GroupVersionKind.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_K8SResourceOverlayPatch_GroupVersionKind proto.InternalMessageInfo
+
+func (m *K8SResourceOverlayPatch_GroupVersionKind) GetKind() string {
+	if m != nil {
+		return m.Kind
 	}
 	return ""
 }
 
-func (m *MeshGatewayConfiguration) GetServiceAnnotations() map[string]string {
+func (m *K8SResourceOverlayPatch_GroupVersionKind) GetVersion() string {
 	if m != nil {
-		return m.ServiceAnnotations
-	}
-	return nil
-}
-
-func (m *MeshGatewayConfiguration) GetServiceLabels() map[string]string {
-	if m != nil {
-		return m.ServiceLabels
-	}
-	return nil
-}
-
-func (m *MeshGatewayConfiguration) GetRequestedNetworkView() string {
-	if m != nil {
-		return m.RequestedNetworkView
+		return m.Version
 	}
 	return ""
 }
 
-func (m *MeshGatewayConfiguration) GetAdditionalEnvVars() []v1.EnvVar {
+func (m *K8SResourceOverlayPatch_GroupVersionKind) GetGroup() string {
 	if m != nil {
-		return m.AdditionalEnvVars
+		return m.Group
 	}
-	return nil
+	return ""
 }
 
-func (m *MeshGatewayConfiguration) GetRunAsRoot() *bool {
-	if m != nil {
-		return m.RunAsRoot
+type K8SResourceOverlayPatch_Patch struct {
+	Path                 string                       `protobuf:"bytes,1,opt,name=path,proto3" json:"path,omitempty"`
+	Value                string                       `protobuf:"bytes,2,opt,name=value,proto3" json:"value,omitempty"`
+	ParseValue           bool                         `protobuf:"varint,3,opt,name=parseValue,proto3" json:"parseValue,omitempty"`
+	Type                 K8SResourceOverlayPatch_Type `protobuf:"varint,4,opt,name=type,proto3,enum=istio_operator.v2.api.v1alpha1.K8SResourceOverlayPatch_Type" json:"type,omitempty"`
+	XXX_NoUnkeyedLiteral struct{}                     `json:"-"`
+	XXX_unrecognized     []byte                       `json:"-"`
+	XXX_sizecache        int32                        `json:"-"`
+}
+
+func (m *K8SResourceOverlayPatch_Patch) Reset()         { *m = K8SResourceOverlayPatch_Patch{} }
+func (m *K8SResourceOverlayPatch_Patch) String() string { return proto.CompactTextString(m) }
+func (*K8SResourceOverlayPatch_Patch) ProtoMessage()    {}
+func (*K8SResourceOverlayPatch_Patch) Descriptor() ([]byte, []int) {
+	return fileDescriptor_fdd75a369aea761c, []int{1, 1}
+}
+func (m *K8SResourceOverlayPatch_Patch) XXX_Unmarshal(b []byte) error {
+	return m.Unmarshal(b)
+}
+func (m *K8SResourceOverlayPatch_Patch) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	if deterministic {
+		return xxx_messageInfo_K8SResourceOverlayPatch_Patch.Marshal(b, m, deterministic)
+	} else {
+		b = b[:cap(b)]
+		n, err := m.MarshalToSizedBuffer(b)
+		if err != nil {
+			return nil, err
+		}
+		return b[:n], nil
 	}
-	return nil
+}
+func (m *K8SResourceOverlayPatch_Patch) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_K8SResourceOverlayPatch_Patch.Merge(m, src)
+}
+func (m *K8SResourceOverlayPatch_Patch) XXX_Size() int {
+	return m.Size()
+}
+func (m *K8SResourceOverlayPatch_Patch) XXX_DiscardUnknown() {
+	xxx_messageInfo_K8SResourceOverlayPatch_Patch.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_K8SResourceOverlayPatch_Patch proto.InternalMessageInfo
+
+func (m *K8SResourceOverlayPatch_Patch) GetPath() string {
+	if m != nil {
+		return m.Path
+	}
+	return ""
+}
+
+func (m *K8SResourceOverlayPatch_Patch) GetValue() string {
+	if m != nil {
+		return m.Value
+	}
+	return ""
+}
+
+func (m *K8SResourceOverlayPatch_Patch) GetParseValue() bool {
+	if m != nil {
+		return m.ParseValue
+	}
+	return false
+}
+
+func (m *K8SResourceOverlayPatch_Patch) GetType() K8SResourceOverlayPatch_Type {
+	if m != nil {
+		return m.Type
+	}
+	return K8SResourceOverlayPatch_unspecified
 }
 
 // <!-- go code generation tags
@@ -341,7 +487,7 @@ func (m *MeshGatewayStatus) GetStatus() ConfigState {
 	if m != nil {
 		return m.Status
 	}
-	return ConfigState_Created
+	return ConfigState_Unspecified
 }
 
 func (m *MeshGatewayStatus) GetGatewayAddress() []string {
@@ -361,77 +507,69 @@ func (m *MeshGatewayStatus) GetErrorMessage() string {
 func init() {
 	proto.RegisterEnum("istio_operator.v2.api.v1alpha1.GatewayType", GatewayType_name, GatewayType_value)
 	proto.RegisterEnum("istio_operator.v2.api.v1alpha1.ConfigState", ConfigState_name, ConfigState_value)
+	proto.RegisterEnum("istio_operator.v2.api.v1alpha1.K8SResourceOverlayPatch_Type", K8SResourceOverlayPatch_Type_name, K8SResourceOverlayPatch_Type_value)
 	proto.RegisterType((*MeshGatewaySpec)(nil), "istio_operator.v2.api.v1alpha1.MeshGatewaySpec")
-	proto.RegisterType((*MeshGatewayConfiguration)(nil), "istio_operator.v2.api.v1alpha1.MeshGatewayConfiguration")
-	proto.RegisterMapType((map[string]string)(nil), "istio_operator.v2.api.v1alpha1.MeshGatewayConfiguration.LabelsEntry")
-	proto.RegisterMapType((map[string]string)(nil), "istio_operator.v2.api.v1alpha1.MeshGatewayConfiguration.ServiceAnnotationsEntry")
-	proto.RegisterMapType((map[string]string)(nil), "istio_operator.v2.api.v1alpha1.MeshGatewayConfiguration.ServiceLabelsEntry")
+	proto.RegisterType((*K8SResourceOverlayPatch)(nil), "istio_operator.v2.api.v1alpha1.K8sResourceOverlayPatch")
+	proto.RegisterType((*K8SResourceOverlayPatch_GroupVersionKind)(nil), "istio_operator.v2.api.v1alpha1.K8sResourceOverlayPatch.GroupVersionKind")
+	proto.RegisterType((*K8SResourceOverlayPatch_Patch)(nil), "istio_operator.v2.api.v1alpha1.K8sResourceOverlayPatch.Patch")
 	proto.RegisterType((*MeshGatewayStatus)(nil), "istio_operator.v2.api.v1alpha1.MeshGatewayStatus")
 }
 
 func init() { proto.RegisterFile("api/v1alpha1/meshgateway.proto", fileDescriptor_fdd75a369aea761c) }
 
 var fileDescriptor_fdd75a369aea761c = []byte{
-	// 935 bytes of a gzipped FileDescriptorProto
-	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0xa4, 0x56, 0x4f, 0x6f, 0xe3, 0x44,
-	0x14, 0xaf, 0xfb, 0x57, 0x99, 0xec, 0x6e, 0xd3, 0x69, 0x25, 0xbc, 0x39, 0x24, 0x55, 0x0e, 0x55,
-	0xb5, 0x80, 0xad, 0x66, 0x85, 0x54, 0x40, 0x42, 0xc4, 0x21, 0xd0, 0x6a, 0x69, 0x89, 0xdc, 0x52,
-	0x24, 0x84, 0x58, 0x4d, 0xec, 0x17, 0x67, 0xd4, 0xc9, 0x8c, 0x77, 0x3c, 0x76, 0x08, 0x17, 0xb8,
-	0xf1, 0x35, 0x38, 0xec, 0x57, 0xe0, 0xce, 0x71, 0x8f, 0x7b, 0xe6, 0x10, 0x50, 0x8f, 0xfd, 0x14,
-	0x68, 0xc6, 0x8e, 0x48, 0x37, 0x29, 0xdd, 0x3f, 0x97, 0x78, 0xfc, 0xfc, 0x7e, 0xbf, 0xf7, 0xff,
-	0x4d, 0x50, 0x8d, 0xc4, 0xd4, 0xcd, 0x0e, 0x08, 0x8b, 0x07, 0xe4, 0xc0, 0x1d, 0x42, 0x32, 0x88,
-	0x88, 0x82, 0x11, 0x19, 0x3b, 0xb1, 0x14, 0x4a, 0xe0, 0x1a, 0x4d, 0x14, 0x15, 0x4f, 0x45, 0x0c,
-	0x92, 0x28, 0x21, 0x9d, 0xac, 0xe9, 0x90, 0x98, 0x3a, 0x53, 0x44, 0xb5, 0x16, 0x09, 0x11, 0x31,
-	0x70, 0x8d, 0x76, 0x2f, 0xed, 0xbb, 0x23, 0x49, 0xe2, 0x18, 0x64, 0x92, 0xe3, 0xab, 0x0f, 0x6f,
-	0xf0, 0x07, 0x62, 0x38, 0x14, 0xbc, 0xf8, 0xb4, 0x13, 0x89, 0x48, 0x98, 0xa3, 0xab, 0x4f, 0x85,
-	0xb4, 0x5e, 0x10, 0x6a, 0x5c, 0x9f, 0x02, 0x0b, 0x9f, 0xf6, 0x60, 0x40, 0x32, 0x2a, 0x64, 0xa1,
-	0xd0, 0xb8, 0x3c, 0x4c, 0x1c, 0x2a, 0x8c, 0x42, 0x20, 0x24, 0xb8, 0xd9, 0x81, 0x1b, 0x01, 0xd7,
-	0xfe, 0x41, 0x98, 0xeb, 0x34, 0x9e, 0xaf, 0xa0, 0xcd, 0x13, 0x48, 0x06, 0x5f, 0xe5, 0xb1, 0x9c,
-	0xc5, 0x10, 0xe0, 0x5f, 0xd0, 0xb6, 0x11, 0x8d, 0xda, 0x82, 0xf7, 0x69, 0x94, 0x4a, 0xa2, 0xa8,
-	0xe0, 0xb6, 0xb5, 0x6b, 0xed, 0x97, 0x9b, 0x87, 0xce, 0xff, 0xc7, 0xe9, 0xcc, 0xb0, 0xdd, 0xc0,
-	0x7b, 0xdb, 0x2f, 0x26, 0xf5, 0xa5, 0x97, 0x93, 0xba, 0x75, 0x3d, 0xa9, 0x6f, 0x7c, 0x40, 0x39,
-	0xa3, 0x1c, 0xfc, 0x45, 0x96, 0xf0, 0x11, 0x5a, 0x8b, 0x85, 0x54, 0x89, 0xbd, 0xbc, 0xbb, 0xb2,
-	0x5f, 0x6e, 0xd6, 0x9d, 0x3c, 0x10, 0x63, 0x47, 0x07, 0xe2, 0x64, 0x07, 0xce, 0x19, 0xc8, 0x8c,
-	0x06, 0xd0, 0x15, 0x52, 0x79, 0x5b, 0x57, 0x2d, 0x6b, 0x59, 0xb3, 0x5f, 0x4f, 0xea, 0x39, 0xd2,
-	0xcf, 0x1f, 0xf8, 0x04, 0xad, 0xaa, 0x71, 0x0c, 0xf6, 0xca, 0xae, 0xb5, 0xff, 0xa0, 0xf9, 0xfe,
-	0x5d, 0xbe, 0x17, 0x7e, 0x9f, 0x8f, 0x63, 0xf0, 0xee, 0x69, 0xd2, 0xeb, 0x49, 0xdd, 0x10, 0xf8,
-	0xe6, 0x17, 0x8f, 0xd0, 0x96, 0x61, 0x68, 0x0b, 0xae, 0xa4, 0x60, 0x5d, 0x46, 0x38, 0xd8, 0xab,
-	0x26, 0x2f, 0xce, 0x5d, 0xdc, 0xa7, 0x64, 0x08, 0x49, 0x4c, 0x02, 0x08, 0xf5, 0xc9, 0x7b, 0x58,
-	0xd0, 0xcf, 0x13, 0xfa, 0xf3, 0xa2, 0xc6, 0x1f, 0x25, 0x64, 0xdf, 0x96, 0x58, 0xfc, 0xa7, 0x85,
-	0xf6, 0x3d, 0x92, 0xc0, 0x93, 0xc3, 0xc4, 0x87, 0x44, 0xa4, 0x32, 0x80, 0x5c, 0xe1, 0x3b, 0xaa,
-	0x06, 0x47, 0xdd, 0x96, 0x7e, 0x88, 0x54, 0x1d, 0x0f, 0x49, 0x04, 0x45, 0x15, 0xbf, 0xb9, 0xcb,
-	0xdb, 0x85, 0x7c, 0x85, 0xc1, 0x05, 0xb4, 0x8b, 0x8b, 0xfb, 0xda, 0x5e, 0xe1, 0x1f, 0xd0, 0x3a,
-	0x23, 0x3d, 0x60, 0xd3, 0x92, 0x7f, 0xf1, 0xb6, 0x5d, 0xe6, 0x7c, 0x6d, 0x68, 0x3a, 0x5c, 0xc9,
-	0xb1, 0x5f, 0x70, 0xe2, 0x23, 0x54, 0x4e, 0xf2, 0x76, 0x39, 0x9f, 0x36, 0x43, 0xc9, 0xdb, 0xd3,
-	0x1e, 0xff, 0x35, 0xa9, 0xd7, 0xe6, 0xa7, 0x64, 0xda, 0x5c, 0x5a, 0xdb, 0x9f, 0x85, 0xe2, 0x3d,
-	0xf4, 0x80, 0x09, 0x12, 0x7a, 0x84, 0x11, 0x1e, 0x80, 0x3c, 0xee, 0x9a, 0xea, 0x97, 0xfc, 0x57,
-	0xa4, 0xf8, 0x57, 0x0b, 0xe1, 0x02, 0xd7, 0xe2, 0x5c, 0x28, 0xe3, 0x5b, 0x62, 0xaf, 0x99, 0xe0,
-	0xba, 0x6f, 0x1d, 0xdc, 0xd9, 0x1c, 0x65, 0x1e, 0xe8, 0x02, 0x5b, 0xf8, 0x19, 0xba, 0x5f, 0x48,
-	0xf3, 0x94, 0xd8, 0xeb, 0xc6, 0xf8, 0x93, 0x77, 0x35, 0x3e, 0x9b, 0xe0, 0x9b, 0x16, 0xf0, 0x6f,
-	0x16, 0xda, 0x2d, 0x24, 0x9d, 0x9f, 0x14, 0x48, 0x4e, 0xd8, 0xb9, 0x24, 0xfd, 0x3e, 0x0d, 0xba,
-	0x82, 0xd1, 0xc0, 0xcc, 0x95, 0xbd, 0x61, 0xb2, 0xff, 0x69, 0x91, 0xfd, 0xc7, 0xb7, 0x67, 0xff,
-	0x56, 0x0a, 0xff, 0x4e, 0x23, 0xb8, 0x89, 0x76, 0x24, 0x3c, 0x4b, 0x21, 0x51, 0x10, 0x9e, 0x82,
-	0x1a, 0x09, 0x79, 0x79, 0x41, 0x61, 0x64, 0x97, 0x4c, 0xb5, 0x16, 0x7e, 0xc3, 0xa7, 0x68, 0x8b,
-	0x84, 0x21, 0xd5, 0xb1, 0x12, 0xd6, 0xe1, 0xd9, 0x05, 0x91, 0x89, 0x8d, 0x4c, 0xd2, 0xaa, 0x8b,
-	0x36, 0x50, 0xae, 0xe2, 0xad, 0xea, 0x48, 0xfc, 0x79, 0x28, 0xfe, 0x0c, 0x95, 0x64, 0xca, 0x5b,
-	0x89, 0x2f, 0x84, 0xb2, 0xcb, 0x66, 0xec, 0xaa, 0x4e, 0xbe, 0xb3, 0x9d, 0xe9, 0x25, 0xe0, 0x78,
-	0x42, 0xb0, 0x0b, 0xc2, 0x52, 0xf0, 0x56, 0x7f, 0xff, 0xbb, 0x6e, 0xf9, 0xff, 0x41, 0xaa, 0x1f,
-	0xa3, 0xf2, 0x4c, 0xae, 0x71, 0x05, 0xad, 0x5c, 0xc2, 0xd8, 0xcc, 0x6f, 0xc9, 0xd7, 0x47, 0xbc,
-	0x83, 0xd6, 0x32, 0x0d, 0xb5, 0x97, 0x8d, 0x2c, 0x7f, 0xf9, 0x64, 0xf9, 0xd0, 0xaa, 0x76, 0xd0,
-	0x7b, 0xb7, 0xb4, 0xca, 0x1b, 0xd1, 0x7c, 0x8e, 0xf0, 0x7c, 0xd1, 0xdf, 0x84, 0xa1, 0xf1, 0xdc,
-	0x42, 0x5b, 0xb3, 0xd7, 0x8b, 0x22, 0x2a, 0x4d, 0x70, 0x1b, 0xad, 0xe7, 0x27, 0x43, 0xf2, 0x1a,
-	0x7b, 0x39, 0x6f, 0x44, 0x8d, 0x01, 0xbf, 0x80, 0xea, 0x51, 0x2c, 0x58, 0x5b, 0x61, 0x28, 0x21,
-	0xc9, 0x57, 0x47, 0xc9, 0x7f, 0x45, 0x8a, 0x1b, 0xe8, 0x5e, 0x47, 0x4a, 0x21, 0x4f, 0x20, 0x49,
-	0xf4, 0x02, 0x34, 0xd3, 0xef, 0xdf, 0x90, 0x3d, 0xda, 0x43, 0xe5, 0x99, 0xd5, 0x8f, 0xcb, 0x68,
-	0xe3, 0x98, 0x47, 0x1a, 0x5d, 0x59, 0xc2, 0x08, 0xad, 0x77, 0xf2, 0xb3, 0xf5, 0xe8, 0x47, 0x54,
-	0x9e, 0x71, 0x45, 0xeb, 0xb5, 0x25, 0xe8, 0xdb, 0xb4, 0xb2, 0x84, 0xb7, 0xd1, 0xa6, 0x0f, 0x81,
-	0xe0, 0x01, 0x65, 0xf0, 0x25, 0xa1, 0x0c, 0xc2, 0x8a, 0x85, 0x37, 0x51, 0x79, 0x2a, 0xa4, 0x3c,
-	0xaa, 0x2c, 0xe3, 0xfb, 0xa8, 0xd4, 0xca, 0x08, 0x65, 0xa4, 0xc7, 0xa0, 0xb2, 0xa2, 0x5f, 0xbf,
-	0xe5, 0x43, 0xc2, 0x49, 0x04, 0x61, 0x65, 0xd5, 0x6b, 0xbf, 0xb8, 0xaa, 0x59, 0x2f, 0xaf, 0x6a,
-	0xd6, 0x3f, 0x57, 0x35, 0xeb, 0xfb, 0x8f, 0x22, 0xaa, 0x06, 0x69, 0xcf, 0x09, 0xc4, 0xd0, 0xed,
-	0x11, 0xfe, 0x33, 0xa1, 0x01, 0x13, 0x69, 0xe8, 0x9a, 0x64, 0x7d, 0x38, 0x4d, 0x96, 0x9b, 0x35,
-	0xdd, 0xd9, 0xbf, 0x0e, 0xbd, 0x75, 0xd3, 0x5c, 0x8f, 0xff, 0x0d, 0x00, 0x00, 0xff, 0xff, 0x49,
-	0xb1, 0xdb, 0xc8, 0xb1, 0x08, 0x00, 0x00,
+	// 809 bytes of a gzipped FileDescriptorProto
+	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0x9c, 0x55, 0xe1, 0x8e, 0xdb, 0x44,
+	0x10, 0xae, 0x13, 0xdf, 0x1d, 0x99, 0x40, 0xcf, 0xdd, 0x56, 0xc2, 0xe4, 0x47, 0xee, 0x94, 0x1f,
+	0x70, 0x2a, 0xc2, 0xe6, 0x82, 0x50, 0xfb, 0xa3, 0x20, 0x25, 0x51, 0x29, 0xd2, 0x51, 0x38, 0xb9,
+	0xf4, 0x7e, 0x20, 0x50, 0xb5, 0xb6, 0xe7, 0x9c, 0xe5, 0xec, 0xdd, 0xd5, 0xae, 0xed, 0x2a, 0x7d,
+	0x02, 0x1e, 0x03, 0x09, 0x1e, 0xa6, 0x3f, 0x79, 0x02, 0x40, 0xf7, 0x08, 0x3c, 0x01, 0xda, 0xb5,
+	0x4d, 0x73, 0x77, 0x85, 0xd0, 0xfb, 0x13, 0xcd, 0x4c, 0xe6, 0xfb, 0x76, 0xe6, 0xcb, 0xcc, 0x04,
+	0xc6, 0x54, 0xb2, 0xb0, 0x3e, 0xa4, 0xb9, 0x5c, 0xd2, 0xc3, 0xb0, 0x40, 0xbd, 0xcc, 0x68, 0x89,
+	0xcf, 0xe9, 0x2a, 0x90, 0x4a, 0x94, 0x82, 0x8c, 0x99, 0x2e, 0x99, 0x78, 0x26, 0x24, 0x2a, 0x5a,
+	0x0a, 0x15, 0xd4, 0xd3, 0x80, 0x4a, 0x16, 0x74, 0x88, 0xd1, 0x38, 0x13, 0x22, 0xcb, 0x31, 0xb4,
+	0xd9, 0x71, 0x75, 0x1a, 0x3e, 0x57, 0x54, 0x4a, 0x54, 0xba, 0xc1, 0x8f, 0xde, 0xbb, 0xc0, 0x9f,
+	0x88, 0xa2, 0x10, 0xbc, 0xfd, 0xea, 0x4e, 0x26, 0x32, 0x61, 0xcd, 0xd0, 0x58, 0x6d, 0x74, 0xaf,
+	0x25, 0x34, 0xb8, 0x53, 0x86, 0x79, 0xfa, 0x2c, 0xc6, 0x25, 0xad, 0x99, 0x50, 0x6d, 0xc2, 0xe4,
+	0xec, 0xbe, 0x0e, 0x98, 0xb0, 0x09, 0x89, 0x50, 0x18, 0xd6, 0x87, 0x61, 0x86, 0xdc, 0xd4, 0x87,
+	0x69, 0x93, 0x33, 0xf9, 0xc9, 0x85, 0xdd, 0xc7, 0xa8, 0x97, 0x8f, 0x9a, 0x5e, 0x9e, 0x48, 0x4c,
+	0xc8, 0xf7, 0x00, 0x29, 0xca, 0x5c, 0xac, 0x0a, 0xe4, 0xa5, 0xef, 0xec, 0x3b, 0x07, 0xc3, 0xe9,
+	0x83, 0xe0, 0xbf, 0xdb, 0x0b, 0xe6, 0x54, 0xe3, 0x51, 0x15, 0xa3, 0xe2, 0x58, 0xa2, 0x8e, 0x50,
+	0x8b, 0x4a, 0x25, 0xb8, 0x10, 0xfc, 0x94, 0x65, 0xd1, 0x1a, 0x1f, 0x99, 0xc1, 0x8e, 0x46, 0x55,
+	0xb3, 0x04, 0xfd, 0x9e, 0xa5, 0xfe, 0x60, 0x13, 0xf5, 0x93, 0x26, 0x3d, 0xea, 0x70, 0xe4, 0x73,
+	0x18, 0xa8, 0x8a, 0xcf, 0x74, 0x24, 0x44, 0xe9, 0xf7, 0x2d, 0xc9, 0x28, 0x68, 0xd4, 0x08, 0x3a,
+	0x79, 0x83, 0xb9, 0x10, 0xf9, 0x09, 0xcd, 0x2b, 0x9c, 0xbb, 0x3f, 0xff, 0xb1, 0xe7, 0x44, 0xaf,
+	0x20, 0xe4, 0x21, 0xb8, 0xe5, 0x4a, 0xa2, 0xef, 0xee, 0x3b, 0x07, 0x37, 0xa7, 0x1f, 0x6e, 0x7a,
+	0xbf, 0xd5, 0xe6, 0xdb, 0x95, 0xc4, 0xb9, 0x7b, 0x3e, 0x73, 0x7a, 0x91, 0x85, 0x93, 0x18, 0x6e,
+	0x59, 0xe4, 0x42, 0xf0, 0x52, 0x89, 0xfc, 0x38, 0xa7, 0x1c, 0xfd, 0x2d, 0x5b, 0x4e, 0xb0, 0x89,
+	0xf3, 0x6b, 0x5a, 0xa0, 0x96, 0x34, 0xc1, 0xd4, 0x58, 0x2d, 0xed, 0x55, 0x3a, 0xc2, 0xe0, 0xf6,
+	0xd9, 0xfd, 0x7f, 0xe4, 0xfc, 0xa6, 0x46, 0x95, 0xd3, 0x95, 0xf6, 0xb7, 0xf7, 0xfb, 0x07, 0xc3,
+	0xe9, 0xbd, 0x4d, 0xaf, 0x1c, 0x5d, 0x81, 0x1e, 0xd3, 0x32, 0x59, 0x46, 0xaf, 0xe3, 0x9c, 0xfc,
+	0xe5, 0xc2, 0xbb, 0xff, 0x02, 0x20, 0x2f, 0xc0, 0xcb, 0x94, 0xa8, 0xe4, 0x09, 0x2a, 0xcd, 0x04,
+	0x3f, 0x62, 0x3c, 0x6d, 0x07, 0xe3, 0xcb, 0x6b, 0xd6, 0x10, 0x3c, 0xba, 0xc4, 0x37, 0x77, 0x5f,
+	0xfe, 0xbe, 0x77, 0x23, 0xba, 0xf2, 0x0e, 0xf9, 0x0a, 0x06, 0x22, 0xfe, 0x11, 0x93, 0xf2, 0x08,
+	0x57, 0xed, 0xc8, 0xbc, 0xa1, 0xbc, 0xd1, 0x2b, 0x02, 0xf2, 0x03, 0xec, 0x48, 0xf3, 0x3e, 0x6a,
+	0xbf, 0x6f, 0x45, 0xfc, 0xec, 0xba, 0x0d, 0xd8, 0xcf, 0xb6, 0xea, 0x8e, 0x73, 0x74, 0x02, 0xde,
+	0xe5, 0xc6, 0x08, 0x01, 0xf7, 0xac, 0x13, 0x6c, 0x10, 0x59, 0x9b, 0xf8, 0xb0, 0x53, 0x37, 0x29,
+	0xb6, 0xa5, 0x41, 0xd4, 0xb9, 0xe4, 0x0e, 0x6c, 0x59, 0x09, 0xec, 0x60, 0x0f, 0xa2, 0xc6, 0x19,
+	0xfd, 0xe2, 0xc0, 0x56, 0xf3, 0x53, 0x10, 0x70, 0x25, 0x2d, 0x97, 0x1d, 0x9b, 0xb1, 0x0d, 0xa6,
+	0x36, 0xa3, 0xde, 0x72, 0x35, 0x0e, 0x19, 0x03, 0x48, 0xaa, 0x34, 0xda, 0x2d, 0xb0, 0x74, 0x6f,
+	0x45, 0x6b, 0x11, 0x72, 0x7c, 0x61, 0x0d, 0x1e, 0x5c, 0x57, 0x07, 0xb3, 0x17, 0xcd, 0x46, 0x4c,
+	0x3e, 0x06, 0xd7, 0x78, 0x64, 0x17, 0x86, 0x15, 0xd7, 0x12, 0x13, 0x76, 0xca, 0x30, 0xf5, 0x6e,
+	0x90, 0x21, 0xec, 0x28, 0x94, 0x39, 0x4d, 0xd0, 0x73, 0x08, 0xc0, 0xb6, 0xc2, 0x42, 0xd4, 0xe8,
+	0xf5, 0x26, 0xbf, 0x3a, 0x70, 0x6b, 0xfd, 0xfe, 0x94, 0xb4, 0xac, 0x34, 0x59, 0xc0, 0x76, 0x63,
+	0xd9, 0x2e, 0xff, 0xc7, 0x8a, 0x36, 0x77, 0xc6, 0x60, 0x30, 0x6a, 0xa1, 0xe4, 0x7d, 0xb8, 0xd9,
+	0xb2, 0xce, 0xd2, 0x54, 0xa1, 0xd6, 0x7e, 0x6f, 0xbf, 0x7f, 0x30, 0x88, 0x2e, 0x45, 0xc9, 0x04,
+	0xde, 0x7e, 0xa8, 0x94, 0x50, 0x8f, 0x51, 0x6b, 0x9a, 0x61, 0xab, 0xfb, 0x85, 0xd8, 0xdd, 0x7b,
+	0x30, 0x5c, 0xbb, 0x02, 0xaf, 0xed, 0x8f, 0xf1, 0xcc, 0xd0, 0x35, 0xfd, 0x61, 0x63, 0xf7, 0xee,
+	0x0a, 0x18, 0xae, 0xd5, 0x66, 0x80, 0x4f, 0x2f, 0x03, 0x17, 0x0a, 0xcd, 0x41, 0xf6, 0x1c, 0x72,
+	0x1b, 0x76, 0x23, 0x4c, 0x04, 0x4f, 0x58, 0x8e, 0x5f, 0x50, 0x96, 0x63, 0xea, 0xf5, 0x0c, 0xa4,
+	0x0b, 0x32, 0x9e, 0x79, 0x7d, 0xf2, 0x0e, 0x0c, 0x66, 0x35, 0x65, 0x39, 0x8d, 0x73, 0xf4, 0x5c,
+	0xe3, 0x3e, 0xe5, 0x05, 0xe5, 0x34, 0xc3, 0xd4, 0xdb, 0x9a, 0x2f, 0x5e, 0x9e, 0x8f, 0x9d, 0xdf,
+	0xce, 0xc7, 0xce, 0x9f, 0xe7, 0x63, 0xe7, 0xbb, 0x4f, 0x33, 0x56, 0x2e, 0xab, 0x38, 0x48, 0x44,
+	0x11, 0xc6, 0x94, 0xbf, 0xa0, 0x2c, 0xc9, 0x45, 0x95, 0x86, 0x56, 0xce, 0x8f, 0x3a, 0x39, 0xc3,
+	0x7a, 0x1a, 0xae, 0xff, 0xfb, 0xc4, 0xdb, 0xf6, 0x8a, 0x7e, 0xf2, 0x77, 0x00, 0x00, 0x00, 0xff,
+	0xff, 0xbc, 0x8d, 0xcf, 0xe1, 0xf4, 0x06, 0x00, 0x00,
 }
 
 func (m *MeshGatewaySpec) Marshal() (dAtA []byte, err error) {
@@ -458,6 +596,20 @@ func (m *MeshGatewaySpec) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 		i -= len(m.XXX_unrecognized)
 		copy(dAtA[i:], m.XXX_unrecognized)
 	}
+	if len(m.K8SResourceOverlays) > 0 {
+		for iNdEx := len(m.K8SResourceOverlays) - 1; iNdEx >= 0; iNdEx-- {
+			{
+				size, err := m.K8SResourceOverlays[iNdEx].MarshalToSizedBuffer(dAtA[:i])
+				if err != nil {
+					return 0, err
+				}
+				i -= size
+				i = encodeVarintMeshgateway(dAtA, i, uint64(size))
+			}
+			i--
+			dAtA[i] = 0x32
+		}
+	}
 	if m.IstioControlPlane != nil {
 		{
 			size, err := m.IstioControlPlane.MarshalToSizedBuffer(dAtA[:i])
@@ -468,17 +620,78 @@ func (m *MeshGatewaySpec) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 			i = encodeVarintMeshgateway(dAtA, i, uint64(size))
 		}
 		i--
-		dAtA[i] = 0x22
+		dAtA[i] = 0x2a
 	}
 	if m.Type != 0 {
 		i = encodeVarintMeshgateway(dAtA, i, uint64(m.Type))
 		i--
-		dAtA[i] = 0x18
+		dAtA[i] = 0x20
 	}
-	if len(m.Ports) > 0 {
-		for iNdEx := len(m.Ports) - 1; iNdEx >= 0; iNdEx-- {
+	if m.RunAsRoot != nil {
+		n2, err2 := github_com_gogo_protobuf_types.StdBoolMarshalTo(*m.RunAsRoot, dAtA[i-github_com_gogo_protobuf_types.SizeOfStdBool(*m.RunAsRoot):])
+		if err2 != nil {
+			return 0, err2
+		}
+		i -= n2
+		i = encodeVarintMeshgateway(dAtA, i, uint64(n2))
+		i--
+		dAtA[i] = 0x1a
+	}
+	if m.Service != nil {
+		{
+			size, err := m.Service.MarshalToSizedBuffer(dAtA[:i])
+			if err != nil {
+				return 0, err
+			}
+			i -= size
+			i = encodeVarintMeshgateway(dAtA, i, uint64(size))
+		}
+		i--
+		dAtA[i] = 0x12
+	}
+	if m.Deployment != nil {
+		{
+			size, err := m.Deployment.MarshalToSizedBuffer(dAtA[:i])
+			if err != nil {
+				return 0, err
+			}
+			i -= size
+			i = encodeVarintMeshgateway(dAtA, i, uint64(size))
+		}
+		i--
+		dAtA[i] = 0xa
+	}
+	return len(dAtA) - i, nil
+}
+
+func (m *K8SResourceOverlayPatch) Marshal() (dAtA []byte, err error) {
+	size := m.Size()
+	dAtA = make([]byte, size)
+	n, err := m.MarshalToSizedBuffer(dAtA[:size])
+	if err != nil {
+		return nil, err
+	}
+	return dAtA[:n], nil
+}
+
+func (m *K8SResourceOverlayPatch) MarshalTo(dAtA []byte) (int, error) {
+	size := m.Size()
+	return m.MarshalToSizedBuffer(dAtA[:size])
+}
+
+func (m *K8SResourceOverlayPatch) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+	i := len(dAtA)
+	_ = i
+	var l int
+	_ = l
+	if m.XXX_unrecognized != nil {
+		i -= len(m.XXX_unrecognized)
+		copy(dAtA[i:], m.XXX_unrecognized)
+	}
+	if len(m.Patches) > 0 {
+		for iNdEx := len(m.Patches) - 1; iNdEx >= 0; iNdEx-- {
 			{
-				size, err := m.Ports[iNdEx].MarshalToSizedBuffer(dAtA[:i])
+				size, err := m.Patches[iNdEx].MarshalToSizedBuffer(dAtA[:i])
 				if err != nil {
 					return 0, err
 				}
@@ -486,11 +699,23 @@ func (m *MeshGatewaySpec) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 				i = encodeVarintMeshgateway(dAtA, i, uint64(size))
 			}
 			i--
-			dAtA[i] = 0x12
+			dAtA[i] = 0x1a
 		}
 	}
+	if m.ObjectKey != nil {
+		{
+			size, err := m.ObjectKey.MarshalToSizedBuffer(dAtA[:i])
+			if err != nil {
+				return 0, err
+			}
+			i -= size
+			i = encodeVarintMeshgateway(dAtA, i, uint64(size))
+		}
+		i--
+		dAtA[i] = 0x12
+	}
 	{
-		size, err := m.MeshGatewayConfiguration.MarshalToSizedBuffer(dAtA[:i])
+		size, err := m.GroupVersionKind.MarshalToSizedBuffer(dAtA[:i])
 		if err != nil {
 			return 0, err
 		}
@@ -502,7 +727,7 @@ func (m *MeshGatewaySpec) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 	return len(dAtA) - i, nil
 }
 
-func (m *MeshGatewayConfiguration) Marshal() (dAtA []byte, err error) {
+func (m *K8SResourceOverlayPatch_GroupVersionKind) Marshal() (dAtA []byte, err error) {
 	size := m.Size()
 	dAtA = make([]byte, size)
 	n, err := m.MarshalToSizedBuffer(dAtA[:size])
@@ -512,12 +737,12 @@ func (m *MeshGatewayConfiguration) Marshal() (dAtA []byte, err error) {
 	return dAtA[:n], nil
 }
 
-func (m *MeshGatewayConfiguration) MarshalTo(dAtA []byte) (int, error) {
+func (m *K8SResourceOverlayPatch_GroupVersionKind) MarshalTo(dAtA []byte) (int, error) {
 	size := m.Size()
 	return m.MarshalToSizedBuffer(dAtA[:size])
 }
 
-func (m *MeshGatewayConfiguration) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+func (m *K8SResourceOverlayPatch_GroupVersionKind) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 	i := len(dAtA)
 	_ = i
 	var l int
@@ -526,125 +751,83 @@ func (m *MeshGatewayConfiguration) MarshalToSizedBuffer(dAtA []byte) (int, error
 		i -= len(m.XXX_unrecognized)
 		copy(dAtA[i:], m.XXX_unrecognized)
 	}
-	if m.RunAsRoot != nil {
-		n3, err3 := github_com_gogo_protobuf_types.StdBoolMarshalTo(*m.RunAsRoot, dAtA[i-github_com_gogo_protobuf_types.SizeOfStdBool(*m.RunAsRoot):])
-		if err3 != nil {
-			return 0, err3
-		}
-		i -= n3
-		i = encodeVarintMeshgateway(dAtA, i, uint64(n3))
-		i--
-		dAtA[i] = 0x5a
-	}
-	if len(m.AdditionalEnvVars) > 0 {
-		for iNdEx := len(m.AdditionalEnvVars) - 1; iNdEx >= 0; iNdEx-- {
-			{
-				size, err := m.AdditionalEnvVars[iNdEx].MarshalToSizedBuffer(dAtA[:i])
-				if err != nil {
-					return 0, err
-				}
-				i -= size
-				i = encodeVarintMeshgateway(dAtA, i, uint64(size))
-			}
-			i--
-			dAtA[i] = 0x52
-		}
-	}
-	if len(m.RequestedNetworkView) > 0 {
-		i -= len(m.RequestedNetworkView)
-		copy(dAtA[i:], m.RequestedNetworkView)
-		i = encodeVarintMeshgateway(dAtA, i, uint64(len(m.RequestedNetworkView)))
-		i--
-		dAtA[i] = 0x4a
-	}
-	if len(m.ServiceExternalTrafficPolicyType) > 0 {
-		i -= len(m.ServiceExternalTrafficPolicyType)
-		copy(dAtA[i:], m.ServiceExternalTrafficPolicyType)
-		i = encodeVarintMeshgateway(dAtA, i, uint64(len(m.ServiceExternalTrafficPolicyType)))
-		i--
-		dAtA[i] = 0x3a
-	}
-	if len(m.ServiceLabels) > 0 {
-		for k := range m.ServiceLabels {
-			v := m.ServiceLabels[k]
-			baseI := i
-			i -= len(v)
-			copy(dAtA[i:], v)
-			i = encodeVarintMeshgateway(dAtA, i, uint64(len(v)))
-			i--
-			dAtA[i] = 0x12
-			i -= len(k)
-			copy(dAtA[i:], k)
-			i = encodeVarintMeshgateway(dAtA, i, uint64(len(k)))
-			i--
-			dAtA[i] = 0xa
-			i = encodeVarintMeshgateway(dAtA, i, uint64(baseI-i))
-			i--
-			dAtA[i] = 0x32
-		}
-	}
-	if len(m.ServiceAnnotations) > 0 {
-		for k := range m.ServiceAnnotations {
-			v := m.ServiceAnnotations[k]
-			baseI := i
-			i -= len(v)
-			copy(dAtA[i:], v)
-			i = encodeVarintMeshgateway(dAtA, i, uint64(len(v)))
-			i--
-			dAtA[i] = 0x12
-			i -= len(k)
-			copy(dAtA[i:], k)
-			i = encodeVarintMeshgateway(dAtA, i, uint64(len(k)))
-			i--
-			dAtA[i] = 0xa
-			i = encodeVarintMeshgateway(dAtA, i, uint64(baseI-i))
-			i--
-			dAtA[i] = 0x2a
-		}
-	}
-	if len(m.LoadBalancerIP) > 0 {
-		i -= len(m.LoadBalancerIP)
-		copy(dAtA[i:], m.LoadBalancerIP)
-		i = encodeVarintMeshgateway(dAtA, i, uint64(len(m.LoadBalancerIP)))
-		i--
-		dAtA[i] = 0x22
-	}
-	if len(m.ServiceType) > 0 {
-		i -= len(m.ServiceType)
-		copy(dAtA[i:], m.ServiceType)
-		i = encodeVarintMeshgateway(dAtA, i, uint64(len(m.ServiceType)))
+	if len(m.Group) > 0 {
+		i -= len(m.Group)
+		copy(dAtA[i:], m.Group)
+		i = encodeVarintMeshgateway(dAtA, i, uint64(len(m.Group)))
 		i--
 		dAtA[i] = 0x1a
 	}
-	if len(m.Labels) > 0 {
-		for k := range m.Labels {
-			v := m.Labels[k]
-			baseI := i
-			i -= len(v)
-			copy(dAtA[i:], v)
-			i = encodeVarintMeshgateway(dAtA, i, uint64(len(v)))
-			i--
-			dAtA[i] = 0x12
-			i -= len(k)
-			copy(dAtA[i:], k)
-			i = encodeVarintMeshgateway(dAtA, i, uint64(len(k)))
-			i--
-			dAtA[i] = 0xa
-			i = encodeVarintMeshgateway(dAtA, i, uint64(baseI-i))
-			i--
-			dAtA[i] = 0x12
-		}
+	if len(m.Version) > 0 {
+		i -= len(m.Version)
+		copy(dAtA[i:], m.Version)
+		i = encodeVarintMeshgateway(dAtA, i, uint64(len(m.Version)))
+		i--
+		dAtA[i] = 0x12
 	}
-	{
-		size, err := m.BaseK8SResourceConfigurationWithHPAWithoutImage.MarshalToSizedBuffer(dAtA[:i])
-		if err != nil {
-			return 0, err
-		}
-		i -= size
-		i = encodeVarintMeshgateway(dAtA, i, uint64(size))
+	if len(m.Kind) > 0 {
+		i -= len(m.Kind)
+		copy(dAtA[i:], m.Kind)
+		i = encodeVarintMeshgateway(dAtA, i, uint64(len(m.Kind)))
+		i--
+		dAtA[i] = 0xa
 	}
-	i--
-	dAtA[i] = 0xa
+	return len(dAtA) - i, nil
+}
+
+func (m *K8SResourceOverlayPatch_Patch) Marshal() (dAtA []byte, err error) {
+	size := m.Size()
+	dAtA = make([]byte, size)
+	n, err := m.MarshalToSizedBuffer(dAtA[:size])
+	if err != nil {
+		return nil, err
+	}
+	return dAtA[:n], nil
+}
+
+func (m *K8SResourceOverlayPatch_Patch) MarshalTo(dAtA []byte) (int, error) {
+	size := m.Size()
+	return m.MarshalToSizedBuffer(dAtA[:size])
+}
+
+func (m *K8SResourceOverlayPatch_Patch) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+	i := len(dAtA)
+	_ = i
+	var l int
+	_ = l
+	if m.XXX_unrecognized != nil {
+		i -= len(m.XXX_unrecognized)
+		copy(dAtA[i:], m.XXX_unrecognized)
+	}
+	if m.Type != 0 {
+		i = encodeVarintMeshgateway(dAtA, i, uint64(m.Type))
+		i--
+		dAtA[i] = 0x20
+	}
+	if m.ParseValue {
+		i--
+		if m.ParseValue {
+			dAtA[i] = 1
+		} else {
+			dAtA[i] = 0
+		}
+		i--
+		dAtA[i] = 0x18
+	}
+	if len(m.Value) > 0 {
+		i -= len(m.Value)
+		copy(dAtA[i:], m.Value)
+		i = encodeVarintMeshgateway(dAtA, i, uint64(len(m.Value)))
+		i--
+		dAtA[i] = 0x12
+	}
+	if len(m.Path) > 0 {
+		i -= len(m.Path)
+		copy(dAtA[i:], m.Path)
+		i = encodeVarintMeshgateway(dAtA, i, uint64(len(m.Path)))
+		i--
+		dAtA[i] = 0xa
+	}
 	return len(dAtA) - i, nil
 }
 
@@ -713,13 +896,17 @@ func (m *MeshGatewaySpec) Size() (n int) {
 	}
 	var l int
 	_ = l
-	l = m.MeshGatewayConfiguration.Size()
-	n += 1 + l + sovMeshgateway(uint64(l))
-	if len(m.Ports) > 0 {
-		for _, e := range m.Ports {
-			l = e.Size()
-			n += 1 + l + sovMeshgateway(uint64(l))
-		}
+	if m.Deployment != nil {
+		l = m.Deployment.Size()
+		n += 1 + l + sovMeshgateway(uint64(l))
+	}
+	if m.Service != nil {
+		l = m.Service.Size()
+		n += 1 + l + sovMeshgateway(uint64(l))
+	}
+	if m.RunAsRoot != nil {
+		l = github_com_gogo_protobuf_types.SizeOfStdBool(*m.RunAsRoot)
+		n += 1 + l + sovMeshgateway(uint64(l))
 	}
 	if m.Type != 0 {
 		n += 1 + sovMeshgateway(uint64(m.Type))
@@ -728,69 +915,85 @@ func (m *MeshGatewaySpec) Size() (n int) {
 		l = m.IstioControlPlane.Size()
 		n += 1 + l + sovMeshgateway(uint64(l))
 	}
+	if len(m.K8SResourceOverlays) > 0 {
+		for _, e := range m.K8SResourceOverlays {
+			l = e.Size()
+			n += 1 + l + sovMeshgateway(uint64(l))
+		}
+	}
 	if m.XXX_unrecognized != nil {
 		n += len(m.XXX_unrecognized)
 	}
 	return n
 }
 
-func (m *MeshGatewayConfiguration) Size() (n int) {
+func (m *K8SResourceOverlayPatch) Size() (n int) {
 	if m == nil {
 		return 0
 	}
 	var l int
 	_ = l
-	l = m.BaseK8SResourceConfigurationWithHPAWithoutImage.Size()
+	l = m.GroupVersionKind.Size()
 	n += 1 + l + sovMeshgateway(uint64(l))
-	if len(m.Labels) > 0 {
-		for k, v := range m.Labels {
-			_ = k
-			_ = v
-			mapEntrySize := 1 + len(k) + sovMeshgateway(uint64(len(k))) + 1 + len(v) + sovMeshgateway(uint64(len(v)))
-			n += mapEntrySize + 1 + sovMeshgateway(uint64(mapEntrySize))
-		}
-	}
-	l = len(m.ServiceType)
-	if l > 0 {
+	if m.ObjectKey != nil {
+		l = m.ObjectKey.Size()
 		n += 1 + l + sovMeshgateway(uint64(l))
 	}
-	l = len(m.LoadBalancerIP)
-	if l > 0 {
-		n += 1 + l + sovMeshgateway(uint64(l))
-	}
-	if len(m.ServiceAnnotations) > 0 {
-		for k, v := range m.ServiceAnnotations {
-			_ = k
-			_ = v
-			mapEntrySize := 1 + len(k) + sovMeshgateway(uint64(len(k))) + 1 + len(v) + sovMeshgateway(uint64(len(v)))
-			n += mapEntrySize + 1 + sovMeshgateway(uint64(mapEntrySize))
-		}
-	}
-	if len(m.ServiceLabels) > 0 {
-		for k, v := range m.ServiceLabels {
-			_ = k
-			_ = v
-			mapEntrySize := 1 + len(k) + sovMeshgateway(uint64(len(k))) + 1 + len(v) + sovMeshgateway(uint64(len(v)))
-			n += mapEntrySize + 1 + sovMeshgateway(uint64(mapEntrySize))
-		}
-	}
-	l = len(m.ServiceExternalTrafficPolicyType)
-	if l > 0 {
-		n += 1 + l + sovMeshgateway(uint64(l))
-	}
-	l = len(m.RequestedNetworkView)
-	if l > 0 {
-		n += 1 + l + sovMeshgateway(uint64(l))
-	}
-	if len(m.AdditionalEnvVars) > 0 {
-		for _, e := range m.AdditionalEnvVars {
+	if len(m.Patches) > 0 {
+		for _, e := range m.Patches {
 			l = e.Size()
 			n += 1 + l + sovMeshgateway(uint64(l))
 		}
 	}
-	if m.RunAsRoot != nil {
-		l = github_com_gogo_protobuf_types.SizeOfStdBool(*m.RunAsRoot)
+	if m.XXX_unrecognized != nil {
+		n += len(m.XXX_unrecognized)
+	}
+	return n
+}
+
+func (m *K8SResourceOverlayPatch_GroupVersionKind) Size() (n int) {
+	if m == nil {
+		return 0
+	}
+	var l int
+	_ = l
+	l = len(m.Kind)
+	if l > 0 {
 		n += 1 + l + sovMeshgateway(uint64(l))
+	}
+	l = len(m.Version)
+	if l > 0 {
+		n += 1 + l + sovMeshgateway(uint64(l))
+	}
+	l = len(m.Group)
+	if l > 0 {
+		n += 1 + l + sovMeshgateway(uint64(l))
+	}
+	if m.XXX_unrecognized != nil {
+		n += len(m.XXX_unrecognized)
+	}
+	return n
+}
+
+func (m *K8SResourceOverlayPatch_Patch) Size() (n int) {
+	if m == nil {
+		return 0
+	}
+	var l int
+	_ = l
+	l = len(m.Path)
+	if l > 0 {
+		n += 1 + l + sovMeshgateway(uint64(l))
+	}
+	l = len(m.Value)
+	if l > 0 {
+		n += 1 + l + sovMeshgateway(uint64(l))
+	}
+	if m.ParseValue {
+		n += 2
+	}
+	if m.Type != 0 {
+		n += 1 + sovMeshgateway(uint64(m.Type))
 	}
 	if m.XXX_unrecognized != nil {
 		n += len(m.XXX_unrecognized)
@@ -860,7 +1063,7 @@ func (m *MeshGatewaySpec) Unmarshal(dAtA []byte) error {
 		switch fieldNum {
 		case 1:
 			if wireType != 2 {
-				return fmt.Errorf("proto: wrong wireType = %d for field MeshGatewayConfiguration", wireType)
+				return fmt.Errorf("proto: wrong wireType = %d for field Deployment", wireType)
 			}
 			var msglen int
 			for shift := uint(0); ; shift += 7 {
@@ -887,13 +1090,16 @@ func (m *MeshGatewaySpec) Unmarshal(dAtA []byte) error {
 			if postIndex > l {
 				return io.ErrUnexpectedEOF
 			}
-			if err := m.MeshGatewayConfiguration.Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
+			if m.Deployment == nil {
+				m.Deployment = &BaseKubernetesResourceConfig{}
+			}
+			if err := m.Deployment.Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
 				return err
 			}
 			iNdEx = postIndex
 		case 2:
 			if wireType != 2 {
-				return fmt.Errorf("proto: wrong wireType = %d for field Ports", wireType)
+				return fmt.Errorf("proto: wrong wireType = %d for field Service", wireType)
 			}
 			var msglen int
 			for shift := uint(0); ; shift += 7 {
@@ -920,694 +1126,14 @@ func (m *MeshGatewaySpec) Unmarshal(dAtA []byte) error {
 			if postIndex > l {
 				return io.ErrUnexpectedEOF
 			}
-			m.Ports = append(m.Ports, v1.ServicePort{})
-			if err := m.Ports[len(m.Ports)-1].Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
+			if m.Service == nil {
+				m.Service = &Service{}
+			}
+			if err := m.Service.Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
 				return err
 			}
 			iNdEx = postIndex
 		case 3:
-			if wireType != 0 {
-				return fmt.Errorf("proto: wrong wireType = %d for field Type", wireType)
-			}
-			m.Type = 0
-			for shift := uint(0); ; shift += 7 {
-				if shift >= 64 {
-					return ErrIntOverflowMeshgateway
-				}
-				if iNdEx >= l {
-					return io.ErrUnexpectedEOF
-				}
-				b := dAtA[iNdEx]
-				iNdEx++
-				m.Type |= GatewayType(b&0x7F) << shift
-				if b < 0x80 {
-					break
-				}
-			}
-		case 4:
-			if wireType != 2 {
-				return fmt.Errorf("proto: wrong wireType = %d for field IstioControlPlane", wireType)
-			}
-			var msglen int
-			for shift := uint(0); ; shift += 7 {
-				if shift >= 64 {
-					return ErrIntOverflowMeshgateway
-				}
-				if iNdEx >= l {
-					return io.ErrUnexpectedEOF
-				}
-				b := dAtA[iNdEx]
-				iNdEx++
-				msglen |= int(b&0x7F) << shift
-				if b < 0x80 {
-					break
-				}
-			}
-			if msglen < 0 {
-				return ErrInvalidLengthMeshgateway
-			}
-			postIndex := iNdEx + msglen
-			if postIndex < 0 {
-				return ErrInvalidLengthMeshgateway
-			}
-			if postIndex > l {
-				return io.ErrUnexpectedEOF
-			}
-			if m.IstioControlPlane == nil {
-				m.IstioControlPlane = &NamespacedName{}
-			}
-			if err := m.IstioControlPlane.Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
-				return err
-			}
-			iNdEx = postIndex
-		default:
-			iNdEx = preIndex
-			skippy, err := skipMeshgateway(dAtA[iNdEx:])
-			if err != nil {
-				return err
-			}
-			if (skippy < 0) || (iNdEx+skippy) < 0 {
-				return ErrInvalidLengthMeshgateway
-			}
-			if (iNdEx + skippy) > l {
-				return io.ErrUnexpectedEOF
-			}
-			m.XXX_unrecognized = append(m.XXX_unrecognized, dAtA[iNdEx:iNdEx+skippy]...)
-			iNdEx += skippy
-		}
-	}
-
-	if iNdEx > l {
-		return io.ErrUnexpectedEOF
-	}
-	return nil
-}
-func (m *MeshGatewayConfiguration) Unmarshal(dAtA []byte) error {
-	l := len(dAtA)
-	iNdEx := 0
-	for iNdEx < l {
-		preIndex := iNdEx
-		var wire uint64
-		for shift := uint(0); ; shift += 7 {
-			if shift >= 64 {
-				return ErrIntOverflowMeshgateway
-			}
-			if iNdEx >= l {
-				return io.ErrUnexpectedEOF
-			}
-			b := dAtA[iNdEx]
-			iNdEx++
-			wire |= uint64(b&0x7F) << shift
-			if b < 0x80 {
-				break
-			}
-		}
-		fieldNum := int32(wire >> 3)
-		wireType := int(wire & 0x7)
-		if wireType == 4 {
-			return fmt.Errorf("proto: MeshGatewayConfiguration: wiretype end group for non-group")
-		}
-		if fieldNum <= 0 {
-			return fmt.Errorf("proto: MeshGatewayConfiguration: illegal tag %d (wire type %d)", fieldNum, wire)
-		}
-		switch fieldNum {
-		case 1:
-			if wireType != 2 {
-				return fmt.Errorf("proto: wrong wireType = %d for field BaseK8SResourceConfigurationWithHPAWithoutImage", wireType)
-			}
-			var msglen int
-			for shift := uint(0); ; shift += 7 {
-				if shift >= 64 {
-					return ErrIntOverflowMeshgateway
-				}
-				if iNdEx >= l {
-					return io.ErrUnexpectedEOF
-				}
-				b := dAtA[iNdEx]
-				iNdEx++
-				msglen |= int(b&0x7F) << shift
-				if b < 0x80 {
-					break
-				}
-			}
-			if msglen < 0 {
-				return ErrInvalidLengthMeshgateway
-			}
-			postIndex := iNdEx + msglen
-			if postIndex < 0 {
-				return ErrInvalidLengthMeshgateway
-			}
-			if postIndex > l {
-				return io.ErrUnexpectedEOF
-			}
-			if err := m.BaseK8SResourceConfigurationWithHPAWithoutImage.Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
-				return err
-			}
-			iNdEx = postIndex
-		case 2:
-			if wireType != 2 {
-				return fmt.Errorf("proto: wrong wireType = %d for field Labels", wireType)
-			}
-			var msglen int
-			for shift := uint(0); ; shift += 7 {
-				if shift >= 64 {
-					return ErrIntOverflowMeshgateway
-				}
-				if iNdEx >= l {
-					return io.ErrUnexpectedEOF
-				}
-				b := dAtA[iNdEx]
-				iNdEx++
-				msglen |= int(b&0x7F) << shift
-				if b < 0x80 {
-					break
-				}
-			}
-			if msglen < 0 {
-				return ErrInvalidLengthMeshgateway
-			}
-			postIndex := iNdEx + msglen
-			if postIndex < 0 {
-				return ErrInvalidLengthMeshgateway
-			}
-			if postIndex > l {
-				return io.ErrUnexpectedEOF
-			}
-			if m.Labels == nil {
-				m.Labels = make(map[string]string)
-			}
-			var mapkey string
-			var mapvalue string
-			for iNdEx < postIndex {
-				entryPreIndex := iNdEx
-				var wire uint64
-				for shift := uint(0); ; shift += 7 {
-					if shift >= 64 {
-						return ErrIntOverflowMeshgateway
-					}
-					if iNdEx >= l {
-						return io.ErrUnexpectedEOF
-					}
-					b := dAtA[iNdEx]
-					iNdEx++
-					wire |= uint64(b&0x7F) << shift
-					if b < 0x80 {
-						break
-					}
-				}
-				fieldNum := int32(wire >> 3)
-				if fieldNum == 1 {
-					var stringLenmapkey uint64
-					for shift := uint(0); ; shift += 7 {
-						if shift >= 64 {
-							return ErrIntOverflowMeshgateway
-						}
-						if iNdEx >= l {
-							return io.ErrUnexpectedEOF
-						}
-						b := dAtA[iNdEx]
-						iNdEx++
-						stringLenmapkey |= uint64(b&0x7F) << shift
-						if b < 0x80 {
-							break
-						}
-					}
-					intStringLenmapkey := int(stringLenmapkey)
-					if intStringLenmapkey < 0 {
-						return ErrInvalidLengthMeshgateway
-					}
-					postStringIndexmapkey := iNdEx + intStringLenmapkey
-					if postStringIndexmapkey < 0 {
-						return ErrInvalidLengthMeshgateway
-					}
-					if postStringIndexmapkey > l {
-						return io.ErrUnexpectedEOF
-					}
-					mapkey = string(dAtA[iNdEx:postStringIndexmapkey])
-					iNdEx = postStringIndexmapkey
-				} else if fieldNum == 2 {
-					var stringLenmapvalue uint64
-					for shift := uint(0); ; shift += 7 {
-						if shift >= 64 {
-							return ErrIntOverflowMeshgateway
-						}
-						if iNdEx >= l {
-							return io.ErrUnexpectedEOF
-						}
-						b := dAtA[iNdEx]
-						iNdEx++
-						stringLenmapvalue |= uint64(b&0x7F) << shift
-						if b < 0x80 {
-							break
-						}
-					}
-					intStringLenmapvalue := int(stringLenmapvalue)
-					if intStringLenmapvalue < 0 {
-						return ErrInvalidLengthMeshgateway
-					}
-					postStringIndexmapvalue := iNdEx + intStringLenmapvalue
-					if postStringIndexmapvalue < 0 {
-						return ErrInvalidLengthMeshgateway
-					}
-					if postStringIndexmapvalue > l {
-						return io.ErrUnexpectedEOF
-					}
-					mapvalue = string(dAtA[iNdEx:postStringIndexmapvalue])
-					iNdEx = postStringIndexmapvalue
-				} else {
-					iNdEx = entryPreIndex
-					skippy, err := skipMeshgateway(dAtA[iNdEx:])
-					if err != nil {
-						return err
-					}
-					if (skippy < 0) || (iNdEx+skippy) < 0 {
-						return ErrInvalidLengthMeshgateway
-					}
-					if (iNdEx + skippy) > postIndex {
-						return io.ErrUnexpectedEOF
-					}
-					iNdEx += skippy
-				}
-			}
-			m.Labels[mapkey] = mapvalue
-			iNdEx = postIndex
-		case 3:
-			if wireType != 2 {
-				return fmt.Errorf("proto: wrong wireType = %d for field ServiceType", wireType)
-			}
-			var stringLen uint64
-			for shift := uint(0); ; shift += 7 {
-				if shift >= 64 {
-					return ErrIntOverflowMeshgateway
-				}
-				if iNdEx >= l {
-					return io.ErrUnexpectedEOF
-				}
-				b := dAtA[iNdEx]
-				iNdEx++
-				stringLen |= uint64(b&0x7F) << shift
-				if b < 0x80 {
-					break
-				}
-			}
-			intStringLen := int(stringLen)
-			if intStringLen < 0 {
-				return ErrInvalidLengthMeshgateway
-			}
-			postIndex := iNdEx + intStringLen
-			if postIndex < 0 {
-				return ErrInvalidLengthMeshgateway
-			}
-			if postIndex > l {
-				return io.ErrUnexpectedEOF
-			}
-			m.ServiceType = k8s_io_api_core_v1.ServiceType(dAtA[iNdEx:postIndex])
-			iNdEx = postIndex
-		case 4:
-			if wireType != 2 {
-				return fmt.Errorf("proto: wrong wireType = %d for field LoadBalancerIP", wireType)
-			}
-			var stringLen uint64
-			for shift := uint(0); ; shift += 7 {
-				if shift >= 64 {
-					return ErrIntOverflowMeshgateway
-				}
-				if iNdEx >= l {
-					return io.ErrUnexpectedEOF
-				}
-				b := dAtA[iNdEx]
-				iNdEx++
-				stringLen |= uint64(b&0x7F) << shift
-				if b < 0x80 {
-					break
-				}
-			}
-			intStringLen := int(stringLen)
-			if intStringLen < 0 {
-				return ErrInvalidLengthMeshgateway
-			}
-			postIndex := iNdEx + intStringLen
-			if postIndex < 0 {
-				return ErrInvalidLengthMeshgateway
-			}
-			if postIndex > l {
-				return io.ErrUnexpectedEOF
-			}
-			m.LoadBalancerIP = string(dAtA[iNdEx:postIndex])
-			iNdEx = postIndex
-		case 5:
-			if wireType != 2 {
-				return fmt.Errorf("proto: wrong wireType = %d for field ServiceAnnotations", wireType)
-			}
-			var msglen int
-			for shift := uint(0); ; shift += 7 {
-				if shift >= 64 {
-					return ErrIntOverflowMeshgateway
-				}
-				if iNdEx >= l {
-					return io.ErrUnexpectedEOF
-				}
-				b := dAtA[iNdEx]
-				iNdEx++
-				msglen |= int(b&0x7F) << shift
-				if b < 0x80 {
-					break
-				}
-			}
-			if msglen < 0 {
-				return ErrInvalidLengthMeshgateway
-			}
-			postIndex := iNdEx + msglen
-			if postIndex < 0 {
-				return ErrInvalidLengthMeshgateway
-			}
-			if postIndex > l {
-				return io.ErrUnexpectedEOF
-			}
-			if m.ServiceAnnotations == nil {
-				m.ServiceAnnotations = make(map[string]string)
-			}
-			var mapkey string
-			var mapvalue string
-			for iNdEx < postIndex {
-				entryPreIndex := iNdEx
-				var wire uint64
-				for shift := uint(0); ; shift += 7 {
-					if shift >= 64 {
-						return ErrIntOverflowMeshgateway
-					}
-					if iNdEx >= l {
-						return io.ErrUnexpectedEOF
-					}
-					b := dAtA[iNdEx]
-					iNdEx++
-					wire |= uint64(b&0x7F) << shift
-					if b < 0x80 {
-						break
-					}
-				}
-				fieldNum := int32(wire >> 3)
-				if fieldNum == 1 {
-					var stringLenmapkey uint64
-					for shift := uint(0); ; shift += 7 {
-						if shift >= 64 {
-							return ErrIntOverflowMeshgateway
-						}
-						if iNdEx >= l {
-							return io.ErrUnexpectedEOF
-						}
-						b := dAtA[iNdEx]
-						iNdEx++
-						stringLenmapkey |= uint64(b&0x7F) << shift
-						if b < 0x80 {
-							break
-						}
-					}
-					intStringLenmapkey := int(stringLenmapkey)
-					if intStringLenmapkey < 0 {
-						return ErrInvalidLengthMeshgateway
-					}
-					postStringIndexmapkey := iNdEx + intStringLenmapkey
-					if postStringIndexmapkey < 0 {
-						return ErrInvalidLengthMeshgateway
-					}
-					if postStringIndexmapkey > l {
-						return io.ErrUnexpectedEOF
-					}
-					mapkey = string(dAtA[iNdEx:postStringIndexmapkey])
-					iNdEx = postStringIndexmapkey
-				} else if fieldNum == 2 {
-					var stringLenmapvalue uint64
-					for shift := uint(0); ; shift += 7 {
-						if shift >= 64 {
-							return ErrIntOverflowMeshgateway
-						}
-						if iNdEx >= l {
-							return io.ErrUnexpectedEOF
-						}
-						b := dAtA[iNdEx]
-						iNdEx++
-						stringLenmapvalue |= uint64(b&0x7F) << shift
-						if b < 0x80 {
-							break
-						}
-					}
-					intStringLenmapvalue := int(stringLenmapvalue)
-					if intStringLenmapvalue < 0 {
-						return ErrInvalidLengthMeshgateway
-					}
-					postStringIndexmapvalue := iNdEx + intStringLenmapvalue
-					if postStringIndexmapvalue < 0 {
-						return ErrInvalidLengthMeshgateway
-					}
-					if postStringIndexmapvalue > l {
-						return io.ErrUnexpectedEOF
-					}
-					mapvalue = string(dAtA[iNdEx:postStringIndexmapvalue])
-					iNdEx = postStringIndexmapvalue
-				} else {
-					iNdEx = entryPreIndex
-					skippy, err := skipMeshgateway(dAtA[iNdEx:])
-					if err != nil {
-						return err
-					}
-					if (skippy < 0) || (iNdEx+skippy) < 0 {
-						return ErrInvalidLengthMeshgateway
-					}
-					if (iNdEx + skippy) > postIndex {
-						return io.ErrUnexpectedEOF
-					}
-					iNdEx += skippy
-				}
-			}
-			m.ServiceAnnotations[mapkey] = mapvalue
-			iNdEx = postIndex
-		case 6:
-			if wireType != 2 {
-				return fmt.Errorf("proto: wrong wireType = %d for field ServiceLabels", wireType)
-			}
-			var msglen int
-			for shift := uint(0); ; shift += 7 {
-				if shift >= 64 {
-					return ErrIntOverflowMeshgateway
-				}
-				if iNdEx >= l {
-					return io.ErrUnexpectedEOF
-				}
-				b := dAtA[iNdEx]
-				iNdEx++
-				msglen |= int(b&0x7F) << shift
-				if b < 0x80 {
-					break
-				}
-			}
-			if msglen < 0 {
-				return ErrInvalidLengthMeshgateway
-			}
-			postIndex := iNdEx + msglen
-			if postIndex < 0 {
-				return ErrInvalidLengthMeshgateway
-			}
-			if postIndex > l {
-				return io.ErrUnexpectedEOF
-			}
-			if m.ServiceLabels == nil {
-				m.ServiceLabels = make(map[string]string)
-			}
-			var mapkey string
-			var mapvalue string
-			for iNdEx < postIndex {
-				entryPreIndex := iNdEx
-				var wire uint64
-				for shift := uint(0); ; shift += 7 {
-					if shift >= 64 {
-						return ErrIntOverflowMeshgateway
-					}
-					if iNdEx >= l {
-						return io.ErrUnexpectedEOF
-					}
-					b := dAtA[iNdEx]
-					iNdEx++
-					wire |= uint64(b&0x7F) << shift
-					if b < 0x80 {
-						break
-					}
-				}
-				fieldNum := int32(wire >> 3)
-				if fieldNum == 1 {
-					var stringLenmapkey uint64
-					for shift := uint(0); ; shift += 7 {
-						if shift >= 64 {
-							return ErrIntOverflowMeshgateway
-						}
-						if iNdEx >= l {
-							return io.ErrUnexpectedEOF
-						}
-						b := dAtA[iNdEx]
-						iNdEx++
-						stringLenmapkey |= uint64(b&0x7F) << shift
-						if b < 0x80 {
-							break
-						}
-					}
-					intStringLenmapkey := int(stringLenmapkey)
-					if intStringLenmapkey < 0 {
-						return ErrInvalidLengthMeshgateway
-					}
-					postStringIndexmapkey := iNdEx + intStringLenmapkey
-					if postStringIndexmapkey < 0 {
-						return ErrInvalidLengthMeshgateway
-					}
-					if postStringIndexmapkey > l {
-						return io.ErrUnexpectedEOF
-					}
-					mapkey = string(dAtA[iNdEx:postStringIndexmapkey])
-					iNdEx = postStringIndexmapkey
-				} else if fieldNum == 2 {
-					var stringLenmapvalue uint64
-					for shift := uint(0); ; shift += 7 {
-						if shift >= 64 {
-							return ErrIntOverflowMeshgateway
-						}
-						if iNdEx >= l {
-							return io.ErrUnexpectedEOF
-						}
-						b := dAtA[iNdEx]
-						iNdEx++
-						stringLenmapvalue |= uint64(b&0x7F) << shift
-						if b < 0x80 {
-							break
-						}
-					}
-					intStringLenmapvalue := int(stringLenmapvalue)
-					if intStringLenmapvalue < 0 {
-						return ErrInvalidLengthMeshgateway
-					}
-					postStringIndexmapvalue := iNdEx + intStringLenmapvalue
-					if postStringIndexmapvalue < 0 {
-						return ErrInvalidLengthMeshgateway
-					}
-					if postStringIndexmapvalue > l {
-						return io.ErrUnexpectedEOF
-					}
-					mapvalue = string(dAtA[iNdEx:postStringIndexmapvalue])
-					iNdEx = postStringIndexmapvalue
-				} else {
-					iNdEx = entryPreIndex
-					skippy, err := skipMeshgateway(dAtA[iNdEx:])
-					if err != nil {
-						return err
-					}
-					if (skippy < 0) || (iNdEx+skippy) < 0 {
-						return ErrInvalidLengthMeshgateway
-					}
-					if (iNdEx + skippy) > postIndex {
-						return io.ErrUnexpectedEOF
-					}
-					iNdEx += skippy
-				}
-			}
-			m.ServiceLabels[mapkey] = mapvalue
-			iNdEx = postIndex
-		case 7:
-			if wireType != 2 {
-				return fmt.Errorf("proto: wrong wireType = %d for field ServiceExternalTrafficPolicyType", wireType)
-			}
-			var stringLen uint64
-			for shift := uint(0); ; shift += 7 {
-				if shift >= 64 {
-					return ErrIntOverflowMeshgateway
-				}
-				if iNdEx >= l {
-					return io.ErrUnexpectedEOF
-				}
-				b := dAtA[iNdEx]
-				iNdEx++
-				stringLen |= uint64(b&0x7F) << shift
-				if b < 0x80 {
-					break
-				}
-			}
-			intStringLen := int(stringLen)
-			if intStringLen < 0 {
-				return ErrInvalidLengthMeshgateway
-			}
-			postIndex := iNdEx + intStringLen
-			if postIndex < 0 {
-				return ErrInvalidLengthMeshgateway
-			}
-			if postIndex > l {
-				return io.ErrUnexpectedEOF
-			}
-			m.ServiceExternalTrafficPolicyType = k8s_io_api_core_v1.ServiceExternalTrafficPolicyType(dAtA[iNdEx:postIndex])
-			iNdEx = postIndex
-		case 9:
-			if wireType != 2 {
-				return fmt.Errorf("proto: wrong wireType = %d for field RequestedNetworkView", wireType)
-			}
-			var stringLen uint64
-			for shift := uint(0); ; shift += 7 {
-				if shift >= 64 {
-					return ErrIntOverflowMeshgateway
-				}
-				if iNdEx >= l {
-					return io.ErrUnexpectedEOF
-				}
-				b := dAtA[iNdEx]
-				iNdEx++
-				stringLen |= uint64(b&0x7F) << shift
-				if b < 0x80 {
-					break
-				}
-			}
-			intStringLen := int(stringLen)
-			if intStringLen < 0 {
-				return ErrInvalidLengthMeshgateway
-			}
-			postIndex := iNdEx + intStringLen
-			if postIndex < 0 {
-				return ErrInvalidLengthMeshgateway
-			}
-			if postIndex > l {
-				return io.ErrUnexpectedEOF
-			}
-			m.RequestedNetworkView = string(dAtA[iNdEx:postIndex])
-			iNdEx = postIndex
-		case 10:
-			if wireType != 2 {
-				return fmt.Errorf("proto: wrong wireType = %d for field AdditionalEnvVars", wireType)
-			}
-			var msglen int
-			for shift := uint(0); ; shift += 7 {
-				if shift >= 64 {
-					return ErrIntOverflowMeshgateway
-				}
-				if iNdEx >= l {
-					return io.ErrUnexpectedEOF
-				}
-				b := dAtA[iNdEx]
-				iNdEx++
-				msglen |= int(b&0x7F) << shift
-				if b < 0x80 {
-					break
-				}
-			}
-			if msglen < 0 {
-				return ErrInvalidLengthMeshgateway
-			}
-			postIndex := iNdEx + msglen
-			if postIndex < 0 {
-				return ErrInvalidLengthMeshgateway
-			}
-			if postIndex > l {
-				return io.ErrUnexpectedEOF
-			}
-			m.AdditionalEnvVars = append(m.AdditionalEnvVars, v1.EnvVar{})
-			if err := m.AdditionalEnvVars[len(m.AdditionalEnvVars)-1].Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
-				return err
-			}
-			iNdEx = postIndex
-		case 11:
 			if wireType != 2 {
 				return fmt.Errorf("proto: wrong wireType = %d for field RunAsRoot", wireType)
 			}
@@ -1643,6 +1169,550 @@ func (m *MeshGatewayConfiguration) Unmarshal(dAtA []byte) error {
 				return err
 			}
 			iNdEx = postIndex
+		case 4:
+			if wireType != 0 {
+				return fmt.Errorf("proto: wrong wireType = %d for field Type", wireType)
+			}
+			m.Type = 0
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowMeshgateway
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				m.Type |= GatewayType(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+		case 5:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field IstioControlPlane", wireType)
+			}
+			var msglen int
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowMeshgateway
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				msglen |= int(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			if msglen < 0 {
+				return ErrInvalidLengthMeshgateway
+			}
+			postIndex := iNdEx + msglen
+			if postIndex < 0 {
+				return ErrInvalidLengthMeshgateway
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			if m.IstioControlPlane == nil {
+				m.IstioControlPlane = &NamespacedName{}
+			}
+			if err := m.IstioControlPlane.Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
+				return err
+			}
+			iNdEx = postIndex
+		case 6:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field K8SResourceOverlays", wireType)
+			}
+			var msglen int
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowMeshgateway
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				msglen |= int(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			if msglen < 0 {
+				return ErrInvalidLengthMeshgateway
+			}
+			postIndex := iNdEx + msglen
+			if postIndex < 0 {
+				return ErrInvalidLengthMeshgateway
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.K8SResourceOverlays = append(m.K8SResourceOverlays, &K8SResourceOverlayPatch{})
+			if err := m.K8SResourceOverlays[len(m.K8SResourceOverlays)-1].Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
+				return err
+			}
+			iNdEx = postIndex
+		default:
+			iNdEx = preIndex
+			skippy, err := skipMeshgateway(dAtA[iNdEx:])
+			if err != nil {
+				return err
+			}
+			if (skippy < 0) || (iNdEx+skippy) < 0 {
+				return ErrInvalidLengthMeshgateway
+			}
+			if (iNdEx + skippy) > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.XXX_unrecognized = append(m.XXX_unrecognized, dAtA[iNdEx:iNdEx+skippy]...)
+			iNdEx += skippy
+		}
+	}
+
+	if iNdEx > l {
+		return io.ErrUnexpectedEOF
+	}
+	return nil
+}
+func (m *K8SResourceOverlayPatch) Unmarshal(dAtA []byte) error {
+	l := len(dAtA)
+	iNdEx := 0
+	for iNdEx < l {
+		preIndex := iNdEx
+		var wire uint64
+		for shift := uint(0); ; shift += 7 {
+			if shift >= 64 {
+				return ErrIntOverflowMeshgateway
+			}
+			if iNdEx >= l {
+				return io.ErrUnexpectedEOF
+			}
+			b := dAtA[iNdEx]
+			iNdEx++
+			wire |= uint64(b&0x7F) << shift
+			if b < 0x80 {
+				break
+			}
+		}
+		fieldNum := int32(wire >> 3)
+		wireType := int(wire & 0x7)
+		if wireType == 4 {
+			return fmt.Errorf("proto: K8sResourceOverlayPatch: wiretype end group for non-group")
+		}
+		if fieldNum <= 0 {
+			return fmt.Errorf("proto: K8sResourceOverlayPatch: illegal tag %d (wire type %d)", fieldNum, wire)
+		}
+		switch fieldNum {
+		case 1:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field GroupVersionKind", wireType)
+			}
+			var msglen int
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowMeshgateway
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				msglen |= int(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			if msglen < 0 {
+				return ErrInvalidLengthMeshgateway
+			}
+			postIndex := iNdEx + msglen
+			if postIndex < 0 {
+				return ErrInvalidLengthMeshgateway
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			if err := m.GroupVersionKind.Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
+				return err
+			}
+			iNdEx = postIndex
+		case 2:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field ObjectKey", wireType)
+			}
+			var msglen int
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowMeshgateway
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				msglen |= int(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			if msglen < 0 {
+				return ErrInvalidLengthMeshgateway
+			}
+			postIndex := iNdEx + msglen
+			if postIndex < 0 {
+				return ErrInvalidLengthMeshgateway
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			if m.ObjectKey == nil {
+				m.ObjectKey = &NamespacedName{}
+			}
+			if err := m.ObjectKey.Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
+				return err
+			}
+			iNdEx = postIndex
+		case 3:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field Patches", wireType)
+			}
+			var msglen int
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowMeshgateway
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				msglen |= int(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			if msglen < 0 {
+				return ErrInvalidLengthMeshgateway
+			}
+			postIndex := iNdEx + msglen
+			if postIndex < 0 {
+				return ErrInvalidLengthMeshgateway
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.Patches = append(m.Patches, K8SResourceOverlayPatch_Patch{})
+			if err := m.Patches[len(m.Patches)-1].Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
+				return err
+			}
+			iNdEx = postIndex
+		default:
+			iNdEx = preIndex
+			skippy, err := skipMeshgateway(dAtA[iNdEx:])
+			if err != nil {
+				return err
+			}
+			if (skippy < 0) || (iNdEx+skippy) < 0 {
+				return ErrInvalidLengthMeshgateway
+			}
+			if (iNdEx + skippy) > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.XXX_unrecognized = append(m.XXX_unrecognized, dAtA[iNdEx:iNdEx+skippy]...)
+			iNdEx += skippy
+		}
+	}
+
+	if iNdEx > l {
+		return io.ErrUnexpectedEOF
+	}
+	return nil
+}
+func (m *K8SResourceOverlayPatch_GroupVersionKind) Unmarshal(dAtA []byte) error {
+	l := len(dAtA)
+	iNdEx := 0
+	for iNdEx < l {
+		preIndex := iNdEx
+		var wire uint64
+		for shift := uint(0); ; shift += 7 {
+			if shift >= 64 {
+				return ErrIntOverflowMeshgateway
+			}
+			if iNdEx >= l {
+				return io.ErrUnexpectedEOF
+			}
+			b := dAtA[iNdEx]
+			iNdEx++
+			wire |= uint64(b&0x7F) << shift
+			if b < 0x80 {
+				break
+			}
+		}
+		fieldNum := int32(wire >> 3)
+		wireType := int(wire & 0x7)
+		if wireType == 4 {
+			return fmt.Errorf("proto: GroupVersionKind: wiretype end group for non-group")
+		}
+		if fieldNum <= 0 {
+			return fmt.Errorf("proto: GroupVersionKind: illegal tag %d (wire type %d)", fieldNum, wire)
+		}
+		switch fieldNum {
+		case 1:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field Kind", wireType)
+			}
+			var stringLen uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowMeshgateway
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				stringLen |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			intStringLen := int(stringLen)
+			if intStringLen < 0 {
+				return ErrInvalidLengthMeshgateway
+			}
+			postIndex := iNdEx + intStringLen
+			if postIndex < 0 {
+				return ErrInvalidLengthMeshgateway
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.Kind = string(dAtA[iNdEx:postIndex])
+			iNdEx = postIndex
+		case 2:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field Version", wireType)
+			}
+			var stringLen uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowMeshgateway
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				stringLen |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			intStringLen := int(stringLen)
+			if intStringLen < 0 {
+				return ErrInvalidLengthMeshgateway
+			}
+			postIndex := iNdEx + intStringLen
+			if postIndex < 0 {
+				return ErrInvalidLengthMeshgateway
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.Version = string(dAtA[iNdEx:postIndex])
+			iNdEx = postIndex
+		case 3:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field Group", wireType)
+			}
+			var stringLen uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowMeshgateway
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				stringLen |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			intStringLen := int(stringLen)
+			if intStringLen < 0 {
+				return ErrInvalidLengthMeshgateway
+			}
+			postIndex := iNdEx + intStringLen
+			if postIndex < 0 {
+				return ErrInvalidLengthMeshgateway
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.Group = string(dAtA[iNdEx:postIndex])
+			iNdEx = postIndex
+		default:
+			iNdEx = preIndex
+			skippy, err := skipMeshgateway(dAtA[iNdEx:])
+			if err != nil {
+				return err
+			}
+			if (skippy < 0) || (iNdEx+skippy) < 0 {
+				return ErrInvalidLengthMeshgateway
+			}
+			if (iNdEx + skippy) > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.XXX_unrecognized = append(m.XXX_unrecognized, dAtA[iNdEx:iNdEx+skippy]...)
+			iNdEx += skippy
+		}
+	}
+
+	if iNdEx > l {
+		return io.ErrUnexpectedEOF
+	}
+	return nil
+}
+func (m *K8SResourceOverlayPatch_Patch) Unmarshal(dAtA []byte) error {
+	l := len(dAtA)
+	iNdEx := 0
+	for iNdEx < l {
+		preIndex := iNdEx
+		var wire uint64
+		for shift := uint(0); ; shift += 7 {
+			if shift >= 64 {
+				return ErrIntOverflowMeshgateway
+			}
+			if iNdEx >= l {
+				return io.ErrUnexpectedEOF
+			}
+			b := dAtA[iNdEx]
+			iNdEx++
+			wire |= uint64(b&0x7F) << shift
+			if b < 0x80 {
+				break
+			}
+		}
+		fieldNum := int32(wire >> 3)
+		wireType := int(wire & 0x7)
+		if wireType == 4 {
+			return fmt.Errorf("proto: Patch: wiretype end group for non-group")
+		}
+		if fieldNum <= 0 {
+			return fmt.Errorf("proto: Patch: illegal tag %d (wire type %d)", fieldNum, wire)
+		}
+		switch fieldNum {
+		case 1:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field Path", wireType)
+			}
+			var stringLen uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowMeshgateway
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				stringLen |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			intStringLen := int(stringLen)
+			if intStringLen < 0 {
+				return ErrInvalidLengthMeshgateway
+			}
+			postIndex := iNdEx + intStringLen
+			if postIndex < 0 {
+				return ErrInvalidLengthMeshgateway
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.Path = string(dAtA[iNdEx:postIndex])
+			iNdEx = postIndex
+		case 2:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field Value", wireType)
+			}
+			var stringLen uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowMeshgateway
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				stringLen |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			intStringLen := int(stringLen)
+			if intStringLen < 0 {
+				return ErrInvalidLengthMeshgateway
+			}
+			postIndex := iNdEx + intStringLen
+			if postIndex < 0 {
+				return ErrInvalidLengthMeshgateway
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.Value = string(dAtA[iNdEx:postIndex])
+			iNdEx = postIndex
+		case 3:
+			if wireType != 0 {
+				return fmt.Errorf("proto: wrong wireType = %d for field ParseValue", wireType)
+			}
+			var v int
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowMeshgateway
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				v |= int(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			m.ParseValue = bool(v != 0)
+		case 4:
+			if wireType != 0 {
+				return fmt.Errorf("proto: wrong wireType = %d for field Type", wireType)
+			}
+			m.Type = 0
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowMeshgateway
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				m.Type |= K8SResourceOverlayPatch_Type(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
 		default:
 			iNdEx = preIndex
 			skippy, err := skipMeshgateway(dAtA[iNdEx:])
