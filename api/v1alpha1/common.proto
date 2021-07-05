@@ -107,6 +107,9 @@ message BaseKubernetesResourceConfig {
 
     // Replica configuration
     Replicas replicas = 13;
+
+    // Standard Kubernetes pod annotation configuration
+    map<string,string> podAnnotations = 14;
 }
 
 // ServiceSpec describes the attributes that a user creates on a service.

@@ -53,19 +53,19 @@ spec:
                 properties:
                   limits:
                     additionalProperties:
-                      properties:
-                        string:
-                          type: string
-                      type: object
+                      anyOf:
+                      - type: integer
+                      - type: string
+                      x-kubernetes-int-or-string: true
                     description: Limits describes the maximum amount of compute resources
                       allowed.
                     type: object
                   requests:
                     additionalProperties:
-                      properties:
-                        string:
-                          type: string
-                      type: object
+                      anyOf:
+                      - type: integer
+                      - type: string
+                      x-kubernetes-int-or-string: true
                     description: Requests describes the minimum amount of compute
                       resources required.
                     type: object
@@ -700,6 +700,11 @@ spec:
                         additionalProperties:
                           type: string
                         description: Standard Kubernetes node selector configuration.
+                        type: object
+                      podAnnotations:
+                        additionalProperties:
+                          type: string
+                        description: Standard Kubernetes pod annotation configuration.
                         type: object
                       priorityClassName:
                         description: If specified, indicates the pod's priority.
@@ -3462,19 +3467,19 @@ spec:
                     properties:
                       limits:
                         additionalProperties:
-                          properties:
-                            string:
-                              type: string
-                          type: object
+                          anyOf:
+                          - type: integer
+                          - type: string
+                          x-kubernetes-int-or-string: true
                         description: Limits describes the maximum amount of compute
                           resources allowed.
                         type: object
                       requests:
                         additionalProperties:
-                          properties:
-                            string:
-                              type: string
-                          type: object
+                          anyOf:
+                          - type: integer
+                          - type: string
+                          x-kubernetes-int-or-string: true
                         description: Requests describes the minimum amount of compute
                           resources required.
                         type: object
@@ -3489,19 +3494,19 @@ spec:
                     properties:
                       limits:
                         additionalProperties:
-                          properties:
-                            string:
-                              type: string
-                          type: object
+                          anyOf:
+                          - type: integer
+                          - type: string
+                          x-kubernetes-int-or-string: true
                         description: Limits describes the maximum amount of compute
                           resources allowed.
                         type: object
                       requests:
                         additionalProperties:
-                          properties:
-                            string:
-                              type: string
-                          type: object
+                          anyOf:
+                          - type: integer
+                          - type: string
+                          x-kubernetes-int-or-string: true
                         description: Requests describes the minimum amount of compute
                           resources required.
                         type: object
@@ -4076,6 +4081,11 @@ spec:
                     additionalProperties:
                       type: string
                     description: Standard Kubernetes node selector configuration.
+                    type: object
+                  podAnnotations:
+                    additionalProperties:
+                      type: string
+                    description: Standard Kubernetes pod annotation configuration.
                     type: object
                   priorityClassName:
                     description: If specified, indicates the pod's priority.

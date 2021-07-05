@@ -60,7 +60,7 @@ message IstioControlPlaneSpec {
     // Horizontal Pod Autoscaler will be able to function (if set).
     // Each component can overwrite these default values by adding its own resources
     // block in the relevant section below and setting the desired resources values.
-    k8s.io.api.core.v1.ResourceRequirements defaultResources = 3 [(gogoproto.jsontag) = "defaultResources"];
+    ResourceRequirements defaultResources = 3 [(gogoproto.jsontag) = "defaultResources"];
     // Use the user-specified, secret volume mounted key and certs for Pilot and workloads.
     google.protobuf.BoolValue mountMtlsCerts = 4 [(gogoproto.wktpointer) = true, (gogoproto.jsontag) = "mountMtlsCerts"];
     // Istiod configuration.
@@ -147,7 +147,7 @@ message ProxyConfiguration {
     // Default value is 'false'.
     google.protobuf.BoolValue holdApplicationUntilProxyStarts = 7 [(gogoproto.wktpointer) = true, (gogoproto.jsontag) = "holdApplicationUntilProxyStarts"];
     k8s.io.api.core.v1.Lifecycle lifecycle = 8 [(gogoproto.jsontag) = "lifecycle"];
-    k8s.io.api.core.v1.ResourceRequirements resources = 9 [(gogoproto.jsontag) = "resources"];
+    ResourceRequirements resources = 9 [(gogoproto.jsontag) = "resources"];
     // IncludeIPRanges the range where to capture egress traffic
     string includeIPRanges = 10 [(gogoproto.jsontag) = "includeIPRanges"];
     // ExcludeIPRanges the range where not to capture egress traffic
@@ -171,7 +171,7 @@ enum ProxyLogLevel {
 // ProxyInitConfiguration defines config options for Proxy Init containers
 message ProxyInitConfiguration {
     string image = 1 [(gogoproto.jsontag) = "image"];
-    k8s.io.api.core.v1.ResourceRequirements resources = 2 [(gogoproto.jsontag) = "resources"];
+    ResourceRequirements resources = 2 [(gogoproto.jsontag) = "resources"];
 }
 
 // IstiodConfiguration defines config options for Istiod

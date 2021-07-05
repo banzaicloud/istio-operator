@@ -45,7 +45,7 @@ No
 </tr>
 <tr id="IstioControlPlaneSpec-defaultResources">
 <td><code>defaultResources</code></td>
-<td><code><a href="#k8s-io-api-core-v1-ResourceRequirements">ResourceRequirements</a></code></td>
+<td><code><a href="#ResourceRequirements">ResourceRequirements</a></code></td>
 <td>
 <p>A minimal set of requested resources to applied to all deployments so that
 Horizontal Pod Autoscaler will be able to function (if set).
@@ -416,7 +416,7 @@ No
 </tr>
 <tr id="ProxyConfiguration-resources">
 <td><code>resources</code></td>
-<td><code><a href="#k8s-io-api-core-v1-ResourceRequirements">ResourceRequirements</a></code></td>
+<td><code><a href="#ResourceRequirements">ResourceRequirements</a></code></td>
 <td>
 </td>
 <td>
@@ -495,7 +495,7 @@ No
 </tr>
 <tr id="ProxyInitConfiguration-resources">
 <td><code>resources</code></td>
-<td><code><a href="#k8s-io-api-core-v1-ResourceRequirements">ResourceRequirements</a></code></td>
+<td><code><a href="#ResourceRequirements">ResourceRequirements</a></code></td>
 <td>
 </td>
 <td>
@@ -834,7 +834,7 @@ No
 <section>
 
 </section>
-<h2 id="k8s-io-api-core-v1-ResourceRequirements">k8s.io.api.core.v1.ResourceRequirements</h2>
+<h2 id="ResourceRequirements">ResourceRequirements</h2>
 <section>
 <p>ResourceRequirements describes the compute resource requirements.</p>
 
@@ -848,9 +848,9 @@ No
 </tr>
 </thead>
 <tbody>
-<tr id="k8s-io-api-core-v1-ResourceRequirements-limits">
+<tr id="ResourceRequirements-limits">
 <td><code>limits</code></td>
-<td><code>map&lt;string,&nbsp;<a href="#k8s-io-apimachinery-pkg-api-resource-Quantity">Quantity</a>&gt;</code></td>
+<td><code>map&lt;string,&nbsp;<a href="#Quantity">Quantity</a>&gt;</code></td>
 <td>
 <p>Limits describes the maximum amount of compute resources allowed.
 More info: https://kubernetes.io/docs/concepts/configuration/manage-compute-resources-container/
@@ -861,9 +861,9 @@ More info: https://kubernetes.io/docs/concepts/configuration/manage-compute-reso
 No
 </td>
 </tr>
-<tr id="k8s-io-api-core-v1-ResourceRequirements-requests">
+<tr id="ResourceRequirements-requests">
 <td><code>requests</code></td>
-<td><code>map&lt;string,&nbsp;<a href="#k8s-io-apimachinery-pkg-api-resource-Quantity">Quantity</a>&gt;</code></td>
+<td><code>map&lt;string,&nbsp;<a href="#Quantity">Quantity</a>&gt;</code></td>
 <td>
 <p>Requests describes the minimum amount of compute resources required.
 If Requests is omitted for a container, it defaults to Limits if that is explicitly specified,
@@ -1134,6 +1134,17 @@ No
 <td><code><a href="#Replicas">Replicas</a></code></td>
 <td>
 <p>Replica configuration</p>
+
+</td>
+<td>
+No
+</td>
+</tr>
+<tr id="BaseKubernetesResourceConfig-podAnnotations">
+<td><code>podAnnotations</code></td>
+<td><code>map&lt;string,&nbsp;string&gt;</code></td>
+<td>
+<p>Standard Kubernetes pod annotation configuration</p>
 
 </td>
 <td>
