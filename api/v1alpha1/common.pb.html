@@ -2,7 +2,7 @@
 title: istio_operator.v2.api.v1alpha1
 layout: protoc-gen-docs
 generator: protoc-gen-docs
-number_of_entries: 16
+number_of_entries: 20
 ---
 <h2 id="K8sObjectMeta">K8sObjectMeta</h2>
 <section>
@@ -68,6 +68,17 @@ No
 <td><code><a href="#K8sObjectMeta">K8sObjectMeta</a></code></td>
 <td>
 <p>Generic k8s resource metadata</p>
+
+</td>
+<td>
+No
+</td>
+</tr>
+<tr id="BaseKubernetesResourceConfig-image">
+<td><code>image</code></td>
+<td><code>string</code></td>
+<td>
+<p>Standard Kubernetes container image configuration</p>
 
 </td>
 <td>
@@ -208,6 +219,17 @@ No
 <td><code><a href="#Replicas">Replicas</a></code></td>
 <td>
 <p>Replica configuration</p>
+
+</td>
+<td>
+No
+</td>
+</tr>
+<tr id="BaseKubernetesResourceConfig-podAnnotations">
+<td><code>podAnnotations</code></td>
+<td><code>map&lt;string,&nbsp;string&gt;</code></td>
+<td>
+<p>Standard Kubernetes pod annotation configuration</p>
 
 </td>
 <td>
@@ -708,6 +730,48 @@ No
 </tbody>
 </table>
 </section>
+<h2 id="K8sResourceOverlayPatch">K8sResourceOverlayPatch</h2>
+<section>
+<table class="message-fields">
+<thead>
+<tr>
+<th>Field</th>
+<th>Type</th>
+<th>Description</th>
+<th>Required</th>
+</tr>
+</thead>
+<tbody>
+<tr id="K8sResourceOverlayPatch-groupVersionKind">
+<td><code>groupVersionKind</code></td>
+<td><code><a href="#K8sResourceOverlayPatch-GroupVersionKind">GroupVersionKind</a></code></td>
+<td>
+</td>
+<td>
+No
+</td>
+</tr>
+<tr id="K8sResourceOverlayPatch-objectKey">
+<td><code>objectKey</code></td>
+<td><code><a href="#NamespacedName">NamespacedName</a></code></td>
+<td>
+</td>
+<td>
+No
+</td>
+</tr>
+<tr id="K8sResourceOverlayPatch-patches">
+<td><code>patches</code></td>
+<td><code><a href="#K8sResourceOverlayPatch-Patch">Patch[]</a></code></td>
+<td>
+</td>
+<td>
+No
+</td>
+</tr>
+</tbody>
+</table>
+</section>
 <h2 id="Quantity">Quantity</h2>
 <section>
 <p>Synthetic type for generating Go structs.
@@ -719,6 +783,99 @@ GOTYPE: *Quantity</p>
 <p>Synthetic type for generating Go structs.
 GOTYPE: *IntOrString</p>
 
+</section>
+<h2 id="K8sResourceOverlayPatch-GroupVersionKind">K8sResourceOverlayPatch.GroupVersionKind</h2>
+<section>
+<table class="message-fields">
+<thead>
+<tr>
+<th>Field</th>
+<th>Type</th>
+<th>Description</th>
+<th>Required</th>
+</tr>
+</thead>
+<tbody>
+<tr id="K8sResourceOverlayPatch-GroupVersionKind-kind">
+<td><code>kind</code></td>
+<td><code>string</code></td>
+<td>
+</td>
+<td>
+No
+</td>
+</tr>
+<tr id="K8sResourceOverlayPatch-GroupVersionKind-version">
+<td><code>version</code></td>
+<td><code>string</code></td>
+<td>
+</td>
+<td>
+No
+</td>
+</tr>
+<tr id="K8sResourceOverlayPatch-GroupVersionKind-group">
+<td><code>group</code></td>
+<td><code>string</code></td>
+<td>
+</td>
+<td>
+No
+</td>
+</tr>
+</tbody>
+</table>
+</section>
+<h2 id="K8sResourceOverlayPatch-Patch">K8sResourceOverlayPatch.Patch</h2>
+<section>
+<table class="message-fields">
+<thead>
+<tr>
+<th>Field</th>
+<th>Type</th>
+<th>Description</th>
+<th>Required</th>
+</tr>
+</thead>
+<tbody>
+<tr id="K8sResourceOverlayPatch-Patch-path">
+<td><code>path</code></td>
+<td><code>string</code></td>
+<td>
+</td>
+<td>
+No
+</td>
+</tr>
+<tr id="K8sResourceOverlayPatch-Patch-value">
+<td><code>value</code></td>
+<td><code>string</code></td>
+<td>
+</td>
+<td>
+No
+</td>
+</tr>
+<tr id="K8sResourceOverlayPatch-Patch-parseValue">
+<td><code>parseValue</code></td>
+<td><code>bool</code></td>
+<td>
+</td>
+<td>
+No
+</td>
+</tr>
+<tr id="K8sResourceOverlayPatch-Patch-type">
+<td><code>type</code></td>
+<td><code><a href="#K8sResourceOverlayPatch-Type">Type</a></code></td>
+<td>
+</td>
+<td>
+No
+</td>
+</tr>
+</tbody>
+</table>
 </section>
 <h2 id="k8s-io-api-core-v1-EnvVar">k8s.io.api.core.v1.EnvVar</h2>
 <section>
@@ -1250,6 +1407,34 @@ No
 </td>
 <td>
 No
+</td>
+</tr>
+</tbody>
+</table>
+</section>
+<h2 id="K8sResourceOverlayPatch-Type">K8sResourceOverlayPatch.Type</h2>
+<section>
+<table class="enum-values">
+<thead>
+<tr>
+<th>Name</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr id="K8sResourceOverlayPatch-Type-unspecified">
+<td><code>unspecified</code></td>
+<td>
+</td>
+</tr>
+<tr id="K8sResourceOverlayPatch-Type-replace">
+<td><code>replace</code></td>
+<td>
+</td>
+</tr>
+<tr id="K8sResourceOverlayPatch-Type-remove">
+<td><code>remove</code></td>
+<td>
 </td>
 </tr>
 </tbody>

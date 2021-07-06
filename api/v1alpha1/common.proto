@@ -53,11 +53,14 @@ message BaseKubernetesResourceConfig {
     // Generic k8s resource metadata
     K8sObjectMeta metadata = 1;
 
+    // Standard Kubernetes container image configuration
+    string image = 2;
+
     // If present will be appended to the environment variables of the container
-    repeated k8s.io.api.core.v1.EnvVar env = 2 [(gogoproto.nullable) = false];
+    repeated k8s.io.api.core.v1.EnvVar env = 3 [(gogoproto.nullable) = false];
 
     // Standard Kubernetes resource configuration, memory and CPU resource requirements
-    ResourceRequirements resources = 3;
+    ResourceRequirements resources = 4;
 
     // Standard Kubernetes node selector configuration
     map<string,string> nodeSelector = 5;
@@ -104,6 +107,9 @@ message BaseKubernetesResourceConfig {
 
     // Replica configuration
     Replicas replicas = 13;
+
+    // Standard Kubernetes pod annotation configuration
+    map<string,string> podAnnotations = 14;
 }
 
 // ServiceSpec describes the attributes that a user creates on a service.
@@ -311,6 +317,31 @@ message Replicas {
     // Standard Kubernetes maximum replicas configuration
     // +kubebuilder:validation:Minimum=0
     google.protobuf.Int32Value max = 3 [(gogoproto.wktpointer) = true];
+}
+
+message K8sResourceOverlayPatch {
+    message GroupVersionKind {
+        string kind = 1;
+        string version = 2;
+        string group = 3;
+    }
+
+    enum Type {
+        unspecified = 0;
+        replace = 1;
+        remove = 2;
+    }
+
+    message Patch {
+        string path = 1;
+        string value = 2;
+        bool parseValue = 3;
+        Type type = 4;
+    }
+
+    GroupVersionKind groupVersionKind = 1 [(gogoproto.nullable) = false];
+    NamespacedName objectKey = 2;
+    repeated Patch patches = 3 [(gogoproto.nullable) = false];
 }
 
 // Synthetic type for generating Go structs.

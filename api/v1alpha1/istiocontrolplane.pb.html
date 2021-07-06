@@ -4,7 +4,7 @@ description: Istio control plane descriptor
 layout: protoc-gen-docs
 generator: protoc-gen-docs
 schema: istio-operator.api.v1alpha1.IstioControlPlaneSpec
-number_of_entries: 2
+number_of_entries: 23
 ---
 <h2 id="IstioControlPlaneSpec">IstioControlPlaneSpec</h2>
 <section>
@@ -32,6 +32,211 @@ number_of_entries: 2
 Yes
 </td>
 </tr>
+<tr id="IstioControlPlaneSpec-logging">
+<td><code>logging</code></td>
+<td><code><a href="#LoggingConfiguration">LoggingConfiguration</a></code></td>
+<td>
+<p>Logging configurations.</p>
+
+</td>
+<td>
+No
+</td>
+</tr>
+<tr id="IstioControlPlaneSpec-defaultResources">
+<td><code>defaultResources</code></td>
+<td><code><a href="#ResourceRequirements">ResourceRequirements</a></code></td>
+<td>
+<p>A minimal set of requested resources to applied to all deployments so that
+Horizontal Pod Autoscaler will be able to function (if set).
+Each component can overwrite these default values by adding its own resources
+block in the relevant section below and setting the desired resources values.</p>
+
+</td>
+<td>
+No
+</td>
+</tr>
+<tr id="IstioControlPlaneSpec-mountMtlsCerts">
+<td><code>mountMtlsCerts</code></td>
+<td><code><a href="https://developers.google.com/protocol-buffers/docs/reference/google.protobuf#boolvalue">BoolValue</a></code></td>
+<td>
+<p>Use the user-specified, secret volume mounted key and certs for Pilot and workloads.</p>
+
+</td>
+<td>
+No
+</td>
+</tr>
+<tr id="IstioControlPlaneSpec-istiod">
+<td><code>istiod</code></td>
+<td><code><a href="#IstiodConfiguration">IstiodConfiguration</a></code></td>
+<td>
+<p>Istiod configuration.</p>
+
+</td>
+<td>
+No
+</td>
+</tr>
+<tr id="IstioControlPlaneSpec-proxy">
+<td><code>proxy</code></td>
+<td><code><a href="#ProxyConfiguration">ProxyConfiguration</a></code></td>
+<td>
+<p>Proxy configuration options.</p>
+
+</td>
+<td>
+No
+</td>
+</tr>
+<tr id="IstioControlPlaneSpec-proxyInit">
+<td><code>proxyInit</code></td>
+<td><code><a href="#ProxyInitConfiguration">ProxyInitConfiguration</a></code></td>
+<td>
+<p>Proxy Init configuration options.</p>
+
+</td>
+<td>
+No
+</td>
+</tr>
+<tr id="IstioControlPlaneSpec-telemetryV2">
+<td><code>telemetryV2</code></td>
+<td><code><a href="#TelemetryV2Configuration">TelemetryV2Configuration</a></code></td>
+<td>
+<p>Telemetry V2 configuration.</p>
+
+</td>
+<td>
+No
+</td>
+</tr>
+<tr id="IstioControlPlaneSpec-sds">
+<td><code>sds</code></td>
+<td><code><a href="#SDSConfiguration">SDSConfiguration</a></code></td>
+<td>
+<p>If SDS is configured, mTLS certificates for the sidecars will be distributed through the
+SecretDiscoveryService instead of using K8S secrets to mount the certificates.</p>
+
+</td>
+<td>
+No
+</td>
+</tr>
+<tr id="IstioControlPlaneSpec-proxyWasm">
+<td><code>proxyWasm</code></td>
+<td><code><a href="#ProxyWasmConfiguration">ProxyWasmConfiguration</a></code></td>
+<td>
+<p>ProxyWasm configuration options.</p>
+
+</td>
+<td>
+No
+</td>
+</tr>
+<tr id="IstioControlPlaneSpec-watchOneNamespace">
+<td><code>watchOneNamespace</code></td>
+<td><code><a href="https://developers.google.com/protocol-buffers/docs/reference/google.protobuf#boolvalue">BoolValue</a></code></td>
+<td>
+<p>Whether to restrict the applications namespace the controller manages.
+If not set, controller watches all namespaces</p>
+
+</td>
+<td>
+No
+</td>
+</tr>
+<tr id="IstioControlPlaneSpec-priorityClassName">
+<td><code>priorityClassName</code></td>
+<td><code>string</code></td>
+<td>
+<p>Prior to Kubernetes v1.17.0 it was not allowed to use the system-cluster-critical and system-node-critical
+PriorityClass outside of the kube-system namespace, so it is advised to create your own PriorityClass
+and use its name here
+On Kubernetes &gt;=v1.17.0 it is possible to configure system-cluster-critical and
+system-node-critical PriorityClass in order to make sure your Istio pods
+will not be killed because of low priority class.
+Refer to https://kubernetes.io/docs/concepts/configuration/pod-priority-preemption/#priorityclass
+for more detail.</p>
+
+</td>
+<td>
+No
+</td>
+</tr>
+<tr id="IstioControlPlaneSpec-defaultPodDisruptionBudget">
+<td><code>defaultPodDisruptionBudget</code></td>
+<td><code><a href="#PDBConfiguration">PDBConfiguration</a></code></td>
+<td>
+<p>Enable pod disruption budget for the control plane, which is used to ensure Istio control plane
+components are gradually upgraded or recovered</p>
+
+</td>
+<td>
+No
+</td>
+</tr>
+<tr id="IstioControlPlaneSpec-imagePullPolicy">
+<td><code>imagePullPolicy</code></td>
+<td><code>string</code></td>
+<td>
+<p>ImagePullPolicy describes a policy for if/when to pull a container image.
+TODO: change to k8s.io.api.core.v1.PullPolicy when k8s proto is updated
++kubebuilder:validation:Enum=&ldquo;&rdquo;;ALWAYS;NEVER;IF<em>NOT</em>PRESENT</p>
+
+</td>
+<td>
+No
+</td>
+</tr>
+<tr id="IstioControlPlaneSpec-imagePullSecrets">
+<td><code>imagePullSecrets</code></td>
+<td><code><a href="#k8s-io-api-core-v1-LocalObjectReference">LocalObjectReference[]</a></code></td>
+<td>
+<p>ImagePullSecrets is an optional list of references to secrets to use for pulling any of the images.</p>
+
+</td>
+<td>
+No
+</td>
+</tr>
+<tr id="IstioControlPlaneSpec-jwtPolicy">
+<td><code>jwtPolicy</code></td>
+<td><code><a href="#JWTPolicyType">JWTPolicyType</a></code></td>
+<td>
+<p>Configure the policy for validating JWT.
+Currently, two options are supported: &ldquo;third-party-jwt&rdquo; and &ldquo;first-party-jwt&rdquo;.
++kubebuilder:validation:Enum=THIRD<em>PARTY</em>JWT;FIRST<em>PARTY</em>JWT</p>
+
+</td>
+<td>
+No
+</td>
+</tr>
+<tr id="IstioControlPlaneSpec-caAddress">
+<td><code>caAddress</code></td>
+<td><code>string</code></td>
+<td>
+<p>The customized CA address to retrieve certificates for the pods in the cluster.
+CSR clients such as the Istio Agent and ingress gateways can use this to specify the CA endpoint.</p>
+
+</td>
+<td>
+No
+</td>
+</tr>
+<tr id="IstioControlPlaneSpec-httpProxyEnvs">
+<td><code>httpProxyEnvs</code></td>
+<td><code><a href="#HTTPProxyEnvsConfiguration">HTTPProxyEnvsConfiguration</a></code></td>
+<td>
+<p>Upstream HTTP proxy properties to be injected as environment variables to the pod containers.</p>
+
+</td>
+<td>
+No
+</td>
+</tr>
 <tr id="IstioControlPlaneSpec-mesh_config">
 <td><code>meshConfig</code></td>
 <td><code><a href="https://istio.io/docs/reference/config/istio.mesh.v1alpha1.html#MeshConfig">MeshConfig</a></code></td>
@@ -43,10 +248,1130 @@ Yes
 No
 </td>
 </tr>
+<tr id="IstioControlPlaneSpec-k8sResourceOverlays">
+<td><code>k8sResourceOverlays</code></td>
+<td><code><a href="#K8sResourceOverlayPatch">K8sResourceOverlayPatch[]</a></code></td>
+<td>
+<p>K8s resource overlay patches</p>
+
+</td>
+<td>
+No
+</td>
+</tr>
+</tbody>
+</table>
+</section>
+<h2 id="LoggingConfiguration">LoggingConfiguration</h2>
+<section>
+<p>Comma-separated minimum per-scope logging level of messages to output, in the form of <scope>:<level>,<scope>:<level>
+The control plane has different scopes depending on component, but can configure default log level across all components
+If empty, default scope and level will be used as configured in code</p>
+
+<table class="message-fields">
+<thead>
+<tr>
+<th>Field</th>
+<th>Type</th>
+<th>Description</th>
+<th>Required</th>
+</tr>
+</thead>
+<tbody>
+<tr id="LoggingConfiguration-level">
+<td><code>level</code></td>
+<td><code>string</code></td>
+<td>
+<p>+kubebuilder:validation:Pattern=<code>^([a-zA-Z]+:[a-zA-Z]+,?)+$</code></p>
+
+</td>
+<td>
+No
+</td>
+</tr>
+</tbody>
+</table>
+</section>
+<h2 id="SDSConfiguration">SDSConfiguration</h2>
+<section>
+<p>SDSConfiguration defines Secret Discovery Service config options</p>
+
+<table class="message-fields">
+<thead>
+<tr>
+<th>Field</th>
+<th>Type</th>
+<th>Description</th>
+<th>Required</th>
+</tr>
+</thead>
+<tbody>
+<tr id="SDSConfiguration-tokenAudience">
+<td><code>tokenAudience</code></td>
+<td><code>string</code></td>
+<td>
+<p>The JWT token for SDS and the aud field of such JWT. See RFC 7519, section 4.1.3.
+When a CSR is sent from Citadel Agent to the CA (e.g. Citadel), this aud is to make sure the
+	JWT is intended for the CA.</p>
+
+</td>
+<td>
+No
+</td>
+</tr>
+</tbody>
+</table>
+</section>
+<h2 id="ProxyConfiguration">ProxyConfiguration</h2>
+<section>
+<p>ProxyConfiguration defines config options for Proxy</p>
+
+<table class="message-fields">
+<thead>
+<tr>
+<th>Field</th>
+<th>Type</th>
+<th>Description</th>
+<th>Required</th>
+</tr>
+</thead>
+<tbody>
+<tr id="ProxyConfiguration-image">
+<td><code>image</code></td>
+<td><code>string</code></td>
+<td>
+</td>
+<td>
+No
+</td>
+</tr>
+<tr id="ProxyConfiguration-privileged">
+<td><code>privileged</code></td>
+<td><code><a href="https://developers.google.com/protocol-buffers/docs/reference/google.protobuf#boolvalue">BoolValue</a></code></td>
+<td>
+<p>If set to true, istio-proxy container will have privileged securityContext</p>
+
+</td>
+<td>
+No
+</td>
+</tr>
+<tr id="ProxyConfiguration-enableCoreDump">
+<td><code>enableCoreDump</code></td>
+<td><code><a href="https://developers.google.com/protocol-buffers/docs/reference/google.protobuf#boolvalue">BoolValue</a></code></td>
+<td>
+<p>If set, newly injected sidecars will have core dumps enabled.</p>
+
+</td>
+<td>
+No
+</td>
+</tr>
+<tr id="ProxyConfiguration-logLevel">
+<td><code>logLevel</code></td>
+<td><code><a href="#ProxyLogLevel">ProxyLogLevel</a></code></td>
+<td>
+<p>Log level for proxy, applies to gateways and sidecars. If left empty, &ldquo;warning&rdquo; is used.
+Expected values are: trace|debug|info|warning|error|critical|off
++kubebuilder:validation:Enum=TRACE;DEBUG;INFO;WARNING;ERROR;CRITICAL;OFF</p>
+
+</td>
+<td>
+No
+</td>
+</tr>
+<tr id="ProxyConfiguration-componentLogLevel">
+<td><code>componentLogLevel</code></td>
+<td><code>string</code></td>
+<td>
+<p>Per Component log level for proxy, applies to gateways and sidecars. If a component level is
+not set, then the &ldquo;LogLevel&rdquo; will be used. If left empty, &ldquo;misc:error&rdquo; is used.</p>
+
+</td>
+<td>
+No
+</td>
+</tr>
+<tr id="ProxyConfiguration-clusterDomain">
+<td><code>clusterDomain</code></td>
+<td><code>string</code></td>
+<td>
+<p>cluster domain. Default value is &ldquo;cluster.local&rdquo;</p>
+
+</td>
+<td>
+No
+</td>
+</tr>
+<tr id="ProxyConfiguration-holdApplicationUntilProxyStarts">
+<td><code>holdApplicationUntilProxyStarts</code></td>
+<td><code><a href="https://developers.google.com/protocol-buffers/docs/reference/google.protobuf#boolvalue">BoolValue</a></code></td>
+<td>
+<p>Controls if sidecar is injected at the front of the container list and blocks
+the start of the other containers until the proxy is ready
+Default value is &lsquo;false&rsquo;.</p>
+
+</td>
+<td>
+No
+</td>
+</tr>
+<tr id="ProxyConfiguration-lifecycle">
+<td><code>lifecycle</code></td>
+<td><code><a href="#k8s-io-api-core-v1-Lifecycle">Lifecycle</a></code></td>
+<td>
+</td>
+<td>
+No
+</td>
+</tr>
+<tr id="ProxyConfiguration-resources">
+<td><code>resources</code></td>
+<td><code><a href="#ResourceRequirements">ResourceRequirements</a></code></td>
+<td>
+</td>
+<td>
+No
+</td>
+</tr>
+<tr id="ProxyConfiguration-includeIPRanges">
+<td><code>includeIPRanges</code></td>
+<td><code>string</code></td>
+<td>
+<p>IncludeIPRanges the range where to capture egress traffic</p>
+
+</td>
+<td>
+No
+</td>
+</tr>
+<tr id="ProxyConfiguration-excludeIPRanges">
+<td><code>excludeIPRanges</code></td>
+<td><code>string</code></td>
+<td>
+<p>ExcludeIPRanges the range where not to capture egress traffic</p>
+
+</td>
+<td>
+No
+</td>
+</tr>
+<tr id="ProxyConfiguration-excludeInboundPorts">
+<td><code>excludeInboundPorts</code></td>
+<td><code>string</code></td>
+<td>
+<p>ExcludeInboundPorts the comma separated list of inbound ports to be excluded from redirection to Envoy</p>
+
+</td>
+<td>
+No
+</td>
+</tr>
+<tr id="ProxyConfiguration-excludeOutboundPorts">
+<td><code>excludeOutboundPorts</code></td>
+<td><code>string</code></td>
+<td>
+<p>ExcludeOutboundPorts the comma separated list of outbound ports to be excluded from redirection to Envoy</p>
+
+</td>
+<td>
+No
+</td>
+</tr>
+</tbody>
+</table>
+</section>
+<h2 id="ProxyInitConfiguration">ProxyInitConfiguration</h2>
+<section>
+<p>ProxyInitConfiguration defines config options for Proxy Init containers</p>
+
+<table class="message-fields">
+<thead>
+<tr>
+<th>Field</th>
+<th>Type</th>
+<th>Description</th>
+<th>Required</th>
+</tr>
+</thead>
+<tbody>
+<tr id="ProxyInitConfiguration-image">
+<td><code>image</code></td>
+<td><code>string</code></td>
+<td>
+</td>
+<td>
+No
+</td>
+</tr>
+<tr id="ProxyInitConfiguration-resources">
+<td><code>resources</code></td>
+<td><code><a href="#ResourceRequirements">ResourceRequirements</a></code></td>
+<td>
+</td>
+<td>
+No
+</td>
+</tr>
+</tbody>
+</table>
+</section>
+<h2 id="IstiodConfiguration">IstiodConfiguration</h2>
+<section>
+<p>IstiodConfiguration defines config options for Istiod</p>
+
+<table class="message-fields">
+<thead>
+<tr>
+<th>Field</th>
+<th>Type</th>
+<th>Description</th>
+<th>Required</th>
+</tr>
+</thead>
+<tbody>
+<tr id="IstiodConfiguration-deployment">
+<td><code>deployment</code></td>
+<td><code><a href="#BaseKubernetesResourceConfig">BaseKubernetesResourceConfig</a></code></td>
+<td>
+<p>Deployment spec</p>
+
+</td>
+<td>
+No
+</td>
+</tr>
+<tr id="IstiodConfiguration-enableAnalysis">
+<td><code>enableAnalysis</code></td>
+<td><code><a href="https://developers.google.com/protocol-buffers/docs/reference/google.protobuf#boolvalue">BoolValue</a></code></td>
+<td>
+<p>If enabled, pilot will run Istio analyzers and write analysis errors to the Status field of any Istio Resources</p>
+
+</td>
+<td>
+No
+</td>
+</tr>
+<tr id="IstiodConfiguration-enableStatus">
+<td><code>enableStatus</code></td>
+<td><code><a href="https://developers.google.com/protocol-buffers/docs/reference/google.protobuf#boolvalue">BoolValue</a></code></td>
+<td>
+<p>If enabled, pilot will update the CRD Status field of all Istio resources with reconciliation status</p>
+
+</td>
+<td>
+No
+</td>
+</tr>
+<tr id="IstiodConfiguration-externalIstiod">
+<td><code>externalIstiod</code></td>
+<td><code><a href="#ExternalIstiodConfiguration">ExternalIstiodConfiguration</a></code></td>
+<td>
+<p>Settings for local istiod to control remote clusters as well</p>
+
+</td>
+<td>
+No
+</td>
+</tr>
+<tr id="IstiodConfiguration-traceSampling">
+<td><code>traceSampling</code></td>
+<td><code><a href="https://developers.google.com/protocol-buffers/docs/reference/google.protobuf#floatvalue">FloatValue</a></code></td>
+<td>
+</td>
+<td>
+No
+</td>
+</tr>
+<tr id="IstiodConfiguration-enableProtocolSniffingOutbound">
+<td><code>enableProtocolSniffingOutbound</code></td>
+<td><code><a href="https://developers.google.com/protocol-buffers/docs/reference/google.protobuf#boolvalue">BoolValue</a></code></td>
+<td>
+<p>If enabled, protocol sniffing will be used for outbound listeners whose port protocol is not specified or unsupported</p>
+
+</td>
+<td>
+No
+</td>
+</tr>
+<tr id="IstiodConfiguration-enableProtocolSniffingInbound">
+<td><code>enableProtocolSniffingInbound</code></td>
+<td><code><a href="https://developers.google.com/protocol-buffers/docs/reference/google.protobuf#boolvalue">BoolValue</a></code></td>
+<td>
+<p>If enabled, protocol sniffing will be used for inbound listeners whose port protocol is not specified or unsupported</p>
+
+</td>
+<td>
+No
+</td>
+</tr>
+<tr id="IstiodConfiguration-certProvider">
+<td><code>certProvider</code></td>
+<td><code><a href="#PilotCertProviderType">PilotCertProviderType</a></code></td>
+<td>
+<p>Configure the certificate provider for control plane communication.
+Currently, two providers are supported: &ldquo;kubernetes&rdquo; and &ldquo;istiod&rdquo;.
+As some platforms may not have kubernetes signing APIs,
+Istiod is the default
++kubebuilder:validation:Enum=KUBERNETES;ISTIOD</p>
+
+</td>
+<td>
+No
+</td>
+</tr>
+<tr id="IstiodConfiguration-additionalEnvVars">
+<td><code>additionalEnvVars</code></td>
+<td><code><a href="#k8s-io-api-core-v1-EnvVar">EnvVar[]</a></code></td>
+<td>
+<p>If present will be appended to the environment variables of the container</p>
+
+</td>
+<td>
+No
+</td>
+</tr>
+<tr id="IstiodConfiguration-spiffe">
+<td><code>spiffe</code></td>
+<td><code><a href="#SPIFFEConfiguration">SPIFFEConfiguration</a></code></td>
+<td>
+<p>SPIFFE configuration of Pilot</p>
+
+</td>
+<td>
+No
+</td>
+</tr>
+</tbody>
+</table>
+</section>
+<h2 id="ExternalIstiodConfiguration">ExternalIstiodConfiguration</h2>
+<section>
+<p>ExternalIstiodConfiguration defines settings for local istiod to control remote clusters as well</p>
+
+<table class="message-fields">
+<thead>
+<tr>
+<th>Field</th>
+<th>Type</th>
+<th>Description</th>
+<th>Required</th>
+</tr>
+</thead>
+<tbody>
+<tr id="ExternalIstiodConfiguration-enabled">
+<td><code>enabled</code></td>
+<td><code><a href="https://developers.google.com/protocol-buffers/docs/reference/google.protobuf#boolvalue">BoolValue</a></code></td>
+<td>
+</td>
+<td>
+No
+</td>
+</tr>
+</tbody>
+</table>
+</section>
+<h2 id="SPIFFEConfiguration">SPIFFEConfiguration</h2>
+<section>
+<p>SPIFFEConfiguration is for SPIFFE configuration of Pilot</p>
+
+<table class="message-fields">
+<thead>
+<tr>
+<th>Field</th>
+<th>Type</th>
+<th>Description</th>
+<th>Required</th>
+</tr>
+</thead>
+<tbody>
+<tr id="SPIFFEConfiguration-operatorEndpoints">
+<td><code>operatorEndpoints</code></td>
+<td><code><a href="#OperatorEndpointsConfiguration">OperatorEndpointsConfiguration</a></code></td>
+<td>
+</td>
+<td>
+No
+</td>
+</tr>
+</tbody>
+</table>
+</section>
+<h2 id="OperatorEndpointsConfiguration">OperatorEndpointsConfiguration</h2>
+<section>
+<p>OperatorEndpointsConfiguration defines config options for automatic SPIFFE endpoints</p>
+
+<table class="message-fields">
+<thead>
+<tr>
+<th>Field</th>
+<th>Type</th>
+<th>Description</th>
+<th>Required</th>
+</tr>
+</thead>
+<tbody>
+<tr id="OperatorEndpointsConfiguration-enabled">
+<td><code>enabled</code></td>
+<td><code><a href="https://developers.google.com/protocol-buffers/docs/reference/google.protobuf#boolvalue">BoolValue</a></code></td>
+<td>
+</td>
+<td>
+No
+</td>
+</tr>
+</tbody>
+</table>
+</section>
+<h2 id="TelemetryV2Configuration">TelemetryV2Configuration</h2>
+<section>
+<table class="message-fields">
+<thead>
+<tr>
+<th>Field</th>
+<th>Type</th>
+<th>Description</th>
+<th>Required</th>
+</tr>
+</thead>
+<tbody>
+<tr id="TelemetryV2Configuration-enabled">
+<td><code>enabled</code></td>
+<td><code><a href="https://developers.google.com/protocol-buffers/docs/reference/google.protobuf#boolvalue">BoolValue</a></code></td>
+<td>
+</td>
+<td>
+No
+</td>
+</tr>
+</tbody>
+</table>
+</section>
+<h2 id="ProxyWasmConfiguration">ProxyWasmConfiguration</h2>
+<section>
+<p>ProxyWasmConfiguration defines config options for Envoy wasm</p>
+
+<table class="message-fields">
+<thead>
+<tr>
+<th>Field</th>
+<th>Type</th>
+<th>Description</th>
+<th>Required</th>
+</tr>
+</thead>
+<tbody>
+<tr id="ProxyWasmConfiguration-enabled">
+<td><code>enabled</code></td>
+<td><code><a href="https://developers.google.com/protocol-buffers/docs/reference/google.protobuf#boolvalue">BoolValue</a></code></td>
+<td>
+</td>
+<td>
+No
+</td>
+</tr>
+</tbody>
+</table>
+</section>
+<h2 id="PDBConfiguration">PDBConfiguration</h2>
+<section>
+<p>PDBConfiguration holds Pod Disruption Budget related config options</p>
+
+<table class="message-fields">
+<thead>
+<tr>
+<th>Field</th>
+<th>Type</th>
+<th>Description</th>
+<th>Required</th>
+</tr>
+</thead>
+<tbody>
+<tr id="PDBConfiguration-enabled">
+<td><code>enabled</code></td>
+<td><code><a href="https://developers.google.com/protocol-buffers/docs/reference/google.protobuf#boolvalue">BoolValue</a></code></td>
+<td>
+</td>
+<td>
+No
+</td>
+</tr>
+</tbody>
+</table>
+</section>
+<h2 id="HTTPProxyEnvsConfiguration">HTTPProxyEnvsConfiguration</h2>
+<section>
+<table class="message-fields">
+<thead>
+<tr>
+<th>Field</th>
+<th>Type</th>
+<th>Description</th>
+<th>Required</th>
+</tr>
+</thead>
+<tbody>
+<tr id="HTTPProxyEnvsConfiguration-httpProxy">
+<td><code>httpProxy</code></td>
+<td><code>string</code></td>
+<td>
+</td>
+<td>
+No
+</td>
+</tr>
+<tr id="HTTPProxyEnvsConfiguration-httpsProxy">
+<td><code>httpsProxy</code></td>
+<td><code>string</code></td>
+<td>
+</td>
+<td>
+No
+</td>
+</tr>
+<tr id="HTTPProxyEnvsConfiguration-noProxy">
+<td><code>noProxy</code></td>
+<td><code>string</code></td>
+<td>
+</td>
+<td>
+No
+</td>
+</tr>
 </tbody>
 </table>
 </section>
 <h2 id="IstioControlPlaneStatus">IstioControlPlaneStatus</h2>
 <section>
 
+</section>
+<h2 id="ResourceRequirements">ResourceRequirements</h2>
+<section>
+<p>ResourceRequirements describes the compute resource requirements.</p>
+
+<table class="message-fields">
+<thead>
+<tr>
+<th>Field</th>
+<th>Type</th>
+<th>Description</th>
+<th>Required</th>
+</tr>
+</thead>
+<tbody>
+<tr id="ResourceRequirements-limits">
+<td><code>limits</code></td>
+<td><code>map&lt;string,&nbsp;<a href="#Quantity">Quantity</a>&gt;</code></td>
+<td>
+<p>Limits describes the maximum amount of compute resources allowed.
+More info: https://kubernetes.io/docs/concepts/configuration/manage-compute-resources-container/
++optional</p>
+
+</td>
+<td>
+No
+</td>
+</tr>
+<tr id="ResourceRequirements-requests">
+<td><code>requests</code></td>
+<td><code>map&lt;string,&nbsp;<a href="#Quantity">Quantity</a>&gt;</code></td>
+<td>
+<p>Requests describes the minimum amount of compute resources required.
+If Requests is omitted for a container, it defaults to Limits if that is explicitly specified,
+otherwise to an implementation-defined value.
+More info: https://kubernetes.io/docs/concepts/configuration/manage-compute-resources-container/
++optional</p>
+
+</td>
+<td>
+No
+</td>
+</tr>
+</tbody>
+</table>
+</section>
+<h2 id="k8s-io-api-core-v1-LocalObjectReference">k8s.io.api.core.v1.LocalObjectReference</h2>
+<section>
+<p>LocalObjectReference contains enough information to let you locate the
+referenced object inside the same namespace.</p>
+
+<table class="message-fields">
+<thead>
+<tr>
+<th>Field</th>
+<th>Type</th>
+<th>Description</th>
+<th>Required</th>
+</tr>
+</thead>
+<tbody>
+<tr id="k8s-io-api-core-v1-LocalObjectReference-name">
+<td><code>name</code></td>
+<td><code>string</code></td>
+<td>
+<p>Name of the referent.
+More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names
+TODO: Add other useful fields. apiVersion, kind, uid?
++optional</p>
+
+</td>
+<td>
+No
+</td>
+</tr>
+</tbody>
+</table>
+</section>
+<h2 id="K8sResourceOverlayPatch">K8sResourceOverlayPatch</h2>
+<section>
+<table class="message-fields">
+<thead>
+<tr>
+<th>Field</th>
+<th>Type</th>
+<th>Description</th>
+<th>Required</th>
+</tr>
+</thead>
+<tbody>
+<tr id="K8sResourceOverlayPatch-groupVersionKind">
+<td><code>groupVersionKind</code></td>
+<td><code><a href="#K8sResourceOverlayPatch-GroupVersionKind">GroupVersionKind</a></code></td>
+<td>
+</td>
+<td>
+No
+</td>
+</tr>
+<tr id="K8sResourceOverlayPatch-objectKey">
+<td><code>objectKey</code></td>
+<td><code><a href="#NamespacedName">NamespacedName</a></code></td>
+<td>
+</td>
+<td>
+No
+</td>
+</tr>
+<tr id="K8sResourceOverlayPatch-patches">
+<td><code>patches</code></td>
+<td><code><a href="#K8sResourceOverlayPatch-Patch">Patch[]</a></code></td>
+<td>
+</td>
+<td>
+No
+</td>
+</tr>
+</tbody>
+</table>
+</section>
+<h2 id="k8s-io-api-core-v1-Lifecycle">k8s.io.api.core.v1.Lifecycle</h2>
+<section>
+<p>Lifecycle describes actions that the management system should take in response to container lifecycle
+events. For the PostStart and PreStop lifecycle handlers, management of the container blocks
+until the action is complete, unless the container process fails, in which case the handler is aborted.</p>
+
+<table class="message-fields">
+<thead>
+<tr>
+<th>Field</th>
+<th>Type</th>
+<th>Description</th>
+<th>Required</th>
+</tr>
+</thead>
+<tbody>
+<tr id="k8s-io-api-core-v1-Lifecycle-postStart">
+<td><code>postStart</code></td>
+<td><code><a href="#k8s-io-api-core-v1-Handler">Handler</a></code></td>
+<td>
+<p>PostStart is called immediately after a container is created. If the handler fails,
+the container is terminated and restarted according to its restart policy.
+Other management of the container blocks until the hook completes.
+More info: https://kubernetes.io/docs/concepts/containers/container-lifecycle-hooks/#container-hooks
++optional</p>
+
+</td>
+<td>
+No
+</td>
+</tr>
+<tr id="k8s-io-api-core-v1-Lifecycle-preStop">
+<td><code>preStop</code></td>
+<td><code><a href="#k8s-io-api-core-v1-Handler">Handler</a></code></td>
+<td>
+<p>PreStop is called immediately before a container is terminated due to an
+API request or management event such as liveness probe failure,
+preemption, resource contention, etc. The handler is not called if the
+container crashes or exits. The reason for termination is passed to the
+handler. The Pod&rsquo;s termination grace period countdown begins before the
+PreStop hooked is executed. Regardless of the outcome of the handler, the
+container will eventually terminate within the Pod&rsquo;s termination grace
+period. Other management of the container blocks until the hook completes
+or until the termination grace period is reached.
+More info: https://kubernetes.io/docs/concepts/containers/container-lifecycle-hooks/#container-hooks
++optional</p>
+
+</td>
+<td>
+No
+</td>
+</tr>
+</tbody>
+</table>
+</section>
+<h2 id="BaseKubernetesResourceConfig">BaseKubernetesResourceConfig</h2>
+<section>
+<table class="message-fields">
+<thead>
+<tr>
+<th>Field</th>
+<th>Type</th>
+<th>Description</th>
+<th>Required</th>
+</tr>
+</thead>
+<tbody>
+<tr id="BaseKubernetesResourceConfig-metadata">
+<td><code>metadata</code></td>
+<td><code><a href="#K8sObjectMeta">K8sObjectMeta</a></code></td>
+<td>
+<p>Generic k8s resource metadata</p>
+
+</td>
+<td>
+No
+</td>
+</tr>
+<tr id="BaseKubernetesResourceConfig-image">
+<td><code>image</code></td>
+<td><code>string</code></td>
+<td>
+<p>Standard Kubernetes container image configuration</p>
+
+</td>
+<td>
+No
+</td>
+</tr>
+<tr id="BaseKubernetesResourceConfig-env">
+<td><code>env</code></td>
+<td><code><a href="#k8s-io-api-core-v1-EnvVar">EnvVar[]</a></code></td>
+<td>
+<p>If present will be appended to the environment variables of the container</p>
+
+</td>
+<td>
+No
+</td>
+</tr>
+<tr id="BaseKubernetesResourceConfig-resources">
+<td><code>resources</code></td>
+<td><code><a href="#ResourceRequirements">ResourceRequirements</a></code></td>
+<td>
+<p>Standard Kubernetes resource configuration, memory and CPU resource requirements</p>
+
+</td>
+<td>
+No
+</td>
+</tr>
+<tr id="BaseKubernetesResourceConfig-nodeSelector">
+<td><code>nodeSelector</code></td>
+<td><code>map&lt;string,&nbsp;string&gt;</code></td>
+<td>
+<p>Standard Kubernetes node selector configuration</p>
+
+</td>
+<td>
+No
+</td>
+</tr>
+<tr id="BaseKubernetesResourceConfig-affinity">
+<td><code>affinity</code></td>
+<td><code><a href="#k8s-io-api-core-v1-Affinity">Affinity</a></code></td>
+<td>
+<p>Standard Kubernetes affinity configuration</p>
+
+</td>
+<td>
+No
+</td>
+</tr>
+<tr id="BaseKubernetesResourceConfig-securityContext">
+<td><code>securityContext</code></td>
+<td><code><a href="#k8s-io-api-core-v1-SecurityContext">SecurityContext</a></code></td>
+<td>
+<p>Standard Kubernetes security context configuration</p>
+
+</td>
+<td>
+No
+</td>
+</tr>
+<tr id="BaseKubernetesResourceConfig-imagePullPolicy">
+<td><code>imagePullPolicy</code></td>
+<td><code>string</code></td>
+<td>
+<p>Image pull policy.
+One of Always, Never, IfNotPresent.
+Defaults to Always if :latest tag is specified, or IfNotPresent otherwise.
++optional</p>
+
+</td>
+<td>
+No
+</td>
+</tr>
+<tr id="BaseKubernetesResourceConfig-priorityClassName">
+<td><code>priorityClassName</code></td>
+<td><code>string</code></td>
+<td>
+<p>If specified, indicates the pod&rsquo;s priority. &ldquo;system-node-critical&rdquo; and
+&ldquo;system-cluster-critical&rdquo; are two special keywords which indicate the
+highest priorities with the former being the highest priority. Any other
+name must be defined by creating a PriorityClass object with that name.
+If not specified, the pod priority will be default or zero if there is no
+default.
++optional</p>
+
+</td>
+<td>
+No
+</td>
+</tr>
+<tr id="BaseKubernetesResourceConfig-tolerations">
+<td><code>tolerations</code></td>
+<td><code><a href="#k8s-io-api-core-v1-Toleration">Toleration[]</a></code></td>
+<td>
+<p>google.protobuf.Int32Value replicaCount = 1 [(gogoproto.wktpointer) = true];
+If specified, the pod&rsquo;s tolerations.
++optional</p>
+
+</td>
+<td>
+No
+</td>
+</tr>
+<tr id="BaseKubernetesResourceConfig-volumes">
+<td><code>volumes</code></td>
+<td><code><a href="#k8s-io-api-core-v1-Volume">Volume[]</a></code></td>
+<td>
+<p>List of volumes that can be mounted by containers belonging to the pod.
+More info: https://kubernetes.io/docs/concepts/storage/volumes
++optional
++patchMergeKey=name
++patchStrategy=merge,retainKeys</p>
+
+</td>
+<td>
+No
+</td>
+</tr>
+<tr id="BaseKubernetesResourceConfig-volumeMounts">
+<td><code>volumeMounts</code></td>
+<td><code><a href="#k8s-io-api-core-v1-VolumeMount">VolumeMount[]</a></code></td>
+<td>
+<p>Pod volumes to mount into the container&rsquo;s filesystem.
+Cannot be updated.
++optional
++patchMergeKey=mountPath
++patchStrategy=merge</p>
+
+</td>
+<td>
+No
+</td>
+</tr>
+<tr id="BaseKubernetesResourceConfig-replicas">
+<td><code>replicas</code></td>
+<td><code><a href="#Replicas">Replicas</a></code></td>
+<td>
+<p>Replica configuration</p>
+
+</td>
+<td>
+No
+</td>
+</tr>
+<tr id="BaseKubernetesResourceConfig-podAnnotations">
+<td><code>podAnnotations</code></td>
+<td><code>map&lt;string,&nbsp;string&gt;</code></td>
+<td>
+<p>Standard Kubernetes pod annotation configuration</p>
+
+</td>
+<td>
+No
+</td>
+</tr>
+</tbody>
+</table>
+</section>
+<h2 id="k8s-io-api-core-v1-EnvVar">k8s.io.api.core.v1.EnvVar</h2>
+<section>
+<p>EnvVar represents an environment variable present in a Container.</p>
+
+<table class="message-fields">
+<thead>
+<tr>
+<th>Field</th>
+<th>Type</th>
+<th>Description</th>
+<th>Required</th>
+</tr>
+</thead>
+<tbody>
+<tr id="k8s-io-api-core-v1-EnvVar-name">
+<td><code>name</code></td>
+<td><code>string</code></td>
+<td>
+<p>Name of the environment variable. Must be a C_IDENTIFIER.</p>
+
+</td>
+<td>
+No
+</td>
+</tr>
+<tr id="k8s-io-api-core-v1-EnvVar-value">
+<td><code>value</code></td>
+<td><code>string</code></td>
+<td>
+<p>Variable references $(VAR<em>NAME) are expanded
+using the previous defined environment variables in the container and
+any service environment variables. If a variable cannot be resolved,
+the reference in the input string will be unchanged. The $(VAR</em>NAME)
+syntax can be escaped with a double $$, ie: $$(VAR_NAME). Escaped
+references will never be expanded, regardless of whether the variable
+exists or not.
+Defaults to &ldquo;&rdquo;.
++optional</p>
+
+</td>
+<td>
+No
+</td>
+</tr>
+<tr id="k8s-io-api-core-v1-EnvVar-valueFrom">
+<td><code>valueFrom</code></td>
+<td><code><a href="#k8s-io-api-core-v1-EnvVarSource">EnvVarSource</a></code></td>
+<td>
+<p>Source for the environment variable&rsquo;s value. Cannot be used if value is not empty.
++optional</p>
+
+</td>
+<td>
+No
+</td>
+</tr>
+</tbody>
+</table>
+</section>
+<h2 id="ProxyLogLevel">ProxyLogLevel</h2>
+<section>
+<table class="enum-values">
+<thead>
+<tr>
+<th>Name</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr id="ProxyLogLevel-UNSPECIFIED">
+<td><code>UNSPECIFIED</code></td>
+<td>
+</td>
+</tr>
+<tr id="ProxyLogLevel-TRACE">
+<td><code>TRACE</code></td>
+<td>
+</td>
+</tr>
+<tr id="ProxyLogLevel-DEBUG">
+<td><code>DEBUG</code></td>
+<td>
+</td>
+</tr>
+<tr id="ProxyLogLevel-INFO">
+<td><code>INFO</code></td>
+<td>
+</td>
+</tr>
+<tr id="ProxyLogLevel-WARNING">
+<td><code>WARNING</code></td>
+<td>
+</td>
+</tr>
+<tr id="ProxyLogLevel-ERROR">
+<td><code>ERROR</code></td>
+<td>
+</td>
+</tr>
+<tr id="ProxyLogLevel-CRITICAL">
+<td><code>CRITICAL</code></td>
+<td>
+</td>
+</tr>
+<tr id="ProxyLogLevel-OFF">
+<td><code>OFF</code></td>
+<td>
+</td>
+</tr>
+</tbody>
+</table>
+</section>
+<h2 id="PilotCertProviderType">PilotCertProviderType</h2>
+<section>
+<table class="enum-values">
+<thead>
+<tr>
+<th>Name</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr id="PilotCertProviderType-UNSPECIFIED">
+<td><code>UNSPECIFIED</code></td>
+<td>
+</td>
+</tr>
+<tr id="PilotCertProviderType-KUBERNETES">
+<td><code>KUBERNETES</code></td>
+<td>
+</td>
+</tr>
+<tr id="PilotCertProviderType-ISTIOD">
+<td><code>ISTIOD</code></td>
+<td>
+</td>
+</tr>
+</tbody>
+</table>
+</section>
+<h2 id="JWTPolicyType">JWTPolicyType</h2>
+<section>
+<table class="enum-values">
+<thead>
+<tr>
+<th>Name</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr id="JWTPolicyType-UNSPECIFIED">
+<td><code>UNSPECIFIED</code></td>
+<td>
+</td>
+</tr>
+<tr id="JWTPolicyType-THIRD_PARTY_JWT">
+<td><code>THIRD_PARTY_JWT</code></td>
+<td>
+</td>
+</tr>
+<tr id="JWTPolicyType-FIRST_PARTY_JWT">
+<td><code>FIRST_PARTY_JWT</code></td>
+<td>
+</td>
+</tr>
+</tbody>
+</table>
 </section>

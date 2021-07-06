@@ -31,39 +31,6 @@ func (this *MeshGatewaySpec) UnmarshalJSON(b []byte) error {
 	return MeshgatewayUnmarshaler.Unmarshal(bytes.NewReader(b), this)
 }
 
-// MarshalJSON is a custom marshaler for K8SResourceOverlayPatch
-func (this *K8SResourceOverlayPatch) MarshalJSON() ([]byte, error) {
-	str, err := MeshgatewayMarshaler.MarshalToString(this)
-	return []byte(str), err
-}
-
-// UnmarshalJSON is a custom unmarshaler for K8SResourceOverlayPatch
-func (this *K8SResourceOverlayPatch) UnmarshalJSON(b []byte) error {
-	return MeshgatewayUnmarshaler.Unmarshal(bytes.NewReader(b), this)
-}
-
-// MarshalJSON is a custom marshaler for K8SResourceOverlayPatch_GroupVersionKind
-func (this *K8SResourceOverlayPatch_GroupVersionKind) MarshalJSON() ([]byte, error) {
-	str, err := MeshgatewayMarshaler.MarshalToString(this)
-	return []byte(str), err
-}
-
-// UnmarshalJSON is a custom unmarshaler for K8SResourceOverlayPatch_GroupVersionKind
-func (this *K8SResourceOverlayPatch_GroupVersionKind) UnmarshalJSON(b []byte) error {
-	return MeshgatewayUnmarshaler.Unmarshal(bytes.NewReader(b), this)
-}
-
-// MarshalJSON is a custom marshaler for K8SResourceOverlayPatch_Patch
-func (this *K8SResourceOverlayPatch_Patch) MarshalJSON() ([]byte, error) {
-	str, err := MeshgatewayMarshaler.MarshalToString(this)
-	return []byte(str), err
-}
-
-// UnmarshalJSON is a custom unmarshaler for K8SResourceOverlayPatch_Patch
-func (this *K8SResourceOverlayPatch_Patch) UnmarshalJSON(b []byte) error {
-	return MeshgatewayUnmarshaler.Unmarshal(bytes.NewReader(b), this)
-}
-
 // MarshalJSON is a custom marshaler for MeshGatewayStatus
 func (this *MeshGatewayStatus) MarshalJSON() ([]byte, error) {
 	str, err := MeshgatewayMarshaler.MarshalToString(this)

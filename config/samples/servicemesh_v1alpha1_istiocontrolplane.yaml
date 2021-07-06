@@ -4,6 +4,87 @@ metadata:
   name: icp-v10x-sample
 spec:
   version: 1.10.0-rc.0
+  logging:
+    level: "default:info"
+  defaultResources:
+    requests:
+      cpu: 10m
+  mountMtlsCerts: false
+  istiod:
+    deployment:
+      replicas:
+        min: 1
+        max: 5
+        count: 1
+      image: "gcr.io/istio-release/pilot:1.10.0"
+      resources:
+        requests:
+          cpu: 500m
+          memory: 2048Mi
+      nodeSelector: {}
+      affinity: {}
+      tolerations: []
+      podAnnotations: {}
+      securityContext: {}
+    enableAnalysis: false
+    enableStatus: false
+    externalIstiod:
+      enabled: false
+    traceSampling: 1.0
+    enableProtocolSniffingOutbound: true
+    enableProtocolSniffingInbound: true
+    certProvider: ISTIOD
+    additionalEnvVars: []
+    spiffe:
+      operatorEndpoints:
+        enabled: false
+  proxy:
+    image: "gcr.io/istio-release/proxyv2:1.10.0"
+    privileged: false
+    enableCoreDump: false
+    logLevel: "WARNING"
+    componentLogLevel: "misc:error"
+    clusterDomain: "cluster.local"
+    holdApplicationUntilProxyStarts: false
+    lifecycle: {}
+    resources:
+      requests:
+        cpu: 100m
+        memory: 128Mi
+      limits:
+        cpu: 2000m
+        memory: 1024Mi
+    includeIPRanges: "*"
+    excludeIPRanges: ""
+    excludeInboundPorts: ""
+    excludeOutboundPorts: ""
+  proxyInit:
+    image: "gcr.io/istio-release/proxyv2:1.10.0"
+    resources:
+      limits:
+        cpu: 2000m
+        memory: 1024Mi
+      requests:
+        cpu: 10m
+        memory: 10Mi
+  telemetryV2:
+    enabled: true
+  sds:
+    tokenAudience: "istio-ca"
+  proxyWasm:
+    enabled: false
+  watchOneNamespace: false
+  priorityClassName: ""
+  defaultPodDisruptionBudget:
+    enabled: true
+  imagePullPolicy: ""
+  imagePullSecrets: []
+  jwtPolicy: "THIRD_PARTY_JWT"
+  caAddress: ""
+  httpProxyEnvs:
+    httpProxy: ""
+    httpsProxy: ""
+    noProxy: ""
   meshConfig:
     proxyListenPort: 15001
     connectTimeout: 10s
