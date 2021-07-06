@@ -1898,6 +1898,47 @@ spec:
                 - THIRD_PARTY_JWT
                 - FIRST_PARTY_JWT
                 type: string
+              k8sResourceOverlays:
+                description: K8s resource overlay patches.
+                items:
+                  properties:
+                    groupVersionKind:
+                      properties:
+                        group:
+                          type: string
+                        kind:
+                          type: string
+                        version:
+                          type: string
+                      type: object
+                    objectKey:
+                      properties:
+                        name:
+                          description: Name of the referenced Kubernetes resource.
+                          type: string
+                        namespace:
+                          description: Namespace of the referenced Kubernetes resource.
+                          type: string
+                      type: object
+                    patches:
+                      items:
+                        properties:
+                          parseValue:
+                            type: boolean
+                          path:
+                            type: string
+                          type:
+                            enum:
+                            - unspecified
+                            - replace
+                            - remove
+                            type: string
+                          value:
+                            type: string
+                        type: object
+                      type: array
+                  type: object
+                type: array
               logging:
                 description: Logging configurations.
                 properties:

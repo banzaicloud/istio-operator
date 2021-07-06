@@ -4,7 +4,7 @@ description: Istio Mesh Gateway descriptor
 layout: protoc-gen-docs
 generator: protoc-gen-docs
 schema: istio-operator.api.v1alpha1.MeshGatewaySpec
-number_of_entries: 11
+number_of_entries: 8
 ---
 <h2 id="MeshGatewaySpec">MeshGatewaySpec</h2>
 <section>
@@ -90,48 +90,6 @@ No
 </tbody>
 </table>
 </section>
-<h2 id="K8sResourceOverlayPatch">K8sResourceOverlayPatch</h2>
-<section>
-<table class="message-fields">
-<thead>
-<tr>
-<th>Field</th>
-<th>Type</th>
-<th>Description</th>
-<th>Required</th>
-</tr>
-</thead>
-<tbody>
-<tr id="K8sResourceOverlayPatch-groupVersionKind">
-<td><code>groupVersionKind</code></td>
-<td><code><a href="#K8sResourceOverlayPatch-GroupVersionKind">GroupVersionKind</a></code></td>
-<td>
-</td>
-<td>
-No
-</td>
-</tr>
-<tr id="K8sResourceOverlayPatch-objectKey">
-<td><code>objectKey</code></td>
-<td><code><a href="#NamespacedName">NamespacedName</a></code></td>
-<td>
-</td>
-<td>
-No
-</td>
-</tr>
-<tr id="K8sResourceOverlayPatch-patches">
-<td><code>patches</code></td>
-<td><code><a href="#K8sResourceOverlayPatch-Patch">Patch[]</a></code></td>
-<td>
-</td>
-<td>
-No
-</td>
-</tr>
-</tbody>
-</table>
-</section>
 <h2 id="MeshGatewayStatus">MeshGatewayStatus</h2>
 <section>
 
@@ -173,99 +131,6 @@ No
 <td>
 <p>Reconciliation error message if any</p>
 
-</td>
-<td>
-No
-</td>
-</tr>
-</tbody>
-</table>
-</section>
-<h2 id="K8sResourceOverlayPatch-GroupVersionKind">K8sResourceOverlayPatch.GroupVersionKind</h2>
-<section>
-<table class="message-fields">
-<thead>
-<tr>
-<th>Field</th>
-<th>Type</th>
-<th>Description</th>
-<th>Required</th>
-</tr>
-</thead>
-<tbody>
-<tr id="K8sResourceOverlayPatch-GroupVersionKind-kind">
-<td><code>kind</code></td>
-<td><code>string</code></td>
-<td>
-</td>
-<td>
-No
-</td>
-</tr>
-<tr id="K8sResourceOverlayPatch-GroupVersionKind-version">
-<td><code>version</code></td>
-<td><code>string</code></td>
-<td>
-</td>
-<td>
-No
-</td>
-</tr>
-<tr id="K8sResourceOverlayPatch-GroupVersionKind-group">
-<td><code>group</code></td>
-<td><code>string</code></td>
-<td>
-</td>
-<td>
-No
-</td>
-</tr>
-</tbody>
-</table>
-</section>
-<h2 id="K8sResourceOverlayPatch-Patch">K8sResourceOverlayPatch.Patch</h2>
-<section>
-<table class="message-fields">
-<thead>
-<tr>
-<th>Field</th>
-<th>Type</th>
-<th>Description</th>
-<th>Required</th>
-</tr>
-</thead>
-<tbody>
-<tr id="K8sResourceOverlayPatch-Patch-path">
-<td><code>path</code></td>
-<td><code>string</code></td>
-<td>
-</td>
-<td>
-No
-</td>
-</tr>
-<tr id="K8sResourceOverlayPatch-Patch-value">
-<td><code>value</code></td>
-<td><code>string</code></td>
-<td>
-</td>
-<td>
-No
-</td>
-</tr>
-<tr id="K8sResourceOverlayPatch-Patch-parseValue">
-<td><code>parseValue</code></td>
-<td><code>bool</code></td>
-<td>
-</td>
-<td>
-No
-</td>
-</tr>
-<tr id="K8sResourceOverlayPatch-Patch-type">
-<td><code>type</code></td>
-<td><code><a href="#K8sResourceOverlayPatch-Type">Type</a></code></td>
-<td>
 </td>
 <td>
 No
@@ -762,29 +627,43 @@ No
 </tbody>
 </table>
 </section>
-<h2 id="K8sResourceOverlayPatch-Type">K8sResourceOverlayPatch.Type</h2>
+<h2 id="K8sResourceOverlayPatch">K8sResourceOverlayPatch</h2>
 <section>
-<table class="enum-values">
+<table class="message-fields">
 <thead>
 <tr>
-<th>Name</th>
+<th>Field</th>
+<th>Type</th>
 <th>Description</th>
+<th>Required</th>
 </tr>
 </thead>
 <tbody>
-<tr id="K8sResourceOverlayPatch-Type-unspecified">
-<td><code>unspecified</code></td>
+<tr id="K8sResourceOverlayPatch-groupVersionKind">
+<td><code>groupVersionKind</code></td>
+<td><code><a href="#K8sResourceOverlayPatch-GroupVersionKind">GroupVersionKind</a></code></td>
 <td>
 </td>
-</tr>
-<tr id="K8sResourceOverlayPatch-Type-replace">
-<td><code>replace</code></td>
 <td>
+No
 </td>
 </tr>
-<tr id="K8sResourceOverlayPatch-Type-remove">
-<td><code>remove</code></td>
+<tr id="K8sResourceOverlayPatch-objectKey">
+<td><code>objectKey</code></td>
+<td><code><a href="#NamespacedName">NamespacedName</a></code></td>
 <td>
+</td>
+<td>
+No
+</td>
+</tr>
+<tr id="K8sResourceOverlayPatch-patches">
+<td><code>patches</code></td>
+<td><code><a href="#K8sResourceOverlayPatch-Patch">Patch[]</a></code></td>
+<td>
+</td>
+<td>
+No
 </td>
 </tr>
 </tbody>

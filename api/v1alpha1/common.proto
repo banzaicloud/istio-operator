@@ -319,6 +319,31 @@ message Replicas {
     google.protobuf.Int32Value max = 3 [(gogoproto.wktpointer) = true];
 }
 
+message K8sResourceOverlayPatch {
+    message GroupVersionKind {
+        string kind = 1;
+        string version = 2;
+        string group = 3;
+    }
+
+    enum Type {
+        unspecified = 0;
+        replace = 1;
+        remove = 2;
+    }
+
+    message Patch {
+        string path = 1;
+        string value = 2;
+        bool parseValue = 3;
+        Type type = 4;
+    }
+
+    GroupVersionKind groupVersionKind = 1 [(gogoproto.nullable) = false];
+    NamespacedName objectKey = 2;
+    repeated Patch patches = 3 [(gogoproto.nullable) = false];
+}
+
 // Synthetic type for generating Go structs.
 // GOTYPE: *Quantity
 message Quantity {}

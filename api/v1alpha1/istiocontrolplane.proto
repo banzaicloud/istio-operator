@@ -108,6 +108,8 @@ message IstioControlPlaneSpec {
     HTTPProxyEnvsConfiguration httpProxyEnvs = 18 [(gogoproto.jsontag) = "httpProxyEnvs"];
     // Defines mesh-wide settings for the Istio control plane.
     istio.mesh.v1alpha1.MeshConfig mesh_config = 19;
+    // K8s resource overlay patches
+    repeated K8sResourceOverlayPatch k8sResourceOverlays = 20;
 }
 
 // Comma-separated minimum per-scope logging level of messages to output, in the form of <scope>:<level>,<scope>:<level>
