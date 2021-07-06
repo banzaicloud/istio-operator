@@ -33,6 +33,8 @@ import (
 var charts = []string{
 	"base",
 	"istio-control/istio-discovery",
+	"gateways/istio-ingress",
+	"gateways/istio-egress",
 }
 
 //go:generate go run main.go

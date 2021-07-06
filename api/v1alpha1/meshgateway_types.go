@@ -23,6 +23,7 @@ import (
 // +kubebuilder:object:root=true
 
 // MeshGateway is the Schema for the meshgateways API
+// +kubebuilder:resource:path=meshgateways,shortName=mgw;meshgw
 type MeshGateway struct {
 	metav1.TypeMeta   `json:",inline"`
 	metav1.ObjectMeta `json:"metadata,omitempty" protobuf:"bytes,1,opt,name=metadata"`

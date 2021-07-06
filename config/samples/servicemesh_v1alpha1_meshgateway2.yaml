@@ -1,0 +1,16 @@
+apiVersion: servicemesh.cisco.com/v1alpha1
+kind: MeshGateway
+metadata:
+  name: meshgateway-sample
+spec:
+  type: "ingress"
+  istioControlPlane:
+      name: cp-v110x
+      namespace: istio-system
+  ports:
+  - servicePort:
+      port: 15021
+      name: status-port
+    gatewayTargetPort: 15021
+  meshGwConfiguration:
+    loadBalancerIP: "almafa"
