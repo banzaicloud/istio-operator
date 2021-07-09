@@ -5,7 +5,7 @@ metadata:
     controller-tools.k8s.io: "1.0"
   name: multimesh-v19x
 spec:
-  version: "1.9.5"
+  version: "1.9.6"
   global: false
   meshPolicy:
     mtlsMode: STRICT
@@ -15,5 +15,5 @@ spec:
   citadel:
     caSecretName: "cacerts"
   proxy:
-    image: "gcr.io/istio-release/proxyv2:1.9.5"
+    image: "gcr.io/istio-release/proxyv2:1.9.6"
   jwtPolicy: "first-party-jwt"
