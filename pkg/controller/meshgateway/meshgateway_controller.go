@@ -121,7 +121,7 @@ func add(mgr manager.Manager, r reconcile.Reconciler) error {
 func triggerMeshGateways(mgr manager.Manager, object runtime.Object, logger logr.Logger) []reconcile.Request {
 	requests := make([]reconcile.Request, 0)
 
-	istio := &istiov1beta1.Istio{}
+	var istio *istiov1beta1.Istio
 	var ok bool
 	if istio, ok = object.(*istiov1beta1.Istio); !ok {
 		return nil

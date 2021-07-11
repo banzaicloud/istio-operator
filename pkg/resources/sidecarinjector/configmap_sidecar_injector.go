@@ -164,7 +164,6 @@ func (r *Reconciler) siConfig() string {
 	marshaledConfig, _ := yaml.Marshal(siConfig)
 	// this is a static config, so we don't have to deal with errors
 	return string(marshaledConfig)
-
 }
 
 func (r *Reconciler) templates() map[string]string {
@@ -177,31 +176,35 @@ metadata:
     service.istio.io/canonical-name: {{ index .ObjectMeta.Labels ` + "`" + `service.istio.io/canonical-name` + "`" + ` | default (index .ObjectMeta.Labels ` + "`" + `app.kubernetes.io/name` + "`" + `) | default (index .ObjectMeta.Labels ` + "`" + `app` + "`" + `) | default .DeploymentMeta.Name | quote }}
     service.istio.io/canonical-revision: {{ index .ObjectMeta.Labels ` + "`" + `service.istio.io/canonical-revision` + "`" + ` | default (index .ObjectMeta.Labels ` + "`" + `app.kubernetes.io/version` + "`" + `) | default (index .ObjectMeta.Labels ` + "`" + `version` + "`" + `) | default "latest" | quote }}
     istio.io/rev: {{ .Revision | default "default" | quote }}
-  annotations:
+  annotations: {
     {{- if eq (len $containers) 1 }}
-    kubectl.kubernetes.io/default-logs-container: "{{ index $containers 0 }}"
+    kubectl.kubernetes.io/default-logs-container: "{{ index $containers 0 }}",
+    kubectl.kubernetes.io/default-container: "{{ index $containers 0 }}",
     {{ end }}
-{{ if .Values.global.proxy_init.cniEnabled -}}
+    {{ if .Values.global.proxy_init.cniEnabled -}}
     {{- if not .Values.global.proxy_init.cniChained }}
-    k8s.v1.cni.cncf.io/networks: '{{ appendMultusNetwork (index .ObjectMeta.Annotations ` + "`" + `k8s.v1.cni.cncf.io/networks` + "`" + `) ` + "`" + `istio-cni` + "`" + ` }}'
+    k8s.v1.cni.cncf.io/networks: '{{ appendMultusNetwork (index .ObjectMeta.Annotations ` + "`" + `k8s.v1.cni.cncf.io/networks` + "`" + `) ` + "`" + `istio-cni` + "`" + ` }}',
     {{- end }}
-    sidecar.istio.io/interceptionMode: "{{ annotation .ObjectMeta ` + "`" + `sidecar.istio.io/interceptionMode` + "`" + ` .ProxyConfig.InterceptionMode }}"
+    sidecar.istio.io/interceptionMode: "{{ annotation .ObjectMeta ` + "`" + `sidecar.istio.io/interceptionMode` + "`" + ` .ProxyConfig.InterceptionMode }}",
     {{ with annotation .ObjectMeta ` + "`" + `traffic.sidecar.istio.io/includeOutboundIPRanges` + "`" + ` .Values.global.proxy.includeIPRanges }}
-    traffic.sidecar.istio.io/includeOutboundIPRanges: "{{.}}"
+    traffic.sidecar.istio.io/includeOutboundIPRanges: "{{.}}",
     {{ end }}
     {{ with annotation .ObjectMeta ` + "`" + `traffic.sidecar.istio.io/excludeOutboundIPRanges` + "`" + ` .Values.global.proxy.excludeIPRanges }}
-    traffic.sidecar.istio.io/excludeOutboundIPRanges: "{{.}}"
+    traffic.sidecar.istio.io/excludeOutboundIPRanges: "{{.}}",
     {{ end }}
-    traffic.sidecar.istio.io/includeInboundPorts: "{{ annotation .ObjectMeta ` + "`" + `traffic.sidecar.istio.io/includeInboundPorts` + "`" + ` ` + "`" + `*` + "`" + ` }}"
-    traffic.sidecar.istio.io/excludeInboundPorts: "{{ excludeInboundPort (annotation .ObjectMeta ` + "`" + `status.sidecar.istio.io/port` + "`" + ` .Values.global.proxy.statusPort) (annotation .ObjectMeta ` + "`" + `traffic.sidecar.istio.io/excludeInboundPorts` + "`" + ` .Values.global.proxy.excludeInboundPorts) }}"
+    traffic.sidecar.istio.io/includeInboundPorts: "{{ annotation .ObjectMeta ` + "`" + `traffic.sidecar.istio.io/includeInboundPorts` + "`" + ` ` + "`" + `*` + "`" + ` }}",
+    traffic.sidecar.istio.io/excludeInboundPorts: "{{ excludeInboundPort (annotation .ObjectMeta ` + "`" + `status.sidecar.istio.io/port` + "`" + ` .Values.global.proxy.statusPort) (annotation .ObjectMeta ` + "`" + `traffic.sidecar.istio.io/excludeInboundPorts` + "`" + ` .Values.global.proxy.excludeInboundPorts) }}",
     {{ if or (isset .ObjectMeta.Annotations ` + "`" + `traffic.sidecar.istio.io/includeOutboundPorts` + "`" + `) (ne (valueOrDefault .Values.global.proxy.includeOutboundPorts "") "") }}
-    traffic.sidecar.istio.io/includeOutboundPorts: "{{ annotation .ObjectMeta ` + "`" + `traffic.sidecar.istio.io/includeOutboundPorts` + "`" + ` .Values.global.proxy.includeOutboundPorts }}"
+    traffic.sidecar.istio.io/includeOutboundPorts: "{{ annotation .ObjectMeta ` + "`" + `traffic.sidecar.istio.io/includeOutboundPorts` + "`" + ` .Values.global.proxy.includeOutboundPorts }}",
     {{- end }}
     {{ if or (isset .ObjectMeta.Annotations ` + "`" + `traffic.sidecar.istio.io/excludeOutboundPorts` + "`" + `) (ne .Values.global.proxy.excludeOutboundPorts "") }}
-    traffic.sidecar.istio.io/excludeOutboundPorts: "{{ annotation .ObjectMeta ` + "`" + `traffic.sidecar.istio.io/excludeOutboundPorts` + "`" + ` .Values.global.proxy.excludeOutboundPorts }}"
+    traffic.sidecar.istio.io/excludeOutboundPorts: "{{ annotation .ObjectMeta ` + "`" + `traffic.sidecar.istio.io/excludeOutboundPorts` + "`" + ` .Values.global.proxy.excludeOutboundPorts }}",
     {{- end }}
-    {{ with index .ObjectMeta.Annotations ` + "`" + `traffic.sidecar.istio.io/kubevirtInterfaces` + "`" + ` }}traffic.sidecar.istio.io/kubevirtInterfaces: "{{.}}",{{ end }}
-{{- end }}
+    {{ with index .ObjectMeta.Annotations ` + "`" + `traffic.sidecar.istio.io/kubevirtInterfaces` + "`" + ` }}
+    traffic.sidecar.istio.io/kubevirtInterfaces: "{{.}}",
+    {{ end }}
+    {{- end }}
+  }
 spec:
 ` + indentWithSpaces(r.templatePodSpec(2), 2) + `
 `}
