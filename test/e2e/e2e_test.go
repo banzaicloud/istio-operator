@@ -95,8 +95,8 @@ var _ = Describe("E2E", func() {
 		})
 		Context("Mixerless Telemetry Stats Filter Test", func() {
 			var (
-				istio        v1beta1.Istio
-				majorMinor   string
+				istio      v1beta1.Istio
+				majorMinor string
 			)
 			const timeout = 120 * time.Second
 			const interval = 10 * time.Second
@@ -147,7 +147,6 @@ var _ = Describe("E2E", func() {
 				Expect(setMixerlessTelemetryState(&istio, util.BoolPointer(true))).Should(Succeed())
 				Expect(waitForMixerlessTelemetryFilters(
 					istio.Namespace, statsName, tcpName, true, timeout, interval)).Should(Succeed())
-
 			})
 		})
 
@@ -206,7 +205,6 @@ var _ = Describe("E2E", func() {
 					err = containerExists(containerList, istioProxyContainerName)
 					Expect(err).ShouldNot(HaveOccurred())
 				})
-
 			})
 
 			Context("when mgw service is created", func() {
