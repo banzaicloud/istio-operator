@@ -394,17 +394,13 @@ type CNITaintConfiguration struct {
 	Enabled *bool `json:"enabled,omitempty"`
 }
 
-// SidecarInjectorInitConfiguration defines options for init containers in the sidecar
-type SidecarInjectorInitConfiguration struct {
-	Resources *corev1.ResourceRequirements `json:"resources,omitempty"`
-}
-
 // SidecarInjectorConfiguration defines config options for SidecarInjector
 type SidecarInjectorConfiguration struct {
 	Enabled                                  *bool `json:"enabled,omitempty"`
 	BaseK8sResourceConfigurationWithReplicas `json:",inline"`
-	Init                                     SidecarInjectorInitConfiguration `json:"init,omitempty"`
-	InitCNIConfiguration                     InitCNIConfiguration             `json:"initCNIConfiguration,omitempty"`
+	// DEPRECATED: Use proxy.init instead
+	Init                 ProxyInitConfiguration `json:"init,omitempty"`
+	InitCNIConfiguration InitCNIConfiguration   `json:"initCNIConfiguration,omitempty"`
 	// If true, sidecar injector will rewrite PodSpec for liveness
 	// health check to redirect request to sidecar. This makes liveness check work
 	// even when mTLS is enabled.
@@ -566,11 +562,15 @@ type ProxyConfiguration struct {
 
 	Resources       *corev1.ResourceRequirements `json:"resources,omitempty"`
 	SecurityContext *corev1.SecurityContext      `json:"securityContext,omitempty"`
+
+	// Proxy Init configuration options
+	Init *ProxyInitConfiguration `json:"init,omitempty"`
 }
 
 // ProxyInitConfiguration defines config options for Proxy Init containers
 type ProxyInitConfiguration struct {
-	Image string `json:"image,omitempty"`
+	Image     string                       `json:"image,omitempty"`
+	Resources *corev1.ResourceRequirements `json:"resources,omitempty"`
 }
 
 // PDBConfiguration holds Pod Disruption Budget related config options
@@ -850,6 +850,7 @@ type IstioSpec struct {
 	Proxy ProxyConfiguration `json:"proxy,omitempty"`
 
 	// Proxy Init configuration options
+	// DEPRECATED: Use proxy.init instead
 	ProxyInit ProxyInitConfiguration `json:"proxyInit,omitempty"`
 
 	// Whether to restrict the applications namespace the controller manages
