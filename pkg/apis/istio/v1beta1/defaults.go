@@ -438,9 +438,6 @@ func SetDefaults(config *Istio) {
 	if config.Spec.SidecarInjector.InitCNIConfiguration.Repair.BrokenPodLabelValue == nil {
 		config.Spec.SidecarInjector.InitCNIConfiguration.Repair.BrokenPodLabelValue = util.StrPointer(defaultInitCNIBrokenPodLabelValue)
 	}
-	if config.Spec.SidecarInjector.Init.Resources == nil {
-		config.Spec.SidecarInjector.Init.Resources = defaultInitResources
-	}
 	if config.Spec.SidecarInjector.SecurityContext == nil {
 		config.Spec.SidecarInjector.SecurityContext = defaultSecurityContext
 	}
@@ -473,9 +470,16 @@ func SetDefaults(config *Istio) {
 		config.Spec.Proxy.Image = defaultProxyImage
 	}
 	// Proxy Init config
-	if config.Spec.ProxyInit.Image == "" {
-		config.Spec.ProxyInit.Image = defaultProxyInitImage
+	if config.Spec.Proxy.Init == nil {
+		config.Spec.Proxy.Init = &ProxyInitConfiguration{}
 	}
+	if config.Spec.Proxy.Init.Image == "" {
+		config.Spec.Proxy.Init.Image = defaultProxyInitImage
+	}
+	if config.Spec.Proxy.Init.Resources == nil {
+		config.Spec.Proxy.Init.Resources = defaultInitResources
+	}
+
 	if config.Spec.Proxy.AccessLogFile == nil {
 		config.Spec.Proxy.AccessLogFile = util.StrPointer(defaultEnvoyAccessLogFile)
 	}

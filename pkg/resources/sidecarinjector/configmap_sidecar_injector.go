@@ -87,7 +87,7 @@ func (r *Reconciler) getValues() string {
 				"cniEnabled":    util.PointerToBool(r.Config.Spec.SidecarInjector.InitCNIConfiguration.Enabled),
 				"cniChained":    util.PointerToBool(r.Config.Spec.SidecarInjector.InitCNIConfiguration.Chained),
 				"containerName": proxyInitContainerName,
-				"image":         r.Config.Spec.ProxyInit.Image,
+				"image":         r.Config.Spec.Proxy.Init.Image,
 			},
 			"sds": map[string]interface{}{
 				"customTokenDirectory": r.Config.Spec.SDS.CustomTokenDirectory,
@@ -763,7 +763,7 @@ func (r *Reconciler) proxyInitContainer(indentSize int) string {
         {{ end }}
     {{- end }}
   {{- else }}
-` + r.getFormattedResources(r.Config.Spec.SidecarInjector.Init.Resources, 2) + `
+` + r.getFormattedResources(r.Config.Spec.Proxy.Init.Resources, 2) + `
   {{- end }}
 `
 }
