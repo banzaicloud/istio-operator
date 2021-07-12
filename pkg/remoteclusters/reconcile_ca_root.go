@@ -33,11 +33,9 @@ const (
 	certKeyInConfigMap  = "root-cert.pem"
 )
 
-var (
-	caRootConfigMapLabels = map[string]string{
-		"banzaicloud.io/managed-by": "istio-operator",
-	}
-)
+var caRootConfigMapLabels = map[string]string{
+	"banzaicloud.io/managed-by": "istio-operator",
+}
 
 func (c *Cluster) reconcileCARootToNamespaces(remoteConfig *istiov1beta1.RemoteIstio, istio *istiov1beta1.Istio) error {
 	desiredState := k8sutil.DesiredStatePresent
@@ -82,13 +80,8 @@ func (c *Cluster) reconcileCARootInNamespace(name, namespace string, configMapDa
 		},
 		Data: configMapData,
 	}
-	ownerRef, err := k8sutil.SetOwnerReferenceToObject(&configmap, c.istioConfig)
-	if err != nil {
-		return err
-	}
-	configmap.SetOwnerReferences(ownerRef)
 
-	err = k8sutil.Reconcile(c.log, c.ctrlRuntimeClient, &configmap, desiredState)
+	err := k8sutil.Reconcile(c.log, c.ctrlRuntimeClient, &configmap, desiredState)
 	if err != nil {
 		return emperror.WrapWith(err, "failed to reconcile resource", "resource", configmap.GetObjectKind().GroupVersionKind())
 	}
