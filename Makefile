@@ -130,6 +130,7 @@ download-deps:
 generate: download-deps
 	go generate ./pkg/... ./cmd/...
 	bin/controller-gen object:headerFile="hack/boilerplate.go.txt" paths="./..."
+	cd pkg/apis && ../../bin/controller-gen object:headerFile="../../hack/boilerplate.go.txt" paths="./..."
 	./hack/update-codegen.sh
 	go run static/generate.go
 

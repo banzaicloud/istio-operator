@@ -17,7 +17,6 @@ limitations under the License.
 package k8sutil
 
 import (
-	"fmt"
 	"sort"
 
 	"k8s.io/apimachinery/pkg/runtime"
@@ -39,8 +38,6 @@ func RunObjectModifiers(o runtime.Object, objectModifiers []ObjectModifierFunc) 
 	sort.Ints(keys)
 
 	for _, m := range keys {
-		fmt.Printf("\n\nRUN OM [%d]\n\n", m)
-
 		o, err = objectModifiers[m](o)
 		if err != nil {
 			return nil, emperror.Wrap(err, "could not modify object")
@@ -77,7 +74,6 @@ func GetObjectModifiersForOverlays(scheme *runtime.Scheme, overlays []resources.
 
 func GetGVKObjectModifier(scheme *runtime.Scheme) ObjectModifierFunc {
 	return func(o runtime.Object) (runtime.Object, error) {
-		fmt.Println("pista")
 		if o.GetObjectKind().GroupVersionKind().Group == "" {
 			gvks, _, err := scheme.ObjectKinds(o)
 			if err != nil {
