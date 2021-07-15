@@ -33,6 +33,7 @@ type Reconciler struct {
 
 type ComponentReconciler interface {
 	Reconcile(log logr.Logger) error
+	Cleanup(log logr.Logger) error
 }
 
 type Resource func() runtime.Object

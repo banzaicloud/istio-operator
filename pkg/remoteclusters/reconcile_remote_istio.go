@@ -29,7 +29,15 @@ import (
 	"github.com/banzaicloud/istio-operator/pkg/resources/sidecarinjector"
 )
 
-func (c *Cluster) reconcileComponents(remoteConfig *istiov1beta1.RemoteIstio, istio *istiov1beta1.Istio) error {
+func (c *Cluster) ReconcileComponents(remoteConfig *istiov1beta1.RemoteIstio, istio *istiov1beta1.Istio) error {
+	return c.reconcileComponents(remoteConfig, istio, false)
+}
+
+func (c *Cluster) CleanupComponents(remoteConfig *istiov1beta1.RemoteIstio, istio *istiov1beta1.Istio) error {
+	return c.reconcileComponents(remoteConfig, istio, true)
+}
+
+func (c *Cluster) reconcileComponents(remoteConfig *istiov1beta1.RemoteIstio, istio *istiov1beta1.Istio, cleanup bool) error {
 	c.log.Info("reconciling components")
 
 	reconcilers := []resources.ComponentReconciler{
@@ -46,6 +54,13 @@ func (c *Cluster) reconcileComponents(remoteConfig *istiov1beta1.RemoteIstio, is
 	}
 
 	for _, rec := range reconcilers {
+		if cleanup {
+			err := rec.Cleanup(c.log)
+			if err != nil {
+				return err
+			}
+			continue
+		}
 		err := rec.Reconcile(c.log)
 		if err != nil {
 			return err

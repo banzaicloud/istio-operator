@@ -66,6 +66,25 @@ func New(client client.Client, config *istiov1beta1.Istio, scheme *runtime.Schem
 	}
 }
 
+func (r *Reconciler) Cleanup(log logr.Logger) error {
+	log = log.WithValues("component", componentName)
+
+	log.Info("cleanup")
+
+	for _, res := range []resources.ResourceWithDesiredState{
+		{Resource: r.clusterRole, DesiredState: k8sutil.DesiredStateAbsent},
+		{Resource: r.clusterRoleBinding, DesiredState: k8sutil.DesiredStateAbsent},
+		{Resource: r.webhook, DesiredState: k8sutil.DesiredStateAbsent},
+	} {
+		o := res.Resource()
+		err := k8sutil.Reconcile(log, r.Client, o, res.DesiredState)
+		if err != nil {
+			return emperror.WrapWith(err, "failed to reconcile resource", "resource", o.GetObjectKind().GroupVersionKind())
+		}
+	}
+	return nil
+}
+
 func (r *Reconciler) Reconcile(log logr.Logger) error {
 	log = log.WithValues("component", componentName)
 
