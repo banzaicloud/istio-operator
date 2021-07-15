@@ -255,6 +255,22 @@ func (c *Cluster) initK8SClients() error {
 	return nil
 }
 
+func (c *Cluster) Cleanup() error {
+	var ReconcilerFuncs []func(remoteConfig *istiov1beta1.RemoteIstio, istio *istiov1beta1.Istio) error
+
+	ReconcilerFuncs = append(ReconcilerFuncs,
+		c.CleanupComponents,
+	)
+
+	for _, f := range ReconcilerFuncs {
+		if err := f(c.remoteConfig, c.istioConfig); err != nil {
+			return emperror.Wrapf(err, "could not reconcile")
+		}
+	}
+
+	return nil
+}
+
 func (c *Cluster) Reconcile(remoteConfig *istiov1beta1.RemoteIstio, istio *istiov1beta1.Istio) error {
 	c.log.Info("reconciling remote istio")
 
@@ -294,7 +310,7 @@ func (c *Cluster) Reconcile(remoteConfig *istiov1beta1.RemoteIstio, istio *istio
 		c.reconcileEnabledServices,
 		c.ReconcileEnabledServiceEndpoints,
 		c.reconcileNamespaceInjectionLabels,
-		c.reconcileComponents,
+		c.ReconcileComponents,
 	)
 
 	for _, f := range ReconcilerFuncs {
@@ -342,6 +358,8 @@ func (c *Cluster) RemoveRemoteIstioComponents() error {
 	if err != nil && k8serrors.IsNotFound(err) {
 		return emperror.Wrap(err, "could not remove mesh gateway CRD from remote cluster")
 	}
+
+	c.Cleanup()
 
 	return nil
 }

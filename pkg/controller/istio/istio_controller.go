@@ -297,6 +297,14 @@ func (r *ReconcileIstio) reconcile(logger logr.Logger, config *istiov1beta1.Isti
 					Namespace: config.Namespace,
 				},
 			}, logger)
+			// run cleanups
+			reconcilers := r.getReconcilers(config)
+			for _, rec := range reconcilers {
+				err := rec.Cleanup(logger)
+				if err != nil {
+					return reconcile.Result{}, err
+				}
+			}
 			config.ObjectMeta.Finalizers = util.RemoveString(config.ObjectMeta.Finalizers, finalizerID)
 			if err := r.Update(context.Background(), config); err != nil {
 				return reconcile.Result{}, emperror.Wrap(err, "could not remove finalizer from config")
@@ -341,25 +349,7 @@ func (r *ReconcileIstio) reconcile(logger logr.Logger, config *istiov1beta1.Isti
 	}
 	config.Spec.SetMeshNetworks(meshNetworks)
 
-	reconcilers := []resources.ComponentReconciler{
-		base.New(r.Client, config, false, r.mgr.GetScheme()),
-		webhookcert.New(r.Client, config, r.operatorConfig, r.mgr.GetScheme()),
-		citadel.New(citadel.Configuration{
-			DeployMeshWidePolicy: true,
-		}, r.Client, r.dynamic, config, r.mgr.GetScheme()),
-		galley.New(r.Client, config, r.mgr.GetScheme()),
-		sidecarinjector.New(r.Client, config, r.mgr.GetScheme()),
-		pilot.New(r.Client, r.dynamic, config, r.mgr.GetScheme()),
-		istiod.New(r.Client, r.dynamic, config, r.operatorConfig, r.mgr.GetScheme()),
-		cni.New(r.Client, config, r.mgr.GetScheme()),
-		nodeagent.New(r.Client, config, r.mgr.GetScheme()),
-		istiocoredns.New(r.Client, config, r.mgr.GetScheme()),
-		mixerlesstelemetry.New(r.Client, r.dynamic, config, r.mgr.GetScheme()),
-		ingressgateway.New(r.Client, r.dynamic, config, false, r.mgr.GetScheme()),
-		egressgateway.New(r.Client, r.dynamic, config, false, r.mgr.GetScheme()),
-		meshexpansion.New(r.Client, r.dynamic, config, false, r.mgr.GetScheme()),
-	}
-
+	reconcilers := r.getReconcilers(config)
 	for _, rec := range reconcilers {
 		err = rec.Reconcile(logger)
 		if err != nil {
@@ -397,6 +387,27 @@ func (r *ReconcileIstio) reconcile(logger logr.Logger, config *istiov1beta1.Isti
 	}
 
 	return reconcile.Result{}, nil
+}
+
+func (r *ReconcileIstio) getReconcilers(config *istiov1beta1.Istio) []resources.ComponentReconciler {
+	return []resources.ComponentReconciler{
+		base.New(r.Client, config, false, r.mgr.GetScheme()),
+		webhookcert.New(r.Client, config, r.operatorConfig, r.mgr.GetScheme()),
+		citadel.New(citadel.Configuration{
+			DeployMeshWidePolicy: true,
+		}, r.Client, r.dynamic, config, r.mgr.GetScheme()),
+		galley.New(r.Client, config, r.mgr.GetScheme()),
+		sidecarinjector.New(r.Client, config, r.mgr.GetScheme()),
+		pilot.New(r.Client, r.dynamic, config, r.mgr.GetScheme()),
+		istiod.New(r.Client, r.dynamic, config, r.operatorConfig, r.mgr.GetScheme()),
+		cni.New(r.Client, config, r.mgr.GetScheme()),
+		nodeagent.New(r.Client, config, r.mgr.GetScheme()),
+		istiocoredns.New(r.Client, config, r.mgr.GetScheme()),
+		mixerlesstelemetry.New(r.Client, r.dynamic, config, r.mgr.GetScheme()),
+		ingressgateway.New(r.Client, r.dynamic, config, false, r.mgr.GetScheme()),
+		egressgateway.New(r.Client, r.dynamic, config, false, r.mgr.GetScheme()),
+		meshexpansion.New(r.Client, r.dynamic, config, false, r.mgr.GetScheme()),
+	}
 }
 
 func (r *ReconcileIstio) validateLegacyIstioComponentsAreDisabled(config *istiov1beta1.Istio) error {

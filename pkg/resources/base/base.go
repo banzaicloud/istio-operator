@@ -54,6 +54,10 @@ func New(client client.Client, config *istiov1beta1.Istio, isRemote bool, scheme
 	}
 }
 
+func (r *Reconciler) Cleanup(log logr.Logger) error {
+	return nil
+}
+
 func (r *Reconciler) Reconcile(log logr.Logger) error {
 	log = log.WithValues("component", componentName)
 
