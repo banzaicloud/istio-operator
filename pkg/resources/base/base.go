@@ -60,6 +60,20 @@ func New(client client.Client, config *istiov1beta1.Istio, isRemote bool, operat
 }
 
 func (r *Reconciler) Cleanup(log logr.Logger) error {
+	log = log.WithValues("component", componentName)
+
+	log.Info("cleanup")
+
+	for _, res := range []resources.ResourceWithDesiredState{
+		{Resource: r.clusterRoleReader, DesiredState: k8sutil.DesiredStateAbsent},
+		{Resource: r.clusterRoleBindingReader, DesiredState: k8sutil.DesiredStateAbsent},
+	} {
+		o := res.Resource()
+		err := k8sutil.Reconcile(log, r.Client, o, res.DesiredState)
+		if err != nil {
+			return emperror.WrapWith(err, "failed to reconcile resource", "resource", o.GetObjectKind().GroupVersionKind())
+		}
+	}
 	return nil
 }
 
