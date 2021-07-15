@@ -474,7 +474,11 @@ func SetDefaults(config *Istio) {
 		config.Spec.Proxy.Init = &ProxyInitConfiguration{}
 	}
 	if config.Spec.Proxy.Init.Image == "" {
-		config.Spec.Proxy.Init.Image = defaultProxyInitImage
+		if config.Spec.ProxyInit.Image != "" {
+			config.Spec.Proxy.Init.Image = config.Spec.ProxyInit.Image
+		} else {
+			config.Spec.Proxy.Init.Image = defaultProxyInitImage
+		}
 	}
 	if config.Spec.Proxy.Init.Resources == nil {
 		config.Spec.Proxy.Init.Resources = defaultInitResources
