@@ -73,7 +73,7 @@ For a complete list of [Backyards](https://banzaicloud.com/products/backyards/) 
 
 ## Istio operator installation
 
-The operator (`release-1.10` branch) installs the 1.10.2 version of Istio, and can run on Kubernetes 1.18.0+.
+The operator (`release-1.10` branch) installs the 1.10.3 version of Istio, and can run on Kubernetes 1.18.0+.
 
 As a pre-requisite it needs a Kubernetes cluster (you can create one using [Pipeline](https://github.com/banzaicloud/pipeline)).
 
