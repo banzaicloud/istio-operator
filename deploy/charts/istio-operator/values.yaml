@@ -12,6 +12,9 @@ operator:
     requests:
       cpu: 200m
       memory: 256Mi
+  istio:
+    injection:
+      enabled: false
 
 istioVersion: "1.10"
 

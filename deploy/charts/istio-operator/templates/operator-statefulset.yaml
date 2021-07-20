@@ -23,6 +23,8 @@ spec:
   serviceName: {{ include "istio-operator.fullname" . }}{{ .Values.operatorComponentSuffix }}
   template:
     metadata:
+      annotations:
+        sidecar.istio.io/inject: {{ .Values.operator.istio.injection.enabled | quote }}
       labels:
         control-plane: controller-manager
         controller-tools.k8s.io: "1.0"
