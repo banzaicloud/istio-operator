@@ -4,10 +4,10 @@ The steps are listed in this doc to perform an Istio in-place version upgrade wi
 
 ## Istio Control Plane Upgrade
 
-Let us suppose that we have a [Kubernetes](https://kubernetes.io/) cluster with Istio 1.8.2, and we would like to upgrade our Istio components to Istio version 1.9.6. Here are the steps we need to perform to accomplish this with the operator:
+Let us suppose that we have a [Kubernetes](https://kubernetes.io/) cluster with Istio 1.8.2, and we would like to upgrade our Istio components to Istio version 1.9.7. Here are the steps we need to perform to accomplish this with the operator:
 
 1. Deploy a version of the operator which supports Istio 1.9.x
-2. Apply a [Custom Resource](https://kubernetes.io/docs/concepts/extend-kubernetes/api-extension/custom-resources/) using Istio 1.9.6 components
+2. Apply a [Custom Resource](https://kubernetes.io/docs/concepts/extend-kubernetes/api-extension/custom-resources/) using Istio 1.9.7 components
 
 What happens is that once the operator discerns that the Custom Resource it's watching has changed, it reconciles all Istio-related components in order to perform a control plane upgrade.
 
@@ -113,9 +113,9 @@ $ INGRESS_HOST=$(kubectl -n istio-system get service istio-ingressgateway -o jso
 $ open http://$INGRESS_HOST/productpage
 ```
 
-#### Install Istio 1.9.6
+#### Install Istio 1.9.7
 
-To install Istio 1.9.6, first we need to check out the `release-1.9` branch of our operator (this branch supports the Istio 1.9.x versions):
+To install Istio 1.9.7, first we need to check out the `release-1.9` branch of our operator (this branch supports the Istio 1.9.x versions):
 
 ```bash
 $ git clone git@github.com:banzaicloud/istio-operator.git
@@ -143,7 +143,7 @@ Alternatively, you can deploy the operator using a [Helm chart](https://github.c
 
 ```bash
 $ helm repo add banzaicloud-stable https://kubernetes-charts.banzaicloud.com
-$ helm upgrade istio-operator --install --namespace=istio-system --set-string operator.image.tag=0.9.8 --set-string istioVersion=1.9.6 banzaicloud-stable/istio-operator
+$ helm upgrade istio-operator --install --namespace=istio-system --set-string operator.image.tag=0.9.8 --set-string istioVersion=1.9.7 banzaicloud-stable/istio-operator
 ```
 
 *Note: As of now, the `0.9.8` tag is the latest version of our operator to support Istio versions 1.9.x*
@@ -154,7 +154,7 @@ $ helm upgrade istio-operator --install --namespace=istio-system --set-string op
 
 > If you've installed Istio 1.8.2 or earlier with the Istio operator, and if you check the logs of the operator pod at this point, you will see the following error message: `intended Istio version is unsupported by this version of the operator`. We need to update the Istio Custom Resource with Istio 1.9's components for the operator to be reconciled with the Istio control plane.
 
-To deploy Istio 1.9.6 with its default configuration options, use the following command (please modify the sample CR to have the same name as the one on your cluster so that replace command can work):
+To deploy Istio 1.9.7 with its default configuration options, use the following command (please modify the sample CR to have the same name as the one on your cluster so that replace command can work):
 
 ```bash
 $ kubectl replace -n istio-system -f config/samples/istio_v1beta1_istio.yaml
@@ -170,25 +170,25 @@ istio-operator-controller-manager-0       2/2       Running   0          16m
 istiod-84588fff4c-4lhq8                   2/2       Running   0          7m
 ```
 
-The `Istio` Custom Resource is showing `Available` in its status field, and the Istio components are now using `1.9.6` images:
+The `Istio` Custom Resource is showing `Available` in its status field, and the Istio components are now using `1.9.7` images:
 
 ```bash
 $ kubectl describe istio -n istio-system istio | grep Image:
-    Image:                         docker.io/istio/citadel:1.9.6
-    Image:          docker.io/istio/galley:1.9.6
-    Image:    docker.io/istio/node-agent-k8s:1.9.6
-        Image:    docker.io/istio/node-agent-k8s:1.9.6
-    Image:          coredns/coredns:1.9.6
+    Image:                         docker.io/istio/citadel:1.9.7
+    Image:          docker.io/istio/galley:1.9.7
+    Image:    docker.io/istio/node-agent-k8s:1.9.7
+        Image:    docker.io/istio/node-agent-k8s:1.9.7
+    Image:          coredns/coredns:1.9.7
     Plugin Image:   docker.io/istio/coredns-plugin:0.2-istio-1.1
-    Image:    docker.io/istio/node-agent-k8s:1.9.6
-    Image:          docker.io/istio/pilot:1.9.6
-    Image:             docker.io/istio/proxyv2:1.9.6
-    Image:  docker.io/istio/proxyv2:1.9.6
-    Image:                          docker.io/istio/sidecar_injector:1.9.6
-      Image:                 docker.io/istio/install-cni:1.9.6
+    Image:    docker.io/istio/node-agent-k8s:1.9.7
+    Image:          docker.io/istio/pilot:1.9.7
+    Image:             docker.io/istio/proxyv2:1.9.7
+    Image:  docker.io/istio/proxyv2:1.9.7
+    Image:                          docker.io/istio/sidecar_injector:1.9.7
+      Image:                 docker.io/istio/install-cni:1.9.7
 ```
 
-At this point, your Istio control plane is upgraded to Istio 1.9.6 and your BookInfo application should still be available at:
+At this point, your Istio control plane is upgraded to Istio 1.9.7 and your BookInfo application should still be available at:
 ```bash
 $ open http://$INGRESS_HOST/productpage
 ```
