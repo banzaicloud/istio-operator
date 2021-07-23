@@ -7,6 +7,7 @@ require (
 	github.com/banzaicloud/istio-operator/v2/api v0.0.1
 	github.com/banzaicloud/istio-operator/v2/static v0.0.1
 	github.com/banzaicloud/operator-tools v0.21.2-0.20210422182251-13765652229a
+	github.com/ghodss/yaml v1.0.0
 	github.com/go-logr/logr v0.4.0
 	github.com/golang/protobuf v1.4.3
 	github.com/google/go-cmp v0.5.4 // indirect

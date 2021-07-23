@@ -23,6 +23,7 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/reconcile"
 
 	"github.com/banzaicloud/istio-operator/v2/api/v1alpha1"
+	"github.com/banzaicloud/istio-operator/v2/internal/util"
 	"github.com/banzaicloud/istio-operator/v2/static/gen/charts/base"
 	"github.com/banzaicloud/operator-tools/pkg/helm"
 	"github.com/banzaicloud/operator-tools/pkg/helm/templatereconciler"
@@ -33,6 +34,9 @@ const (
 	componentName = "base"
 	chartName     = "base"
 	releaseName   = "istio-operator-base"
+
+	valuesTemplatePath     = "internal/components/base"
+	valuesTemplateFileName = "values.tmpl"
 )
 
 var _ templatereconciler.Component = &Reconciler{}
@@ -99,25 +103,19 @@ func (rec *Reconciler) IsOptional() bool {
 func (rec *Reconciler) RegisterWatches(builder *controllerruntime.Builder) {}
 
 func (rec *Reconciler) values(object runtime.Object) (helm.Strimap, error) {
-	if _, ok := object.(*v1alpha1.IstioControlPlane); ok {
-		return helm.Strimap{
-			"global": helm.Strimap{
-				"imagePullSecrets": []string{},
-				"istioNamespace":   "istio-system",
-				"istiod": helm.Strimap{
-					"enableAnalysis": false,
-				},
-				"configValidation":   true,
-				"externalIstiod":     false,
-				"remotePilotAddress": "",
-			},
-			"base": helm.Strimap{
-				"enableCRDTemplates":    false,
-				"validationURL":         "",
-				"enableIstioConfigCRDs": true,
-			},
-		}, nil
+	icp, ok := object.(*v1alpha1.IstioControlPlane)
+	if !ok {
+		return nil, errors.WrapIff(errors.NewPlain("object cannot be converted to an IstioControlPlane"), "%+v", object)
 	}
 
-	return nil, errors.WrapIff(errors.NewPlain("object cannot be converted to an IstioControlPlane"), "%+v", object)
+	values, err := util.TransformICPSpecToStriMapWithTemplate(
+		icp.Spec,
+		valuesTemplatePath,
+		valuesTemplateFileName,
+	)
+	if err != nil {
+		return nil, errors.WrapIff(errors.NewPlain("IstioControlPlane spec cannot be converted into a map[string]interface{}"), "%+v", icp.Spec)
+	}
+
+	return values, nil
 }

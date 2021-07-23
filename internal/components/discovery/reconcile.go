@@ -34,6 +34,9 @@ const (
 	componentName = "istio-discovery"
 	chartName     = "istio-discovery"
 	releaseName   = "istio-operator-discovery"
+
+	valuesTemplatePath     = "internal/components/discovery"
+	valuesTemplateFileName = "values.tmpl"
 )
 
 var _ templatereconciler.Component = &Reconciler{}
@@ -105,13 +108,21 @@ func (rec *Reconciler) values(object runtime.Object) (helm.Strimap, error) {
 		return nil, errors.WrapIff(errors.NewPlain("object cannot be converted to an IstioControlPlane"), "%+v", object)
 	}
 
+	values, err := util.TransformICPSpecToStriMapWithTemplate(
+		icp.Spec,
+		valuesTemplatePath,
+		valuesTemplateFileName,
+	)
+	if err != nil {
+		return nil, errors.WrapIff(errors.NewPlain("IstioControlPlane spec cannot be converted into a map[string]interface{}"), "%+v", icp.Spec)
+	}
+
 	var meshConfigStriMap helm.Strimap
-	err := util.ProtoFieldToStriMap(icp.Spec.MeshConfig, &meshConfigStriMap)
+	err = util.ProtoFieldToStriMap(icp.Spec.MeshConfig, &meshConfigStriMap)
 	if err != nil {
 		return nil, errors.WrapIff(errors.NewPlain("meshConfig cannot be converted into a map[string]interface{}"), "%+v", icp.Spec.MeshConfig)
 	}
+	values["meshConfig"] = meshConfigStriMap
 
-	return helm.Strimap{
-		"meshConfig": meshConfigStriMap,
-	}, nil
+	return values, nil
 }
