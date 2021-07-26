@@ -57,7 +57,7 @@ message IstioControlPlaneSpec {
     // Default deployment spec for Istio control plane components.
     // Each component can overwrite these default values by adding its own deployment
     // block in the relevant section below and setting the desired values.
-    BaseKubernetesResourceConfig deployment = 2;
+    BaseKubernetesResourceConfig k8s = 2;
     // Logging configurations.
     LoggingConfiguration logging = 3 [(gogoproto.jsontag) = "logging"];
     // Use the user-specified, secret volume mounted key and certs for Pilot and workloads.

@@ -32,8 +32,8 @@ number_of_entries: 22
 Yes
 </td>
 </tr>
-<tr id="IstioControlPlaneSpec-deployment">
-<td><code>deployment</code></td>
+<tr id="IstioControlPlaneSpec-k8s">
+<td><code>k8s</code></td>
 <td><code><a href="#BaseKubernetesResourceConfig">BaseKubernetesResourceConfig</a></code></td>
 <td>
 <p>Default deployment spec for Istio control plane components.
@@ -993,6 +993,17 @@ No
 <td><code>map&lt;string,&nbsp;string&gt;</code></td>
 <td>
 <p>Standard Kubernetes pod annotation configuration</p>
+
+</td>
+<td>
+No
+</td>
+</tr>
+<tr id="BaseKubernetesResourceConfig-resourceOverlays">
+<td><code>resourceOverlays</code></td>
+<td><code><a href="#K8sResourceOverlayPatch">K8sResourceOverlayPatch[]</a></code></td>
+<td>
+<p>K8s resource overlay patches</p>
 
 </td>
 <td>

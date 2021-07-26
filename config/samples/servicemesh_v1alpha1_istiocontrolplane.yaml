@@ -4,7 +4,7 @@ metadata:
   name: icp-v10x-sample
 spec:
   version: 1.10.0-rc.0
-  deployment:
+  k8s:
     resources:
       requests:
         cpu: 10m
