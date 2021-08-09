@@ -19,7 +19,9 @@ spec:
     volumes: []
     volumeMounts: []
     replicas: {}
-    podAnnotations: {}
+    podMetadata:
+      labels: {}
+      annotations: {}
   logging:
     level: "default:info"
   mountMtlsCerts: false
@@ -37,7 +39,9 @@ spec:
       nodeSelector: {}
       affinity: {}
       tolerations: []
-      podAnnotations: {}
+      podMetadata:
+        labels: {}
+        annotations: {}
       securityContext: {}
     enableAnalysis: false
     enableStatus: false
