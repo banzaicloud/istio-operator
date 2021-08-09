@@ -112,8 +112,8 @@ message BaseKubernetesResourceConfig {
     // Replica configuration
     Replicas replicas = 14;
 
-    // Standard Kubernetes pod annotation configuration
-    map<string,string> podAnnotations = 15;
+    // Standard Kubernetes pod annotation and label configuration
+    K8sObjectMeta podMetadata = 15;
 
     // K8s resource overlay patches
     repeated K8sResourceOverlayPatch resourceOverlays = 16;
