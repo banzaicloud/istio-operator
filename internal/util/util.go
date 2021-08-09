@@ -19,29 +19,44 @@ package util
 import (
 	"bytes"
 	"encoding/json"
-	"fmt"
+	"io/fs"
+	"path"
 	"text/template"
 
 	"emperror.dev/errors"
-	"github.com/ghodss/yaml"
+	"github.com/Masterminds/sprig"
 	"github.com/golang/protobuf/jsonpb"
 	"github.com/golang/protobuf/proto"
+	"sigs.k8s.io/yaml"
 
 	"github.com/banzaicloud/istio-operator/v2/api/v1alpha1"
 	"github.com/banzaicloud/operator-tools/pkg/helm"
+	"github.com/banzaicloud/operator-tools/pkg/utils"
 )
 
-func TransformICPSpecToStriMapWithTemplate(spec v1alpha1.IstioControlPlaneSpec, valuesTemplatePath string, valuesTemplateFileName string) (helm.Strimap, error) {
-	valuesTemplateFilePath := fmt.Sprintf("%s/%s", valuesTemplatePath, valuesTemplateFileName)
-	tmpl, err := template.New(valuesTemplateFileName).ParseFiles(valuesTemplateFilePath)
+func TransformICPToStriMapWithTemplate(icp *v1alpha1.IstioControlPlane, filesystem fs.FS, templateFileName string) (helm.Strimap, error) {
+	tt, err := template.New(path.Base(templateFileName)).Funcs(template.FuncMap{
+		"PointerToBool": utils.PointerToBool,
+		"toYaml": func(value interface{}) string {
+			y, err := yaml.Marshal(value)
+			if err != nil {
+				return ""
+			}
+
+			return string(y)
+		},
+	}).Funcs(sprig.TxtFuncMap()).ParseFS(filesystem, templateFileName)
 	if err != nil {
-		return nil, errors.WrapWithDetails(err, "values template cannot be parsed", valuesTemplateFilePath)
+		return nil, errors.WrapWithDetails(err, "template cannot be parsed", "template", templateFileName)
 	}
+
 	var tpl bytes.Buffer
-	err = tmpl.Execute(&tpl, spec)
+	err = tt.Execute(&tpl, icp)
 	if err != nil {
-		return nil, errors.WrapWithDetails(err, "values template cannot be applied to ICP spec", valuesTemplateFilePath)
+		return nil, errors.WrapWithDetails(err, "template cannot be executed", "template", templateFileName)
 	}
+
+	// fmt.Printf("PY: %s\n", string(tpl.Bytes()))
 
 	values := &helm.Strimap{}
 	err = yaml.Unmarshal(tpl.Bytes(), values)
@@ -65,4 +80,25 @@ func ProtoFieldToStriMap(protoField proto.Message, striMap *helm.Strimap) error 
 	}
 
 	return nil
+}
+
+func ContainsString(slice []string, s string) bool {
+	for _, item := range slice {
+		if item == s {
+			return true
+		}
+	}
+
+	return false
+}
+
+func RemoveString(slice []string, s string) (result []string) {
+	for _, item := range slice {
+		if item == s {
+			continue
+		}
+		result = append(result, item)
+	}
+
+	return
 }

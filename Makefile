@@ -91,6 +91,7 @@ deploy: install-kustomize manifests
 manifests: download-deps update-istio-deps
 	bin/controller-gen rbac:roleName=manager-role webhook paths="./..."
 	bin/cue-gen -paths=build -f=cue.yaml -crd -status istio_operator.v2.api.v1alpha1.IstioControlPlaneStatus
+	cp -a config/crd/bases internal/assets/crds
 
 # Run go fmt against code
 fmt:

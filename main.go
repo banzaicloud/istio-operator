@@ -22,6 +22,7 @@ import (
 
 	istionetworkingv1alpha3 "istio.io/client-go/pkg/apis/networking/v1alpha3"
 	istiosecurityv1beta1 "istio.io/client-go/pkg/apis/security/v1beta1"
+	apiextensionv1 "k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 	clientgoscheme "k8s.io/client-go/kubernetes/scheme"
 	_ "k8s.io/client-go/plugin/pkg/client/auth/gcp"
@@ -42,6 +43,7 @@ func init() {
 	_ = clientgoscheme.AddToScheme(scheme)
 	_ = istionetworkingv1alpha3.AddToScheme(scheme)
 	_ = istiosecurityv1beta1.AddToScheme(scheme)
+	_ = apiextensionv1.AddToScheme(scheme)
 
 	_ = servicemeshv1alpha1.AddToScheme(scheme)
 	// +kubebuilder:scaffold:scheme
@@ -92,5 +94,12 @@ func main() {
 	if err := mgr.Start(ctrl.SetupSignalHandler()); err != nil {
 		setupLog.Error(err, "problem running manager")
 		os.Exit(1)
+	}
+
+	// remove finalizers
+	setupLog.Info("removing finalizer from Istio resources")
+	err = controllers.RemoveFinalizers(mgr.GetClient())
+	if err != nil {
+		setupLog.Error(err, "could not remove finalizers from Istio resources")
 	}
 }

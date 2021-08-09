@@ -17,16 +17,20 @@ limitations under the License.
 package discovery
 
 import (
+	"net/http"
+
 	"emperror.dev/errors"
 	"k8s.io/apimachinery/pkg/runtime"
 	controllerruntime "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/reconcile"
+	"sigs.k8s.io/yaml"
 
 	"github.com/banzaicloud/istio-operator/v2/api/v1alpha1"
+	assets "github.com/banzaicloud/istio-operator/v2/internal/assets"
 	"github.com/banzaicloud/istio-operator/v2/internal/util"
-	istiodiscovery "github.com/banzaicloud/istio-operator/v2/static/gen/charts/istio-control/istio-discovery"
 	"github.com/banzaicloud/operator-tools/pkg/helm"
 	"github.com/banzaicloud/operator-tools/pkg/helm/templatereconciler"
+	"github.com/banzaicloud/operator-tools/pkg/reconciler"
 	"github.com/banzaicloud/operator-tools/pkg/types"
 )
 
@@ -35,8 +39,7 @@ const (
 	chartName     = "istio-discovery"
 	releaseName   = "istio-operator-discovery"
 
-	valuesTemplatePath     = "internal/components/discovery"
-	valuesTemplateFileName = "values.tmpl"
+	valuesTemplateFileName = "values.yaml.tmpl"
 )
 
 var _ templatereconciler.Component = &Reconciler{}
@@ -56,13 +59,19 @@ func (rec *Reconciler) Name() string {
 }
 
 func (rec *Reconciler) Skipped(object runtime.Object) bool {
-	// controlPlane, ok := object.(*v1alpha1.IstioControlPlane)
 	return false
 }
 
 func (rec *Reconciler) Enabled(object runtime.Object) bool {
-	// controlPlane, ok := object.(*v1alpha1.IstioControlPlane)
+	if controlPlane, ok := object.(*v1alpha1.IstioControlPlane); ok {
+		return controlPlane.DeletionTimestamp.IsZero()
+	}
+
 	return true
+}
+
+func (rec *Reconciler) IsOptional() bool {
+	return false
 }
 
 func (rec *Reconciler) PreChecks(object runtime.Object) error {
@@ -81,11 +90,12 @@ func (rec *Reconciler) ReleaseData(object runtime.Object) (*templatereconciler.R
 		}
 
 		return &templatereconciler.ReleaseData{
-			Chart:       istiodiscovery.Chart,
-			Values:      values,
-			Namespace:   controlPlane.Namespace,
-			ChartName:   chartName,
-			ReleaseName: releaseName,
+			Chart:                 http.FS(assets.DiscoveryChart),
+			Values:                values,
+			Namespace:             controlPlane.Namespace,
+			ChartName:             chartName,
+			ReleaseName:           releaseName,
+			DesiredStateOverrides: map[reconciler.ObjectKeyWithGVK]reconciler.DesiredState{},
 		}, nil
 	}
 
@@ -96,10 +106,6 @@ func (rec *Reconciler) Reconcile(object runtime.Object) (*reconcile.Result, erro
 	return rec.helmReconciler.Reconcile(object, rec)
 }
 
-func (rec *Reconciler) IsOptional() bool {
-	return true
-}
-
 func (rec *Reconciler) RegisterWatches(builder *controllerruntime.Builder) {}
 
 func (rec *Reconciler) values(object runtime.Object) (helm.Strimap, error) {
@@ -108,21 +114,22 @@ func (rec *Reconciler) values(object runtime.Object) (helm.Strimap, error) {
 		return nil, errors.WrapIff(errors.NewPlain("object cannot be converted to an IstioControlPlane"), "%+v", object)
 	}
 
-	values, err := util.TransformICPSpecToStriMapWithTemplate(
-		icp.Spec,
-		valuesTemplatePath,
-		valuesTemplateFileName,
-	)
+	values, err := util.TransformICPToStriMapWithTemplate(icp, assets.DiscoveryChart, valuesTemplateFileName)
 	if err != nil {
 		return nil, errors.WrapIff(errors.NewPlain("IstioControlPlane spec cannot be converted into a map[string]interface{}"), "%+v", icp.Spec)
 	}
 
+	_, _ = yaml.Marshal(values)
+	// fmt.Printf("%s\n", y)
+
 	var meshConfigStriMap helm.Strimap
-	err = util.ProtoFieldToStriMap(icp.Spec.MeshConfig, &meshConfigStriMap)
-	if err != nil {
-		return nil, errors.WrapIff(errors.NewPlain("meshConfig cannot be converted into a map[string]interface{}"), "%+v", icp.Spec.MeshConfig)
+	if mc := icp.GetSpec().GetMeshConfig(); mc != nil {
+		err = util.ProtoFieldToStriMap(mc, &meshConfigStriMap)
+		if err != nil {
+			return nil, errors.WrapIff(err, "meshConfig cannot be converted into a map[string]interface{}: %+v", icp.Spec.MeshConfig)
+		}
+		values["meshConfig"] = meshConfigStriMap
 	}
-	values["meshConfig"] = meshConfigStriMap
 
 	return values, nil
 }
