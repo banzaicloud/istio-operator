@@ -668,10 +668,24 @@ spec:
                           type: string
                         description: Standard Kubernetes node selector configuration.
                         type: object
-                      podAnnotations:
-                        additionalProperties:
-                          type: string
-                        description: Standard Kubernetes pod annotation configuration.
+                      podMetadata:
+                        description: Standard Kubernetes pod annotation and label
+                          configuration.
+                        properties:
+                          annotations:
+                            additionalProperties:
+                              type: string
+                            description: |-
+                              Annotations is an unstructured key value map stored with a resource that may be
+                              set by external tools to store and retrieve arbitrary metadata.
+                            type: object
+                          labels:
+                            additionalProperties:
+                              type: string
+                            description: |-
+                              Map of string keys and values that can be used to organize and categorize
+                              (scope and select) objects.
+                            type: object
                         type: object
                       priorityClassName:
                         description: If specified, indicates the pod's priority.
@@ -2409,10 +2423,23 @@ spec:
                       type: string
                     description: Standard Kubernetes node selector configuration.
                     type: object
-                  podAnnotations:
-                    additionalProperties:
-                      type: string
-                    description: Standard Kubernetes pod annotation configuration.
+                  podMetadata:
+                    description: Standard Kubernetes pod annotation and label configuration.
+                    properties:
+                      annotations:
+                        additionalProperties:
+                          type: string
+                        description: |-
+                          Annotations is an unstructured key value map stored with a resource that may be
+                          set by external tools to store and retrieve arbitrary metadata.
+                        type: object
+                      labels:
+                        additionalProperties:
+                          type: string
+                        description: |-
+                          Map of string keys and values that can be used to organize and categorize
+                          (scope and select) objects.
+                        type: object
                     type: object
                   priorityClassName:
                     description: If specified, indicates the pod's priority.
@@ -5811,10 +5838,23 @@ spec:
                       type: string
                     description: Standard Kubernetes node selector configuration.
                     type: object
-                  podAnnotations:
-                    additionalProperties:
-                      type: string
-                    description: Standard Kubernetes pod annotation configuration.
+                  podMetadata:
+                    description: Standard Kubernetes pod annotation and label configuration.
+                    properties:
+                      annotations:
+                        additionalProperties:
+                          type: string
+                        description: |-
+                          Annotations is an unstructured key value map stored with a resource that may be
+                          set by external tools to store and retrieve arbitrary metadata.
+                        type: object
+                      labels:
+                        additionalProperties:
+                          type: string
+                        description: |-
+                          Map of string keys and values that can be used to organize and categorize
+                          (scope and select) objects.
+                        type: object
                     type: object
                   priorityClassName:
                     description: If specified, indicates the pod's priority.
