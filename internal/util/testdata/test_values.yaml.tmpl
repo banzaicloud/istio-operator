@@ -4,8 +4,9 @@ param2:
 version: "{{ .GetSpec.GetVersion }}"
 enableAnalysis: {{ or .GetSpec.GetIstiod.GetEnableAnalysis true }}
 istioNamespace: {{ .Namespace }}
-resources:
-{{ .GetSpec.GetIstiod.GetDeployment.GetResources | toYaml | indent 2 }}
+k8s:
+  resources:
+{{ .GetSpec.GetK8S.GetResources | toYaml | indent 4 }}
 istiod:
   {{ if .GetSpec.GetIstiod.GetDeployment.GetMetadata.GetLabels }}
   deploymentLabels:
