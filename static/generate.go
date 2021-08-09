@@ -30,26 +30,10 @@ import (
 	"github.com/banzaicloud/istio-operator/v2/static/util"
 )
 
-var charts = []string{
-	"base",
-	"istio-control/istio-discovery",
-}
+var charts = []string{}
 
 //go:generate go run main.go
 func main() {
-	crds := util.ZeroModTimeFileSystem{
-		Source: http.Dir(filepath.Join(getRepoRoot(), "config/crd/bases")),
-	}
-
-	err := vfsgen.Generate(crds, vfsgen.Options{
-		Filename:     filepath.Join(getRepoRoot(), "static/gen/crds/generated.go"),
-		PackageName:  "crds",
-		VariableName: "Root",
-	})
-	if err != nil {
-		panic(fmt.Sprintf("failed to generate crds vfs: %+v", err))
-	}
-
 	chartsPath := filepath.Join(getRepoRoot(), "deploy/charts")
 
 	for _, dir := range charts {
@@ -64,7 +48,7 @@ func main() {
 		}
 
 		dirParts := strings.Split(dir, "/")
-		err = vfsgen.Generate(chartDir, vfsgen.Options{
+		err := vfsgen.Generate(chartDir, vfsgen.Options{
 			Filename:     filepath.Join(staticPath, "generated.go"),
 			PackageName:  strings.ReplaceAll(dirParts[len(dirParts)-1], "-", "_"),
 			VariableName: "Chart",
