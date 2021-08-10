@@ -18,13 +18,12 @@ package util_test
 
 import (
 	"embed"
-	"reflect"
 	"sigs.k8s.io/yaml"
 	"testing"
 
-	"emperror.dev/errors"
 	"github.com/banzaicloud/istio-operator/v2/api/v1alpha1"
 	"github.com/banzaicloud/istio-operator/v2/internal/util"
+	"github.com/kylelemons/godebug/pretty"
 )
 
 //go:embed testdata/test_istiocontrolplane.yaml
@@ -64,7 +63,7 @@ func TestTransformICPSpecToStriMapWithTemplate(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	if !reflect.DeepEqual(values, expectedValues) {
-		t.Fatal(errors.Errorf("%#v != %#v", values, expectedValues))
+	if diff := pretty.Compare(values, expectedValues); diff != "" {
+		t.Errorf("diff: (-got +want)\n%s", diff)
 	}
 }

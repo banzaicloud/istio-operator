@@ -1,10 +1,10 @@
 apiVersion: servicemesh.cisco.com/v1alpha1
 kind: IstioControlPlane
 metadata:
-  name: icp-v10x-sample
+  name: test-icp-v10x-sample
   namespace: istio-system
 spec:
-  version: 1.10.0-rc.0
+  version: 1.10.3
   k8s:
     resources:
       requests:
@@ -32,7 +32,7 @@ spec:
         min: 1
         max: 5
         count: 1
-      image: "gcr.io/istio-release/pilot:1.10.0"
+      image: "gcr.io/istio-release/pilot:1.10.3"
       resources:
         requests:
           cpu: 500m
@@ -57,7 +57,7 @@ spec:
       operatorEndpoints:
         enabled: false
   proxy:
-    image: "gcr.io/istio-release/proxyv2:1.10.0"
+    image: "gcr.io/istio-release/proxyv2:1.10.3"
     privileged: false
     enableCoreDump: false
     logLevel: "WARNING"
@@ -77,7 +77,7 @@ spec:
     excludeInboundPorts: ""
     excludeOutboundPorts: ""
   proxyInit:
-    image: "gcr.io/istio-release/proxyv2:1.10.0"
+    image: "gcr.io/istio-release/proxyv2:1.10.3"
     resources:
       limits:
         cpu: 2000m
