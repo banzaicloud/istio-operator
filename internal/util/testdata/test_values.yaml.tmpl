@@ -112,6 +112,12 @@ sidecarInjectorWebhook:
 
   rewriteAppHTTPProbe: true
 
+  # Supported only in Cisco provided istio-proxy images
+  httpProxyEnvs:
+    httpProxy: "{{ .GetSpec.GetHttpProxyEnvs.GetHttpProxy }}"
+    httpsProxy: "{{ .GetSpec.GetHttpProxyEnvs.GetHttpsProxy }}"
+    noProxy: "{{ .GetSpec.GetHttpProxyEnvs.GetNoProxy }}"
+
   # Templates defines a set of custom injection templates that can be used. For example, defining:
   #
   # templates:
@@ -148,7 +154,7 @@ telemetry:
   v2:
     # For Null VM case now.
     # This also enables metadata exchange.
-    enabled: {{or .GetSpec.GetTelemetryV2.GetEnabled true}}
+    enabled: {{ or .GetSpec.GetTelemetryV2.GetEnabled true }}
     metadataExchange:
       # Indicates whether to enable WebAssembly runtime for metadata exchange filter.
       wasmEnabled: false

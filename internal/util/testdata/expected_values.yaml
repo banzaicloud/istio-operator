@@ -105,6 +105,12 @@ sidecarInjectorWebhook:
 
   rewriteAppHTTPProbe: true
 
+  # Supported only in Cisco provided istio-proxy images
+  httpProxyEnvs:
+    httpProxy: ""
+    httpsProxy: ""
+    noProxy: ""
+
   # Templates defines a set of custom injection templates that can be used. For example, defining:
   #
   # templates:
