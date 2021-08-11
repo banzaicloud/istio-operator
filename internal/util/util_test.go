@@ -28,21 +28,16 @@ import (
 )
 
 //go:embed testdata/test_istiocontrolplane.yaml
-var icpFS embed.FS
+var icpFile []byte
 
 //go:embed testdata/test_values.yaml.tmpl
 var valuesFS embed.FS
 
 //go:embed testdata/expected_values.yaml
-var expectedValuesFS embed.FS
+var expectedValuesFile []byte
 
 func TestTransformICPSpecToStriMapWithTemplate(t *testing.T) {
 	t.Parallel()
-
-	icpFile, err := icpFS.ReadFile("testdata/test_istiocontrolplane.yaml")
-	if err != nil {
-		t.Fatal(err)
-	}
 
 	var icp *v1alpha1.IstioControlPlane
 	if err := yaml.Unmarshal(icpFile, &icp); err != nil {
@@ -50,11 +45,6 @@ func TestTransformICPSpecToStriMapWithTemplate(t *testing.T) {
 	}
 
 	values, err := util.TransformICPToStriMapWithTemplate(icp, valuesFS, "testdata/test_values.yaml.tmpl")
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	expectedValuesFile, err := expectedValuesFS.ReadFile("testdata/expected_values.yaml")
 	if err != nil {
 		t.Fatal(err)
 	}
