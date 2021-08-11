@@ -8,10 +8,15 @@ spec:
   k8s:
     resources:
       requests:
-        cpu: 10m
-    priorityClassName: ""
-    imagePullPolicy: ""
-    imagePullSecrets: []
+        cpu: 11m
+        memory: 128Mi
+      limits:
+        cpu: 100m
+        memory: 1Gi
+    priorityClassName: high-priority
+    imagePullPolicy: IfNotPresent
+    imagePullSecrets:
+      - name: private-registry-key
     env: []
     nodeSelector: {}
     affinity: {}
@@ -24,61 +29,65 @@ spec:
       labels: {}
       annotations: {}
   logging:
-    level: "default:info"
-  mountMtlsCerts: false
+    level: "default:warning"
+  mountMtlsCerts: true
   istiod:
     deployment:
       replicas:
-        autoscaleEnabled: true
-        min: 1
-        max: 5
-        count: 1
+        autoscaleEnabled: false
+        min: 2
+        max: 4
+        count: 3
       image: "gcr.io/istio-release/pilot:1.10.3"
       resources:
         requests:
           cpu: 500m
           memory: 2048Mi
+        limits:
+          cpu: "1"
+          memory: 4Gi
       nodeSelector:
         region: east
         type: user-node
       affinity: {}
       tolerations: []
       podMetadata:
-        labels: {}
+        labels:
+          version: v1
         annotations:
           foo: bar
       securityContext: {}
-    enableAnalysis: false
-    enableStatus: false
+    enableAnalysis: true
+    enableStatus: true
     externalIstiod:
-      enabled: false
-    traceSampling: 1.0
-    enableProtocolSniffingOutbound: true
-    enableProtocolSniffingInbound: true
-    certProvider: ISTIOD
+      enabled: true
+    traceSampling: 2.5
+    enableProtocolSniffingOutbound: false
+    enableProtocolSniffingInbound: false
+    certProvider: KUBERNETES
     spiffe:
       operatorEndpoints:
         enabled: false
   proxy:
     image: "gcr.io/istio-release/proxyv2:1.10.3"
-    privileged: false
-    enableCoreDump: false
-    logLevel: "WARNING"
-    componentLogLevel: "misc:error"
-    clusterDomain: "cluster.local"
-    holdApplicationUntilProxyStarts: false
+    privileged: true
+    enableCoreDump: true
+    logLevel: "ERROR"
+    componentLogLevel: "misc:info"
+    clusterDomain: "x.y.z"
+    holdApplicationUntilProxyStarts: true
     lifecycle: {}
     resources:
       requests:
-        cpu: 100m
-        memory: 128Mi
+        cpu: 50m
+        memory: 64Mi
       limits:
         cpu: 2000m
         memory: 1024Mi
-    includeIPRanges: "*"
-    excludeIPRanges: ""
-    excludeInboundPorts: ""
-    excludeOutboundPorts: ""
+    includeIPRanges: "172.30.0.0/16,172.20.0.0/16"
+    excludeIPRanges: "172.40.0.0/16,172.30.0.0/16"
+    excludeInboundPorts: "80,8080"
+    excludeOutboundPorts: "81,8081"
   proxyInit:
     image: "gcr.io/istio-release/proxyv2:1.10.3"
     resources:
@@ -86,23 +95,23 @@ spec:
         cpu: 2000m
         memory: 1024Mi
       requests:
-        cpu: 10m
-        memory: 10Mi
+        cpu: 11m
+        memory: 11Mi
   telemetryV2:
-    enabled: true
+    enabled: false
   sds:
     tokenAudience: "istio-ca"
   proxyWasm:
     enabled: false
-  watchOneNamespace: false
+  watchOneNamespace: true
   defaultPodDisruptionBudget:
-    enabled: true
-  jwtPolicy: "THIRD_PARTY_JWT"
-  caAddress: ""
+    enabled: false
+  jwtPolicy: "FIRST_PARTY_JWT"
+  caAddress: "1.1.1.1"
   httpProxyEnvs:
-    httpProxy: ""
-    httpsProxy: ""
-    noProxy: ""
+    httpProxy: "http://proxy.example.com:3128"
+    httpsProxy: "http://proxy.example.com:3129"
+    noProxy: "svc,local"
   meshConfig:
     defaultConfig:
-      meshId: cluster.local
+      meshId: mesh1

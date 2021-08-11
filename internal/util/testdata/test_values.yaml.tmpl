@@ -58,9 +58,9 @@ pilot:
   keepaliveMaxServerConnectionAge: 30m
 
   # Additional labels to apply to the deployment.
-  {{ if .GetSpec.GetIstiod.GetDeployment.GetMetadata.GetLabels }}
+  {{ if .GetSpec.GetIstiod.GetDeployment.GetPodMetadata.GetLabels }}
   deploymentLabels:
-{{ .GetSpec.GetIstiod.GetDeployment.GetMetadata.GetLabels | toYaml | indent 4 }}
+{{ .GetSpec.GetIstiod.GetDeployment.GetPodMetadata.GetLabels | toYaml | indent 4 }}
   {{ else }}
   deploymentLabels: {}
   {{ end }}
@@ -239,7 +239,8 @@ global:
   # For components that don't use ServiceAccounts (i.e. grafana, servicegraph, tracing)
   # ImagePullSecrets will be added to the corresponding Deployment(StatefulSet) objects.
   # Must be set for any cluster configured with private docker registry.
-  imagePullSecrets: {{ .GetSpec.GetK8S.GetImagePullSecrets }}
+  imagePullSecrets:
+{{ .GetSpec.GetK8S.GetImagePullSecrets | toYaml | indent 4 }}
   # - private-registry-key
 
   # Enabled by default in master for maximising testing.

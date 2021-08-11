@@ -2,10 +2,10 @@
 
 ## Discovery Settings
 pilot:
-  autoscaleEnabled: true
-  autoscaleMin: 1
-  autoscaleMax: 5
-  replicaCount: 1
+  autoscaleEnabled: false
+  autoscaleMin: 2
+  autoscaleMax: 4
+  replicaCount: 3
   rollingMaxSurge: 100%
   rollingMaxUnavailable: 25%
 
@@ -14,27 +14,30 @@ pilot:
 
   # Can be a full hub/image:tag
   image: "gcr.io/istio-release/pilot:1.10.3"
-  traceSampling: 1.0
+  traceSampling: 2.5
 
   # Resources for a small pilot install
   resources:
     requests:
       cpu: 500m
       memory: 2Gi
+    limits:
+      cpu: "1"
+      memory: 4Gi
 
   env:
     VALIDATION_WEBHOOK_CONFIG_NAME: istiod-test-icp-v10x-sample-istio-system
     ISTIOD_CUSTOM_HOST: istiod-test-icp-v10x-sample.istio-system.svc
     INJECTION_WEBHOOK_CONFIG_NAME: istio-sidecar-injector-test-icp-v10x-sample-istio-system
-    PILOT_ENABLE_STATUS: false
+    PILOT_ENABLE_STATUS: true
 
   cpu:
     targetAverageUtilization: 80
 
   # if protocol sniffing is enabled for outbound
-  enableProtocolSniffingForOutbound: true
+  enableProtocolSniffingForOutbound: false
   # if protocol sniffing is enabled for inbound
-  enableProtocolSniffingForInbound: true
+  enableProtocolSniffingForInbound: false
 
   nodeSelector:
     region: east
@@ -61,7 +64,8 @@ pilot:
   keepaliveMaxServerConnectionAge: 30m
 
   # Additional labels to apply to the deployment.
-  deploymentLabels: {}
+  deploymentLabels:
+    version: v1
 
   ## Mesh config settings
 
@@ -110,9 +114,9 @@ sidecarInjectorWebhook:
 
   # Supported only in Cisco provided istio-proxy images
   httpProxyEnvs:
-    httpProxy: ""
-    httpsProxy: ""
-    noProxy: ""
+    httpProxy: "http://proxy.example.com:3128"
+    httpsProxy: "http://proxy.example.com:3129"
+    noProxy: "svc,local"
 
   # Templates defines a set of custom injection templates that can be used. For example, defining:
   #
@@ -150,7 +154,7 @@ telemetry:
   v2:
     # For Null VM case now.
     # This also enables metadata exchange.
-    enabled: true
+    enabled: false
     metadataExchange:
       # Indicates whether to enable WebAssembly runtime for metadata exchange filter.
       wasmEnabled: false
@@ -199,7 +203,7 @@ global:
   # enable pod disruption budget for the control plane, which is used to
   # ensure Istio control plane components are gradually upgraded or recovered.
   defaultPodDisruptionBudget:
-    enabled: true
+    enabled: false
     # The values aren't mutable due to a current PodDisruptionBudget limitation
     # minAvailable: 1
 
@@ -209,7 +213,11 @@ global:
   # block in the relevant section below and setting the desired resources values.
   defaultResources:
     requests:
-      cpu: 10m
+      cpu: 11m
+      memory: 128Mi
+    limits:
+      cpu: 100m
+      memory: 1Gi
 
   # Default hub for Istio images.
   # Releases are published to docker hub under 'istio' project.
@@ -220,19 +228,19 @@ global:
 
   # Specify image pull policy if default behavior isn't desired.
   # Default behavior: latest images will be Always else IfNotPresent.
-  imagePullPolicy: ""
+  imagePullPolicy: IfNotPresent
 
   # ImagePullSecrets for all ServiceAccount, list of secrets in the same namespace
   # to use for pulling any images in pods that reference this ServiceAccount.
   # For components that don't use ServiceAccounts (i.e. grafana, servicegraph, tracing)
   # ImagePullSecrets will be added to the corresponding Deployment(StatefulSet) objects.
   # Must be set for any cluster configured with private docker registry.
-  imagePullSecrets: []
-  # - private-registry-key
+  imagePullSecrets:
+    - name: private-registry-key
 
   # Enabled by default in master for maximising testing.
   istiod:
-    enableAnalysis: false
+    enableAnalysis: true
 
   # To output all istio components logs in json format by adding --log_as_json argument to each container argument
   logAsJson: false
@@ -241,13 +249,13 @@ global:
   # The control plane has different scopes depending on component, but can configure default log level across all components
   # If empty, default scope and level will be used as configured in code
   logging:
-    level: "default:info"
+    level: "default:warning"
 
   omitSidecarInjectorConfigMap: false
 
   # Whether to restrict the applications namespace the controller manages;
   # If not set, controller watches all namespaces
-  oneNamespace: false
+  oneNamespace: true
 
   # Configure whether Operator manages webhook configurations. The current behavior
   # of Istiod is to manage its own webhook configurations.
@@ -273,7 +281,7 @@ global:
   # will not be killed because of low priority class.
   # Refer to https://kubernetes.io/docs/concepts/configuration/pod-priority-preemption/#priorityclass
   # for more detail.
-  priorityClassName: ""
+  priorityClassName: high-priority
 
   proxy:
     image: "gcr.io/istio-release/proxyv2:1.10.3"
@@ -283,35 +291,35 @@ global:
 
     # CAUTION: It is important to ensure that all Istio helm charts specify the same clusterDomain value
     # cluster domain. Default value is "cluster.local".
-    clusterDomain: "cluster.local"
+    clusterDomain: "x.y.z"
 
     # Per Component log level for proxy, applies to gateways and sidecars. If a component level is
     # not set, then the global "logLevel" will be used.
-    componentLogLevel: "misc:error"
+    componentLogLevel: "misc:info"
 
     # If set, newly injected sidecars will have core dumps enabled.
-    enableCoreDump: false
+    enableCoreDump: true
 
     # istio ingress capture allowlist
     # examples:
     #     Redirect only selected ports:            --includeInboundPorts="80,8080"
-    excludeInboundPorts: ""
+    excludeInboundPorts: "80,8080"
 
     # istio egress capture allowlist
     # https://istio.io/docs/tasks/traffic-management/egress.html#calling-external-services-directly
     # example: includeIPRanges: "172.30.0.0/16,172.20.0.0/16"
     # would only capture egress traffic on those two IP Ranges, all other outbound traffic would
     # be allowed by the sidecar
-    includeIPRanges: "*"
-    excludeIPRanges: ""
-    excludeOutboundPorts: ""
+    includeIPRanges: "172.30.0.0/16,172.20.0.0/16"
+    excludeIPRanges: "172.40.0.0/16,172.30.0.0/16"
+    excludeOutboundPorts: "81,8081"
 
     # Log level for proxy, applies to gateways and sidecars.
     # Expected values are: trace|debug|info|warning|error|critical|off
-    logLevel: "warning"
+    logLevel: "error"
 
     #If set to true, istio-proxy container will have privileged securityContext
-    privileged: false
+    privileged: true
 
     # The number of successive failed probes before indicating readiness failure.
     readinessFailureThreshold: 30
@@ -325,8 +333,8 @@ global:
     # Resources for the sidecar.
     resources:
       requests:
-        cpu: 100m
-        memory: 128Mi
+        cpu: 50m
+        memory: 64Mi
       limits:
         cpu: "2"
         memory: 1Gi
@@ -339,7 +347,7 @@ global:
     tracer: "zipkin"
 
     # Controls if sidecar is injected at the front of the container list and blocks the start of the other containers until the proxy is ready
-    holdApplicationUntilProxyStarts: false
+    holdApplicationUntilProxyStarts: true
 
   proxy_init:
     # Base name for the proxy_init container, used to configure iptables.
@@ -349,8 +357,8 @@ global:
         cpu: "2"
         memory: 1Gi
       requests:
-        cpu: 10m
-        memory: 10Mi
+        cpu: 11m
+        memory: 11Mi
 
   # configure remote pilot and istiod service and endpoint
   remotePilotAddress: ""
@@ -363,14 +371,14 @@ global:
   # The customized CA address to retrieve certificates for the pods in the cluster.
   # CSR clients such as the Istio Agent and ingress gateways can use this to specify the CA endpoint.
   # If not set explicitly, default to the Istio discovery address.
-  caAddress: ""
+  caAddress: "1.1.1.1"
 
   # External istiod controls all remote clusters: disabled by default
-  externalIstiod: false
+  externalIstiod: true
 
   # Configure the policy for validating JWT.
   # Currently, two options are supported: "third-party-jwt" and "first-party-jwt".
-  jwtPolicy: "third-party-jwt"
+  jwtPolicy: "first-party-jwt"
 
   # Mesh ID means Mesh Identifier. It should be unique within the scope where
   # meshes will interact with each other, but it is not required to be
@@ -393,7 +401,7 @@ global:
   # If the mesh admin does not specify a value, Istio will use the value of the
   # mesh's Trust Domain. The best practice is to select a proper Trust Domain
   # value.
-  meshID: "cluster.local"
+  meshID: "mesh1"
 
   # Configure the mesh networks to be used by the Split Horizon EDS.
   #
@@ -425,7 +433,7 @@ global:
   meshNetworks: {}
 
   # Use the user-specified, secret volume mounted key and certs for Pilot and workloads.
-  mountMtlsCerts: false
+  mountMtlsCerts: true
 
   multiCluster:
     # Set to true to connect two kubernetes clusters via their respective
@@ -445,7 +453,7 @@ global:
   # Currently, two providers are supported: "kubernetes" and "istiod".
   # As some platforms may not have kubernetes signing APIs,
   # Istiod is the default
-  pilotCertProvider: "istiod"
+  pilotCertProvider: "kubernetes"
 
   sds:
     # The JWT token for SDS and the aud field of such JWT. See RFC 7519, section 4.1.3.
