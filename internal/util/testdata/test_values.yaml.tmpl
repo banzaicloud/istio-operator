@@ -24,6 +24,7 @@ pilot:
     VALIDATION_WEBHOOK_CONFIG_NAME: istiod-{{ .Name }}-{{ .Namespace }}
     ISTIOD_CUSTOM_HOST: istiod-{{ .Name }}.{{ .Namespace }}.svc
     INJECTION_WEBHOOK_CONFIG_NAME: istio-sidecar-injector-{{ .Name }}-{{ .Namespace }}
+    PILOT_ENABLE_STATUS: {{ or .GetSpec.GetIstiod.GetEnableStatus false }}
 
   cpu:
     targetAverageUtilization: 80

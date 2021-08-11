@@ -26,6 +26,7 @@ pilot:
     VALIDATION_WEBHOOK_CONFIG_NAME: istiod-test-icp-v10x-sample-istio-system
     ISTIOD_CUSTOM_HOST: istiod-test-icp-v10x-sample.istio-system.svc
     INJECTION_WEBHOOK_CONFIG_NAME: istio-sidecar-injector-test-icp-v10x-sample-istio-system
+    PILOT_ENABLE_STATUS: false
 
   cpu:
     targetAverageUtilization: 80
