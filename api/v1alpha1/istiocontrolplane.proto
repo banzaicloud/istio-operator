@@ -182,10 +182,8 @@ message IstiodConfiguration {
     // Istiod is the default
     // +kubebuilder:validation:Enum=KUBERNETES;ISTIOD
     PilotCertProviderType certProvider = 8 [(gogoproto.jsontag) = "certProvider"];
-    // If present will be appended to the environment variables of the container
-    repeated k8s.io.api.core.v1.EnvVar additionalEnvVars = 9 [(gogoproto.nullable) = false];
     // SPIFFE configuration of Pilot
-    SPIFFEConfiguration spiffe = 10 [(gogoproto.jsontag) = "spiffe"];
+    SPIFFEConfiguration spiffe = 9 [(gogoproto.jsontag) = "spiffe"];
 }
 
 // ExternalIstiodConfiguration defines settings for local istiod to control remote clusters as well

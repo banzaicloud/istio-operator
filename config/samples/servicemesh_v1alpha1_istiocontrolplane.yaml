@@ -52,7 +52,6 @@ spec:
     enableProtocolSniffingOutbound: true
     enableProtocolSniffingInbound: true
     certProvider: ISTIOD
-    additionalEnvVars: []
     spiffe:
       operatorEndpoints:
         enabled: false

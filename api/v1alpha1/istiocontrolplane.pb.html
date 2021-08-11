@@ -4,7 +4,7 @@ description: Istio control plane descriptor
 layout: protoc-gen-docs
 generator: protoc-gen-docs
 schema: istio-operator.api.v1alpha1.IstioControlPlaneSpec
-number_of_entries: 22
+number_of_entries: 21
 ---
 <h2 id="IstioControlPlaneSpec">IstioControlPlaneSpec</h2>
 <section>
@@ -577,17 +577,6 @@ Istiod is the default
 No
 </td>
 </tr>
-<tr id="IstiodConfiguration-additionalEnvVars">
-<td><code>additionalEnvVars</code></td>
-<td><code><a href="#k8s-io-api-core-v1-EnvVar">EnvVar[]</a></code></td>
-<td>
-<p>If present will be appended to the environment variables of the container</p>
-
-</td>
-<td>
-No
-</td>
-</tr>
 <tr id="IstiodConfiguration-spiffe">
 <td><code>spiffe</code></td>
 <td><code><a href="#SPIFFEConfiguration">SPIFFEConfiguration</a></code></td>
@@ -1145,65 +1134,6 @@ No
 If Requests is omitted for a container, it defaults to Limits if that is explicitly specified,
 otherwise to an implementation-defined value.
 More info: https://kubernetes.io/docs/concepts/configuration/manage-compute-resources-container/
-+optional</p>
-
-</td>
-<td>
-No
-</td>
-</tr>
-</tbody>
-</table>
-</section>
-<h2 id="k8s-io-api-core-v1-EnvVar">k8s.io.api.core.v1.EnvVar</h2>
-<section>
-<p>EnvVar represents an environment variable present in a Container.</p>
-
-<table class="message-fields">
-<thead>
-<tr>
-<th>Field</th>
-<th>Type</th>
-<th>Description</th>
-<th>Required</th>
-</tr>
-</thead>
-<tbody>
-<tr id="k8s-io-api-core-v1-EnvVar-name">
-<td><code>name</code></td>
-<td><code>string</code></td>
-<td>
-<p>Name of the environment variable. Must be a C_IDENTIFIER.</p>
-
-</td>
-<td>
-No
-</td>
-</tr>
-<tr id="k8s-io-api-core-v1-EnvVar-value">
-<td><code>value</code></td>
-<td><code>string</code></td>
-<td>
-<p>Variable references $(VAR<em>NAME) are expanded
-using the previous defined environment variables in the container and
-any service environment variables. If a variable cannot be resolved,
-the reference in the input string will be unchanged. The $(VAR</em>NAME)
-syntax can be escaped with a double $$, ie: $$(VAR_NAME). Escaped
-references will never be expanded, regardless of whether the variable
-exists or not.
-Defaults to &ldquo;&rdquo;.
-+optional</p>
-
-</td>
-<td>
-No
-</td>
-</tr>
-<tr id="k8s-io-api-core-v1-EnvVar-valueFrom">
-<td><code>valueFrom</code></td>
-<td><code><a href="#k8s-io-api-core-v1-EnvVarSource">EnvVarSource</a></code></td>
-<td>
-<p>Source for the environment variable&rsquo;s value. Cannot be used if value is not empty.
 +optional</p>
 
 </td>
