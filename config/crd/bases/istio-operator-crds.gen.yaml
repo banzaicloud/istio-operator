@@ -693,6 +693,10 @@ spec:
                       replicas:
                         description: Replica configuration.
                         properties:
+                          autoscaleEnabled:
+                            description: Standard Kubernetes hpa enablement configuration.
+                            nullable: true
+                            type: boolean
                           count:
                             description: Standard Kubernetes replica count configuration.
                             minimum: 0
@@ -2447,6 +2451,10 @@ spec:
                   replicas:
                     description: Replica configuration.
                     properties:
+                      autoscaleEnabled:
+                        description: Standard Kubernetes hpa enablement configuration.
+                        nullable: true
+                        type: boolean
                       count:
                         description: Standard Kubernetes replica count configuration.
                         minimum: 0
@@ -5862,6 +5870,10 @@ spec:
                   replicas:
                     description: Replica configuration.
                     properties:
+                      autoscaleEnabled:
+                        description: Standard Kubernetes hpa enablement configuration.
+                        nullable: true
+                        type: boolean
                       count:
                         description: Standard Kubernetes replica count configuration.
                         minimum: 0
