@@ -2,39 +2,57 @@
 
 ## Discovery Settings
 pilot:
-  autoscaleEnabled: true
+  autoscaleEnabled: {{ or .GetSpec.GetIstiod.GetDeployment.GetReplicas.GetAutoscaleEnabled true }}
   autoscaleMin: {{ or .GetSpec.GetIstiod.GetDeployment.GetReplicas.GetMin 1 }}
   autoscaleMax: {{ or .GetSpec.GetIstiod.GetDeployment.GetReplicas.GetMax 5 }}
   replicaCount: {{ or .GetSpec.GetIstiod.GetDeployment.GetReplicas.GetCount 1 }}
   rollingMaxSurge: 100%
   rollingMaxUnavailable: 25%
 
-  hub: "waynz0r"
-  tag: "debug"
+  hub: ""
+  tag: ""
 
   # Can be a full hub/image:tag
-  image: istio-pilot
-  traceSampling: 1.0
+  image: {{ or .GetSpec.GetIstiod.GetDeployment.GetImage "istio-pilot" }}
+  traceSampling: {{ or .GetSpec.GetIstiod.GetTraceSampling 1.0 }}
 
   # Resources for a small pilot install
+{{ if .GetSpec.GetIstiod.GetDeployment.GetResources }}
   resources:
 {{ .GetSpec.GetIstiod.GetDeployment.GetResources | toYaml | indent 4 }}
+{{ else }}
+  resources: {}
+{{ end }}
+
 
   env:
     VALIDATION_WEBHOOK_CONFIG_NAME: istiod-{{ .Name }}-{{ .Namespace }}
     ISTIOD_CUSTOM_HOST: istiod-{{ .Name }}.{{ .Namespace }}.svc
     INJECTION_WEBHOOK_CONFIG_NAME: istio-sidecar-injector-{{ .Name }}-{{ .Namespace }}
+    PILOT_ENABLE_STATUS: {{ or .GetSpec.GetIstiod.GetEnableStatus false }}
 
   cpu:
     targetAverageUtilization: 80
 
   # if protocol sniffing is enabled for outbound
-  enableProtocolSniffingForOutbound: true
+  enableProtocolSniffingForOutbound: {{ or .GetSpec.GetIstiod.GetEnableProtocolSniffingOutbound true }}
   # if protocol sniffing is enabled for inbound
-  enableProtocolSniffingForInbound: true
+  enableProtocolSniffingForInbound: {{ or .GetSpec.GetIstiod.GetEnableProtocolSniffingInbound true }}
 
+{{ if .GetSpec.GetIstiod.GetDeployment.GetNodeSelector }}
+  nodeSelector:
+{{ .GetSpec.GetIstiod.GetDeployment.GetNodeSelector | toYaml | indent 4 }}
+{{ else }}
   nodeSelector: {}
+{{ end }}
+
+{{ if .GetSpec.GetIstiod.GetDeployment.GetPodMetadata.GetAnnotations }}
+  podAnnotations:
+{{ .GetSpec.GetIstiod.GetDeployment.GetPodMetadata.GetAnnotations | toYaml | indent 4 }}
+{{ else }}
   podAnnotations: {}
+{{ end }}
+
 
   # You can use jwksResolverExtraRootCA to provide a root certificate
   # in PEM format. This will then be trusted by pilot when resolving
@@ -55,9 +73,9 @@ pilot:
   keepaliveMaxServerConnectionAge: 30m
 
   # Additional labels to apply to the deployment.
-  {{ if .GetSpec.GetIstiod.GetDeployment.GetMetadata.GetLabels }}
+  {{ if .GetSpec.GetIstiod.GetDeployment.GetPodMetadata.GetLabels }}
   deploymentLabels:
-{{ .GetSpec.GetIstiod.GetDeployment.GetMetadata.GetLabels | toYaml | indent 4 }}
+{{ .GetSpec.GetIstiod.GetDeployment.GetPodMetadata.GetLabels | toYaml | indent 4 }}
   {{ else }}
   deploymentLabels: {}
   {{ end }}
@@ -108,6 +126,12 @@ sidecarInjectorWebhook:
 
   rewriteAppHTTPProbe: true
 
+  # Supported only in Cisco provided istio-proxy images
+  httpProxyEnvs:
+    httpProxy: "{{ .GetSpec.GetHttpProxyEnvs.GetHttpProxy }}"
+    httpsProxy: "{{ .GetSpec.GetHttpProxyEnvs.GetHttpsProxy }}"
+    noProxy: "{{ .GetSpec.GetHttpProxyEnvs.GetNoProxy }}"
+
   # Templates defines a set of custom injection templates that can be used. For example, defining:
   #
   # templates:
@@ -144,15 +168,15 @@ telemetry:
   v2:
     # For Null VM case now.
     # This also enables metadata exchange.
-    enabled: true
+    enabled: {{ or .GetSpec.GetTelemetryV2.GetEnabled true }}
     metadataExchange:
       # Indicates whether to enable WebAssembly runtime for metadata exchange filter.
-      wasmEnabled: false
+      wasmEnabled: {{ or .GetSpec.GetProxyWasm.GetEnabled false }}
     # Indicate if prometheus stats filter is enabled or not
     prometheus:
       enabled: true
       # Indicates whether to enable WebAssembly runtime for stats filter.
-      wasmEnabled: false
+      wasmEnabled: {{ or .GetSpec.GetProxyWasm.GetEnabled false }}
       # overrides stats EnvoyFilter configuration.
       configOverride:
         gateway: {}
@@ -186,36 +210,6 @@ revisionTags: []
 # For Helm compatibility.
 ownerName: ""
 
-# meshConfig defines runtime configuration of components, including Istiod and istio-agent behavior
-# See https://istio.io/docs/reference/config/istio.mesh.v1alpha1/ for all available options
-meshConfig:
-  enablePrometheusMerge: true
-  # Config for the default ProxyConfig.
-  # Initially using directly the proxy metadata - can also be activated using annotations
-  # on the pod. This is an unsupported low-level API, pending review and decisions on
-  # enabling the feature. Enabling the DNS listener is safe - and allows further testing
-  # and gradual adoption by setting capture only on specific workloads. It also allows
-  # VMs to use other DNS options, like dnsmasq or unbound.
-
-  # The namespace to treat as the administrative root namespace for Istio configuration.
-  # When processing a leaf namespace Istio will search for declarations in that namespace first
-  # and if none are found it will search in the root namespace. Any matching declaration found in the root namespace
-  # is processed as if it were declared in the leaf namespace.
-
-  rootNamespace: {{ .Namespace }}
-
-  # The trust domain corresponds to the trust root of a system
-  # Refer to https://github.com/spiffe/spiffe/blob/master/standards/SPIFFE-ID.md#21-trust-domain
-  trustDomain: "cluster.local"
-
-  # TODO: the intent is to eventually have this enabled by default when security is used.
-  # It is not clear if user should normally need to configure - the metadata is typically
-  # used as an escape and to control testing and rollout, but it is not intended as a long-term
-  # stable API.
-
-  # What we may configure in mesh config is the ".global" - and use of other suffixes.
-  # No hurry to do this in 1.6, we're trying to prove the code.
-
 global:
   distribution: "cisco"
   # Used to locate istiod.
@@ -223,7 +217,7 @@ global:
   # enable pod disruption budget for the control plane, which is used to
   # ensure Istio control plane components are gradually upgraded or recovered.
   defaultPodDisruptionBudget:
-    enabled: true
+    enabled: {{or .GetSpec.GetDefaultPodDisruptionBudget.GetEnabled true }}
     # The values aren't mutable due to a current PodDisruptionBudget limitation
     # minAvailable: 1
 
@@ -231,13 +225,18 @@ global:
   # Horizontal Pod Autoscaler will be able to function (if set).
   # Each component can overwrite these default values by adding its own resources
   # block in the relevant section below and setting the desired resources values.
+{{ if .GetSpec.GetK8S.GetResources }}
+  defaultResources:
+{{ .GetSpec.GetK8S.GetResources | toYaml | indent 4 }}
+{{ else }}
   defaultResources:
     requests:
       cpu: 10m
-    #   memory: 128Mi
-    # limits:
-    #   cpu: 100m
-    #   memory: 128Mi
+  #   memory: 128Mi
+  # limits:
+  #   cpu: 100m
+  #   memory: 128Mi
+{{ end }}
 
   # Default hub for Istio images.
   # Releases are published to docker hub under 'istio' project.
@@ -248,19 +247,23 @@ global:
 
   # Specify image pull policy if default behavior isn't desired.
   # Default behavior: latest images will be Always else IfNotPresent.
-  imagePullPolicy: ""
+  imagePullPolicy: "{{ .GetSpec.GetK8S.GetImagePullPolicy }}"
 
   # ImagePullSecrets for all ServiceAccount, list of secrets in the same namespace
   # to use for pulling any images in pods that reference this ServiceAccount.
   # For components that don't use ServiceAccounts (i.e. grafana, servicegraph, tracing)
   # ImagePullSecrets will be added to the corresponding Deployment(StatefulSet) objects.
   # Must be set for any cluster configured with private docker registry.
+{{ if .GetSpec.GetK8S.GetImagePullSecrets }}
+  imagePullSecrets:
+{{ .GetSpec.GetK8S.GetImagePullSecrets | toYaml | indent 4 }}
+{{ else }}
   imagePullSecrets: []
-  # - private-registry-key
+{{ end }}
 
   # Enabled by default in master for maximising testing.
   istiod:
-    enableAnalysis: false
+    enableAnalysis: {{ or .GetSpec.GetIstiod.GetEnableAnalysis false}}
 
   # To output all istio components logs in json format by adding --log_as_json argument to each container argument
   logAsJson: false
@@ -269,13 +272,13 @@ global:
   # The control plane has different scopes depending on component, but can configure default log level across all components
   # If empty, default scope and level will be used as configured in code
   logging:
-    level: "default:info"
+    level: {{ or .GetSpec.GetLogging.GetLevel "default:info" }}
 
   omitSidecarInjectorConfigMap: false
 
   # Whether to restrict the applications namespace the controller manages;
   # If not set, controller watches all namespaces
-  oneNamespace: false
+  oneNamespace: {{ or .GetSpec.GetWatchOneNamespace false }}
 
   # Configure whether Operator manages webhook configurations. The current behavior
   # of Istiod is to manage its own webhook configurations.
@@ -301,45 +304,45 @@ global:
   # will not be killed because of low priority class.
   # Refer to https://kubernetes.io/docs/concepts/configuration/pod-priority-preemption/#priorityclass
   # for more detail.
-  priorityClassName: ""
+  priorityClassName: "{{ .GetSpec.GetK8S.GetPriorityClassName }}"
 
   proxy:
-    image: proxyv2
+    image: {{ or .GetSpec.GetProxy.GetImage "proxyv2" }}
 
     # This controls the 'policy' in the sidecar injector.
     autoInject: enabled
 
     # CAUTION: It is important to ensure that all Istio helm charts specify the same clusterDomain value
     # cluster domain. Default value is "cluster.local".
-    clusterDomain: "cluster.local"
+    clusterDomain: {{ or .GetSpec.GetProxy.GetClusterDomain "cluster.local" }}
 
     # Per Component log level for proxy, applies to gateways and sidecars. If a component level is
     # not set, then the global "logLevel" will be used.
-    componentLogLevel: "misc:error"
+    componentLogLevel: {{ or .GetSpec.GetProxy.GetComponentLogLevel "misc:error" }}
 
     # If set, newly injected sidecars will have core dumps enabled.
-    enableCoreDump: false
+    enableCoreDump: {{ or .GetSpec.GetProxy.GetEnableCoreDump false }}
 
     # istio ingress capture allowlist
     # examples:
     #     Redirect only selected ports:            --includeInboundPorts="80,8080"
-    excludeInboundPorts: ""
+    excludeInboundPorts: "{{ .GetSpec.GetProxy.GetExcludeInboundPorts }}"
 
     # istio egress capture allowlist
     # https://istio.io/docs/tasks/traffic-management/egress.html#calling-external-services-directly
     # example: includeIPRanges: "172.30.0.0/16,172.20.0.0/16"
     # would only capture egress traffic on those two IP Ranges, all other outbound traffic would
     # be allowed by the sidecar
-    includeIPRanges: "*"
-    excludeIPRanges: ""
-    excludeOutboundPorts: ""
+    includeIPRanges: "{{ or .GetSpec.GetProxy.GetIncludeIPRanges "*" }}"
+    excludeIPRanges: "{{ .GetSpec.GetProxy.GetExcludeIPRanges }}"
+    excludeOutboundPorts: "{{ .GetSpec.GetProxy.GetExcludeOutboundPorts }}"
 
     # Log level for proxy, applies to gateways and sidecars.
     # Expected values are: trace|debug|info|warning|error|critical|off
-    logLevel: warning
+    logLevel: {{ or .GetSpec.GetProxy.GetLogLevel "warning" | toString | lower }}
 
     #If set to true, istio-proxy container will have privileged securityContext
-    privileged: false
+    privileged: {{ or .GetSpec.GetProxy.GetPrivileged false }}
 
     # The number of successive failed probes before indicating readiness failure.
     readinessFailureThreshold: 30
@@ -351,6 +354,10 @@ global:
     readinessPeriodSeconds: 2
 
     # Resources for the sidecar.
+{{ if .GetSpec.GetProxy.GetResources }}
+    resources:
+{{ .GetSpec.GetProxy.GetResources | toYaml | indent 6 }}
+{{ else }}
     resources:
       requests:
         cpu: 100m
@@ -358,6 +365,7 @@ global:
       limits:
         cpu: 2000m
         memory: 1024Mi
+{{ end }}
 
     # Default port for Pilot agent health checks. A value of 0 will disable health checking.
     statusPort: 15020
@@ -367,11 +375,15 @@ global:
     tracer: "zipkin"
 
     # Controls if sidecar is injected at the front of the container list and blocks the start of the other containers until the proxy is ready
-    holdApplicationUntilProxyStarts: false
+    holdApplicationUntilProxyStarts: {{ or .GetSpec.GetProxy.GetHoldApplicationUntilProxyStarts false }}
 
   proxy_init:
     # Base name for the proxy_init container, used to configure iptables.
-    image: proxyv2
+    image: {{ or .GetSpec.GetProxyInit.GetImage "proxyv2" }}
+{{ if .GetSpec.GetProxyInit.GetResources }}
+    resources:
+{{ .GetSpec.GetProxyInit.GetResources | toYaml | indent 6 }}
+{{ else }}
     resources:
       limits:
         cpu: 2000m
@@ -379,6 +391,7 @@ global:
       requests:
         cpu: 10m
         memory: 10Mi
+{{ end }}
 
   # configure remote pilot and istiod service and endpoint
   remotePilotAddress: ""
@@ -391,14 +404,14 @@ global:
   # The customized CA address to retrieve certificates for the pods in the cluster.
   # CSR clients such as the Istio Agent and ingress gateways can use this to specify the CA endpoint.
   # If not set explicitly, default to the Istio discovery address.
-  caAddress: ""
+  caAddress: "{{ or .GetSpec.GetCaAddress "" }}"
 
   # External istiod controls all remote clusters: disabled by default
-  externalIstiod: false
+  externalIstiod: {{ or .GetSpec.GetIstiod.GetExternalIstiod.GetEnabled false }}
 
   # Configure the policy for validating JWT.
   # Currently, two options are supported: "third-party-jwt" and "first-party-jwt".
-  jwtPolicy: "third-party-jwt"
+  jwtPolicy: {{ or .GetSpec.GetJwtPolicy "third-party-jwt" | toString | lower | replace "_" "-"}}
 
   # Mesh ID means Mesh Identifier. It should be unique within the scope where
   # meshes will interact with each other, but it is not required to be
@@ -421,7 +434,7 @@ global:
   # If the mesh admin does not specify a value, Istio will use the value of the
   # mesh's Trust Domain. The best practice is to select a proper Trust Domain
   # value.
-  meshID: "mesh1"
+  meshID: {{ or .GetSpec.GetMeshConfig.GetDefaultConfig.GetMeshId "cluster.local" }}
 
   # Configure the mesh networks to be used by the Split Horizon EDS.
   #
@@ -453,7 +466,7 @@ global:
   meshNetworks: {}
 
   # Use the user-specified, secret volume mounted key and certs for Pilot and workloads.
-  mountMtlsCerts: false
+  mountMtlsCerts: {{ or .GetSpec.GetMountMtlsCerts false }}
 
   multiCluster:
     # Set to true to connect two kubernetes clusters via their respective
@@ -463,24 +476,24 @@ global:
     enabled: false
     # Should be set to the name of the cluster this installation will run in. This is required for sidecar injection
     # to properly label proxies
-    clusterName: "waynz0r-0807-01"
+    clusterName: ""
 
   # Network defines the network this cluster belong to. This name
   # corresponds to the networks in the map of mesh networks.
-  network: "waynz0r-0807-01"
+  network: ""
 
   # Configure the certificate provider for control plane communication.
   # Currently, two providers are supported: "kubernetes" and "istiod".
   # As some platforms may not have kubernetes signing APIs,
   # Istiod is the default
-  pilotCertProvider: istiod
+  pilotCertProvider: {{ or .GetSpec.GetIstiod.GetCertProvider "istiod" | toString | lower }}
 
   sds:
     # The JWT token for SDS and the aud field of such JWT. See RFC 7519, section 4.1.3.
     # When a CSR is sent from Istio Agent to the CA (e.g. Istiod), this aud is to make sure the
     # JWT is intended for the CA.
     token:
-      aud: istio-ca
+      aud: {{ or .GetSpec.GetSds.GetTokenAudience "istio-ca" }}
 
   sts:
     # The service port used by Security Token Service (STS) server to handle token exchange requests.
