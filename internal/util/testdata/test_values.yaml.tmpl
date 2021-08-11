@@ -171,12 +171,12 @@ telemetry:
     enabled: {{ or .GetSpec.GetTelemetryV2.GetEnabled true }}
     metadataExchange:
       # Indicates whether to enable WebAssembly runtime for metadata exchange filter.
-      wasmEnabled: false
+      wasmEnabled: {{ or .GetSpec.GetProxyWasm.GetEnabled false }}
     # Indicate if prometheus stats filter is enabled or not
     prometheus:
       enabled: true
       # Indicates whether to enable WebAssembly runtime for stats filter.
-      wasmEnabled: false
+      wasmEnabled: {{ or .GetSpec.GetProxyWasm.GetEnabled false }}
       # overrides stats EnvoyFilter configuration.
       configOverride:
         gateway: {}

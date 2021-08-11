@@ -100,7 +100,7 @@ spec:
   sds:
     tokenAudience: "istio-ca"
   proxyWasm:
-    enabled: false
+    enabled: true
   watchOneNamespace: true
   defaultPodDisruptionBudget:
     enabled: false
