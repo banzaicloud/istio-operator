@@ -18,12 +18,13 @@ package util_test
 
 import (
 	"embed"
-	"sigs.k8s.io/yaml"
 	"testing"
+
+	"github.com/kylelemons/godebug/pretty"
+	"sigs.k8s.io/yaml"
 
 	"github.com/banzaicloud/istio-operator/v2/api/v1alpha1"
 	"github.com/banzaicloud/istio-operator/v2/internal/util"
-	"github.com/kylelemons/godebug/pretty"
 )
 
 //go:embed testdata/test_istiocontrolplane.yaml
