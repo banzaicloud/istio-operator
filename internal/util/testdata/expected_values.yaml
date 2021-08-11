@@ -42,8 +42,7 @@ pilot:
   nodeSelector:
     region: east
     type: user-node
-  podAnnotations:
-    foo: bar
+  podAnnotations: {}
 
   # You can use jwksResolverExtraRootCA to provide a root certificate
   # in PEM format. This will then be trusted by pilot when resolving

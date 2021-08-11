@@ -54,8 +54,6 @@ spec:
       podMetadata:
         labels:
           version: v1
-        annotations:
-          foo: bar
       securityContext: {}
     enableAnalysis: true
     enableStatus: true

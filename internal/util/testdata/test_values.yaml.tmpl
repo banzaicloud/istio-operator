@@ -17,8 +17,13 @@ pilot:
   traceSampling: {{ or .GetSpec.GetIstiod.GetTraceSampling 1.0 }}
 
   # Resources for a small pilot install
+{{ if .GetSpec.GetIstiod.GetDeployment.GetResources }}
   resources:
 {{ .GetSpec.GetIstiod.GetDeployment.GetResources | toYaml | indent 4 }}
+{{ else }}
+  resources: {}
+{{ end }}
+
 
   env:
     VALIDATION_WEBHOOK_CONFIG_NAME: istiod-{{ .Name }}-{{ .Namespace }}
@@ -34,10 +39,20 @@ pilot:
   # if protocol sniffing is enabled for inbound
   enableProtocolSniffingForInbound: {{ or .GetSpec.GetIstiod.GetEnableProtocolSniffingInbound true }}
 
+{{ if .GetSpec.GetIstiod.GetDeployment.GetNodeSelector }}
   nodeSelector:
 {{ .GetSpec.GetIstiod.GetDeployment.GetNodeSelector | toYaml | indent 4 }}
+{{ else }}
+  nodeSelector: {}
+{{ end }}
+
+{{ if .GetSpec.GetIstiod.GetDeployment.GetPodMetadata.GetAnnotations }}
   podAnnotations:
 {{ .GetSpec.GetIstiod.GetDeployment.GetPodMetadata.GetAnnotations | toYaml | indent 4 }}
+{{ else }}
+  podAnnotations: {}
+{{ end }}
+
 
   # You can use jwksResolverExtraRootCA to provide a root certificate
   # in PEM format. This will then be trusted by pilot when resolving
@@ -239,9 +254,12 @@ global:
   # For components that don't use ServiceAccounts (i.e. grafana, servicegraph, tracing)
   # ImagePullSecrets will be added to the corresponding Deployment(StatefulSet) objects.
   # Must be set for any cluster configured with private docker registry.
+{{ if .GetSpec.GetK8S.GetImagePullSecrets }}
   imagePullSecrets:
 {{ .GetSpec.GetK8S.GetImagePullSecrets | toYaml | indent 4 }}
-  # - private-registry-key
+{{ else }}
+  imagePullSecrets: []
+{{ end }}
 
   # Enabled by default in master for maximising testing.
   istiod:
