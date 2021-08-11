@@ -38,12 +38,15 @@ spec:
         requests:
           cpu: 500m
           memory: 2048Mi
-      nodeSelector: {}
+      nodeSelector:
+        region: east
+        type: user-node
       affinity: {}
       tolerations: []
       podMetadata:
         labels: {}
-        annotations: {}
+        annotations:
+          foo: bar
       securityContext: {}
     enableAnalysis: false
     enableStatus: false

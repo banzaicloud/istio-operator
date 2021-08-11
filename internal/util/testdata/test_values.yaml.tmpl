@@ -34,7 +34,6 @@ pilot:
   # if protocol sniffing is enabled for inbound
   enableProtocolSniffingForInbound: {{ or .GetSpec.GetIstiod.GetEnableProtocolSniffingInbound true }}
 
-  # TODO: check if needs to be done as labels with if
   nodeSelector:
 {{ .GetSpec.GetIstiod.GetDeployment.GetNodeSelector | toYaml | indent 4 }}
   podAnnotations:
@@ -416,9 +415,7 @@ global:
   # If the mesh admin does not specify a value, Istio will use the value of the
   # mesh's Trust Domain. The best practice is to select a proper Trust Domain
   # value.
-  # TODO: fix this
-  #meshID: {{/* or .GetSpec.GetMeshConfig.GetDefaultConfig.GetMeshID "mesh1" */}}
-  meshID: "cluster.local"
+  meshID: {{ or .GetSpec.GetMeshConfig.GetDefaultConfig.GetMeshId "cluster.local" }}
 
   # Configure the mesh networks to be used by the Split Horizon EDS.
   #
