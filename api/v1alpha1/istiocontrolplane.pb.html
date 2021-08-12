@@ -183,6 +183,19 @@ CSR clients such as the Istio Agent and ingress gateways can use this to specify
 No
 </td>
 </tr>
+<tr id="IstioControlPlaneSpec-distribution">
+<td><code>distribution</code></td>
+<td><code>string</code></td>
+<td>
+<p>Contains the intended distribution for the Istio control plane.
+The official distribution is used by default unless special preserved distribution value is set.
+The only preserved distribution is &ldquo;cisco&rdquo; as of now.</p>
+
+</td>
+<td>
+No
+</td>
+</tr>
 <tr id="IstioControlPlaneSpec-httpProxyEnvs">
 <td><code>httpProxyEnvs</code></td>
 <td><code><a href="#HTTPProxyEnvsConfiguration">HTTPProxyEnvsConfiguration</a></code></td>

@@ -106,6 +106,7 @@ spec:
     enabled: false
   jwtPolicy: "FIRST_PARTY_JWT"
   caAddress: "1.1.1.1"
+  distribution: "official"
   httpProxyEnvs:
     httpProxy: "http://proxy.example.com:3128"
     httpsProxy: "http://proxy.example.com:3129"

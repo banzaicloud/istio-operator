@@ -46,6 +46,10 @@ spec:
                     nullable: true
                     type: boolean
                 type: object
+              distribution:
+                description: Contains the intended distribution for the Istio control
+                  plane.
+                type: string
               httpProxyEnvs:
                 description: Upstream HTTP proxy properties to be injected as environment
                   variables to the pod containers.

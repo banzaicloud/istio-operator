@@ -211,7 +211,7 @@ meshConfig:
   # No hurry to do this in 1.6, we're trying to prove the code.
 
 global:
-  distribution: istio
+  distribution: official
   # Used to locate istiod.
   istioNamespace: istio-system
   # enable pod disruption budget for the control plane, which is used to

@@ -95,6 +95,7 @@ spec:
     enabled: true
   jwtPolicy: "THIRD_PARTY_JWT"
   caAddress: ""
+  distribution: "official"
   httpProxyEnvs:
     httpProxy: ""
     httpsProxy: ""
