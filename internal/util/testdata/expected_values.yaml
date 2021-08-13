@@ -348,6 +348,14 @@ global:
     # Controls if sidecar is injected at the front of the container list and blocks the start of the other containers until the proxy is ready
     holdApplicationUntilProxyStarts: true
 
+    lifecycle:
+      postStart:
+        exec:
+          command: [ "/bin/sh", "-c", "echo Hello from the postStart handler > /usr/share/message" ]
+      preStop:
+        exec:
+          command: [ "/bin/sh","-c","nginx -s quit; while killall -0 nginx; do sleep 1; done" ]
+
   proxy_init:
     # Base name for the proxy_init container, used to configure iptables.
     image: "gcr.io/istio-release/proxyv2:1.10.3"

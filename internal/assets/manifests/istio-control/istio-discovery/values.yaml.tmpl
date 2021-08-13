@@ -377,6 +377,13 @@ global:
     # Controls if sidecar is injected at the front of the container list and blocks the start of the other containers until the proxy is ready
     holdApplicationUntilProxyStarts: {{ or .GetSpec.GetProxy.GetHoldApplicationUntilProxyStarts false }}
 
+{{ if .GetSpec.GetProxy.GetLifecycle }}
+    lifecycle:
+{{ .GetSpec.GetProxy.GetLifecycle | toYaml | indent 6 }}
+{{ else }}
+    lifecycle: {}
+{{ end }}
+
   proxy_init:
     # Base name for the proxy_init container, used to configure iptables.
     image: {{ or .GetSpec.GetProxyInit.GetImage "proxyv2" }}
