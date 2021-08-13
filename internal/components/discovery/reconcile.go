@@ -23,7 +23,6 @@ import (
 	"k8s.io/apimachinery/pkg/runtime"
 	controllerruntime "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/reconcile"
-	"sigs.k8s.io/yaml"
 
 	"github.com/banzaicloud/istio-operator/v2/api/v1alpha1"
 	assets "github.com/banzaicloud/istio-operator/v2/internal/assets"
@@ -83,23 +82,24 @@ func (rec *Reconciler) UpdateStatus(object runtime.Object, status types.Reconcil
 }
 
 func (rec *Reconciler) ReleaseData(object runtime.Object) (*templatereconciler.ReleaseData, error) {
-	if controlPlane, ok := object.(*v1alpha1.IstioControlPlane); ok {
-		values, err := rec.values(object)
-		if err != nil {
-			return nil, err
-		}
-
-		return &templatereconciler.ReleaseData{
-			Chart:                 http.FS(assets.DiscoveryChart),
-			Values:                values,
-			Namespace:             controlPlane.Namespace,
-			ChartName:             chartName,
-			ReleaseName:           releaseName,
-			DesiredStateOverrides: map[reconciler.ObjectKeyWithGVK]reconciler.DesiredState{},
-		}, nil
+	icp, ok := object.(*v1alpha1.IstioControlPlane)
+	if !ok {
+		return nil, errors.WrapIff(errors.NewPlain("object cannot be converted to an IstioControlPlane"), "%+v", object)
 	}
 
-	return nil, errors.WrapIff(errors.NewPlain("object cannot be converted to an IstioControlPlane"), "%+v", object)
+	values, err := rec.values(object)
+	if err != nil {
+		return nil, err
+	}
+
+	return &templatereconciler.ReleaseData{
+		Chart:                 http.FS(assets.DiscoveryChart),
+		Values:                values,
+		Namespace:             icp.Namespace,
+		ChartName:             chartName,
+		ReleaseName:           releaseName,
+		DesiredStateOverrides: map[reconciler.ObjectKeyWithGVK]reconciler.DesiredState{},
+	}, nil
 }
 
 func (rec *Reconciler) Reconcile(object runtime.Object) (*reconcile.Result, error) {
@@ -118,9 +118,6 @@ func (rec *Reconciler) values(object runtime.Object) (helm.Strimap, error) {
 	if err != nil {
 		return nil, errors.WrapIff(errors.NewPlain("IstioControlPlane spec cannot be converted into a map[string]interface{}"), "%+v", icp.Spec)
 	}
-
-	_, _ = yaml.Marshal(values)
-	// fmt.Printf("%s\n", y)
 
 	var meshConfigStriMap helm.Strimap
 	if mc := icp.GetSpec().GetMeshConfig(); mc != nil {
