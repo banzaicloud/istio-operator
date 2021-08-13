@@ -4,24 +4,6 @@ metadata:
   name: icp-v10x-sample
 spec:
   version: 1.10.0-rc.0
-  k8s:
-    resources:
-      requests:
-        cpu: 10m
-    priorityClassName: ""
-    imagePullPolicy: ""
-    imagePullSecrets: []
-    env: []
-    nodeSelector: {}
-    affinity: {}
-    securityContext: {}
-    tolerations: []
-    volumes: []
-    volumeMounts: []
-    replicas: {}
-    podMetadata:
-      labels: {}
-      annotations: {}
   logging:
     level: "default:info"
   mountMtlsCerts: false

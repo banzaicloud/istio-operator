@@ -212,11 +212,7 @@ global:
   # block in the relevant section below and setting the desired resources values.
   defaultResources:
     requests:
-      cpu: 11m
-      memory: 128Mi
-    limits:
-      cpu: 100m
-      memory: 1Gi
+      cpu: 10m
 
   # Default hub for Istio images.
   # Releases are published to docker hub under 'istio' project.
@@ -227,15 +223,14 @@ global:
 
   # Specify image pull policy if default behavior isn't desired.
   # Default behavior: latest images will be Always else IfNotPresent.
-  imagePullPolicy: IfNotPresent
+  imagePullPolicy: ""
 
   # ImagePullSecrets for all ServiceAccount, list of secrets in the same namespace
   # to use for pulling any images in pods that reference this ServiceAccount.
   # For components that don't use ServiceAccounts (i.e. grafana, servicegraph, tracing)
   # ImagePullSecrets will be added to the corresponding Deployment(StatefulSet) objects.
   # Must be set for any cluster configured with private docker registry.
-  imagePullSecrets:
-    - name: private-registry-key
+  imagePullSecrets: []
 
   # Enabled by default in master for maximising testing.
   istiod:
@@ -280,7 +275,7 @@ global:
   # will not be killed because of low priority class.
   # Refer to https://kubernetes.io/docs/concepts/configuration/pod-priority-preemption/#priorityclass
   # for more detail.
-  priorityClassName: high-priority
+  priorityClassName: ""
 
   proxy:
     image: "gcr.io/istio-release/proxyv2:1.10.3"

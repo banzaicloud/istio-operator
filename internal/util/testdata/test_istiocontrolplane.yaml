@@ -5,29 +5,6 @@ metadata:
   namespace: istio-system
 spec:
   version: 1.10.3
-  k8s:
-    resources:
-      requests:
-        cpu: 11m
-        memory: 128Mi
-      limits:
-        cpu: 100m
-        memory: 1Gi
-    priorityClassName: high-priority
-    imagePullPolicy: IfNotPresent
-    imagePullSecrets:
-      - name: private-registry-key
-    env: []
-    nodeSelector: {}
-    affinity: {}
-    securityContext: {}
-    tolerations: []
-    volumes: []
-    volumeMounts: []
-    replicas: {}
-    podMetadata:
-      labels: {}
-      annotations: {}
   logging:
     level: "default:warning"
   mountMtlsCerts: true
