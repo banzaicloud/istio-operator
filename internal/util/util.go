@@ -56,8 +56,6 @@ func TransformICPToStriMapWithTemplate(icp *v1alpha1.IstioControlPlane, filesyst
 		return nil, errors.WrapWithDetails(err, "template cannot be executed", "template", templateFileName)
 	}
 
-	// fmt.Printf("PY: %s\n", string(tpl.Bytes()))
-
 	values := &helm.Strimap{}
 	err = yaml.Unmarshal(tpl.Bytes(), values)
 	if err != nil {

@@ -86,57 +86,58 @@ func (rec *Reconciler) UpdateStatus(object runtime.Object, status types.Reconcil
 }
 
 func (rec *Reconciler) ReleaseData(object runtime.Object) (*templatereconciler.ReleaseData, error) {
-	if controlPlane, ok := object.(*v1alpha1.IstioControlPlane); ok {
-		values, err := rec.values(object)
-		if err != nil {
-			return nil, err
-		}
-
-		return &templatereconciler.ReleaseData{
-			Chart:       http.FS(assets.BaseChart),
-			Values:      values,
-			Namespace:   controlPlane.Namespace,
-			ChartName:   chartName,
-			ReleaseName: releaseName,
-			DesiredStateOverrides: map[reconciler.ObjectKeyWithGVK]reconciler.DesiredState{
-				{
-					GVK: apiextensionv1.SchemeGroupVersion.WithKind("CustomResourceDefinition"),
-				}: reconciler.DynamicDesiredState{
-					DesiredState: reconciler.StateCreated,
-					BeforeCreateFunc: func(desired runtime.Object) error {
-						if o, ok := desired.(client.Object); ok {
-							annotations := o.GetAnnotations()
-							delete(annotations, types.BanzaiCloudManagedComponent)
-							delete(annotations, types.BanzaiCloudRelatedTo)
-							o.SetAnnotations(annotations)
-						}
-
-						return nil
-					},
-				},
-				{
-					GVK: admissionregistrationv1.SchemeGroupVersion.WithKind("ValidatingWebhookConfiguration"),
-				}: reconciler.DynamicDesiredState{
-					ShouldUpdateFunc: func(current, desired runtime.Object) (bool, error) {
-						options := []patch.CalculateOption{
-							patch.IgnoreStatusFields(),
-							reconciler.IgnoreManagedFields(),
-							util.IgnoreWebhookFailurePolicy(),
-						}
-
-						patchResult, err := patch.DefaultPatchMaker.Calculate(current, desired, options...)
-						if err != nil {
-							return false, err
-						}
-
-						return !patchResult.IsEmpty(), nil
-					},
-				},
-			},
-		}, nil
+	icp, ok := object.(*v1alpha1.IstioControlPlane)
+	if !ok {
+		return nil, errors.WrapIff(errors.NewPlain("object cannot be converted to an IstioControlPlane"), "%+v", object)
 	}
 
-	return nil, errors.WrapIff(errors.NewPlain("object cannot be converted to an IstioControlPlane"), "%+v", object)
+	values, err := rec.values(object)
+	if err != nil {
+		return nil, err
+	}
+
+	return &templatereconciler.ReleaseData{
+		Chart:       http.FS(assets.BaseChart),
+		Values:      values,
+		Namespace:   icp.Namespace,
+		ChartName:   chartName,
+		ReleaseName: releaseName,
+		DesiredStateOverrides: map[reconciler.ObjectKeyWithGVK]reconciler.DesiredState{
+			{
+				GVK: apiextensionv1.SchemeGroupVersion.WithKind("CustomResourceDefinition"),
+			}: reconciler.DynamicDesiredState{
+				DesiredState: reconciler.StateCreated,
+				BeforeCreateFunc: func(desired runtime.Object) error {
+					if o, ok := desired.(client.Object); ok {
+						annotations := o.GetAnnotations()
+						delete(annotations, types.BanzaiCloudManagedComponent)
+						delete(annotations, types.BanzaiCloudRelatedTo)
+						o.SetAnnotations(annotations)
+					}
+
+					return nil
+				},
+			},
+			{
+				GVK: admissionregistrationv1.SchemeGroupVersion.WithKind("ValidatingWebhookConfiguration"),
+			}: reconciler.DynamicDesiredState{
+				ShouldUpdateFunc: func(current, desired runtime.Object) (bool, error) {
+					options := []patch.CalculateOption{
+						patch.IgnoreStatusFields(),
+						reconciler.IgnoreManagedFields(),
+						util.IgnoreWebhookFailurePolicy(),
+					}
+
+					patchResult, err := patch.DefaultPatchMaker.Calculate(current, desired, options...)
+					if err != nil {
+						return false, err
+					}
+
+					return !patchResult.IsEmpty(), nil
+				},
+			},
+		},
+	}, nil
 }
 
 func (rec *Reconciler) Reconcile(object runtime.Object) (*reconcile.Result, error) {

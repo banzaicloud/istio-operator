@@ -4,28 +4,13 @@ metadata:
   name: icp-v10x-sample
 spec:
   version: 1.10.0-rc.0
-  k8s:
-    resources:
-      requests:
-        cpu: 10m
-    priorityClassName: ""
-    imagePullPolicy: ""
-    imagePullSecrets: []
-    env: []
-    nodeSelector: {}
-    affinity: {}
-    securityContext: {}
-    tolerations: []
-    volumes: []
-    volumeMounts: []
-    replicas: {}
-    podAnnotations: {}
   logging:
     level: "default:info"
   mountMtlsCerts: false
   istiod:
     deployment:
       replicas:
+        autoscaleEnabled: true
         min: 1
         max: 5
         count: 1
@@ -37,7 +22,9 @@ spec:
       nodeSelector: {}
       affinity: {}
       tolerations: []
-      podAnnotations: {}
+      podMetadata:
+        labels: {}
+        annotations: {}
       securityContext: {}
     enableAnalysis: false
     enableStatus: false
@@ -47,7 +34,6 @@ spec:
     enableProtocolSniffingOutbound: true
     enableProtocolSniffingInbound: true
     certProvider: ISTIOD
-    additionalEnvVars: []
     spiffe:
       operatorEndpoints:
         enabled: false
@@ -91,6 +77,7 @@ spec:
     enabled: true
   jwtPolicy: "THIRD_PARTY_JWT"
   caAddress: ""
+  distribution: "official"
   httpProxyEnvs:
     httpProxy: ""
     httpsProxy: ""

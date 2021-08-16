@@ -18,77 +18,43 @@ package util_test
 
 import (
 	"embed"
-	"reflect"
 	"testing"
 
-	"emperror.dev/errors"
-	"k8s.io/apimachinery/pkg/api/resource"
-	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"github.com/kylelemons/godebug/pretty"
+	"sigs.k8s.io/yaml"
 
 	"github.com/banzaicloud/istio-operator/v2/api/v1alpha1"
 	"github.com/banzaicloud/istio-operator/v2/internal/util"
 )
 
-//go:embed testdata/*.tmpl
-var testChartValuesTemplate embed.FS
+//go:embed testdata/test_istiocontrolplane.yaml
+var icpFile []byte
+
+//go:embed testdata/test_values.yaml.tmpl
+var valuesFS embed.FS
+
+//go:embed testdata/expected_values.yaml
+var expectedValuesFile []byte
 
 func TestTransformICPSpecToStriMapWithTemplate(t *testing.T) {
 	t.Parallel()
-	icp := &v1alpha1.IstioControlPlane{
-		ObjectMeta: v1.ObjectMeta{
-			Name:      "test",
-			Namespace: "default",
-		},
-		Spec: &v1alpha1.IstioControlPlaneSpec{
-			Istiod: &v1alpha1.IstiodConfiguration{
-				Deployment: &v1alpha1.BaseKubernetesResourceConfig{
-					Resources: &v1alpha1.ResourceRequirements{},
-					Metadata: &v1alpha1.K8SObjectMeta{
-						Annotations: map[string]string{
-							"a": "b",
-						},
-						Labels: map[string]string{
-							"c": "d",
-							"e": "f",
-						},
-					},
-				},
-			},
-		},
-	}
-	icp.Spec.Version = "1.10"
-	icp.Spec.Istiod.Deployment.Resources.Requests = make(map[string]*v1alpha1.Quantity)
-	icp.Spec.Istiod.Deployment.Resources.Requests["memory"] = &v1alpha1.Quantity{
-		Quantity: resource.MustParse("500m"),
+
+	var icp *v1alpha1.IstioControlPlane
+	if err := yaml.Unmarshal(icpFile, &icp); err != nil {
+		t.Fatal(err)
 	}
 
-	values, err := util.TransformICPToStriMapWithTemplate(icp, testChartValuesTemplate, "testdata/test-chart-values.yaml.tmpl")
+	values, err := util.TransformICPToStriMapWithTemplate(icp, valuesFS, "testdata/test_values.yaml.tmpl")
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	expected := map[string]interface{}{
-		"enableAnalysis": true,
-		"istioNamespace": "default",
-		"istiod": map[string]interface{}{
-			"deploymentLabels": map[string]interface{}{
-				"c": "d",
-				"e": "f",
-			},
-		},
-		"param1": "value",
-		"param2": map[string]interface{}{
-			"level2": "value",
-		},
-		"resources": map[string]interface{}{
-			"requests": map[string]interface{}{
-				"memory": "500m",
-			},
-		},
-		"version": string("1.10"),
+	var expectedValues map[string]interface{}
+	if err := yaml.Unmarshal(expectedValuesFile, &expectedValues); err != nil {
+		t.Fatal(err)
 	}
 
-	if !reflect.DeepEqual(values, expected) {
-		t.Fatal(errors.Errorf("%#v != %#v", values, expected))
+	if diff := pretty.Compare(values, expectedValues); diff != "" {
+		t.Errorf("diff: (-got +want)\n%s", diff)
 	}
 }

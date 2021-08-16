@@ -12,7 +12,7 @@ global:
     enableAnalysis: {{ or .GetSpec.GetIstiod.GetEnableAnalysis false }}
 
   configValidation: true
-  externalIstiod: false
+  externalIstiod: {{ or .GetSpec.GetIstiod.GetExternalIstiod.GetEnabled false }}
   remotePilotAddress: ""
 
   revision: "{{ .Name }}"

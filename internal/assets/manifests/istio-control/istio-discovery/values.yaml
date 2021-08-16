@@ -33,7 +33,17 @@ pilot:
   enableProtocolSniffingForInbound: true
 
   nodeSelector: {}
+  affinity: {}
+  tolerations: {}
   podAnnotations: {}
+
+  securityContext:
+    runAsUser: 1337
+    runAsGroup: 1337
+    runAsNonRoot: true
+    capabilities:
+      drop:
+        - ALL
 
   # You can use jwksResolverExtraRootCA to provide a root certificate
   # in PEM format. This will then be trusted by pilot when resolving
@@ -211,7 +221,7 @@ meshConfig:
   # No hurry to do this in 1.6, we're trying to prove the code.
 
 global:
-  distribution: istio
+  distribution: official
   # Used to locate istiod.
   istioNamespace: istio-system
   # enable pod disruption budget for the control plane, which is used to
