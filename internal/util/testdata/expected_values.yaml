@@ -6,11 +6,6 @@ pilot:
   autoscaleMin: 2
   autoscaleMax: 4
   replicaCount: 3
-  rollingMaxSurge: 100%
-  rollingMaxUnavailable: 25%
-
-  hub: ""
-  tag: ""
 
   # Can be a full hub/image:tag
   image: "gcr.io/istio-release/pilot:1.10.3"
@@ -30,9 +25,6 @@ pilot:
     ISTIOD_CUSTOM_HOST: istiod-test-icp-v10x-sample.istio-system.svc
     INJECTION_WEBHOOK_CONFIG_NAME: istio-sidecar-injector-test-icp-v10x-sample-istio-system
     PILOT_ENABLE_STATUS: true
-
-  cpu:
-    targetAverageUtilization: 80
 
   # if protocol sniffing is enabled for outbound
   enableProtocolSniffingForOutbound: false
@@ -63,112 +55,18 @@ pilot:
     runAsUser: 2000
     allowPrivilegeEscalation: false
 
-  # You can use jwksResolverExtraRootCA to provide a root certificate
-  # in PEM format. This will then be trusted by pilot when resolving
-  # JWKS URIs.
-  jwksResolverExtraRootCA: ""
-
-  # This is used to set the source of configuration for
-  # the associated address in configSource, if nothing is specificed
-  # the default MCP is assumed.
-  configSource:
-    subscribedResources: []
-
-  plugins: []
-
-  # The following is used to limit how long a sidecar can be connected
-  # to a pilot. It balances out load across pilot instances at the cost of
-  # increasing system churn.
-  keepaliveMaxServerConnectionAge: 30m
-
   # Additional labels to apply to the deployment.
   deploymentLabels:
     version: v1
 
-  ## Mesh config settings
-
-  # Install the mesh config map, generated from values.yaml.
-  # If false, pilot wil use default values (by default) or user-supplied values.
-  configMap: true
-
-
 sidecarInjectorWebhook:
-  # If enabled, the legacy webhook selection logic will be used. This relies on filtering of webhook
-  # requests in Istiod, rather than at the webhook selection level.
-  # This is option is intended for migration purposes only and will be removed in Istio 1.10.
-  useLegacySelectors: false
-  # You can use the field called alwaysInjectSelector and neverInjectSelector which will always inject the sidecar or
-  # always skip the injection on pods that match that label selector, regardless of the global policy.
-  # See https://istio.io/docs/setup/kubernetes/additional-setup/sidecar-injection/#more-control-adding-exceptions
-  neverInjectSelector: []
-  alwaysInjectSelector: []
-
-  # injectedAnnotations are additional annotations that will be added to the pod spec after injection
-  # This is primarily to support PSP annotations. For example, if you defined a PSP with the annotations:
-  #
-  # annotations:
-  #   apparmor.security.beta.kubernetes.io/allowedProfileNames: runtime/default
-  #   apparmor.security.beta.kubernetes.io/defaultProfileName: runtime/default
-  #
-  # The PSP controller would add corresponding annotations to the pod spec for each container. However, this happens before
-  # the inject adds additional containers, so we must specify them explicitly here. With the above example, we could specify:
-  # injectedAnnotations:
-  #   container.apparmor.security.beta.kubernetes.io/istio-init: runtime/default
-  #   container.apparmor.security.beta.kubernetes.io/istio-proxy: runtime/default
-  injectedAnnotations: {}
-
-  # This enables injection of sidecar in all namespaces,
-  # with the exception of namespaces with "istio-injection:disabled" annotation
-  # Only one environment should have this enabled.
-  enableNamespacesByDefault: false
-
-  # Enable objectSelector to filter out pods with no need for sidecar before calling istiod.
-  # It is enabled by default as the minimum supported Kubernetes version is 1.15+
-  objectSelector:
-    enabled: true
-    autoInject: true
-
-  rewriteAppHTTPProbe: true
-
   # Supported only in Cisco provided istio-proxy images
   httpProxyEnvs:
     httpProxy: "http://proxy.example.com:3128"
     httpsProxy: "http://proxy.example.com:3129"
     noProxy: "svc,local"
 
-  # Templates defines a set of custom injection templates that can be used. For example, defining:
-  #
-  # templates:
-  #   hello: |
-  #     metadata:
-  #       labels:
-  #         hello: world
-  #
-  # Then starting a pod with the `inject.istio.io/templates: hello` annotation, will result in the pod
-  # being injected with the hello=world labels.
-  # This is intended for advanced configuration only; most users should use the built in template
-  templates: {}
-
-  # Default templates specifies a set of default templates that are used in sidecar injection.
-  # By default, a template `sidecar` is always provided, which contains the template of default sidecar.
-  # To inject other additional templates, define it using the `templates` option, and add it to
-  # the default templates list.
-  # For example:
-  #
-  # templates:
-  #   hello: |
-  #     metadata:
-  #       labels:
-  #         hello: world
-  #
-  # defaultTemplates: ["sidecar", "hello"]
-  defaultTemplates: []
-istiodRemote:
-  # Sidecar injector mutating webhook configuration url
-  # For example: https://$remotePilotAddress:15017/inject
-  injectionURL: ""
 telemetry:
-  enabled: true
   v2:
     # For Null VM case now.
     # This also enables metadata exchange.
@@ -178,85 +76,22 @@ telemetry:
       wasmEnabled: true
     # Indicate if prometheus stats filter is enabled or not
     prometheus:
-      enabled: true
       # Indicates whether to enable WebAssembly runtime for stats filter.
       wasmEnabled: true
-      # overrides stats EnvoyFilter configuration.
-      configOverride:
-        gateway: {}
-        inboundSidecar: {}
-        outboundSidecar: {}
-    # stackdriver filter settings.
-    stackdriver:
-      enabled: false
-      logging: false
-      monitoring: false
-      topology: false # deprecated. setting this to true will have no effect, as this option is no longer supported.
-      disableOutbound: false
-      #  configOverride parts give you the ability to override the low level configuration params passed to envoy filter.
 
-      configOverride: {}
-      #  e.g.
-      #  disable_server_access_logging: false
-      #  disable_host_header_fallback: true
-    # Access Log Policy Filter Settings. This enables filtering of access logs from stackdriver.
-    accessLogPolicy:
-      enabled: false
-      # To reduce the number of successful logs, default log window duration is
-      # set to 12 hours.
-      logWindowDuration: "43200s"
 # Revision is set as 'version' label and part of the resource names when installing multiple control planes.
 revision: "test-icp-v10x-sample"
 
-# Revision tags are aliases to Istio control plane revisions
-revisionTags: []
-
-# For Helm compatibility.
-ownerName: ""
-
 global:
   distribution: "official"
-  # Used to locate istiod.
-  istioNamespace: istio-system
   # enable pod disruption budget for the control plane, which is used to
   # ensure Istio control plane components are gradually upgraded or recovered.
   defaultPodDisruptionBudget:
     enabled: false
-    # The values aren't mutable due to a current PodDisruptionBudget limitation
-    # minAvailable: 1
-
-  # A minimal set of requested resources to applied to all deployments so that
-  # Horizontal Pod Autoscaler will be able to function (if set).
-  # Each component can overwrite these default values by adding its own resources
-  # block in the relevant section below and setting the desired resources values.
-  defaultResources:
-    requests:
-      cpu: 10m
-
-  # Default hub for Istio images.
-  # Releases are published to docker hub under 'istio' project.
-  # Dev builds from prow are on gcr.io
-  hub: istio
-  # Default tag for Istio images.
-  tag: 1.10.3
-
-  # Specify image pull policy if default behavior isn't desired.
-  # Default behavior: latest images will be Always else IfNotPresent.
-  imagePullPolicy: ""
-
-  # ImagePullSecrets for all ServiceAccount, list of secrets in the same namespace
-  # to use for pulling any images in pods that reference this ServiceAccount.
-  # For components that don't use ServiceAccounts (i.e. grafana, servicegraph, tracing)
-  # ImagePullSecrets will be added to the corresponding Deployment(StatefulSet) objects.
-  # Must be set for any cluster configured with private docker registry.
-  imagePullSecrets: []
 
   # Enabled by default in master for maximising testing.
   istiod:
     enableAnalysis: true
-
-  # To output all istio components logs in json format by adding --log_as_json argument to each container argument
-  logAsJson: false
 
   # Comma-separated minimum per-scope logging level of messages to output, in the form of <scope>:<level>,<scope>:<level>
   # The control plane has different scopes depending on component, but can configure default log level across all components
@@ -264,43 +99,12 @@ global:
   logging:
     level: "default:warning"
 
-  omitSidecarInjectorConfigMap: false
-
   # Whether to restrict the applications namespace the controller manages;
   # If not set, controller watches all namespaces
   oneNamespace: true
 
-  # Configure whether Operator manages webhook configurations. The current behavior
-  # of Istiod is to manage its own webhook configurations.
-  # When this option is set as true, Istio Operator, instead of webhooks, manages the
-  # webhook configurations. When this option is set as false, webhooks manage their
-  # own webhook configurations.
-  operatorManageWebhooks: false
-
-  # Custom DNS config for the pod to resolve names of services in other
-  # clusters. Use this to add additional search domains, and other settings.
-  # see
-  # https://kubernetes.io/docs/concepts/services-networking/dns-pod-service/#dns-config
-  # This does not apply to gateway pods as they typically need a different
-  # set of DNS settings than the normal application pods (e.g., in
-  # multicluster scenarios).
-  # NOTE: If using templates, follow the pattern in the commented example below.
-  #podDNSSearchNamespaces:
-  #- global
-  #- "{{/* valueOrDefault .DeploymentMeta.Namespace \"default\" */}}.global"
-
-  # Kubernetes >=v1.11.0 will create two PriorityClass, including system-cluster-critical and
-  # system-node-critical, it is better to configure this in order to make sure your Istio pods
-  # will not be killed because of low priority class.
-  # Refer to https://kubernetes.io/docs/concepts/configuration/pod-priority-preemption/#priorityclass
-  # for more detail.
-  priorityClassName: ""
-
   proxy:
     image: "gcr.io/istio-release/proxyv2:1.10.3"
-
-    # This controls the 'policy' in the sidecar injector.
-    autoInject: enabled
 
     # CAUTION: It is important to ensure that all Istio helm charts specify the same clusterDomain value
     # cluster domain. Default value is "cluster.local".
@@ -334,15 +138,6 @@ global:
     #If set to true, istio-proxy container will have privileged securityContext
     privileged: true
 
-    # The number of successive failed probes before indicating readiness failure.
-    readinessFailureThreshold: 30
-
-    # The initial delay for readiness probes in seconds.
-    readinessInitialDelaySeconds: 1
-
-    # The period between readiness probes.
-    readinessPeriodSeconds: 2
-
     # Resources for the sidecar.
     resources:
       requests:
@@ -351,13 +146,6 @@ global:
       limits:
         cpu: "2"
         memory: 1Gi
-
-    # Default port for Pilot agent health checks. A value of 0 will disable health checking.
-    statusPort: 15020
-
-    # Specify which tracer to use. One of: zipkin, lightstep, datadog, stackdriver.
-    # If using stackdriver tracer outside GCP, set env GOOGLE_APPLICATION_CREDENTIALS to the GCP credential file.
-    tracer: "zipkin"
 
     # Controls if sidecar is injected at the front of the container list and blocks the start of the other containers until the proxy is ready
     holdApplicationUntilProxyStarts: true
@@ -380,9 +168,6 @@ global:
       requests:
         cpu: 11m
         memory: 11Mi
-
-  # configure remote pilot and istiod service and endpoint
-  remotePilotAddress: ""
 
   ##############################################################################################
   # The following values are found in other charts. To effectively modify these values, make   #
@@ -424,51 +209,8 @@ global:
   # value.
   meshID: "mesh1"
 
-  # Configure the mesh networks to be used by the Split Horizon EDS.
-  #
-  # The following example defines two networks with different endpoints association methods.
-  # For `network1` all endpoints that their IP belongs to the provided CIDR range will be
-  # mapped to network1. The gateway for this network example is specified by its public IP
-  # address and port.
-  # The second network, `network2`, in this example is defined differently with all endpoints
-  # retrieved through the specified Multi-Cluster registry being mapped to network2. The
-  # gateway is also defined differently with the name of the gateway service on the remote
-  # cluster. The public IP for the gateway will be determined from that remote service (only
-  # LoadBalancer gateway service type is currently supported, for a NodePort type gateway service,
-  # it still need to be configured manually).
-  #
-  # meshNetworks:
-  #   network1:
-  #     endpoints:
-  #     - fromCidr: "192.168.0.1/24"
-  #     gateways:
-  #     - address: 1.1.1.1
-  #       port: 80
-  #   network2:
-  #     endpoints:
-  #     - fromRegistry: reg1
-  #     gateways:
-  #     - registryServiceName: istio-ingressgateway.istio-system.svc.cluster.local
-  #       port: 443
-  #
-  meshNetworks: {}
-
   # Use the user-specified, secret volume mounted key and certs for Pilot and workloads.
   mountMtlsCerts: true
-
-  multiCluster:
-    # Set to true to connect two kubernetes clusters via their respective
-    # ingressgateway services when pods in each cluster cannot directly
-    # talk to one another. All clusters should be using Istio mTLS and must
-    # have a shared root CA for this model to work.
-    enabled: false
-    # Should be set to the name of the cluster this installation will run in. This is required for sidecar injection
-    # to properly label proxies
-    clusterName: ""
-
-  # Network defines the network this cluster belong to. This name
-  # corresponds to the networks in the map of mesh networks.
-  network: ""
 
   # Configure the certificate provider for control plane communication.
   # Currently, two providers are supported: "kubernetes" and "istiod".
@@ -482,42 +224,3 @@ global:
     # JWT is intended for the CA.
     token:
       aud: "istio-ca"
-
-  sts:
-    # The service port used by Security Token Service (STS) server to handle token exchange requests.
-    # Setting this port to a non-zero value enables STS server.
-    servicePort: 0
-
-  # Configuration for each of the supported tracers
-  tracer:
-    # Configuration for envoy to send trace data to LightStep.
-    # Disabled by default.
-    # address: the <host>:<port> of the satellite pool
-    # accessToken: required for sending data to the pool
-    #
-    datadog:
-      # Host:Port for submitting traces to the Datadog agent.
-      address: "$(HOST_IP):8126"
-    lightstep:
-      address: ""                # example: lightstep-satellite:443
-      accessToken: ""            # example: abcdefg1234567
-    stackdriver:
-      # enables trace output to stdout.
-      debug: false
-      # The global default max number of message events per span.
-      maxNumberOfMessageEvents: 200
-      # The global default max number of annotation events per span.
-      maxNumberOfAnnotations: 200
-      # The global default max number of attributes per span.
-      maxNumberOfAttributes: 200
-    zipkin:
-      # Host:Port for reporting trace data in zipkin format. If not specified, will default to
-      # zipkin service (port 9411) in the same namespace as the other istio components.
-      address: ""
-
-  # Use the Mesh Control Protocol (MCP) for configuring Istiod. Requires an MCP source.
-  useMCP: false
-
-base:
-  # For istioctl usage to disable istio config crds in base
-  enableIstioConfigCRDs: true
