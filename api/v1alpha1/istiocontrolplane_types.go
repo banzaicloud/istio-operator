@@ -28,8 +28,16 @@ type IstioControlPlane struct {
 	metav1.TypeMeta   `json:",inline"`
 	metav1.ObjectMeta `json:"metadata,omitempty"`
 
-	Spec   IstioControlPlaneSpec   `json:"spec,omitempty"`
+	Spec   *IstioControlPlaneSpec  `json:"spec,omitempty"`
 	Status IstioControlPlaneStatus `json:"status,omitempty"`
+}
+
+func (icp *IstioControlPlane) GetSpec() *IstioControlPlaneSpec {
+	if icp.Spec != nil {
+		return icp.Spec
+	}
+
+	return nil
 }
 
 // +kubebuilder:object:root=true

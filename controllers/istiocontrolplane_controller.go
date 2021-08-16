@@ -20,8 +20,8 @@ import (
 	"context"
 	"sync"
 
+	"emperror.dev/errors"
 	"github.com/go-logr/logr"
-	"github.com/pkg/errors"
 	istionetworkingv1alpha3 "istio.io/client-go/pkg/apis/networking/v1alpha3"
 	istiosecurityv1beta1 "istio.io/client-go/pkg/apis/security/v1beta1"
 	admissionregistrationv1 "k8s.io/api/admissionregistration/v1"
@@ -37,11 +37,15 @@ import (
 	ctrl "sigs.k8s.io/controller-runtime"
 	ctrlBuilder "sigs.k8s.io/controller-runtime/pkg/builder"
 	"sigs.k8s.io/controller-runtime/pkg/client"
+	"sigs.k8s.io/controller-runtime/pkg/controller"
+	"sigs.k8s.io/controller-runtime/pkg/handler"
 	"sigs.k8s.io/controller-runtime/pkg/reconcile"
+	"sigs.k8s.io/controller-runtime/pkg/source"
 
 	servicemeshv1alpha1 "github.com/banzaicloud/istio-operator/v2/api/v1alpha1"
 	"github.com/banzaicloud/istio-operator/v2/internal/components/base"
 	discovery_component "github.com/banzaicloud/istio-operator/v2/internal/components/discovery"
+	"github.com/banzaicloud/istio-operator/v2/internal/util"
 	"github.com/banzaicloud/operator-tools/pkg/helm/templatereconciler"
 	"github.com/banzaicloud/operator-tools/pkg/reconciler"
 )
@@ -53,6 +57,7 @@ type IstioControlPlaneReconciler struct {
 	Scheme           *runtime.Scheme
 	watchersInitOnce sync.Once
 	builder          *ctrlBuilder.Builder
+	ctrl             controller.Controller
 }
 
 // +kubebuilder:rbac:groups="",resources=nodes;pods;replicationcontrollers,verbs=get;list;watch
@@ -116,6 +121,13 @@ func (r *IstioControlPlaneReconciler) Reconcile(ctx context.Context, req ctrl.Re
 		}, nil
 	}
 
+	logger.Info("reconciling")
+
+	err = r.addFinalizer(icp)
+	if err != nil {
+		return ctrl.Result{}, err
+	}
+
 	config, err := ctrl.GetConfig()
 	if err != nil {
 		return ctrl.Result{}, err
@@ -152,13 +164,18 @@ func (r *IstioControlPlaneReconciler) Reconcile(ctx context.Context, req ctrl.Re
 		return ctrl.Result{}, err
 	}
 
+	err = r.removeFinalizer(icp)
+	if err != nil {
+		return ctrl.Result{}, err
+	}
+
 	return ctrl.Result{}, nil
 }
 
 func (r *IstioControlPlaneReconciler) SetupWithManager(mgr ctrl.Manager) error {
 	r.builder = ctrl.NewControllerManagedBy(mgr)
 
-	return r.builder.
+	ctrl, err := r.builder.
 		For(&servicemeshv1alpha1.IstioControlPlane{
 			TypeMeta: metav1.TypeMeta{
 				Kind:       "IstioControlPlane",
@@ -170,107 +187,194 @@ func (r *IstioControlPlaneReconciler) SetupWithManager(mgr ctrl.Manager) error {
 				Kind:       "Deployment",
 				APIVersion: appsv1.SchemeGroupVersion.String(),
 			},
-		}, ctrlBuilder.WithPredicates(reconciler.SpecChangePredicate{})).
+		}, ctrlBuilder.WithPredicates(util.ObjectChangePredicate{})).
 		Owns(&appsv1.DaemonSet{
 			TypeMeta: metav1.TypeMeta{
 				Kind:       "DaemonSet",
 				APIVersion: appsv1.SchemeGroupVersion.String(),
 			},
-		}, ctrlBuilder.WithPredicates(reconciler.SpecChangePredicate{})).
+		}, ctrlBuilder.WithPredicates(util.ObjectChangePredicate{})).
 		Owns(&corev1.ConfigMap{
 			TypeMeta: metav1.TypeMeta{
 				Kind:       "ConfigMap",
 				APIVersion: corev1.SchemeGroupVersion.String(),
 			},
-		}, ctrlBuilder.WithPredicates(reconciler.SpecChangePredicate{})).
+		}, ctrlBuilder.WithPredicates(util.ObjectChangePredicate{})).
 		Owns(&corev1.Secret{
 			TypeMeta: metav1.TypeMeta{
 				Kind:       "Secret",
 				APIVersion: corev1.SchemeGroupVersion.String(),
 			},
-		}, ctrlBuilder.WithPredicates(reconciler.SpecChangePredicate{})).
+		}, ctrlBuilder.WithPredicates(util.ObjectChangePredicate{})).
 		Owns(&corev1.Service{
 			TypeMeta: metav1.TypeMeta{
 				Kind:       "Service",
 				APIVersion: corev1.SchemeGroupVersion.String(),
 			},
-		}, ctrlBuilder.WithPredicates(reconciler.SpecChangePredicate{})).
+		}, ctrlBuilder.WithPredicates(util.ObjectChangePredicate{})).
 		Owns(&corev1.ServiceAccount{
 			TypeMeta: metav1.TypeMeta{
 				Kind:       "ServiceAccount",
 				APIVersion: corev1.SchemeGroupVersion.String(),
 			},
-		}, ctrlBuilder.WithPredicates(reconciler.SpecChangePredicate{})).
+		}, ctrlBuilder.WithPredicates(util.ObjectChangePredicate{})).
 		Owns(&policyv1beta1.PodSecurityPolicy{
 			TypeMeta: metav1.TypeMeta{
 				Kind:       "PodSecurityPolicy",
 				APIVersion: policyv1beta1.SchemeGroupVersion.String(),
 			},
-		}, ctrlBuilder.WithPredicates(reconciler.SpecChangePredicate{})).
+		}, ctrlBuilder.WithPredicates(util.ObjectChangePredicate{})).
 		Owns(&policyv1beta1.PodDisruptionBudget{
 			TypeMeta: metav1.TypeMeta{
 				Kind:       "PodDisruptionBudget",
 				APIVersion: policyv1beta1.SchemeGroupVersion.String(),
 			},
-		}, ctrlBuilder.WithPredicates(reconciler.SpecChangePredicate{})).
+		}, ctrlBuilder.WithPredicates(util.ObjectChangePredicate{})).
 		Owns(&rbacv1.Role{
 			TypeMeta: metav1.TypeMeta{
 				Kind:       "Role",
 				APIVersion: rbacv1.SchemeGroupVersion.String(),
 			},
-		}, ctrlBuilder.WithPredicates(reconciler.SpecChangePredicate{})).
+		}, ctrlBuilder.WithPredicates(util.ObjectChangePredicate{})).
 		Owns(&rbacv1.RoleBinding{
 			TypeMeta: metav1.TypeMeta{
 				Kind:       "RoleBinding",
 				APIVersion: rbacv1.SchemeGroupVersion.String(),
 			},
-		}, ctrlBuilder.WithPredicates(reconciler.SpecChangePredicate{})).
-		Owns(&rbacv1.ClusterRole{
-			TypeMeta: metav1.TypeMeta{
-				Kind:       "ClusterRole",
-				APIVersion: rbacv1.SchemeGroupVersion.String(),
-			},
-		}, ctrlBuilder.WithPredicates(reconciler.SpecChangePredicate{})).
-		Owns(&rbacv1.ClusterRoleBinding{
-			TypeMeta: metav1.TypeMeta{
-				Kind:       "ClusterRoleBinding",
-				APIVersion: rbacv1.SchemeGroupVersion.String(),
-			},
-		}, ctrlBuilder.WithPredicates(reconciler.SpecChangePredicate{})).
+		}, ctrlBuilder.WithPredicates(util.ObjectChangePredicate{})).
 		Owns(&autoscalingv1.HorizontalPodAutoscaler{
 			TypeMeta: metav1.TypeMeta{
 				Kind:       "HorizontalPodAutoscaler",
 				APIVersion: autoscalingv1.SchemeGroupVersion.String(),
 			},
-		}, ctrlBuilder.WithPredicates(reconciler.SpecChangePredicate{})).
-		Owns(&admissionregistrationv1.MutatingWebhookConfiguration{
+		}, ctrlBuilder.WithPredicates(util.ObjectChangePredicate{
+			CalculateOptions: []util.CalculateOption{
+				util.IgnoreMetadataAnnotations("autoscaling.alpha.kubernetes.io"),
+			},
+		})).
+		Build(r)
+	if err != nil {
+		return err
+	}
+
+	r.ctrl = ctrl
+
+	types := []client.Object{
+		&rbacv1.ClusterRole{
+			TypeMeta: metav1.TypeMeta{
+				Kind:       "ClusterRole",
+				APIVersion: rbacv1.SchemeGroupVersion.String(),
+			},
+		},
+		&rbacv1.ClusterRoleBinding{
+			TypeMeta: metav1.TypeMeta{
+				Kind:       "ClusterRoleBinding",
+				APIVersion: rbacv1.SchemeGroupVersion.String(),
+			},
+		},
+		&admissionregistrationv1.MutatingWebhookConfiguration{
 			TypeMeta: metav1.TypeMeta{
 				Kind:       "MutatingWebhookConfiguration",
 				APIVersion: admissionregistrationv1.SchemeGroupVersion.String(),
 			},
-		}, ctrlBuilder.WithPredicates(reconciler.SpecChangePredicate{})).
-		Owns(&admissionregistrationv1.ValidatingWebhookConfiguration{
+		},
+		&admissionregistrationv1.ValidatingWebhookConfiguration{
 			TypeMeta: metav1.TypeMeta{
 				Kind:       "ValidatingWebhookConfiguration",
 				APIVersion: admissionregistrationv1.SchemeGroupVersion.String(),
 			},
-		}, ctrlBuilder.WithPredicates(reconciler.SpecChangePredicate{})).
-		Complete(r)
+		},
+	}
+
+	for _, t := range types {
+		err := r.ctrl.Watch(&source.Kind{Type: t}, handler.EnqueueRequestsFromMapFunc(reconciler.EnqueueByOwnerAnnotationMapper()), util.ObjectChangePredicate{})
+		if err != nil {
+			return err
+		}
+	}
+
+	return err
 }
 
 func (r *IstioControlPlaneReconciler) watchIstioCRs() error {
-	return r.builder.
-		Owns(&istionetworkingv1alpha3.EnvoyFilter{
+	if r.ctrl == nil {
+		return errors.New("ctrl is not set")
+	}
+
+	eventHandler := &handler.EnqueueRequestForOwner{
+		OwnerType: &servicemeshv1alpha1.IstioControlPlane{
+			TypeMeta: metav1.TypeMeta{
+				Kind:       "IstioControlPlane",
+				APIVersion: servicemeshv1alpha1.SchemeBuilder.GroupVersion.String(),
+			},
+		},
+		IsController: true,
+	}
+
+	types := []client.Object{
+		&istionetworkingv1alpha3.EnvoyFilter{
 			TypeMeta: metav1.TypeMeta{
 				Kind:       "EnvoyFilter",
 				APIVersion: istionetworkingv1alpha3.SchemeGroupVersion.String(),
 			},
-		}, ctrlBuilder.WithPredicates(reconciler.SpecChangePredicate{})).
-		Owns(&istiosecurityv1beta1.PeerAuthentication{
+		},
+		&istiosecurityv1beta1.PeerAuthentication{
 			TypeMeta: metav1.TypeMeta{
 				Kind:       "PeerAuthentication",
 				APIVersion: istiosecurityv1beta1.SchemeGroupVersion.String(),
 			},
-		}, ctrlBuilder.WithPredicates(reconciler.SpecChangePredicate{})).
-		Complete(r)
+		},
+	}
+
+	for _, t := range types {
+		err := r.ctrl.Watch(&source.Kind{Type: t}, eventHandler, util.ObjectChangePredicate{})
+		if err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
+const finalizerID = "istio-controlplane.servicemesh.cisco.com"
+
+func (r *IstioControlPlaneReconciler) addFinalizer(icp *servicemeshv1alpha1.IstioControlPlane) error {
+	// add finalizer strings and update
+	if icp.ObjectMeta.DeletionTimestamp.IsZero() && !util.ContainsString(icp.ObjectMeta.Finalizers, finalizerID) {
+		icp.ObjectMeta.Finalizers = append(icp.ObjectMeta.Finalizers, finalizerID)
+		if err := r.Update(context.Background(), icp); err != nil {
+			return errors.WrapIf(err, "could not add finalizer to resource")
+		}
+	}
+
+	return nil
+}
+
+func (r *IstioControlPlaneReconciler) removeFinalizer(icp *servicemeshv1alpha1.IstioControlPlane) error {
+	if !icp.ObjectMeta.DeletionTimestamp.IsZero() && util.ContainsString(icp.ObjectMeta.Finalizers, finalizerID) {
+		icp.ObjectMeta.Finalizers = util.RemoveString(icp.ObjectMeta.Finalizers, finalizerID)
+		if err := r.Update(context.Background(), icp); err != nil {
+			return errors.WrapIf(err, "could not remove finalizer from resource")
+		}
+	}
+
+	return nil
+}
+
+func RemoveFinalizers(c client.Client) error {
+	var icps servicemeshv1alpha1.IstioControlPlaneList
+
+	err := c.List(context.Background(), &icps)
+	if err != nil {
+		return errors.WrapIf(err, "could not list Istio control plane resources")
+	}
+	for _, istio := range icps.Items {
+		istio := istio
+		istio.ObjectMeta.Finalizers = util.RemoveString(istio.ObjectMeta.Finalizers, finalizerID)
+		if err := c.Update(context.Background(), &istio); err != nil {
+			return errors.WrapIfWithDetails(err, "could not remove finalizer from Istio resource", "name", istio.GetName())
+		}
+	}
+
+	return nil
 }

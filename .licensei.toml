@@ -14,6 +14,8 @@ ignored = [
   "gopkg.in/fsnotify.v1",
 
   "github.com/davecgh/go-spew", # ISC license
+  "github.com/russross/blackfriday", # BSD-2
+  "github.com/russross/blackfriday/v2", # BSD-2
   "github.com/xeipuuv/gojsonpointer", # Apache2
   "github.com/xeipuuv/gojsonreference", # Apache2
   "github.com/xeipuuv/gojsonschema", # Apache2

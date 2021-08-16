@@ -4,7 +4,7 @@ description: Istio control plane descriptor
 layout: protoc-gen-docs
 generator: protoc-gen-docs
 schema: istio-operator.api.v1alpha1.IstioControlPlaneSpec
-number_of_entries: 22
+number_of_entries: 21
 ---
 <h2 id="IstioControlPlaneSpec">IstioControlPlaneSpec</h2>
 <section>
@@ -30,19 +30,6 @@ number_of_entries: 22
 </td>
 <td>
 Yes
-</td>
-</tr>
-<tr id="IstioControlPlaneSpec-k8s">
-<td><code>k8s</code></td>
-<td><code><a href="#BaseKubernetesResourceConfig">BaseKubernetesResourceConfig</a></code></td>
-<td>
-<p>Default deployment spec for Istio control plane components.
-Each component can overwrite these default values by adding its own deployment
-block in the relevant section below and setting the desired values.</p>
-
-</td>
-<td>
-No
 </td>
 </tr>
 <tr id="IstioControlPlaneSpec-logging">
@@ -177,6 +164,19 @@ No
 <td>
 <p>The customized CA address to retrieve certificates for the pods in the cluster.
 CSR clients such as the Istio Agent and ingress gateways can use this to specify the CA endpoint.</p>
+
+</td>
+<td>
+No
+</td>
+</tr>
+<tr id="IstioControlPlaneSpec-distribution">
+<td><code>distribution</code></td>
+<td><code>string</code></td>
+<td>
+<p>Contains the intended distribution for the Istio control plane.
+The official distribution is used by default unless special preserved distribution value is set.
+The only preserved distribution is &ldquo;cisco&rdquo; as of now.</p>
 
 </td>
 <td>
@@ -577,17 +577,6 @@ Istiod is the default
 No
 </td>
 </tr>
-<tr id="IstiodConfiguration-additionalEnvVars">
-<td><code>additionalEnvVars</code></td>
-<td><code><a href="#k8s-io-api-core-v1-EnvVar">EnvVar[]</a></code></td>
-<td>
-<p>If present will be appended to the environment variables of the container</p>
-
-</td>
-<td>
-No
-</td>
-</tr>
 <tr id="IstiodConfiguration-spiffe">
 <td><code>spiffe</code></td>
 <td><code><a href="#SPIFFEConfiguration">SPIFFEConfiguration</a></code></td>
@@ -802,6 +791,148 @@ No
 <section>
 
 </section>
+<h2 id="K8sResourceOverlayPatch">K8sResourceOverlayPatch</h2>
+<section>
+<table class="message-fields">
+<thead>
+<tr>
+<th>Field</th>
+<th>Type</th>
+<th>Description</th>
+<th>Required</th>
+</tr>
+</thead>
+<tbody>
+<tr id="K8sResourceOverlayPatch-groupVersionKind">
+<td><code>groupVersionKind</code></td>
+<td><code><a href="#K8sResourceOverlayPatch-GroupVersionKind">GroupVersionKind</a></code></td>
+<td>
+</td>
+<td>
+No
+</td>
+</tr>
+<tr id="K8sResourceOverlayPatch-objectKey">
+<td><code>objectKey</code></td>
+<td><code><a href="#NamespacedName">NamespacedName</a></code></td>
+<td>
+</td>
+<td>
+No
+</td>
+</tr>
+<tr id="K8sResourceOverlayPatch-patches">
+<td><code>patches</code></td>
+<td><code><a href="#K8sResourceOverlayPatch-Patch">Patch[]</a></code></td>
+<td>
+</td>
+<td>
+No
+</td>
+</tr>
+</tbody>
+</table>
+</section>
+<h2 id="k8s-io-api-core-v1-Lifecycle">k8s.io.api.core.v1.Lifecycle</h2>
+<section>
+<p>Lifecycle describes actions that the management system should take in response to container lifecycle
+events. For the PostStart and PreStop lifecycle handlers, management of the container blocks
+until the action is complete, unless the container process fails, in which case the handler is aborted.</p>
+
+<table class="message-fields">
+<thead>
+<tr>
+<th>Field</th>
+<th>Type</th>
+<th>Description</th>
+<th>Required</th>
+</tr>
+</thead>
+<tbody>
+<tr id="k8s-io-api-core-v1-Lifecycle-postStart">
+<td><code>postStart</code></td>
+<td><code><a href="#k8s-io-api-core-v1-Handler">Handler</a></code></td>
+<td>
+<p>PostStart is called immediately after a container is created. If the handler fails,
+the container is terminated and restarted according to its restart policy.
+Other management of the container blocks until the hook completes.
+More info: https://kubernetes.io/docs/concepts/containers/container-lifecycle-hooks/#container-hooks
++optional</p>
+
+</td>
+<td>
+No
+</td>
+</tr>
+<tr id="k8s-io-api-core-v1-Lifecycle-preStop">
+<td><code>preStop</code></td>
+<td><code><a href="#k8s-io-api-core-v1-Handler">Handler</a></code></td>
+<td>
+<p>PreStop is called immediately before a container is terminated due to an
+API request or management event such as liveness probe failure,
+preemption, resource contention, etc. The handler is not called if the
+container crashes or exits. The reason for termination is passed to the
+handler. The Pod&rsquo;s termination grace period countdown begins before the
+PreStop hooked is executed. Regardless of the outcome of the handler, the
+container will eventually terminate within the Pod&rsquo;s termination grace
+period. Other management of the container blocks until the hook completes
+or until the termination grace period is reached.
+More info: https://kubernetes.io/docs/concepts/containers/container-lifecycle-hooks/#container-hooks
++optional</p>
+
+</td>
+<td>
+No
+</td>
+</tr>
+</tbody>
+</table>
+</section>
+<h2 id="ResourceRequirements">ResourceRequirements</h2>
+<section>
+<p>ResourceRequirements describes the compute resource requirements.</p>
+
+<table class="message-fields">
+<thead>
+<tr>
+<th>Field</th>
+<th>Type</th>
+<th>Description</th>
+<th>Required</th>
+</tr>
+</thead>
+<tbody>
+<tr id="ResourceRequirements-limits">
+<td><code>limits</code></td>
+<td><code>map&lt;string,&nbsp;<a href="#Quantity">Quantity</a>&gt;</code></td>
+<td>
+<p>Limits describes the maximum amount of compute resources allowed.
+More info: https://kubernetes.io/docs/concepts/configuration/manage-compute-resources-container/
++optional</p>
+
+</td>
+<td>
+No
+</td>
+</tr>
+<tr id="ResourceRequirements-requests">
+<td><code>requests</code></td>
+<td><code>map&lt;string,&nbsp;<a href="#Quantity">Quantity</a>&gt;</code></td>
+<td>
+<p>Requests describes the minimum amount of compute resources required.
+If Requests is omitted for a container, it defaults to Limits if that is explicitly specified,
+otherwise to an implementation-defined value.
+More info: https://kubernetes.io/docs/concepts/configuration/manage-compute-resources-container/
++optional</p>
+
+</td>
+<td>
+No
+</td>
+</tr>
+</tbody>
+</table>
+</section>
 <h2 id="BaseKubernetesResourceConfig">BaseKubernetesResourceConfig</h2>
 <section>
 <table class="message-fields">
@@ -988,11 +1119,11 @@ No
 No
 </td>
 </tr>
-<tr id="BaseKubernetesResourceConfig-podAnnotations">
-<td><code>podAnnotations</code></td>
-<td><code>map&lt;string,&nbsp;string&gt;</code></td>
+<tr id="BaseKubernetesResourceConfig-podMetadata">
+<td><code>podMetadata</code></td>
+<td><code><a href="#K8sObjectMeta">K8sObjectMeta</a></code></td>
 <td>
-<p>Standard Kubernetes pod annotation configuration</p>
+<p>Standard Kubernetes pod annotation and label configuration</p>
 
 </td>
 <td>
@@ -1004,207 +1135,6 @@ No
 <td><code><a href="#K8sResourceOverlayPatch">K8sResourceOverlayPatch[]</a></code></td>
 <td>
 <p>K8s resource overlay patches</p>
-
-</td>
-<td>
-No
-</td>
-</tr>
-</tbody>
-</table>
-</section>
-<h2 id="K8sResourceOverlayPatch">K8sResourceOverlayPatch</h2>
-<section>
-<table class="message-fields">
-<thead>
-<tr>
-<th>Field</th>
-<th>Type</th>
-<th>Description</th>
-<th>Required</th>
-</tr>
-</thead>
-<tbody>
-<tr id="K8sResourceOverlayPatch-groupVersionKind">
-<td><code>groupVersionKind</code></td>
-<td><code><a href="#K8sResourceOverlayPatch-GroupVersionKind">GroupVersionKind</a></code></td>
-<td>
-</td>
-<td>
-No
-</td>
-</tr>
-<tr id="K8sResourceOverlayPatch-objectKey">
-<td><code>objectKey</code></td>
-<td><code><a href="#NamespacedName">NamespacedName</a></code></td>
-<td>
-</td>
-<td>
-No
-</td>
-</tr>
-<tr id="K8sResourceOverlayPatch-patches">
-<td><code>patches</code></td>
-<td><code><a href="#K8sResourceOverlayPatch-Patch">Patch[]</a></code></td>
-<td>
-</td>
-<td>
-No
-</td>
-</tr>
-</tbody>
-</table>
-</section>
-<h2 id="k8s-io-api-core-v1-Lifecycle">k8s.io.api.core.v1.Lifecycle</h2>
-<section>
-<p>Lifecycle describes actions that the management system should take in response to container lifecycle
-events. For the PostStart and PreStop lifecycle handlers, management of the container blocks
-until the action is complete, unless the container process fails, in which case the handler is aborted.</p>
-
-<table class="message-fields">
-<thead>
-<tr>
-<th>Field</th>
-<th>Type</th>
-<th>Description</th>
-<th>Required</th>
-</tr>
-</thead>
-<tbody>
-<tr id="k8s-io-api-core-v1-Lifecycle-postStart">
-<td><code>postStart</code></td>
-<td><code><a href="#k8s-io-api-core-v1-Handler">Handler</a></code></td>
-<td>
-<p>PostStart is called immediately after a container is created. If the handler fails,
-the container is terminated and restarted according to its restart policy.
-Other management of the container blocks until the hook completes.
-More info: https://kubernetes.io/docs/concepts/containers/container-lifecycle-hooks/#container-hooks
-+optional</p>
-
-</td>
-<td>
-No
-</td>
-</tr>
-<tr id="k8s-io-api-core-v1-Lifecycle-preStop">
-<td><code>preStop</code></td>
-<td><code><a href="#k8s-io-api-core-v1-Handler">Handler</a></code></td>
-<td>
-<p>PreStop is called immediately before a container is terminated due to an
-API request or management event such as liveness probe failure,
-preemption, resource contention, etc. The handler is not called if the
-container crashes or exits. The reason for termination is passed to the
-handler. The Pod&rsquo;s termination grace period countdown begins before the
-PreStop hooked is executed. Regardless of the outcome of the handler, the
-container will eventually terminate within the Pod&rsquo;s termination grace
-period. Other management of the container blocks until the hook completes
-or until the termination grace period is reached.
-More info: https://kubernetes.io/docs/concepts/containers/container-lifecycle-hooks/#container-hooks
-+optional</p>
-
-</td>
-<td>
-No
-</td>
-</tr>
-</tbody>
-</table>
-</section>
-<h2 id="ResourceRequirements">ResourceRequirements</h2>
-<section>
-<p>ResourceRequirements describes the compute resource requirements.</p>
-
-<table class="message-fields">
-<thead>
-<tr>
-<th>Field</th>
-<th>Type</th>
-<th>Description</th>
-<th>Required</th>
-</tr>
-</thead>
-<tbody>
-<tr id="ResourceRequirements-limits">
-<td><code>limits</code></td>
-<td><code>map&lt;string,&nbsp;<a href="#Quantity">Quantity</a>&gt;</code></td>
-<td>
-<p>Limits describes the maximum amount of compute resources allowed.
-More info: https://kubernetes.io/docs/concepts/configuration/manage-compute-resources-container/
-+optional</p>
-
-</td>
-<td>
-No
-</td>
-</tr>
-<tr id="ResourceRequirements-requests">
-<td><code>requests</code></td>
-<td><code>map&lt;string,&nbsp;<a href="#Quantity">Quantity</a>&gt;</code></td>
-<td>
-<p>Requests describes the minimum amount of compute resources required.
-If Requests is omitted for a container, it defaults to Limits if that is explicitly specified,
-otherwise to an implementation-defined value.
-More info: https://kubernetes.io/docs/concepts/configuration/manage-compute-resources-container/
-+optional</p>
-
-</td>
-<td>
-No
-</td>
-</tr>
-</tbody>
-</table>
-</section>
-<h2 id="k8s-io-api-core-v1-EnvVar">k8s.io.api.core.v1.EnvVar</h2>
-<section>
-<p>EnvVar represents an environment variable present in a Container.</p>
-
-<table class="message-fields">
-<thead>
-<tr>
-<th>Field</th>
-<th>Type</th>
-<th>Description</th>
-<th>Required</th>
-</tr>
-</thead>
-<tbody>
-<tr id="k8s-io-api-core-v1-EnvVar-name">
-<td><code>name</code></td>
-<td><code>string</code></td>
-<td>
-<p>Name of the environment variable. Must be a C_IDENTIFIER.</p>
-
-</td>
-<td>
-No
-</td>
-</tr>
-<tr id="k8s-io-api-core-v1-EnvVar-value">
-<td><code>value</code></td>
-<td><code>string</code></td>
-<td>
-<p>Variable references $(VAR<em>NAME) are expanded
-using the previous defined environment variables in the container and
-any service environment variables. If a variable cannot be resolved,
-the reference in the input string will be unchanged. The $(VAR</em>NAME)
-syntax can be escaped with a double $$, ie: $$(VAR_NAME). Escaped
-references will never be expanded, regardless of whether the variable
-exists or not.
-Defaults to &ldquo;&rdquo;.
-+optional</p>
-
-</td>
-<td>
-No
-</td>
-</tr>
-<tr id="k8s-io-api-core-v1-EnvVar-valueFrom">
-<td><code>valueFrom</code></td>
-<td><code><a href="#k8s-io-api-core-v1-EnvVarSource">EnvVarSource</a></code></td>
-<td>
-<p>Source for the environment variable&rsquo;s value. Cannot be used if value is not empty.
-+optional</p>
 
 </td>
 <td>

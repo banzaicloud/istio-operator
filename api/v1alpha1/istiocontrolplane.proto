@@ -54,40 +54,40 @@ message IstioControlPlaneSpec {
     // Contains the intended version for the Istio control plane.
     // +kubebuilder:validation:Pattern=^1.
     string version = 1 [(gogoproto.jsontag) = "version", (google.api.field_behavior) = REQUIRED];
-    // Default deployment spec for Istio control plane components.
-    // Each component can overwrite these default values by adding its own deployment
-    // block in the relevant section below and setting the desired values.
-    BaseKubernetesResourceConfig k8s = 2;
     // Logging configurations.
-    LoggingConfiguration logging = 3 [(gogoproto.jsontag) = "logging"];
+    LoggingConfiguration logging = 2 [(gogoproto.jsontag) = "logging"];
     // Use the user-specified, secret volume mounted key and certs for Pilot and workloads.
-    google.protobuf.BoolValue mountMtlsCerts = 4 [(gogoproto.wktpointer) = true, (gogoproto.jsontag) = "mountMtlsCerts"];
+    google.protobuf.BoolValue mountMtlsCerts = 3 [(gogoproto.wktpointer) = true, (gogoproto.jsontag) = "mountMtlsCerts"];
     // Istiod configuration.
-    IstiodConfiguration istiod = 5 [(gogoproto.jsontag) = "istiod"];
+    IstiodConfiguration istiod = 4 [(gogoproto.jsontag) = "istiod"];
     // Proxy configuration options.
-    ProxyConfiguration proxy = 6 [(gogoproto.jsontag) = "proxy"];
+    ProxyConfiguration proxy = 5 [(gogoproto.jsontag) = "proxy"];
     // Proxy Init configuration options.
-    ProxyInitConfiguration proxyInit = 7 [(gogoproto.jsontag) = "proxyInit"];
+    ProxyInitConfiguration proxyInit = 6 [(gogoproto.jsontag) = "proxyInit"];
     // Telemetry V2 configuration.
-    TelemetryV2Configuration telemetryV2 = 8 [(gogoproto.jsontag) = "telemetryV2"];
+    TelemetryV2Configuration telemetryV2 = 7 [(gogoproto.jsontag) = "telemetryV2"];
     // If SDS is configured, mTLS certificates for the sidecars will be distributed through the
     // SecretDiscoveryService instead of using K8S secrets to mount the certificates.
-    SDSConfiguration sds = 9 [(gogoproto.jsontag) = "sds"];
+    SDSConfiguration sds = 8 [(gogoproto.jsontag) = "sds"];
     // ProxyWasm configuration options.
-    ProxyWasmConfiguration proxyWasm = 10 [(gogoproto.jsontag) = "proxyWasm"];
+    ProxyWasmConfiguration proxyWasm = 9 [(gogoproto.jsontag) = "proxyWasm"];
     // Whether to restrict the applications namespace the controller manages.
     // If not set, controller watches all namespaces
-    google.protobuf.BoolValue watchOneNamespace = 11 [(gogoproto.wktpointer) = true, (gogoproto.jsontag) = "watchOneNamespace"];
+    google.protobuf.BoolValue watchOneNamespace = 10 [(gogoproto.wktpointer) = true, (gogoproto.jsontag) = "watchOneNamespace"];
     // Enable pod disruption budget for the control plane, which is used to ensure Istio control plane
     // components are gradually upgraded or recovered
-    PDBConfiguration defaultPodDisruptionBudget = 12 [(gogoproto.jsontag) = "defaultPodDisruptionBudget"];
+    PDBConfiguration defaultPodDisruptionBudget = 11 [(gogoproto.jsontag) = "defaultPodDisruptionBudget"];
     // Configure the policy for validating JWT.
     // Currently, two options are supported: "third-party-jwt" and "first-party-jwt".
     // +kubebuilder:validation:Enum=THIRD_PARTY_JWT;FIRST_PARTY_JWT
-    JWTPolicyType jwtPolicy = 13 [(gogoproto.jsontag) = "jwtPolicy"];
+    JWTPolicyType jwtPolicy = 12 [(gogoproto.jsontag) = "jwtPolicy"];
     // The customized CA address to retrieve certificates for the pods in the cluster.
     // CSR clients such as the Istio Agent and ingress gateways can use this to specify the CA endpoint.
-    string caAddress = 14 [(gogoproto.jsontag) = "caAddress"];
+    string caAddress = 13 [(gogoproto.jsontag) = "caAddress"];
+    // Contains the intended distribution for the Istio control plane.
+    // The official distribution is used by default unless special preserved distribution value is set.
+    // The only preserved distribution is "cisco" as of now.
+    string distribution = 14 [(gogoproto.jsontag) = "distribution"];
     // Upstream HTTP proxy properties to be injected as environment variables to the pod containers.
     HTTPProxyEnvsConfiguration httpProxyEnvs = 15 [(gogoproto.jsontag) = "httpProxyEnvs"];
     // Defines mesh-wide settings for the Istio control plane.
@@ -182,10 +182,8 @@ message IstiodConfiguration {
     // Istiod is the default
     // +kubebuilder:validation:Enum=KUBERNETES;ISTIOD
     PilotCertProviderType certProvider = 8 [(gogoproto.jsontag) = "certProvider"];
-    // If present will be appended to the environment variables of the container
-    repeated k8s.io.api.core.v1.EnvVar additionalEnvVars = 9 [(gogoproto.nullable) = false];
     // SPIFFE configuration of Pilot
-    SPIFFEConfiguration spiffe = 10 [(gogoproto.jsontag) = "spiffe"];
+    SPIFFEConfiguration spiffe = 9 [(gogoproto.jsontag) = "spiffe"];
 }
 
 // ExternalIstiodConfiguration defines settings for local istiod to control remote clusters as well

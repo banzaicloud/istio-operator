@@ -1,0 +1,14 @@
+{{- if .Values.pilot.jwksResolverExtraRootCA }}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "name-with-revision" ( dict "name" "pilot-jwks-extra-cacerts" "context" $) }}
+  namespace: {{ .Release.Namespace }}
+  labels:
+    release: {{ .Release.Name }}
+    istio.io/rev: {{ include "namespaced-revision" . }}
+    install.operator.istio.io/owning-resource: {{ .Values.ownerName | default "unknown" }}
+    operator.istio.io/component: "Pilot"
+data:
+  extra.pem: {{ .Values.pilot.jwksResolverExtraRootCA | quote }}
+{{- end }}

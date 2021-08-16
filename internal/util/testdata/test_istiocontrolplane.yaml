@@ -1,0 +1,114 @@
+apiVersion: servicemesh.cisco.com/v1alpha1
+kind: IstioControlPlane
+metadata:
+  name: test-icp-v10x-sample
+  namespace: istio-system
+spec:
+  version: 1.10.3
+  logging:
+    level: "default:warning"
+  mountMtlsCerts: true
+  istiod:
+    deployment:
+      replicas:
+        autoscaleEnabled: false
+        min: 2
+        max: 4
+        count: 3
+      image: "gcr.io/istio-release/pilot:1.10.3"
+      resources:
+        requests:
+          cpu: 500m
+          memory: 2048Mi
+        limits:
+          cpu: "1"
+          memory: 4Gi
+      nodeSelector:
+        region: east
+        type: user-node
+      affinity:
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+              - matchExpressions:
+                  - key: kubernetes.io/e2e-az-name
+                    operator: In
+                    values:
+                      - e2e-az1
+                      - e2e-az2
+      tolerations:
+        - key: "key1"
+          operator: "Equal"
+          value: "value1"
+          effect: "NoSchedule"
+      podMetadata:
+        labels:
+          version: v1
+      securityContext:
+        runAsUser: 2000
+        allowPrivilegeEscalation: false
+    enableAnalysis: true
+    enableStatus: true
+    externalIstiod:
+      enabled: true
+    traceSampling: 2.5
+    enableProtocolSniffingOutbound: false
+    enableProtocolSniffingInbound: false
+    certProvider: KUBERNETES
+    spiffe:
+      operatorEndpoints:
+        enabled: false
+  proxy:
+    image: "gcr.io/istio-release/proxyv2:1.10.3"
+    privileged: true
+    enableCoreDump: true
+    logLevel: "ERROR"
+    componentLogLevel: "misc:info"
+    clusterDomain: "x.y.z"
+    holdApplicationUntilProxyStarts: true
+    lifecycle:
+      postStart:
+        exec:
+          command: [ "/bin/sh", "-c", "echo Hello from the postStart handler > /usr/share/message" ]
+      preStop:
+        exec:
+          command: [ "/bin/sh","-c","nginx -s quit; while killall -0 nginx; do sleep 1; done" ]
+    resources:
+      requests:
+        cpu: 50m
+        memory: 64Mi
+      limits:
+        cpu: 2000m
+        memory: 1024Mi
+    includeIPRanges: "172.30.0.0/16,172.20.0.0/16"
+    excludeIPRanges: "172.40.0.0/16,172.30.0.0/16"
+    excludeInboundPorts: "80,8080"
+    excludeOutboundPorts: "81,8081"
+  proxyInit:
+    image: "gcr.io/istio-release/proxyv2:1.10.3"
+    resources:
+      limits:
+        cpu: 2000m
+        memory: 1024Mi
+      requests:
+        cpu: 11m
+        memory: 11Mi
+  telemetryV2:
+    enabled: false
+  sds:
+    tokenAudience: "istio-ca"
+  proxyWasm:
+    enabled: true
+  watchOneNamespace: true
+  defaultPodDisruptionBudget:
+    enabled: false
+  jwtPolicy: "FIRST_PARTY_JWT"
+  caAddress: "1.1.1.1"
+  distribution: "official"
+  httpProxyEnvs:
+    httpProxy: "http://proxy.example.com:3128"
+    httpsProxy: "http://proxy.example.com:3129"
+    noProxy: "svc,local"
+  meshConfig:
+    defaultConfig:
+      meshId: mesh1

@@ -112,8 +112,8 @@ message BaseKubernetesResourceConfig {
     // Replica configuration
     Replicas replicas = 14;
 
-    // Standard Kubernetes pod annotation configuration
-    map<string,string> podAnnotations = 15;
+    // Standard Kubernetes pod annotation and label configuration
+    K8sObjectMeta podMetadata = 15;
 
     // K8s resource overlay patches
     repeated K8sResourceOverlayPatch resourceOverlays = 16;
@@ -317,13 +317,16 @@ message Replicas {
     // +kubebuilder:validation:Minimum=0
     google.protobuf.Int32Value count = 1 [(gogoproto.wktpointer) = true];
 
+    // Standard Kubernetes hpa enablement configuration
+    google.protobuf.BoolValue autoscaleEnabled = 2 [(gogoproto.wktpointer) = true];
+
     // Standard Kubernetes minimum replicas configuration
     // +kubebuilder:validation:Minimum=0
-    google.protobuf.Int32Value min = 2 [(gogoproto.wktpointer) = true];
+    google.protobuf.Int32Value min = 3 [(gogoproto.wktpointer) = true];
 
     // Standard Kubernetes maximum replicas configuration
     // +kubebuilder:validation:Minimum=0
-    google.protobuf.Int32Value max = 3 [(gogoproto.wktpointer) = true];
+    google.protobuf.Int32Value max = 4 [(gogoproto.wktpointer) = true];
 }
 
 message K8sResourceOverlayPatch {

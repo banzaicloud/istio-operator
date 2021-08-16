@@ -17,16 +17,19 @@ limitations under the License.
 package discovery
 
 import (
+	"net/http"
+
 	"emperror.dev/errors"
 	"k8s.io/apimachinery/pkg/runtime"
 	controllerruntime "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/reconcile"
 
 	"github.com/banzaicloud/istio-operator/v2/api/v1alpha1"
+	assets "github.com/banzaicloud/istio-operator/v2/internal/assets"
 	"github.com/banzaicloud/istio-operator/v2/internal/util"
-	istiodiscovery "github.com/banzaicloud/istio-operator/v2/static/gen/charts/istio-control/istio-discovery"
 	"github.com/banzaicloud/operator-tools/pkg/helm"
 	"github.com/banzaicloud/operator-tools/pkg/helm/templatereconciler"
+	"github.com/banzaicloud/operator-tools/pkg/reconciler"
 	"github.com/banzaicloud/operator-tools/pkg/types"
 )
 
@@ -34,6 +37,8 @@ const (
 	componentName = "istio-discovery"
 	chartName     = "istio-discovery"
 	releaseName   = "istio-operator-discovery"
+
+	valuesTemplateFileName = "values.yaml.tmpl"
 )
 
 var _ templatereconciler.Component = &Reconciler{}
@@ -53,13 +58,19 @@ func (rec *Reconciler) Name() string {
 }
 
 func (rec *Reconciler) Skipped(object runtime.Object) bool {
-	// controlPlane, ok := object.(*v1alpha1.IstioControlPlane)
 	return false
 }
 
 func (rec *Reconciler) Enabled(object runtime.Object) bool {
-	// controlPlane, ok := object.(*v1alpha1.IstioControlPlane)
+	if controlPlane, ok := object.(*v1alpha1.IstioControlPlane); ok {
+		return controlPlane.DeletionTimestamp.IsZero()
+	}
+
 	return true
+}
+
+func (rec *Reconciler) IsOptional() bool {
+	return false
 }
 
 func (rec *Reconciler) PreChecks(object runtime.Object) error {
@@ -71,30 +82,28 @@ func (rec *Reconciler) UpdateStatus(object runtime.Object, status types.Reconcil
 }
 
 func (rec *Reconciler) ReleaseData(object runtime.Object) (*templatereconciler.ReleaseData, error) {
-	if controlPlane, ok := object.(*v1alpha1.IstioControlPlane); ok {
-		values, err := rec.values(object)
-		if err != nil {
-			return nil, err
-		}
-
-		return &templatereconciler.ReleaseData{
-			Chart:       istiodiscovery.Chart,
-			Values:      values,
-			Namespace:   controlPlane.Namespace,
-			ChartName:   chartName,
-			ReleaseName: releaseName,
-		}, nil
+	icp, ok := object.(*v1alpha1.IstioControlPlane)
+	if !ok {
+		return nil, errors.WrapIff(errors.NewPlain("object cannot be converted to an IstioControlPlane"), "%+v", object)
 	}
 
-	return nil, errors.WrapIff(errors.NewPlain("object cannot be converted to an IstioControlPlane"), "%+v", object)
+	values, err := rec.values(object)
+	if err != nil {
+		return nil, err
+	}
+
+	return &templatereconciler.ReleaseData{
+		Chart:                 http.FS(assets.DiscoveryChart),
+		Values:                values,
+		Namespace:             icp.Namespace,
+		ChartName:             chartName,
+		ReleaseName:           releaseName,
+		DesiredStateOverrides: map[reconciler.ObjectKeyWithGVK]reconciler.DesiredState{},
+	}, nil
 }
 
 func (rec *Reconciler) Reconcile(object runtime.Object) (*reconcile.Result, error) {
 	return rec.helmReconciler.Reconcile(object, rec)
-}
-
-func (rec *Reconciler) IsOptional() bool {
-	return true
 }
 
 func (rec *Reconciler) RegisterWatches(builder *controllerruntime.Builder) {}
@@ -105,13 +114,19 @@ func (rec *Reconciler) values(object runtime.Object) (helm.Strimap, error) {
 		return nil, errors.WrapIff(errors.NewPlain("object cannot be converted to an IstioControlPlane"), "%+v", object)
 	}
 
-	var meshConfigStriMap helm.Strimap
-	err := util.ProtoFieldToStriMap(icp.Spec.MeshConfig, &meshConfigStriMap)
+	values, err := util.TransformICPToStriMapWithTemplate(icp, assets.DiscoveryChart, valuesTemplateFileName)
 	if err != nil {
-		return nil, errors.WrapIff(errors.NewPlain("meshConfig cannot be converted into a map[string]interface{}"), "%+v", icp.Spec.MeshConfig)
+		return nil, errors.WrapIff(errors.NewPlain("IstioControlPlane spec cannot be converted into a map[string]interface{}"), "%+v", icp.Spec)
 	}
 
-	return helm.Strimap{
-		"meshConfig": meshConfigStriMap,
-	}, nil
+	var meshConfigStriMap helm.Strimap
+	if mc := icp.GetSpec().GetMeshConfig(); mc != nil {
+		err = util.ProtoFieldToStriMap(mc, &meshConfigStriMap)
+		if err != nil {
+			return nil, errors.WrapIff(err, "meshConfig cannot be converted into a map[string]interface{}: %+v", icp.Spec.MeshConfig)
+		}
+		values["meshConfig"] = meshConfigStriMap
+	}
+
+	return values, nil
 }
