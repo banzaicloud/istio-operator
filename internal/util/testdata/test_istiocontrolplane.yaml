@@ -26,12 +26,27 @@ spec:
       nodeSelector:
         region: east
         type: user-node
-      affinity: {}
-      tolerations: []
+      affinity:
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+              - matchExpressions:
+                  - key: kubernetes.io/e2e-az-name
+                    operator: In
+                    values:
+                      - e2e-az1
+                      - e2e-az2
+      tolerations:
+        - key: "key1"
+          operator: "Equal"
+          value: "value1"
+          effect: "NoSchedule"
       podMetadata:
         labels:
           version: v1
-      securityContext: {}
+      securityContext:
+        runAsUser: 2000
+        allowPrivilegeEscalation: false
     enableAnalysis: true
     enableStatus: true
     externalIstiod:

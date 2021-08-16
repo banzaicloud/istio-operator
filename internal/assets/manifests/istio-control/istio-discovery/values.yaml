@@ -33,7 +33,17 @@ pilot:
   enableProtocolSniffingForInbound: true
 
   nodeSelector: {}
+  affinity: {}
+  tolerations: {}
   podAnnotations: {}
+
+  securityContext:
+    runAsUser: 1337
+    runAsGroup: 1337
+    runAsNonRoot: true
+    capabilities:
+      drop:
+        - ALL
 
   # You can use jwksResolverExtraRootCA to provide a root certificate
   # in PEM format. This will then be trusted by pilot when resolving

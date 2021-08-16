@@ -46,11 +46,32 @@ pilot:
   nodeSelector: {}
 {{ end }}
 
+{{ if .GetSpec.GetIstiod.GetDeployment.GetAffinity }}
+  affinity:
+{{ .GetSpec.GetIstiod.GetDeployment.GetAffinity | toYaml | indent 4 }}
+{{ else }}
+  affinity: {}
+{{ end }}
+
+{{ if .GetSpec.GetIstiod.GetDeployment.GetTolerations }}
+  tolerations:
+{{ .GetSpec.GetIstiod.GetDeployment.GetTolerations | toYaml | indent 4 }}
+{{ else }}
+  tolerations: {}
+{{ end }}
+
 {{ if .GetSpec.GetIstiod.GetDeployment.GetPodMetadata.GetAnnotations }}
   podAnnotations:
 {{ .GetSpec.GetIstiod.GetDeployment.GetPodMetadata.GetAnnotations | toYaml | indent 4 }}
 {{ else }}
   podAnnotations: {}
+{{ end }}
+
+{{ if .GetSpec.GetIstiod.GetDeployment.GetSecurityContext }}
+  securityContext:
+{{ .GetSpec.GetIstiod.GetDeployment.GetSecurityContext | toYaml | indent 4 }}
+{{ else }}
+  securityContext: {}
 {{ end }}
 
 
