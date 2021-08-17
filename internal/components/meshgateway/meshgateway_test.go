@@ -19,7 +19,6 @@ import (
 	_ "embed"
 	"fmt"
 	"os"
-	"reflect"
 	"testing"
 
 	"emperror.dev/errors"
@@ -99,7 +98,7 @@ func TestMGWTemplateTransform(t *testing.T) {
 		},
 	}
 
-	values, err := util.TransformICPToStriMapWithTemplate(obj, assets.MeshGateway, "values.yaml.tpl")
+	values, err := util.TransformStructToStriMapWithTemplate(obj, assets.MeshGateway, "values.yaml.tpl")
 	if err != nil {
 		kv := keyval.ToMap(errors.GetDetails(err))
 		if t, ok := kv["template"]; ok {
@@ -108,22 +107,17 @@ func TestMGWTemplateTransform(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	var expectedValues map[string]interface{}
-	if err := yaml.Unmarshal(mgwExpectedValues, &expectedValues); err != nil {
+	valuesYaml, err := yaml.Marshal(values)
+	if err != nil {
 		t.Fatal(err)
 	}
 
-	if !reflect.DeepEqual(values, expectedValues) {
-		valuesYaml, err := yaml.Marshal(values)
-		if err != nil {
-			t.Fatal(err)
-		}
+	report, err := util.CompareYAMLs(mgwExpectedValues, valuesYaml)
+	if err != nil {
+		t.Fatal(err)
+	}
 
-		report, err := util.CompareYAMLs(mgwExpectedValues, valuesYaml)
-		if err != nil {
-			t.Fatal(err)
-		}
-
+	if len(report.Diffs) > 0 {
 		if err := (&dyff.HumanReport{
 			Report:       report,
 			OmitHeader:   false,
@@ -131,7 +125,5 @@ func TestMGWTemplateTransform(t *testing.T) {
 		}).WriteReport(os.Stdout); err != nil {
 			t.Fatal(err)
 		}
-
-		t.Fatal(errors.NewPlain("generated values not equals with expected"))
 	}
 }

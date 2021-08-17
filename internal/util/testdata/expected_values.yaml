@@ -2,7 +2,7 @@
 
 ## Discovery Settings
 pilot:
-  autoscaleEnabled: false
+  autoscaleEnabled: true
   autoscaleMin: 2
   autoscaleMax: 4
   replicaCount: 3

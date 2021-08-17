@@ -152,7 +152,7 @@ func (rec *Reconciler) values(object runtime.Object) (helm.Strimap, error) {
 		return nil, errors.WrapIff(errors.NewPlain("object cannot be converted to an IstioControlPlane"), "%+v", object)
 	}
 
-	values, err := util.TransformICPToStriMapWithTemplate(icp, assets.BaseChart, valuesTemplateFileName)
+	values, err := util.TransformStructToStriMapWithTemplate(icp, assets.BaseChart, valuesTemplateFileName)
 	if err != nil {
 		return nil, errors.WrapIff(err, "IstioControlPlane spec cannot be converted into a map[string]interface{}")
 	}

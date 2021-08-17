@@ -37,7 +37,6 @@ service:
   type: {{ .GetType }}
 {{ toYamlIf (dict "value" .GetMetadata "key" "metadata") | indent 2 }}
 {{ toYamlIf (dict "value" .GetPorts "key" "ports") | indent 2 }}
-{{ toYamlIf (dict "value" .GetPorts "key" "ports") | indent 2 }}
 {{ toYamlIf (dict "value" .GetSelector "key" "selector") | indent 2 }}
   clusterIP: {{ .GetClusterIP | quote }}
 {{ toYamlIf (dict "value" .GetExternalIPs "key" "externalIPs") | indent 2 }}
