@@ -56,6 +56,11 @@ func TestMGWResourceDump(t *testing.T) {
 		templatereconciler.NewHelmReconciler(nil, nil, nil, fake.NewSimpleClientset().Discovery(), []reconciler.NativeReconcilerOpt{
 			reconciler.NativeReconcilerSetControllerRef(),
 		}),
+		v1alpha1.MeshGatewayProperties{
+			Revision:              "cp-v110x.istio-system",
+			EnablePrometheusMerge: true,
+			InjectionTemplate:     "gateway",
+		},
 	)
 
 	dd, err := reconciler.GetManifest(mgw)
