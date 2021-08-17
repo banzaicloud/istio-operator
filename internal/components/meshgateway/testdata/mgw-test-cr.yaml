@@ -1,0 +1,149 @@
+apiVersion: servicemesh.cisco.com/v1alpha1
+kind: MeshGateway
+metadata:
+  name: demo-gw
+  namespace: default
+spec:
+  deployment:
+    metadata:
+      annotations:
+        mgw.banzaicloud.io/type: "ingress"
+      labels:
+        app: demo-gw
+    image: container-hub/image-name:tag
+    env:
+    - name: ISTIO_META_LOCAL_ENDPOINTS_ONLY
+      value: "true"
+    - name: ISTIO_META_ROUTER_MODE
+      value: "standard"
+    resources:
+      limits:
+        cpu: "2"
+        memory: 1Gi
+      requests:
+        cpu: 100m
+        memory: 128Mi
+    nodeSelector:
+      disktype: ssd
+    affinity:
+      nodeAffinity:
+        requiredDuringSchedulingIgnoredDuringExecution:
+          nodeSelectorTerms:
+          - matchExpressions:
+            - key: kubernetes.io/e2e-az-name
+              operator: In
+              values:
+              - e2e-az1
+              - e2e-az2
+      podAffinity:
+        requiredDuringSchedulingIgnoredDuringExecution:
+        - labelSelector:
+            matchExpressions:
+            - key: security
+              operator: In
+              values:
+              - S1
+          topologyKey: topology.kubernetes.io/zone
+    securityContext:
+      runAsUser: 1337
+      runAsGroup: 1337
+      runAsNonRoot: true
+    imagePullPolicy: Always
+    imagePullSecrets:
+    - name: pullsecret-1
+    - name: pullsecret-2
+    priorityClassName: "high-priority"
+    tolerations:
+    - key: "key1"
+      operator: "Equal"
+      value: "value1"
+      effect: "NoSchedule"
+      tolerationSeconds: 5
+    volumes:
+    - name: "dddemo"
+      volumeSource:
+        secret:
+          secretName: "ssname"
+          optional: true
+    - name: config-vol
+      volumeSource:
+        configMap:
+          localObjectReference:
+            name: log-config
+          items:
+            - key: log_level
+              path: log_level
+    volumeMounts:
+    - name: config-vol
+      mountPath: /etc/config
+    replicas:
+      count: 1
+      min: 1
+      max: 3
+      targetCPUUtilizationPercentage: 80
+    podMetadata:
+      annotations:
+        podannotation: podannotationvalue
+      labels:
+        podlabel: podlabelvalue
+    podDisruptionBudget:
+      minAvailable: 1
+      maxUnavailable: 5
+    deploymentStrategy:
+      type: RollingUpdate
+      rollingUpdate:
+        maxUnavailable: "25%"
+        maxSurge: 100%
+  service:
+    metadata:
+      annotations:
+        annotation1: smt
+      labels:
+        label1: smt
+    ports:
+    - name: tcp-als-tls
+      port: 50600
+      protocol: TCP
+      targetPort: 50600
+    - name: tcp-zipkin-tls
+      port: 59411
+      protocol: TCP
+      targetPort: 59411
+    selector:
+      selectorlabel: selectorlabelvalue
+    clusterIP: 127.0.0.1
+    type: LoadBalancer
+    externalIPs:
+    - 192.168.0.1
+    - 192.168.0.2
+    sessionAffinity: None
+    loadBalancerIP: 192.168.0.100
+    loadBalancerSourceRanges:
+    - 192.168.0.0/16
+    externalName: my.domain.tld
+    externalTrafficPolicy: Cluster
+    healthCheckNodePort: 8080
+    publishNotReadyAddresses: false
+    sessionAffinityConfig:
+      clientIP:
+        timeoutSeconds: 3600
+    ipFamily: IPv4
+  runAsRoot: true
+  type: ingress
+  istioControlPlane:
+    name: cp-v19x
+    namespace: istio-system
+  k8sResourceOverlays:
+  - groupVersionKind:
+      kind: DestinationRule
+    objectKey:
+      name: meshexpansion-dr-istiod-cp-v19x
+    patches:
+    - parseValue: true
+      path: /spec/trafficPolicy?/loadBalancer?
+      type: replace
+      value: |
+        consistentHash:
+          httpCookie:
+            name: user
+            ttl: 0s

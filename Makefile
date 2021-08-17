@@ -2,11 +2,11 @@
 TAG ?= $(shell git describe --tags --abbrev=0 --match '[0-9].*[0-9].*[0-9]' 2>/dev/null )
 IMG ?= banzaicloud/istio-operator-v2:$(TAG)
 
-GOLANGCI_VERSION = 1.39.0
-LICENSEI_VERSION = 0.3.1
+GOLANGCI_VERSION = 1.41.1
+LICENSEI_VERSION = 0.4.0
 KUBEBUILDER_VERSION = 2.3.2
 KUSTOMIZE_VERSION = 4.1.2
-ISTIO_VERSION = 1.10.0
+ISTIO_VERSION = 1.10.3
 BUF_VERSION = 0.41.0
 
 PATH := $(PATH):$(PWD)/bin
@@ -90,7 +90,7 @@ deploy: install-kustomize manifests
 # Generate manifests e.g. CRD, RBAC etc.
 manifests: download-deps update-istio-deps
 	bin/controller-gen rbac:roleName=manager-role webhook paths="./..."
-	bin/cue-gen -paths=build -f=cue.yaml -crd -status istio_operator.v2.api.v1alpha1.IstioControlPlaneStatus
+	bin/cue-gen -paths=build -f=cue.yaml -crd
 	cp -a config/crd/bases/ internal/assets/crds
 
 # Run go fmt against code

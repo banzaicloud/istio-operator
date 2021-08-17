@@ -446,6 +446,26 @@ spec:
                                 type: array
                             type: object
                         type: object
+                      deploymentStrategy:
+                        properties:
+                          rollingUpdate:
+                            description: Rolling update config params.
+                            properties:
+                              maxSurge:
+                                anyOf:
+                                - type: integer
+                                - type: string
+                                x-kubernetes-int-or-string: true
+                              maxUnavailable:
+                                anyOf:
+                                - type: integer
+                                - type: string
+                                x-kubernetes-int-or-string: true
+                            type: object
+                          type:
+                            description: Type of deployment.
+                            type: string
+                        type: object
                       env:
                         description: If present will be appended to the environment
                           variables of the container.
@@ -579,6 +599,26 @@ spec:
                           type: string
                         description: Standard Kubernetes node selector configuration.
                         type: object
+                      podDisruptionBudget:
+                        description: PodDisruptionBudget configuration.
+                        properties:
+                          maxUnavailable:
+                            anyOf:
+                            - type: integer
+                            - type: string
+                            description: |-
+                              An eviction is allowed if at most "maxUnavailable" pods selected by
+                              "selector" are unavailable after the eviction, i.e.
+                            x-kubernetes-int-or-string: true
+                          minAvailable:
+                            anyOf:
+                            - type: integer
+                            - type: string
+                            description: |-
+                              An eviction is allowed if at least "minAvailable" pods selected by
+                              "selector" will still be available after the eviction, i.e.
+                            x-kubernetes-int-or-string: true
+                        type: object
                       podMetadata:
                         description: Standard Kubernetes pod annotation and label
                           configuration.
@@ -604,10 +644,6 @@ spec:
                       replicas:
                         description: Replica configuration.
                         properties:
-                          autoscaleEnabled:
-                            description: Standard Kubernetes hpa enablement configuration.
-                            nullable: true
-                            type: boolean
                           count:
                             description: Standard Kubernetes replica count configuration.
                             minimum: 0
@@ -623,49 +659,14 @@ spec:
                             minimum: 0
                             nullable: true
                             type: integer
+                          targetCPUUtilizationPercentage:
+                            description: |-
+                              target average CPU utilization (represented as a percentage of requested CPU) over all the pods;
+                              if not specified the default autoscaling policy will be used.
+                            minimum: 0
+                            nullable: true
+                            type: integer
                         type: object
-                      resourceOverlays:
-                        description: K8s resource overlay patches.
-                        items:
-                          properties:
-                            groupVersionKind:
-                              properties:
-                                group:
-                                  type: string
-                                kind:
-                                  type: string
-                                version:
-                                  type: string
-                              type: object
-                            objectKey:
-                              properties:
-                                name:
-                                  description: Name of the referenced Kubernetes resource.
-                                  type: string
-                                namespace:
-                                  description: Namespace of the referenced Kubernetes
-                                    resource.
-                                  type: string
-                              type: object
-                            patches:
-                              items:
-                                properties:
-                                  parseValue:
-                                    type: boolean
-                                  path:
-                                    type: string
-                                  type:
-                                    enum:
-                                    - unspecified
-                                    - replace
-                                    - remove
-                                    type: string
-                                  value:
-                                    type: string
-                                type: object
-                              type: array
-                          type: object
-                        type: array
                       resources:
                         description: Standard Kubernetes resource configuration, memory
                           and CPU resource requirements.
@@ -3545,14 +3546,32 @@ spec:
   scope: Namespaced
   versions:
   - additionalPrinterColumns:
-    - description: 'CreationTimestamp is a timestamp representing the server time
-        when this object was created. It is not guaranteed to be set in happens-before
-        order across separate operations. Clients may not set this value. It is represented
-        in RFC3339 form and is in UTC. Populated by the system. Read-only. Null for
-        lists. More info: https://git.k8s.io/community/contributors/devel/api-conventions.md#metadata'
-      jsonPath: .metadata.creationTimestamp
+    - description: Type of the gateway
+      jsonPath: .spec.type
+      name: Type
+      type: string
+    - description: Type of the service
+      jsonPath: .spec.service.type
+      name: Service Type
+      type: string
+    - description: Status of the resource
+      jsonPath: .status.Status
+      name: Status
+      type: string
+    - description: Ingress gateway addresses of the resource
+      jsonPath: .status.GatewayAddress
+      name: Ingress IPs
+      type: string
+    - description: Error message
+      jsonPath: .status.ErrorMessage
+      name: Error
+      type: string
+    - jsonPath: .metadata.creationTimestamp
       name: Age
       type: date
+    - jsonPath: .spec.istioControlPlane
+      name: Control Plane
+      type: string
     name: v1alpha1
     schema:
       openAPIV3Schema:
@@ -3930,6 +3949,26 @@ spec:
                             type: array
                         type: object
                     type: object
+                  deploymentStrategy:
+                    properties:
+                      rollingUpdate:
+                        description: Rolling update config params.
+                        properties:
+                          maxSurge:
+                            anyOf:
+                            - type: integer
+                            - type: string
+                            x-kubernetes-int-or-string: true
+                          maxUnavailable:
+                            anyOf:
+                            - type: integer
+                            - type: string
+                            x-kubernetes-int-or-string: true
+                        type: object
+                      type:
+                        description: Type of deployment.
+                        type: string
+                    type: object
                   env:
                     description: If present will be appended to the environment variables
                       of the container.
@@ -4062,6 +4101,26 @@ spec:
                       type: string
                     description: Standard Kubernetes node selector configuration.
                     type: object
+                  podDisruptionBudget:
+                    description: PodDisruptionBudget configuration.
+                    properties:
+                      maxUnavailable:
+                        anyOf:
+                        - type: integer
+                        - type: string
+                        description: |-
+                          An eviction is allowed if at most "maxUnavailable" pods selected by
+                          "selector" are unavailable after the eviction, i.e.
+                        x-kubernetes-int-or-string: true
+                      minAvailable:
+                        anyOf:
+                        - type: integer
+                        - type: string
+                        description: |-
+                          An eviction is allowed if at least "minAvailable" pods selected by
+                          "selector" will still be available after the eviction, i.e.
+                        x-kubernetes-int-or-string: true
+                    type: object
                   podMetadata:
                     description: Standard Kubernetes pod annotation and label configuration.
                     properties:
@@ -4086,10 +4145,6 @@ spec:
                   replicas:
                     description: Replica configuration.
                     properties:
-                      autoscaleEnabled:
-                        description: Standard Kubernetes hpa enablement configuration.
-                        nullable: true
-                        type: boolean
                       count:
                         description: Standard Kubernetes replica count configuration.
                         minimum: 0
@@ -4105,49 +4160,14 @@ spec:
                         minimum: 0
                         nullable: true
                         type: integer
+                      targetCPUUtilizationPercentage:
+                        description: |-
+                          target average CPU utilization (represented as a percentage of requested CPU) over all the pods;
+                          if not specified the default autoscaling policy will be used.
+                        minimum: 0
+                        nullable: true
+                        type: integer
                     type: object
-                  resourceOverlays:
-                    description: K8s resource overlay patches.
-                    items:
-                      properties:
-                        groupVersionKind:
-                          properties:
-                            group:
-                              type: string
-                            kind:
-                              type: string
-                            version:
-                              type: string
-                          type: object
-                        objectKey:
-                          properties:
-                            name:
-                              description: Name of the referenced Kubernetes resource.
-                              type: string
-                            namespace:
-                              description: Namespace of the referenced Kubernetes
-                                resource.
-                              type: string
-                          type: object
-                        patches:
-                          items:
-                            properties:
-                              parseValue:
-                                type: boolean
-                              path:
-                                type: string
-                              type:
-                                enum:
-                                - unspecified
-                                - replace
-                                - remove
-                                type: string
-                              value:
-                                type: string
-                            type: object
-                          type: array
-                      type: object
-                    type: array
                   resources:
                     description: Standard Kubernetes resource configuration, memory
                       and CPU resource requirements.
@@ -5454,6 +5474,25 @@ spec:
             - type
             type: object
           status:
+            properties:
+              ErrorMessage:
+                description: Reconciliation error message if any.
+                type: string
+              GatewayAddress:
+                description: Current address for the gateway.
+                items:
+                  type: string
+                type: array
+              Status:
+                description: Reconciliation status of the mesh gateway.
+                enum:
+                - Unspecified
+                - Created
+                - ReconcileFailed
+                - Reconciling
+                - Available
+                - Unmanaged
+                type: string
             type: object
         type: object
     served: true

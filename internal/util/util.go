@@ -18,23 +18,29 @@ package util
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
+	"fmt"
 	"io/fs"
 	"path"
+	"reflect"
+	"strings"
 	"text/template"
 
 	"emperror.dev/errors"
 	"github.com/Masterminds/sprig"
 	"github.com/golang/protobuf/jsonpb"
 	"github.com/golang/protobuf/proto"
+	"github.com/gonvenience/ytbx"
+	"github.com/homeport/dyff/pkg/dyff"
+	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/yaml"
 
-	"github.com/banzaicloud/istio-operator/v2/api/v1alpha1"
 	"github.com/banzaicloud/operator-tools/pkg/helm"
 	"github.com/banzaicloud/operator-tools/pkg/utils"
 )
 
-func TransformICPToStriMapWithTemplate(icp *v1alpha1.IstioControlPlane, filesystem fs.FS, templateFileName string) (helm.Strimap, error) {
+func TransformICPToStriMapWithTemplate(data interface{}, filesystem fs.FS, templateFileName string) (helm.Strimap, error) {
 	tt, err := template.New(path.Base(templateFileName)).Funcs(template.FuncMap{
 		"PointerToBool": utils.PointerToBool,
 		"toYaml": func(value interface{}) string {
@@ -45,13 +51,46 @@ func TransformICPToStriMapWithTemplate(icp *v1alpha1.IstioControlPlane, filesyst
 
 			return string(y)
 		},
+		"toYamlIf": func(value interface{}) string {
+			sprig.TxtFuncMap()
+			body := []string{}
+			if dict, ok := value.(map[string]interface{}); ok { // nolint:nestif
+				if key, ok := dict["key"]; ok {
+					body = append(body, fmt.Sprintf("%s:", key))
+				}
+				if value, ok := dict["value"]; ok {
+					if value == nil || reflect.ValueOf(value).IsNil() {
+						return ""
+					}
+					y, err := yaml.Marshal(value)
+					if err != nil {
+						return ""
+					}
+
+					indent := func(spaces int, v string) string {
+						pad := strings.Repeat(" ", spaces)
+
+						return pad + strings.ReplaceAll(v, "\n", "\n"+pad)
+					}
+
+					content := string(y)
+					if len(body) > 0 {
+						content = indent(2, content)
+					}
+
+					body = append(body, content)
+				}
+			}
+
+			return strings.Join(body, "\n")
+		},
 	}).Funcs(sprig.TxtFuncMap()).ParseFS(filesystem, templateFileName)
 	if err != nil {
 		return nil, errors.WrapWithDetails(err, "template cannot be parsed", "template", templateFileName)
 	}
 
 	var tpl bytes.Buffer
-	err = tt.Execute(&tpl, icp)
+	err = tt.Execute(&tpl, data)
 	if err != nil {
 		return nil, errors.WrapWithDetails(err, "template cannot be executed", "template", templateFileName)
 	}
@@ -59,7 +98,7 @@ func TransformICPToStriMapWithTemplate(icp *v1alpha1.IstioControlPlane, filesyst
 	values := &helm.Strimap{}
 	err = yaml.Unmarshal(tpl.Bytes(), values)
 	if err != nil {
-		return nil, errors.WrapWithDetails(err, "values string cannot be unmarshalled", tpl.String())
+		return nil, errors.WrapWithDetails(err, "values string cannot be unmarshalled", "template", tpl.String())
 	}
 
 	return *values, nil
@@ -99,4 +138,53 @@ func RemoveString(slice []string, s string) (result []string) {
 	}
 
 	return
+}
+
+func AddFinalizer(c client.Client, obj client.Object, finalizerID string) error {
+	finalizers := obj.GetFinalizers()
+	if obj.GetDeletionTimestamp().IsZero() && !ContainsString(finalizers, finalizerID) {
+		finalizers = append(finalizers, finalizerID)
+		obj.SetFinalizers(finalizers)
+		if err := c.Update(context.Background(), obj); err != nil {
+			return errors.WrapIf(err, "could not add finalizer to resource")
+		}
+	}
+
+	return nil
+}
+
+func RemoveFinalizer(c client.Client, obj client.Object, finalizerID string) error {
+	finalizers := obj.GetFinalizers()
+
+	if !obj.GetDeletionTimestamp().IsZero() && ContainsString(finalizers, finalizerID) {
+		finalizers = RemoveString(finalizers, finalizerID)
+		obj.SetFinalizers(finalizers)
+		if err := c.Update(context.Background(), obj); err != nil {
+			return errors.WrapIf(err, "could not remove finalizer from resource")
+		}
+	}
+
+	return nil
+}
+
+func CompareYAMLs(left, right []byte) (dyff.Report, error) {
+	y1, err := ytbx.LoadDocuments(left)
+	if err != nil {
+		return dyff.Report{}, err
+	}
+	y2, err := ytbx.LoadDocuments(right)
+	if err != nil {
+		return dyff.Report{}, err
+	}
+
+	return dyff.CompareInputFiles(ytbx.InputFile{
+		Location:  "left",
+		Documents: y1,
+	}, ytbx.InputFile{
+		Location:  "right",
+		Documents: y2,
+	},
+		dyff.IgnoreOrderChanges(false),
+		dyff.KubernetesEntityDetection(true),
+	)
 }

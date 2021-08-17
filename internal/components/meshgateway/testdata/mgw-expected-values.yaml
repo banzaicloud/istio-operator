@@ -1,0 +1,133 @@
+type: ingress
+
+# The injection template to use for the gateway. If not set, no injection will be performed.
+injectionTemplate: "gateway"
+
+# Revision is set as 'version' label and part of the resource names when installing multiple control planes.
+revision: "cp-revision-1"
+
+runAsRoot: true
+
+deployment:
+  enablePrometheusMerge: false
+  deploymentStrategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 100%
+      maxUnavailable: 25%
+  name: demo-gw
+  metadata:
+    labels:
+      app: demo-gw
+    annotations:
+      mgw.banzaicloud.io/type: ingress
+  env:
+  - name: ISTIO_META_LOCAL_ENDPOINTS_ONLY
+    value: "true"
+  - name: ISTIO_META_ROUTER_MODE
+    value: "standard"
+  imagePullPolicy: Always
+  imagePullSecrets:
+  - name: pullsecret-1
+  - name: pullsecret-2
+  affinity:
+    nodeAffinity:
+      requiredDuringSchedulingIgnoredDuringExecution:
+        nodeSelectorTerms:
+        - matchExpressions:
+          - key: kubernetes.io/e2e-az-name
+            operator: In
+            values:
+            - e2e-az1
+            - e2e-az2
+    podAffinity:
+      requiredDuringSchedulingIgnoredDuringExecution:
+      - labelSelector:
+          matchExpressions:
+          - key: security
+            operator: In
+            values:
+            - S1
+        topologyKey: topology.kubernetes.io/zone
+  nodeSelector:
+    disktype: ssd
+  priorityClassName: "high-priority"
+  replicas:
+    count: 1
+    min: 1
+    max: 3
+    targetCPUUtilizationPercentage: 80
+  resources:
+    limits:
+      cpu: "2"
+      memory: 1Gi
+    requests:
+      cpu: 100m
+      memory: 128Mi
+  securityContext:
+    runAsUser: 1337
+    runAsGroup: 1337
+    runAsNonRoot: true
+  tolerations:
+  - key: key1
+    effect: NoSchedule
+    operator: Equal
+    tolerationSeconds: 5
+    value: value1
+  volumeMounts:
+  - name: config-vol
+    mountPath: /etc/config
+  volumes:
+  - name: dddemo
+    secret:
+      optional: true
+      secretName: ssname
+  - name: config-vol
+    configMap:
+      name: log-config
+      items:
+      - key: log_level
+        path: log_level
+  podDisruptionBudget:
+    minAvailable: 1
+    maxUnavailable: 5
+  podMetadata:
+    annotations:
+      podannotation: podannotationvalue
+    labels:
+      podlabel: podlabelvalue
+
+service:
+  type: LoadBalancer
+  metadata:
+    labels:
+      label1: smt
+    annotations:
+      annotation1: smt
+  ports:
+  - name: tcp-als-tls
+    port: 50600
+    protocol: TCP
+    targetPort: 50600
+  - name: tcp-zipkin-tls
+    port: 59411
+    protocol: TCP
+    targetPort: 59411
+  selector:
+    selectorlabel: selectorlabelvalue
+  clusterIP: 127.0.0.1
+  externalIPs:
+  - 192.168.0.1
+  - 192.168.0.2
+  sessionAffinity: None
+  loadBalancerIP: 192.168.0.100
+  loadBalancerSourceRanges:
+  - 192.168.0.0/16
+  externalName: my.domain.tld
+  externalTrafficPolicy: Cluster
+  healthCheckNodePort: 8080
+  publishNotReadyAddresses: false
+  sessionAffinityConfig:
+    clientIP:
+      timeoutSeconds: 3600
+  ipFamily: IPv4

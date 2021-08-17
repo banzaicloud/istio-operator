@@ -1,0 +1,35 @@
+{{- $gateway := .Values.deployment }}
+{{- $service := .Values.service -}}
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ $gateway.name }}
+  namespace: {{ .Release.Namespace }}
+  annotations:
+    {{- range $key, $val := $service.metadata.annotations }}
+    {{ $key }}: {{ $val | quote }}
+    {{- end }}
+  labels:
+{{- include "deployment.labels" . | indent 4 }}
+spec:
+{{- if $service.loadBalancerIP }}
+  loadBalancerIP: "{{ $service.loadBalancerIP }}"
+{{- end }}
+{{- if $service.loadBalancerSourceRanges }}
+  loadBalancerSourceRanges:
+{{ toYaml $service.loadBalancerSourceRanges | indent 4 }}
+{{- end }}
+{{- if $service.externalTrafficPolicy }}
+  externalTrafficPolicy: {{$service.externalTrafficPolicy }}
+{{- end }}
+  type: {{ $service.type }}
+  selector:
+{{- include "pod.labels" . | indent 4 }}
+  ports:
+    {{- range $key, $val := $service.ports }}
+    -
+      {{- range $pkey, $pval := $val }}
+      {{ $pkey}}: {{ $pval }}
+      {{- end }}
+    {{- end }}
+---

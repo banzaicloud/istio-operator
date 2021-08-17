@@ -55,6 +55,8 @@ linters-settings:
       - ifElseChain
   gomoddirectives:
     replace-local: true
+    replace-allow-list:
+    - github.com/gogo/protobuf
 
 issues:
   # mainly because of the operator, but we are using helm chart names

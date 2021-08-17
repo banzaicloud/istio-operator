@@ -12,7 +12,9 @@ import (
 	_ "github.com/gogo/protobuf/protoc-gen-gogo/descriptor"
 	_ "github.com/gogo/protobuf/types"
 	_ "istio.io/gogo-genproto/googleapis/google/api"
+	_ "k8s.io/api/apps/v1"
 	_ "k8s.io/api/core/v1"
+	_ "k8s.io/apimachinery/pkg/apis/meta/v1"
 	math "math"
 )
 
@@ -40,6 +42,39 @@ func (this *BaseKubernetesResourceConfig) MarshalJSON() ([]byte, error) {
 
 // UnmarshalJSON is a custom unmarshaler for BaseKubernetesResourceConfig
 func (this *BaseKubernetesResourceConfig) UnmarshalJSON(b []byte) error {
+	return CommonUnmarshaler.Unmarshal(bytes.NewReader(b), this)
+}
+
+// MarshalJSON is a custom marshaler for DeploymentStrategy
+func (this *DeploymentStrategy) MarshalJSON() ([]byte, error) {
+	str, err := CommonMarshaler.MarshalToString(this)
+	return []byte(str), err
+}
+
+// UnmarshalJSON is a custom unmarshaler for DeploymentStrategy
+func (this *DeploymentStrategy) UnmarshalJSON(b []byte) error {
+	return CommonUnmarshaler.Unmarshal(bytes.NewReader(b), this)
+}
+
+// MarshalJSON is a custom marshaler for DeploymentStrategy_RollingUpdateDeployment
+func (this *DeploymentStrategy_RollingUpdateDeployment) MarshalJSON() ([]byte, error) {
+	str, err := CommonMarshaler.MarshalToString(this)
+	return []byte(str), err
+}
+
+// UnmarshalJSON is a custom unmarshaler for DeploymentStrategy_RollingUpdateDeployment
+func (this *DeploymentStrategy_RollingUpdateDeployment) UnmarshalJSON(b []byte) error {
+	return CommonUnmarshaler.Unmarshal(bytes.NewReader(b), this)
+}
+
+// MarshalJSON is a custom marshaler for PodDisruptionBudget
+func (this *PodDisruptionBudget) MarshalJSON() ([]byte, error) {
+	str, err := CommonMarshaler.MarshalToString(this)
+	return []byte(str), err
+}
+
+// UnmarshalJSON is a custom unmarshaler for PodDisruptionBudget
+func (this *PodDisruptionBudget) UnmarshalJSON(b []byte) error {
 	return CommonUnmarshaler.Unmarshal(bytes.NewReader(b), this)
 }
 
@@ -154,6 +189,6 @@ func (this *IntOrString) UnmarshalJSON(b []byte) error {
 }
 
 var (
-	CommonMarshaler   = &github_com_gogo_protobuf_jsonpb.Marshaler{}
+	CommonMarshaler   = &github_com_gogo_protobuf_jsonpb.Marshaler{Int64Uint64asIntegers: true}
 	CommonUnmarshaler = &github_com_gogo_protobuf_jsonpb.Unmarshaler{AllowUnknownFields: true}
 )

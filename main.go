@@ -27,11 +27,11 @@ import (
 	clientgoscheme "k8s.io/client-go/kubernetes/scheme"
 	_ "k8s.io/client-go/plugin/pkg/client/auth/gcp"
 	ctrl "sigs.k8s.io/controller-runtime"
-	"sigs.k8s.io/controller-runtime/pkg/log/zap"
 
 	// +kubebuilder:scaffold:imports
 	servicemeshv1alpha1 "github.com/banzaicloud/istio-operator/v2/api/v1alpha1"
 	"github.com/banzaicloud/istio-operator/v2/controllers"
+	"github.com/banzaicloud/istio-operator/v2/pkg/util"
 )
 
 var (
@@ -51,21 +51,31 @@ func init() {
 
 func main() {
 	var metricsAddr string
-	var enableLeaderElection bool
 	flag.StringVar(&metricsAddr, "metrics-addr", ":8080", "The address the metric endpoint binds to.")
-	flag.BoolVar(&enableLeaderElection, "enable-leader-election", false,
-		"Enable leader election for controller manager. "+
-			"Enabling this will ensure there is only one active controller manager.")
+	var developmentMode bool
+	flag.BoolVar(&developmentMode, "devel-mode", false, "Set development mode (mainly for logging).")
+	var leaderElectionEnabled bool
+	flag.BoolVar(&leaderElectionEnabled, "leader-election-enabled", false, "Enable leader election for controller manager. "+
+		"Enabling this will ensure there is only one active controller manager.")
+	var leaderElectionNamespace string
+	flag.StringVar(&leaderElectionNamespace, "leader-election-namespace", "istio-system", "Determines the namespace in which the leader election configmap will be created.")
+	var leaderElectionName string
+	flag.StringVar(&leaderElectionName, "leader-election-name", "istio-operator-leader-election", "Determines the name of the leader election configmap.")
+	var webhookServerPort uint
+	flag.UintVar(&webhookServerPort, "webhook-server-port", 9443, "The port that the webhook server serves at.")
+	var verboseLogging bool
+	flag.BoolVar(&verboseLogging, "verbose", false, "Enable verbose logging")
 	flag.Parse()
 
-	ctrl.SetLogger(zap.New(zap.UseDevMode(true)))
+	ctrl.SetLogger(util.CreateLogger(verboseLogging, developmentMode))
 
 	mgr, err := ctrl.NewManager(ctrl.GetConfigOrDie(), ctrl.Options{
-		Scheme:             scheme,
-		MetricsBindAddress: metricsAddr,
-		Port:               9443, //nolint:gomnd
-		LeaderElection:     enableLeaderElection,
-		LeaderElectionID:   "e59a683c.cisco.com",
+		Scheme:                  scheme,
+		MetricsBindAddress:      metricsAddr,
+		Port:                    int(webhookServerPort),
+		LeaderElection:          leaderElectionEnabled,
+		LeaderElectionID:        leaderElectionName,
+		LeaderElectionNamespace: leaderElectionNamespace,
 	})
 	if err != nil {
 		setupLog.Error(err, "unable to start manager")
@@ -74,7 +84,7 @@ func main() {
 
 	if err = (&controllers.IstioControlPlaneReconciler{
 		Client: mgr.GetClient(),
-		Log:    ctrl.Log.WithName("istio-cp-controller").WithName("IstioControlPlane"),
+		Log:    ctrl.Log.WithName("controllers").WithName("IstioControlPlane"),
 		Scheme: mgr.GetScheme(),
 	}).SetupWithManager(mgr); err != nil {
 		setupLog.Error(err, "unable to create controller", "controller", "IstioControlPlane")
@@ -97,9 +107,9 @@ func main() {
 	}
 
 	// remove finalizers
-	setupLog.Info("removing finalizer from Istio resources")
+	setupLog.Info("removing finalizer from controlled resources")
 	err = controllers.RemoveFinalizers(mgr.GetClient())
 	if err != nil {
-		setupLog.Error(err, "could not remove finalizers from Istio resources")
+		setupLog.Error(err, "could not remove finalizers from controlled resources")
 	}
 }

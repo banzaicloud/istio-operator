@@ -19,6 +19,7 @@ ignored = [
   "github.com/xeipuuv/gojsonpointer", # Apache2
   "github.com/xeipuuv/gojsonreference", # Apache2
   "github.com/xeipuuv/gojsonschema", # Apache2
+  "github.com/russross/blackfriday", # Simplifed BSD
 
   # Unsupported VCS
   "cloud.google.com/go",

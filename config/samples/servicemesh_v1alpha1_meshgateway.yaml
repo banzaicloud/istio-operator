@@ -1,45 +1,113 @@
 apiVersion: servicemesh.cisco.com/v1alpha1
 kind: MeshGateway
 metadata:
-  name: meshgateway-sample
+  name: joskapista
 spec:
+  deployment:
+    affinity:
+      nodeAffinity:
+        requiredDuringSchedulingIgnoredDuringExecution:
+          nodeSelectorTerms:
+          - matchExpressions:
+            - key: kubernetes.io/e2e-az-name
+              operator: In
+              values:
+              - e2e-az1
+              - e2e-az2
+      podAffinity:
+        requiredDuringSchedulingIgnoredDuringExecution:
+        - labelSelector:
+            matchExpressions:
+            - key: security
+              operator: In
+              values:
+              - S1
+          topologyKey: topology.kubernetes.io/zone
+    env:
+    - name: ISTIO_META_LOCAL_ENDPOINTS_ONLY
+      value: "true"
+    imagePullPolicy: Always
+    metadata:
+      annotations:
+        smt: smt
+      labels:
+        app: istio-meshexpansion-gateway
+        gateway-name: istio-meshexpansion-gateway-cp-v19x
+        gateway-type: ingress
+        istio: meshexpansiongateway
+        istio.io/rev: cp-v19x.istio-system
+    nodeSelector:
+      disktype: ssd
+    priorityClassName: "asdad"
+    replicas:
+      count: 1
+      min: 1
+      max: 1
+    resources:
+      limits:
+        cpu: "2"
+        memory: 1Gi
+      requests:
+        cpu: 100m
+        memory: 128Mi
+    securityContext:
+      runAsGroup: 0
+      runAsNonRoot: false
+      runAsUser: 0
+    tolerations:
+    - key: "key1"
+      operator: "Equal"
+      value: "value1"
+      effect: "NoSchedule"
+    volumeMounts:
+    - name: config-vol
+      mountPath: /etc/config
+    volumes:
+    - name: "dddemo"
+      volumeSource:
+        secret:
+          secretName: "ssname"
+          optional: true
+    - name: config-vol
+      volumeSource:
+        configMap:
+          localObjectReference:
+            name: log-config
+          items:
+            - key: log_level
+              path: log_level
   istioControlPlane:
-      name: cp-v110x
-      namespace: istio-system
+    name: cp-v19x
+    namespace: istio-system
+  k8sResourceOverlays:
+  - groupVersionKind:
+      kind: DestinationRule
+    objectKey:
+      name: meshexpansion-dr-istiod-cp-v19x
+    patches:
+    - parseValue: true
+      path: /spec/trafficPolicy?/loadBalancer?
+      type: replace
+      value: |
+        consistentHash:
+          httpCookie:
+            name: user
+            ttl: 0s
+  runAsRoot: true
+  service:
+    metadata:
+      annotations:
+        smt: smt
+      labels:
+        smt: smt
+    ports:
+    - name: tcp-als-tls
+      port: 50600
+      protocol: TCP
+      targetPort: 50600
+    - name: tcp-zipkin-tls
+      port: 59411
+      protocol: TCP
+      targetPort: 59411
+    type: LoadBalancer
   type: ingress
-  replicaCount: 1
-  minReplicas: 1
-  maxReplicas: 5
-  serviceType: "LoadBalancer"
-  loadBalancerIP: ""
-  serviceAnnotations: {}
-  serviceLabels: {}
-  serviceExternalTrafficPolicy: "Cluster"
-  runAsRoot: false
-  ports:
-    - port: 15021
-      targetPort: 15021
-      name: status-port
-    - port: 80
-      targetPort: 8080
-      name: http2
-    - port: 443
-      targetPort: 8443
-      name: https
-    - port: 15443
-      targetPort: 15443
-      name: tls
-#   additionalEnvVars:
-#   - name: ADDITIONAL_VARIABLE
-#     value: "value"
-#   - name: META_POD_NAME
-#     valueFrom:
-#       fieldRef:
-#         fieldPath: metadata.name
-  resources:
-    requests:
-      cpu: 100m
-      memory: 128Mi
-    limits:
-      cpu: 2000m
-      memory: 1024Mi

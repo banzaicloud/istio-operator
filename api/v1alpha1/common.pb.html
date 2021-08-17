@@ -2,7 +2,7 @@
 title: istio_operator.v2.api.v1alpha1
 layout: protoc-gen-docs
 generator: protoc-gen-docs
-number_of_entries: 21
+number_of_entries: 25
 ---
 <h2 id="K8sObjectMeta">K8sObjectMeta</h2>
 <section>
@@ -248,11 +248,107 @@ No
 No
 </td>
 </tr>
-<tr id="BaseKubernetesResourceConfig-resourceOverlays">
-<td><code>resourceOverlays</code></td>
-<td><code><a href="#K8sResourceOverlayPatch">K8sResourceOverlayPatch[]</a></code></td>
+<tr id="BaseKubernetesResourceConfig-podDisruptionBudget">
+<td><code>podDisruptionBudget</code></td>
+<td><code><a href="#PodDisruptionBudget">PodDisruptionBudget</a></code></td>
 <td>
-<p>K8s resource overlay patches</p>
+<p>PodDisruptionBudget configuration</p>
+
+</td>
+<td>
+No
+</td>
+</tr>
+<tr id="BaseKubernetesResourceConfig-deploymentStrategy">
+<td><code>deploymentStrategy</code></td>
+<td><code><a href="#DeploymentStrategy">DeploymentStrategy</a></code></td>
+<td>
+</td>
+<td>
+No
+</td>
+</tr>
+</tbody>
+</table>
+</section>
+<h2 id="DeploymentStrategy">DeploymentStrategy</h2>
+<section>
+<table class="message-fields">
+<thead>
+<tr>
+<th>Field</th>
+<th>Type</th>
+<th>Description</th>
+<th>Required</th>
+</tr>
+</thead>
+<tbody>
+<tr id="DeploymentStrategy-type">
+<td><code>type</code></td>
+<td><code>string</code></td>
+<td>
+<p>Type of deployment. Can be &ldquo;Recreate&rdquo; or &ldquo;RollingUpdate&rdquo;. Default is RollingUpdate.
++optional</p>
+
+</td>
+<td>
+No
+</td>
+</tr>
+<tr id="DeploymentStrategy-rollingUpdate">
+<td><code>rollingUpdate</code></td>
+<td><code><a href="#DeploymentStrategy-RollingUpdateDeployment">RollingUpdateDeployment</a></code></td>
+<td>
+<p>Rolling update config params. Present only if DeploymentStrategyType =
+RollingUpdate.
++optional</p>
+
+</td>
+<td>
+No
+</td>
+</tr>
+</tbody>
+</table>
+</section>
+<h2 id="PodDisruptionBudget">PodDisruptionBudget</h2>
+<section>
+<p>is a description of a PodDisruptionBudget</p>
+
+<table class="message-fields">
+<thead>
+<tr>
+<th>Field</th>
+<th>Type</th>
+<th>Description</th>
+<th>Required</th>
+</tr>
+</thead>
+<tbody>
+<tr id="PodDisruptionBudget-minAvailable">
+<td><code>minAvailable</code></td>
+<td><code><a href="#IntOrString">IntOrString</a></code></td>
+<td>
+<p>An eviction is allowed if at least &ldquo;minAvailable&rdquo; pods selected by
+&ldquo;selector&rdquo; will still be available after the eviction, i.e. even in the
+absence of the evicted pod.  So for example you can prevent all voluntary
+evictions by specifying &ldquo;100%&rdquo;.
++optional</p>
+
+</td>
+<td>
+No
+</td>
+</tr>
+<tr id="PodDisruptionBudget-maxUnavailable">
+<td><code>maxUnavailable</code></td>
+<td><code><a href="#IntOrString">IntOrString</a></code></td>
+<td>
+<p>An eviction is allowed if at most &ldquo;maxUnavailable&rdquo; pods selected by
+&ldquo;selector&rdquo; are unavailable after the eviction, i.e. even in absence of
+the evicted pod. For example, one can prevent all voluntary evictions
+by specifying 0. This is a mutually exclusive setting with &ldquo;minAvailable&rdquo;.
++optional</p>
 
 </td>
 <td>
@@ -726,17 +822,6 @@ No
 No
 </td>
 </tr>
-<tr id="Replicas-autoscaleEnabled">
-<td><code>autoscaleEnabled</code></td>
-<td><code><a href="https://developers.google.com/protocol-buffers/docs/reference/google.protobuf#boolvalue">BoolValue</a></code></td>
-<td>
-<p>Standard Kubernetes hpa enablement configuration</p>
-
-</td>
-<td>
-No
-</td>
-</tr>
 <tr id="Replicas-min">
 <td><code>min</code></td>
 <td><code><a href="https://developers.google.com/protocol-buffers/docs/reference/google.protobuf#int32value">Int32Value</a></code></td>
@@ -754,6 +839,20 @@ No
 <td><code><a href="https://developers.google.com/protocol-buffers/docs/reference/google.protobuf#int32value">Int32Value</a></code></td>
 <td>
 <p>Standard Kubernetes maximum replicas configuration
++kubebuilder:validation:Minimum=0</p>
+
+</td>
+<td>
+No
+</td>
+</tr>
+<tr id="Replicas-targetCPUUtilizationPercentage">
+<td><code>targetCPUUtilizationPercentage</code></td>
+<td><code><a href="https://developers.google.com/protocol-buffers/docs/reference/google.protobuf#int32value">Int32Value</a></code></td>
+<td>
+<p>target average CPU utilization (represented as a percentage of requested CPU) over all the pods;
+if not specified the default autoscaling policy will be used.
++optional
 +kubebuilder:validation:Minimum=0</p>
 
 </td>
@@ -817,6 +916,39 @@ GOTYPE: *Quantity</p>
 <p>Synthetic type for generating Go structs.
 GOTYPE: *IntOrString</p>
 
+</section>
+<h2 id="DeploymentStrategy-RollingUpdateDeployment">DeploymentStrategy.RollingUpdateDeployment</h2>
+<section>
+<table class="message-fields">
+<thead>
+<tr>
+<th>Field</th>
+<th>Type</th>
+<th>Description</th>
+<th>Required</th>
+</tr>
+</thead>
+<tbody>
+<tr id="DeploymentStrategy-RollingUpdateDeployment-maxUnavailable">
+<td><code>maxUnavailable</code></td>
+<td><code><a href="#IntOrString">IntOrString</a></code></td>
+<td>
+</td>
+<td>
+No
+</td>
+</tr>
+<tr id="DeploymentStrategy-RollingUpdateDeployment-maxSurge">
+<td><code>maxSurge</code></td>
+<td><code><a href="#IntOrString">IntOrString</a></code></td>
+<td>
+</td>
+<td>
+No
+</td>
+</tr>
+</tbody>
+</table>
 </section>
 <h2 id="K8sResourceOverlayPatch-GroupVersionKind">K8sResourceOverlayPatch.GroupVersionKind</h2>
 <section>
@@ -1500,6 +1632,49 @@ No
 </tr>
 <tr id="K8sResourceOverlayPatch-Type-remove">
 <td><code>remove</code></td>
+<td>
+</td>
+</tr>
+</tbody>
+</table>
+</section>
+<h2 id="ConfigState">ConfigState</h2>
+<section>
+<table class="enum-values">
+<thead>
+<tr>
+<th>Name</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr id="ConfigState-Unspecified">
+<td><code>Unspecified</code></td>
+<td>
+</td>
+</tr>
+<tr id="ConfigState-Created">
+<td><code>Created</code></td>
+<td>
+</td>
+</tr>
+<tr id="ConfigState-ReconcileFailed">
+<td><code>ReconcileFailed</code></td>
+<td>
+</td>
+</tr>
+<tr id="ConfigState-Reconciling">
+<td><code>Reconciling</code></td>
+<td>
+</td>
+</tr>
+<tr id="ConfigState-Available">
+<td><code>Available</code></td>
+<td>
+</td>
+</tr>
+<tr id="ConfigState-Unmanaged">
+<td><code>Unmanaged</code></td>
 <td>
 </td>
 </tr>

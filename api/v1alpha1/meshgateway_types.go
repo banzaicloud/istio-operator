@@ -27,8 +27,36 @@ type MeshGateway struct {
 	metav1.TypeMeta   `json:",inline"`
 	metav1.ObjectMeta `json:"metadata,omitempty" protobuf:"bytes,1,opt,name=metadata"`
 
-	Spec   MeshGatewaySpec   `json:"spec,omitempty" protobuf:"bytes,2,opt,name=spec"`
+	Spec   *MeshGatewaySpec  `json:"spec,omitempty" protobuf:"bytes,2,opt,name=spec"`
 	Status MeshGatewayStatus `json:"status,omitempty"`
+}
+
+func (mgw *MeshGateway) SetStatus(status ConfigState, errorMessage string) {
+	mgw.Status.Status = status
+	mgw.Status.ErrorMessage = errorMessage
+}
+
+func (mgw *MeshGateway) GetStatus() interface{} {
+	return mgw.Status
+}
+
+func (mgw *MeshGateway) GetSpec() *MeshGatewaySpec {
+	if mgw.Spec != nil {
+		return mgw.Spec
+	}
+
+	return nil
+}
+
+type MeshGatewayWithProperties struct {
+	*MeshGateway
+	Properties MeshGatewayProperties
+}
+
+type MeshGatewayProperties struct {
+	Revision              string
+	EnablePrometheusMerge bool
+	InjectionTemplate     string
 }
 
 // +kubebuilder:object:root=true

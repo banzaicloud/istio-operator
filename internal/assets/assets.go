@@ -35,6 +35,11 @@ var (
 	//go:embed manifests/istio-control/istio-discovery/templates/_helpers.tpl
 	discoveryChart embed.FS
 	DiscoveryChart = GetSubFS(discoveryChart, "manifests/istio-control/istio-discovery")
+
+	//go:embed manifests/meshgateway
+	//go:embed manifests/meshgateway/templates/_helpers.tpl
+	meshGateway embed.FS
+	MeshGateway = GetSubFS(meshGateway, "manifests/meshgateway")
 )
 
 func GetSubFS(fsys fs.FS, dir string) (subFS fs.FS) {
