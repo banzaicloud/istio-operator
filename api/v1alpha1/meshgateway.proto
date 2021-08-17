@@ -38,10 +38,13 @@ option go_package = "github.com/banzaicloud/istio-operator/v2/api/v1alpha1";
 // +cue-gen:MeshGateway:subresource:status
 // +cue-gen:MeshGateway:scope:Namespaced
 // +cue-gen:MeshGateway:resource:shortNames=mgw,meshgw
-// +cue-gen:MeshGateway:printerColumn:name=Age,type=date,JSONPath=.metadata.creationTimestamp,description="CreationTimestamp is a timestamp
-// representing the server time when this object was created. It is not guaranteed to be set in happens-before order across separate operations.
-// Clients may not set this value. It is represented in RFC3339 form and is in UTC.
-// Populated by the system. Read-only. Null for lists. More info: https://git.k8s.io/community/contributors/devel/api-conventions.md#metadata"
+// +cue-gen:MeshGateway:printerColumn:name="Type",type="string",JSONPath=".spec.type",description="Type of the gateway"
+// +cue-gen:MeshGateway:printerColumn:name="Service Type",type="string",JSONPath=".spec.service.type",description="Type of the service"
+// +cue-gen:MeshGateway:printerColumn:name="Status",type="string",JSONPath=".status.Status",description="Status of the resource"
+// +cue-gen:MeshGateway:printerColumn:name="Ingress IPs",type="string",JSONPath=".status.GatewayAddress",description="Ingress gateway addresses of the resource"
+// +cue-gen:MeshGateway:printerColumn:name="Error",type="string",JSONPath=".status.ErrorMessage",description="Error message"
+// +cue-gen:MeshGateway:printerColumn:name="Age",type="date",JSONPath=".metadata.creationTimestamp"
+// +cue-gen:MeshGateway:printerColumn:name="Control Plane",type="string",JSONPath=".spec.istioControlPlane"
 // +cue-gen:MeshGateway:preserveUnknownFields:false
 // -->
 //
@@ -70,6 +73,10 @@ message MeshGatewaySpec {
     repeated K8sResourceOverlayPatch k8sResourceOverlays = 6;
 }
 
+message Properties {
+    string name = 1;
+}
+
 enum GatewayType {
     unspecified = 0;
     ingress = 1;
@@ -89,13 +96,4 @@ message MeshGatewayStatus {
 
     // Reconciliation error message if any
     string ErrorMessage = 3;
-}
-
-enum ConfigState {
-    Unspecified = 0;
-    Created = 1;
-    ReconcileFailed = 2;
-    Reconciling = 3;
-    Available = 4;
-    Unmanaged = 5;
 }

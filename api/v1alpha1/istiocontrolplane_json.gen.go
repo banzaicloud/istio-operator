@@ -176,6 +176,6 @@ func (this *IstioControlPlaneStatus) UnmarshalJSON(b []byte) error {
 }
 
 var (
-	IstiocontrolplaneMarshaler   = &github_com_gogo_protobuf_jsonpb.Marshaler{}
+	IstiocontrolplaneMarshaler   = &github_com_gogo_protobuf_jsonpb.Marshaler{Int64Uint64asIntegers: true}
 	IstiocontrolplaneUnmarshaler = &github_com_gogo_protobuf_jsonpb.Unmarshaler{AllowUnknownFields: true}
 )

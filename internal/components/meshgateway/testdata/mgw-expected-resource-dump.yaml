@@ -1,0 +1,272 @@
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  creationTimestamp: null
+  name: default
+spec: {}
+status: {}
+
+---
+apiVersion: policy/v1beta1
+kind: PodDisruptionBudget
+metadata:
+  labels:
+    app: demo-gw
+    gateway-name: demo-gw
+    gateway-type: ingress
+    istio.io/rev: cp-v110x.istio-system
+    release: meshgateway
+  name: demo-gw
+  namespace: default
+spec:
+  maxUnavailable: 5
+  minAvailable: 1
+  selector:
+    matchLabels:
+      app: demo-gw
+      gateway-name: demo-gw
+      gateway-type: ingress
+      istio.io/rev: cp-v110x.istio-system
+      podlabel: podlabelvalue
+      release: meshgateway
+---
+apiVersion: v1
+imagePullSecrets:
+- name: pullsecret-1
+- name: pullsecret-2
+kind: ServiceAccount
+metadata:
+  labels:
+    app: demo-gw
+    gateway-name: demo-gw
+    gateway-type: ingress
+    istio.io/rev: cp-v110x.istio-system
+    release: meshgateway
+  name: demo-gw-service-account
+  namespace: default
+
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  labels:
+    app: demo-gw
+    gateway-name: demo-gw
+    gateway-type: ingress
+    istio.io/rev: cp-v110x.istio-system
+    release: meshgateway
+  name: demo-gw-sds
+  namespace: default
+rules:
+- apiGroups:
+  - ""
+  resources:
+  - secrets
+  verbs:
+  - get
+  - watch
+  - list
+
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  labels:
+    app: demo-gw
+    gateway-name: demo-gw
+    gateway-type: ingress
+    istio.io/rev: cp-v110x.istio-system
+    release: meshgateway
+  name: demo-gw-sds
+  namespace: default
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: demo-gw-sds
+subjects:
+- kind: ServiceAccount
+  name: demo-gw-service-account
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  annotations:
+    annotation1: smt
+  labels:
+    app: demo-gw
+    gateway-name: demo-gw
+    gateway-type: ingress
+    istio.io/rev: cp-v110x.istio-system
+    release: meshgateway
+  name: demo-gw
+  namespace: default
+spec:
+  externalTrafficPolicy: Cluster
+  loadBalancerIP: 192.168.0.100
+  loadBalancerSourceRanges:
+  - 192.168.0.0/16
+  ports:
+  - name: tcp-als-tls
+    port: 50600
+    protocol: TCP
+    targetPort: 50600
+  - name: tcp-zipkin-tls
+    port: 59411
+    protocol: TCP
+    targetPort: 59411
+  selector:
+    app: demo-gw
+    gateway-name: demo-gw
+    gateway-type: ingress
+    istio.io/rev: cp-v110x.istio-system
+    podlabel: podlabelvalue
+    release: meshgateway
+  type: LoadBalancer
+
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  annotations:
+    mgw.banzaicloud.io/type: ingress
+  labels:
+    app: demo-gw
+    gateway-name: demo-gw
+    gateway-type: ingress
+    istio.io/rev: cp-v110x.istio-system
+    release: meshgateway
+  name: demo-gw
+  namespace: default
+spec:
+  selector:
+    matchLabels:
+      app: demo-gw
+      gateway-name: demo-gw
+      gateway-type: ingress
+      istio.io/rev: cp-v110x.istio-system
+      podlabel: podlabelvalue
+      release: meshgateway
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 100%
+      maxUnavailable: 25%
+  template:
+    metadata:
+      annotations:
+        prometheus.io/path: /stats/prometheus
+        prometheus.io/port: "15020"
+        prometheus.io/scrape: "true"
+        inject.istio.io/templates: gateway
+        sidecar.istio.io/inject: "true"
+        podannotation: podannotationvalue
+      labels:
+        app: demo-gw
+        gateway-name: demo-gw
+        gateway-type: ingress
+        istio.io/rev: cp-v110x.istio-system
+        release: meshgateway
+        sidecar.istio.io/inject: "true"
+        podlabel: podlabelvalue
+    spec:
+      affinity:
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+            - matchExpressions:
+              - key: kubernetes.io/e2e-az-name
+                operator: In
+                values:
+                - e2e-az1
+                - e2e-az2
+        podAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+          - labelSelector:
+              matchExpressions:
+              - key: security
+                operator: In
+                values:
+                - S1
+            topologyKey: topology.kubernetes.io/zone
+      containers:
+      - env:
+        - name: ISTIO_META_LOCAL_ENDPOINTS_ONLY
+          value: "true"
+        - name: ISTIO_META_ROUTER_MODE
+          value: standard
+        image: auto
+        name: istio-proxy
+        imagePullPolicy: Always
+        ports:
+        - containerPort: 15090
+          name: http-envoy-prom
+          protocol: TCP
+        resources:
+          limits:
+            cpu: "2"
+            memory: 1Gi
+          requests:
+            cpu: 100m
+            memory: 128Mi
+        securityContext:
+          allowPrivilegeEscalation: false
+          capabilities:
+            drop:
+            - ALL
+          privileged: false
+          readOnlyRootFilesystem: true
+        volumeMounts:
+        - mountPath: /etc/config
+          name: config-vol
+      nodeSelector:
+        disktype: ssd
+      priorityClassName: high-priority
+      securityContext:
+        runAsGroup: 1337
+        runAsNonRoot: true
+        runAsUser: 1337
+      serviceAccountName: demo-gw-service-account
+      tolerations:
+      - effect: NoSchedule
+        key: key1
+        operator: Equal
+        tolerationSeconds: 5
+        value: value1
+      volumes:
+      - name: dddemo
+        secret:
+          optional: true
+          secretName: ssname
+      - configMap:
+          items:
+          - key: log_level
+            path: log_level
+          name: log-config
+        name: config-vol
+
+---
+apiVersion: autoscaling/v2beta1
+kind: HorizontalPodAutoscaler
+metadata:
+  name: demo-gw
+  namespace: default
+  labels:
+    app: demo-gw
+    gateway-name: demo-gw
+    gateway-type: ingress
+    istio.io/rev: cp-v110x.istio-system
+    release: meshgateway
+spec:
+  maxReplicas: 3
+  minReplicas: 1
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: demo-gw
+  metrics:
+    - type: Resource
+      resource:
+        name: cpu
+        targetAverageUtilization: 80

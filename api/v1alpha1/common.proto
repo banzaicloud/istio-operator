@@ -18,6 +18,8 @@ import "google/protobuf/wrappers.proto";
 import "gogoproto/gogo.proto";
 import "google/api/field_behavior.proto";
 import "k8s.io/api/core/v1/generated.proto";
+import "k8s.io/api/apps/v1/generated.proto";
+import "k8s.io/apimachinery/pkg/apis/meta/v1/generated.proto";
 import "google/protobuf/descriptor.proto";
 
 package istio_operator.v2.api.v1alpha1;
@@ -115,8 +117,43 @@ message BaseKubernetesResourceConfig {
     // Standard Kubernetes pod annotation and label configuration
     K8sObjectMeta podMetadata = 15;
 
-    // K8s resource overlay patches
-    repeated K8sResourceOverlayPatch resourceOverlays = 16;
+    // PodDisruptionBudget configuration
+    PodDisruptionBudget podDisruptionBudget = 16;
+
+    DeploymentStrategy deploymentStrategy = 17;
+}
+
+message DeploymentStrategy {
+    message RollingUpdateDeployment {
+        IntOrString maxUnavailable = 1 [(intorstring) = "true"];
+        IntOrString maxSurge = 2 [(intorstring) = "true"];
+    }
+
+    // Type of deployment. Can be "Recreate" or "RollingUpdate". Default is RollingUpdate.
+    // +optional
+    string type = 1;
+
+    // Rolling update config params. Present only if DeploymentStrategyType =
+    // RollingUpdate.
+    // +optional
+    RollingUpdateDeployment rollingUpdate = 2;
+}
+
+// is a description of a PodDisruptionBudget
+message PodDisruptionBudget {
+    // An eviction is allowed if at least "minAvailable" pods selected by
+    // "selector" will still be available after the eviction, i.e. even in the
+    // absence of the evicted pod.  So for example you can prevent all voluntary
+    // evictions by specifying "100%".
+    // +optional
+    IntOrString minAvailable = 1 [(intorstring) = "true"];
+
+    // An eviction is allowed if at most "maxUnavailable" pods selected by
+    // "selector" are unavailable after the eviction, i.e. even in absence of
+    // the evicted pod. For example, one can prevent all voluntary evictions
+    // by specifying 0. This is a mutually exclusive setting with "minAvailable".
+    // +optional
+    IntOrString maxUnavailable = 2 [(intorstring) = "true"];
 }
 
 // ServiceSpec describes the attributes that a user creates on a service.
@@ -317,16 +354,19 @@ message Replicas {
     // +kubebuilder:validation:Minimum=0
     google.protobuf.Int32Value count = 1 [(gogoproto.wktpointer) = true];
 
-    // Standard Kubernetes hpa enablement configuration
-    google.protobuf.BoolValue autoscaleEnabled = 2 [(gogoproto.wktpointer) = true];
-
     // Standard Kubernetes minimum replicas configuration
     // +kubebuilder:validation:Minimum=0
-    google.protobuf.Int32Value min = 3 [(gogoproto.wktpointer) = true];
+    google.protobuf.Int32Value min = 2 [(gogoproto.wktpointer) = true];
 
     // Standard Kubernetes maximum replicas configuration
     // +kubebuilder:validation:Minimum=0
-    google.protobuf.Int32Value max = 4 [(gogoproto.wktpointer) = true];
+    google.protobuf.Int32Value max = 3 [(gogoproto.wktpointer) = true];
+
+    // target average CPU utilization (represented as a percentage of requested CPU) over all the pods;
+	// if not specified the default autoscaling policy will be used.
+	// +optional
+    // +kubebuilder:validation:Minimum=0
+    google.protobuf.Int32Value targetCPUUtilizationPercentage = 4 [(gogoproto.wktpointer) = true];
 }
 
 message K8sResourceOverlayPatch {
@@ -352,6 +392,15 @@ message K8sResourceOverlayPatch {
     GroupVersionKind groupVersionKind = 1 [(gogoproto.nullable) = false];
     NamespacedName objectKey = 2;
     repeated Patch patches = 3 [(gogoproto.nullable) = false];
+}
+
+enum ConfigState {
+    Unspecified = 0;
+    Created = 1;
+    ReconcileFailed = 2;
+    Reconciling = 3;
+    Available = 4;
+    Unmanaged = 5;
 }
 
 // Synthetic type for generating Go structs.

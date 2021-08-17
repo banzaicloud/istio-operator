@@ -50,6 +50,8 @@ import (
 	"github.com/banzaicloud/operator-tools/pkg/reconciler"
 )
 
+const istioControlPlaneFinalizerID = "istio-controlplane.servicemesh.cisco.com"
+
 // IstioControlPlaneReconciler reconciles a IstioControlPlane object
 type IstioControlPlaneReconciler struct {
 	client.Client
@@ -123,7 +125,7 @@ func (r *IstioControlPlaneReconciler) Reconcile(ctx context.Context, req ctrl.Re
 
 	logger.Info("reconciling")
 
-	err = r.addFinalizer(icp)
+	err = util.AddFinalizer(r.Client, icp, istioControlPlaneFinalizerID)
 	if err != nil {
 		return ctrl.Result{}, err
 	}
@@ -159,17 +161,18 @@ func (r *IstioControlPlaneReconciler) Reconcile(ctx context.Context, req ctrl.Re
 			reconciler.NativeReconcilerSetControllerRef(),
 		}),
 	)
-	_, err = discoveryReconciler.Reconcile(icp)
+
+	result, err := discoveryReconciler.Reconcile(icp)
 	if err != nil {
 		return ctrl.Result{}, err
 	}
 
-	err = r.removeFinalizer(icp)
+	err = util.RemoveFinalizer(r.Client, icp, istioControlPlaneFinalizerID)
 	if err != nil {
 		return ctrl.Result{}, err
 	}
 
-	return ctrl.Result{}, nil
+	return *result, nil
 }
 
 func (r *IstioControlPlaneReconciler) SetupWithManager(mgr ctrl.Manager) error {
@@ -181,7 +184,7 @@ func (r *IstioControlPlaneReconciler) SetupWithManager(mgr ctrl.Manager) error {
 				Kind:       "IstioControlPlane",
 				APIVersion: servicemeshv1alpha1.SchemeBuilder.GroupVersion.String(),
 			},
-		}).
+		}, ctrlBuilder.WithPredicates(util.ObjectChangePredicate{})).
 		Owns(&appsv1.Deployment{
 			TypeMeta: metav1.TypeMeta{
 				Kind:       "Deployment",
@@ -336,43 +339,32 @@ func (r *IstioControlPlaneReconciler) watchIstioCRs() error {
 	return nil
 }
 
-const finalizerID = "istio-controlplane.servicemesh.cisco.com"
-
-func (r *IstioControlPlaneReconciler) addFinalizer(icp *servicemeshv1alpha1.IstioControlPlane) error {
-	// add finalizer strings and update
-	if icp.ObjectMeta.DeletionTimestamp.IsZero() && !util.ContainsString(icp.ObjectMeta.Finalizers, finalizerID) {
-		icp.ObjectMeta.Finalizers = append(icp.ObjectMeta.Finalizers, finalizerID)
-		if err := r.Update(context.Background(), icp); err != nil {
-			return errors.WrapIf(err, "could not add finalizer to resource")
-		}
-	}
-
-	return nil
-}
-
-func (r *IstioControlPlaneReconciler) removeFinalizer(icp *servicemeshv1alpha1.IstioControlPlane) error {
-	if !icp.ObjectMeta.DeletionTimestamp.IsZero() && util.ContainsString(icp.ObjectMeta.Finalizers, finalizerID) {
-		icp.ObjectMeta.Finalizers = util.RemoveString(icp.ObjectMeta.Finalizers, finalizerID)
-		if err := r.Update(context.Background(), icp); err != nil {
-			return errors.WrapIf(err, "could not remove finalizer from resource")
-		}
-	}
-
-	return nil
-}
-
 func RemoveFinalizers(c client.Client) error {
 	var icps servicemeshv1alpha1.IstioControlPlaneList
-
 	err := c.List(context.Background(), &icps)
 	if err != nil {
 		return errors.WrapIf(err, "could not list Istio control plane resources")
 	}
+
 	for _, istio := range icps.Items {
 		istio := istio
-		istio.ObjectMeta.Finalizers = util.RemoveString(istio.ObjectMeta.Finalizers, finalizerID)
-		if err := c.Update(context.Background(), &istio); err != nil {
-			return errors.WrapIfWithDetails(err, "could not remove finalizer from Istio resource", "name", istio.GetName())
+		err = util.RemoveFinalizer(c, &istio, istioControlPlaneFinalizerID)
+		if err != nil {
+			return err
+		}
+	}
+
+	var mgws servicemeshv1alpha1.MeshGatewayList
+	err = c.List(context.Background(), &mgws)
+	if err != nil {
+		return errors.WrapIf(err, "could not list mesh gateway resources")
+	}
+
+	for _, mgw := range mgws.Items {
+		mgw := mgw
+		err = util.RemoveFinalizer(c, &mgw, meshGatewayFinalizerID)
+		if err != nil {
+			return err
 		}
 	}
 

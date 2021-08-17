@@ -38,7 +38,7 @@ const (
 	chartName     = "istio-discovery"
 	releaseName   = "istio-operator-discovery"
 
-	valuesTemplateFileName = "values.yaml.tmpl"
+	valuesTemplateFileName = "values.yaml.tpl"
 )
 
 var _ templatereconciler.Component = &Reconciler{}
@@ -116,7 +116,7 @@ func (rec *Reconciler) values(object runtime.Object) (helm.Strimap, error) {
 
 	values, err := util.TransformICPToStriMapWithTemplate(icp, assets.DiscoveryChart, valuesTemplateFileName)
 	if err != nil {
-		return nil, errors.WrapIff(errors.NewPlain("IstioControlPlane spec cannot be converted into a map[string]interface{}"), "%+v", icp.Spec)
+		return nil, errors.WrapIff(err, "IstioControlPlane spec cannot be converted into a map[string]interface{}: %+v", icp.Spec)
 	}
 
 	var meshConfigStriMap helm.Strimap

@@ -1,0 +1,77 @@
+{{- $gateway := .Values.deployment }}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ $gateway.name }}
+  namespace: {{ .Release.Namespace }}
+  labels:
+{{- include "deployment.labels" . | indent 4 }}
+{{- include "toYamlIf" (dict "value" $gateway.metadata.annotations "key" "annotations" "indent" 2) | indent 2 }}
+spec:
+{{- if not $gateway.autoscaleEnabled }}
+{{- if $gateway.replicaCount }}
+  replicas: {{ $gateway.replicaCount }}
+{{- end }}
+{{- end }}
+  selector:
+    matchLabels:
+{{- include "pod.labels" . | indent 6 }}
+  strategy:
+{{- if $gateway.deploymentStrategy }}
+{{ $gateway.deploymentStrategy | toYaml | indent 4 }}
+{{- end }}
+  template:
+    metadata:
+      labels:
+{{- include "pod.labels" . | indent 8 }}
+        sidecar.istio.io/inject: "true"
+      annotations:
+        {{- if $gateway.enablePrometheusMerge }}
+        prometheus.io/port: "15020"
+        prometheus.io/scrape: "true"
+        prometheus.io/path: "/stats/prometheus"
+        {{- end }}
+        sidecar.istio.io/inject: "true"
+        inject.istio.io/templates: "{{ .Values.injectionTemplate }}"
+{{ include "toYamlIf" (dict "value" $gateway.podMetadata.annotations) | indent 8 }}
+    spec:
+{{ include "toYamlIf" (dict "value" $gateway.securityContext "key" "securityContext" "indent" 2) | indent 6 }}
+      serviceAccountName: {{ $gateway.name }}-service-account
+{{- if $gateway.priorityClassName }}
+      priorityClassName: "{{ $gateway.priorityClassName }}"
+{{- end }}
+      containers:
+        - name: istio-proxy
+          image: auto
+{{- if $gateway.imagePullPolicy }}
+          imagePullPolicy: {{ $gateway.imagePullPolicy }}
+{{- end }}
+          ports:
+            {{- range $key, $val := $gateway.ports }}
+            - containerPort: {{ $val.targetPort | default $val.port }}
+              protocol: {{ $val.protocol | default "TCP" }}
+            {{- end }}
+            - containerPort: 15090
+              protocol: TCP
+              name: http-envoy-prom
+        {{- if not $gateway.runAsRoot }}
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop:
+              - ALL
+            privileged: false
+            readOnlyRootFilesystem: true
+        {{- end }}
+{{ include "toYamlIf" (dict "value" $gateway.resources "key" "resources" "indent" 2) | indent 10 }}
+          env:
+          {{- if not .Values.runAsRoot }}
+          - name: ISTIO_META_UNPRIVILEGED_POD
+            value: "true"
+          {{- end }}
+{{ include "toYamlIf" (dict "value" $gateway.env) | indent 10 }}
+{{ include "toYamlIf" (dict "value" $gateway.volumeMounts "key" "volumeMounts" "indent" 2) | indent 10 }}
+{{ include "toYamlIf" (dict "value" $gateway.volumes "key" "volumes" "indent" 2) | indent 6 }}
+{{ include "toYamlIf" (dict "value" $gateway.affinity "key" "affinity" "indent" 2) | indent 6 }}
+{{ include "toYamlIf" (dict "value" $gateway.nodeSelector "key" "nodeSelector" "indent" 2) | indent 6 }}
+{{ include "toYamlIf" (dict "value" $gateway.tolerations "key" "tolerations" "indent" 2) | indent 6 }}

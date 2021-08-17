@@ -20,6 +20,20 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
+type SortableIstioControlPlaneItems []IstioControlPlane
+
+func (list SortableIstioControlPlaneItems) Len() int {
+	return len(list)
+}
+
+func (list SortableIstioControlPlaneItems) Swap(i, j int) {
+	list[i], list[j] = list[j], list[i]
+}
+
+func (list SortableIstioControlPlaneItems) Less(i, j int) bool {
+	return list[i].CreationTimestamp.Time.Before(list[j].CreationTimestamp.Time)
+}
+
 // +kubebuilder:object:root=true
 
 // IstioControlPlane is the Schema for the istiocontrolplanes API

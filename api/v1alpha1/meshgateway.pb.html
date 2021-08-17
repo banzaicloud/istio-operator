@@ -4,7 +4,7 @@ description: Istio Mesh Gateway descriptor
 layout: protoc-gen-docs
 generator: protoc-gen-docs
 schema: istio-operator.api.v1alpha1.MeshGatewaySpec
-number_of_entries: 8
+number_of_entries: 9
 ---
 <h2 id="MeshGatewaySpec">MeshGatewaySpec</h2>
 <section>
@@ -82,6 +82,30 @@ Yes
 <td>
 <p>K8s resource overlay patches</p>
 
+</td>
+<td>
+No
+</td>
+</tr>
+</tbody>
+</table>
+</section>
+<h2 id="Properties">Properties</h2>
+<section>
+<table class="message-fields">
+<thead>
+<tr>
+<th>Field</th>
+<th>Type</th>
+<th>Description</th>
+<th>Required</th>
+</tr>
+</thead>
+<tbody>
+<tr id="Properties-name">
+<td><code>name</code></td>
+<td><code>string</code></td>
+<td>
 </td>
 <td>
 No
@@ -336,12 +360,21 @@ No
 No
 </td>
 </tr>
-<tr id="BaseKubernetesResourceConfig-resourceOverlays">
-<td><code>resourceOverlays</code></td>
-<td><code><a href="#K8sResourceOverlayPatch">K8sResourceOverlayPatch[]</a></code></td>
+<tr id="BaseKubernetesResourceConfig-podDisruptionBudget">
+<td><code>podDisruptionBudget</code></td>
+<td><code><a href="#PodDisruptionBudget">PodDisruptionBudget</a></code></td>
 <td>
-<p>K8s resource overlay patches</p>
+<p>PodDisruptionBudget configuration</p>
 
+</td>
+<td>
+No
+</td>
+</tr>
+<tr id="BaseKubernetesResourceConfig-deploymentStrategy">
+<td><code>deploymentStrategy</code></td>
+<td><code><a href="#DeploymentStrategy">DeploymentStrategy</a></code></td>
+<td>
 </td>
 <td>
 No

@@ -2,7 +2,7 @@
 
 ## Discovery Settings
 pilot:
-  autoscaleEnabled: {{ or .GetSpec.GetIstiod.GetDeployment.GetReplicas.GetAutoscaleEnabled true }}
+  autoscaleEnabled: false
   autoscaleMin: {{ or .GetSpec.GetIstiod.GetDeployment.GetReplicas.GetMin 1 }}
   autoscaleMax: {{ or .GetSpec.GetIstiod.GetDeployment.GetReplicas.GetMax 5 }}
   replicaCount: {{ or .GetSpec.GetIstiod.GetDeployment.GetReplicas.GetCount 1 }}
