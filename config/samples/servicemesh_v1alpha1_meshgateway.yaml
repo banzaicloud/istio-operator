@@ -1,7 +1,7 @@
 apiVersion: servicemesh.cisco.com/v1alpha1
 kind: MeshGateway
 metadata:
-  name: joskapista
+  name: mgw-sample
 spec:
   deployment:
     affinity:
@@ -77,13 +77,13 @@ spec:
             - key: log_level
               path: log_level
   istioControlPlane:
-    name: cp-v19x
+    name: cp-v110x
     namespace: istio-system
   k8sResourceOverlays:
   - groupVersionKind:
       kind: DestinationRule
     objectKey:
-      name: meshexpansion-dr-istiod-cp-v19x
+      name: meshexpansion-dr-istiod-cp-v110x
     patches:
     - parseValue: true
       path: /spec/trafficPolicy?/loadBalancer?
