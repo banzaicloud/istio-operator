@@ -200,6 +200,10 @@ spec:
         name: istio-proxy
         imagePullPolicy: Always
         ports:
+        - containerPort: 50600
+          protocol: TCP
+        - containerPort: 59411
+          protocol: TCP
         - containerPort: 15090
           name: http-envoy-prom
           protocol: TCP
