@@ -139,7 +139,7 @@ message DeploymentStrategy {
     RollingUpdateDeployment rollingUpdate = 2;
 }
 
-// is a description of a PodDisruptionBudget
+// PodDisruptionBudget is a description of a PodDisruptionBudget
 message PodDisruptionBudget {
     // An eviction is allowed if at least "minAvailable" pods selected by
     // "selector" will still be available after the eviction, i.e. even in the
@@ -156,7 +156,7 @@ message PodDisruptionBudget {
     IntOrString maxUnavailable = 2 [(intorstring) = "true"];
 }
 
-// ServiceSpec describes the attributes that a user creates on a service.
+// Service describes the attributes that a user creates on a service.
 message Service {
     K8sObjectMeta metadata = 16;
 
