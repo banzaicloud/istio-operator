@@ -147,7 +147,7 @@ func (r *MeshGatewayReconciler) getRelatedIstioControlPlane(ctx context.Context,
 	if err != nil {
 		updateErr := components.UpdateStatus(ctx, c, mgw, components.ConvertConfigStateToReconcileStatus(servicemeshv1alpha1.ConfigState_ReconcileFailed), err.Error())
 		if updateErr != nil {
-			logger.Error(updateErr, "failed to update state")
+			logger.Error(updateErr, "failed to update mesh gateway state")
 
 			return nil, errors.WithStack(err)
 		}

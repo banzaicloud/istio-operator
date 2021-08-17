@@ -20,7 +20,7 @@ spec:
 {{ toYaml $service.loadBalancerSourceRanges | indent 4 }}
 {{- end }}
 {{- if $service.externalTrafficPolicy }}
-  externalTrafficPolicy: {{$service.externalTrafficPolicy }}
+  externalTrafficPolicy: {{ $service.externalTrafficPolicy }}
 {{- end }}
   type: {{ $service.type }}
   selector:
