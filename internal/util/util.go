@@ -40,7 +40,7 @@ import (
 	"github.com/banzaicloud/operator-tools/pkg/utils"
 )
 
-func TransformICPToStriMapWithTemplate(data interface{}, filesystem fs.FS, templateFileName string) (helm.Strimap, error) {
+func TransformStructToStriMapWithTemplate(data interface{}, filesystem fs.FS, templateFileName string) (helm.Strimap, error) {
 	tt, err := template.New(path.Base(templateFileName)).Funcs(template.FuncMap{
 		"PointerToBool": utils.PointerToBool,
 		"toYaml": func(value interface{}) string {

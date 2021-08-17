@@ -151,9 +151,8 @@ func (r *MeshGatewayReconciler) getRelatedIstioControlPlane(ctx context.Context,
 
 			return nil, errors.WithStack(err)
 		}
-		if err != nil {
-			logger.Error(err, "could not get related istio control plane")
-		}
+
+		logger.Error(err, "could not get related istio control plane")
 	}
 
 	return icp, nil

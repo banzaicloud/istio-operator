@@ -156,7 +156,7 @@ func (rec *Reconciler) values(object runtime.Object) (helm.Strimap, error) {
 		return nil, errors.WrapIff(errors.NewPlain("object cannot be converted to a MeshGateway"), "%+v", object)
 	}
 
-	values, err := util.TransformICPToStriMapWithTemplate(&v1alpha1.MeshGatewayWithProperties{
+	values, err := util.TransformStructToStriMapWithTemplate(&v1alpha1.MeshGatewayWithProperties{
 		MeshGateway: mgw,
 		Properties: v1alpha1.MeshGatewayProperties{
 			Revision:              "cp-v110x.istio-system",

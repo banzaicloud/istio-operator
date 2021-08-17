@@ -44,7 +44,7 @@ func TestTransformICPSpecToStriMapWithTemplate(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	values, err := util.TransformICPToStriMapWithTemplate(icp, valuesFS, "testdata/test_values.yaml.tmpl")
+	values, err := util.TransformStructToStriMapWithTemplate(icp, valuesFS, "testdata/test_values.yaml.tmpl")
 	if err != nil {
 		t.Fatal(err)
 	}
