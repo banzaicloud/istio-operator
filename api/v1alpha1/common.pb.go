@@ -479,7 +479,7 @@ var xxx_messageInfo_DeploymentStrategy_RollingUpdateDeployment proto.InternalMes
 
 
 
-// is a description of a PodDisruptionBudget
+// PodDisruptionBudget is a description of a PodDisruptionBudget
 type PodDisruptionBudget struct {
 	// An eviction is allowed if at least "minAvailable" pods selected by
 	// "selector" will still be available after the eviction, i.e. even in the
@@ -533,7 +533,7 @@ var xxx_messageInfo_PodDisruptionBudget proto.InternalMessageInfo
 
 
 
-// ServiceSpec describes the attributes that a user creates on a service.
+// Service describes the attributes that a user creates on a service.
 type Service struct {
 	Metadata *K8SObjectMeta `protobuf:"bytes,16,opt,name=metadata,proto3" json:"metadata,omitempty"`
 	// The list of ports that are exposed by this service.
