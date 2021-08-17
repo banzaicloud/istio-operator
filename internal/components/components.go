@@ -31,7 +31,10 @@ import (
 	"github.com/banzaicloud/operator-tools/pkg/types"
 )
 
-type NewChartReconcilerFunc = func(helmReconciler *templatereconciler.HelmReconciler) Component
+type (
+	HelmReconciler         = templatereconciler.HelmReconciler
+	NewChartReconcilerFunc = func(helmReconciler *HelmReconciler) Component
+)
 
 type Component interface {
 	templatereconciler.Component

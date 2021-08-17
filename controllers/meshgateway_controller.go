@@ -71,11 +71,6 @@ func (r *MeshGatewayReconciler) Reconcile(ctx context.Context, req ctrl.Request)
 
 	logger.Info("reconciling")
 
-	reconciler, err := GetHelmReconciler(r, meshgateway.NewChartReconciler)
-	if err != nil {
-		return ctrl.Result{}, err
-	}
-
 	icp, err := r.getRelatedIstioControlPlane(ctx, r.GetClient(), mgw, logger)
 	// do not reqeue if control plane was not found
 	if icp == nil && err == nil {
@@ -89,6 +84,17 @@ func (r *MeshGatewayReconciler) Reconcile(ctx context.Context, req ctrl.Request)
 	}
 
 	err = util.AddFinalizer(r.Client, mgw, meshGatewayFinalizerID)
+	if err != nil {
+		return ctrl.Result{}, err
+	}
+
+	reconciler, err := GetHelmReconciler(r, func(helmReconciler *components.HelmReconciler) components.Component {
+		return meshgateway.NewChartReconciler(helmReconciler, servicemeshv1alpha1.MeshGatewayProperties{
+			Revision:              fmt.Sprintf("%s.%s", icp.GetName(), icp.GetNamespace()),
+			EnablePrometheusMerge: true,
+			InjectionTemplate:     "gateway",
+		})
+	})
 	if err != nil {
 		return ctrl.Result{}, err
 	}

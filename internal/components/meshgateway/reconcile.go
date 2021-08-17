@@ -49,11 +49,13 @@ var _ components.Component = &Reconciler{}
 
 type Reconciler struct {
 	helmReconciler *templatereconciler.HelmReconciler
+	properties     v1alpha1.MeshGatewayProperties
 }
 
-func NewChartReconciler(helmReconciler *templatereconciler.HelmReconciler) components.Component {
+func NewChartReconciler(helmReconciler *templatereconciler.HelmReconciler, properties v1alpha1.MeshGatewayProperties) components.Component {
 	return &Reconciler{
 		helmReconciler: helmReconciler,
+		properties:     properties,
 	}
 }
 
@@ -158,11 +160,7 @@ func (rec *Reconciler) values(object runtime.Object) (helm.Strimap, error) {
 
 	values, err := util.TransformStructToStriMapWithTemplate(&v1alpha1.MeshGatewayWithProperties{
 		MeshGateway: mgw,
-		Properties: v1alpha1.MeshGatewayProperties{
-			Revision:              "cp-v110x.istio-system",
-			EnablePrometheusMerge: true,
-			InjectionTemplate:     "gateway",
-		},
+		Properties:  rec.properties,
 	}, assets.MeshGateway, valuesTemplateFileName)
 	if err != nil {
 		return nil, errors.WrapIff(err, "MeshGateway cannot be converted into a map[string]interface{}")
