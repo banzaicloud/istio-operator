@@ -17,15 +17,9 @@ limitations under the License.
 package controllers
 
 import (
-	"context"
-	"sort"
-
-	"emperror.dev/errors"
 	"k8s.io/client-go/discovery"
 	ctrl "sigs.k8s.io/controller-runtime"
-	"sigs.k8s.io/controller-runtime/pkg/client"
 
-	"github.com/banzaicloud/istio-operator/v2/api/v1alpha1"
 	"github.com/banzaicloud/istio-operator/v2/internal/components"
 	"github.com/banzaicloud/operator-tools/pkg/helm/templatereconciler"
 	"github.com/banzaicloud/operator-tools/pkg/reconciler"
@@ -47,36 +41,4 @@ func GetHelmReconciler(r components.Reconciler, newChartReconcilerFunc component
 			reconciler.NativeReconcilerSetControllerRef(),
 		}),
 	), nil
-}
-
-func GetRelatedIstioCR(ctx context.Context, c client.Client, key client.ObjectKey) (*v1alpha1.IstioControlPlane, error) {
-	icp := &v1alpha1.IstioControlPlane{}
-
-	// try to get specified Istio CR
-	if key.Name != "" && key.Namespace != "" {
-		err := c.Get(ctx, key, icp)
-		if err == nil {
-			return icp, nil
-		}
-		if err != nil {
-			return nil, errors.WrapIf(err, "could not get related Istio control plane")
-		}
-	}
-
-	// get the oldest otherwise for backward compatibility
-	var icps v1alpha1.IstioControlPlaneList
-	err := c.List(context.TODO(), &icps)
-	if err != nil {
-		return nil, errors.WrapIf(err, "could not list istio control planes")
-	}
-	if len(icps.Items) == 0 {
-		return nil, errors.New("no Istio control planes were found")
-	}
-
-	sort.Sort(v1alpha1.SortableIstioControlPlaneItems(icps.Items))
-
-	icp = &icps.Items[0]
-	icp.SetGroupVersionKind(v1alpha1.SchemeBuilder.GroupVersion.WithKind("IstioControlPlane"))
-
-	return icp, nil
 }
