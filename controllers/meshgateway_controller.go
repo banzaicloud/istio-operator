@@ -112,9 +112,9 @@ func (r *MeshGatewayReconciler) Reconcile(ctx context.Context, req ctrl.Request)
 		return result, errors.WrapIf(err, "could not set gateway address")
 	}
 
-	err = util.RemoveFinalizer(r.Client, mgw, istioControlPlaneFinalizerID)
+	err = util.RemoveFinalizer(r.Client, mgw, meshGatewayFinalizerID)
 	if err != nil {
-		return ctrl.Result{}, err
+		return result, err
 	}
 
 	return result, nil
@@ -187,6 +187,10 @@ func (r *MeshGatewayReconciler) getGatewayAddress(mgw *servicemeshv1alpha1.MeshG
 func (r *MeshGatewayReconciler) setGatewayAddress(ctx context.Context, c client.Client, mgw *servicemeshv1alpha1.MeshGateway, logger logr.Logger, result ctrl.Result) (ctrl.Result, error) {
 	var gatewayHasHostname bool
 	var err error
+
+	if !mgw.DeletionTimestamp.IsZero() {
+		return ctrl.Result{}, nil
+	}
 
 	mgw.Status.GatewayAddress, gatewayHasHostname, err = r.getGatewayAddress(mgw)
 	if err != nil {
