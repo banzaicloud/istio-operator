@@ -46,6 +46,7 @@ option go_package = "github.com/banzaicloud/istio-operator/v2/api/v1alpha1";
 // +cue-gen:MeshGateway:printerColumn:name="Age",type="date",JSONPath=".metadata.creationTimestamp"
 // +cue-gen:MeshGateway:printerColumn:name="Control Plane",type="string",JSONPath=".spec.istioControlPlane"
 // +cue-gen:MeshGateway:preserveUnknownFields:false
+// +cue-gen:MeshGateway:specIsRequired
 // -->
 //
 // <!-- go code generation tags
@@ -57,7 +58,7 @@ message MeshGatewaySpec {
     BaseKubernetesResourceConfig deployment = 1;
 
     // Service spec
-    Service service = 2;
+    Service service = 2 [(google.api.field_behavior) = REQUIRED];
 
     // Whether to run the gateway in a privileged container
     google.protobuf.BoolValue runAsRoot = 3 [(gogoproto.wktpointer) = true];
