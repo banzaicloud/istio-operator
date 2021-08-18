@@ -5423,6 +5423,7 @@ spec:
                       required:
                       - port
                       type: object
+                    minItems: 1
                     type: array
                     x-kubernetes-list-map-keys:
                     - port
@@ -5461,7 +5462,14 @@ spec:
                     type: object
                   type:
                     description: type determines how the Service is exposed.
+                    enum:
+                    - ClusterIP
+                    - NodePort
+                    - LoadBalancer
                     type: string
+                required:
+                - ports
+                - type
                 type: object
               type:
                 description: Type of gateway, either ingress or egress.
@@ -5471,6 +5479,7 @@ spec:
                 type: string
             required:
             - istioControlPlane
+            - service
             - type
             type: object
           status:
@@ -5494,6 +5503,8 @@ spec:
                 - Unmanaged
                 type: string
             type: object
+        required:
+        - spec
         type: object
     served: true
     storage: true
