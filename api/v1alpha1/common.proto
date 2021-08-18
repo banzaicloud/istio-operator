@@ -167,7 +167,8 @@ message Service {
     // +listType=map
     // +listMapKey=port
     // +listMapKey=protocol
-    repeated ServicePort ports = 1;
+    // +kubebuilder:validation:MinItems=1
+    repeated ServicePort ports = 1 [(google.api.field_behavior) = REQUIRED];
 
     // Route service traffic to pods with label keys and values matching this
     // selector. If empty or not present, the service is assumed to have an
@@ -205,7 +206,8 @@ message Service {
     // to the clusterIP.
     // More info: https://kubernetes.io/docs/concepts/services-networking/service/#publishing-services-service-types
     // +optional
-    string type = 4;
+    // +kubebuilder:validation:Enum=ClusterIP;NodePort;LoadBalancer
+    string type = 4 [(google.api.field_behavior) = REQUIRED];
 
     // externalIPs is a list of IP addresses for which nodes in the cluster
     // will also accept traffic for this service.  These IPs are not managed by
