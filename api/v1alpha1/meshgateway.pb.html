@@ -39,7 +39,7 @@ No
 
 </td>
 <td>
-No
+Yes
 </td>
 </tr>
 <tr id="MeshGatewaySpec-runAsRoot">
@@ -416,11 +416,12 @@ More info: https://kubernetes.io/docs/concepts/services-networking/service/#virt
 +patchStrategy=merge
 +listType=map
 +listMapKey=port
-+listMapKey=protocol</p>
++listMapKey=protocol
++kubebuilder:validation:MinItems=1</p>
 
 </td>
 <td>
-No
+Yes
 </td>
 </tr>
 <tr id="Service-selector">
@@ -478,11 +479,12 @@ routes to the clusterIP.
 external load-balancer (if supported in the current cloud) which routes
 to the clusterIP.
 More info: https://kubernetes.io/docs/concepts/services-networking/service/#publishing-services-service-types
-+optional</p>
++optional
++kubebuilder:validation:Enum=ClusterIP;NodePort;LoadBalancer</p>
 
 </td>
 <td>
-No
+Yes
 </td>
 </tr>
 <tr id="Service-externalIPs">
