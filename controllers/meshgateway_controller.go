@@ -72,11 +72,8 @@ func (r *MeshGatewayReconciler) Reconcile(ctx context.Context, req ctrl.Request)
 	logger.Info("reconciling")
 
 	icp, err := r.getRelatedIstioControlPlane(ctx, r.GetClient(), mgw, logger)
-	// do not reqeue if control plane was not found
-	if icp == nil && err == nil {
-		return ctrl.Result{
-			Requeue: false,
-		}, nil
+	if err != nil {
+		return ctrl.Result{}, err
 	}
 
 	if !isIstioVersionSupported(icp.Spec.Version) {
@@ -146,10 +143,12 @@ func (r *MeshGatewayReconciler) SetupWithManager(mgr ctrl.Manager) error {
 }
 
 func (r *MeshGatewayReconciler) getRelatedIstioControlPlane(ctx context.Context, c client.Client, mgw *servicemeshv1alpha1.MeshGateway, logger logr.Logger) (*servicemeshv1alpha1.IstioControlPlane, error) {
-	icp, err := GetRelatedIstioCR(context.Background(), r.GetClient(), client.ObjectKey{
+	icp := &servicemeshv1alpha1.IstioControlPlane{}
+
+	err := c.Get(ctx, client.ObjectKey{
 		Name:      mgw.GetSpec().GetIstioControlPlane().GetName(),
 		Namespace: mgw.GetSpec().GetIstioControlPlane().GetNamespace(),
-	})
+	}, icp)
 	if err != nil {
 		updateErr := components.UpdateStatus(ctx, c, mgw, components.ConvertConfigStateToReconcileStatus(servicemeshv1alpha1.ConfigState_ReconcileFailed), err.Error())
 		if updateErr != nil {
@@ -158,7 +157,7 @@ func (r *MeshGatewayReconciler) getRelatedIstioControlPlane(ctx context.Context,
 			return nil, errors.WithStack(err)
 		}
 
-		logger.Error(err, "could not get related istio control plane")
+		return nil, errors.WrapIf(err, "could not get related Istio control plane")
 	}
 
 	return icp, nil
