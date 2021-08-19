@@ -2,9 +2,9 @@
 
 set -euo pipefail
 
-code_generator_version=v0.20.2
-controller_gen_version=v0.5.0
-istio_deps_version=v1.10.3-bzc.3
+code_generator_version=v0.22.0
+controller_gen_version=v0.6.2
+istio_deps_version=v1.11.0-bzc.1
 istio_tools_replacement_module_name=github.com/waynz0r/istio-tools
 gogo_protobuf_version=v1.3.2
 
