@@ -1,0 +1,11 @@
+base:
+  enableCRDTemplates: false
+  enableIstioConfigCRDs: true
+global:
+  configValidation: true
+  externalIstiod: false
+  imagePullSecrets: []
+  istioNamespace: istio-system
+  istiod:
+    enableAnalysis: false
+  revision: cp-v111x

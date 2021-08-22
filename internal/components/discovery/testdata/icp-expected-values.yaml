@@ -1,0 +1,81 @@
+global:
+  caAddress: ""
+  defaultPodDisruptionBudget:
+    enabled: true
+  distribution: "official"
+  externalIstiod: false
+  istiod:
+    enableAnalysis: false
+  jwtPolicy: third-party-jwt
+  logging:
+    level: "default:info"
+  meshID: cluster.local
+  mountMtlsCerts: false
+  oneNamespace: false
+  pilotCertProvider: istiod
+  proxy:
+    resources:
+      limits:
+        cpu: 2000m
+        memory: 1024Mi
+      requests:
+        cpu: 100m
+        memory: 128Mi
+    clusterDomain: cluster.local
+    componentLogLevel: "misc:error"
+    enableCoreDump: false
+    excludeIPRanges: ""
+    excludeInboundPorts: ""
+    excludeOutboundPorts: ""
+    holdApplicationUntilProxyStarts: false
+    image: proxyv2
+    includeIPRanges: "*"
+    lifecycle: {}
+    logLevel: warning
+    privileged: false
+  proxy_init:
+    resources:
+      limits:
+        cpu: 2000m
+        memory: 1024Mi
+      requests:
+        cpu: 10m
+        memory: 10Mi
+    image: proxyv2
+  sds:
+    token:
+      aud: istio-ca
+pilot:
+  resources: {}
+  traceSampling: 1
+  autoscaleEnabled: false
+  autoscaleMax: 5
+  autoscaleMin: 1
+  deploymentLabels: {}
+  enableProtocolSniffingForInbound: true
+  enableProtocolSniffingForOutbound: true
+  affinity: {}
+  image: pilot
+  nodeSelector: {}
+  podAnnotations: {}
+  replicaCount: 1
+  securityContext: {}
+  tolerations: {}
+  env:
+    INJECTION_WEBHOOK_CONFIG_NAME: istio-sidecar-injector-cp-v111x-istio-system
+    ISTIOD_CUSTOM_HOST: istiod-cp-v111x.istio-system.svc
+    PILOT_ENABLE_STATUS: false
+    VALIDATION_WEBHOOK_CONFIG_NAME: istiod-cp-v111x-istio-system
+revision: cp-v111x
+sidecarInjectorWebhook:
+  httpProxyEnvs:
+    httpProxy: ""
+    httpsProxy: ""
+    noProxy: ""
+telemetry:
+  v2:
+    enabled: true
+    metadataExchange:
+      wasmEnabled: false
+    prometheus:
+      wasmEnabled: false

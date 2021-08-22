@@ -13,17 +13,12 @@ global:
 
   configValidation: true
   externalIstiod: {{ or .GetSpec.GetIstiod.GetExternalIstiod.GetEnabled false }}
-  remotePilotAddress: ""
 
   revision: "{{ .Name }}"
 
 base:
   # Used for helm2 to add the CRDs to templates.
   enableCRDTemplates: false
-
-  # Validation webhook configuration url
-  # For example: https://$remotePilotAddress:15017/validate
-  validationURL: ""
 
   # For istioctl usage to disable istio config crds in base
   enableIstioConfigCRDs: true

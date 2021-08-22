@@ -99,7 +99,7 @@ telemetry:
 revision: "{{ .Name }}"
 
 global:
-  distribution: "{{ .GetSpec.GetDistribution }}"
+  distribution: "{{ .GetSpec.GetDistribution | default "official" }}"
   # enable pod disruption budget for the control plane, which is used to
   # ensure Istio control plane components are gradually upgraded or recovered.
   defaultPodDisruptionBudget:
