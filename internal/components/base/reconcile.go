@@ -20,7 +20,6 @@ import (
 	"net/http"
 
 	"emperror.dev/errors"
-	admissionregistrationv1 "k8s.io/api/admissionregistration/v1"
 	apiextensionv1 "k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 	controllerruntime "sigs.k8s.io/controller-runtime"
@@ -30,7 +29,6 @@ import (
 	"github.com/banzaicloud/istio-operator/v2/api/v1alpha1"
 	"github.com/banzaicloud/istio-operator/v2/internal/assets"
 	"github.com/banzaicloud/istio-operator/v2/internal/util"
-	"github.com/banzaicloud/k8s-objectmatcher/patch"
 	"github.com/banzaicloud/operator-tools/pkg/helm"
 	"github.com/banzaicloud/operator-tools/pkg/helm/templatereconciler"
 	"github.com/banzaicloud/operator-tools/pkg/reconciler"
@@ -116,24 +114,6 @@ func (rec *Reconciler) ReleaseData(object runtime.Object) (*templatereconciler.R
 					}
 
 					return nil
-				},
-			},
-			{
-				GVK: admissionregistrationv1.SchemeGroupVersion.WithKind("ValidatingWebhookConfiguration"),
-			}: reconciler.DynamicDesiredState{
-				ShouldUpdateFunc: func(current, desired runtime.Object) (bool, error) {
-					options := []patch.CalculateOption{
-						patch.IgnoreStatusFields(),
-						reconciler.IgnoreManagedFields(),
-						util.IgnoreWebhookFailurePolicy(),
-					}
-
-					patchResult, err := patch.DefaultPatchMaker.Calculate(current, desired, options...)
-					if err != nil {
-						return false, err
-					}
-
-					return !patchResult.IsEmpty(), nil
 				},
 			},
 		},

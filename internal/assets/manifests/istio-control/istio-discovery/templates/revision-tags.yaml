@@ -5,12 +5,12 @@
 - name: {{.Prefix}}sidecar-injector.istio.io
   clientConfig:
     {{- if .Values.istiodRemote.injectionURL }}
-    url: {{ .Values.istiodRemote.injectionURL }}
+    url: "{{ .Values.istiodRemote.injectionURL }}"
     {{- else }}
     service:
-      name: {{ include "name-with-revision" ( dict "name" "istiod" "context" $) }}
+      name: istiod{{- if not (eq .Values.revision "") }}-{{ .Values.revision }}{{- end }}
       namespace: {{ .Release.Namespace }}
-      path: "/inject"
+      path: "{{ .Values.istiodRemote.injectionPath }}"
     {{- end }}
     caBundle: ""
   sideEffects: None
@@ -27,12 +27,10 @@
 apiVersion: admissionregistration.k8s.io/v1
 kind: MutatingWebhookConfiguration
 metadata:
-  name: istio-revision-tag-{{ $tagName }}-{{ $.Release.Namespace }}
+  name:  {{ include "name-with-namespaced-revision" ( dict "name" "istio-revision-{{ $tagName }}" "context" $) }}
   labels:
     istio.io/tag: {{ $tagName }}
-    istio.io/rev: {{ include "namespaced-revision" $ }}
-    install.operator.istio.io/owning-resource: {{ $.Values.ownerName | default "unknown" }}
-    operator.istio.io/component: "Pilot"
+    istio.io/rev: {{ $.Values.revision | default "default" }}
     app: sidecar-injector
     release: {{ $.Release.Name }}
 webhooks:

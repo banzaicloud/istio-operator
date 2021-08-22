@@ -4,11 +4,9 @@ metadata:
   name: {{ include "name-with-revision" ( dict "name" "istiod" "context" $) }}
   namespace: {{ .Release.Namespace }}
   labels:
-    istio.io/rev: {{ include "namespaced-revision" . }}
-    install.operator.istio.io/owning-resource: {{ .Values.ownerName | default "unknown" }}
-    operator.istio.io/component: "Pilot"
     app: istiod
-    istio: pilot
+    istio.io/rev: {{ include "namespaced-revision" . }}
+    istio: istiod
     release: {{ .Release.Name }}
 spec:
   ports:

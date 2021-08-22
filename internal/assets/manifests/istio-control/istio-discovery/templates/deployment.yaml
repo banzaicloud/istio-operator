@@ -6,9 +6,7 @@ metadata:
   labels:
     app: istiod
     istio.io/rev: {{ include "namespaced-revision" . }}
-    install.operator.istio.io/owning-resource: {{ .Values.ownerName | default "unknown" }}
-    operator.istio.io/component: "Pilot"
-    istio: pilot
+    istio: istiod
     release: {{ .Release.Name }}
 {{- range $key, $val := .Values.pilot.deploymentLabels }}
     {{ $key }}: "{{ $val }}"
@@ -33,9 +31,7 @@ spec:
       labels:
         app: istiod
         istio.io/rev: {{ include "namespaced-revision" . }}
-        install.operator.istio.io/owning-resource: {{ .Values.ownerName | default "unknown" }}
         sidecar.istio.io/inject: "false"
-        operator.istio.io/component: "Pilot"
         istio: istiod
       annotations:
         {{- if .Values.meshConfig.enablePrometheusMerge }}
@@ -47,7 +43,7 @@ spec:
 {{ toYaml .Values.pilot.podAnnotations | indent 8 }}
         {{- end }}
     spec:
-      serviceAccountName: {{ include "name-with-revision" ( dict "name" "istiod-service-account" "context" $) }}
+      serviceAccountName: {{ include "name-with-revision" ( dict "name" "istiod" "context" $) }}
 {{- if .Values.global.priorityClassName }}
       priorityClassName: "{{ .Values.global.priorityClassName }}"
 {{- end }}
