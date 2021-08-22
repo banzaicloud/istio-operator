@@ -20,6 +20,11 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
+const (
+	SidecarInjectionChecksumAnnotation = "sidecar.istio.servicemesh.cisco.com/injection-checksum"
+	MeshConfigChecksumAnnotation       = "sidecar.istio.servicemesh.cisco.com/meshconfig-checksum"
+)
+
 // +kubebuilder:object:root=true
 
 // MeshGateway is the Schema for the meshgateways API
@@ -36,7 +41,7 @@ func (mgw *MeshGateway) SetStatus(status ConfigState, errorMessage string) {
 	mgw.Status.ErrorMessage = errorMessage
 }
 
-func (mgw *MeshGateway) GetStatus() interface{} {
+func (mgw *MeshGateway) GetStatus() MeshGatewayStatus {
 	return mgw.Status
 }
 
@@ -53,10 +58,32 @@ type MeshGatewayWithProperties struct {
 	Properties MeshGatewayProperties
 }
 
+func (p *MeshGatewayWithProperties) SetDefaults() {
+	annotations := p.MeshGateway.GetSpec().GetDeployment().GetPodMetadata().GetAnnotations()
+	if annotations == nil {
+		annotations = make(map[string]string)
+	}
+	if p.Properties.InjectionChecksum != "" {
+		annotations[SidecarInjectionChecksumAnnotation] = p.Properties.InjectionChecksum
+	}
+	if p.Properties.MeshConfigChecksum != "" {
+		annotations[MeshConfigChecksumAnnotation] = p.Properties.MeshConfigChecksum
+	}
+	if p.MeshGateway.GetSpec().GetDeployment() == nil {
+		p.MeshGateway.GetSpec().Deployment = &BaseKubernetesResourceConfig{}
+	}
+	if p.MeshGateway.GetSpec().GetDeployment().GetPodMetadata() == nil {
+		p.MeshGateway.GetSpec().GetDeployment().PodMetadata = &K8SObjectMeta{}
+	}
+	p.MeshGateway.GetSpec().GetDeployment().GetPodMetadata().Annotations = annotations
+}
+
 type MeshGatewayProperties struct {
 	Revision              string
 	EnablePrometheusMerge bool
 	InjectionTemplate     string
+	InjectionChecksum     string
+	MeshConfigChecksum    string
 }
 
 // +kubebuilder:object:root=true

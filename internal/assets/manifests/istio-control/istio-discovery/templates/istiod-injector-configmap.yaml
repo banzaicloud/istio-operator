@@ -9,6 +9,7 @@ metadata:
   {{- end }}
   namespace: {{ .Release.Namespace }}
   labels:
+    istio: sidecar-injector
     istio.io/rev: {{ include "namespaced-revision" . }}
     release: {{ .Release.Name }}
 data:

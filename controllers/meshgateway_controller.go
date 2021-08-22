@@ -25,10 +25,14 @@ import (
 	"github.com/go-logr/logr"
 	corev1 "k8s.io/api/core/v1"
 	k8serrors "k8s.io/apimachinery/pkg/api/errors"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 	ctrl "sigs.k8s.io/controller-runtime"
 	ctrlBuilder "sigs.k8s.io/controller-runtime/pkg/builder"
 	"sigs.k8s.io/controller-runtime/pkg/client"
+	"sigs.k8s.io/controller-runtime/pkg/handler"
+	"sigs.k8s.io/controller-runtime/pkg/reconcile"
+	"sigs.k8s.io/controller-runtime/pkg/source"
 
 	servicemeshv1alpha1 "github.com/banzaicloud/istio-operator/v2/api/v1alpha1"
 	"github.com/banzaicloud/istio-operator/v2/internal/components"
@@ -85,13 +89,15 @@ func (r *MeshGatewayReconciler) Reconcile(ctx context.Context, req ctrl.Request)
 		return ctrl.Result{}, err
 	}
 
-	reconciler, err := GetHelmReconciler(r, func(helmReconciler *components.HelmReconciler) components.Component {
+	reconciler, err := NewComponentReconciler(r, func(helmReconciler *components.HelmReconciler) components.ComponentReconciler {
 		return meshgateway.NewChartReconciler(helmReconciler, servicemeshv1alpha1.MeshGatewayProperties{
 			Revision:              fmt.Sprintf("%s.%s", icp.GetName(), icp.GetNamespace()),
 			EnablePrometheusMerge: true,
 			InjectionTemplate:     "gateway",
+			InjectionChecksum:     icp.Status.GetChecksums().GetSidecarInjector(),
+			MeshConfigChecksum:    icp.Status.GetChecksums().GetMeshConfig(),
 		})
-	})
+	}, r.Log.WithName("meshgateway"))
 	if err != nil {
 		return ctrl.Result{}, err
 	}
@@ -128,18 +134,57 @@ func (r *MeshGatewayReconciler) GetScheme() *runtime.Scheme {
 	return r.Scheme
 }
 
-func (r *MeshGatewayReconciler) GetLogger() logr.Logger {
-	return r.Log
-}
-
-func (r *MeshGatewayReconciler) GetName() string {
-	return "meshgateway"
-}
-
 func (r *MeshGatewayReconciler) SetupWithManager(mgr ctrl.Manager) error {
-	return ctrl.NewControllerManagedBy(mgr).
+	builder := ctrl.NewControllerManagedBy(mgr)
+
+	ctrl, err := builder.
 		For(&servicemeshv1alpha1.MeshGateway{}, ctrlBuilder.WithPredicates(util.ObjectChangePredicate{})).
-		Complete(r)
+		Build(r)
+	if err != nil {
+		return err
+	}
+
+	err = ctrl.Watch(&source.Kind{
+		Type: &servicemeshv1alpha1.IstioControlPlane{
+			TypeMeta: metav1.TypeMeta{
+				Kind:       "IstioControlPlane",
+				APIVersion: servicemeshv1alpha1.SchemeBuilder.GroupVersion.String(),
+			},
+		},
+	}, handler.EnqueueRequestsFromMapFunc(func(a client.Object) []reconcile.Request {
+		var icp *servicemeshv1alpha1.IstioControlPlane
+		var ok bool
+		if icp, ok = a.(*servicemeshv1alpha1.IstioControlPlane); !ok {
+			return nil
+		}
+
+		mgws := &servicemeshv1alpha1.MeshGatewayList{}
+		err := r.Client.List(context.Background(), mgws)
+		if err != nil {
+			r.Log.Error(err, "could not list meshgateway resources")
+
+			return nil
+		}
+
+		resources := make([]reconcile.Request, 0)
+		for _, mgw := range mgws.Items {
+			if icp.GetName() == mgw.GetSpec().GetIstioControlPlane().GetName() && icp.GetNamespace() == mgw.GetSpec().GetIstioControlPlane().GetNamespace() {
+				resources = append(resources, reconcile.Request{
+					NamespacedName: client.ObjectKey{
+						Name:      mgw.GetName(),
+						Namespace: mgw.GetNamespace(),
+					},
+				})
+			}
+		}
+
+		return resources
+	}), util.ICPInjectorChangePredicate{})
+	if err != nil {
+		return err
+	}
+
+	return nil
 }
 
 func (r *MeshGatewayReconciler) getRelatedIstioControlPlane(ctx context.Context, c client.Client, mgw *servicemeshv1alpha1.MeshGateway, logger logr.Logger) (*servicemeshv1alpha1.IstioControlPlane, error) {

@@ -94,6 +94,8 @@ deployment:
   podMetadata:
     annotations:
       podannotation: podannotationvalue
+      sidecar.istio.servicemesh.cisco.com/injection-checksum: 08fdba0c89f9bbd6624201d98758746d1bddc78e9004b00259f33b20b7f9efba
+      sidecar.istio.servicemesh.cisco.com/meshconfig-checksum: 319ffd3f807ef4516499c6ad68279a1cd07778f5847e65f9aef908eceb1693e3
     labels:
       podlabel: podlabelvalue
 

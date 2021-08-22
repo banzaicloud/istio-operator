@@ -24,6 +24,7 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/event"
 	"sigs.k8s.io/controller-runtime/pkg/predicate"
 
+	"github.com/banzaicloud/istio-operator/v2/api/v1alpha1"
 	"github.com/banzaicloud/k8s-objectmatcher/patch"
 	"github.com/banzaicloud/operator-tools/pkg/reconciler"
 )
@@ -138,4 +139,44 @@ func deleteMetadataAnnotations(obj []byte, annotationPrefixes ...string) ([]byte
 	}
 
 	return obj, nil
+}
+
+type ICPInjectorChangePredicate struct {
+	predicate.Funcs
+}
+
+func (p ICPInjectorChangePredicate) Create(e event.CreateEvent) bool {
+	return false
+}
+
+func (p ICPInjectorChangePredicate) Delete(e event.DeleteEvent) bool {
+	return false
+}
+
+func (p ICPInjectorChangePredicate) Update(e event.UpdateEvent) bool {
+	var ok bool
+	var oldICP *v1alpha1.IstioControlPlane
+	var newICP *v1alpha1.IstioControlPlane
+
+	if oldICP, ok = e.ObjectOld.(*v1alpha1.IstioControlPlane); !ok {
+		return false
+	}
+
+	if newICP, ok = e.ObjectNew.(*v1alpha1.IstioControlPlane); !ok {
+		return false
+	}
+
+	if oldICP.Status.GetChecksums().GetMeshConfig() != newICP.Status.GetChecksums().GetMeshConfig() {
+		return true
+	}
+
+	if oldICP.Status.GetChecksums().GetSidecarInjector() != newICP.Status.GetChecksums().GetSidecarInjector() {
+		return true
+	}
+
+	return false
+}
+
+func (p ICPInjectorChangePredicate) Generic(e event.GenericEvent) bool {
+	return false
 }
