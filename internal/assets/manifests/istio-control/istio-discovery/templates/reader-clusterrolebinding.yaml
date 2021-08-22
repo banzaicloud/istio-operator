@@ -1,0 +1,15 @@
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: {{ include "name-with-namespaced-revision" ( dict "name" "istio-reader" "context" $) }}
+  labels:
+    app: istio-reader
+    release: {{ .Release.Name }}
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: {{ include "name-with-namespaced-revision" ( dict "name" "istio-reader" "context" $) }}
+subjects:
+  - kind: ServiceAccount
+    name: {{ include "name-with-revision" ( dict "name" "istio-reader" "context" $) }}
+    namespace: {{ .Release.Namespace }}

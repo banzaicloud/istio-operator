@@ -7,10 +7,8 @@ metadata:
   labels:
     app: istiod
     istio.io/rev: {{ include "namespaced-revision" . }}
-    install.operator.istio.io/owning-resource: {{ .Values.ownerName | default "unknown" }}
-    operator.istio.io/component: "Pilot"
     release: {{ .Release.Name }}
-    istio: pilot
+    istio: istiod
 spec:
   minAvailable: 1
   selector:

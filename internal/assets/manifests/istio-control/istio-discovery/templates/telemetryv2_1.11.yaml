@@ -3,21 +3,21 @@
 apiVersion: networking.istio.io/v1alpha3
 kind: EnvoyFilter
 metadata:
-  name: {{ include "name-with-revision" ( dict "name" "metadata-exchange-1.9" "context" $) }}
+  name: metadata-exchange-1.11{{- if not (eq .Values.revision "") }}-{{ .Values.revision }}{{- end }}
   {{- if .Values.meshConfig.rootNamespace }}
   namespace: {{ .Values.meshConfig.rootNamespace }}
   {{- else }}
   namespace: {{ .Release.Namespace }}
   {{- end }}
   labels:
-    istio.io/rev: {{ include "namespaced-revision" . }}
+    istio.io/rev: {{ .Values.revision | default "default" }}
 spec:
   configPatches:
     - applyTo: HTTP_FILTER
       match:
         context: SIDECAR_INBOUND
         proxy:
-          proxyVersion: '^1\.9.*'
+          proxyVersion: '^1\.11.*'
         listener:
           filterChain:
             filter:
@@ -52,7 +52,7 @@ spec:
       match:
         context: SIDECAR_OUTBOUND
         proxy:
-          proxyVersion: '^1\.9.*'
+          proxyVersion: '^1\.11.*'
         listener:
           filterChain:
             filter:
@@ -87,7 +87,7 @@ spec:
       match:
         context: GATEWAY
         proxy:
-          proxyVersion: '^1\.9.*'
+          proxyVersion: '^1\.11.*'
         listener:
           filterChain:
             filter:
@@ -122,21 +122,21 @@ spec:
 apiVersion: networking.istio.io/v1alpha3
 kind: EnvoyFilter
 metadata:
-  name: {{ include "name-with-revision" ( dict "name" "tcp-metadata-exchange-1.9" "context" $) }}
+  name: tcp-metadata-exchange-1.11{{- if not (eq .Values.revision "") }}-{{ .Values.revision }}{{- end }}
   {{- if .Values.meshConfig.rootNamespace }}
   namespace: {{ .Values.meshConfig.rootNamespace }}
   {{- else }}
   namespace: {{ .Release.Namespace }}
   {{- end }}
   labels:
-    istio.io/rev: {{ include "namespaced-revision" . }}
+    istio.io/rev: {{ .Values.revision | default "default" }}
 spec:
   configPatches:
     - applyTo: NETWORK_FILTER
       match:
         context: SIDECAR_INBOUND
         proxy:
-          proxyVersion: '^1\.9.*'
+          proxyVersion: '^1\.11.*'
         listener: {}
       patch:
         operation: INSERT_BEFORE
@@ -151,7 +151,7 @@ spec:
       match:
         context: SIDECAR_OUTBOUND
         proxy:
-          proxyVersion: '^1\.9.*'
+          proxyVersion: '^1\.11.*'
         cluster: {}
       patch:
         operation: MERGE
@@ -167,7 +167,7 @@ spec:
       match:
         context: GATEWAY
         proxy:
-          proxyVersion: '^1\.9.*'
+          proxyVersion: '^1\.11.*'
         cluster: {}
       patch:
         operation: MERGE
@@ -185,21 +185,21 @@ spec:
 apiVersion: networking.istio.io/v1alpha3
 kind: EnvoyFilter
 metadata:
-  name: {{ include "name-with-revision" ( dict "name" "stats-filter-1.9" "context" $) }}
+  name: stats-filter-1.11{{- if not (eq .Values.revision "") }}-{{ .Values.revision }}{{- end }}
   {{- if .Values.meshConfig.rootNamespace }}
   namespace: {{ .Values.meshConfig.rootNamespace }}
   {{- else }}
   namespace: {{ .Release.Namespace }}
   {{- end }}
   labels:
-    istio.io/rev: {{ include "namespaced-revision" . }}
+    istio.io/rev: {{ .Values.revision | default "default" }}
 spec:
   configPatches:
     - applyTo: HTTP_FILTER
       match:
         context: SIDECAR_OUTBOUND
         proxy:
-          proxyVersion: '^1\.9.*'
+          proxyVersion: '^1\.11.*'
         listener:
           filterChain:
             filter:
@@ -222,15 +222,7 @@ spec:
                     {{- if not .Values.telemetry.v2.prometheus.configOverride.outboundSidecar }}
                     {
                       "debug": "false",
-                      "stat_prefix": "istio",
-                      "metrics": [
-                        {
-                          "dimensions": {
-                            "source_cluster": "node.metadata['CLUSTER_ID']",
-                            "destination_cluster": "upstream_peer.cluster_id"
-                          }
-                        }
-                      ]
+                      "stat_prefix": "istio"
                     }
                     {{- else }}
                     {{ toJson .Values.telemetry.v2.prometheus.configOverride.outboundSidecar | indent 18 }}
@@ -253,7 +245,7 @@ spec:
       match:
         context: SIDECAR_INBOUND
         proxy:
-          proxyVersion: '^1\.9.*'
+          proxyVersion: '^1\.11.*'
         listener:
           filterChain:
             filter:
@@ -277,6 +269,7 @@ spec:
                     {
                       "debug": "false",
                       "stat_prefix": "istio",
+                      "disable_host_header_fallback": true,
                       "metrics": [
                         {
                           "dimensions": {
@@ -307,7 +300,7 @@ spec:
       match:
         context: GATEWAY
         proxy:
-          proxyVersion: '^1\.9.*'
+          proxyVersion: '^1\.11.*'
         listener:
           filterChain:
             filter:
@@ -331,15 +324,7 @@ spec:
                     {
                       "debug": "false",
                       "stat_prefix": "istio",
-                      "disable_host_header_fallback": true,
-                      "metrics": [
-                        {
-                          "dimensions": {
-                            "source_cluster": "node.metadata['CLUSTER_ID']",
-                            "destination_cluster": "upstream_peer.cluster_id"
-                          }
-                        }
-                      ]
+                      "disable_host_header_fallback": true
                     }
                     {{- else }}
                     {{ toJson .Values.telemetry.v2.prometheus.configOverride.gateway | indent 18 }}
@@ -363,21 +348,21 @@ spec:
 apiVersion: networking.istio.io/v1alpha3
 kind: EnvoyFilter
 metadata:
-  name: {{ include "name-with-revision" ( dict "name" "tcp-stats-filter-1.9" "context" $) }}
+  name: tcp-stats-filter-1.11{{- if not (eq .Values.revision "") }}-{{ .Values.revision }}{{- end }}
   {{- if .Values.meshConfig.rootNamespace }}
   namespace: {{ .Values.meshConfig.rootNamespace }}
   {{- else }}
   namespace: {{ .Release.Namespace }}
   {{- end }}
   labels:
-    istio.io/rev: {{ include "namespaced-revision" . }}
+    istio.io/rev: {{ .Values.revision | default "default" }}
 spec:
   configPatches:
     - applyTo: NETWORK_FILTER
       match:
         context: SIDECAR_INBOUND
         proxy:
-          proxyVersion: '^1\.9.*'
+          proxyVersion: '^1\.11.*'
         listener:
           filterChain:
             filter:
@@ -429,7 +414,7 @@ spec:
       match:
         context: SIDECAR_OUTBOUND
         proxy:
-          proxyVersion: '^1\.9.*'
+          proxyVersion: '^1\.11.*'
         listener:
           filterChain:
             filter:
@@ -450,15 +435,7 @@ spec:
                     {{- if not .Values.telemetry.v2.prometheus.configOverride.outboundSidecar }}
                     {
                       "debug": "false",
-                      "stat_prefix": "istio",
-                      "metrics": [
-                        {
-                          "dimensions": {
-                            "source_cluster": "node.metadata['CLUSTER_ID']",
-                            "destination_cluster": "upstream_peer.cluster_id"
-                          }
-                        }
-                      ]
+                      "stat_prefix": "istio"
                     }
                     {{- else }}
                     {{ toJson .Values.telemetry.v2.prometheus.configOverride.outboundSidecar | indent 18 }}
@@ -481,7 +458,7 @@ spec:
       match:
         context: GATEWAY
         proxy:
-          proxyVersion: '^1\.9.*'
+          proxyVersion: '^1\.11.*'
         listener:
           filterChain:
             filter:
@@ -502,15 +479,7 @@ spec:
                     {{- if not .Values.telemetry.v2.prometheus.configOverride.gateway }}
                     {
                       "debug": "false",
-                      "stat_prefix": "istio",
-                      "metrics": [
-                        {
-                          "dimensions": {
-                            "source_cluster": "node.metadata['CLUSTER_ID']",
-                            "destination_cluster": "upstream_peer.cluster_id"
-                          }
-                        }
-                      ]
+                      "stat_prefix": "istio"
                     }
                     {{- else }}
                     {{ toJson .Values.telemetry.v2.prometheus.configOverride.gateway | indent 18 }}
@@ -535,14 +504,14 @@ spec:
 apiVersion: networking.istio.io/v1alpha3
 kind: EnvoyFilter
 metadata:
-  name: {{ include "name-with-revision" ( dict "name" "stackdriver-filter-1.9" "context" $) }}
+  name: stackdriver-filter-1.11{{- if not (eq .Values.revision "") }}-{{ .Values.revision }}{{- end }}
   {{- if .Values.meshConfig.rootNamespace }}
   namespace: {{ .Values.meshConfig.rootNamespace }}
   {{- else }}
   namespace: {{ .Release.Namespace }}
   {{- end }}
   labels:
-    istio.io/rev: {{ include "namespaced-revision" . }}
+    istio.io/rev: {{ .Values.revision | default "default" }}
 spec:
   configPatches:
 {{- if not .Values.telemetry.v2.stackdriver.disableOutbound }}
@@ -550,7 +519,7 @@ spec:
       match:
         context: SIDECAR_OUTBOUND
         proxy:
-          proxyVersion: '^1\.9.*'
+          proxyVersion: '^1\.11.*'
         listener:
           filterChain:
             filter:
@@ -585,7 +554,7 @@ spec:
       match:
         context: SIDECAR_INBOUND
         proxy:
-          proxyVersion: '^1\.9.*'
+          proxyVersion: '^1\.11.*'
         listener:
           filterChain:
             filter:
@@ -619,7 +588,7 @@ spec:
       match:
         context: GATEWAY
         proxy:
-          proxyVersion: '^1\.9.*'
+          proxyVersion: '^1\.11.*'
         listener:
           filterChain:
             filter:
@@ -653,14 +622,14 @@ spec:
 apiVersion: networking.istio.io/v1alpha3
 kind: EnvoyFilter
 metadata:
-  name: {{ include "name-with-revision" ( dict "name" "tcp-stackdriver-filter-1.9" "context" $) }}
+  name: tcp-stackdriver-filter-1.11{{- if not (eq .Values.revision "") }}-{{ .Values.revision }}{{- end }}
   {{- if .Values.meshConfig.rootNamespace }}
   namespace: {{ .Values.meshConfig.rootNamespace }}
   {{- else }}
   namespace: {{ .Release.Namespace }}
   {{- end }}
   labels:
-    istio.io/rev: {{ include "namespaced-revision" . }}
+    istio.io/rev: {{ .Values.revision | default "default" }}
 spec:
   configPatches:
   {{- if not .Values.telemetry.v2.stackdriver.disableOutbound }}
@@ -668,7 +637,7 @@ spec:
     match:
       context: SIDECAR_OUTBOUND
       proxy:
-        proxyVersion: '^1\.9.*'
+        proxyVersion: '^1\.11.*'
       listener:
         filterChain:
           filter:
@@ -701,7 +670,7 @@ spec:
     match:
       context: SIDECAR_INBOUND
       proxy:
-        proxyVersion: '^1\.9.*'
+        proxyVersion: '^1\.11.*'
       listener:
         filterChain:
           filter:
@@ -733,7 +702,7 @@ spec:
     match:
       context: GATEWAY
       proxy:
-        proxyVersion: '^1\.9.*'
+        proxyVersion: '^1\.11.*'
       listener:
         filterChain:
           filter:
@@ -766,21 +735,21 @@ spec:
 apiVersion: networking.istio.io/v1alpha3
 kind: EnvoyFilter
 metadata:
-  name: {{ include "name-with-revision" ( dict "name" "stackdriver-sampling-accesslog-filter-1.9" "context" $) }}
+  name: stackdriver-sampling-accesslog-filter-1.11{{- if not (eq .Values.revision "") }}-{{ .Values.revision }}{{- end }}
   {{- if .Values.meshConfig.rootNamespace }}
   namespace: {{ .Values.meshConfig.rootNamespace }}
   {{- else }}
   namespace: {{ .Release.Namespace }}
   {{- end }}
   labels:
-    istio.io/rev: {{ include "namespaced-revision" . }}
+    istio.io/rev: {{ .Values.revision | default "default" }}
 spec:
   configPatches:
     - applyTo: HTTP_FILTER
       match:
         context: SIDECAR_INBOUND
         proxy:
-          proxyVersion: '1\.9.*'
+          proxyVersion: '1\.11.*'
         listener:
           filterChain:
             filter:

@@ -11,8 +11,6 @@ metadata:
   {{- end }}
   labels:
     istio.io/rev: {{ include "namespaced-revision" . }}
-    install.operator.istio.io/owning-resource: {{ .Values.ownerName | default "unknown" }}
-    operator.istio.io/component: "Pilot"
 spec:
   configPatches:
     - applyTo: HTTP_FILTER
@@ -271,6 +269,7 @@ spec:
                     {
                       "debug": "false",
                       "stat_prefix": "istio",
+                      "disable_host_header_fallback": true,
                       "metrics": [
                         {
                           "dimensions": {

@@ -8,8 +8,6 @@ metadata:
     app: istiod
     release: {{ .Release.Name }}
     istio.io/rev: {{ include "namespaced-revision" . }}
-    install.operator.istio.io/owning-resource: {{ .Values.ownerName | default "unknown" }}
-    operator.istio.io/component: "Pilot"
 spec:
   maxReplicas: {{ .Values.pilot.autoscaleMax }}
   minReplicas: {{ .Values.pilot.autoscaleMin }}

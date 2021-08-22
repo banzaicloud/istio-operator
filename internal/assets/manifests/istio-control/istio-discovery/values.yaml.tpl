@@ -8,7 +8,7 @@ pilot:
   replicaCount: {{ or .GetSpec.GetIstiod.GetDeployment.GetReplicas.GetCount 1 }}
 
   # Can be a full hub/image:tag
-  image: {{ or .GetSpec.GetIstiod.GetDeployment.GetImage "istio-pilot" }}
+  image: {{ or .GetSpec.GetIstiod.GetDeployment.GetImage "pilot" }}
   traceSampling: {{ or .GetSpec.GetIstiod.GetTraceSampling 1.0 }}
 
   # Resources for a small pilot install
@@ -204,7 +204,9 @@ global:
   # If not set explicitly, default to the Istio discovery address.
   caAddress: "{{ or .GetSpec.GetCaAddress "" }}"
 
-  # External istiod controls all remote clusters: disabled by default
+  # Configure a remote cluster data plane controlled by an external istiod.
+  # When set to true, istiod is not deployed locally and only a subset of the other
+  # discovery charts are enabled.
   externalIstiod: {{ or .GetSpec.GetIstiod.GetExternalIstiod.GetEnabled false }}
 
   # Configure the policy for validating JWT.

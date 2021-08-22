@@ -1,10 +1,6 @@
 {{- $containers := list }}
 {{- range $index, $container := .Spec.Containers }}{{ if not (eq $container.Name "istio-proxy") }}{{ $containers = append $containers $container.Name }}{{end}}{{- end}}
 metadata:
-  labels:
-    service.istio.io/canonical-name: {{ index .ObjectMeta.Labels `service.istio.io/canonical-name` | default (index .ObjectMeta.Labels `app.kubernetes.io/name`) | default (index .ObjectMeta.Labels `app`) | default .DeploymentMeta.Name  | quote }}
-    service.istio.io/canonical-revision: {{ index .ObjectMeta.Labels `service.istio.io/canonical-revision` | default (index .ObjectMeta.Labels `app.kubernetes.io/version`) | default (index .ObjectMeta.Labels `version`) | default "latest"  | quote }}
-    istio.io/rev: {{ .Revision | default "default" | quote }}
   annotations: {
     {{- if eq (len $containers) 1 }}
     kubectl.kubernetes.io/default-logs-container: "{{ index $containers 0 }}",
@@ -13,23 +9,33 @@ metadata:
   }
 spec:
   containers:
+  {{- range $index, $container := .Spec.Containers  }}
+  {{ if not (eq $container.Name "istio-proxy") }}
+  - name: {{ $container.Name }}
+    env:
+    - name: "GRPC_XDS_BOOTSTRAP"
+      value: "/var/lib/istio/data/grpc-bootstrap.json"
+    - name: "GRPC_XDS_EXPERIMENTAL_SECURITY_SUPPORT"
+      value: "true"
+    volumeMounts:
+    - mountPath: /var/lib/istio/data
+      name: istio-data
+    # UDS channel between istioagent and gRPC client for XDS/SDS
+    - mountPath: /etc/istio/proxy
+      name: istio-xds
+  {{- end }}
+  {{- end }}
   - name: istio-proxy
-  {{- if contains "/" .Values.global.proxy.image }}
+  {{- if contains "/" (annotation .ObjectMeta `sidecar.istio.io/proxyImage` .Values.global.proxy.image) }}
     image: "{{ annotation .ObjectMeta `sidecar.istio.io/proxyImage` .Values.global.proxy.image }}"
   {{- else }}
     image: "{{ .Values.global.hub }}/{{ .Values.global.proxy.image }}:{{ .Values.global.tag }}"
   {{- end }}
-    ports:
-    - containerPort: 15090
-      protocol: TCP
-      name: http-envoy-prom
     args:
     - proxy
-    - router
+    - sidecar
     - --domain
     - $(POD_NAMESPACE).svc.{{ .Values.global.proxy.clusterDomain }}
-    - --proxyLogLevel={{ annotation .ObjectMeta `sidecar.istio.io/logLevel` .Values.global.proxy.logLevel }}
-    - --proxyComponentLogLevel={{ annotation .ObjectMeta `sidecar.istio.io/componentLogLevel` .Values.global.proxy.componentLogLevel }}
     - --log_output_level={{ annotation .ObjectMeta `sidecar.istio.io/agentLogLevel` .Values.global.logging.level }}
   {{- if .Values.global.sts.servicePort }}
     - --stsPort={{ .Values.global.sts.servicePort }}
@@ -37,11 +43,17 @@ spec:
   {{- if .Values.global.logAsJson }}
     - --log_as_json
   {{- end }}
-  {{- if .Values.global.proxy.lifecycle }}
-    lifecycle:
-      {{ toYaml .Values.global.proxy.lifecycle | indent 6 }}
-  {{- end }}
     env:
+    - name: "GRPC_XDS_BOOTSTRAP"
+      value: "/var/lib/istio/data/grpc-bootstrap.json"
+    - name: ISTIO_META_GENERATOR
+      value: grpc
+    - name: OUTPUT_CERTS
+      value: /var/lib/istio/data
+    {{- if eq (env "PILOT_ENABLE_INBOUND_PASSTHROUGH" "true") "false" }}
+    - name: REWRITE_PROBE_LEGACY_LOCALHOST_DESTINATION
+      value: "true"
+    {{- end }}
     - name: JWT_POLICY
       value: {{ .Values.global.jwtPolicy }}
     - name: PILOT_CERT_PROVIDER
@@ -93,7 +105,7 @@ spec:
     - name: ISTIO_META_CLUSTER_ID
       value: "{{ valueOrDefault .Values.global.multiCluster.clusterName `Kubernetes` }}"
     - name: ISTIO_META_INTERCEPTION_MODE
-      value: "{{ .ProxyConfig.InterceptionMode.String }}"
+      value: "{{ or (index .ObjectMeta.Annotations `sidecar.istio.io/interceptionMode`) .ProxyConfig.InterceptionMode.String }}"
     {{- if .Values.global.network }}
     - name: ISTIO_META_NETWORK
       value: "{{ .Values.global.network }}"
@@ -121,15 +133,47 @@ spec:
     - name: {{ $key }}
       value: "{{ $value }}"
     {{- end }}
+    # grpc uses xds:/// to resolve – no need to resolve VIP
+    - name: ISTIO_META_DNS_CAPTURE
+      value: "false"
+    - name: DISABLE_ENVOY
+      value: "true"
     {{with .Values.global.imagePullPolicy }}imagePullPolicy: "{{.}}"{{end}}
+    {{ if ne (annotation .ObjectMeta `status.sidecar.istio.io/port` .Values.global.proxy.statusPort) `0` }}
     readinessProbe:
       httpGet:
         path: /healthz/ready
-        port: 15021
-      initialDelaySeconds: {{.Values.global.proxy.readinessInitialDelaySeconds }}
-      periodSeconds: {{ .Values.global.proxy.readinessPeriodSeconds }}
+        port: {{ .Values.global.proxy.statusPort }}
+      initialDelaySeconds: {{ annotation .ObjectMeta `readiness.status.sidecar.istio.io/initialDelaySeconds` .Values.global.proxy.readinessInitialDelaySeconds }}
+      periodSeconds: {{ annotation .ObjectMeta `readiness.status.sidecar.istio.io/periodSeconds` .Values.global.proxy.readinessPeriodSeconds }}
       timeoutSeconds: 3
-      failureThreshold: {{ .Values.global.proxy.readinessFailureThreshold }}
+      failureThreshold: {{ annotation .ObjectMeta `readiness.status.sidecar.istio.io/failureThreshold` .Values.global.proxy.readinessFailureThreshold }}
+    {{ end -}}
+    resources:
+  {{- if or (isset .ObjectMeta.Annotations `sidecar.istio.io/proxyCPU`) (isset .ObjectMeta.Annotations `sidecar.istio.io/proxyMemory`) (isset .ObjectMeta.Annotations `sidecar.istio.io/proxyCPULimit`) (isset .ObjectMeta.Annotations `sidecar.istio.io/proxyMemoryLimit`) }}
+    {{- if or (isset .ObjectMeta.Annotations `sidecar.istio.io/proxyCPU`) (isset .ObjectMeta.Annotations `sidecar.istio.io/proxyMemory`) }}
+      requests:
+        {{ if (isset .ObjectMeta.Annotations `sidecar.istio.io/proxyCPU`) -}}
+        cpu: "{{ index .ObjectMeta.Annotations `sidecar.istio.io/proxyCPU` }}"
+        {{ end }}
+        {{ if (isset .ObjectMeta.Annotations `sidecar.istio.io/proxyMemory`) -}}
+        memory: "{{ index .ObjectMeta.Annotations `sidecar.istio.io/proxyMemory` }}"
+        {{ end }}
+    {{- end }}
+    {{- if or (isset .ObjectMeta.Annotations `sidecar.istio.io/proxyCPULimit`) (isset .ObjectMeta.Annotations `sidecar.istio.io/proxyMemoryLimit`) }}
+      limits:
+        {{ if (isset .ObjectMeta.Annotations `sidecar.istio.io/proxyCPULimit`) -}}
+        cpu: "{{ index .ObjectMeta.Annotations `sidecar.istio.io/proxyCPULimit` }}"
+        {{ end }}
+        {{ if (isset .ObjectMeta.Annotations `sidecar.istio.io/proxyMemoryLimit`) -}}
+        memory: "{{ index .ObjectMeta.Annotations `sidecar.istio.io/proxyMemoryLimit` }}"
+        {{ end }}
+    {{- end }}
+  {{- else }}
+    {{- if .Values.global.proxy.resources }}
+      {{ toYaml .Values.global.proxy.resources | indent 6 }}
+    {{- end }}
+  {{- end }}
     volumeMounts:
     {{- if eq .Values.global.pilotCertProvider "istiod" }}
     - mountPath: /var/run/secrets/istio
@@ -137,26 +181,26 @@ spec:
     {{- end }}
     - mountPath: /var/lib/istio/data
       name: istio-data
-    # SDS channel between istioagent and Envoy
+    # UDS channel between istioagent and gRPC client for XDS/SDS
     - mountPath: /etc/istio/proxy
-      name: istio-envoy
+      name: istio-xds
     {{- if eq .Values.global.jwtPolicy "third-party-jwt" }}
     - mountPath: /var/run/secrets/tokens
       name: istio-token
     {{- end }}
-    {{- if .Values.global.mountMtlsCerts }}
-    # Use the key and cert mounted to /etc/certs/ for the in-cluster mTLS communications.
-    - mountPath: /etc/certs/
-      name: istio-certs
-      readOnly: true
-    {{- end }}
     - name: istio-podinfo
       mountPath: /etc/istio/pod
+    {{- if isset .ObjectMeta.Annotations `sidecar.istio.io/userVolumeMount` }}
+    {{ range $index, $value := fromJSON (index .ObjectMeta.Annotations `sidecar.istio.io/userVolumeMount`) }}
+    - name: "{{  $index }}"
+    {{ toYaml $value | indent 6 }}
+    {{ end }}
+    {{- end }}
   volumes:
-  # SDS channel between istioagent and Envoy
+  # UDS channel between istioagent and gRPC client for XDS/SDS
   - emptyDir:
       medium: Memory
-    name: istio-envoy
+    name: istio-xds
   - name: istio-data
     emptyDir: {}
   - name: istio-podinfo
@@ -168,7 +212,7 @@ spec:
         - path: "annotations"
           fieldRef:
             fieldPath: metadata.annotations
-  {{- if eq .Values.global.jwtPolicy "third-party-jwt" }}
+{{- if eq .Values.global.jwtPolicy "third-party-jwt" }}
   - name: istio-token
     projected:
       sources:
@@ -176,30 +220,15 @@ spec:
           path: istio-token
           expirationSeconds: 43200
           audience: {{ .Values.global.sds.token.aud }}
-  {{- end }}
+{{- end }}
   {{- if eq .Values.global.pilotCertProvider "istiod" }}
   - name: istiod-ca-cert
     configMap:
       name: istio-ca-root-cert
   {{- end }}
-  {{- if .Values.global.mountMtlsCerts }}
-  # Use the key and cert mounted to /etc/certs/ for the in-cluster mTLS communications.
-  - name: istio-certs
-    secret:
-      optional: true
-      {{ if eq .Spec.ServiceAccountName "" }}
-      secretName: istio.default
-      {{ else -}}
-      secretName: {{  printf "istio.%s" .Spec.ServiceAccountName }}
-      {{  end -}}
-  {{- end }}
-  {{- if .Values.global.imagePullSecrets }}
-  imagePullSecrets:
-    {{- range .Values.global.imagePullSecrets }}
-    - name: {{ . }}
-    {{- end }}
-  {{- end }}
-  {{- if eq (env "ENABLE_LEGACY_FSGROUP_INJECTION" "true") "true" }}
-  securityContext:
-    fsGroup: 1337
-  {{- end }}
+  {{- if isset .ObjectMeta.Annotations `sidecar.istio.io/userVolume` }}
+  {{range $index, $value := fromJSON (index .ObjectMeta.Annotations `sidecar.istio.io/userVolume`) }}
+  - name: "{{ $index }}"
+  {{ toYaml $value | indent 4 }}
+  {{ end }}
+  {{ end }}

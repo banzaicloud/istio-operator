@@ -10,8 +10,6 @@ metadata:
   namespace: {{ .Release.Namespace }}
   labels:
     istio.io/rev: {{ include "namespaced-revision" . }}
-    install.operator.istio.io/owning-resource: {{ .Values.ownerName | default "unknown" }}
-    operator.istio.io/component: "Pilot"
     release: {{ .Release.Name }}
 data:
 {{/* Scope the values to just top level fields used in the template, to reduce the size. */}}
@@ -55,6 +53,14 @@ data:
 {{- if not (hasKey .Values.sidecarInjectorWebhook.templates "gateway") }}
       gateway: |
 {{ .Files.Get "resources/gateway-injection-template.yaml" | trim | indent 8 }}
+{{- end }}
+{{- if not (hasKey .Values.sidecarInjectorWebhook.templates "grpc-simple") }}
+      grpc-simple: |
+{{ .Files.Get "resources/grpc-simple.yaml" | trim | indent 8 }}
+{{- end }}
+{{- if not (hasKey .Values.sidecarInjectorWebhook.templates "grpc-agent") }}
+      grpc-agent: |
+{{ .Files.Get "resources/grpc-agent.yaml" | trim | indent 8 }}
 {{- end }}
 {{- with .Values.sidecarInjectorWebhook.templates }}
 {{ toYaml . | trim | indent 6 }}

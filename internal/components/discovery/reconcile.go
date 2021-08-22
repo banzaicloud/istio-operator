@@ -20,6 +20,7 @@ import (
 	"net/http"
 
 	"emperror.dev/errors"
+	admissionregistrationv1 "k8s.io/api/admissionregistration/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 	controllerruntime "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/reconcile"
@@ -27,6 +28,7 @@ import (
 	"github.com/banzaicloud/istio-operator/v2/api/v1alpha1"
 	assets "github.com/banzaicloud/istio-operator/v2/internal/assets"
 	"github.com/banzaicloud/istio-operator/v2/internal/util"
+	"github.com/banzaicloud/k8s-objectmatcher/patch"
 	"github.com/banzaicloud/operator-tools/pkg/helm"
 	"github.com/banzaicloud/operator-tools/pkg/helm/templatereconciler"
 	"github.com/banzaicloud/operator-tools/pkg/reconciler"
@@ -93,12 +95,31 @@ func (rec *Reconciler) ReleaseData(object runtime.Object) (*templatereconciler.R
 	}
 
 	return &templatereconciler.ReleaseData{
-		Chart:                 http.FS(assets.DiscoveryChart),
-		Values:                values,
-		Namespace:             icp.Namespace,
-		ChartName:             chartName,
-		ReleaseName:           releaseName,
-		DesiredStateOverrides: map[reconciler.ObjectKeyWithGVK]reconciler.DesiredState{},
+		Chart:       http.FS(assets.DiscoveryChart),
+		Values:      values,
+		Namespace:   icp.Namespace,
+		ChartName:   chartName,
+		ReleaseName: releaseName,
+		DesiredStateOverrides: map[reconciler.ObjectKeyWithGVK]reconciler.DesiredState{
+			{
+				GVK: admissionregistrationv1.SchemeGroupVersion.WithKind("ValidatingWebhookConfiguration"),
+			}: reconciler.DynamicDesiredState{
+				ShouldUpdateFunc: func(current, desired runtime.Object) (bool, error) {
+					options := []patch.CalculateOption{
+						patch.IgnoreStatusFields(),
+						reconciler.IgnoreManagedFields(),
+						util.IgnoreWebhookFailurePolicy(),
+					}
+
+					patchResult, err := patch.DefaultPatchMaker.Calculate(current, desired, options...)
+					if err != nil {
+						return false, err
+					}
+
+					return !patchResult.IsEmpty(), nil
+				},
+			},
+		},
 	}, nil
 }
 
