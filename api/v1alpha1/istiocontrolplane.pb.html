@@ -4,7 +4,7 @@ description: Istio control plane descriptor
 layout: protoc-gen-docs
 generator: protoc-gen-docs
 schema: istio-operator.api.v1alpha1.IstioControlPlaneSpec
-number_of_entries: 21
+number_of_entries: 23
 ---
 <h2 id="IstioControlPlaneSpec">IstioControlPlaneSpec</h2>
 <section>
@@ -790,6 +790,103 @@ No
 <h2 id="IstioControlPlaneStatus">IstioControlPlaneStatus</h2>
 <section>
 
+<table class="message-fields">
+<thead>
+<tr>
+<th>Field</th>
+<th>Type</th>
+<th>Description</th>
+<th>Required</th>
+</tr>
+</thead>
+<tbody>
+<tr id="IstioControlPlaneStatus-status">
+<td><code>status</code></td>
+<td><code><a href="#ConfigState">ConfigState</a></code></td>
+<td>
+<p>Reconciliation status of the mesh gateway</p>
+
+</td>
+<td>
+No
+</td>
+</tr>
+<tr id="IstioControlPlaneStatus-gatewayAddress">
+<td><code>gatewayAddress</code></td>
+<td><code>string[]</code></td>
+<td>
+<p>Current address for the gateway</p>
+
+</td>
+<td>
+No
+</td>
+</tr>
+<tr id="IstioControlPlaneStatus-errorMessage">
+<td><code>errorMessage</code></td>
+<td><code>string</code></td>
+<td>
+<p>Reconciliation error message if any</p>
+
+</td>
+<td>
+No
+</td>
+</tr>
+<tr id="IstioControlPlaneStatus-meshConfig">
+<td><code>meshConfig</code></td>
+<td><code><a href="https://istio.io/docs/reference/config/istio.mesh.v1alpha1.html#MeshConfig">MeshConfig</a></code></td>
+<td>
+</td>
+<td>
+No
+</td>
+</tr>
+<tr id="IstioControlPlaneStatus-checksums">
+<td><code>checksums</code></td>
+<td><code><a href="#StatusChecksums">StatusChecksums</a></code></td>
+<td>
+</td>
+<td>
+No
+</td>
+</tr>
+</tbody>
+</table>
+</section>
+<h2 id="StatusChecksums">StatusChecksums</h2>
+<section>
+
+<table class="message-fields">
+<thead>
+<tr>
+<th>Field</th>
+<th>Type</th>
+<th>Description</th>
+<th>Required</th>
+</tr>
+</thead>
+<tbody>
+<tr id="StatusChecksums-meshConfig">
+<td><code>meshConfig</code></td>
+<td><code>string</code></td>
+<td>
+</td>
+<td>
+No
+</td>
+</tr>
+<tr id="StatusChecksums-sidecarInjector">
+<td><code>sidecarInjector</code></td>
+<td><code>string</code></td>
+<td>
+</td>
+<td>
+No
+</td>
+</tr>
+</tbody>
+</table>
 </section>
 <h2 id="K8sResourceOverlayPatch">K8sResourceOverlayPatch</h2>
 <section>
@@ -1256,6 +1353,49 @@ No
 </tr>
 <tr id="JWTPolicyType-FIRST_PARTY_JWT">
 <td><code>FIRST_PARTY_JWT</code></td>
+<td>
+</td>
+</tr>
+</tbody>
+</table>
+</section>
+<h2 id="ConfigState">ConfigState</h2>
+<section>
+<table class="enum-values">
+<thead>
+<tr>
+<th>Name</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr id="ConfigState-Unspecified">
+<td><code>Unspecified</code></td>
+<td>
+</td>
+</tr>
+<tr id="ConfigState-Created">
+<td><code>Created</code></td>
+<td>
+</td>
+</tr>
+<tr id="ConfigState-ReconcileFailed">
+<td><code>ReconcileFailed</code></td>
+<td>
+</td>
+</tr>
+<tr id="ConfigState-Reconciling">
+<td><code>Reconciling</code></td>
+<td>
+</td>
+</tr>
+<tr id="ConfigState-Available">
+<td><code>Available</code></td>
+<td>
+</td>
+</tr>
+<tr id="ConfigState-Unmanaged">
+<td><code>Unmanaged</code></td>
 <td>
 </td>
 </tr>
