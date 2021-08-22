@@ -18,41 +18,158 @@ package components
 
 import (
 	"context"
+	"fmt"
 
 	"emperror.dev/errors"
-	"github.com/go-logr/logr"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/apimachinery/pkg/runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/reconcile"
+	"sigs.k8s.io/yaml"
 
 	"github.com/banzaicloud/istio-operator/v2/api/v1alpha1"
 	"github.com/banzaicloud/operator-tools/pkg/helm/templatereconciler"
+	"github.com/banzaicloud/operator-tools/pkg/reconciler"
 	"github.com/banzaicloud/operator-tools/pkg/types"
 )
 
 type (
-	HelmReconciler         = templatereconciler.HelmReconciler
-	NewChartReconcilerFunc = func(helmReconciler *HelmReconciler) Component
+	HelmReconciler             = templatereconciler.HelmReconciler
+	NewComponentReconcilerFunc = func(helmReconciler *HelmReconciler) ComponentReconciler
 )
 
-type Component interface {
+type MinimalComponent interface {
+	Name() string
+	Enabled(runtime.Object) bool
+	ReleaseData(runtime.Object) (*templatereconciler.ReleaseData, error)
+}
+
+type ComponentReconciler interface {
 	templatereconciler.Component
 	Reconcile(object runtime.Object) (reconcile.Result, error)
 	GetManifest(object runtime.Object) ([]byte, error)
+	GetHelmReconciler() *HelmReconciler
 }
 
 type Reconciler interface {
 	GetClient() client.Client
 	GetScheme() *runtime.Scheme
-	GetLogger() logr.Logger
-	GetName() string
 }
 
 type ObjectWithStatus interface {
 	client.Object
 	SetStatus(status v1alpha1.ConfigState, errorMessage string)
-	GetStatus() interface{}
+}
+
+type Base struct {
+	HelmReconciler *HelmReconciler
+	Component      MinimalComponent
+}
+
+func (rec *Base) Reconcile(object runtime.Object) (reconcile.Result, error) {
+	result, err := rec.GetHelmReconciler().Reconcile(object, rec)
+	if err != nil {
+		return reconcile.Result{}, err
+	}
+
+	return *result, nil
+}
+
+func (rec *Base) ReleaseData(object runtime.Object) (*templatereconciler.ReleaseData, error) {
+	return rec.Component.ReleaseData(object)
+}
+
+func (rec *Base) Name() string {
+	return rec.Component.Name()
+}
+
+func (rec *Base) GetHelmReconciler() *HelmReconciler {
+	return rec.HelmReconciler
+}
+
+func (rec *Base) GetManifest(object runtime.Object) ([]byte, error) {
+	content := []byte{}
+
+	releaseData, err := rec.ReleaseData(object)
+	if err != nil {
+		return nil, errors.WrapIf(err, "failed to get release data")
+	}
+
+	var parent reconciler.ResourceOwner
+	var ok bool
+	if parent, ok = object.(reconciler.ResourceOwner); !ok {
+		return nil, errors.New("cannot convert object to ResourceOwner interface")
+	}
+
+	rbs, err := rec.GetHelmReconciler().GetResourceBuilders(parent, rec, releaseData, false)
+	if err != nil {
+		return nil, err
+	}
+
+	for _, rb := range rbs {
+		obj, _, err := rb()
+		if err != nil {
+			return nil, err
+		}
+
+		y, err := yaml.Marshal(obj)
+		if err != nil {
+			return nil, err
+		}
+		content = append(content, []byte(fmt.Sprintf("---\n%s\n", string(y)))...)
+	}
+
+	return content, err
+}
+
+func (rec *Base) IsOptional() bool {
+	if c, ok := rec.Component.(interface {
+		IsOptional() bool
+	}); ok {
+		return c.IsOptional()
+	}
+
+	return false
+}
+
+func (rec *Base) UpdateStatus(object runtime.Object, status types.ReconcileStatus, message string) error {
+	if c, ok := rec.Component.(interface {
+		UpdateStatus(object runtime.Object, status types.ReconcileStatus, message string) error
+	}); ok {
+		return c.UpdateStatus(object, status, message)
+	}
+
+	return UpdateStatus(context.Background(), rec.GetHelmReconciler().GetClient(), object, status, message)
+}
+
+func (rec *Base) Skipped(object runtime.Object) bool {
+	if c, ok := rec.Component.(interface {
+		Skipped(object runtime.Object) bool
+	}); ok {
+		return c.Skipped(object)
+	}
+
+	return false
+}
+
+func (rec *Base) Enabled(object runtime.Object) bool {
+	if c, ok := rec.Component.(interface {
+		Enabled(object runtime.Object) bool
+	}); ok {
+		return c.Enabled(object)
+	}
+
+	return true
+}
+
+func (rec *Base) PreChecks(object runtime.Object) error {
+	if c, ok := rec.Component.(interface {
+		PreChecks(object runtime.Object) error
+	}); ok {
+		return c.PreChecks(object)
+	}
+
+	return nil
 }
 
 func ConvertReconcileStatusToConfigState(status types.ReconcileStatus) v1alpha1.ConfigState {

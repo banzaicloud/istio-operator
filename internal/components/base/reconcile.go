@@ -22,12 +22,11 @@ import (
 	"emperror.dev/errors"
 	apiextensionv1 "k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1"
 	"k8s.io/apimachinery/pkg/runtime"
-	controllerruntime "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
-	"sigs.k8s.io/controller-runtime/pkg/reconcile"
 
 	"github.com/banzaicloud/istio-operator/v2/api/v1alpha1"
 	"github.com/banzaicloud/istio-operator/v2/internal/assets"
+	"github.com/banzaicloud/istio-operator/v2/internal/components"
 	"github.com/banzaicloud/istio-operator/v2/internal/util"
 	"github.com/banzaicloud/operator-tools/pkg/helm"
 	"github.com/banzaicloud/operator-tools/pkg/helm/templatereconciler"
@@ -43,27 +42,22 @@ const (
 	valuesTemplateFileName = "values.yaml.tmpl"
 )
 
-var _ templatereconciler.Component = &Reconciler{}
+var _ components.MinimalComponent = &Component{}
 
-type Reconciler struct {
-	helmReconciler *templatereconciler.HelmReconciler
-}
+type Component struct{}
 
-func NewChartReconciler(helmReconciler *templatereconciler.HelmReconciler) *Reconciler {
-	return &Reconciler{
-		helmReconciler: helmReconciler,
+func NewComponentReconciler(helmReconciler *templatereconciler.HelmReconciler) components.ComponentReconciler {
+	return &components.Base{
+		HelmReconciler: helmReconciler,
+		Component:      &Component{},
 	}
 }
 
-func (rec *Reconciler) Name() string {
+func (rec *Component) Name() string {
 	return componentName
 }
 
-func (rec *Reconciler) Skipped(object runtime.Object) bool {
-	return false
-}
-
-func (rec *Reconciler) Enabled(object runtime.Object) bool {
+func (rec *Component) Enabled(object runtime.Object) bool {
 	if controlPlane, ok := object.(*v1alpha1.IstioControlPlane); ok {
 		return controlPlane.DeletionTimestamp.IsZero()
 	}
@@ -71,19 +65,7 @@ func (rec *Reconciler) Enabled(object runtime.Object) bool {
 	return true
 }
 
-func (rec *Reconciler) IsOptional() bool {
-	return false
-}
-
-func (rec *Reconciler) PreChecks(object runtime.Object) error {
-	return nil
-}
-
-func (rec *Reconciler) UpdateStatus(object runtime.Object, status types.ReconcileStatus, message string) error {
-	return nil
-}
-
-func (rec *Reconciler) ReleaseData(object runtime.Object) (*templatereconciler.ReleaseData, error) {
+func (rec *Component) ReleaseData(object runtime.Object) (*templatereconciler.ReleaseData, error) {
 	icp, ok := object.(*v1alpha1.IstioControlPlane)
 	if !ok {
 		return nil, errors.WrapIff(errors.NewPlain("object cannot be converted to an IstioControlPlane"), "%+v", object)
@@ -120,13 +102,7 @@ func (rec *Reconciler) ReleaseData(object runtime.Object) (*templatereconciler.R
 	}, nil
 }
 
-func (rec *Reconciler) Reconcile(object runtime.Object) (*reconcile.Result, error) {
-	return rec.helmReconciler.Reconcile(object, rec)
-}
-
-func (rec *Reconciler) RegisterWatches(builder *controllerruntime.Builder) {}
-
-func (rec *Reconciler) values(object runtime.Object) (helm.Strimap, error) {
+func (rec *Component) values(object runtime.Object) (helm.Strimap, error) {
 	icp, ok := object.(*v1alpha1.IstioControlPlane)
 	if !ok {
 		return nil, errors.WrapIff(errors.NewPlain("object cannot be converted to an IstioControlPlane"), "%+v", object)

@@ -17,6 +17,7 @@ limitations under the License.
 package controllers
 
 import (
+	"github.com/go-logr/logr"
 	"k8s.io/client-go/discovery"
 	ctrl "sigs.k8s.io/controller-runtime"
 
@@ -25,7 +26,7 @@ import (
 	"github.com/banzaicloud/operator-tools/pkg/reconciler"
 )
 
-func GetHelmReconciler(r components.Reconciler, newChartReconcilerFunc components.NewChartReconcilerFunc) (components.Component, error) {
+func NewComponentReconciler(r components.Reconciler, newComponentFunc components.NewComponentReconcilerFunc, logger logr.Logger) (components.ComponentReconciler, error) {
 	config, err := ctrl.GetConfig()
 	if err != nil {
 		return nil, err
@@ -36,8 +37,8 @@ func GetHelmReconciler(r components.Reconciler, newChartReconcilerFunc component
 		return nil, err
 	}
 
-	return newChartReconcilerFunc(
-		templatereconciler.NewHelmReconciler(r.GetClient(), r.GetScheme(), r.GetLogger().WithName(r.GetName()), d, []reconciler.NativeReconcilerOpt{
+	return newComponentFunc(
+		templatereconciler.NewHelmReconciler(r.GetClient(), r.GetScheme(), logger, d, []reconciler.NativeReconcilerOpt{
 			reconciler.NativeReconcilerSetControllerRef(),
 		}),
 	), nil
