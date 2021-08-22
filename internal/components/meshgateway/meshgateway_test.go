@@ -60,6 +60,8 @@ func TestMGWResourceDump(t *testing.T) {
 			Revision:              "cp-v110x.istio-system",
 			EnablePrometheusMerge: true,
 			InjectionTemplate:     "gateway",
+			InjectionChecksum:     "08fdba0c89f9bbd6624201d98758746d1bddc78e9004b00259f33b20b7f9efba",
+			MeshConfigChecksum:    "319ffd3f807ef4516499c6ad68279a1cd07778f5847e65f9aef908eceb1693e3",
 		},
 	)
 
@@ -100,8 +102,11 @@ func TestMGWTemplateTransform(t *testing.T) {
 			Revision:              "cp-revision-1",
 			EnablePrometheusMerge: false,
 			InjectionTemplate:     "gateway",
+			InjectionChecksum:     "08fdba0c89f9bbd6624201d98758746d1bddc78e9004b00259f33b20b7f9efba",
+			MeshConfigChecksum:    "319ffd3f807ef4516499c6ad68279a1cd07778f5847e65f9aef908eceb1693e3",
 		},
 	}
+	obj.SetDefaults()
 
 	values, err := util.TransformStructToStriMapWithTemplate(obj, assets.MeshGateway, "values.yaml.tpl")
 	if err != nil {
@@ -130,5 +135,7 @@ func TestMGWTemplateTransform(t *testing.T) {
 		}).WriteReport(os.Stdout); err != nil {
 			t.Fatal(err)
 		}
+
+		t.Fatal(errors.NewPlain("generated template values not equals with expected"))
 	}
 }

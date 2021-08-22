@@ -18,10 +18,15 @@ package controllers
 
 import (
 	"context"
+	"crypto/sha256"
+	"encoding/json"
+	"fmt"
 	"sync"
 
 	"emperror.dev/errors"
 	"github.com/go-logr/logr"
+	"github.com/gogo/protobuf/jsonpb"
+	"istio.io/api/mesh/v1alpha1"
 	istionetworkingv1alpha3 "istio.io/client-go/pkg/apis/networking/v1alpha3"
 	istiosecurityv1beta1 "istio.io/client-go/pkg/apis/security/v1beta1"
 	admissionregistrationv1 "k8s.io/api/admissionregistration/v1"
@@ -33,7 +38,6 @@ import (
 	k8serrors "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
-	"k8s.io/client-go/discovery"
 	ctrl "sigs.k8s.io/controller-runtime"
 	ctrlBuilder "sigs.k8s.io/controller-runtime/pkg/builder"
 	"sigs.k8s.io/controller-runtime/pkg/client"
@@ -43,14 +47,17 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/source"
 
 	servicemeshv1alpha1 "github.com/banzaicloud/istio-operator/v2/api/v1alpha1"
+	"github.com/banzaicloud/istio-operator/v2/internal/components"
 	"github.com/banzaicloud/istio-operator/v2/internal/components/base"
 	discovery_component "github.com/banzaicloud/istio-operator/v2/internal/components/discovery"
 	"github.com/banzaicloud/istio-operator/v2/internal/util"
-	"github.com/banzaicloud/operator-tools/pkg/helm/templatereconciler"
 	"github.com/banzaicloud/operator-tools/pkg/reconciler"
+	"github.com/banzaicloud/operator-tools/pkg/utils"
 )
 
-const istioControlPlaneFinalizerID = "istio-controlplane.servicemesh.cisco.com"
+const (
+	istioControlPlaneFinalizerID = "istio-controlplane.servicemesh.cisco.com"
+)
 
 // IstioControlPlaneReconciler reconciles a IstioControlPlane object
 type IstioControlPlaneReconciler struct {
@@ -130,21 +137,12 @@ func (r *IstioControlPlaneReconciler) Reconcile(ctx context.Context, req ctrl.Re
 		return ctrl.Result{}, err
 	}
 
-	config, err := ctrl.GetConfig()
+	baseComponent, err := NewComponentReconciler(r, base.NewComponentReconciler, r.Log.WithName("base"))
 	if err != nil {
 		return ctrl.Result{}, err
 	}
-	var d discovery.DiscoveryInterface
-	if d, err = discovery.NewDiscoveryClientForConfig(config); err != nil {
-		return ctrl.Result{}, err
-	}
 
-	baseReconciler := base.NewChartReconciler(
-		templatereconciler.NewHelmReconciler(r.Client, r.Scheme, r.Log.WithName("base"), d, []reconciler.NativeReconcilerOpt{
-			reconciler.NativeReconcilerSetControllerRef(),
-		}),
-	)
-	_, err = baseReconciler.Reconcile(icp)
+	_, err = baseComponent.Reconcile(icp)
 	if err != nil {
 		return ctrl.Result{}, err
 	}
@@ -156,15 +154,33 @@ func (r *IstioControlPlaneReconciler) Reconcile(ctx context.Context, req ctrl.Re
 		}
 	})
 
-	discoveryReconciler := discovery_component.NewChartReconciler(
-		templatereconciler.NewHelmReconciler(r.Client, r.Scheme, r.Log.WithName("discovery"), d, []reconciler.NativeReconcilerOpt{
-			reconciler.NativeReconcilerSetControllerRef(),
-		}),
-	)
+	discoveryReconciler, err := NewComponentReconciler(r, discovery_component.NewChartReconciler, r.Log.WithName("discovery"))
+	if err != nil {
+		return ctrl.Result{}, err
+	}
 
 	result, err := discoveryReconciler.Reconcile(icp)
 	if err != nil {
 		return ctrl.Result{}, err
+	}
+
+	err = r.setSidecarInjectorChecksumToStatus(ctx, icp)
+	if err != nil {
+		return ctrl.Result{}, err
+	}
+
+	icp.Status.MeshConfig = icp.GetSpec().GetMeshConfig()
+
+	err = r.setMeshConfigChecksumToStatus(icp, icp.Status.MeshConfig)
+	if err != nil {
+		return ctrl.Result{}, err
+	}
+
+	updateErr := components.UpdateStatus(ctx, r.Client, icp, components.ConvertConfigStateToReconcileStatus(servicemeshv1alpha1.ConfigState_Available), "")
+	if updateErr != nil {
+		logger.Error(updateErr, "failed to update state")
+
+		return result, errors.WithStack(err)
 	}
 
 	err = util.RemoveFinalizer(r.Client, icp, istioControlPlaneFinalizerID)
@@ -172,7 +188,57 @@ func (r *IstioControlPlaneReconciler) Reconcile(ctx context.Context, req ctrl.Re
 		return ctrl.Result{}, err
 	}
 
-	return *result, nil
+	return result, nil
+}
+
+func (r *IstioControlPlaneReconciler) setMeshConfigChecksumToStatus(icp *servicemeshv1alpha1.IstioControlPlane, mc *v1alpha1.MeshConfig) error {
+	m := jsonpb.Marshaler{}
+	ms, err := m.MarshalToString(mc)
+	if err != nil {
+		return err
+	}
+
+	cs := icp.Status.GetChecksums()
+	if cs == nil {
+		cs = &servicemeshv1alpha1.StatusChecksums{}
+	}
+	cs.MeshConfig = fmt.Sprintf("%x", sha256.Sum256([]byte(ms)))
+	icp.Status.Checksums = cs
+
+	return nil
+}
+
+func (r *IstioControlPlaneReconciler) setSidecarInjectorChecksumToStatus(ctx context.Context, icp *servicemeshv1alpha1.IstioControlPlane) error {
+	configmaps := &corev1.ConfigMapList{}
+	err := r.Client.List(ctx, configmaps, client.InNamespace(icp.GetNamespace()), client.MatchingLabels(utils.MergeLabels(icp.RevisionLabels(), map[string]string{"istio": "sidecar-injector"})))
+	if err != nil {
+		return err
+	}
+
+	if len(configmaps.Items) == 1 {
+		cm := configmaps.Items[0]
+		jm, err := json.Marshal(cm.Data)
+		if err != nil {
+			return err
+		}
+
+		cs := icp.Status.GetChecksums()
+		if cs == nil {
+			cs = &servicemeshv1alpha1.StatusChecksums{}
+		}
+		cs.SidecarInjector = fmt.Sprintf("%x", sha256.Sum256(jm))
+		icp.Status.Checksums = cs
+	}
+
+	return nil
+}
+
+func (r *IstioControlPlaneReconciler) GetClient() client.Client {
+	return r.Client
+}
+
+func (r *IstioControlPlaneReconciler) GetScheme() *runtime.Scheme {
+	return r.Scheme
 }
 
 func (r *IstioControlPlaneReconciler) SetupWithManager(mgr ctrl.Manager) error {
