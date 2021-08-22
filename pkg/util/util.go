@@ -17,10 +17,16 @@ limitations under the License.
 package util
 
 import (
+	"encoding/json"
+
 	"github.com/go-logr/logr"
+	"github.com/gogo/protobuf/jsonpb"
+	"github.com/imdario/mergo"
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
+	"istio.io/api/mesh/v1alpha1"
 	k8s_zap "sigs.k8s.io/controller-runtime/pkg/log/zap"
+	"sigs.k8s.io/yaml"
 )
 
 func CreateLogger(debug bool, development bool) logr.Logger {
@@ -49,4 +55,77 @@ func CreateLogger(debug bool, development bool) logr.Logger {
 	}
 
 	return k8s_zap.New(k8s_zap.UseDevMode(development), k8s_zap.Encoder(encoder), k8s_zap.Level(level))
+}
+
+type MergoOption = func(*mergo.Config)
+
+func MergeMeshConfigs(mergoOptions []MergoOption, meshConfigs ...v1alpha1.MeshConfig) (v1alpha1.MeshConfig, error) {
+	m := jsonpb.Marshaler{}
+	dstMeshConfig := v1alpha1.MeshConfig{}
+	var dstMap map[string]interface{}
+
+	if mergoOptions == nil {
+		mergoOptions = make([]MergoOption, 0)
+	}
+
+	if len(mergoOptions) == 0 {
+		mergoOptions = append(mergoOptions, mergo.WithOverride)
+	}
+
+	for _, mc := range meshConfigs {
+		mc := mc
+		y, err := m.MarshalToString(&mc)
+		if err != nil {
+			return dstMeshConfig, err
+		}
+
+		var sourceMap map[string]interface{}
+		err = json.Unmarshal([]byte(y), &sourceMap)
+		if err != nil {
+			return dstMeshConfig, err
+		}
+		err = mergo.Merge(&dstMap, sourceMap, mergoOptions...)
+		if err != nil {
+			return dstMeshConfig, err
+		}
+	}
+
+	jsonBytes, err := json.Marshal(&dstMap)
+	if err != nil {
+		return dstMeshConfig, err
+	}
+
+	err = jsonpb.UnmarshalString(string(jsonBytes), &dstMeshConfig)
+	if err != nil {
+		return dstMeshConfig, err
+	}
+
+	return dstMeshConfig, nil
+}
+
+func MergeYAMLs(mergoOptions []MergoOption, yamls ...string) ([]byte, error) {
+	var l map[string]interface{}
+
+	if mergoOptions == nil {
+		mergoOptions = make([]func(*mergo.Config), 0)
+	}
+
+	if len(mergoOptions) == 0 {
+		mergoOptions = append(mergoOptions, mergo.WithOverride)
+	}
+
+	for _, y := range yamls {
+		var r map[string]interface{}
+		err := yaml.Unmarshal([]byte(y), &r)
+		if err != nil {
+			return nil, err
+		}
+
+		err = mergo.Merge(&l, r, mergoOptions...)
+		if err != nil {
+			return nil, err
+		}
+	}
+
+	return yaml.Marshal(l)
 }
