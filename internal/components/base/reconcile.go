@@ -39,7 +39,7 @@ const (
 	chartName     = "base"
 	releaseName   = "istio-operator-base"
 
-	valuesTemplateFileName = "values.yaml.tmpl"
+	valuesTemplateFileName = "values.yaml.tpl"
 )
 
 var _ components.MinimalComponent = &Component{}
