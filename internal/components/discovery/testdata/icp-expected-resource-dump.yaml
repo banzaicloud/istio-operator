@@ -30,7 +30,6 @@ data:
   mesh: |-
     defaultConfig:
       discoveryAddress: istiod-cp-v111x.istio-system.svc:15012
-      meshId: cluster.local
       tracing:
         zipkin:
           address: zipkin.istio-system:9411
@@ -1056,7 +1055,7 @@ data:
         "logging": {
           "level": "default:info"
         },
-        "meshID": "cluster.local",
+        "meshID": "",
         "meshNetworks": {},
         "mountMtlsCerts": false,
         "multiCluster": {
@@ -1080,7 +1079,6 @@ data:
           "holdApplicationUntilProxyStarts": false,
           "image": "proxyv2",
           "includeIPRanges": "*",
-          "lifecycle": {},
           "logLevel": "warning",
           "privileged": false,
           "readinessFailureThreshold": 30,
@@ -1147,11 +1145,6 @@ data:
         "alwaysInjectSelector": [],
         "defaultTemplates": [],
         "enableNamespacesByDefault": false,
-        "httpProxyEnvs": {
-          "httpProxy": "",
-          "httpsProxy": "",
-          "noProxy": ""
-        },
         "injectedAnnotations": {},
         "neverInjectSelector": [],
         "objectSelector": {
@@ -1576,7 +1569,6 @@ metadata:
   name: istiod-cp-v111x
   namespace: istio-system
 spec:
-  replicas: 1
   selector:
     matchLabels:
       app: istiod
@@ -1706,6 +1698,29 @@ spec:
         secret:
           optional: true
           secretName: istio-kubeconfig
+
+---
+apiVersion: autoscaling/v2beta1
+kind: HorizontalPodAutoscaler
+metadata:
+  labels:
+    app: istiod
+    istio.io/rev: cp-v111x.istio-system
+    release: istio-operator-discovery
+  name: istiod-cp-v111x
+  namespace: istio-system
+spec:
+  maxReplicas: 5
+  metrics:
+  - resource:
+      name: cpu
+      targetAverageUtilization: 80
+    type: Resource
+  minReplicas: 1
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: istiod-cp-v111x
 
 ---
 apiVersion: admissionregistration.k8s.io/v1

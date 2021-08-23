@@ -20,11 +20,8 @@ import (
 	"bytes"
 	"context"
 	"encoding/json"
-	"fmt"
 	"io/fs"
 	"path"
-	"reflect"
-	"strings"
 	"text/template"
 
 	"emperror.dev/errors"
@@ -37,53 +34,16 @@ import (
 	"sigs.k8s.io/yaml"
 
 	"github.com/banzaicloud/operator-tools/pkg/helm"
-	"github.com/banzaicloud/operator-tools/pkg/utils"
 )
 
 func TransformStructToStriMapWithTemplate(data interface{}, filesystem fs.FS, templateFileName string) (helm.Strimap, error) {
-	tt, err := template.New(path.Base(templateFileName)).Funcs(template.FuncMap{
-		"PointerToBool": utils.PointerToBool,
-		"toYaml": func(value interface{}) string {
-			y, err := yaml.Marshal(value)
-			if err != nil {
-				return ""
-			}
-
-			return string(y)
-		},
-		"toYamlIf": func(value interface{}) string {
-			sprig.TxtFuncMap()
-			body := []string{}
-			if dict, ok := value.(map[string]interface{}); ok { // nolint:nestif
-				if key, ok := dict["key"]; ok {
-					body = append(body, fmt.Sprintf("%s:", key))
-				}
-				if value, ok := dict["value"]; ok {
-					if value == nil || reflect.ValueOf(value).IsNil() {
-						return ""
-					}
-					y, err := yaml.Marshal(value)
-					if err != nil {
-						return ""
-					}
-
-					indent := func(spaces int, v string) string {
-						pad := strings.Repeat(" ", spaces)
-
-						return pad + strings.ReplaceAll(v, "\n", "\n"+pad)
-					}
-
-					content := string(y)
-					if len(body) > 0 {
-						content = indent(2, content)
-					}
-
-					body = append(body, content)
-				}
-			}
-
-			return strings.Join(body, "\n")
-		},
+	t := template.New(path.Base(templateFileName))
+	tt, err := t.Funcs(template.FuncMap{
+		"include":      includeTemplateFunc(t),
+		"toYaml":       toYamlTemplateFunc,
+		"valueIf":      valueIfTemplateFunc,
+		"reformatYaml": reformatYamlTemplateFunc,
+		"toYamlIf":     toYamlIfTemplateFunc,
 	}).Funcs(sprig.TxtFuncMap()).ParseFS(filesystem, templateFileName)
 	if err != nil {
 		return nil, errors.WrapWithDetails(err, "template cannot be parsed", "template", templateFileName)

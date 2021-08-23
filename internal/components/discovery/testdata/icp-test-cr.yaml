@@ -5,3 +5,35 @@ metadata:
   namespace: istio-system
 spec:
   version: "1.11.0"
+  # istiod:
+    # deployment:
+    #   env:
+    #   - name: JOSKA
+    #     value: pista
+  # jwtPolicy: THIRD_PARTY_JWT
+  proxy:
+    image: proxyv2
+  proxyInit:
+    image: proxyv2
+  #   resources:
+  #     limits:
+  #       cpu: 2000m
+  #       memory: 1024Mi
+  #     requests:
+  #       cpu: 100m
+  #       memory: 128Mi
+  # defaultPodDisruptionBudget:
+  #   enabled: true
+  # telemetryV2:
+  #   enabled: false
+  # proxyWasm:
+  #   enabled: false
+  # httpProxyEnvs:
+  #   noProxy: "localhost"
+  # istiod:
+  #   enableAnalysis: false
+  #   deployment:
+  #     replicas:
+  #       min: 5
+  # logging:
+  #   level: "joska"

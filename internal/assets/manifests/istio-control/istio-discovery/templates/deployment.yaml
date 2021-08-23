@@ -117,12 +117,7 @@ spec:
                 fieldPath: spec.serviceAccountName
           - name: KUBECONFIG
             value: /var/run/secrets/remote/config
-          {{- if .Values.pilot.env }}
-          {{- range $key, $val := .Values.pilot.env }}
-          - name: {{ $key }}
-            value: "{{ $val }}"
-          {{- end }}
-          {{- end }}
+{{ include "toYamlIf" (dict "value" .Values.pilot.env) | indent 10 }}
 {{- if .Values.pilot.traceSampling }}
           - name: PILOT_TRACE_SAMPLING
             value: "{{ .Values.pilot.traceSampling }}"

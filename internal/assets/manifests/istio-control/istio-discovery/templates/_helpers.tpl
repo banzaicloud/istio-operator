@@ -26,3 +26,16 @@
 {{- .name -}}
 {{- end -}}
 {{- end -}}
+
+{{- define "toYamlIf" }}
+{{- if .value }}
+{{- if .key }}
+{{ .key }}:
+{{- end }}
+{{- if gt (.indent | int) 0 }}
+{{ .value | toYaml | indent .indent }}
+{{- else }}
+{{ .value | toYaml }}
+{{- end }}
+{{- end }}
+{{- end }}

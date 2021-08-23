@@ -12,7 +12,6 @@ require (
 	github.com/banzaicloud/operator-tools v0.24.1-0.20210823142428-2095ccb7f5e6
 	github.com/fatih/color v1.12.0 // indirect
 	github.com/go-logr/logr v0.4.0
-	github.com/go-sql-driver/mysql v1.5.0 // indirect
 	github.com/gogo/protobuf v1.3.2
 	github.com/golang/protobuf v1.5.2
 	github.com/gonvenience/ytbx v1.4.2
