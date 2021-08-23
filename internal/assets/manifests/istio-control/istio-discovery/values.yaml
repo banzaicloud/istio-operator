@@ -22,7 +22,7 @@ pilot:
       cpu: 500m
       memory: 2048Mi
 
-  env: {}
+  env: []
 
   cpu:
     targetAverageUtilization: 80
@@ -63,6 +63,7 @@ pilot:
   # If false, pilot wil use default values (by default) or user-supplied values.
   configMap: true
 
+  securityContext: {}
 
 sidecarInjectorWebhook:
   # You can use the field called alwaysInjectSelector and neverInjectSelector which will always inject the sidecar or

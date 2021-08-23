@@ -1,253 +1,135 @@
-#.Values.pilot for discovery and mesh wide config
+# template for pilot values
+{{- define "pilot" }}
+{{- if and .GetSpec.GetIstiod.GetDeployment.GetReplicas.GetMin .GetSpec.GetIstiod.GetDeployment.GetReplicas.GetMax }}
+autoscaleEnabled: {{ and (gt (.GetSpec.GetIstiod.GetDeployment.GetReplicas.GetMin | int) 0) (gt (.GetSpec.GetIstiod.GetDeployment.GetReplicas.GetMax | int) (.GetSpec.GetIstiod.GetDeployment.GetReplicas.GetMin | int)) }}
+{{- end }}
+{{ valueIf (dict "key" "autoscaleMin" "value" .GetSpec.GetIstiod.GetDeployment.GetReplicas.GetMin) }}
+{{ valueIf (dict "key" "autoscaleMax" "value" .GetSpec.GetIstiod.GetDeployment.GetReplicas.GetMax) }}
+{{ valueIf (dict "key" "replicaCount" "value" .GetSpec.GetIstiod.GetDeployment.GetReplicas.GetCount) }}
+{{ valueIf (dict "key" "image" "value" .GetSpec.GetIstiod.GetDeployment.GetImage) }}
+{{ valueIf (dict "key" "traceSampling" "value" .GetSpec.GetIstiod.GetTraceSampling) }}
 
-## Discovery Settings
+{{ toYamlIf (dict "value" .GetSpec.GetIstiod.GetDeployment.GetResources "key" "resources") }}
+env:
+  - name: INJECTION_WEBHOOK_CONFIG_NAME
+    value: istio-sidecar-injector-cp-v111x-istio-system
+  - name: ISTIOD_CUSTOM_HOST
+    value: istiod-cp-v111x.istio-system.svc
+  - name: PILOT_ENABLE_STATUS
+    value: "false"
+  - name: VALIDATION_WEBHOOK_CONFIG_NAME
+    value: istiod-cp-v111x-istio-system
+{{ toYamlIf (dict "value" .GetSpec.GetIstiod.GetDeployment.GetEnv) | indent 2 }}
+
+{{ valueIf (dict "key" "enableProtocolSniffingForOutbound" "value" .GetSpec.GetIstiod.GetEnableProtocolSniffingOutbound) }}
+{{ valueIf (dict "key" "enableProtocolSniffingForInbound" "value" .GetSpec.GetIstiod.GetEnableProtocolSniffingInbound) }}
+
+{{ toYamlIf (dict "value" .GetSpec.GetIstiod.GetDeployment.GetNodeSelector "key" "nodeSelector") }}
+{{ toYamlIf (dict "value" .GetSpec.GetIstiod.GetDeployment.GetAffinity "key" "affinity") }}
+{{ toYamlIf (dict "value" .GetSpec.GetIstiod.GetDeployment.GetTolerations "key" "tolerations") }}
+{{ toYamlIf (dict "value" .GetSpec.GetIstiod.GetDeployment.GetPodMetadata.GetAnnotations "key" "podAnnotations") }}
+{{ toYamlIf (dict "value" .GetSpec.GetIstiod.GetDeployment.GetSecurityContext "key" "securityContext") }}
+{{ toYamlIf (dict "value" .GetSpec.GetIstiod.GetDeployment.GetMetadata.GetLabels "key" "deploymentLabels") }}
+{{- end }}
+
+# template for proxy values
+{{- define "proxy" }}
+{{- valueIf (dict "key" "image" "value" .GetSpec.GetProxy.GetImage) }}
+{{- valueIf (dict "key" "clusterDomain" "value" .GetSpec.GetProxy.GetClusterDomain) }}
+{{- valueIf (dict "key" "componentLogLevel" "value" .GetSpec.GetProxy.GetComponentLogLevel) }}
+{{- valueIf (dict "key" "enableCoreDump" "value" .GetSpec.GetProxy.GetEnableCoreDump) }}
+{{- valueIf (dict "key" "excludeInboundPorts" "value" .GetSpec.GetProxy.GetExcludeInboundPorts) }}
+{{- valueIf (dict "key" "includeIPRanges" "value" .GetSpec.GetProxy.GetIncludeIPRanges) }}
+{{- valueIf (dict "key" "excludeIPRanges" "value" .GetSpec.GetProxy.GetExcludeIPRanges) }}
+{{- valueIf (dict "key" "excludeOutboundPorts" "value" .GetSpec.GetProxy.GetExcludeOutboundPorts) }}
+{{- valueIf (dict "key" "logLevel" "value" .GetSpec.GetProxy.GetLogLevel) }}
+{{- valueIf (dict "key" "privileged" "value" .GetSpec.GetProxy.GetPrivileged) }}
+{{- valueIf (dict "key" "holdApplicationUntilProxyStarts" "value" .GetSpec.GetProxy.GetHoldApplicationUntilProxyStarts) }}
+{{- toYamlIf (dict "value" .GetSpec.GetProxy.GetResources "key" "resources") }}
+{{- toYamlIf (dict "value" .GetSpec.GetProxy.GetLifecycle "key" "lifecycle") }}
+{{- end }}
+
+# template for proxy init values
+{{- define "proxyInit" }}
+{{- valueIf (dict "key" "image" "value" .GetSpec.GetProxyInit.GetImage) }}
+{{- toYamlIf (dict "value" .GetSpec.GetProxyInit.GetResources "key" "resources") }}
+{{- end }}
+
+{{ valueIf (dict "key" "revision" "value" .Name) }}
+
+{{- $x := (include "pilot" .) | reformatYaml }}
+{{- if ne $x "" }}
 pilot:
-  autoscaleEnabled: {{ and (gt (.GetSpec.GetIstiod.GetDeployment.GetReplicas.GetMin | int) 0) (gt (.GetSpec.GetIstiod.GetDeployment.GetReplicas.GetMax | int) (.GetSpec.GetIstiod.GetDeployment.GetReplicas.GetMin | int)) }}
-  autoscaleMin: {{ or .GetSpec.GetIstiod.GetDeployment.GetReplicas.GetMin 1 }}
-  autoscaleMax: {{ or .GetSpec.GetIstiod.GetDeployment.GetReplicas.GetMax 5 }}
-  replicaCount: {{ or .GetSpec.GetIstiod.GetDeployment.GetReplicas.GetCount 1 }}
+{{ $x | indent 2 }}
+{{- end }}
 
-  # Can be a full hub/image:tag
-  image: {{ or .GetSpec.GetIstiod.GetDeployment.GetImage "pilot" }}
-  traceSampling: {{ or .GetSpec.GetIstiod.GetTraceSampling 1.0 }}
-
-  # Resources for a small pilot install
-{{ if .GetSpec.GetIstiod.GetDeployment.GetResources }}
-  resources:
-{{ .GetSpec.GetIstiod.GetDeployment.GetResources | toYaml | indent 4 }}
-{{ else }}
-  resources: {}
-{{ end }}
-
-
-  env:
-    VALIDATION_WEBHOOK_CONFIG_NAME: istiod-{{ .Name }}-{{ .Namespace }}
-    ISTIOD_CUSTOM_HOST: istiod-{{ .Name }}.{{ .Namespace }}.svc
-    INJECTION_WEBHOOK_CONFIG_NAME: istio-sidecar-injector-{{ .Name }}-{{ .Namespace }}
-    PILOT_ENABLE_STATUS: {{ or .GetSpec.GetIstiod.GetEnableStatus false }}
-
-  # if protocol sniffing is enabled for outbound
-  enableProtocolSniffingForOutbound: {{ or .GetSpec.GetIstiod.GetEnableProtocolSniffingOutbound true }}
-  # if protocol sniffing is enabled for inbound
-  enableProtocolSniffingForInbound: {{ or .GetSpec.GetIstiod.GetEnableProtocolSniffingInbound true }}
-
-{{ if .GetSpec.GetIstiod.GetDeployment.GetNodeSelector }}
-  nodeSelector:
-{{ .GetSpec.GetIstiod.GetDeployment.GetNodeSelector | toYaml | indent 4 }}
-{{ else }}
-  nodeSelector: {}
-{{ end }}
-
-{{ if .GetSpec.GetIstiod.GetDeployment.GetAffinity }}
-  affinity:
-{{ .GetSpec.GetIstiod.GetDeployment.GetAffinity | toYaml | indent 4 }}
-{{ else }}
-  affinity: {}
-{{ end }}
-
-{{ if .GetSpec.GetIstiod.GetDeployment.GetTolerations }}
-  tolerations:
-{{ .GetSpec.GetIstiod.GetDeployment.GetTolerations | toYaml | indent 4 }}
-{{ else }}
-  tolerations: {}
-{{ end }}
-
-{{ if .GetSpec.GetIstiod.GetDeployment.GetPodMetadata.GetAnnotations }}
-  podAnnotations:
-{{ .GetSpec.GetIstiod.GetDeployment.GetPodMetadata.GetAnnotations | toYaml | indent 4 }}
-{{ else }}
-  podAnnotations: {}
-{{ end }}
-
-{{ if .GetSpec.GetIstiod.GetDeployment.GetSecurityContext }}
-  securityContext:
-{{ .GetSpec.GetIstiod.GetDeployment.GetSecurityContext | toYaml | indent 4 }}
-{{ else }}
-  securityContext: {}
-{{ end }}
-
-  # Additional labels to apply to the deployment.
-  {{ if .GetSpec.GetIstiod.GetDeployment.GetPodMetadata.GetLabels }}
-  deploymentLabels:
-{{ .GetSpec.GetIstiod.GetDeployment.GetPodMetadata.GetLabels | toYaml | indent 4 }}
-  {{ else }}
-  deploymentLabels: {}
-  {{ end }}
-
-
+{{- if .GetSpec.GetHttpProxyEnvs }}
 sidecarInjectorWebhook:
   # Supported only in Cisco provided istio-proxy images
-  httpProxyEnvs:
-    httpProxy: "{{ .GetSpec.GetHttpProxyEnvs.GetHttpProxy }}"
-    httpsProxy: "{{ .GetSpec.GetHttpProxyEnvs.GetHttpsProxy }}"
-    noProxy: "{{ .GetSpec.GetHttpProxyEnvs.GetNoProxy }}"
+{{ toYamlIf (dict "value" .GetSpec.GetHttpProxyEnvs "key" "httpProxyEnvs") | indent 2 }}
+{{- end }}
 
+{{- if or .GetSpec.GetTelemetryV2.GetEnabled .GetSpec.GetProxyWasm.GetEnabled }}
 telemetry:
   v2:
     # For Null VM case now.
     # This also enables metadata exchange.
-    enabled: {{ or .GetSpec.GetTelemetryV2.GetEnabled true }}
+    {{ valueIf (dict "key" "enabled" "value" .GetSpec.GetTelemetryV2.GetEnabled) }}
+    {{- if .GetSpec.GetProxyWasm.GetEnabled }}
     metadataExchange:
       # Indicates whether to enable WebAssembly runtime for metadata exchange filter.
-      wasmEnabled: {{ or .GetSpec.GetProxyWasm.GetEnabled false }}
+      wasmEnabled: {{ .GetSpec.GetProxyWasm.GetEnabled }}
     # Indicate if prometheus stats filter is enabled or not
     prometheus:
       # Indicates whether to enable WebAssembly runtime for stats filter.
-      wasmEnabled: {{ or .GetSpec.GetProxyWasm.GetEnabled false }}
+      wasmEnabled: {{ .GetSpec.GetProxyWasm.GetEnabled }}
+    {{- end }}
+{{- end }}
 
-# Revision is set as 'version' label and part of the resource names when installing multiple control planes.
-revision: "{{ .Name }}"
-
-global:
-  distribution: "{{ .GetSpec.GetDistribution | default "official" }}"
-  # enable pod disruption budget for the control plane, which is used to
-  # ensure Istio control plane components are gradually upgraded or recovered.
-  defaultPodDisruptionBudget:
-    enabled: {{ or .GetSpec.GetDefaultPodDisruptionBudget.GetEnabled true }}
-
-  # Enabled by default in master for maximising testing.
+{{- define "global" }}
+{{ valueIf (dict "key" "distribution" "value" .GetSpec.GetDistribution) }}
+{{ toYamlIf (dict "value" .GetSpec.GetDefaultPodDisruptionBudget "key" "defaultPodDisruptionBudget") }}
+  {{- if .GetSpec.GetIstiod.GetEnableAnalysis }}
   istiod:
-    enableAnalysis: {{ or .GetSpec.GetIstiod.GetEnableAnalysis false}}
+    enableAnalysis: {{ .GetSpec.GetIstiod.GetEnableAnalysis }}
+  {{- end }}
+{{ toYamlIf (dict "value" .GetSpec.GetLogging.GetLevel "key" "logging")}}
+{{ valueIf (dict "key" "oneNamespace" "value" .GetSpec.GetWatchOneNamespace) }}
 
-  # Comma-separated minimum per-scope logging level of messages to output, in the form of <scope>:<level>,<scope>:<level>
-  # The control plane has different scopes depending on component, but can configure default log level across all components
-  # If empty, default scope and level will be used as configured in code
-  logging:
-    level: {{ or .GetSpec.GetLogging.GetLevel "default:info" }}
-
-  # Whether to restrict the applications namespace the controller manages;
-  # If not set, controller watches all namespaces
-  oneNamespace: {{ or .GetSpec.GetWatchOneNamespace false }}
-
+{{- $x := (include "proxy" .) | reformatYaml }}
+{{- if ne $x "" }}
   proxy:
-    image: {{ or .GetSpec.GetProxy.GetImage "proxyv2" }}
+{{ $x | indent 4 }}
+{{- end }}
 
-    # CAUTION: It is important to ensure that all Istio helm charts specify the same clusterDomain value
-    # cluster domain. Default value is "cluster.local".
-    clusterDomain: {{ or .GetSpec.GetProxy.GetClusterDomain "cluster.local" }}
-
-    # Per Component log level for proxy, applies to gateways and sidecars. If a component level is
-    # not set, then the global "logLevel" will be used.
-    componentLogLevel: {{ or .GetSpec.GetProxy.GetComponentLogLevel "misc:error" }}
-
-    # If set, newly injected sidecars will have core dumps enabled.
-    enableCoreDump: {{ or .GetSpec.GetProxy.GetEnableCoreDump false }}
-
-    # istio ingress capture allowlist
-    # examples:
-    #     Redirect only selected ports:            --includeInboundPorts="80,8080"
-    excludeInboundPorts: "{{ .GetSpec.GetProxy.GetExcludeInboundPorts }}"
-
-    # istio egress capture allowlist
-    # https://istio.io/docs/tasks/traffic-management/egress.html#calling-external-services-directly
-    # example: includeIPRanges: "172.30.0.0/16,172.20.0.0/16"
-    # would only capture egress traffic on those two IP Ranges, all other outbound traffic would
-    # be allowed by the sidecar
-    includeIPRanges: "{{ or .GetSpec.GetProxy.GetIncludeIPRanges "*" }}"
-    excludeIPRanges: "{{ .GetSpec.GetProxy.GetExcludeIPRanges }}"
-    excludeOutboundPorts: "{{ .GetSpec.GetProxy.GetExcludeOutboundPorts }}"
-
-    # Log level for proxy, applies to gateways and sidecars.
-    # Expected values are: trace|debug|info|warning|error|critical|off
-    logLevel: {{ or .GetSpec.GetProxy.GetLogLevel "warning" | toString | lower }}
-
-    #If set to true, istio-proxy container will have privileged securityContext
-    privileged: {{ or .GetSpec.GetProxy.GetPrivileged false }}
-
-    # Resources for the sidecar.
-{{ if .GetSpec.GetProxy.GetResources }}
-    resources:
-{{ .GetSpec.GetProxy.GetResources | toYaml | indent 6 }}
-{{ else }}
-    resources:
-      requests:
-        cpu: 100m
-        memory: 128Mi
-      limits:
-        cpu: 2000m
-        memory: 1024Mi
-{{ end }}
-
-    # Controls if sidecar is injected at the front of the container list and blocks the start of the other containers until the proxy is ready
-    holdApplicationUntilProxyStarts: {{ or .GetSpec.GetProxy.GetHoldApplicationUntilProxyStarts false }}
-
-{{ if .GetSpec.GetProxy.GetLifecycle }}
-    lifecycle:
-{{ .GetSpec.GetProxy.GetLifecycle | toYaml | indent 6 }}
-{{ else }}
-    lifecycle: {}
-{{ end }}
-
+{{- $x := (include "proxyInit" .) | reformatYaml }}
+{{- if ne $x "" }}
   proxy_init:
-    # Base name for the proxy_init container, used to configure iptables.
-    image: {{ or .GetSpec.GetProxyInit.GetImage "proxyv2" }}
-{{ if .GetSpec.GetProxyInit.GetResources }}
-    resources:
-{{ .GetSpec.GetProxyInit.GetResources | toYaml | indent 6 }}
-{{ else }}
-    resources:
-      limits:
-        cpu: 2000m
-        memory: 1024Mi
-      requests:
-        cpu: 10m
-        memory: 10Mi
-{{ end }}
+{{ $x | indent 4 }}
+{{- end }}
 
   ##############################################################################################
   # The following values are found in other charts. To effectively modify these values, make   #
   # make sure they are consistent across your Istio helm charts                                #
   ##############################################################################################
 
-  # The customized CA address to retrieve certificates for the pods in the cluster.
-  # CSR clients such as the Istio Agent and ingress gateways can use this to specify the CA endpoint.
-  # If not set explicitly, default to the Istio discovery address.
-  caAddress: "{{ or .GetSpec.GetCaAddress "" }}"
+{{ valueIf (dict "key" "caAddress" "value" .GetSpec.GetCaAddress) }}
+{{ valueIf (dict "key" "externalIstiod" "value" .GetSpec.GetIstiod.GetExternalIstiod.GetEnabled) }}
+{{- if .GetSpec.GetJwtPolicy }}
+jwtPolicy: {{ .GetSpec.GetJwtPolicy | toString | lower | replace "_" "-" }}
+{{- end }}
+{{ valueIf (dict "key" "meshID" "value" .GetSpec.GetMeshConfig.GetDefaultConfig.GetMeshId) }}
+{{ valueIf (dict "key" "mountMtlsCerts" "value" .GetSpec.GetMountMtlsCerts) }}
+{{ valueIf (dict "key" "pilotCertProvider" "value" .GetSpec.GetIstiod.GetCertProvider) }}
+{{- if .GetSpec.GetSds.GetTokenAudience}}
+sds:
+  token:
+    aud: {{ .GetSpec.GetSds.GetTokenAudience }}
+{{- end }}
+{{- end }}
 
-  # Configure a remote cluster data plane controlled by an external istiod.
-  # When set to true, istiod is not deployed locally and only a subset of the other
-  # discovery charts are enabled.
-  externalIstiod: {{ or .GetSpec.GetIstiod.GetExternalIstiod.GetEnabled false }}
-
-  # Configure the policy for validating JWT.
-  # Currently, two options are supported: "third-party-jwt" and "first-party-jwt".
-  jwtPolicy: {{ or .GetSpec.GetJwtPolicy "third-party-jwt" | toString | lower | replace "_" "-"}}
-
-  # Mesh ID means Mesh Identifier. It should be unique within the scope where
-  # meshes will interact with each other, but it is not required to be
-  # globally/universally unique. For example, if any of the following are true,
-  # then two meshes must have different Mesh IDs:
-  # - Meshes will have their telemetry aggregated in one place
-  # - Meshes will be federated together
-  # - Policy will be written referencing one mesh from the other
-  #
-  # If an administrator expects that any of these conditions may become true in
-  # the future, they should ensure their meshes have different Mesh IDs
-  # assigned.
-  #
-  # Within a multicluster mesh, each cluster must be (manually or auto)
-  # configured to have the same Mesh ID value. If an existing cluster 'joins' a
-  # multicluster mesh, it will need to be migrated to the new mesh ID. Details
-  # of migration TBD, and it may be a disruptive operation to change the Mesh
-  # ID post-install.
-  #
-  # If the mesh admin does not specify a value, Istio will use the value of the
-  # mesh's Trust Domain. The best practice is to select a proper Trust Domain
-  # value.
-  meshID: {{ or .GetSpec.GetMeshConfig.GetDefaultConfig.GetMeshId "cluster.local" }}
-
-  # Use the user-specified, secret volume mounted key and certs for Pilot and workloads.
-  mountMtlsCerts: {{ or .GetSpec.GetMountMtlsCerts false }}
-
-  # Configure the certificate provider for control plane communication.
-  # Currently, two providers are supported: "kubernetes" and "istiod".
-  # As some platforms may not have kubernetes signing APIs,
-  # Istiod is the default
-  pilotCertProvider: {{ or .GetSpec.GetIstiod.GetCertProvider "istiod" | toString | lower }}
-
-  sds:
-    # The JWT token for SDS and the aud field of such JWT. See RFC 7519, section 4.1.3.
-    # When a CSR is sent from Istio Agent to the CA (e.g. Istiod), this aud is to make sure the
-    # JWT is intended for the CA.
-    token:
-      aud: {{ or .GetSpec.GetSds.GetTokenAudience "istio-ca" }}
+{{- $x := (include "global" .) | reformatYaml }}
+{{- if ne $x "" }}
+global:
+{{ $x | indent 2 }}
+{{- end }}
