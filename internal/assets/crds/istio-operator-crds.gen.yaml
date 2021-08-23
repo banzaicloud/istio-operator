@@ -3587,7 +3587,7 @@ spec:
                 description: Reconciliation error message if any.
                 type: string
               gatewayAddress:
-                description: Current address for the gateway.
+                description: Current addresses for the corresponding gateways.
                 items:
                   type: string
                 type: array
@@ -4990,7 +4990,7 @@ spec:
                     type: boolean
                 type: object
               status:
-                description: Reconciliation status of the mesh gateway.
+                description: Reconciliation status of the Istio control plane.
                 enum:
                 - Unspecified
                 - Created

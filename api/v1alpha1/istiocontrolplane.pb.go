@@ -1147,9 +1147,9 @@ func (m *HTTPProxyEnvsConfiguration) GetNoProxy() string {
 // +k8s:deepcopy-gen=true
 // -->
 type IstioControlPlaneStatus struct {
-	// Reconciliation status of the mesh gateway
+	// Reconciliation status of the Istio control plane
 	Status ConfigState `protobuf:"varint,1,opt,name=status,proto3,enum=istio_operator.v2.api.v1alpha1.ConfigState" json:"status,omitempty"`
-	// Current address for the gateway
+	// Current addresses for the corresponding gateways
 	GatewayAddress []string `protobuf:"bytes,2,rep,name=gatewayAddress,proto3" json:"gatewayAddress,omitempty"`
 	// Reconciliation error message if any
 	ErrorMessage         string               `protobuf:"bytes,3,opt,name=errorMessage,proto3" json:"errorMessage,omitempty"`
