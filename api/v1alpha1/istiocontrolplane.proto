@@ -240,10 +240,10 @@ message HTTPProxyEnvsConfiguration {
 // +k8s:deepcopy-gen=true
 // -->
 message IstioControlPlaneStatus {
-    // Reconciliation status of the mesh gateway
+    // Reconciliation status of the Istio control plane
     ConfigState status = 1;
 
-    // Current address for the gateway
+    // Current addresses for the corresponding gateways
     repeated string gatewayAddress = 2;
 
     // Reconciliation error message if any
