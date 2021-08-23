@@ -1,9 +1,9 @@
 apiVersion: servicemesh.cisco.com/v1alpha1
 kind: IstioControlPlane
 metadata:
-  name: icp-v10x-sample
+  name: icp-v11x-sample
 spec:
-  version: 1.10.0-rc.0
+  version: 1.11.0
   logging:
     level: "default:info"
   mountMtlsCerts: false
@@ -14,7 +14,7 @@ spec:
         min: 1
         max: 5
         count: 1
-      image: "gcr.io/istio-release/pilot:1.10.0"
+      image: "gcr.io/istio-release/pilot:1.11.0"
       resources:
         requests:
           cpu: 500m
@@ -38,7 +38,7 @@ spec:
       operatorEndpoints:
         enabled: false
   proxy:
-    image: "gcr.io/istio-release/proxyv2:1.10.0"
+    image: "gcr.io/istio-release/proxyv2:1.11.0"
     privileged: false
     enableCoreDump: false
     logLevel: "WARNING"
@@ -58,7 +58,7 @@ spec:
     excludeInboundPorts: ""
     excludeOutboundPorts: ""
   proxyInit:
-    image: "gcr.io/istio-release/proxyv2:1.10.0"
+    image: "gcr.io/istio-release/proxyv2:1.11.0"
     resources:
       limits:
         cpu: 2000m
@@ -102,7 +102,7 @@ spec:
       serviceCluster: istio-proxy
       drainDuration: 45s
       parentShutdownDuration: 60s
-      discoveryAddress: istiod-icp-v10x-sample.istio-system.svc:15012
+      discoveryAddress: istiod-icp-v11x-sample.istio-system.svc:15012
       proxyAdminPort: 15000
       controlPlaneAuthPolicy: MUTUAL_TLS
       concurrency: 2
