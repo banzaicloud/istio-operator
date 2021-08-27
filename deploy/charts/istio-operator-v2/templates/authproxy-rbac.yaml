@@ -39,4 +39,14 @@ subjects:
 - kind: ServiceAccount
   name: {{ include "istio-operator-v2.authProxyName" . }}
   namespace: {{ .Release.Namespace }}
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: {{ include "istio-operator-v2.authProxyName" . }}-metrics-reader
+  labels:
+    {{- include "istio-operator-v2.authProxyLabels" . | nindent 4 }}
+rules:
+  - nonResourceURLs: ["/metrics"]
+    verbs: ["get"]
 {{- end }}
