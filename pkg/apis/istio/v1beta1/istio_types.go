@@ -43,7 +43,7 @@ const (
 )
 
 var (
-	SupportedIstioVersion = "1.10.3"
+	SupportedIstioVersion = "1.10.4"
 	Version               = "0.10.3"
 
 	DisableInjectionLabel = map[string]string{
