@@ -4,6 +4,7 @@
 
 ## Prerequisites
 
+- Helm3
 - Kubernetes 1.19.0 - 1.22.x
 
 ## Installing the chart
@@ -20,7 +21,7 @@ To install the chart:
 To uninstall/delete the `istio-operator-v2` release:
 
 ```bash
-❯ helm del --purge istio-operator-v2
+❯ helm uninstall istio-operator-v2
 ```
 
 The command removes all the Kubernetes components associated with the chart and deletes the release.
