@@ -44,7 +44,7 @@ const (
 
 var (
 	SupportedIstioVersion = "1.9.8"
-	Version               = "0.9.9"
+	Version               = "0.9.10"
 
 	DisableInjectionLabel = map[string]string{
 		ManualInjectionLabelKey: "false",
