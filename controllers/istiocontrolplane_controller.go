@@ -45,6 +45,7 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/handler"
 	"sigs.k8s.io/controller-runtime/pkg/reconcile"
 	"sigs.k8s.io/controller-runtime/pkg/source"
+	"sigs.k8s.io/yaml"
 
 	servicemeshv1alpha1 "github.com/banzaicloud/istio-operator/v2/api/v1alpha1"
 	"github.com/banzaicloud/istio-operator/v2/internal/components"
@@ -170,9 +171,7 @@ func (r *IstioControlPlaneReconciler) Reconcile(ctx context.Context, req ctrl.Re
 		return ctrl.Result{}, err
 	}
 
-	icp.Status.MeshConfig = icp.GetSpec().GetMeshConfig()
-
-	err = r.setMeshConfigChecksumToStatus(icp, icp.Status.MeshConfig)
+	err = r.setMeshConfigToStatus(ctx, icp)
 	if err != nil {
 		return ctrl.Result{}, err
 	}
@@ -190,48 +189,6 @@ func (r *IstioControlPlaneReconciler) Reconcile(ctx context.Context, req ctrl.Re
 	}
 
 	return result, nil
-}
-
-func (r *IstioControlPlaneReconciler) setMeshConfigChecksumToStatus(icp *servicemeshv1alpha1.IstioControlPlane, mc *v1alpha1.MeshConfig) error {
-	m := jsonpb.Marshaler{}
-	ms, err := m.MarshalToString(mc)
-	if err != nil {
-		return err
-	}
-
-	cs := icp.Status.GetChecksums()
-	if cs == nil {
-		cs = &servicemeshv1alpha1.StatusChecksums{}
-	}
-	cs.MeshConfig = fmt.Sprintf("%x", sha256.Sum256([]byte(ms)))
-	icp.Status.Checksums = cs
-
-	return nil
-}
-
-func (r *IstioControlPlaneReconciler) setSidecarInjectorChecksumToStatus(ctx context.Context, icp *servicemeshv1alpha1.IstioControlPlane) error {
-	configmaps := &corev1.ConfigMapList{}
-	err := r.Client.List(ctx, configmaps, client.InNamespace(icp.GetNamespace()), client.MatchingLabels(utils.MergeLabels(icp.RevisionLabels(), map[string]string{"istio": "sidecar-injector"})))
-	if err != nil {
-		return err
-	}
-
-	if len(configmaps.Items) == 1 {
-		cm := configmaps.Items[0]
-		jm, err := json.Marshal(cm.Data)
-		if err != nil {
-			return err
-		}
-
-		cs := icp.Status.GetChecksums()
-		if cs == nil {
-			cs = &servicemeshv1alpha1.StatusChecksums{}
-		}
-		cs.SidecarInjector = fmt.Sprintf("%x", sha256.Sum256(jm))
-		icp.Status.Checksums = cs
-	}
-
-	return nil
 }
 
 func (r *IstioControlPlaneReconciler) GetClient() client.Client {
@@ -364,6 +321,67 @@ func (r *IstioControlPlaneReconciler) SetupWithManager(mgr ctrl.Manager) error {
 	}
 
 	return err
+}
+
+func (r *IstioControlPlaneReconciler) setMeshConfigToStatus(ctx context.Context, icp *servicemeshv1alpha1.IstioControlPlane) error {
+	configmaps := &corev1.ConfigMapList{}
+	err := r.Client.List(ctx, configmaps, client.InNamespace(icp.GetNamespace()), client.MatchingLabels(utils.MergeLabels(icp.RevisionLabels(), map[string]string{"istio": "meshconfig"})))
+	if err != nil {
+		return errors.WithStackIf(err)
+	}
+
+	if len(configmaps.Items) != 1 {
+		return nil
+	}
+
+	var mc v1alpha1.MeshConfig
+
+	mcYAML := configmaps.Items[0].Data["mesh"]
+	mcJSON, err := yaml.YAMLToJSON([]byte(mcYAML))
+	if err != nil {
+		return errors.WithStackIf(err)
+	}
+
+	err = jsonpb.UnmarshalString(string(mcJSON), &mc)
+	if err != nil {
+		return errors.WithStackIf(err)
+	}
+
+	icp.Status.MeshConfig = &mc
+
+	cs := icp.Status.GetChecksums()
+	if cs == nil {
+		cs = &servicemeshv1alpha1.StatusChecksums{}
+	}
+	cs.MeshConfig = fmt.Sprintf("%x", sha256.Sum256([]byte(mcYAML)))
+	icp.Status.Checksums = cs
+
+	return nil
+}
+
+func (r *IstioControlPlaneReconciler) setSidecarInjectorChecksumToStatus(ctx context.Context, icp *servicemeshv1alpha1.IstioControlPlane) error {
+	configmaps := &corev1.ConfigMapList{}
+	err := r.Client.List(ctx, configmaps, client.InNamespace(icp.GetNamespace()), client.MatchingLabels(utils.MergeLabels(icp.RevisionLabels(), map[string]string{"istio": "sidecar-injector"})))
+	if err != nil {
+		return err
+	}
+
+	if len(configmaps.Items) == 1 {
+		cm := configmaps.Items[0]
+		jm, err := json.Marshal(cm.Data)
+		if err != nil {
+			return err
+		}
+
+		cs := icp.Status.GetChecksums()
+		if cs == nil {
+			cs = &servicemeshv1alpha1.StatusChecksums{}
+		}
+		cs.SidecarInjector = fmt.Sprintf("%x", sha256.Sum256(jm))
+		icp.Status.Checksums = cs
+	}
+
+	return nil
 }
 
 func (r *IstioControlPlaneReconciler) watchIstioCRs() error {
