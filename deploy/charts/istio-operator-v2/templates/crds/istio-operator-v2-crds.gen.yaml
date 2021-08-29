@@ -45,15 +45,6 @@ spec:
                 description: The customized CA address to retrieve certificates for
                   the pods in the cluster.
                 type: string
-              defaultPodDisruptionBudget:
-                description: |-
-                  Enable pod disruption budget for the control plane, which is used to ensure Istio control plane
-                  components are gradually upgraded or recovered.
-                properties:
-                  enabled:
-                    nullable: true
-                    type: boolean
-                type: object
               distribution:
                 description: Contains the intended distribution for the Istio control
                   plane.
@@ -455,6 +446,7 @@ spec:
                             type: object
                         type: object
                       deploymentStrategy:
+                        description: DeploymentStrategy configuration.
                         properties:
                           rollingUpdate:
                             description: Rolling update config params.
@@ -644,6 +636,90 @@ spec:
                             description: |-
                               Map of string keys and values that can be used to organize and categorize
                               (scope and select) objects.
+                            type: object
+                        type: object
+                      podSecurityContext:
+                        description: Standard Kubernetes pod security context configuration.
+                        properties:
+                          fsGroup:
+                            description: A special supplemental group that applies
+                              to all containers in a pod.
+                            format: int64
+                            type: integer
+                          runAsGroup:
+                            description: The GID to run the entrypoint of the container
+                              process.
+                            format: int64
+                            type: integer
+                          runAsNonRoot:
+                            description: Indicates that the container must run as
+                              a non-root user.
+                            type: boolean
+                          runAsUser:
+                            description: The UID to run the entrypoint of the container
+                              process.
+                            format: int64
+                            type: integer
+                          seLinuxOptions:
+                            description: The SELinux context to be applied to all
+                              containers.
+                            properties:
+                              level:
+                                description: Level is SELinux level label that applies
+                                  to the container.
+                                type: string
+                              role:
+                                description: Role is a SELinux role label that applies
+                                  to the container.
+                                type: string
+                              type:
+                                description: Type is a SELinux type label that applies
+                                  to the container.
+                                type: string
+                              user:
+                                description: User is a SELinux user label that applies
+                                  to the container.
+                                type: string
+                            type: object
+                          supplementalGroups:
+                            description: |-
+                              A list of groups applied to the first process run in each container, in addition
+                              to the container's primary GID.
+                            items:
+                              format: int64
+                              type: integer
+                            type: array
+                          sysctls:
+                            description: Sysctls hold a list of namespaced sysctls
+                              used for the pod.
+                            items:
+                              properties:
+                                name:
+                                  description: Name of a property to set.
+                                  type: string
+                                value:
+                                  description: Value of a property to set.
+                                  type: string
+                              type: object
+                            type: array
+                          windowsOptions:
+                            description: The Windows specific settings applied to
+                              all containers.
+                            properties:
+                              gmsaCredentialSpec:
+                                description: |-
+                                  GMSACredentialSpec is where the GMSA admission webhook
+                                  (https://github.com/kubernetes-sigs/windows-gmsa) inlines the contents of the
+                                  GMSA credential spec named by the GMSACredentialSpecName field.
+                                type: string
+                              gmsaCredentialSpecName:
+                                description: GMSACredentialSpecName is the name of
+                                  the GMSA credential spec to use.
+                                type: string
+                              runAsUserName:
+                                description: The UserName in Windows to run the entrypoint
+                                  of the container process.
+                                type: string
                             type: object
                         type: object
                       priorityClassName:
@@ -5430,6 +5506,7 @@ spec:
                         type: object
                     type: object
                   deploymentStrategy:
+                    description: DeploymentStrategy configuration.
                     properties:
                       rollingUpdate:
                         description: Rolling update config params.
@@ -5617,6 +5694,89 @@ spec:
                         description: |-
                           Map of string keys and values that can be used to organize and categorize
                           (scope and select) objects.
+                        type: object
+                    type: object
+                  podSecurityContext:
+                    description: Standard Kubernetes pod security context configuration.
+                    properties:
+                      fsGroup:
+                        description: A special supplemental group that applies to
+                          all containers in a pod.
+                        format: int64
+                        type: integer
+                      runAsGroup:
+                        description: The GID to run the entrypoint of the container
+                          process.
+                        format: int64
+                        type: integer
+                      runAsNonRoot:
+                        description: Indicates that the container must run as a non-root
+                          user.
+                        type: boolean
+                      runAsUser:
+                        description: The UID to run the entrypoint of the container
+                          process.
+                        format: int64
+                        type: integer
+                      seLinuxOptions:
+                        description: The SELinux context to be applied to all containers.
+                        properties:
+                          level:
+                            description: Level is SELinux level label that applies
+                              to the container.
+                            type: string
+                          role:
+                            description: Role is a SELinux role label that applies
+                              to the container.
+                            type: string
+                          type:
+                            description: Type is a SELinux type label that applies
+                              to the container.
+                            type: string
+                          user:
+                            description: User is a SELinux user label that applies
+                              to the container.
+                            type: string
+                        type: object
+                      supplementalGroups:
+                        description: |-
+                          A list of groups applied to the first process run in each container, in addition
+                          to the container's primary GID.
+                        items:
+                          format: int64
+                          type: integer
+                        type: array
+                      sysctls:
+                        description: Sysctls hold a list of namespaced sysctls used
+                          for the pod.
+                        items:
+                          properties:
+                            name:
+                              description: Name of a property to set.
+                              type: string
+                            value:
+                              description: Value of a property to set.
+                              type: string
+                          type: object
+                        type: array
+                      windowsOptions:
+                        description: The Windows specific settings applied to all
+                          containers.
+                        properties:
+                          gmsaCredentialSpec:
+                            description: |-
+                              GMSACredentialSpec is where the GMSA admission webhook
+                              (https://github.com/kubernetes-sigs/windows-gmsa) inlines the contents of the
+                              GMSA credential spec named by the GMSACredentialSpecName field.
+                            type: string
+                          gmsaCredentialSpecName:
+                            description: GMSACredentialSpecName is the name of the
+                              GMSA credential spec to use.
+                            type: string
+                          runAsUserName:
+                            description: The UserName in Windows to run the entrypoint
+                              of the container process.
+                            type: string
                         type: object
                     type: object
                   priorityClassName:

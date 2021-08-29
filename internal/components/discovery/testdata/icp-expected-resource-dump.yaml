@@ -18,7 +18,7 @@ metadata:
   name: istiod-cp-v111x
   namespace: istio-system
 spec:
-  minAvailable: 1
+  maxUnavailable: 5
   selector:
     matchLabels:
       app: istiod
@@ -40,6 +40,7 @@ data:
 kind: ConfigMap
 metadata:
   labels:
+    istio: meshconfig
     istio.io/rev: cp-v111x.istio-system
     release: istio-operator-discovery
   name: istio-cp-v111x.istio-system
@@ -52,6 +53,8 @@ data:
     # defaultTemplates defines the default template to use for pods that do not explicitly specify a template
     defaultTemplates: [sidecar]
     policy: enabled
+    httpProxyEnvs:
+      noProxy: localhost
     alwaysInjectSelector:
       []
     neverInjectSelector:
@@ -1030,11 +1033,13 @@ data:
   values: |-
     {
       "global": {
-        "caAddress": "",
+        "caAddress": "localhost",
         "configCluster": false,
         "configValidation": true,
         "defaultPodDisruptionBudget": {
-          "enabled": true
+          "enabled": true,
+          "maxUnavailable": 5,
+          "minAvailable": 1
         },
         "defaultResources": {
           "requests": {
@@ -1044,8 +1049,15 @@ data:
         "distribution": "official",
         "externalIstiod": false,
         "hub": "istio",
-        "imagePullPolicy": "",
-        "imagePullSecrets": [],
+        "imagePullPolicy": "Never",
+        "imagePullSecrets": [
+          {
+            "name": "pullsecret-1"
+          },
+          {
+            "name": "pullsecret-2"
+          }
+        ],
         "istioNamespace": "istio-system",
         "istiod": {
           "enableAnalysis": false
@@ -1053,7 +1065,7 @@ data:
         "jwtPolicy": "third-party-jwt",
         "logAsJson": false,
         "logging": {
-          "level": "default:info"
+          "level": "default:warning"
         },
         "meshID": "",
         "meshNetworks": {},
@@ -1067,18 +1079,28 @@ data:
         "oneNamespace": false,
         "operatorManageWebhooks": false,
         "pilotCertProvider": "istiod",
-        "priorityClassName": "",
+        "priorityClassName": "high-priority",
         "proxy": {
           "autoInject": "enabled",
-          "clusterDomain": "cluster.local",
-          "componentLogLevel": "misc:error",
+          "clusterDomain": "acme.corp",
+          "componentLogLevel": "misc:debug",
           "enableCoreDump": false,
           "excludeIPRanges": "",
           "excludeInboundPorts": "",
           "excludeOutboundPorts": "",
-          "holdApplicationUntilProxyStarts": false,
+          "holdApplicationUntilProxyStarts": true,
           "image": "proxyv2",
           "includeIPRanges": "*",
+          "lifecycle": {
+            "postStart": {
+              "exec": {
+                "command": [
+                  "pilot-agent",
+                  "wait"
+                ]
+              }
+            }
+          },
           "logLevel": "warning",
           "privileged": false,
           "readinessFailureThreshold": 30,
@@ -1086,8 +1108,8 @@ data:
           "readinessPeriodSeconds": 2,
           "resources": {
             "limits": {
-              "cpu": "2000m",
-              "memory": "1024Mi"
+              "cpu": "500m",
+              "memory": "512Mi"
             },
             "requests": {
               "cpu": "100m",
@@ -1101,12 +1123,12 @@ data:
           "image": "proxyv2",
           "resources": {
             "limits": {
-              "cpu": "2000m",
-              "memory": "1024Mi"
+              "cpu": "100m",
+              "memory": "64Mi"
             },
             "requests": {
-              "cpu": "10m",
-              "memory": "10Mi"
+              "cpu": "50m",
+              "memory": "32Mi"
             }
           }
         },
@@ -1145,6 +1167,9 @@ data:
         "alwaysInjectSelector": [],
         "defaultTemplates": [],
         "enableNamespacesByDefault": false,
+        "httpProxyEnvs": {
+          "noProxy": "localhost"
+        },
         "injectedAnnotations": {},
         "neverInjectSelector": [],
         "objectSelector": {
@@ -1167,6 +1192,9 @@ metadata:
 ---
 apiVersion: v1
 kind: ServiceAccount
+imagePullSecrets:
+- name: "map[name:pullsecret-1]"
+- name: "map[name:pullsecret-2]"
 metadata:
   labels:
     app: istio-reader
@@ -1177,6 +1205,9 @@ metadata:
 ---
 apiVersion: v1
 kind: ServiceAccount
+imagePullSecrets:
+- name: "map[name:pullsecret-1]"
+- name: "map[name:pullsecret-2]"
 metadata:
   labels:
     app: istiod
@@ -1561,11 +1592,15 @@ spec:
 apiVersion: apps/v1
 kind: Deployment
 metadata:
+  annotations:
+    testannotation.banzaicloud.io/name: value
   labels:
     app: istiod
     istio: istiod
     istio.io/rev: cp-v111x.istio-system
     release: istio-operator-discovery
+    testlabel.banzaicloud.io/name: value
+    label-added-by-overlay-patch: "true"
   name: istiod-cp-v111x
   namespace: istio-system
 spec:
@@ -1576,7 +1611,7 @@ spec:
   strategy:
     rollingUpdate:
       maxSurge: 100%
-      maxUnavailable: 25%
+      maxUnavailable: 30%
     type: RollingUpdate
   template:
     metadata:
@@ -1584,19 +1619,21 @@ spec:
         prometheus.io/port: "15014"
         prometheus.io/scrape: "true"
         sidecar.istio.io/inject: "false"
+        podannotation: podannotationvalue
       labels:
         app: istiod
         istio: istiod
         istio.io/rev: cp-v111x.istio-system
         sidecar.istio.io/inject: "false"
+        podlabel: podlabelvalue
     spec:
       containers:
       - args:
         - discovery
         - --monitoringAddr=:15014
-        - --log_output_level=default:info
+        - --log_output_level=default:warning
         - --domain
-        - cluster.local
+        - acme.corp
         - --keepaliveMaxServerConnectionAge
         - 30m
         env:
@@ -1628,22 +1665,25 @@ spec:
         - name: ISTIOD_CUSTOM_HOST
           value: istiod-cp-v111x.istio-system.svc
         - name: PILOT_ENABLE_STATUS
-          value: "false"
+          value: "true"
         - name: VALIDATION_WEBHOOK_CONFIG_NAME
           value: istiod-cp-v111x-istio-system
+        - name: TEST_ENV
+          value: test-env-value
         - name: PILOT_TRACE_SAMPLING
-          value: "1"
+          value: "0.5"
         - name: PILOT_ENABLE_PROTOCOL_SNIFFING_FOR_OUTBOUND
-          value: "true"
+          value: "false"
         - name: PILOT_ENABLE_PROTOCOL_SNIFFING_FOR_INBOUND
-          value: "true"
+          value: "false"
         - name: ISTIOD_ADDR
           value: istiod-cp-v111x.istio-system.svc:15012
         - name: PILOT_ENABLE_ANALYSIS
           value: "false"
         - name: CLUSTER_ID
           value: Kubernetes
-        image: istio/pilot:1.11.0
+        image: "container-hub/image-name:tag"
+        imagePullPolicy: Never
         name: discovery
         ports:
         - containerPort: 8080
@@ -1660,10 +1700,16 @@ spec:
           periodSeconds: 3
           timeoutSeconds: 5
         resources:
+          limits:
+            cpu: "2"
+            memory: 1Gi
           requests:
-            cpu: 500m
-            memory: 2048Mi
-        securityContext: {}
+            cpu: 100m
+            memory: 128Mi
+        securityContext:
+          runAsGroup: 1337
+          runAsNonRoot: true
+          runAsUser: 1337
         volumeMounts:
         - mountPath: /var/run/secrets/tokens
           name: istio-token
@@ -1676,9 +1722,19 @@ spec:
         - mountPath: /var/run/secrets/remote
           name: istio-kubeconfig
           readOnly: true
+        - name: config-vol
+          mountPath: /etc/config
       securityContext:
         fsGroup: 1337
+        runAsUser: 1337
       serviceAccountName: istiod-cp-v111x
+      priorityClassName: high-priority
+      tolerations:
+      - key: key1
+        effect: NoSchedule
+        operator: Equal
+        tolerationSeconds: 5
+        value: value1
       volumes:
       - emptyDir:
           medium: Memory
@@ -1698,6 +1754,37 @@ spec:
         secret:
           optional: true
           secretName: istio-kubeconfig
+      - name: dddemo
+        secret:
+          optional: true
+          secretName: ssname
+      - name: config-vol
+        configMap:
+          name: log-config
+          items:
+          - key: log_level
+            path: log_level
+      nodeSelector:
+        disktype: ssd
+      affinity:
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+            - matchExpressions:
+              - key: kubernetes.io/e2e-az-name
+                operator: In
+                values:
+                - e2e-az1
+                - e2e-az2
+        podAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+          - labelSelector:
+              matchExpressions:
+              - key: security
+                operator: In
+                values:
+                - S1
+            topologyKey: topology.kubernetes.io/zone
 
 ---
 apiVersion: autoscaling/v2beta1

@@ -33,6 +33,8 @@ data:
     defaultTemplates: [sidecar]
     {{- end }}
     policy: {{ .Values.global.proxy.autoInject }}
+    httpProxyEnvs:
+{{ toYaml .Values.sidecarInjectorWebhook.httpProxyEnvs | trim | indent 6 }}
     alwaysInjectSelector:
 {{ toYaml .Values.sidecarInjectorWebhook.alwaysInjectSelector | trim | indent 6 }}
     neverInjectSelector:

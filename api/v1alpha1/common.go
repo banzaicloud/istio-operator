@@ -74,3 +74,17 @@ func FromInt(val int) IntOrString {
 func FromString(val string) IntOrString {
 	return IntOrString{intstr.FromString(val)}
 }
+
+func (m *PodDisruptionBudget) GetMinAvailable() *IntOrString {
+	if m != nil {
+		return m.MinAvailable
+	}
+	return nil
+}
+
+func (m *PodDisruptionBudget) GetMaxUnavailable() *IntOrString {
+	if m != nil {
+		return m.MaxUnavailable
+	}
+	return nil
+}

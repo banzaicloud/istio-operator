@@ -6,8 +6,11 @@ pilot:
   autoscaleMin: 1
   autoscaleMax: 5
   replicaCount: 1
-  rollingMaxSurge: 100%
-  rollingMaxUnavailable: 25%
+  deploymentStrategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 100%
+      maxUnavailable: 25%
 
   hub: ""
   tag: ""
@@ -34,6 +37,7 @@ pilot:
 
   nodeSelector: {}
   podAnnotations: {}
+  podLabels: {}
 
   # You can use jwksResolverExtraRootCA to provide a root certificate
   # in PEM format. This will then be trusted by pilot when resolving
@@ -55,6 +59,7 @@ pilot:
 
   # Additional labels to apply to the deployment.
   deploymentLabels: {}
+  deploymentAnnotations: {}
 
 
   ## Mesh config settings
@@ -64,6 +69,10 @@ pilot:
   configMap: true
 
   securityContext: {}
+  podSecurityContext:
+    fsGroup: 1337
+  volumes: []
+  volumeMounts: []
 
 sidecarInjectorWebhook:
   # You can use the field called alwaysInjectSelector and neverInjectSelector which will always inject the sidecar or
@@ -222,7 +231,7 @@ global:
   defaultPodDisruptionBudget:
     enabled: true
     # The values aren't mutable due to a current PodDisruptionBudget limitation
-    # minAvailable: 1
+    minAvailable: 1
 
   # A minimal set of requested resources to applied to all deployments so that
   # Horizontal Pod Autoscaler will be able to function (if set).

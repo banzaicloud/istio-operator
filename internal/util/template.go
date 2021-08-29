@@ -23,6 +23,8 @@ import (
 	"text/template"
 
 	"github.com/Masterminds/sprig"
+	"github.com/gogo/protobuf/jsonpb"
+	"github.com/golang/protobuf/proto"
 	"sigs.k8s.io/yaml"
 )
 
@@ -42,6 +44,30 @@ func toYamlTemplateFunc(value interface{}) (string, error) {
 	}
 
 	return string(y), nil
+}
+
+func toJsonPBTemplateFunc(value interface{}) (string, error) {
+	if v, ok := value.(proto.Message); ok {
+		m := jsonpb.Marshaler{}
+		y, err := m.MarshalToString(v)
+		if err != nil {
+			return "", err
+		}
+
+		return string(y), nil
+	}
+
+	return "", nil
+}
+
+func fromYamlTemplateFunc(value string) (map[string]interface{}, error) {
+	var out map[string]interface{}
+	err := yaml.Unmarshal([]byte(value), &out)
+	if err != nil {
+		return nil, err
+	}
+
+	return out, nil
 }
 
 func valueIfTemplateFunc(value interface{}) (string, error) {
