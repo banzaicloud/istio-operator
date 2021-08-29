@@ -28,7 +28,7 @@ import (
 
 const (
 	banzaiImageHub                         = "ghcr.io/banzaicloud"
-	banzaiImageVersion                     = "1.10.4-bzc"
+	banzaiImageVersion                     = "1.10.4-bzc.1"
 	defaultImageHub                        = "gcr.io/istio-release"
 	defaultImageVersion                    = "1.10.4"
 	defaultLogLevel                        = "default:info"
