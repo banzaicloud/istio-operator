@@ -103,7 +103,7 @@ global:
   # enable pod disruption budget for the control plane, which is used to
   # ensure Istio control plane components are gradually upgraded or recovered.
   defaultPodDisruptionBudget:
-    enabled: {{ or .GetSpec.GetDefaultPodDisruptionBudget.GetEnabled true }}
+    enabled: false
 
   # Enabled by default in master for maximising testing.
   istiod:
