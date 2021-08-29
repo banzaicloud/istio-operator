@@ -16,7 +16,7 @@ env:
   - name: ISTIOD_CUSTOM_HOST
     value: istiod-cp-v111x.istio-system.svc
   - name: PILOT_ENABLE_STATUS
-    value: "false"
+    value: "{{ .GetSpec.GetIstiod.GetEnableStatus }}"
   - name: VALIDATION_WEBHOOK_CONFIG_NAME
     value: istiod-cp-v111x-istio-system
 {{ toYamlIf (dict "value" .GetSpec.GetIstiod.GetDeployment.GetEnv) | indent 2 }}
@@ -24,29 +24,41 @@ env:
 {{ valueIf (dict "key" "enableProtocolSniffingForOutbound" "value" .GetSpec.GetIstiod.GetEnableProtocolSniffingOutbound) }}
 {{ valueIf (dict "key" "enableProtocolSniffingForInbound" "value" .GetSpec.GetIstiod.GetEnableProtocolSniffingInbound) }}
 
+{{ toYamlIf (dict "value" .GetSpec.GetIstiod.GetDeployment.GetVolumes "key" "volumes") }}
+{{ toYamlIf (dict "value" .GetSpec.GetIstiod.GetDeployment.GetVolumeMounts "key" "volumeMounts") }}
 {{ toYamlIf (dict "value" .GetSpec.GetIstiod.GetDeployment.GetNodeSelector "key" "nodeSelector") }}
 {{ toYamlIf (dict "value" .GetSpec.GetIstiod.GetDeployment.GetAffinity "key" "affinity") }}
 {{ toYamlIf (dict "value" .GetSpec.GetIstiod.GetDeployment.GetTolerations "key" "tolerations") }}
 {{ toYamlIf (dict "value" .GetSpec.GetIstiod.GetDeployment.GetPodMetadata.GetAnnotations "key" "podAnnotations") }}
+{{ toYamlIf (dict "value" .GetSpec.GetIstiod.GetDeployment.GetPodMetadata.GetLabels "key" "podLabels") }}
 {{ toYamlIf (dict "value" .GetSpec.GetIstiod.GetDeployment.GetSecurityContext "key" "securityContext") }}
+{{ toYamlIf (dict "value" .GetSpec.GetIstiod.GetDeployment.GetPodSecurityContext "key" "podSecurityContext") }}
 {{ toYamlIf (dict "value" .GetSpec.GetIstiod.GetDeployment.GetMetadata.GetLabels "key" "deploymentLabels") }}
+{{ toYamlIf (dict "value" .GetSpec.GetIstiod.GetDeployment.GetMetadata.GetAnnotations "key" "deploymentAnnotations") }}
+{{- if .GetSpec.GetIstiod.GetDeployment.GetReplicas.GetTargetCPUUtilizationPercentage }}
+cpu:
+  targetAverageUtilization: {{ .GetSpec.GetIstiod.GetDeployment.GetReplicas.GetTargetCPUUtilizationPercentage }}
+{{- end }}
+{{ toYamlIf (dict "value" .GetSpec.GetIstiod.GetDeployment.GetDeploymentStrategy "key" "deploymentStrategy") }}
 {{- end }}
 
 # template for proxy values
 {{- define "proxy" }}
-{{- valueIf (dict "key" "image" "value" .GetSpec.GetProxy.GetImage) }}
-{{- valueIf (dict "key" "clusterDomain" "value" .GetSpec.GetProxy.GetClusterDomain) }}
-{{- valueIf (dict "key" "componentLogLevel" "value" .GetSpec.GetProxy.GetComponentLogLevel) }}
-{{- valueIf (dict "key" "enableCoreDump" "value" .GetSpec.GetProxy.GetEnableCoreDump) }}
-{{- valueIf (dict "key" "excludeInboundPorts" "value" .GetSpec.GetProxy.GetExcludeInboundPorts) }}
-{{- valueIf (dict "key" "includeIPRanges" "value" .GetSpec.GetProxy.GetIncludeIPRanges) }}
-{{- valueIf (dict "key" "excludeIPRanges" "value" .GetSpec.GetProxy.GetExcludeIPRanges) }}
-{{- valueIf (dict "key" "excludeOutboundPorts" "value" .GetSpec.GetProxy.GetExcludeOutboundPorts) }}
-{{- valueIf (dict "key" "logLevel" "value" .GetSpec.GetProxy.GetLogLevel) }}
-{{- valueIf (dict "key" "privileged" "value" .GetSpec.GetProxy.GetPrivileged) }}
-{{- valueIf (dict "key" "holdApplicationUntilProxyStarts" "value" .GetSpec.GetProxy.GetHoldApplicationUntilProxyStarts) }}
-{{- toYamlIf (dict "value" .GetSpec.GetProxy.GetResources "key" "resources") }}
-{{- toYamlIf (dict "value" .GetSpec.GetProxy.GetLifecycle "key" "lifecycle") }}
+{{ valueIf (dict "key" "image" "value" .GetSpec.GetProxy.GetImage) }}
+{{ valueIf (dict "key" "clusterDomain" "value" .GetSpec.GetProxy.GetClusterDomain) }}
+{{ valueIf (dict "key" "componentLogLevel" "value" .GetSpec.GetProxy.GetComponentLogLevel) }}
+{{ valueIf (dict "key" "enableCoreDump" "value" .GetSpec.GetProxy.GetEnableCoreDump) }}
+{{ valueIf (dict "key" "excludeInboundPorts" "value" .GetSpec.GetProxy.GetExcludeInboundPorts) }}
+{{ valueIf (dict "key" "includeIPRanges" "value" .GetSpec.GetProxy.GetIncludeIPRanges) }}
+{{ valueIf (dict "key" "excludeIPRanges" "value" .GetSpec.GetProxy.GetExcludeIPRanges) }}
+{{ valueIf (dict "key" "excludeOutboundPorts" "value" .GetSpec.GetProxy.GetExcludeOutboundPorts) }}
+{{ if .GetSpec.GetProxy.GetLogLevel }}
+logLevel: {{ .GetSpec.GetProxy.GetLogLevel | toString | lower }}
+{{ end }}
+{{ valueIf (dict "key" "privileged" "value" .GetSpec.GetProxy.GetPrivileged) }}
+{{ valueIf (dict "key" "holdApplicationUntilProxyStarts" "value" .GetSpec.GetProxy.GetHoldApplicationUntilProxyStarts) }}
+{{ toYamlIf (dict "value" .GetSpec.GetProxy.GetResources "key" "resources") }}
+{{ toYamlIf (dict "value" .GetSpec.GetProxy.GetLifecycle "key" "lifecycle") }}
 {{- end }}
 
 # template for proxy init values
@@ -88,24 +100,33 @@ telemetry:
 
 {{- define "global" }}
 {{ valueIf (dict "key" "distribution" "value" .GetSpec.GetDistribution) }}
-{{ toYamlIf (dict "value" .GetSpec.GetDefaultPodDisruptionBudget "key" "defaultPodDisruptionBudget") }}
-  {{- if .GetSpec.GetIstiod.GetEnableAnalysis }}
-  istiod:
-    enableAnalysis: {{ .GetSpec.GetIstiod.GetEnableAnalysis }}
-  {{- end }}
-{{ toYamlIf (dict "value" .GetSpec.GetLogging.GetLevel "key" "logging")}}
+{{- if .GetSpec.GetIstiod.GetEnableAnalysis }}
+istiod:
+  enableAnalysis: {{ .GetSpec.GetIstiod.GetEnableAnalysis }}
+{{- end }}
+{{ toYamlIf (dict "value" .GetSpec.GetLogging "key" "logging")}}
 {{ valueIf (dict "key" "oneNamespace" "value" .GetSpec.GetWatchOneNamespace) }}
+{{ valueIf (dict "key" "imagePullPolicy" "value" .GetSpec.GetIstiod.GetDeployment.GetImagePullPolicy) }}
+{{ valueIf (dict "key" "priorityClassName" "value" .GetSpec.GetIstiod.GetDeployment.GetPriorityClassName) }}
+{{ toYamlIf (dict "value" .GetSpec.GetIstiod.GetDeployment.GetImagePullSecrets "key" "imagePullSecrets") }}
+
+{{- if or .GetSpec.GetIstiod.GetDeployment.GetPodDisruptionBudget.GetMinAvailable .GetSpec.GetIstiod.GetDeployment.GetPodDisruptionBudget.GetMaxUnavailable }}
+defaultPodDisruptionBudget:
+  enabled: true
+  {{ valueIf (dict "key" "minAvailable" "value" .GetSpec.GetIstiod.GetDeployment.GetPodDisruptionBudget.GetMinAvailable) }}
+  {{ valueIf (dict "key" "maxUnavailable" "value" .GetSpec.GetIstiod.GetDeployment.GetPodDisruptionBudget.GetMaxUnavailable) }}
+{{- end }}
 
 {{- $x := (include "proxy" .) | reformatYaml }}
 {{- if ne $x "" }}
-  proxy:
-{{ $x | indent 4 }}
+proxy:
+{{ $x | indent 2 }}
 {{- end }}
 
 {{- $x := (include "proxyInit" .) | reformatYaml }}
 {{- if ne $x "" }}
-  proxy_init:
-{{ $x | indent 4 }}
+proxy_init:
+{{ $x | indent 2 }}
 {{- end }}
 
   ##############################################################################################
@@ -120,8 +141,10 @@ jwtPolicy: {{ .GetSpec.GetJwtPolicy | toString | lower | replace "_" "-" }}
 {{- end }}
 {{ valueIf (dict "key" "meshID" "value" .GetSpec.GetMeshConfig.GetDefaultConfig.GetMeshId) }}
 {{ valueIf (dict "key" "mountMtlsCerts" "value" .GetSpec.GetMountMtlsCerts) }}
-{{ valueIf (dict "key" "pilotCertProvider" "value" .GetSpec.GetIstiod.GetCertProvider) }}
-{{- if .GetSpec.GetSds.GetTokenAudience}}
+{{- if .GetSpec.GetIstiod.GetCertProvider }}
+pilotCertProvider: {{ .GetSpec.GetIstiod.GetCertProvider | toString | lower }}
+{{- end }}
+{{- if .GetSpec.GetSds.GetTokenAudience }}
 sds:
   token:
     aud: {{ .GetSpec.GetSds.GetTokenAudience }}
@@ -133,3 +156,12 @@ sds:
 global:
 {{ $x | indent 2 }}
 {{- end }}
+
+{{- define "mesh" }}
+rootNamespace: {{ .Namespace }}
+{{- end }}
+
+{{- $mesh := mergeOverwrite (.GetSpec.GetMeshConfig | toJsonPB | fromYaml) (include "mesh" . | fromYaml) }}
+
+meshConfig:
+{{ toYaml $mesh | indent 2}}

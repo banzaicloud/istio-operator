@@ -1,16 +1,157 @@
 global:
   proxy:
     image: proxyv2
+    privileged: false
+    enableCoreDump: false
+    logLevel: warning
+    componentLogLevel: "misc:debug"
+    clusterDomain: "acme.corp"
+    holdApplicationUntilProxyStarts: true
+    lifecycle:
+      postStart:
+        exec:
+          command:
+          - pilot-agent
+          - wait
+    resources:
+      limits:
+        cpu: 500m
+        memory: 512Mi
+      requests:
+        cpu: 100m
+        memory: 128Mi
+    includeIPRanges: "*"
   proxy_init:
     image: proxyv2
+    resources:
+      limits:
+        cpu: 100m
+        memory: 64Mi
+      requests:
+        cpu: 50m
+        memory: 32Mi
+  imagePullPolicy: Never
+  imagePullSecrets:
+  - name: pullsecret-1
+  - name: pullsecret-2
+  priorityClassName: high-priority
+  defaultPodDisruptionBudget:
+    enabled: true
+    maxUnavailable: 5
+    minAvailable: 1
+  jwtPolicy: third-party-jwt
+  logging:
+    level: "default:warning"
+  istiod:
+    enableAnalysis: false
+  mountMtlsCerts: false
+  externalIstiod: false
+  pilotCertProvider: istiod
+  sds:
+    token:
+      aud: istio-ca
+  oneNamespace: false
+  caAddress: localhost
+  distribution: official
 pilot:
+  image: "container-hub/image-name:tag"
+  deploymentAnnotations:
+    testannotation.banzaicloud.io/name: value
+  deploymentLabels:
+    testlabel.banzaicloud.io/name: value
+  volumes:
+  - name: dddemo
+    secret:
+      optional: true
+      secretName: ssname
+  - name: config-vol
+    configMap:
+      name: log-config
+      items:
+      - key: log_level
+        path: log_level
+  volumeMounts:
+  - name: config-vol
+    mountPath: /etc/config
   env:
     - name: INJECTION_WEBHOOK_CONFIG_NAME
       value: istio-sidecar-injector-cp-v111x-istio-system
     - name: ISTIOD_CUSTOM_HOST
       value: istiod-cp-v111x.istio-system.svc
     - name: PILOT_ENABLE_STATUS
-      value: "false"
+      value: "true"
     - name: VALIDATION_WEBHOOK_CONFIG_NAME
       value: istiod-cp-v111x-istio-system
+    - name: TEST_ENV
+      value: test-env-value
+  resources:
+    limits:
+      cpu: "2"
+      memory: 1Gi
+    requests:
+      cpu: 100m
+      memory: 128Mi
+  nodeSelector:
+    disktype: ssd
+  affinity:
+    nodeAffinity:
+      requiredDuringSchedulingIgnoredDuringExecution:
+        nodeSelectorTerms:
+        - matchExpressions:
+          - key: kubernetes.io/e2e-az-name
+            operator: In
+            values:
+            - e2e-az1
+            - e2e-az2
+    podAffinity:
+      requiredDuringSchedulingIgnoredDuringExecution:
+      - labelSelector:
+          matchExpressions:
+          - key: security
+            operator: In
+            values:
+            - S1
+        topologyKey: topology.kubernetes.io/zone
+  securityContext:
+    runAsUser: 1337
+    runAsGroup: 1337
+    runAsNonRoot: true
+  podSecurityContext:
+    runAsUser: 1337
+  tolerations:
+  - key: key1
+    effect: NoSchedule
+    operator: Equal
+    tolerationSeconds: 5
+    value: value1
+  autoscaleEnabled: true
+  autoscaleMax: 5
+  autoscaleMin: 1
+  replicaCount: 1
+  cpu:
+    targetAverageUtilization: 80
+  podAnnotations:
+    podannotation: podannotationvalue
+  podLabels:
+    podlabel: podlabelvalue
+  deploymentStrategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 100%
+      maxUnavailable: 30%
+  traceSampling: 0.5
+  enableProtocolSniffingForOutbound: false
+  enableProtocolSniffingForInbound: false
 revision: cp-v111x
+meshConfig:
+  rootNamespace: istio-system
+telemetry:
+  v2:
+    enabled: true
+    metadataExchange:
+      wasmEnabled: false
+    prometheus:
+      wasmEnabled: false
+sidecarInjectorWebhook:
+  httpProxyEnvs:
+    noProxy: localhost

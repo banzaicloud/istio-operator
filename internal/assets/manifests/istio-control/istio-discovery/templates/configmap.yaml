@@ -77,6 +77,7 @@ metadata:
 {{- end }}
   namespace: {{ .Release.Namespace }}
   labels:
+    istio: meshconfig
     istio.io/rev: {{ include "namespaced-revision" . }}
     release: {{ .Release.Name }}
 data:

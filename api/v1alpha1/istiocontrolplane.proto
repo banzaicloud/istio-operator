@@ -76,26 +76,23 @@ message IstioControlPlaneSpec {
     // Whether to restrict the applications namespace the controller manages.
     // If not set, controller watches all namespaces
     google.protobuf.BoolValue watchOneNamespace = 10 [(gogoproto.wktpointer) = true, (gogoproto.jsontag) = "watchOneNamespace"];
-    // Enable pod disruption budget for the control plane, which is used to ensure Istio control plane
-    // components are gradually upgraded or recovered
-    PDBConfiguration defaultPodDisruptionBudget = 11 [(gogoproto.jsontag) = "defaultPodDisruptionBudget"];
     // Configure the policy for validating JWT.
     // Currently, two options are supported: "third-party-jwt" and "first-party-jwt".
     // +kubebuilder:validation:Enum=THIRD_PARTY_JWT;FIRST_PARTY_JWT
-    JWTPolicyType jwtPolicy = 12 [(gogoproto.jsontag) = "jwtPolicy"];
+    JWTPolicyType jwtPolicy = 11 [(gogoproto.jsontag) = "jwtPolicy"];
     // The customized CA address to retrieve certificates for the pods in the cluster.
     // CSR clients such as the Istio Agent and ingress gateways can use this to specify the CA endpoint.
-    string caAddress = 13 [(gogoproto.jsontag) = "caAddress"];
+    string caAddress = 12 [(gogoproto.jsontag) = "caAddress"];
     // Contains the intended distribution for the Istio control plane.
     // The official distribution is used by default unless special preserved distribution value is set.
     // The only preserved distribution is "cisco" as of now.
-    string distribution = 14 [(gogoproto.jsontag) = "distribution"];
+    string distribution = 13 [(gogoproto.jsontag) = "distribution"];
     // Upstream HTTP proxy properties to be injected as environment variables to the pod containers.
-    HTTPProxyEnvsConfiguration httpProxyEnvs = 15 [(gogoproto.jsontag) = "httpProxyEnvs"];
+    HTTPProxyEnvsConfiguration httpProxyEnvs = 14 [(gogoproto.jsontag) = "httpProxyEnvs"];
     // Defines mesh-wide settings for the Istio control plane.
-    istio.mesh.v1alpha1.MeshConfig mesh_config = 16;
+    istio.mesh.v1alpha1.MeshConfig mesh_config = 15;
     // K8s resource overlay patches
-    repeated K8sResourceOverlayPatch k8sResourceOverlays = 17;
+    repeated K8sResourceOverlayPatch k8sResourceOverlays = 16;
 }
 
 // Comma-separated minimum per-scope logging level of messages to output, in the form of <scope>:<level>,<scope>:<level>

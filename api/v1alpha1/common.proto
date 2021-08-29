@@ -120,7 +120,11 @@ message BaseKubernetesResourceConfig {
     // PodDisruptionBudget configuration
     PodDisruptionBudget podDisruptionBudget = 16;
 
+    // DeploymentStrategy configuration
     DeploymentStrategy deploymentStrategy = 17;
+
+    // Standard Kubernetes pod security context configuration
+    k8s.io.api.core.v1.PodSecurityContext podSecurityContext = 18;
 }
 
 message DeploymentStrategy {

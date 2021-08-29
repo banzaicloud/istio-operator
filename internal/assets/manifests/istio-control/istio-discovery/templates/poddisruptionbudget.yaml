@@ -10,7 +10,11 @@ metadata:
     release: {{ .Release.Name }}
     istio: istiod
 spec:
-  minAvailable: 1
+  {{- if .Values.global.defaultPodDisruptionBudget.maxUnavailable }}
+  maxUnavailable: {{ .Values.global.defaultPodDisruptionBudget.maxUnavailable }}
+  {{- else }}
+  minAvailable: {{ .Values.global.defaultPodDisruptionBudget.minAvailable }}
+  {{- end }}
   selector:
     matchLabels:
       app: istiod

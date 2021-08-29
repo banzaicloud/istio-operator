@@ -133,18 +133,6 @@ If not set, controller watches all namespaces</p>
 No
 </td>
 </tr>
-<tr id="IstioControlPlaneSpec-defaultPodDisruptionBudget">
-<td><code>defaultPodDisruptionBudget</code></td>
-<td><code><a href="#PDBConfiguration">PDBConfiguration</a></code></td>
-<td>
-<p>Enable pod disruption budget for the control plane, which is used to ensure Istio control plane
-components are gradually upgraded or recovered</p>
-
-</td>
-<td>
-No
-</td>
-</tr>
 <tr id="IstioControlPlaneSpec-jwtPolicy">
 <td><code>jwtPolicy</code></td>
 <td><code><a href="#JWTPolicyType">JWTPolicyType</a></code></td>
@@ -1242,6 +1230,19 @@ No
 <td><code>deploymentStrategy</code></td>
 <td><code><a href="#DeploymentStrategy">DeploymentStrategy</a></code></td>
 <td>
+<p>DeploymentStrategy configuration</p>
+
+</td>
+<td>
+No
+</td>
+</tr>
+<tr id="BaseKubernetesResourceConfig-podSecurityContext">
+<td><code>podSecurityContext</code></td>
+<td><code><a href="#k8s-io-api-core-v1-PodSecurityContext">PodSecurityContext</a></code></td>
+<td>
+<p>Standard Kubernetes pod security context configuration</p>
+
 </td>
 <td>
 No
