@@ -47,7 +47,7 @@ func TransformStructToStriMapWithTemplate(data interface{}, filesystem fs.FS, te
 		"valueIf":      valueIfTemplateFunc,
 		"reformatYaml": reformatYamlTemplateFunc,
 		"toYamlIf":     toYamlIfTemplateFunc,
-		"toJsonPB":     toJsonPBTemplateFunc,
+		"toJsonPB":     toJSONPBTemplateFunc,
 	}).Funcs(sprig.TxtFuncMap()).ParseFS(filesystem, templateFileName)
 	if err != nil {
 		return nil, errors.WrapWithDetails(err, "template cannot be parsed", "template", templateFileName)
