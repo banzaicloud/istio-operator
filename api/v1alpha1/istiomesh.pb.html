@@ -1,0 +1,115 @@
+---
+title: Istio Mesh Spec
+description: Istio Mesh descriptor
+layout: protoc-gen-docs
+generator: protoc-gen-docs
+schema: istio-operator.api.v1alpha1.IstioMeshSpec
+number_of_entries: 3
+---
+<h2 id="IstioMeshSpec">IstioMeshSpec</h2>
+<section>
+<p>Mesh defines an Istio service mesh</p>
+
+<table class="message-fields">
+<thead>
+<tr>
+<th>Field</th>
+<th>Type</th>
+<th>Description</th>
+<th>Required</th>
+</tr>
+</thead>
+<tbody>
+<tr id="IstioMeshSpec-config">
+<td><code>config</code></td>
+<td><code><a href="https://istio.io/docs/reference/config/istio.mesh.v1alpha1.html#MeshConfig">MeshConfig</a></code></td>
+<td>
+</td>
+<td>
+No
+</td>
+</tr>
+</tbody>
+</table>
+</section>
+<h2 id="IstioMeshStatus">IstioMeshStatus</h2>
+<section>
+
+<table class="message-fields">
+<thead>
+<tr>
+<th>Field</th>
+<th>Type</th>
+<th>Description</th>
+<th>Required</th>
+</tr>
+</thead>
+<tbody>
+<tr id="IstioMeshStatus-status">
+<td><code>status</code></td>
+<td><code><a href="#ConfigState">ConfigState</a></code></td>
+<td>
+<p>Reconciliation status of the Istio mesh</p>
+
+</td>
+<td>
+No
+</td>
+</tr>
+<tr id="IstioMeshStatus-errorMessage">
+<td><code>errorMessage</code></td>
+<td><code>string</code></td>
+<td>
+<p>Reconciliation error message if any</p>
+
+</td>
+<td>
+No
+</td>
+</tr>
+</tbody>
+</table>
+</section>
+<h2 id="ConfigState">ConfigState</h2>
+<section>
+<table class="enum-values">
+<thead>
+<tr>
+<th>Name</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr id="ConfigState-Unspecified">
+<td><code>Unspecified</code></td>
+<td>
+</td>
+</tr>
+<tr id="ConfigState-Created">
+<td><code>Created</code></td>
+<td>
+</td>
+</tr>
+<tr id="ConfigState-ReconcileFailed">
+<td><code>ReconcileFailed</code></td>
+<td>
+</td>
+</tr>
+<tr id="ConfigState-Reconciling">
+<td><code>Reconciling</code></td>
+<td>
+</td>
+</tr>
+<tr id="ConfigState-Available">
+<td><code>Available</code></td>
+<td>
+</td>
+</tr>
+<tr id="ConfigState-Unmanaged">
+<td><code>Unmanaged</code></td>
+<td>
+</td>
+</tr>
+</tbody>
+</table>
+</section>
