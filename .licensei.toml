@@ -20,6 +20,7 @@ ignored = [
   "github.com/xeipuuv/gojsonreference", # Apache2
   "github.com/xeipuuv/gojsonschema", # Apache2
   "github.com/russross/blackfriday", # Simplifed BSD
+  "gomodules.xyz/jsonpatch/v2", # Apache2
 
   # Unsupported VCS
   "cloud.google.com/go",
