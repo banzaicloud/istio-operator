@@ -5088,6 +5088,1457 @@ kind: CustomResourceDefinition
 metadata:
   annotations:
     "helm.sh/resource-policy": keep
+  name: istiomeshes.servicemesh.cisco.com
+spec:
+  group: servicemesh.cisco.com
+  names:
+    kind: IstioMesh
+    listKind: IstioMeshList
+    plural: istiomeshes
+    shortNames:
+    - im
+    - imesh
+    singular: istiomesh
+  scope: Cluster
+  versions:
+  - additionalPrinterColumns:
+    - jsonPath: .metadata.creationTimestamp
+      name: Age
+      type: date
+    name: v1alpha1
+    schema:
+      openAPIV3Schema:
+        properties:
+          spec:
+            description: Mesh defines an Istio service mesh.
+            properties:
+              config:
+                properties:
+                  accessLogEncoding:
+                    description: Encoding for the proxy access log (`TEXT` or `JSON`).
+                    enum:
+                    - TEXT
+                    - JSON
+                    type: string
+                  accessLogFile:
+                    description: File address for the proxy access log (e.g.
+                    type: string
+                  accessLogFormat:
+                    description: |-
+                      Format for the proxy access log
+                      Empty value results in proxy's default access log format.
+                    type: string
+                  ca:
+                    properties:
+                      address:
+                        description: REQUIRED.
+                        type: string
+                      istiodSide:
+                        description: |-
+                          Use istiod_side to specify CA Server integrate to Istiod side or Agent side
+                          Default: true.
+                        type: boolean
+                      requestTimeout:
+                        description: |-
+                          timeout for forward CSR requests from Istiod to External CA
+                          Default: 10s.
+                        type: string
+                      tlsSettings:
+                        description: Use the tls_settings to specify the tls mode
+                          to use.
+                        properties:
+                          caCertificates:
+                            description: |-
+                              OPTIONAL: The path to the file containing certificate authority
+                              certificates to use in verifying a presented server certificate.
+                            type: string
+                          clientCertificate:
+                            description: REQUIRED if mode is `MUTUAL`.
+                            type: string
+                          credentialName:
+                            description: |-
+                              The name of the secret that holds the TLS certs for the
+                              client including the CA certificates.
+                            type: string
+                          mode:
+                            description: |-
+                              Indicates whether connections to this port should be secured
+                              using TLS.
+                            enum:
+                            - DISABLE
+                            - SIMPLE
+                            - MUTUAL
+                            - ISTIO_MUTUAL
+                            type: string
+                          privateKey:
+                            description: REQUIRED if mode is `MUTUAL`.
+                            type: string
+                          sni:
+                            description: SNI string to present to the server during
+                              TLS handshake.
+                            type: string
+                          subjectAltNames:
+                            description: |-
+                              A list of alternate names to verify the subject identity in the
+                              certificate.
+                            items:
+                              type: string
+                            type: array
+                        required:
+                        - mode
+                        type: object
+                    type: object
+                  caCertificates:
+                    description: The extra root certificates for workload-to-workload
+                      communication.
+                    items:
+                      oneOf:
+                      - not:
+                          anyOf:
+                          - required:
+                            - pem
+                          - required:
+                            - spiffeBundleUrl
+                      - required:
+                        - pem
+                      - required:
+                        - spiffeBundleUrl
+                      properties:
+                        pem:
+                          description: The PEM data of the certificate.
+                          type: string
+                        spiffeBundleUrl:
+                          description: |-
+                            The SPIFFE bundle endpoint URL that complies to:
+                            https://github.com/spiffe/spiffe/blob/master/standards/SPIFFE_Trust_Domain_and_Bundle.md#the-spiffe-trust-domain-and-bundle
+                            The endpoint should support authentication based on Web PKI:
+                            https://github.com/spiffe/spiffe/blob/master/standards/SPIFFE_Trust_Domain_and_Bundle.md#521-web-pki
+                            The certificate is retrieved from the endpoint.
+                          type: string
+                      type: object
+                    type: array
+                  certificates:
+                    description: Configure the provision of certificates.
+                    items:
+                      properties:
+                        dnsNames:
+                          description: The DNS names for the certificate.
+                          items:
+                            type: string
+                          type: array
+                        secretName:
+                          description: Name of the secret the certificate and its
+                            key will be stored into.
+                          type: string
+                      type: object
+                    type: array
+                  configSources:
+                    description: |-
+                      ConfigSource describes a source of configuration data for networking
+                      rules, and other Istio configuration artifacts.
+                    items:
+                      properties:
+                        address:
+                          description: |-
+                            Address of the server implementing the Istio Mesh Configuration
+                            protocol (MCP).
+                          type: string
+                        subscribedResources:
+                          description: Describes the source of configuration, if nothing
+                            is specified default is MCP.
+                          items:
+                            enum:
+                            - SERVICE_REGISTRY
+                            type: string
+                          type: array
+                        tlsSettings:
+                          description: Use the tls_settings to specify the tls mode
+                            to use.
+                          properties:
+                            caCertificates:
+                              description: |-
+                                OPTIONAL: The path to the file containing certificate authority
+                                certificates to use in verifying a presented server certificate.
+                              type: string
+                            clientCertificate:
+                              description: REQUIRED if mode is `MUTUAL`.
+                              type: string
+                            credentialName:
+                              description: |-
+                                The name of the secret that holds the TLS certs for the
+                                client including the CA certificates.
+                              type: string
+                            mode:
+                              description: |-
+                                Indicates whether connections to this port should be secured
+                                using TLS.
+                              enum:
+                              - DISABLE
+                              - SIMPLE
+                              - MUTUAL
+                              - ISTIO_MUTUAL
+                              type: string
+                            privateKey:
+                              description: REQUIRED if mode is `MUTUAL`.
+                              type: string
+                            sni:
+                              description: SNI string to present to the server during
+                                TLS handshake.
+                              type: string
+                            subjectAltNames:
+                              description: |-
+                                A list of alternate names to verify the subject identity in the
+                                certificate.
+                              items:
+                                type: string
+                              type: array
+                          required:
+                          - mode
+                          type: object
+                      type: object
+                    type: array
+                  connectTimeout:
+                    description: Connection timeout used by Envoy.
+                    type: string
+                  defaultConfig:
+                    description: Default proxy config used by gateway and sidecars.
+                    properties:
+                      availabilityZone:
+                        type: string
+                      binaryPath:
+                        description: Path to the proxy binary.
+                        type: string
+                      caCertificatesPem:
+                        description: The PEM data of the extra root certificates for
+                          workload-to-workload communication.
+                        items:
+                          type: string
+                        type: array
+                      concurrency:
+                        description: The number of worker threads to run.
+                        nullable: true
+                        type: integer
+                      configPath:
+                        description: Path to the generated configuration file directory.
+                        type: string
+                      controlPlaneAuthPolicy:
+                        description: AuthenticationPolicy defines how the proxy is
+                          authenticated when it connects to the control plane.
+                        enum:
+                        - NONE
+                        - MUTUAL_TLS
+                        - INHERIT
+                        type: string
+                      customConfigFile:
+                        description: |-
+                          File path of custom proxy configuration, currently used by proxies
+                          in front of Mixer and Pilot.
+                        type: string
+                      discoveryAddress:
+                        description: Address of the discovery service exposing xDS
+                          with mTLS connection.
+                        type: string
+                      discoveryRefreshDelay:
+                        type: string
+                      drainDuration:
+                        description: |-
+                          The time in seconds that Envoy will drain connections during a hot
+                          restart.
+                        type: string
+                      envoyAccessLogService:
+                        description: |-
+                          Address of the service to which access logs from Envoys should be
+                          sent.
+                        properties:
+                          address:
+                            description: |-
+                              Address of a remove service used for various purposes (access log
+                              receiver, metrics receiver, etc.).
+                            type: string
+                          tcpKeepalive:
+                            description: If set then set `SO_KEEPALIVE` on the socket
+                              to enable TCP Keepalives.
+                            properties:
+                              interval:
+                                description: The time duration between keep-alive
+                                  probes.
+                                type: string
+                              probes:
+                                description: |-
+                                  Maximum number of keepalive probes to send without response before
+                                  deciding the connection is dead.
+                                type: integer
+                              time:
+                                description: |-
+                                  The time duration a connection needs to be idle before keep-alive
+                                  probes start being sent.
+                                type: string
+                            type: object
+                          tlsSettings:
+                            description: Use the `tls_settings` to specify the tls
+                              mode to use.
+                            properties:
+                              caCertificates:
+                                description: |-
+                                  OPTIONAL: The path to the file containing certificate authority
+                                  certificates to use in verifying a presented server certificate.
+                                type: string
+                              clientCertificate:
+                                description: REQUIRED if mode is `MUTUAL`.
+                                type: string
+                              credentialName:
+                                description: |-
+                                  The name of the secret that holds the TLS certs for the
+                                  client including the CA certificates.
+                                type: string
+                              mode:
+                                description: |-
+                                  Indicates whether connections to this port should be secured
+                                  using TLS.
+                                enum:
+                                - DISABLE
+                                - SIMPLE
+                                - MUTUAL
+                                - ISTIO_MUTUAL
+                                type: string
+                              privateKey:
+                                description: REQUIRED if mode is `MUTUAL`.
+                                type: string
+                              sni:
+                                description: SNI string to present to the server during
+                                  TLS handshake.
+                                type: string
+                              subjectAltNames:
+                                description: |-
+                                  A list of alternate names to verify the subject identity in the
+                                  certificate.
+                                items:
+                                  type: string
+                                type: array
+                            required:
+                            - mode
+                            type: object
+                        type: object
+                      envoyMetricsService:
+                        description: Address of the Envoy Metrics Service implementation
+                          (e.g.
+                        properties:
+                          address:
+                            description: |-
+                              Address of a remove service used for various purposes (access log
+                              receiver, metrics receiver, etc.).
+                            type: string
+                          tcpKeepalive:
+                            description: If set then set `SO_KEEPALIVE` on the socket
+                              to enable TCP Keepalives.
+                            properties:
+                              interval:
+                                description: The time duration between keep-alive
+                                  probes.
+                                type: string
+                              probes:
+                                description: |-
+                                  Maximum number of keepalive probes to send without response before
+                                  deciding the connection is dead.
+                                type: integer
+                              time:
+                                description: |-
+                                  The time duration a connection needs to be idle before keep-alive
+                                  probes start being sent.
+                                type: string
+                            type: object
+                          tlsSettings:
+                            description: Use the `tls_settings` to specify the tls
+                              mode to use.
+                            properties:
+                              caCertificates:
+                                description: |-
+                                  OPTIONAL: The path to the file containing certificate authority
+                                  certificates to use in verifying a presented server certificate.
+                                type: string
+                              clientCertificate:
+                                description: REQUIRED if mode is `MUTUAL`.
+                                type: string
+                              credentialName:
+                                description: |-
+                                  The name of the secret that holds the TLS certs for the
+                                  client including the CA certificates.
+                                type: string
+                              mode:
+                                description: |-
+                                  Indicates whether connections to this port should be secured
+                                  using TLS.
+                                enum:
+                                - DISABLE
+                                - SIMPLE
+                                - MUTUAL
+                                - ISTIO_MUTUAL
+                                type: string
+                              privateKey:
+                                description: REQUIRED if mode is `MUTUAL`.
+                                type: string
+                              sni:
+                                description: SNI string to present to the server during
+                                  TLS handshake.
+                                type: string
+                              subjectAltNames:
+                                description: |-
+                                  A list of alternate names to verify the subject identity in the
+                                  certificate.
+                                items:
+                                  type: string
+                                type: array
+                            required:
+                            - mode
+                            type: object
+                        type: object
+                      envoyMetricsServiceAddress:
+                        type: string
+                      extraStatTags:
+                        description: An additional list of tags to extract from the
+                          in-proxy Istio telemetry.
+                        items:
+                          type: string
+                        type: array
+                      gatewayTopology:
+                        properties:
+                          forwardClientCertDetails:
+                            enum:
+                            - UNDEFINED
+                            - SANITIZE
+                            - FORWARD_ONLY
+                            - APPEND_FORWARD
+                            - SANITIZE_SET
+                            - ALWAYS_FORWARD_ONLY
+                            type: string
+                          numTrustedProxies:
+                            type: integer
+                        type: object
+                      holdApplicationUntilProxyStarts:
+                        description: Boolean flag for enabling/disabling the holdApplicationUntilProxyStarts
+                          behavior.
+                        nullable: true
+                        type: boolean
+                      interceptionMode:
+                        description: The mode used to redirect inbound traffic to
+                          Envoy.
+                        enum:
+                        - REDIRECT
+                        - TPROXY
+                        type: string
+                      meshId:
+                        description: |-
+                          The unique identifier for the [service mesh](https://istio.io/docs/reference/glossary/#service-mesh)
+                          All control planes running in the same service mesh should specify the same mesh ID.
+                        type: string
+                      parentShutdownDuration:
+                        description: |-
+                          The time in seconds that Envoy will wait before shutting down the
+                          parent process during a hot restart.
+                        type: string
+                      proxyAdminPort:
+                        description: Port on which Envoy should listen for administrative
+                          commands.
+                        format: int32
+                        type: integer
+                      proxyBootstrapTemplatePath:
+                        description: Path to the proxy bootstrap template file.
+                        type: string
+                      proxyMetadata:
+                        additionalProperties:
+                          type: string
+                        description: Additional environment variables for the proxy.
+                        type: object
+                      proxyStatsMatcher:
+                        description: Proxy stats matcher defines configuration for
+                          reporting custom Envoy stats.
+                        properties:
+                          inclusionPrefixes:
+                            description: Proxy stats name prefix matcher for inclusion.
+                            items:
+                              type: string
+                            type: array
+                          inclusionRegexps:
+                            description: Proxy stats name regexps matcher for inclusion.
+                            items:
+                              type: string
+                            type: array
+                          inclusionSuffixes:
+                            description: Proxy stats name suffix matcher for inclusion.
+                            items:
+                              type: string
+                            type: array
+                        type: object
+                      readinessProbe:
+                        description: VM Health Checking readiness probe.
+                        oneOf:
+                        - not:
+                            anyOf:
+                            - required:
+                              - httpGet
+                            - required:
+                              - tcpSocket
+                            - required:
+                              - exec
+                        - required:
+                          - httpGet
+                        - required:
+                          - tcpSocket
+                        - required:
+                          - exec
+                        properties:
+                          exec:
+                            description: Health is determined by how the command that
+                              is executed exited.
+                            properties:
+                              command:
+                                description: Command to run.
+                                items:
+                                  type: string
+                                type: array
+                            type: object
+                          failureThreshold:
+                            description: Minimum consecutive failures for the probe
+                              to be considered failed after having succeeded.
+                            format: int32
+                            type: integer
+                          httpGet:
+                            description: |-
+                              `httpGet` is performed to a given endpoint
+                              and the status/able to connect determines health.
+                            properties:
+                              host:
+                                description: Host name to connect to, defaults to
+                                  the pod IP.
+                                type: string
+                              httpHeaders:
+                                description: Headers the proxy will pass on to make
+                                  the request.
+                                items:
+                                  properties:
+                                    name:
+                                      description: The header field name.
+                                      type: string
+                                    value:
+                                      description: The header field value.
+                                      type: string
+                                  type: object
+                                type: array
+                              path:
+                                description: Path to access on the HTTP server.
+                                type: string
+                              port:
+                                description: Port on which the endpoint lives.
+                                type: integer
+                              scheme:
+                                description: HTTP or HTTPS, defaults to HTTP.
+                                type: string
+                            required:
+                            - port
+                            type: object
+                          initialDelaySeconds:
+                            description: Number of seconds after the container has
+                              started before readiness probes are initiated.
+                            format: int32
+                            type: integer
+                          periodSeconds:
+                            description: How often (in seconds) to perform the probe.
+                            format: int32
+                            type: integer
+                          successThreshold:
+                            description: Minimum consecutive successes for the probe
+                              to be considered successful after having failed.
+                            format: int32
+                            type: integer
+                          tcpSocket:
+                            description: Health is determined by if the proxy is able
+                              to connect.
+                            properties:
+                              host:
+                                description: Host to connect to, defaults to localhost.
+                                type: string
+                              port:
+                                description: Port of host.
+                                type: integer
+                            required:
+                            - port
+                            type: object
+                          timeoutSeconds:
+                            description: Number of seconds after which the probe times
+                              out.
+                            format: int32
+                            type: integer
+                        type: object
+                      sds:
+                        description: Secret Discovery Service(SDS) configuration to
+                          be used by the proxy.
+                        properties:
+                          enabled:
+                            description: True if SDS is enabled.
+                            type: boolean
+                          k8sSaJwtPath:
+                            description: Path of k8s service account JWT path.
+                            type: string
+                        type: object
+                      serviceCluster:
+                        description: |-
+                          Service cluster defines the name for the `service_cluster` that is
+                          shared by all Envoy instances.
+                        type: string
+                      statNameLength:
+                        description: Maximum length of name field in Envoy's metrics.
+                        format: int32
+                        type: integer
+                      statsdUdpAddress:
+                        description: IP Address and Port of a statsd UDP listener
+                          (e.g.
+                        type: string
+                      statusPort:
+                        description: Port on which the agent should listen for administrative
+                          commands such as readiness probe.
+                        format: int32
+                        type: integer
+                      terminationDrainDuration:
+                        description: The amount of time allowed for connections to
+                          complete on proxy shutdown.
+                        type: string
+                      tracing:
+                        description: Tracing configuration to be used by the proxy.
+                        oneOf:
+                        - not:
+                            anyOf:
+                            - required:
+                              - zipkin
+                            - required:
+                              - lightstep
+                            - required:
+                              - datadog
+                            - required:
+                              - stackdriver
+                            - required:
+                              - openCensusAgent
+                        - required:
+                          - zipkin
+                        - required:
+                          - lightstep
+                        - required:
+                          - datadog
+                        - required:
+                          - stackdriver
+                        - required:
+                          - openCensusAgent
+                        properties:
+                          customTags:
+                            additionalProperties:
+                              oneOf:
+                              - not:
+                                  anyOf:
+                                  - required:
+                                    - literal
+                                  - required:
+                                    - environment
+                                  - required:
+                                    - header
+                              - required:
+                                - literal
+                              - required:
+                                - environment
+                              - required:
+                                - header
+                              properties:
+                                environment:
+                                  description: |-
+                                    The custom tag's value should be populated from an environmental
+                                    variable.
+                                  properties:
+                                    defaultValue:
+                                      description: |-
+                                        When the environment variable is not found,
+                                        the tag's value will be populated with this default value if specified,
+                                        otherwise the tag will not be populated.
+                                      type: string
+                                    name:
+                                      description: Name of the environment variable
+                                        used to populate the tag's value.
+                                      type: string
+                                  type: object
+                                header:
+                                  description: |-
+                                    The custom tag's value is populated by an http header from
+                                    an incoming request.
+                                  properties:
+                                    defaultValue:
+                                      description: Default value to be used for the
+                                        tag when the named HTTP header does not exist.
+                                      type: string
+                                    name:
+                                      description: HTTP header name used to obtain
+                                        the value from to populate the tag value.
+                                      type: string
+                                  type: object
+                                literal:
+                                  description: The custom tag's value is the specified
+                                    literal.
+                                  properties:
+                                    value:
+                                      description: Static literal value used to populate
+                                        the tag value.
+                                      type: string
+                                  type: object
+                              type: object
+                            description: Configures the custom tags to be added to
+                              active span by all proxies (i.e.
+                            type: object
+                          datadog:
+                            description: Use a Datadog tracer.
+                            properties:
+                              address:
+                                description: Address of the Datadog Agent.
+                                type: string
+                            type: object
+                          lightstep:
+                            description: Use a Lightstep tracer.
+                            properties:
+                              accessToken:
+                                description: The Lightstep access token.
+                                type: string
+                              address:
+                                description: Address of the Lightstep Satellite pool.
+                                type: string
+                            type: object
+                          maxPathTagLength:
+                            description: |-
+                              Configures the maximum length of the request path to extract and include in the
+                              HttpUrl tag.
+                            type: integer
+                          openCensusAgent:
+                            description: Use an OpenCensus tracer exporting to an
+                              OpenCensus agent.
+                            properties:
+                              address:
+                                description: gRPC address for the OpenCensus agent
+                                  (e.g.
+                                type: string
+                              context:
+                                description: |-
+                                  Specifies the set of context propagation headers used for distributed
+                                  tracing.
+                                items:
+                                  enum:
+                                  - UNSPECIFIED
+                                  - W3C_TRACE_CONTEXT
+                                  - GRPC_BIN
+                                  - CLOUD_TRACE_CONTEXT
+                                  - B3
+                                  type: string
+                                type: array
+                            type: object
+                          sampling:
+                            description: |-
+                              The percentage of requests (0.0 - 100.0) that will be randomly selected for trace generation,
+                              if not requested by the client or not forced.
+                            format: double
+                            type: number
+                          stackdriver:
+                            description: Use a Stackdriver tracer.
+                            properties:
+                              debug:
+                                description: debug enables trace output to stdout.
+                                type: boolean
+                              maxNumberOfAnnotations:
+                                description: The global default max number of annotation
+                                  events per span.
+                                nullable: true
+                                type: integer
+                              maxNumberOfAttributes:
+                                description: The global default max number of attributes
+                                  per span.
+                                nullable: true
+                                type: integer
+                              maxNumberOfMessageEvents:
+                                description: The global default max number of message
+                                  events per span.
+                                nullable: true
+                                type: integer
+                            type: object
+                          tlsSettings:
+                            description: Use the tls_settings to specify the tls mode
+                              to use.
+                            properties:
+                              caCertificates:
+                                description: |-
+                                  OPTIONAL: The path to the file containing certificate authority
+                                  certificates to use in verifying a presented server certificate.
+                                type: string
+                              clientCertificate:
+                                description: REQUIRED if mode is `MUTUAL`.
+                                type: string
+                              credentialName:
+                                description: |-
+                                  The name of the secret that holds the TLS certs for the
+                                  client including the CA certificates.
+                                type: string
+                              mode:
+                                description: |-
+                                  Indicates whether connections to this port should be secured
+                                  using TLS.
+                                enum:
+                                - DISABLE
+                                - SIMPLE
+                                - MUTUAL
+                                - ISTIO_MUTUAL
+                                type: string
+                              privateKey:
+                                description: REQUIRED if mode is `MUTUAL`.
+                                type: string
+                              sni:
+                                description: SNI string to present to the server during
+                                  TLS handshake.
+                                type: string
+                              subjectAltNames:
+                                description: |-
+                                  A list of alternate names to verify the subject identity in the
+                                  certificate.
+                                items:
+                                  type: string
+                                type: array
+                            required:
+                            - mode
+                            type: object
+                          zipkin:
+                            description: Use a Zipkin tracer.
+                            properties:
+                              address:
+                                description: Address of the Zipkin service (e.g.
+                                type: string
+                            type: object
+                        type: object
+                      zipkinAddress:
+                        description: Address of the Zipkin service (e.g.
+                        type: string
+                    type: object
+                  defaultDestinationRuleExportTo:
+                    description: The default value for the `DestinationRule.export_to`
+                      field.
+                    items:
+                      type: string
+                    type: array
+                  defaultProviders:
+                    description: Specifies extension providers to use by default in
+                      Istio configuration resources.
+                    properties:
+                      accessLogging:
+                        description: Name of the default provider(s) for access logging.
+                        items:
+                          type: string
+                        type: array
+                      metrics:
+                        description: Name of the default provider(s) for metrics.
+                        items:
+                          type: string
+                        type: array
+                      tracing:
+                        description: Name of the default provider(s) for tracing.
+                        items:
+                          type: string
+                        type: array
+                    type: object
+                  defaultServiceExportTo:
+                    description: |-
+                      The default value for the ServiceEntry.export_to field and services
+                      imported through container registry integrations, e.g.
+                    items:
+                      type: string
+                    type: array
+                  defaultVirtualServiceExportTo:
+                    description: The default value for the VirtualService.export_to
+                      field.
+                    items:
+                      type: string
+                    type: array
+                  disableEnvoyListenerLog:
+                    description: This flag disables Envoy Listener logs.
+                    type: boolean
+                  discoverySelectors:
+                    description: |-
+                      A list of Kubernetes selectors that specify the set of namespaces that Istio considers when
+                      computing configuration updates for sidecars.
+                    items:
+                      properties:
+                        matchExpressions:
+                          description: matchExpressions is a list of label selector
+                            requirements.
+                          items:
+                            properties:
+                              key:
+                                description: key is the label key that the selector
+                                  applies to.
+                                type: string
+                              operator:
+                                description: operator represents a key's relationship
+                                  to a set of values.
+                                type: string
+                              values:
+                                description: values is an array of string values.
+                                items:
+                                  type: string
+                                type: array
+                            type: object
+                          type: array
+                        matchLabels:
+                          additionalProperties:
+                            type: string
+                          description: matchLabels is a map of {key,value} pairs.
+                          type: object
+                      type: object
+                    type: array
+                  dnsRefreshRate:
+                    description: |-
+                      Configures DNS refresh rate for Envoy clusters of type `STRICT_DNS`
+                      Default refresh rate is `5s`.
+                    type: string
+                  enableAutoMtls:
+                    description: |-
+                      This flag is used to enable mutual `TLS` automatically for service to service communication
+                      within the mesh, default true.
+                    nullable: true
+                    type: boolean
+                  enableEnvoyAccessLogService:
+                    description: This flag enables Envoy's gRPC Access Log Service.
+                    type: boolean
+                  enablePrometheusMerge:
+                    description: |-
+                      If enabled, Istio agent will merge metrics exposed by the application with metrics from Envoy
+                      and Istio agent.
+                    nullable: true
+                    type: boolean
+                  enableTracing:
+                    description: Flag to control generation of trace spans and request
+                      IDs.
+                    type: boolean
+                  extensionProviders:
+                    description: Defines a list of extension providers that extend
+                      Istio's functionality.
+                    items:
+                      oneOf:
+                      - not:
+                          anyOf:
+                          - required:
+                            - envoyExtAuthzHttp
+                          - required:
+                            - envoyExtAuthzGrpc
+                          - required:
+                            - zipkin
+                          - required:
+                            - lightstep
+                          - required:
+                            - datadog
+                          - required:
+                            - stackdriver
+                          - required:
+                            - opencensus
+                          - required:
+                            - skywalking
+                          - required:
+                            - prometheus
+                          - required:
+                            - envoyFileAccessLog
+                      - required:
+                        - envoyExtAuthzHttp
+                      - required:
+                        - envoyExtAuthzGrpc
+                      - required:
+                        - zipkin
+                      - required:
+                        - lightstep
+                      - required:
+                        - datadog
+                      - required:
+                        - stackdriver
+                      - required:
+                        - opencensus
+                      - required:
+                        - skywalking
+                      - required:
+                        - prometheus
+                      - required:
+                        - envoyFileAccessLog
+                      properties:
+                        datadog:
+                          description: Configures a Datadog tracing provider.
+                          properties:
+                            maxTagLength:
+                              description: Optional.
+                              type: integer
+                            port:
+                              description: REQUIRED.
+                              type: integer
+                            service:
+                              description: REQUIRED.
+                              type: string
+                          type: object
+                        envoyExtAuthzGrpc:
+                          description: Configures an external authorizer that implements
+                            the Envoy ext_authz filter authorization check service
+                            using the gRPC API.
+                          properties:
+                            failOpen:
+                              description: |-
+                                If true, the HTTP request or TCP connection will be allowed even if the communication with the authorization service has failed,
+                                or if the authorization service has returned a HTTP 5xx error.
+                              type: boolean
+                            includeRequestBodyInCheck:
+                              description: If set, the client request body will be
+                                included in the authorization request sent to the
+                                authorization service.
+                              properties:
+                                allowPartialMessage:
+                                  description: When this field is true, ext-authz
+                                    filter will buffer the message until max_request_bytes
+                                    is reached.
+                                  type: boolean
+                                maxRequestBytes:
+                                  description: Sets the maximum size of a message
+                                    body that the ext-authz filter will hold in memory.
+                                  type: integer
+                                packAsBytes:
+                                  description: |-
+                                    If true, the body sent to the external authorization service in the gRPC authorization request is set with raw bytes
+                                    in the raw_body field (https://github.com/envoyproxy/envoy/blame/cffb095d59d7935abda12b9509bcd136808367bb/api/envoy/service/auth/v3/attribute_context.proto#L153).
+                                  type: boolean
+                              type: object
+                            port:
+                              description: REQUIRED.
+                              type: integer
+                            service:
+                              description: REQUIRED.
+                              type: string
+                            statusOnError:
+                              description: Sets the HTTP status that is returned to
+                                the client when there is a network error to the authorization
+                                service.
+                              type: string
+                            timeout:
+                              description: 'The maximum duration that the proxy will
+                                wait for a response from the provider, this is the
+                                timeout for a specific request (default timeout: 600s).'
+                              type: string
+                          type: object
+                        envoyExtAuthzHttp:
+                          description: Configures an external authorizer that implements
+                            the Envoy ext_authz filter authorization check service
+                            using the HTTP API.
+                          properties:
+                            failOpen:
+                              description: |-
+                                If true, the user request will be allowed even if the communication with the authorization service has failed,
+                                or if the authorization service has returned a HTTP 5xx error.
+                              type: boolean
+                            headersToDownstreamOnDeny:
+                              description: |-
+                                List of headers from the authorization service that should be forwarded to downstream when the authorization
+                                check result is not allowed (HTTP code other than 200).
+                              items:
+                                type: string
+                              type: array
+                            headersToUpstreamOnAllow:
+                              description: |-
+                                List of headers from the authorization service that should be added or overridden in the original request and
+                                forwarded to the upstream when the authorization check result is allowed (HTTP code 200).
+                              items:
+                                type: string
+                              type: array
+                            includeAdditionalHeadersInCheck:
+                              additionalProperties:
+                                type: string
+                              description: Set of additional fixed headers that should
+                                be included in the authorization request sent to the
+                                authorization service.
+                              type: object
+                            includeHeadersInCheck:
+                              description: DEPRECATED.
+                              items:
+                                type: string
+                              type: array
+                            includeRequestBodyInCheck:
+                              description: If set, the client request body will be
+                                included in the authorization request sent to the
+                                authorization service.
+                              properties:
+                                allowPartialMessage:
+                                  description: When this field is true, ext-authz
+                                    filter will buffer the message until max_request_bytes
+                                    is reached.
+                                  type: boolean
+                                maxRequestBytes:
+                                  description: Sets the maximum size of a message
+                                    body that the ext-authz filter will hold in memory.
+                                  type: integer
+                                packAsBytes:
+                                  description: |-
+                                    If true, the body sent to the external authorization service in the gRPC authorization request is set with raw bytes
+                                    in the raw_body field (https://github.com/envoyproxy/envoy/blame/cffb095d59d7935abda12b9509bcd136808367bb/api/envoy/service/auth/v3/attribute_context.proto#L153).
+                                  type: boolean
+                              type: object
+                            includeRequestHeadersInCheck:
+                              description: List of client request headers that should
+                                be included in the authorization request sent to the
+                                authorization service.
+                              items:
+                                type: string
+                              type: array
+                            pathPrefix:
+                              description: Sets a prefix to the value of authorization
+                                request header *Path*.
+                              type: string
+                            port:
+                              description: REQUIRED.
+                              type: integer
+                            service:
+                              description: REQUIRED.
+                              type: string
+                            statusOnError:
+                              description: Sets the HTTP status that is returned to
+                                the client when there is a network error to the authorization
+                                service.
+                              type: string
+                            timeout:
+                              description: 'The maximum duration that the proxy will
+                                wait for a response from the provider (default timeout:
+                                600s).'
+                              type: string
+                          type: object
+                        envoyFileAccessLog:
+                          description: Configures an Envoy File Access Log provider.
+                          properties:
+                            path:
+                              description: Path to a local file to write the access
+                                log entries.
+                              type: string
+                          type: object
+                        lightstep:
+                          description: Configures a Lightstep tracing provider.
+                          properties:
+                            accessToken:
+                              description: The Lightstep access token.
+                              type: string
+                            maxTagLength:
+                              description: Optional.
+                              type: integer
+                            port:
+                              description: REQUIRED.
+                              type: integer
+                            service:
+                              description: REQUIRED.
+                              type: string
+                          type: object
+                        name:
+                          description: REQUIRED.
+                          type: string
+                        opencensus:
+                          description: Configures an OpenCensusAgent tracing provider.
+                          properties:
+                            context:
+                              description: |-
+                                Specifies the set of context propagation headers used for distributed
+                                tracing.
+                              items:
+                                enum:
+                                - UNSPECIFIED
+                                - W3C_TRACE_CONTEXT
+                                - GRPC_BIN
+                                - CLOUD_TRACE_CONTEXT
+                                - B3
+                                type: string
+                              type: array
+                            maxTagLength:
+                              description: Optional.
+                              type: integer
+                            port:
+                              description: REQUIRED.
+                              type: integer
+                            service:
+                              description: REQUIRED.
+                              type: string
+                          type: object
+                        prometheus:
+                          description: Configures a Prometheus metrics provider.
+                          type: object
+                        skywalking:
+                          description: Configures a Apache SkyWalking provider.
+                          properties:
+                            accessToken:
+                              description: Optional.
+                              type: string
+                            port:
+                              description: REQUIRED.
+                              type: integer
+                            service:
+                              description: REQUIRED.
+                              type: string
+                          type: object
+                        stackdriver:
+                          description: Configures a Stackdriver provider.
+                          properties:
+                            debug:
+                              description: debug enables trace output to stdout.
+                              type: boolean
+                            maxNumberOfAnnotations:
+                              description: The global default max number of annotation
+                                events per span.
+                              nullable: true
+                              type: integer
+                            maxNumberOfAttributes:
+                              description: The global default max number of attributes
+                                per span.
+                              nullable: true
+                              type: integer
+                            maxNumberOfMessageEvents:
+                              description: The global default max number of message
+                                events per span.
+                              nullable: true
+                              type: integer
+                            maxTagLength:
+                              description: Optional.
+                              type: integer
+                          type: object
+                        zipkin:
+                          description: Configures a tracing provider that uses the
+                            Zipkin API.
+                          properties:
+                            maxTagLength:
+                              description: Optional.
+                              type: integer
+                            port:
+                              description: REQUIRED.
+                              type: integer
+                            service:
+                              description: REQUIRED.
+                              type: string
+                          type: object
+                      type: object
+                    type: array
+                  h2UpgradePolicy:
+                    description: Specify if http1.1 connections should be upgraded
+                      to http2 by default.
+                    enum:
+                    - DO_NOT_UPGRADE
+                    - UPGRADE
+                    type: string
+                  inboundClusterStatName:
+                    description: Name to be used while emitting statistics for inbound
+                      clusters.
+                    type: string
+                  ingressClass:
+                    description: |-
+                      Class of ingress resources to be processed by Istio ingress
+                      controller.
+                    type: string
+                  ingressControllerMode:
+                    description: Defines whether to use Istio ingress controller for
+                      annotated or all ingress resources.
+                    enum:
+                    - UNSPECIFIED
+                    - "OFF"
+                    - DEFAULT
+                    - STRICT
+                    type: string
+                  ingressSelector:
+                    description: Defines which gateway deployment to use as the Ingress
+                      controller.
+                    type: string
+                  ingressService:
+                    description: Name of the Kubernetes service used for the istio
+                      ingress controller.
+                    type: string
+                  localityLbSetting:
+                    description: Locality based load balancing distribution or failover
+                      settings.
+                    properties:
+                      distribute:
+                        description: 'Optional: only one of distribute or failover
+                          can be set.'
+                        items:
+                          properties:
+                            from:
+                              description: Originating locality, '/' separated, e.g.
+                              type: string
+                            to:
+                              additionalProperties:
+                                type: integer
+                              description: Map of upstream localities to traffic distribution
+                                weights.
+                              type: object
+                          type: object
+                        type: array
+                      enabled:
+                        description: enable locality load balancing, this is DestinationRule-level
+                          and will override mesh wide settings in entirety.
+                        nullable: true
+                        type: boolean
+                      failover:
+                        description: 'Optional: only failover or distribute can be
+                          set.'
+                        items:
+                          properties:
+                            from:
+                              description: Originating region.
+                              type: string
+                            to:
+                              description: |-
+                                Destination region the traffic will fail over to when endpoints in
+                                the 'from' region becomes unhealthy.
+                              type: string
+                          type: object
+                        type: array
+                    type: object
+                  outboundClusterStatName:
+                    description: Name to be used while emitting statistics for outbound
+                      clusters.
+                    type: string
+                  outboundTrafficPolicy:
+                    description: |-
+                      Set the default behavior of the sidecar for handling outbound
+                      traffic from the application.
+                    properties:
+                      mode:
+                        enum:
+                        - REGISTRY_ONLY
+                        - ALLOW_ANY
+                        type: string
+                    type: object
+                  pathNormalization:
+                    description: |-
+                      ProxyPathNormalization configures how URL paths in incoming and outgoing HTTP requests are
+                      normalized by the sidecars and gateways.
+                    properties:
+                      normalization:
+                        enum:
+                        - DEFAULT
+                        - NONE
+                        - BASE
+                        - MERGE_SLASHES
+                        - DECODE_AND_MERGE_SLASHES
+                        type: string
+                    type: object
+                  protocolDetectionTimeout:
+                    description: |-
+                      Automatic protocol detection uses a set of heuristics to
+                      determine whether the connection is using TLS or not (on the
+                      server side), as well as the application protocol being used
+                      (e.g., http vs tcp).
+                    type: string
+                  proxyHttpPort:
+                    description: Port on which Envoy should listen for HTTP PROXY
+                      requests if set.
+                    format: int32
+                    type: integer
+                  proxyListenPort:
+                    description: |-
+                      Port on which Envoy should listen for incoming connections from
+                      other services.
+                    format: int32
+                    type: integer
+                  rootNamespace:
+                    description: |-
+                      The namespace to treat as the administrative root namespace for
+                      Istio configuration.
+                    type: string
+                  serviceSettings:
+                    items:
+                      properties:
+                        hosts:
+                          description: The services to which the Settings should be
+                            applied.
+                          items:
+                            type: string
+                          type: array
+                        settings:
+                          description: The settings to apply to the selected services.
+                          properties:
+                            clusterLocal:
+                              description: If true, specifies that the client and
+                                service endpoints must reside in the same cluster.
+                              type: boolean
+                          type: object
+                      type: object
+                    type: array
+                  tcpKeepalive:
+                    description: If set then set `SO_KEEPALIVE` on the socket to enable
+                      TCP Keepalives.
+                    properties:
+                      interval:
+                        description: The time duration between keep-alive probes.
+                        type: string
+                      probes:
+                        description: |-
+                          Maximum number of keepalive probes to send without response before
+                          deciding the connection is dead.
+                        type: integer
+                      time:
+                        description: |-
+                          The time duration a connection needs to be idle before keep-alive
+                          probes start being sent.
+                        type: string
+                    type: object
+                  thriftConfig:
+                    description: Set configuration for Thrift protocol.
+                    properties:
+                      rateLimitTimeout:
+                        description: Specify thrift rate limit service timeout, in
+                          milliseconds.
+                        type: string
+                      rateLimitUrl:
+                        description: Specify thrift rate limit service URL.
+                        type: string
+                    type: object
+                  trustDomain:
+                    description: The trust domain corresponds to the trust root of
+                      a system.
+                    type: string
+                  trustDomainAliases:
+                    description: The trust domain aliases represent the aliases of
+                      `trust_domain`.
+                    items:
+                      type: string
+                    type: array
+                  verifyCertificateAtClient:
+                    description: |-
+                      `VerifyCertificateAtClient` sets the mesh global default for peer certificate validation
+                      at the client-side proxy when `SIMPLE` TLS or `MUTUAL` TLS (non `ISTIO_MUTUAL`) origination
+                      modes are used.
+                    nullable: true
+                    type: boolean
+                type: object
+            type: object
+          status:
+            properties:
+              errorMessage:
+                description: Reconciliation error message if any.
+                type: string
+              status:
+                description: Reconciliation status of the Istio mesh.
+                enum:
+                - Unspecified
+                - Created
+                - ReconcileFailed
+                - Reconciling
+                - Available
+                - Unmanaged
+                type: string
+            type: object
+        type: object
+    served: true
+    storage: true
+    subresources:
+      status: {}
+
+---
+apiVersion: apiextensions.k8s.io/v1
+kind: CustomResourceDefinition
+metadata:
+  annotations:
+    "helm.sh/resource-policy": keep
   name: meshgateways.servicemesh.cisco.com
 spec:
   group: servicemesh.cisco.com
