@@ -33,7 +33,9 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/yaml"
 
+	"github.com/banzaicloud/istio-operator/v2/api/v1alpha1"
 	"github.com/banzaicloud/operator-tools/pkg/helm"
+	"github.com/banzaicloud/operator-tools/pkg/resources"
 )
 
 func TransformStructToStriMapWithTemplate(data interface{}, filesystem fs.FS, templateFileName string) (helm.Strimap, error) {
@@ -149,4 +151,20 @@ func CompareYAMLs(left, right []byte) (dyff.Report, error) {
 		dyff.IgnoreOrderChanges(false),
 		dyff.KubernetesEntityDetection(true),
 	)
+}
+
+func ConvertK8sOverlays(overlays []*v1alpha1.K8SResourceOverlayPatch) ([]resources.K8SResourceOverlay, error) {
+	var o []resources.K8SResourceOverlay
+
+	j, err := json.Marshal(overlays)
+	if err != nil {
+		return nil, err
+	}
+
+	err = json.Unmarshal(j, &o)
+	if err != nil {
+		return nil, err
+	}
+
+	return o, nil
 }
