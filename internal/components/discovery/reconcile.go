@@ -72,7 +72,12 @@ func (rec *Component) ReleaseData(object runtime.Object) (*templatereconciler.Re
 
 	values, err := rec.values(object)
 	if err != nil {
-		return nil, err
+		return nil, errors.WithStackIf(err)
+	}
+
+	overlays, err := util.ConvertK8sOverlays(icp.GetSpec().GetK8SResourceOverlays())
+	if err != nil {
+		return nil, errors.WrapIf(err, "could not convert k8s resource overlays")
 	}
 
 	return &templatereconciler.ReleaseData{
@@ -101,6 +106,7 @@ func (rec *Component) ReleaseData(object runtime.Object) (*templatereconciler.Re
 				},
 			},
 		},
+		Layers: overlays,
 	}, nil
 }
 
@@ -113,15 +119,6 @@ func (rec *Component) values(object runtime.Object) (helm.Strimap, error) {
 	values, err := util.TransformStructToStriMapWithTemplate(icp, assets.DiscoveryChart, valuesTemplateFileName)
 	if err != nil {
 		return nil, errors.WrapIff(err, "IstioControlPlane spec cannot be converted into a map[string]interface{}: %+v", icp.Spec)
-	}
-
-	var meshConfigStriMap helm.Strimap
-	if mc := icp.GetSpec().GetMeshConfig(); mc != nil {
-		err = util.ProtoFieldToStriMap(mc, &meshConfigStriMap)
-		if err != nil {
-			return nil, errors.WrapIff(err, "meshConfig cannot be converted into a map[string]interface{}: %+v", icp.Spec.MeshConfig)
-		}
-		values["meshConfig"] = meshConfigStriMap
 	}
 
 	return values, nil
