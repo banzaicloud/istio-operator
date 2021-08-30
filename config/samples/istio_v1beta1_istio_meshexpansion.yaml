@@ -5,11 +5,11 @@ metadata:
     controller-tools.k8s.io: "1.0"
   name: istio-sample-v19x
 spec:
-  version: "1.9.7"
+  version: "1.9.8"
   global: false
   meshPolicy:
     mtlsMode: STRICT
   meshExpansion: true
   proxy:
-    image: "gcr.io/istio-release/proxyv2:1.9.7"
+    image: "gcr.io/istio-release/proxyv2:1.9.8"
   jwtPolicy: "first-party-jwt"
