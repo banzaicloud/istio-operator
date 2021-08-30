@@ -329,7 +329,51 @@ func (r *IstioControlPlaneReconciler) SetupWithManager(mgr ctrl.Manager) error {
 		}
 	}
 
-	return err
+	err = r.ctrl.Watch(
+		&source.Kind{
+			Type: &servicemeshv1alpha1.IstioMesh{
+				TypeMeta: metav1.TypeMeta{
+					Kind:       "IstioMesh",
+					APIVersion: servicemeshv1alpha1.SchemeBuilder.GroupVersion.String(),
+				},
+			},
+		},
+		handler.EnqueueRequestsFromMapFunc(func(a client.Object) []reconcile.Request {
+			var imesh *servicemeshv1alpha1.IstioMesh
+			var ok bool
+			if imesh, ok = a.(*servicemeshv1alpha1.IstioMesh); !ok {
+				return nil
+			}
+
+			icps := &servicemeshv1alpha1.IstioControlPlaneList{}
+			err := r.Client.List(context.Background(), icps)
+			if err != nil {
+				r.Log.Error(err, "could not list Istio control plane resources")
+
+				return nil
+			}
+
+			resources := make([]reconcile.Request, 0)
+			for _, icp := range icps.Items {
+				if imesh.GetName() == icp.GetSpec().GetMeshID() {
+					resources = append(resources, reconcile.Request{
+						NamespacedName: client.ObjectKey{
+							Name:      icp.GetName(),
+							Namespace: icp.GetNamespace(),
+						},
+					})
+				}
+			}
+
+			return resources
+		}),
+		util.ObjectChangePredicate{},
+	)
+	if err != nil {
+		return err
+	}
+
+	return nil
 }
 
 func (r *IstioControlPlaneReconciler) getRelatedIstioMesh(ctx context.Context, c client.Client, icp *servicemeshv1alpha1.IstioControlPlane, logger logr.Logger) (*servicemeshv1alpha1.IstioMesh, error) {
