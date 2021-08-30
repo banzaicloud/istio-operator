@@ -1164,10 +1164,6 @@ data:
         },
         "useMCP": false
       },
-      "istio_cni": {
-        "chained": true,
-        "enabled": true
-      },
       "revision": "cp-v111x",
       "sidecarInjectorWebhook": {
         "alwaysInjectSelector": [],
