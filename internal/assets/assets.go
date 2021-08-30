@@ -22,10 +22,6 @@ import (
 )
 
 var (
-	//go:embed crds
-	crds embed.FS
-	CRDs = crds
-
 	//go:embed manifests/base
 	//go:embed manifests/base/templates/_helpers.tpl
 	baseChart embed.FS

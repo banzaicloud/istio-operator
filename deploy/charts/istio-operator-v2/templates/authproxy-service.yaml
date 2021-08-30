@@ -1,0 +1,21 @@
+{{- if and .Values.prometheusMetrics.enabled .Values.prometheusMetrics.authProxy.enabled }}
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "istio-operator-v2.authProxyName" . }}
+  namespace: {{ .Release.Namespace }}
+  annotations:
+    prometheus.io/port: "8443"
+    prometheus.io/scheme: https
+    prometheus.io/scrape: "true"
+  labels:
+    {{- include "istio-operator-v2.authProxyLabels" . | nindent 4 }}
+spec:
+  ports:
+  - name: https
+    port: 8443
+    protocol: TCP
+    targetPort: https
+  selector:
+    {{- include "istio-operator-v2.operatorSelectorLabels" . | nindent 4 }}
+{{- end }}

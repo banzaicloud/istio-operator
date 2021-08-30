@@ -1,0 +1,8 @@
+{{- if .Values.useNamespaceResource }}
+apiVersion: v1
+kind: Namespace
+metadata:
+  labels:
+   {{- include "istio-operator-v2.labels" . | nindent 4 }}
+  name: {{ .Release.Namespace }}
+{{- end }}

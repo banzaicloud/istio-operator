@@ -1,0 +1,53 @@
+image:
+  repository: ghcr.io/banzaicloud/istio-operator-v2
+  tag: "v0.0.1"
+  pullPolicy: IfNotPresent
+replicaCount: 1
+extraArgs: []
+resources:
+  requests:
+    cpu: 200m
+    memory: 256Mi
+podAnnotations:
+  sidecar.istio.io/inject: "false"
+podSecurityContext:
+  fsGroup: 1337
+securityContext:
+  runAsUser: 1337
+  runAsGroup: 1337
+  runAsNonRoot: true
+  capabilities:
+    drop:
+      - ALL
+nodeSelector: {}
+tolerations: []
+affinity: {}
+imagePullSecrets: []
+
+# If you want the operator to expose the /metrics
+prometheusMetrics:
+  enabled: true
+  # Enable or disable the auth proxy (https://github.com/brancz/kube-rbac-proxy)
+  # which protects your /metrics endpoint.
+  authProxy:
+    enabled: true
+    image:
+      repository: gcr.io/kubebuilder/kube-rbac-proxy
+      tag: "v0.8.0"
+      pullPolicy: IfNotPresent
+
+## Role Based Access
+## Ref: https://kubernetes.io/docs/admin/authorization/rbac/
+##
+rbac:
+  enabled: true
+
+nameOverride: ""
+fullnameOverride: ""
+
+useNamespaceResource: false
+
+leaderElection:
+  enabled: true
+  namespace: "istio-system"
+  nameOverride: ""

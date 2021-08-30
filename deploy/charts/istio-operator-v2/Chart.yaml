@@ -1,0 +1,17 @@
+# v2 apiVersion is used to indicate that only Helm3 is supported: https://helm.sh/docs/topics/charts/#the-apiversion-field
+apiVersion: v2
+name: istio-operator-v2
+description: istio-operator-v2 manages Istio deployments on Kubernetes
+type: application
+keywords:
+  - istio
+  - operator
+sources:
+  - https://github.com/banzaicloud/istio-operator/tree/v2
+icon: https://istio.io/latest/img/istio-whitelogo-bluebackground-framed.svg
+
+# Based on support status of Istio releases: https://istio.io/latest/docs/releases/supported-releases/#support-status-of-istio-releases
+kubeVersion: ">= 1.19.0 < 1.23.0"
+
+version: 0.0.1
+appVersion: "v0.0.1"
