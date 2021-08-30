@@ -2,7 +2,7 @@
 SHELL := /bin/bash -eo pipefail
 
 # Image URL to use all building/pushing image targets
-TAG ?= $(shell git describe --tags --abbrev=0 --match '[0-9].*[0-9].*[0-9]' 2>/dev/null )
+TAG ?= $(shell git describe --tags --abbrev=0 --match 'v[0-9].*[0-9].*[0-9]' 2>/dev/null )
 IMAGE_REPOSITORY ?= banzaicloud/istio-operator
 IMG ?= ${IMAGE_REPOSITORY}:$(TAG)
 # Produce CRDs that work back to Kubernetes 1.11 (no version conversion)
@@ -21,7 +21,7 @@ GOLANGCI_VERSION = 1.31.0
 LICENSEI_VERSION = 0.1.0
 KUBEBUILDER_VERSION = 2.3.1
 KUSTOMIZE_VERSION = 2.0.3
-ISTIO_VERSION = 1.10.3
+ISTIO_VERSION = 1.10.4
 
 KUSTOMIZE_BASE = config/overlays/specific-manager-version
 

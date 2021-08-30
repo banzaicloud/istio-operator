@@ -19,7 +19,7 @@ if [ ! -e bin/"${target_dir_name}" ]; then
     arch=$(go env GOARCH)
 
     # download kubebuilder and extract it to tmp
-    curl -L "https://go.kubebuilder.io/dl/${version}/${os}/${arch}" | tar -xz -C /tmp/
+    curl -L "https://github.com/kubernetes-sigs/kubebuilder/releases/download/v${version}/kubebuilder_${version}_${os}_${arch}.tar.gz" | tar -xz -C /tmp/
 
     # extract the archive
     mv "/tmp/kubebuilder_${version}_${os}_${arch}" bin/"${target_dir_name}"
