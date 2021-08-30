@@ -139,6 +139,11 @@ func (r *IstioControlPlaneReconciler) Reconcile(ctx context.Context, req ctrl.Re
 		return ctrl.Result{}, err
 	}
 
+	istioMesh, err := r.getRelatedIstioMesh(ctx, r.Client, icp, logger)
+	if err != nil {
+		return ctrl.Result{}, err
+	}
+
 	baseComponent, err := NewComponentReconciler(r, base.NewComponentReconciler, r.Log.WithName("base"))
 	if err != nil {
 		return ctrl.Result{}, err
@@ -156,7 +161,11 @@ func (r *IstioControlPlaneReconciler) Reconcile(ctx context.Context, req ctrl.Re
 		}
 	})
 
-	discoveryReconciler, err := NewComponentReconciler(r, discovery_component.NewChartReconciler, r.Log.WithName("discovery"))
+	discoveryReconciler, err := NewComponentReconciler(r, func(helmReconciler *components.HelmReconciler) components.ComponentReconciler {
+		return discovery_component.NewChartReconciler(helmReconciler, servicemeshv1alpha1.IstioControlPlaneProperties{
+			Mesh: istioMesh,
+		})
+	}, r.Log.WithName("discovery"))
 	if err != nil {
 		return ctrl.Result{}, err
 	}
@@ -321,6 +330,29 @@ func (r *IstioControlPlaneReconciler) SetupWithManager(mgr ctrl.Manager) error {
 	}
 
 	return err
+}
+
+func (r *IstioControlPlaneReconciler) getRelatedIstioMesh(ctx context.Context, c client.Client, icp *servicemeshv1alpha1.IstioControlPlane, logger logr.Logger) (*servicemeshv1alpha1.IstioMesh, error) {
+	mesh := &servicemeshv1alpha1.IstioMesh{}
+
+	err := c.Get(ctx, client.ObjectKey{
+		Name: icp.GetSpec().GetMeshID(),
+	}, mesh)
+	if k8serrors.IsNotFound(err) {
+		return mesh, nil
+	}
+	if err != nil {
+		updateErr := components.UpdateStatus(ctx, c, icp, components.ConvertConfigStateToReconcileStatus(servicemeshv1alpha1.ConfigState_ReconcileFailed), err.Error())
+		if updateErr != nil {
+			logger.Error(updateErr, "failed to update mesh gateway state")
+
+			return nil, errors.WithStack(err)
+		}
+
+		return nil, errors.WrapIf(err, "could not get related Istio control plane")
+	}
+
+	return mesh, nil
 }
 
 func (r *IstioControlPlaneReconciler) setMeshConfigToStatus(ctx context.Context, icp *servicemeshv1alpha1.IstioControlPlane) error {

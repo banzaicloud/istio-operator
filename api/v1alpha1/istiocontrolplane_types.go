@@ -114,6 +114,23 @@ func NamespacedNameFromRevision(revision string) types.NamespacedName {
 	return nn
 }
 
+type IstioControlPlaneWithProperties struct {
+	*IstioControlPlane
+	Properties IstioControlPlaneProperties
+}
+
+type IstioControlPlaneProperties struct {
+	Mesh *IstioMesh
+}
+
+func (p IstioControlPlaneProperties) GetMesh() *IstioMesh {
+	if p.Mesh != nil {
+		return p.Mesh
+	}
+
+	return nil
+}
+
 // +kubebuilder:object:root=true
 
 // IstioControlPlaneList contains a list of IstioControlPlane

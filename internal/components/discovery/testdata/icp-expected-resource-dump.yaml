@@ -28,8 +28,10 @@ spec:
 apiVersion: v1
 data:
   mesh: |-
+    connectTimeout: 5s
     defaultConfig:
       discoveryAddress: istiod-cp-v111x.istio-system.svc:15012
+      meshId: mesh1
       tracing:
         zipkin:
           address: zipkin.istio-system:9411
@@ -1067,7 +1069,7 @@ data:
         "logging": {
           "level": "default:warning"
         },
-        "meshID": "",
+        "meshID": "mesh1",
         "meshNetworks": {},
         "mountMtlsCerts": false,
         "multiCluster": {
@@ -1161,6 +1163,10 @@ data:
           }
         },
         "useMCP": false
+      },
+      "istio_cni": {
+        "chained": true,
+        "enabled": true
       },
       "revision": "cp-v111x",
       "sidecarInjectorWebhook": {

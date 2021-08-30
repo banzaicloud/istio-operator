@@ -93,6 +93,8 @@ message IstioControlPlaneSpec {
     istio.mesh.v1alpha1.MeshConfig mesh_config = 15;
     // K8s resource overlay patches
     repeated K8sResourceOverlayPatch k8sResourceOverlays = 16;
+    // Name of the Mesh to which this control plane belongs
+    string meshID = 17;
 }
 
 // Comma-separated minimum per-scope logging level of messages to output, in the form of <scope>:<level>,<scope>:<level>

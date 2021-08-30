@@ -139,7 +139,7 @@ proxy_init:
 {{- if .GetSpec.GetJwtPolicy }}
 jwtPolicy: {{ .GetSpec.GetJwtPolicy | toString | lower | replace "_" "-" }}
 {{- end }}
-{{ valueIf (dict "key" "meshID" "value" .GetSpec.GetMeshConfig.GetDefaultConfig.GetMeshId) }}
+{{ valueIf (dict "key" "meshID" "value" .GetSpec.GetMeshID) }}
 {{ valueIf (dict "key" "mountMtlsCerts" "value" .GetSpec.GetMountMtlsCerts) }}
 {{- if .GetSpec.GetIstiod.GetCertProvider }}
 pilotCertProvider: {{ .GetSpec.GetIstiod.GetCertProvider | toString | lower }}
@@ -161,7 +161,7 @@ global:
 rootNamespace: {{ .Namespace }}
 {{- end }}
 
-{{- $mesh := mergeOverwrite (.GetSpec.GetMeshConfig | toJsonPB | fromYaml) (include "mesh" . | fromYaml) }}
+{{- $mesh := mergeOverwrite (.Properties.GetMesh.GetSpec.GetConfig | toJsonPB | fromYaml) (.GetSpec.GetMeshConfig | toJsonPB | fromYaml) (include "mesh" . | fromYaml) }}
 
 meshConfig:
 {{ toYaml $mesh | indent 2}}
