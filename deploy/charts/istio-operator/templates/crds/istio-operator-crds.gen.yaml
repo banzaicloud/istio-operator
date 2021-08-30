@@ -3368,6 +3368,9 @@ spec:
                     nullable: true
                     type: boolean
                 type: object
+              meshID:
+                description: Name of the Mesh to which this control plane belongs.
+                type: string
               mountMtlsCerts:
                 description: Use the user-specified, secret volume mounted key and
                   certs for Pilot and workloads.

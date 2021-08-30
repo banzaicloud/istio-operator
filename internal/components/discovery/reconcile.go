@@ -43,12 +43,16 @@ const (
 
 var _ components.MinimalComponent = &Component{}
 
-type Component struct{}
+type Component struct {
+	properties v1alpha1.IstioControlPlaneProperties
+}
 
-func NewChartReconciler(helmReconciler *templatereconciler.HelmReconciler) components.ComponentReconciler {
+func NewChartReconciler(helmReconciler *templatereconciler.HelmReconciler, properties v1alpha1.IstioControlPlaneProperties) components.ComponentReconciler {
 	return &components.Base{
 		HelmReconciler: helmReconciler,
-		Component:      &Component{},
+		Component: &Component{
+			properties: properties,
+		},
 	}
 }
 
@@ -116,7 +120,12 @@ func (rec *Component) values(object runtime.Object) (helm.Strimap, error) {
 		return nil, errors.WrapIff(errors.NewPlain("object cannot be converted to an IstioControlPlane"), "%+v", object)
 	}
 
-	values, err := util.TransformStructToStriMapWithTemplate(icp, assets.DiscoveryChart, valuesTemplateFileName)
+	obj := &v1alpha1.IstioControlPlaneWithProperties{
+		IstioControlPlane: icp,
+		Properties:        rec.properties,
+	}
+
+	values, err := util.TransformStructToStriMapWithTemplate(obj, assets.DiscoveryChart, valuesTemplateFileName)
 	if err != nil {
 		return nil, errors.WrapIff(err, "IstioControlPlane spec cannot be converted into a map[string]interface{}: %+v", icp.Spec)
 	}

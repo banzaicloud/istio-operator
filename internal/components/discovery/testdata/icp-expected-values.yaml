@@ -53,6 +53,7 @@ global:
   oneNamespace: false
   caAddress: localhost
   distribution: official
+  meshID: mesh1
 pilot:
   image: "container-hub/image-name:tag"
   deploymentAnnotations:
@@ -145,6 +146,7 @@ pilot:
 revision: cp-v111x
 meshConfig:
   rootNamespace: istio-system
+  connectTimeout: 5s
 telemetry:
   v2:
     enabled: true
@@ -155,3 +157,6 @@ telemetry:
 sidecarInjectorWebhook:
   httpProxyEnvs:
     noProxy: localhost
+istio_cni:
+  chained: true
+  enabled: true

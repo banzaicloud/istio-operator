@@ -20,11 +20,14 @@ import (
 	"fmt"
 	"os"
 	"testing"
+	"time"
 
 	"emperror.dev/errors"
 	"emperror.dev/errors/utils/keyval"
 	logr "github.com/go-logr/logr/testing"
+	"github.com/gogo/protobuf/types"
 	"github.com/homeport/dyff/pkg/dyff"
+	istio_mesh_v1alpha1 "istio.io/api/mesh/v1alpha1"
 	"k8s.io/client-go/kubernetes/fake"
 	"sigs.k8s.io/yaml"
 
@@ -59,6 +62,15 @@ func TestICPDiscoveryResourceDump(t *testing.T) {
 		}, fake.NewSimpleClientset().Discovery(), []reconciler.NativeReconcilerOpt{
 			reconciler.NativeReconcilerSetControllerRef(),
 		}),
+		v1alpha1.IstioControlPlaneProperties{
+			Mesh: &v1alpha1.IstioMesh{
+				Spec: &v1alpha1.IstioMeshSpec{
+					Config: &istio_mesh_v1alpha1.MeshConfig{
+						ConnectTimeout: types.DurationProto(5 * time.Second),
+					},
+				},
+			},
+		},
 	)
 
 	dd, err := reconciler.GetManifest(icp)
@@ -92,7 +104,20 @@ func TestICPDiscoveryValuesTemplateTransform(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	values, err := util.TransformStructToStriMapWithTemplate(icp, assets.DiscoveryChart, "values.yaml.tpl")
+	obj := v1alpha1.IstioControlPlaneWithProperties{
+		IstioControlPlane: icp,
+		Properties: v1alpha1.IstioControlPlaneProperties{
+			Mesh: &v1alpha1.IstioMesh{
+				Spec: &v1alpha1.IstioMeshSpec{
+					Config: &istio_mesh_v1alpha1.MeshConfig{
+						ConnectTimeout: types.DurationProto(5 * time.Second),
+					},
+				},
+			},
+		},
+	}
+
+	values, err := util.TransformStructToStriMapWithTemplate(obj, assets.DiscoveryChart, "values.yaml.tpl")
 	if err != nil {
 		kv := keyval.ToMap(errors.GetDetails(err))
 		if t, ok := kv["template"]; ok {

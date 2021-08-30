@@ -47,6 +47,10 @@ func toYamlTemplateFunc(value interface{}) (string, error) {
 }
 
 func toJSONPBTemplateFunc(value interface{}) (string, error) {
+	if value == nil || reflect.ValueOf(value).IsZero() {
+		return "", nil
+	}
+
 	if v, ok := value.(proto.Message); ok {
 		m := jsonpb.Marshaler{}
 		y, err := m.MarshalToString(v)
