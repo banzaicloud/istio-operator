@@ -55,40 +55,40 @@ option go_package = "github.com/banzaicloud/istio-operator/v2/api/v1alpha1";
 message IstioControlPlaneSpec {
     // Contains the intended version for the Istio control plane.
     // +kubebuilder:validation:Pattern=^1.
-    string version = 1 [(gogoproto.jsontag) = "version", (google.api.field_behavior) = REQUIRED];
+    string version = 1 [(google.api.field_behavior) = REQUIRED];
     // Logging configurations.
-    LoggingConfiguration logging = 2 [(gogoproto.jsontag) = "logging"];
+    LoggingConfiguration logging = 2;
     // Use the user-specified, secret volume mounted key and certs for Pilot and workloads.
-    google.protobuf.BoolValue mountMtlsCerts = 3 [(gogoproto.wktpointer) = true, (gogoproto.jsontag) = "mountMtlsCerts"];
+    google.protobuf.BoolValue mountMtlsCerts = 3 [(gogoproto.wktpointer) = true];
     // Istiod configuration.
-    IstiodConfiguration istiod = 4 [(gogoproto.jsontag) = "istiod"];
+    IstiodConfiguration istiod = 4;
     // Proxy configuration options.
-    ProxyConfiguration proxy = 5 [(gogoproto.jsontag) = "proxy"];
+    ProxyConfiguration proxy = 5;
     // Proxy Init configuration options.
-    ProxyInitConfiguration proxyInit = 6 [(gogoproto.jsontag) = "proxyInit"];
+    ProxyInitConfiguration proxyInit = 6;
     // Telemetry V2 configuration.
-    TelemetryV2Configuration telemetryV2 = 7 [(gogoproto.jsontag) = "telemetryV2"];
+    TelemetryV2Configuration telemetryV2 = 7;
     // If SDS is configured, mTLS certificates for the sidecars will be distributed through the
     // SecretDiscoveryService instead of using K8S secrets to mount the certificates.
-    SDSConfiguration sds = 8 [(gogoproto.jsontag) = "sds"];
+    SDSConfiguration sds = 8;
     // ProxyWasm configuration options.
-    ProxyWasmConfiguration proxyWasm = 9 [(gogoproto.jsontag) = "proxyWasm"];
+    ProxyWasmConfiguration proxyWasm = 9;
     // Whether to restrict the applications namespace the controller manages.
     // If not set, controller watches all namespaces
-    google.protobuf.BoolValue watchOneNamespace = 10 [(gogoproto.wktpointer) = true, (gogoproto.jsontag) = "watchOneNamespace"];
+    google.protobuf.BoolValue watchOneNamespace = 10 [(gogoproto.wktpointer) = true];
     // Configure the policy for validating JWT.
     // Currently, two options are supported: "third-party-jwt" and "first-party-jwt".
     // +kubebuilder:validation:Enum=THIRD_PARTY_JWT;FIRST_PARTY_JWT
-    JWTPolicyType jwtPolicy = 11 [(gogoproto.jsontag) = "jwtPolicy"];
+    JWTPolicyType jwtPolicy = 11;
     // The customized CA address to retrieve certificates for the pods in the cluster.
     // CSR clients such as the Istio Agent and ingress gateways can use this to specify the CA endpoint.
-    string caAddress = 12 [(gogoproto.jsontag) = "caAddress"];
+    string caAddress = 12;
     // Contains the intended distribution for the Istio control plane.
     // The official distribution is used by default unless special preserved distribution value is set.
     // The only preserved distribution is "cisco" as of now.
-    string distribution = 13 [(gogoproto.jsontag) = "distribution"];
+    string distribution = 13;
     // Upstream HTTP proxy properties to be injected as environment variables to the pod containers.
-    HTTPProxyEnvsConfiguration httpProxyEnvs = 14 [(gogoproto.jsontag) = "httpProxyEnvs"];
+    HTTPProxyEnvsConfiguration httpProxyEnvs = 14;
     // Defines mesh-wide settings for the Istio control plane.
     istio.mesh.v1alpha1.MeshConfig mesh_config = 15;
     // K8s resource overlay patches
@@ -102,7 +102,7 @@ message IstioControlPlaneSpec {
 // If empty, default scope and level will be used as configured in code
 message LoggingConfiguration {
     // +kubebuilder:validation:Pattern=`^([a-zA-Z]+:[a-zA-Z]+,?)+$`
-    string level = 1 [(gogoproto.jsontag) = "level"];
+    string level = 1;
 }
 
 // SDSConfiguration defines Secret Discovery Service config options
@@ -110,39 +110,39 @@ message SDSConfiguration {
     // The JWT token for SDS and the aud field of such JWT. See RFC 7519, section 4.1.3.
     // When a CSR is sent from Citadel Agent to the CA (e.g. Citadel), this aud is to make sure the
     // 	JWT is intended for the CA.
-    string tokenAudience = 1 [(gogoproto.jsontag) = "tokenAudience"];
+    string tokenAudience = 1;
 }
 
 // ProxyConfiguration defines config options for Proxy
 message ProxyConfiguration {
-    string image = 1 [(gogoproto.jsontag) = "image"];
+    string image = 1;
     // If set to true, istio-proxy container will have privileged securityContext
-    google.protobuf.BoolValue privileged = 2 [(gogoproto.wktpointer) = true, (gogoproto.jsontag) = "privileged"];
+    google.protobuf.BoolValue privileged = 2 [(gogoproto.wktpointer) = true];
     // If set, newly injected sidecars will have core dumps enabled.
-    google.protobuf.BoolValue enableCoreDump = 3 [(gogoproto.wktpointer) = true, (gogoproto.jsontag) = "enableCoreDump"];
+    google.protobuf.BoolValue enableCoreDump = 3 [(gogoproto.wktpointer) = true];
     // Log level for proxy, applies to gateways and sidecars. If left empty, "warning" is used.
     // Expected values are: trace|debug|info|warning|error|critical|off
     // +kubebuilder:validation:Enum=TRACE;DEBUG;INFO;WARNING;ERROR;CRITICAL;OFF
-    ProxyLogLevel logLevel = 4 [(gogoproto.jsontag) = "logLevel"];
+    ProxyLogLevel logLevel = 4;
     // Per Component log level for proxy, applies to gateways and sidecars. If a component level is
     // not set, then the "LogLevel" will be used. If left empty, "misc:error" is used.
-    string componentLogLevel = 5 [(gogoproto.jsontag) = "componentLogLevel"];
+    string componentLogLevel = 5;
     // cluster domain. Default value is "cluster.local"
-    string clusterDomain = 6 [(gogoproto.jsontag) = "clusterDomain"];
+    string clusterDomain = 6;
     // Controls if sidecar is injected at the front of the container list and blocks
     // the start of the other containers until the proxy is ready
     // Default value is 'false'.
-    google.protobuf.BoolValue holdApplicationUntilProxyStarts = 7 [(gogoproto.wktpointer) = true, (gogoproto.jsontag) = "holdApplicationUntilProxyStarts"];
-    k8s.io.api.core.v1.Lifecycle lifecycle = 8 [(gogoproto.jsontag) = "lifecycle"];
-    ResourceRequirements resources = 9 [(gogoproto.jsontag) = "resources"];
+    google.protobuf.BoolValue holdApplicationUntilProxyStarts = 7 [(gogoproto.wktpointer) = true];
+    k8s.io.api.core.v1.Lifecycle lifecycle = 8;
+    ResourceRequirements resources = 9;
     // IncludeIPRanges the range where to capture egress traffic
-    string includeIPRanges = 10 [(gogoproto.jsontag) = "includeIPRanges"];
+    string includeIPRanges = 10;
     // ExcludeIPRanges the range where not to capture egress traffic
-    string excludeIPRanges = 11 [(gogoproto.jsontag) = "excludeIPRanges"];
+    string excludeIPRanges = 11;
     // ExcludeInboundPorts the comma separated list of inbound ports to be excluded from redirection to Envoy
-    string excludeInboundPorts = 12 [(gogoproto.jsontag) = "excludeInboundPorts"];
+    string excludeInboundPorts = 12;
     // ExcludeOutboundPorts the comma separated list of outbound ports to be excluded from redirection to Envoy
-    string excludeOutboundPorts = 13 [(gogoproto.jsontag) = "excludeOutboundPorts"];
+    string excludeOutboundPorts = 13;
 }
 
 enum ProxyLogLevel {
@@ -158,8 +158,8 @@ enum ProxyLogLevel {
 
 // ProxyInitConfiguration defines config options for Proxy Init containers
 message ProxyInitConfiguration {
-    string image = 1 [(gogoproto.jsontag) = "image"];
-    ResourceRequirements resources = 2 [(gogoproto.jsontag) = "resources"];
+    string image = 1;
+    ResourceRequirements resources = 2;
 }
 
 // IstiodConfiguration defines config options for Istiod
@@ -167,29 +167,29 @@ message IstiodConfiguration {
     // Deployment spec
     BaseKubernetesResourceConfig deployment = 1;
     // If enabled, pilot will run Istio analyzers and write analysis errors to the Status field of any Istio Resources
-    google.protobuf.BoolValue enableAnalysis = 2 [(gogoproto.wktpointer) = true, (gogoproto.jsontag) = "enableAnalysis"];
+    google.protobuf.BoolValue enableAnalysis = 2 [(gogoproto.wktpointer) = true];
     // If enabled, pilot will update the CRD Status field of all Istio resources with reconciliation status
-    google.protobuf.BoolValue enableStatus = 3 [(gogoproto.wktpointer) = true, (gogoproto.jsontag) = "enableStatus"];
+    google.protobuf.BoolValue enableStatus = 3 [(gogoproto.wktpointer) = true];
     // Settings for local istiod to control remote clusters as well
-    ExternalIstiodConfiguration externalIstiod = 4 [(gogoproto.jsontag) = "externalIstiod"];
+    ExternalIstiodConfiguration externalIstiod = 4;
     google.protobuf.FloatValue traceSampling = 5 [(gogoproto.wktpointer) = true];
     // If enabled, protocol sniffing will be used for outbound listeners whose port protocol is not specified or unsupported
-    google.protobuf.BoolValue enableProtocolSniffingOutbound = 6 [(gogoproto.wktpointer) = true, (gogoproto.jsontag) = "enableProtocolSniffingOutbound"];
+    google.protobuf.BoolValue enableProtocolSniffingOutbound = 6 [(gogoproto.wktpointer) = true];
     // If enabled, protocol sniffing will be used for inbound listeners whose port protocol is not specified or unsupported
-    google.protobuf.BoolValue enableProtocolSniffingInbound = 7 [(gogoproto.wktpointer) = true, (gogoproto.jsontag) = "enableProtocolSniffingInbound"];
+    google.protobuf.BoolValue enableProtocolSniffingInbound = 7 [(gogoproto.wktpointer) = true];
     // Configure the certificate provider for control plane communication.
     // Currently, two providers are supported: "kubernetes" and "istiod".
     // As some platforms may not have kubernetes signing APIs,
     // Istiod is the default
     // +kubebuilder:validation:Enum=KUBERNETES;ISTIOD
-    PilotCertProviderType certProvider = 8 [(gogoproto.jsontag) = "certProvider"];
+    PilotCertProviderType certProvider = 8;
     // SPIFFE configuration of Pilot
-    SPIFFEConfiguration spiffe = 9 [(gogoproto.jsontag) = "spiffe"];
+    SPIFFEConfiguration spiffe = 9;
 }
 
 // ExternalIstiodConfiguration defines settings for local istiod to control remote clusters as well
 message ExternalIstiodConfiguration {
-    google.protobuf.BoolValue enabled = 1 [(gogoproto.wktpointer) = true, (gogoproto.jsontag) = "enabled"];
+    google.protobuf.BoolValue enabled = 1 [(gogoproto.wktpointer) = true];
 }
 
 enum PilotCertProviderType {
@@ -200,26 +200,26 @@ enum PilotCertProviderType {
 
 // SPIFFEConfiguration is for SPIFFE configuration of Pilot
 message SPIFFEConfiguration {
-    OperatorEndpointsConfiguration operatorEndpoints = 1 [(gogoproto.jsontag) = "operatorEndpoints"];
+    OperatorEndpointsConfiguration operatorEndpoints = 1;
 }
 
 // OperatorEndpointsConfiguration defines config options for automatic SPIFFE endpoints
 message OperatorEndpointsConfiguration {
-    google.protobuf.BoolValue enabled = 1 [(gogoproto.wktpointer) = true, (gogoproto.jsontag) = "enabled"];
+    google.protobuf.BoolValue enabled = 1 [(gogoproto.wktpointer) = true];
 }
 
 message TelemetryV2Configuration {
-    google.protobuf.BoolValue enabled = 1 [(gogoproto.wktpointer) = true, (gogoproto.jsontag) = "enabled"];
+    google.protobuf.BoolValue enabled = 1 [(gogoproto.wktpointer) = true];
 }
 
 // ProxyWasmConfiguration defines config options for Envoy wasm
 message ProxyWasmConfiguration {
-    google.protobuf.BoolValue enabled = 1 [(gogoproto.wktpointer) = true, (gogoproto.jsontag) = "enabled"];
+    google.protobuf.BoolValue enabled = 1 [(gogoproto.wktpointer) = true];
 }
 
 // PDBConfiguration holds Pod Disruption Budget related config options
 message PDBConfiguration {
-    google.protobuf.BoolValue enabled = 1 [(gogoproto.wktpointer) = true, (gogoproto.jsontag) = "enabled"];
+    google.protobuf.BoolValue enabled = 1 [(gogoproto.wktpointer) = true];
 }
 
 enum JWTPolicyType {
@@ -229,9 +229,9 @@ enum JWTPolicyType {
 }
 
 message HTTPProxyEnvsConfiguration {
-    string httpProxy = 1 [(gogoproto.jsontag) = "httpProxy"];
-    string httpsProxy = 2 [(gogoproto.jsontag) = "httpsProxy"];
-    string noProxy = 3 [(gogoproto.jsontag) = "noProxy"];
+    string httpProxy = 1;
+    string httpsProxy = 2;
+    string noProxy = 3;
 }
 
 // <!-- go code generation tags
