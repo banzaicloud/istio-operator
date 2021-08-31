@@ -13,9 +13,11 @@ include test/e2e/e2e-test.mk
 TEST_RACE_DETECTOR ?= 0
 
 RELEASE_TYPE ?= p
-RELEASE_MSG ?= "operator release"
+RELEASE_MSG ?= "istio operator release"
+API_RELEASE_MSG ?= "istio operator api release"
 
 REL_TAG = $(shell ./scripts/increment_version.sh -${RELEASE_TYPE} ${TAG})
+API_REL_TAG ?= pkg/apis/${REL_TAG}
 
 GOLANGCI_VERSION = 1.31.0
 LICENSEI_VERSION = 0.1.0
@@ -148,7 +150,7 @@ docker-push:
 	docker push ${IMG}
 
 check_release:
-	@echo "A new tag (${REL_TAG}) will be pushed to Github, and a new Docker image will be released. Are you sure? [y/N] " && read -r ans && [ "$${ans:-N}" = y ]
+	@echo "New tags (${REL_TAG} and ${API_REL_TAG}) will be pushed to Github, and a new Docker image (${REL_TAG}) will be released. Are you sure? [y/N] " && read -r ans && [ "$${ans:-N}" = y ]
 
 .PHONY: check-diff
 check-diff:
@@ -156,7 +158,8 @@ check-diff:
 
 release: check_release
 	git tag -a ${REL_TAG} -m ${RELEASE_MSG}
-	git push origin ${REL_TAG}
+	git tag -a ${API_REL_TAG} -m ${API_RELEASE_MSG}
+	git push origin ${REL_TAG} ${API_REL_TAG}
 
 .PHONY: shellcheck-makefile
 shellcheck-makefile: bin/shellcheck ## Check each makefile recipe using shellcheck
