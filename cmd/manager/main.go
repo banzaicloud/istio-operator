@@ -49,8 +49,10 @@ import (
 	"github.com/banzaicloud/istio-operator/pkg/webhook/cert"
 )
 
-const watchNamespaceEnvVar = "WATCH_NAMESPACE"
-const podNamespaceEnvVar = "POD_NAMESPACE"
+const (
+	watchNamespaceEnvVar = "WATCH_NAMESPACE"
+	podNamespaceEnvVar   = "POD_NAMESPACE"
+)
 
 func main() {
 	var metricsAddr string
@@ -83,12 +85,24 @@ func main() {
 	logf.SetLogger(util.CreateLogger(verboseLogging, developmentMode))
 	log := logf.Log.WithName("entrypoint")
 
+	operatorConfig := config.Configuration{
+		WebhookServiceAddress:    webhookServiceAddress,
+		WebhookConfigurationName: webhookConfigurationName,
+	}
+
 	// Get a config to talk to the apiserver
 	log.Info("setting up client for manager")
 	k8sConfig, err := k8sConfig.GetConfig()
 	if err != nil {
 		log.Error(err, "unable to set up client config")
 		os.Exit(1)
+	}
+
+	// try to detect support jwt policy
+	supportedJWTPolicy, err := k8sutil.DetectSupportedJWTPolicy(k8sConfig)
+	if err == nil {
+		operatorConfig.SupportedJWTPolicy = supportedJWTPolicy
+		log.Info("supported jwt policy", "policy", operatorConfig.SupportedJWTPolicy)
 	}
 
 	namespace, err := getWatchNamespace()
@@ -130,11 +144,6 @@ func main() {
 	}
 
 	ctx := setupSignalHandler(log, shutdownWaitDuration)
-
-	operatorConfig := config.Configuration{
-		WebhookServiceAddress:    webhookServiceAddress,
-		WebhookConfigurationName: webhookConfigurationName,
-	}
 
 	// Setup all Controllers
 	log.Info("setting up controller")
@@ -195,7 +204,6 @@ func getWatchNamespace() (string, error) {
 		if watchNamespace != "" && watchNamespace != podNamespace {
 			return "", errors.New("watch namespace must be either empty or equal to pod namespace")
 		}
-
 	}
 	return watchNamespace, nil
 }

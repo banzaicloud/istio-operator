@@ -16,8 +16,11 @@ limitations under the License.
 
 package config
 
+import "github.com/banzaicloud/istio-operator/pkg/apis/istio/v1beta1"
+
 // Configuration defines operator configuration
 type Configuration struct {
-	WebhookServiceAddress    string `json:"webhookServiceAddress,omitempty"`
-	WebhookConfigurationName string `json:"webhookConfigurationName,omitempty"`
+	WebhookServiceAddress    string                `json:"webhookServiceAddress,omitempty"`
+	WebhookConfigurationName string                `json:"webhookConfigurationName,omitempty"`
+	SupportedJWTPolicy       v1beta1.JWTPolicyType `json:"SupportedJWTPolicy,omitempty"`
 }
