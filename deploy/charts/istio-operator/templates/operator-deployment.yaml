@@ -1,15 +1,15 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: {{ include "istio-operator-v2.fullname" . }}
+  name: {{ include "istio-operator.fullname" . }}
   namespace: {{ .Release.Namespace }}
   labels:
-    {{- include "istio-operator-v2.operatorLabels" . | nindent 4 }}
+    {{- include "istio-operator.operatorLabels" . | nindent 4 }}
 spec:
   replicas: {{ .Values.replicaCount }}
   selector:
     matchLabels:
-      {{- include "istio-operator-v2.operatorSelectorLabels" . | nindent 6 }}
+      {{- include "istio-operator.operatorSelectorLabels" . | nindent 6 }}
   template:
     metadata:
       {{- with .Values.podAnnotations }}
@@ -17,14 +17,14 @@ spec:
         {{- toYaml . | nindent 8 }}
       {{- end }}
       labels:
-        {{- include "istio-operator-v2.operatorSelectorLabels" . | nindent 8 }}
+        {{- include "istio-operator.operatorSelectorLabels" . | nindent 8 }}
     spec:
       {{- with .Values.imagePullSecrets }}
       imagePullSecrets:
         {{- toYaml . | nindent 8 }}
       {{- end }}
       {{- if .Values.rbac.enabled }}
-      serviceAccountName: {{ include "istio-operator-v2.fullname" . }}
+      serviceAccountName: {{ include "istio-operator.fullname" . }}
       {{- end }}
       securityContext:
         {{- toYaml .Values.podSecurityContext | nindent 8 }}
@@ -57,7 +57,7 @@ spec:
           {{- if .Values.leaderElection.nameOverride }}
           - "--leader-election-name={{ .Values.leaderElection.nameOverride }}"
           {{- else }}
-          - "--leader-election-name={{ include "istio-operator-v2.fullname" . }}-leader"
+          - "--leader-election-name={{ include "istio-operator.fullname" . }}-leader"
           {{- end }}
           - "--leader-election-namespace={{ .Values.leaderElection.namespace }}"
           {{- end }}
