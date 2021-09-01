@@ -72,8 +72,6 @@ spec:
   proxyWasm:
     enabled: false
   watchOneNamespace: false
-  defaultPodDisruptionBudget:
-    enabled: true
   jwtPolicy: "THIRD_PARTY_JWT"
   caAddress: ""
   distribution: "official"

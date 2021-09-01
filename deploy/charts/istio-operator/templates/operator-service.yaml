@@ -1,7 +1,7 @@
 apiVersion: v1
 kind: Service
 metadata:
-  name: {{ include "istio-operator-v2.fullname" . }}
+  name: {{ include "istio-operator.fullname" . }}
   namespace: {{ .Release.Namespace }}
   {{- if and .Values.prometheusMetrics.enabled (not .Values.prometheusMetrics.authProxy.enabled) }}
   annotations:
@@ -10,10 +10,10 @@ metadata:
     prometheus.io/scheme: http
   {{- end }}
   labels:
-    {{- include "istio-operator-v2.operatorLabels" . | nindent 4 }}
+    {{- include "istio-operator.operatorLabels" . | nindent 4 }}
 spec:
   selector:
-   {{- include "istio-operator-v2.operatorSelectorLabels" . | nindent 4 }}
+   {{- include "istio-operator.operatorSelectorLabels" . | nindent 4 }}
   ports:
   - name: https
     protocol: TCP

@@ -1,6 +1,6 @@
 # Image URL to use all building/pushing image targets
 TAG ?= $(shell git describe --tags --abbrev=0 --match '[0-9].*[0-9].*[0-9]' 2>/dev/null )
-IMG ?= banzaicloud/istio-operator-v2:$(TAG)
+IMG ?= banzaicloud/istio-operator:$(TAG)
 
 GOLANGCI_VERSION = 1.41.1
 LICENSEI_VERSION = 0.4.0
@@ -91,7 +91,7 @@ deploy: install-kustomize manifests
 manifests: download-deps update-istio-deps
 	bin/controller-gen rbac:roleName=manager-role webhook paths="./..."
 	bin/cue-gen -paths=build -f=cue.yaml -crd
-	cp -a config/crd/bases/ deploy/charts/istio-operator-v2/templates/crds
+	cp -a config/crd/bases/ deploy/charts/istio-operator/templates/crds
 
 # Run go fmt against code
 fmt:

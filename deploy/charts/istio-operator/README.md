@@ -1,6 +1,6 @@
-# Istio-operator-v2 chart
+# Istio-operator chart
 
-[Istio-operator-v2](https://github.com/banzaicloud/istio-operator/tree/v2) is a Kubernetes operator to deploy and manage [Istio](https://istio.io/) resources for a Kubernetes cluster.
+[Istio-operator](https://github.com/banzaicloud/istio-operator/tree/v2) is a Kubernetes operator to deploy and manage [Istio](https://istio.io/) resources for a Kubernetes cluster.
 
 ## Prerequisites
 
@@ -13,27 +13,27 @@ To install the chart:
 
 ```bash
 ❯ helm repo add banzaicloud-stable https://kubernetes-charts.banzaicloud.com
-❯ helm install --create-namespace --namespace=istio-system istio-operator-v2 banzaicloud-stable/istio-operator-v2
+❯ helm install --create-namespace --namespace=istio-system istio-operator banzaicloud-stable/istio-operator
 ```
 
 ## Uninstalling the Chart
 
-To uninstall/delete the `istio-operator-v2` release:
+To uninstall/delete the `istio-operator` release:
 
 ```bash
-❯ helm uninstall istio-operator-v2
+❯ helm uninstall istio-operator
 ```
 
 The command removes all the Kubernetes components associated with the chart and deletes the release.
 
 ## Configuration
 
-The following table lists the configurable parameters of the Banzaicloud Istio Operator v2 chart and their default values.
+The following table lists the configurable parameters of the Banzaicloud Istio Operator chart and their default values.
 
 Parameter | Description | Default
 --------- | ----------- | -------
-`image.repository` | Operator container image repository | `ghcr.io/banzaicloud/istio-operator-v2`
-`image.tag` | Operator container image tag | `v0.0.1`
+`image.repository` | Operator container image repository | `ghcr.io/banzaicloud/istio-operator`
+`image.tag` | Operator container image tag | `v2.11.0`
 `image.pullPolicy` | Operator container image pull policy | `IfNotPresent`
 `replicaCount` | Operator deployment replica count | `1`
 `extraArgs` | Operator deployment arguments | `[]`
