@@ -147,4 +147,3 @@ spec:
     #   to: eu-west
     # - from: us-west
     #   to: us-east
-  jwtPolicy: "first-party-jwt"
