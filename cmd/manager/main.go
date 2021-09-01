@@ -28,6 +28,7 @@ import (
 	"time"
 
 	"github.com/go-logr/logr"
+	"github.com/goph/emperror"
 	"github.com/pkg/errors"
 	_ "github.com/shurcooL/vfsgen"
 	_ "k8s.io/client-go/plugin/pkg/client/auth/gcp"
@@ -103,6 +104,8 @@ func main() {
 	if err == nil {
 		operatorConfig.SupportedJWTPolicy = supportedJWTPolicy
 		log.Info("supported jwt policy", "policy", operatorConfig.SupportedJWTPolicy)
+	} else {
+		log.Info(emperror.Wrap(err, "could not detect supported jwt policy").Error())
 	}
 
 	namespace, err := getWatchNamespace()
