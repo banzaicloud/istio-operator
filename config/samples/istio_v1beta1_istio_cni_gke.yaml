@@ -28,4 +28,3 @@ spec:
         brokenPodLabelValue: "true"
   proxy:
     image: "gcr.io/istio-release/proxyv2:1.10.4"
-  jwtPolicy: "first-party-jwt"
