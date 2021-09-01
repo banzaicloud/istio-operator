@@ -739,7 +739,7 @@ func SetDefaults(config *Istio) {
 	}
 
 	if config.Spec.JWTPolicy == "" {
-		config.Spec.JWTPolicy = JWTPolicyFirstPartyJWT
+		config.Spec.JWTPolicy = JWTPolicyThirdPartyJWT
 	}
 
 	if config.Spec.ControlPlaneAuthPolicy == "" {

@@ -242,6 +242,11 @@ func (r *ReconcileIstio) Reconcile(ctx context.Context, request reconcile.Reques
 		}, nil
 	}
 
+	// set jwt policy
+	if config.Spec.JWTPolicy == "" && r.operatorConfig.SupportedJWTPolicy != "" {
+		config.Spec.JWTPolicy = r.operatorConfig.SupportedJWTPolicy
+	}
+
 	// Set default values where not set
 	istiov1beta1.SetDefaults(config)
 
