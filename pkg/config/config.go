@@ -22,5 +22,5 @@ import "github.com/banzaicloud/istio-operator/pkg/apis/istio/v1beta1"
 type Configuration struct {
 	WebhookServiceAddress    string                `json:"webhookServiceAddress,omitempty"`
 	WebhookConfigurationName string                `json:"webhookConfigurationName,omitempty"`
-	SupportedJWTPolicy       v1beta1.JWTPolicyType `json:"SupportedJWTPolicy,omitempty"`
+	SupportedJWTPolicy       v1beta1.JWTPolicyType `json:"supportedJWTPolicy,omitempty"`
 }
