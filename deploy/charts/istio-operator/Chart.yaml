@@ -1,8 +1,6 @@
-# v2 apiVersion is used to indicate that only Helm3 is supported: https://helm.sh/docs/topics/charts/#the-apiversion-field
-apiVersion: v2
+apiVersion: v1
 name: istio-operator
 description: istio-operator manages Istio deployments on Kubernetes
-type: application
 keywords:
   - istio
   - operator
