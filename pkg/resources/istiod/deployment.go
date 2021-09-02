@@ -218,6 +218,16 @@ func (r *Reconciler) initContainers() []apiv1.Container {
 	return containers
 }
 
+func (r *Reconciler) bankVaultsMutationSkipLabel() map[string]string {
+	if util.PointerToBool(r.Config.Spec.Istiod.CA.Vault.Enabled) {
+		return map[string]string{
+			"security.banzaicloud.io/mutate": "skip",
+		}
+	}
+
+	return nil
+}
+
 func (r *Reconciler) containers() []apiv1.Container {
 	discoveryContainer := apiv1.Container{
 		Name:            "discovery",
@@ -507,7 +517,7 @@ func (r *Reconciler) deployment() runtime.Object {
 			},
 			Template: apiv1.PodTemplateSpec{
 				ObjectMeta: metav1.ObjectMeta{
-					Labels:      util.MergeMultipleStringMaps(istiodLabels, pilotLabelSelector, r.Config.RevisionLabels(), v1beta1.DisableInjectionLabel),
+					Labels:      util.MergeMultipleStringMaps(istiodLabels, pilotLabelSelector, r.Config.RevisionLabels(), v1beta1.DisableInjectionLabel, r.bankVaultsMutationSkipLabel()),
 					Annotations: util.MergeStringMaps(templates.DefaultDeployAnnotations(), r.Config.Spec.Pilot.PodAnnotations),
 				},
 				Spec: apiv1.PodSpec{
