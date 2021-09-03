@@ -32,7 +32,7 @@ The following table lists the configurable parameters of the Banzaicloud Istio O
 Parameter | Description | Default
 --------- | ----------- | -------
 `operator.image.repository` | Operator container image repository | `banzaicloud/istio-operator`
-`operator.image.tag` | Operator container image tag | `v0.10.5`
+`operator.image.tag` | Operator container image tag | `v0.10.6`
 `operator.image.pullPolicy` | Operator container image pull policy | `IfNotPresent`
 `operator.resources` | CPU/Memory resource requests/limits (YAML) | Memory: `256Mi`, CPU: `200m`
 `operator.istio.injection.enabled` | Whether to enable istio injection for the StatefulSet | `false`

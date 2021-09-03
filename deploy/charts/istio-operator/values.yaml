@@ -5,7 +5,7 @@
 operator:
   image:
     repository: ghcr.io/banzaicloud/istio-operator
-    tag: v0.10.5
+    tag: v0.10.6
     pullPolicy: IfNotPresent
   extraArgs: []
   resources:
