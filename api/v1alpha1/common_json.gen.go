@@ -34,6 +34,28 @@ func (this *K8SObjectMeta) UnmarshalJSON(b []byte) error {
 	return CommonUnmarshaler.Unmarshal(bytes.NewReader(b), this)
 }
 
+// MarshalJSON is a custom marshaler for ContainerImageConfiguration
+func (this *ContainerImageConfiguration) MarshalJSON() ([]byte, error) {
+	str, err := CommonMarshaler.MarshalToString(this)
+	return []byte(str), err
+}
+
+// UnmarshalJSON is a custom unmarshaler for ContainerImageConfiguration
+func (this *ContainerImageConfiguration) UnmarshalJSON(b []byte) error {
+	return CommonUnmarshaler.Unmarshal(bytes.NewReader(b), this)
+}
+
+// MarshalJSON is a custom marshaler for BaseKubernetesContainerConfiguration
+func (this *BaseKubernetesContainerConfiguration) MarshalJSON() ([]byte, error) {
+	str, err := CommonMarshaler.MarshalToString(this)
+	return []byte(str), err
+}
+
+// UnmarshalJSON is a custom unmarshaler for BaseKubernetesContainerConfiguration
+func (this *BaseKubernetesContainerConfiguration) UnmarshalJSON(b []byte) error {
+	return CommonUnmarshaler.Unmarshal(bytes.NewReader(b), this)
+}
+
 // MarshalJSON is a custom marshaler for BaseKubernetesResourceConfig
 func (this *BaseKubernetesResourceConfig) MarshalJSON() ([]byte, error) {
 	str, err := CommonMarshaler.MarshalToString(this)

@@ -4,7 +4,7 @@ description: Istio control plane descriptor
 layout: protoc-gen-docs
 generator: protoc-gen-docs
 schema: istio-operator.api.v1alpha1.IstioControlPlaneSpec
-number_of_entries: 23
+number_of_entries: 29
 ---
 <h2 id="IstioControlPlaneSpec">IstioControlPlaneSpec</h2>
 <section>
@@ -208,7 +208,18 @@ No
 <td><code>meshID</code></td>
 <td><code>string</code></td>
 <td>
-<p>Name of the Mesh to which this control plane belongs</p>
+<p>Name of the Mesh to which this control plane belongs.</p>
+
+</td>
+<td>
+No
+</td>
+</tr>
+<tr id="IstioControlPlaneSpec-containerImageConfiguration">
+<td><code>containerImageConfiguration</code></td>
+<td><code><a href="#ContainerImageConfiguration">ContainerImageConfiguration</a></code></td>
+<td>
+<p>Global configuration for container images.</p>
 
 </td>
 <td>
@@ -463,6 +474,147 @@ No
 <tr id="ProxyInitConfiguration-resources">
 <td><code>resources</code></td>
 <td><code><a href="#ResourceRequirements">ResourceRequirements</a></code></td>
+<td>
+</td>
+<td>
+No
+</td>
+</tr>
+<tr id="ProxyInitConfiguration-cni">
+<td><code>cni</code></td>
+<td><code><a href="#CNIConfiguration">CNIConfiguration</a></code></td>
+<td>
+</td>
+<td>
+No
+</td>
+</tr>
+</tbody>
+</table>
+</section>
+<h2 id="CNIConfiguration">CNIConfiguration</h2>
+<section>
+<table class="message-fields">
+<thead>
+<tr>
+<th>Field</th>
+<th>Type</th>
+<th>Description</th>
+<th>Required</th>
+</tr>
+</thead>
+<tbody>
+<tr id="CNIConfiguration-enabled">
+<td><code>enabled</code></td>
+<td><code><a href="https://developers.google.com/protocol-buffers/docs/reference/google.protobuf#boolvalue">BoolValue</a></code></td>
+<td>
+</td>
+<td>
+No
+</td>
+</tr>
+<tr id="CNIConfiguration-chained">
+<td><code>chained</code></td>
+<td><code><a href="https://developers.google.com/protocol-buffers/docs/reference/google.protobuf#boolvalue">BoolValue</a></code></td>
+<td>
+</td>
+<td>
+No
+</td>
+</tr>
+<tr id="CNIConfiguration-binDir">
+<td><code>binDir</code></td>
+<td><code>string</code></td>
+<td>
+</td>
+<td>
+No
+</td>
+</tr>
+<tr id="CNIConfiguration-confDir">
+<td><code>confDir</code></td>
+<td><code>string</code></td>
+<td>
+</td>
+<td>
+No
+</td>
+</tr>
+<tr id="CNIConfiguration-excludeNamespaces">
+<td><code>excludeNamespaces</code></td>
+<td><code>string[]</code></td>
+<td>
+</td>
+<td>
+No
+</td>
+</tr>
+<tr id="CNIConfiguration-includeNamespaces">
+<td><code>includeNamespaces</code></td>
+<td><code>string[]</code></td>
+<td>
+</td>
+<td>
+No
+</td>
+</tr>
+<tr id="CNIConfiguration-logLevel">
+<td><code>logLevel</code></td>
+<td><code>string</code></td>
+<td>
+</td>
+<td>
+No
+</td>
+</tr>
+<tr id="CNIConfiguration-confFileName">
+<td><code>confFileName</code></td>
+<td><code>string</code></td>
+<td>
+</td>
+<td>
+No
+</td>
+</tr>
+<tr id="CNIConfiguration-pspClusterRoleName">
+<td><code>pspClusterRoleName</code></td>
+<td><code>string</code></td>
+<td>
+</td>
+<td>
+No
+</td>
+</tr>
+<tr id="CNIConfiguration-repair">
+<td><code>repair</code></td>
+<td><code><a href="#CNIConfiguration-RepairConfiguration">RepairConfiguration</a></code></td>
+<td>
+</td>
+<td>
+No
+</td>
+</tr>
+<tr id="CNIConfiguration-taint">
+<td><code>taint</code></td>
+<td><code><a href="#CNIConfiguration-TaintConfiguration">TaintConfiguration</a></code></td>
+<td>
+</td>
+<td>
+No
+</td>
+</tr>
+<tr id="CNIConfiguration-resourceQuotas">
+<td><code>resourceQuotas</code></td>
+<td><code><a href="#CNIConfiguration-ResourceQuotas">ResourceQuotas</a></code></td>
+<td>
+</td>
+<td>
+No
+</td>
+</tr>
+<tr id="CNIConfiguration-daemonset">
+<td><code>daemonset</code></td>
+<td><code><a href="#BaseKubernetesResourceConfig">BaseKubernetesResourceConfig</a></code></td>
 <td>
 </td>
 <td>
@@ -887,6 +1039,150 @@ No
 </tbody>
 </table>
 </section>
+<h2 id="CNIConfiguration-RepairConfiguration">CNIConfiguration.RepairConfiguration</h2>
+<section>
+<table class="message-fields">
+<thead>
+<tr>
+<th>Field</th>
+<th>Type</th>
+<th>Description</th>
+<th>Required</th>
+</tr>
+</thead>
+<tbody>
+<tr id="CNIConfiguration-RepairConfiguration-enabled">
+<td><code>enabled</code></td>
+<td><code><a href="https://developers.google.com/protocol-buffers/docs/reference/google.protobuf#boolvalue">BoolValue</a></code></td>
+<td>
+</td>
+<td>
+No
+</td>
+</tr>
+<tr id="CNIConfiguration-RepairConfiguration-labelPods">
+<td><code>labelPods</code></td>
+<td><code><a href="https://developers.google.com/protocol-buffers/docs/reference/google.protobuf#boolvalue">BoolValue</a></code></td>
+<td>
+</td>
+<td>
+No
+</td>
+</tr>
+<tr id="CNIConfiguration-RepairConfiguration-deletePods">
+<td><code>deletePods</code></td>
+<td><code><a href="https://developers.google.com/protocol-buffers/docs/reference/google.protobuf#boolvalue">BoolValue</a></code></td>
+<td>
+</td>
+<td>
+No
+</td>
+</tr>
+<tr id="CNIConfiguration-RepairConfiguration-initContainerName">
+<td><code>initContainerName</code></td>
+<td><code>string</code></td>
+<td>
+</td>
+<td>
+No
+</td>
+</tr>
+<tr id="CNIConfiguration-RepairConfiguration-brokenPodLabelKey">
+<td><code>brokenPodLabelKey</code></td>
+<td><code>string</code></td>
+<td>
+</td>
+<td>
+No
+</td>
+</tr>
+<tr id="CNIConfiguration-RepairConfiguration-brokenPodLabelValue">
+<td><code>brokenPodLabelValue</code></td>
+<td><code>string</code></td>
+<td>
+</td>
+<td>
+No
+</td>
+</tr>
+</tbody>
+</table>
+</section>
+<h2 id="CNIConfiguration-TaintConfiguration">CNIConfiguration.TaintConfiguration</h2>
+<section>
+<table class="message-fields">
+<thead>
+<tr>
+<th>Field</th>
+<th>Type</th>
+<th>Description</th>
+<th>Required</th>
+</tr>
+</thead>
+<tbody>
+<tr id="CNIConfiguration-TaintConfiguration-enabled">
+<td><code>enabled</code></td>
+<td><code><a href="https://developers.google.com/protocol-buffers/docs/reference/google.protobuf#boolvalue">BoolValue</a></code></td>
+<td>
+</td>
+<td>
+No
+</td>
+</tr>
+<tr id="CNIConfiguration-TaintConfiguration-container">
+<td><code>container</code></td>
+<td><code><a href="#BaseKubernetesContainerConfiguration">BaseKubernetesContainerConfiguration</a></code></td>
+<td>
+</td>
+<td>
+No
+</td>
+</tr>
+</tbody>
+</table>
+</section>
+<h2 id="CNIConfiguration-ResourceQuotas">CNIConfiguration.ResourceQuotas</h2>
+<section>
+<table class="message-fields">
+<thead>
+<tr>
+<th>Field</th>
+<th>Type</th>
+<th>Description</th>
+<th>Required</th>
+</tr>
+</thead>
+<tbody>
+<tr id="CNIConfiguration-ResourceQuotas-enabled">
+<td><code>enabled</code></td>
+<td><code><a href="https://developers.google.com/protocol-buffers/docs/reference/google.protobuf#boolvalue">BoolValue</a></code></td>
+<td>
+</td>
+<td>
+No
+</td>
+</tr>
+<tr id="CNIConfiguration-ResourceQuotas-pods">
+<td><code>pods</code></td>
+<td><code>string</code></td>
+<td>
+</td>
+<td>
+No
+</td>
+</tr>
+<tr id="CNIConfiguration-ResourceQuotas-priorityClasses">
+<td><code>priorityClasses</code></td>
+<td><code>string[]</code></td>
+<td>
+</td>
+<td>
+No
+</td>
+</tr>
+</tbody>
+</table>
+</section>
 <h2 id="K8sResourceOverlayPatch">K8sResourceOverlayPatch</h2>
 <section>
 <table class="message-fields">
@@ -921,6 +1217,70 @@ No
 <td><code>patches</code></td>
 <td><code><a href="#K8sResourceOverlayPatch-Patch">Patch[]</a></code></td>
 <td>
+</td>
+<td>
+No
+</td>
+</tr>
+</tbody>
+</table>
+</section>
+<h2 id="ContainerImageConfiguration">ContainerImageConfiguration</h2>
+<section>
+<table class="message-fields">
+<thead>
+<tr>
+<th>Field</th>
+<th>Type</th>
+<th>Description</th>
+<th>Required</th>
+</tr>
+</thead>
+<tbody>
+<tr id="ContainerImageConfiguration-hub">
+<td><code>hub</code></td>
+<td><code>string</code></td>
+<td>
+<p>Default hub for container images.</p>
+
+</td>
+<td>
+No
+</td>
+</tr>
+<tr id="ContainerImageConfiguration-tag">
+<td><code>tag</code></td>
+<td><code>string</code></td>
+<td>
+<p>Default tag for container images.</p>
+
+</td>
+<td>
+No
+</td>
+</tr>
+<tr id="ContainerImageConfiguration-imagePullPolicy">
+<td><code>imagePullPolicy</code></td>
+<td><code>string</code></td>
+<td>
+<p>Image pull policy.
+One of Always, Never, IfNotPresent.
+Defaults to Always if :latest tag is specified, or IfNotPresent otherwise.
++optional
++kubebuilder:validation:Enum=Always;Never;IfNotPresent</p>
+
+</td>
+<td>
+No
+</td>
+</tr>
+<tr id="ContainerImageConfiguration-imagePullSecrets">
+<td><code>imagePullSecrets</code></td>
+<td><code><a href="#k8s-io-api-core-v1-LocalObjectReference">LocalObjectReference[]</a></code></td>
+<td>
+<p>ImagePullSecrets is an optional list of references to secrets to use for pulling any of the images.
++optional</p>
+
 </td>
 <td>
 No
@@ -1253,6 +1613,80 @@ No
 <td><code><a href="#k8s-io-api-core-v1-PodSecurityContext">PodSecurityContext</a></code></td>
 <td>
 <p>Standard Kubernetes pod security context configuration</p>
+
+</td>
+<td>
+No
+</td>
+</tr>
+</tbody>
+</table>
+</section>
+<h2 id="BaseKubernetesContainerConfiguration">BaseKubernetesContainerConfiguration</h2>
+<section>
+<table class="message-fields">
+<thead>
+<tr>
+<th>Field</th>
+<th>Type</th>
+<th>Description</th>
+<th>Required</th>
+</tr>
+</thead>
+<tbody>
+<tr id="BaseKubernetesContainerConfiguration-image">
+<td><code>image</code></td>
+<td><code>string</code></td>
+<td>
+<p>Standard Kubernetes container image configuration</p>
+
+</td>
+<td>
+No
+</td>
+</tr>
+<tr id="BaseKubernetesContainerConfiguration-env">
+<td><code>env</code></td>
+<td><code><a href="#k8s-io-api-core-v1-EnvVar">EnvVar[]</a></code></td>
+<td>
+<p>If present will be appended to the environment variables of the container</p>
+
+</td>
+<td>
+No
+</td>
+</tr>
+<tr id="BaseKubernetesContainerConfiguration-resources">
+<td><code>resources</code></td>
+<td><code><a href="#ResourceRequirements">ResourceRequirements</a></code></td>
+<td>
+<p>Standard Kubernetes resource configuration, memory and CPU resource requirements</p>
+
+</td>
+<td>
+No
+</td>
+</tr>
+<tr id="BaseKubernetesContainerConfiguration-securityContext">
+<td><code>securityContext</code></td>
+<td><code><a href="#k8s-io-api-core-v1-SecurityContext">SecurityContext</a></code></td>
+<td>
+<p>Standard Kubernetes security context configuration</p>
+
+</td>
+<td>
+No
+</td>
+</tr>
+<tr id="BaseKubernetesContainerConfiguration-volumeMounts">
+<td><code>volumeMounts</code></td>
+<td><code><a href="#k8s-io-api-core-v1-VolumeMount">VolumeMount[]</a></code></td>
+<td>
+<p>Pod volumes to mount into the container&rsquo;s filesystem.
+Cannot be updated.
++optional
++patchMergeKey=mountPath
++patchStrategy=merge</p>
 
 </td>
 <td>
