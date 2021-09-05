@@ -144,6 +144,7 @@ func (JWTPolicyType) EnumDescriptor() ([]byte, []int) {
 // Clients may not set this value. It is represented in RFC3339 form and is in UTC.
 // Populated by the system. Read-only. Null for lists. More info: https://git.k8s.io/community/contributors/devel/api-conventions.md#metadata"
 // +cue-gen:IstioControlPlane:preserveUnknownFields:false
+// +cue-gen:IstioControlPlane:aliases:PeerIstioControlPlane
 // -->
 //
 // <!-- go code generation tags
