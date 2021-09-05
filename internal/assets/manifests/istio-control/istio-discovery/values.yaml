@@ -534,3 +534,7 @@ global:
 base:
   # For istioctl usage to disable istio config crds in base
   enableIstioConfigCRDs: true
+
+istio_cni:
+  enabled: false
+  chained: true

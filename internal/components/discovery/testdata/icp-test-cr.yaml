@@ -134,6 +134,8 @@ spec:
     excludeInboundPorts: ""
     excludeOutboundPorts: ""
   proxyInit:
+    cni:
+      enabled: true
     image: proxyv2
     resources:
       limits:

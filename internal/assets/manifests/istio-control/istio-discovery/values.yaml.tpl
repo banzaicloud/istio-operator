@@ -165,3 +165,9 @@ rootNamespace: {{ .Namespace }}
 
 meshConfig:
 {{ toYaml $mesh | indent 2}}
+
+{{- if or .GetSpec.GetProxyInit.GetCni.GetEnabled .GetSpec.GetProxyInit.GetCni.GetChained }}
+istio_cni:
+{{ valueIf (dict "key" "enabled" "value" .GetSpec.GetProxyInit.GetCni.GetEnabled) | indent 2 }}
+{{ valueIf (dict "key" "chained" "value" .GetSpec.GetProxyInit.GetCni.GetChained) | indent 2 }}
+{{- end }}
