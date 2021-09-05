@@ -32,6 +32,11 @@ var (
 	discoveryChart embed.FS
 	DiscoveryChart = GetSubFS(discoveryChart, "manifests/istio-control/istio-discovery")
 
+	//go:embed manifests/istio-cni
+	//go:embed manifests/istio-cni/templates/_helpers.tpl
+	cniChart embed.FS
+	CNIChart = GetSubFS(cniChart, "manifests/istio-cni")
+
 	//go:embed manifests/meshgateway
 	//go:embed manifests/meshgateway/templates/_helpers.tpl
 	meshGateway embed.FS

@@ -50,6 +50,7 @@ import (
 	servicemeshv1alpha1 "github.com/banzaicloud/istio-operator/v2/api/v1alpha1"
 	"github.com/banzaicloud/istio-operator/v2/internal/components"
 	"github.com/banzaicloud/istio-operator/v2/internal/components/base"
+	"github.com/banzaicloud/istio-operator/v2/internal/components/cni"
 	discovery_component "github.com/banzaicloud/istio-operator/v2/internal/components/discovery"
 	"github.com/banzaicloud/istio-operator/v2/internal/util"
 	"github.com/banzaicloud/operator-tools/pkg/reconciler"
@@ -149,9 +150,9 @@ func (r *IstioControlPlaneReconciler) Reconcile(ctx context.Context, req ctrl.Re
 		return ctrl.Result{}, err
 	}
 
-	_, err = baseComponent.Reconcile(icp)
+	result, err := baseComponent.Reconcile(icp)
 	if err != nil {
-		return ctrl.Result{}, err
+		return result, err
 	}
 
 	r.watchersInitOnce.Do(func() {
@@ -170,9 +171,19 @@ func (r *IstioControlPlaneReconciler) Reconcile(ctx context.Context, req ctrl.Re
 		return ctrl.Result{}, err
 	}
 
-	result, err := discoveryReconciler.Reconcile(icp)
+	result, err = discoveryReconciler.Reconcile(icp)
+	if err != nil {
+		return result, err
+	}
+
+	cniReconciler, err := NewComponentReconciler(r, cni.NewChartReconciler, r.Log.WithName("cni"))
 	if err != nil {
 		return ctrl.Result{}, err
+	}
+
+	result, err = cniReconciler.Reconcile(icp)
+	if err != nil {
+		return result, err
 	}
 
 	err = r.setSidecarInjectorChecksumToStatus(ctx, icp)
