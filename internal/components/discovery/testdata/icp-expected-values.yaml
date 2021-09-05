@@ -157,4 +157,5 @@ telemetry:
 sidecarInjectorWebhook:
   httpProxyEnvs:
     noProxy: localhost
-
+istio_cni:
+  enabled: true
