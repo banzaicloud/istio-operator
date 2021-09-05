@@ -124,11 +124,7 @@ type IstioControlPlaneProperties struct {
 }
 
 func (p IstioControlPlaneProperties) GetMesh() *IstioMesh {
-	if p.Mesh != nil {
-		return p.Mesh
-	}
-
-	return nil
+	return p.Mesh
 }
 
 // +kubebuilder:object:root=true
