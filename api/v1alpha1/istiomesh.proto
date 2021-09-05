@@ -37,7 +37,7 @@ option go_package = "github.com/banzaicloud/istio-operator/v2/api/v1alpha1";
 // +cue-gen:IstioMesh:storageVersion
 // +cue-gen:IstioMesh:annotations:helm.sh/resource-policy=keep
 // +cue-gen:IstioMesh:subresource:status
-// +cue-gen:IstioMesh:scope:Cluster
+// +cue-gen:IstioMesh:scope:Namespaced
 // +cue-gen:IstioMesh:resource:shortNames="im,imesh",plural="istiomeshes"
 // +cue-gen:IstioMesh:printerColumn:name="Age",type="date",JSONPath=".metadata.creationTimestamp"
 // +cue-gen:IstioMesh:preserveUnknownFields:false

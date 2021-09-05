@@ -5102,7 +5102,7 @@ spec:
     - im
     - imesh
     singular: istiomesh
-  scope: Cluster
+  scope: Namespaced
   versions:
   - additionalPrinterColumns:
     - jsonPath: .metadata.creationTimestamp
