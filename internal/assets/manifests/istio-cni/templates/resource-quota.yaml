@@ -1,0 +1,16 @@
+{{- if and .Values.cni.resourceQuotas.enabled (ne .Values.cni.resourceQuotas.pods "") }}
+apiVersion: v1
+kind: ResourceQuota
+metadata:
+  name: {{ include "name-with-revision" ( dict "name" "istio-cni" "context" $) }}
+  namespace: {{ .Release.Namespace }}
+spec:
+  hard:
+    pods: {{ .Values.cni.resourceQuotas.pods | quote }}
+  scopeSelector:
+    matchExpressions:
+    - operator: In
+      scopeName: PriorityClass
+      values:
+{{ toYaml .Values.cni.resourceQuotas.priorityClasses | indent 6}}
+{{- end }}

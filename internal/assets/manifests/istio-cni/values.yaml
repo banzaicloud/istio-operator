@@ -1,8 +1,5 @@
 cni:
-  hub: ""
-  tag: ""
   image: install-cni
-  pullPolicy: ""
 
   logLevel: info
 
@@ -21,8 +18,7 @@ cni:
     - istio-system
     - kube-system
 
-  # Custom annotations on pod level, if you need them
-  podAnnotations: {}
+  includeNamespaces: []
 
   # If this value is set a RoleBinding will be created
   # in the same namespace as the istio-cni DaemonSet is created.
@@ -36,8 +32,6 @@ cni:
 
   repair:
     enabled: true
-    hub: ""
-    tag: ""
 
     labelPods: true
     deletePods: true
@@ -51,11 +45,36 @@ cni:
   taint:
     enabled: false
 
+  resourceQuotas:
+    enabled: true
+    pods: "128"
+    priorityClasses:
+    - system-node-critical
+    - system-cluster-critical
+
+  metadata:
+    labels: {}
+    annotations: {}
+  podMetadata:
+    labels: {}
+    annotations: {}
+  deploymentStrategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxUnavailable: 1
+  env: []
+  nodeSelector:
+    kubernetes.io/os: linux
+  affinity: {}
+  tolerations: []
+  volumes: []
+  volumeMounts: []
+  resources: {}
+  securityContext: {}
+  priorityClassName: system-node-critical
+
 # Revision is set as 'version' label and part of the resource names when installing multiple control planes.
 revision: ""
-
-# For Helm compatibility.
-ownerName: ""
 
 global:
   # Default hub for Istio images.

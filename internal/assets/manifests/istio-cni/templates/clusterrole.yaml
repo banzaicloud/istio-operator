@@ -1,13 +1,11 @@
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRole
 metadata:
-  name: istio-cni
+  name: {{ include "name-with-namespaced-revision" ( dict "name" "istio-cni" "context" $) }}
   labels:
     app: istio-cni
     release: {{ .Release.Name }}
-    istio.io/rev: {{ .Values.revision | default "default" }}
-    install.operator.istio.io/owning-resource: {{ .Values.ownerName | default "unknown" }}
-    operator.istio.io/component: "Cni"
+    istio.io/rev: {{ include "namespaced-revision" . }}
 rules:
 - apiGroups: [""]
   resources:
@@ -20,13 +18,11 @@ rules:
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRole
 metadata:
-  name: istio-cni-repair-role
+  name: {{ include "name-with-namespaced-revision" ( dict "name" "istio-cni-repair" "context" $) }}
   labels:
     app: istio-cni
     release: {{ .Release.Name }}
-    istio.io/rev: {{ .Values.revision | default "default" }}
-    install.operator.istio.io/owning-resource: {{ .Values.ownerName | default "unknown" }}
-    operator.istio.io/component: "Cni"
+    istio.io/rev: {{ include "namespaced-revision" . }}
 rules:
 - apiGroups: [""]
   resources: ["pods"]
@@ -36,17 +32,15 @@ rules:
   verbs: ["get", "list", "watch", "delete", "patch", "update", "create" ]
 {{- end }}
 ---
-  {{- if .Values.cni.taint.enabled }}
+{{- if .Values.cni.taint.enabled }}
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRole
 metadata:
-  name: istio-cni-taint-role
+  name: {{ include "name-with-namespaced-revision" ( dict "name" "istio-cni-taint" "context" $) }}
   labels:
     app: istio-cni
     release: {{ .Release.Name }}
-    istio.io/rev: {{ .Values.revision | default "default" }}
-    install.operator.istio.io/owning-resource: {{ .Values.ownerName | default "unknown" }}
-    operator.istio.io/component: "Cni"
+    istio.io/rev: {{ include "namespaced-revision" . }}
 rules:
   - apiGroups: [""]
     resources: ["pods"]
@@ -60,4 +54,4 @@ rules:
   - apiGroups: ["coordination.k8s.io"]
     resources: ["leases"]
     verbs: ["get", "list", "create", "update"]
-  {{- end }}
+{{- end }}
