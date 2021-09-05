@@ -380,7 +380,8 @@ func (r *IstioControlPlaneReconciler) getRelatedIstioMesh(ctx context.Context, c
 	mesh := &servicemeshv1alpha1.IstioMesh{}
 
 	err := c.Get(ctx, client.ObjectKey{
-		Name: icp.GetSpec().GetMeshID(),
+		Name:      icp.GetSpec().GetMeshID(),
+		Namespace: icp.GetNamespace(),
 	}, mesh)
 	if k8serrors.IsNotFound(err) {
 		return mesh, nil

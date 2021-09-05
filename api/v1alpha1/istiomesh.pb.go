@@ -35,7 +35,7 @@ const _ = proto.GoGoProtoPackageIsVersion3 // please upgrade the proto package
 // +cue-gen:IstioMesh:storageVersion
 // +cue-gen:IstioMesh:annotations:helm.sh/resource-policy=keep
 // +cue-gen:IstioMesh:subresource:status
-// +cue-gen:IstioMesh:scope:Cluster
+// +cue-gen:IstioMesh:scope:Namespaced
 // +cue-gen:IstioMesh:resource:shortNames="im,imesh",plural="istiomeshes"
 // +cue-gen:IstioMesh:printerColumn:name="Age",type="date",JSONPath=".metadata.creationTimestamp"
 // +cue-gen:IstioMesh:preserveUnknownFields:false
