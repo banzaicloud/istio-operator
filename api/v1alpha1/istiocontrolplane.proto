@@ -93,8 +93,10 @@ message IstioControlPlaneSpec {
     istio.mesh.v1alpha1.MeshConfig mesh_config = 15;
     // K8s resource overlay patches
     repeated K8sResourceOverlayPatch k8sResourceOverlays = 16;
-    // Name of the Mesh to which this control plane belongs
+    // Name of the Mesh to which this control plane belongs.
     string meshID = 17;
+    // Global configuration for container images.
+    ContainerImageConfiguration containerImageConfiguration = 18;
 }
 
 // Comma-separated minimum per-scope logging level of messages to output, in the form of <scope>:<level>,<scope>:<level>
@@ -160,6 +162,44 @@ enum ProxyLogLevel {
 message ProxyInitConfiguration {
     string image = 1;
     ResourceRequirements resources = 2;
+    CNIConfiguration cni = 3;
+}
+
+message CNIConfiguration {
+    google.protobuf.BoolValue enabled = 1 [(gogoproto.wktpointer) = true];
+    google.protobuf.BoolValue chained = 2 [(gogoproto.wktpointer) = true];
+    string binDir = 4;
+    string confDir = 5;
+    repeated string excludeNamespaces = 6;
+    repeated string includeNamespaces = 7;
+    string logLevel = 8;
+    string confFileName = 9;
+    string pspClusterRoleName = 10;
+
+    message RepairConfiguration {
+        google.protobuf.BoolValue enabled = 1 [(gogoproto.wktpointer) = true];
+        google.protobuf.BoolValue labelPods = 2 [(gogoproto.wktpointer) = true];
+        google.protobuf.BoolValue deletePods = 3 [(gogoproto.wktpointer) = true];
+        string initContainerName = 4;
+        string brokenPodLabelKey = 5;
+        string brokenPodLabelValue = 6;
+    }
+    RepairConfiguration repair = 11;
+
+    message TaintConfiguration {
+        google.protobuf.BoolValue enabled = 1 [(gogoproto.wktpointer) = true];
+        BaseKubernetesContainerConfiguration container = 2;
+    }
+    TaintConfiguration taint = 12;
+
+    message ResourceQuotas {
+        google.protobuf.BoolValue enabled = 1 [(gogoproto.wktpointer) = true];
+        string pods = 2;
+        repeated string priorityClasses = 3;
+    }
+    ResourceQuotas resourceQuotas = 13;
+
+    BaseKubernetesResourceConfig daemonset = 14;
 }
 
 // IstiodConfiguration defines config options for Istiod
