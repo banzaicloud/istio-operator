@@ -1,40 +1,37 @@
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRoleBinding
 metadata:
-  name: istio-cni
+  name: {{ include "name-with-namespaced-revision" ( dict "name" "istio-cni" "context" $) }}
   labels:
     app: istio-cni
     release: {{ .Release.Name }}
-    istio.io/rev: {{ .Values.revision | default "default" }}
-    install.operator.istio.io/owning-resource: {{ .Values.ownerName | default "unknown" }}
-    operator.istio.io/component: "Cni"
+    istio.io/rev: {{ include "namespaced-revision" . }}
 roleRef:
   apiGroup: rbac.authorization.k8s.io
   kind: ClusterRole
-  name: istio-cni
+  name: {{ include "name-with-namespaced-revision" ( dict "name" "istio-cni" "context" $) }}
 subjects:
 - kind: ServiceAccount
-  name: istio-cni
+  name: {{ include "name-with-revision" ( dict "name" "istio-cni" "context" $) }}
   namespace: {{ .Release.Namespace }}
 ---
 {{- if .Values.cni.repair.enabled }}
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRoleBinding
 metadata:
-  name: istio-cni-repair-rolebinding
+  name: {{ include "name-with-namespaced-revision" ( dict "name" "istio-cni-repair" "context" $) }}
   labels:
-    k8s-app: istio-cni-repair
-    istio.io/rev: {{ .Values.revision | default "default" }}
-    install.operator.istio.io/owning-resource: {{ .Values.ownerName | default "unknown" }}
-    operator.istio.io/component: "Cni"
+    app: istio-cni
+    release: {{ .Release.Name }}
+    istio.io/rev: {{ include "namespaced-revision" . }}
 subjects:
 - kind: ServiceAccount
-  name: istio-cni
-  namespace: {{ .Release.Namespace}}
+  name: {{ include "name-with-revision" ( dict "name" "istio-cni" "context" $) }}
+  namespace: {{ .Release.Namespace }}
 roleRef:
   apiGroup: rbac.authorization.k8s.io
   kind: ClusterRole
-  name: istio-cni-repair-role
+  name: {{ include "name-with-namespaced-revision" ( dict "name" "istio-cni-repair" "context" $) }}
 {{- end }}
 ---
 {{- if ne .Values.cni.psp_cluster_role "" }}
@@ -44,16 +41,16 @@ metadata:
   name: istio-cni-psp
   namespace: {{ .Release.Namespace }}
   labels:
-    istio.io/rev: {{ .Values.revision | default "default" }}
-    install.operator.istio.io/owning-resource: {{ .Values.ownerName | default "unknown" }}
-    operator.istio.io/component: "Cni"
+    app: istio-cni
+    release: {{ .Release.Name }}
+    istio.io/rev: {{ include "namespaced-revision" . }}
 roleRef:
   apiGroup: rbac.authorization.k8s.io
   kind: ClusterRole
   name: {{ .Values.cni.psp_cluster_role }}
 subjects:
 - kind: ServiceAccount
-  name: istio-cni
+  name: {{ include "name-with-revision" ( dict "name" "istio-cni" "context" $) }}
   namespace: {{ .Release.Namespace }}
 {{- end }}
 ---
@@ -61,18 +58,16 @@ subjects:
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRoleBinding
 metadata:
-  name: istio-cni-taint-rolebinding
+  name: {{ include "name-with-namespaced-revision" ( dict "name" "istio-cni-taint" "context" $) }}
   labels:
     k8s-app: istio-cni-taint
-    istio.io/rev: {{ .Values.revision | default "default" }}
-    install.operator.istio.io/owning-resource: {{ .Values.ownerName | default "unknown" }}
-    operator.istio.io/component: "Cni"
+    istio.io/rev: {{ include "namespaced-revision" . }}
 subjects:
   - kind: ServiceAccount
-    name: istio-cni
-    namespace: {{ .Release.Namespace}}
+    name: {{ include "name-with-revision" ( dict "name" "istio-cni" "context" $) }}
+    namespace: {{ .Release.Namespace }}
 roleRef:
   apiGroup: rbac.authorization.k8s.io
   kind: ClusterRole
-  name: istio-cni-taint-role
+  name: {{ include "name-with-namespaced-revision" ( dict "name" "istio-cni-taint" "context" $) }}
 {{- end }}
