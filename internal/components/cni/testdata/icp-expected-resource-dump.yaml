@@ -1,0 +1,410 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  creationTimestamp: null
+  name: istio-system
+spec: {}
+status: {}
+
+---
+
+apiVersion: v1
+kind: ResourceQuota
+metadata:
+  name: istio-cni-cp-v111x
+  namespace: istio-system
+spec:
+  hard:
+    pods: "128"
+  scopeSelector:
+    matchExpressions:
+    - operator: In
+      scopeName: PriorityClass
+      values:
+      - system-node-critical
+      - system-cluster-critical
+
+---
+apiVersion: v1
+data:
+  cni_network_config: "{\n  \"cniVersion\": \"0.3.1\",\n  \"name\": \"istio-cni\",\n
+    \ \"type\": \"istio-cni\",\n  \"log_level\": \"debug\",\n  \"log_uds_address\":
+    \"__LOG_UDS_ADDRESS__\",\n  \"kubernetes\": {\n      \"kubeconfig\": \"__KUBECONFIG_FILEPATH__\",\n
+    \     \"cni_bin_dir\": \"/home/kubernetes/bin\",\n      \"exclude_namespaces\": [ \"smm-system\" ],\n      \"include_namespaces\": [ \"smm-system\" ],\n      \"revision\": \"cp-v111x.istio-system\"\n  }\n}"
+kind: ConfigMap
+metadata:
+  labels:
+    app: istio-cni
+    istio.io/rev: cp-v111x.istio-system
+    release: istio-cni
+  name: istio-cni-cp-v111x
+  namespace: istio-system
+
+---
+
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: istio-cni-taint-cp-v111x
+  namespace: istio-system
+  labels:
+    app: istio-cni
+    release: istio-cni
+    istio.io/rev: cp-v111x.istio-system
+data:
+  config: "- name: istio-cni-cp-v111x\n  selector: app=istio-cni-node,istio.io/rev=cp-v111x.istio-system\n  namespace: istio-system"
+---
+apiVersion: v1
+kind: ServiceAccount
+imagePullSecrets:
+- name: pullsecret-1
+- name: pullsecret-2
+metadata:
+  labels:
+    app: istio-cni
+    istio.io/rev: cp-v111x.istio-system
+    release: istio-cni
+  name: istio-cni-cp-v111x
+  namespace: istio-system
+
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  labels:
+    app: istio-cni
+    istio.io/rev: cp-v111x.istio-system
+    release: istio-cni
+  name: istio-cni-cp-v111x-istio-system
+rules:
+- apiGroups:
+  - ""
+  resources:
+  - pods
+  - nodes
+  verbs:
+  - get
+
+---
+
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  labels:
+    app: istio-cni
+    istio.io/rev: cp-v111x.istio-system
+    release: istio-cni
+  name: istio-cni-repair-cp-v111x-istio-system
+rules:
+- apiGroups:
+  - ""
+  resources:
+  - pods
+  verbs:
+  - get
+  - list
+  - watch
+  - delete
+  - patch
+  - update
+- apiGroups:
+  - ""
+  resources:
+  - events
+  verbs:
+  - get
+  - list
+  - watch
+  - delete
+  - patch
+  - update
+  - create
+
+---
+
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: istio-cni-taint-cp-v111x-istio-system
+  labels:
+    app: istio-cni
+    release: istio-cni
+    istio.io/rev: cp-v111x.istio-system
+rules:
+  - apiGroups: [""]
+    resources: ["pods"]
+    verbs: ["get", "list", "watch", "patch"]
+  - apiGroups: [""]
+    resources: ["nodes"]
+    verbs: ["get", "list", "watch", "update", "patch"]
+  - apiGroups: [""]
+    resources: ["configmaps"]
+    verbs: ["get", "list"]
+  - apiGroups: ["coordination.k8s.io"]
+    resources: ["leases"]
+    verbs: ["get", "list", "create", "update"]
+
+---
+
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  labels:
+    app: istio-cni
+    istio.io/rev: cp-v111x.istio-system
+    release: istio-cni
+  name: istio-cni-cp-v111x-istio-system
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: istio-cni-cp-v111x-istio-system
+subjects:
+- kind: ServiceAccount
+  name: istio-cni-cp-v111x
+  namespace: istio-system
+
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  labels:
+    app: istio-cni
+    istio.io/rev: cp-v111x.istio-system
+    release: istio-cni
+  name: istio-cni-repair-cp-v111x-istio-system
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: istio-cni-repair-cp-v111x-istio-system
+subjects:
+- kind: ServiceAccount
+  name: istio-cni-cp-v111x
+  namespace: istio-system
+
+---
+
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: istio-cni-taint-cp-v111x-istio-system
+  labels:
+    k8s-app: istio-cni-taint
+    istio.io/rev: cp-v111x.istio-system
+subjects:
+  - kind: ServiceAccount
+    name: istio-cni-cp-v111x
+    namespace: istio-system
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: istio-cni-taint-cp-v111x-istio-system
+
+---
+
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: istio-cni-psp
+  namespace: istio-system
+  labels:
+    app: istio-cni
+    release: istio-cni
+    istio.io/rev: cp-v111x.istio-system
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: istio-cni-psp
+subjects:
+- kind: ServiceAccount
+  name: istio-cni-cp-v111x
+  namespace: istio-system
+
+---
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+  annotations:
+    daemonset-annotation: value
+  labels:
+    app: istio-cni-node
+    istio.io/rev: cp-v111x.istio-system
+    release: istio-cni
+    daemonset-label: value
+  name: istio-cni-node-cp-v111x
+  namespace: istio-system
+spec:
+  selector:
+    matchLabels:
+      app: istio-cni-node
+      release: istio-cni
+  template:
+    metadata:
+      annotations:
+        prometheus.io/path: /metrics
+        prometheus.io/port: "15014"
+        prometheus.io/scrape: "true"
+        scheduler.alpha.kubernetes.io/critical-pod: ""
+        sidecar.istio.io/inject: "false"
+        podannotation: podannotationvalue
+      labels:
+        app: istio-cni-node
+        release: istio-cni
+        sidecar.istio.io/inject: "false"
+        podlabel: podlabelvalue
+    spec:
+      containers:
+      - command:
+        - install-cni
+        env:
+        - name: CNI_CONF_NAME
+          value: cni.conf
+        - name: CNI_NETWORK_CONFIG
+          valueFrom:
+            configMapKeyRef:
+              key: cni_network_config
+              name: istio-cni-cp-v111x
+        - name: CNI_NET_DIR
+          value: /etc/cni/conf.d
+        - name: CHAINED_CNI_PLUGIN
+          value: "true"
+        - name: REPAIR_ENABLED
+          value: "true"
+        - name: REPAIR_NODE_NAME
+          valueFrom:
+            fieldRef:
+              fieldPath: spec.nodeName
+        - name: REPAIR_LABEL_PODS
+          value: "true"
+        - name: REPAIR_DELETE_PODS
+          value: "true"
+        - name: REPAIR_RUN_AS_DAEMON
+          value: "true"
+        - name: REPAIR_SIDECAR_ANNOTATION
+          value: sidecar.istio.io/status
+        - name: REPAIR_INIT_CONTAINER_NAME
+          value: istio-validation
+        - name: REPAIR_BROKEN_POD_LABEL_KEY
+          value: cni.istio.io/uninitialized
+        - name: REPAIR_BROKEN_POD_LABEL_VALUE
+          value: "true"
+        - name: CNI_ENV_NAME
+          value: "true"
+        - name: CNI_ANOTHER_ENV_NAME
+          value: "standard"
+        image: gcr.io/istio-testing/install-cni:latest
+        imagePullPolicy: Always
+        livenessProbe:
+          httpGet:
+            path: /healthz
+            port: 8000
+          initialDelaySeconds: 5
+        name: install-cni
+        readinessProbe:
+          httpGet:
+            path: /readyz
+            port: 8000
+        volumeMounts:
+        - mountPath: /host/opt/cni/bin
+          name: cni-bin-dir
+        - mountPath: /host/etc/cni/net.d
+          name: cni-net-dir
+        - mountPath: /var/run/istio-cni
+          name: cni-log-dir
+        - name: config-vol
+          mountPath: /etc/config
+        resources:
+          limits:
+            cpu: "3"
+            memory: 2Gi
+          requests:
+            cpu: 100m
+            memory: 128Mi
+      - name: taint-controller
+        image: "gcr.io/istio-testing/install-cni-taint:latest"
+        imagePullPolicy: Always
+        command:
+        - /opt/local/bin/istio-cni-taint
+        env:
+        - name: TAINT_RUN-AS-DAEMON
+          value: "true"
+        - name: TAINT_CONFIGMAP-NAME
+          value: istio-cni-taint-configmap
+        - name: TAINT_CONFIGMAP-NAMESPACE
+          value: istio-system
+        - name: TAINT_ADDITIONAL_ENV
+          value: value
+        volumeMounts:
+        - name: taint-config-vol
+          mountPath: /etc/config
+        resources:
+          limits:
+            cpu: "2"
+            memory: 1Gi
+          requests:
+            cpu: 100m
+            memory: 128Mi
+        securityContext:
+          runAsGroup: 1337
+          runAsNonRoot: true
+          runAsUser: 1337
+      nodeSelector:
+        kubernetes.io/os: linux
+        disktype: ssd
+      priorityClassName: system-node-critical
+      serviceAccountName: istio-cni-cp-v111x
+      terminationGracePeriodSeconds: 5
+      affinity:
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+            - matchExpressions:
+              - key: kubernetes.io/e2e-az-name
+                operator: In
+                values:
+                - e2e-az1
+                - e2e-az2
+        podAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+          - labelSelector:
+              matchExpressions:
+              - key: security
+                operator: In
+                values:
+                - S1
+            topologyKey: topology.kubernetes.io/zone
+      tolerations:
+      - effect: NoSchedule
+        operator: Exists
+      - key: CriticalAddonsOnly
+        operator: Exists
+      - effect: NoExecute
+        operator: Exists
+      - key: key1
+        effect: NoSchedule
+        operator: Equal
+        tolerationSeconds: 5
+        value: value1
+      volumes:
+      - hostPath:
+          path: /home/kubernetes/bin
+        name: cni-bin-dir
+      - hostPath:
+          path: /etc/cni/conf.d
+        name: cni-net-dir
+      - hostPath:
+          path: /var/run/istio-cni
+        name: cni-log-dir
+      - name: dddemo
+        secret:
+          optional: true
+          secretName: ssname
+      - name: config-vol
+        configMap:
+          name: log-config
+          items:
+          - key: log_level
+            path: log_level
+  updateStrategy:
+    rollingUpdate:
+      maxUnavailable: 1
+    type: RollingUpdate

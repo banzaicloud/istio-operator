@@ -1,0 +1,138 @@
+apiVersion: servicemesh.cisco.com/v1alpha1
+kind: IstioControlPlane
+metadata:
+  name: cp-v111x
+  namespace: istio-system
+spec:
+  version: "1.11.0"
+  containerImageConfiguration:
+    hub: gcr.io/istio-testing
+    tag: latest
+    imagePullPolicy: Always
+    imagePullSecrets:
+    - name: pullsecret-1
+    - name: pullsecret-2
+  proxyInit:
+    cni:
+      enabled: true
+      chained: true
+      binDir: "/home/kubernetes/bin"
+      confDir: "/etc/cni/conf.d"
+      confFileName: "cni.conf"
+      excludeNamespaces:
+      - smm-system
+      includeNamespaces:
+      - smm-system
+      pspClusterRoleName: "istio-cni-psp"
+      logLevel: "debug"
+      repair:
+        enabled: true
+        labelPods: true
+        deletePods: true
+        initContainerName: "istio-validation"
+        brokenPodLabelKey: "cni.istio.io/uninitialized"
+        brokenPodLabelValue: "true"
+      taint:
+        enabled: true
+        container:
+          image: install-cni-taint
+          env:
+          - name: TAINT_ADDITIONAL_ENV
+            value: value
+          resources:
+            limits:
+              cpu: "2"
+              memory: 1Gi
+            requests:
+              cpu: 100m
+              memory: 128Mi
+          securityContext:
+            runAsUser: 1337
+            runAsGroup: 1337
+            runAsNonRoot: true
+          volumeMounts:
+          - name: taint-config-vol
+            mountPath: /etc/config
+      resourceQuotas:
+        enabled: true
+        pods: "128"
+        priorityClasses:
+        - system-node-critical
+        - system-cluster-critical
+      daemonset:
+        metadata:
+          annotations:
+            daemonset-annotation: value
+          labels:
+            daemonset-label: value
+        podMetadata:
+          annotations:
+            podannotation: podannotationvalue
+          labels:
+            podlabel: podlabelvalue
+        deploymentStrategy:
+          type: RollingUpdate
+          rollingUpdate:
+            maxUnavailable: 1
+        image: install-cni
+        env:
+        - name: CNI_ENV_NAME
+          value: "true"
+        - name: CNI_ANOTHER_ENV_NAME
+          value: "standard"
+        nodeSelector:
+          disktype: ssd
+        affinity:
+          nodeAffinity:
+            requiredDuringSchedulingIgnoredDuringExecution:
+              nodeSelectorTerms:
+              - matchExpressions:
+                - key: kubernetes.io/e2e-az-name
+                  operator: In
+                  values:
+                  - e2e-az1
+                  - e2e-az2
+          podAffinity:
+            requiredDuringSchedulingIgnoredDuringExecution:
+            - labelSelector:
+                matchExpressions:
+                - key: security
+                  operator: In
+                  values:
+                  - S1
+              topologyKey: topology.kubernetes.io/zone
+        tolerations:
+        - key: "key1"
+          operator: "Equal"
+          value: "value1"
+          effect: "NoSchedule"
+          tolerationSeconds: 5
+        volumes:
+        - name: "dddemo"
+          volumeSource:
+            secret:
+              secretName: "ssname"
+              optional: true
+        - name: config-vol
+          volumeSource:
+            configMap:
+              localObjectReference:
+                name: log-config
+              items:
+                - key: log_level
+                  path: log_level
+        volumeMounts:
+        - name: config-vol
+          mountPath: /etc/config
+        resources:
+          limits:
+            cpu: "3"
+            memory: 2Gi
+          requests:
+            cpu: 100m
+            memory: 128Mi
+        securityContext:
+          runAsUser: 1337
+          runAsGroup: 1337
+          runAsNonRoot: true
+        priorityClassName: system-node-critical
