@@ -51,6 +51,46 @@ message K8sObjectMeta {
   map<string, string> annotations = 12;
 }
 
+message ContainerImageConfiguration {
+    // Default hub for container images.
+    string hub = 1;
+
+    // Default tag for container images.
+    string tag = 2;
+
+    // Image pull policy.
+    // One of Always, Never, IfNotPresent.
+    // Defaults to Always if :latest tag is specified, or IfNotPresent otherwise.
+    // +optional
+    // +kubebuilder:validation:Enum=Always;Never;IfNotPresent
+    string imagePullPolicy = 3;
+
+    // ImagePullSecrets is an optional list of references to secrets to use for pulling any of the images.
+    // +optional
+    repeated k8s.io.api.core.v1.LocalObjectReference imagePullSecrets = 4;
+}
+
+message BaseKubernetesContainerConfiguration {
+    // Standard Kubernetes container image configuration
+    string image = 1;
+
+    // If present will be appended to the environment variables of the container
+    repeated k8s.io.api.core.v1.EnvVar env = 2 [(gogoproto.nullable) = false];
+
+    // Standard Kubernetes resource configuration, memory and CPU resource requirements
+    ResourceRequirements resources = 3;
+
+    // Standard Kubernetes security context configuration
+    k8s.io.api.core.v1.SecurityContext securityContext = 4;
+
+    // Pod volumes to mount into the container's filesystem.
+    // Cannot be updated.
+    // +optional
+    // +patchMergeKey=mountPath
+    // +patchStrategy=merge
+    repeated k8s.io.api.core.v1.VolumeMount volumeMounts = 5 [(gogoproto.nullable) = false];
+}
+
 message BaseKubernetesResourceConfig {
     // Generic k8s resource metadata
     K8sObjectMeta metadata = 1;
