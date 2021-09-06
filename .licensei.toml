@@ -36,7 +36,6 @@ ignoreFiles = [
   "*.pb.go",
   "*.gen.go",
   "*.gogen.go",
-  "static/generate.go",
   "generated.go",
   "zz_generated.deepcopy.go",
 ]
