@@ -315,7 +315,7 @@ message Service {
     // to propagate SRV records for its Pods without respect to their readiness for purpose
     // of peer discovery.
     // +optional
-    bool publishNotReadyAddresses = 13;
+    google.protobuf.BoolValue publishNotReadyAddresses = 13 [(gogoproto.wktpointer) = true];
 
     // sessionAffinityConfig contains the configurations of session affinity.
     // +optional
@@ -446,7 +446,7 @@ message UnprotectedService {
     // to propagate SRV records for its Pods without respect to their readiness for purpose
     // of peer discovery.
     // +optional
-    bool publishNotReadyAddresses = 13;
+    google.protobuf.BoolValue publishNotReadyAddresses = 13 [(gogoproto.wktpointer) = true];
 
     // sessionAffinityConfig contains the configurations of session affinity.
     // +optional

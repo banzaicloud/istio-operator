@@ -80,7 +80,7 @@ func (p *MeshGatewayWithProperties) SetDefaults() {
 
 type MeshGatewayProperties struct {
 	Revision              string
-	EnablePrometheusMerge bool
+	EnablePrometheusMerge *bool
 	InjectionTemplate     string
 	InjectionChecksum     string
 	MeshConfigChecksum    string

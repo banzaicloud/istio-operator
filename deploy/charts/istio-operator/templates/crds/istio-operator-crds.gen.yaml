@@ -5430,6 +5430,7 @@ spec:
                               publishNotReadyAddresses, when set to true, indicates that DNS implementations
                               must publish the notReadyAddresses of subsets for the Endpoints associated with
                               the Service.
+                            nullable: true
                             type: boolean
                           selector:
                             additionalProperties:
@@ -14786,6 +14787,7 @@ spec:
                               publishNotReadyAddresses, when set to true, indicates that DNS implementations
                               must publish the notReadyAddresses of subsets for the Endpoints associated with
                               the Service.
+                            nullable: true
                             type: boolean
                           selector:
                             additionalProperties:
@@ -22156,6 +22158,7 @@ spec:
                       publishNotReadyAddresses, when set to true, indicates that DNS implementations
                       must publish the notReadyAddresses of subsets for the Endpoints associated with
                       the Service.
+                    nullable: true
                     type: boolean
                   selector:
                     additionalProperties:
