@@ -1,9 +1,9 @@
 {{- define "service" }}
 ports:
 - name: http-status-port
-  port: 15027
+  port: 15021
   protocol: TCP
-  targetPort: 15027
+  targetPort: 15021
 {{ if .Values.exposeIstiod }}
 - name: tls-istiod
   port: 15012
