@@ -30,6 +30,8 @@ global:
       requests:
         cpu: 50m
         memory: 32Mi
+  hub: gcr.io/istio-testing
+  tag: latest
   imagePullPolicy: Never
   imagePullSecrets:
   - name: pullsecret-1

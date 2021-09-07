@@ -1050,7 +1050,7 @@ data:
         },
         "distribution": "official",
         "externalIstiod": false,
-        "hub": "istio",
+        "hub": "gcr.io/istio-testing",
         "imagePullPolicy": "Never",
         "imagePullSecrets": [
           {
@@ -1143,7 +1143,7 @@ data:
         "sts": {
           "servicePort": 0
         },
-        "tag": "1.11.0",
+        "tag": "latest",
         "tracer": {
           "datadog": {
             "address": "$(HOST_IP):8126"
@@ -1199,8 +1199,8 @@ metadata:
 apiVersion: v1
 kind: ServiceAccount
 imagePullSecrets:
-- name: "map[name:pullsecret-1]"
-- name: "map[name:pullsecret-2]"
+- name: "pullsecret-1"
+- name: "pullsecret-2"
 metadata:
   labels:
     app: istio-reader
@@ -1212,8 +1212,8 @@ metadata:
 apiVersion: v1
 kind: ServiceAccount
 imagePullSecrets:
-- name: "map[name:pullsecret-1]"
-- name: "map[name:pullsecret-2]"
+- name: "pullsecret-1"
+- name: "pullsecret-2"
 metadata:
   labels:
     app: istiod

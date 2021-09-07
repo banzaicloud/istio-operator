@@ -110,6 +110,11 @@ istiod:
 {{ valueIf (dict "key" "priorityClassName" "value" .GetSpec.GetIstiod.GetDeployment.GetPriorityClassName) }}
 {{ toYamlIf (dict "value" .GetSpec.GetIstiod.GetDeployment.GetImagePullSecrets "key" "imagePullSecrets") }}
 
+{{ valueIf (dict "key" "hub" "value" .GetSpec.GetContainerImageConfiguration.GetHub) }}
+{{ valueIf (dict "key" "tag" "value" .GetSpec.GetContainerImageConfiguration.GetTag) }}
+{{ valueIf (dict "key" "imagePullPolicy" "value" (default $.GetSpec.GetContainerImageConfiguration.GetImagePullPolicy .GetSpec.GetIstiod.GetDeployment.GetImagePullPolicy) ) }}
+{{ toYamlIf (dict "value" (default $.GetSpec.GetContainerImageConfiguration.GetImagePullSecrets .GetSpec.GetIstiod.GetDeployment.GetImagePullSecrets) "key" "imagePullSecrets") }}
+
 {{- if or .GetSpec.GetIstiod.GetDeployment.GetPodDisruptionBudget.GetMinAvailable .GetSpec.GetIstiod.GetDeployment.GetPodDisruptionBudget.GetMaxUnavailable }}
 defaultPodDisruptionBudget:
   enabled: true
