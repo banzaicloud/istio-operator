@@ -27,10 +27,10 @@ var (
 	baseChart embed.FS
 	BaseChart = GetSubFS(baseChart, "manifests/base")
 
-	//go:embed manifests/istio-control/istio-discovery
-	//go:embed manifests/istio-control/istio-discovery/templates/_helpers.tpl
+	//go:embed manifests/istio-discovery
+	//go:embed manifests/istio-discovery/templates/_helpers.tpl
 	discoveryChart embed.FS
-	DiscoveryChart = GetSubFS(discoveryChart, "manifests/istio-control/istio-discovery")
+	DiscoveryChart = GetSubFS(discoveryChart, "manifests/istio-discovery")
 
 	//go:embed manifests/istio-cni
 	//go:embed manifests/istio-cni/templates/_helpers.tpl
