@@ -23,7 +23,11 @@ import (
 
 	"emperror.dev/errors"
 	"github.com/go-logr/logr"
+	appsv1 "k8s.io/api/apps/v1"
+	autoscalingv1 "k8s.io/api/autoscaling/v1"
 	corev1 "k8s.io/api/core/v1"
+	policyv1beta1 "k8s.io/api/policy/v1beta1"
+	rbacv1 "k8s.io/api/rbac/v1"
 	k8serrors "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
@@ -139,6 +143,52 @@ func (r *MeshGatewayReconciler) SetupWithManager(mgr ctrl.Manager) error {
 
 	ctrl, err := builder.
 		For(&servicemeshv1alpha1.MeshGateway{}, ctrlBuilder.WithPredicates(util.ObjectChangePredicate{})).
+		Owns(&appsv1.Deployment{
+			TypeMeta: metav1.TypeMeta{
+				Kind:       "Deployment",
+				APIVersion: appsv1.SchemeGroupVersion.String(),
+			},
+		}, ctrlBuilder.WithPredicates(util.ObjectChangePredicate{})).
+		Owns(&corev1.Service{
+			TypeMeta: metav1.TypeMeta{
+				Kind:       "Service",
+				APIVersion: corev1.SchemeGroupVersion.String(),
+			},
+		}, ctrlBuilder.WithPredicates(util.ObjectChangePredicate{})).
+		Owns(&corev1.ServiceAccount{
+			TypeMeta: metav1.TypeMeta{
+				Kind:       "ServiceAccount",
+				APIVersion: corev1.SchemeGroupVersion.String(),
+			},
+		}, ctrlBuilder.WithPredicates(util.ObjectChangePredicate{})).
+		Owns(&policyv1beta1.PodDisruptionBudget{
+			TypeMeta: metav1.TypeMeta{
+				Kind:       "PodDisruptionBudget",
+				APIVersion: policyv1beta1.SchemeGroupVersion.String(),
+			},
+		}, ctrlBuilder.WithPredicates(util.ObjectChangePredicate{})).
+		Owns(&rbacv1.Role{
+			TypeMeta: metav1.TypeMeta{
+				Kind:       "Role",
+				APIVersion: rbacv1.SchemeGroupVersion.String(),
+			},
+		}, ctrlBuilder.WithPredicates(util.ObjectChangePredicate{})).
+		Owns(&rbacv1.RoleBinding{
+			TypeMeta: metav1.TypeMeta{
+				Kind:       "RoleBinding",
+				APIVersion: rbacv1.SchemeGroupVersion.String(),
+			},
+		}, ctrlBuilder.WithPredicates(util.ObjectChangePredicate{})).
+		Owns(&autoscalingv1.HorizontalPodAutoscaler{
+			TypeMeta: metav1.TypeMeta{
+				Kind:       "HorizontalPodAutoscaler",
+				APIVersion: autoscalingv1.SchemeGroupVersion.String(),
+			},
+		}, ctrlBuilder.WithPredicates(util.ObjectChangePredicate{
+			CalculateOptions: []util.CalculateOption{
+				util.IgnoreMetadataAnnotations("autoscaling.alpha.kubernetes.io"),
+			},
+		})).
 		Build(r)
 	if err != nil {
 		return err
