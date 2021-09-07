@@ -54,11 +54,7 @@ spec:
         {{- toYaml .Values.pilot.podSecurityContext | nindent 8 }}
       containers:
         - name: discovery
-{{- if contains "/" .Values.pilot.image }}
-          image: "{{ .Values.pilot.image }}"
-{{- else }}
-          image: "{{ .Values.pilot.hub | default .Values.global.hub }}/{{ .Values.pilot.image | default "pilot" }}:{{ .Values.pilot.tag | default .Values.global.tag }}"
-{{- end }}
+{{- include "dockerImage" (dict "image" .Values.pilot.image "hub" .Values.global.hub "tag" .Values.global.tag) | indent 10 -}}
 {{- if .Values.global.imagePullPolicy }}
           imagePullPolicy: {{ .Values.global.imagePullPolicy }}
 {{- end }}

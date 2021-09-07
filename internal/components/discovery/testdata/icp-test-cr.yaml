@@ -7,6 +7,13 @@ spec:
   meshID: mesh1
   clusterID: demo-cluster1
   version: "1.11.0"
+  containerImageConfiguration:
+    hub: gcr.io/istio-testing
+    tag: latest
+    imagePullPolicy: Never
+    imagePullSecrets:
+    - name: pullsecret-1
+    - name: pullsecret-2
   logging:
     level: "default:warning"
   mountMtlsCerts: false

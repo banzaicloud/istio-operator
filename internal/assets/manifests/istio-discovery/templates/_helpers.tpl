@@ -39,3 +39,11 @@
 {{- end }}
 {{- end }}
 {{- end }}
+
+{{- define "dockerImage" }}
+{{- if contains "/" .image }}
+image: "{{ .image }}"
+{{- else }}
+image: "{{ .hub }}/{{ .image }}:{{ .tag }}"
+{{- end }}
+{{- end }}
