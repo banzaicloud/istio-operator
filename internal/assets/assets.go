@@ -37,6 +37,11 @@ var (
 	cniChart embed.FS
 	CNIChart = GetSubFS(cniChart, "manifests/istio-cni")
 
+	//go:embed manifests/istio-meshexpansion
+	//go:embed manifests/istio-meshexpansion/templates/_helpers.tpl
+	meshExpansionChart embed.FS
+	MeshExpansionChart = GetSubFS(meshExpansionChart, "manifests/istio-meshexpansion")
+
 	//go:embed manifests/meshgateway
 	//go:embed manifests/meshgateway/templates/_helpers.tpl
 	meshGateway embed.FS

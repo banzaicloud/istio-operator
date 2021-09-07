@@ -1,0 +1,19 @@
+{{ if .Values.exposeClusterServices }}
+apiVersion: networking.istio.io/v1alpha3
+kind: Gateway
+metadata:
+  name: {{ include "name-with-revision" (dict "name" "istio-cross-network" "context" $) }}
+spec:
+  selector:
+    gateway-name: {{ include "name-with-revision" (dict "name" "istio-meshexpansion" "context" $) }}
+    gateway-type: ingress
+  servers:
+    - port:
+        number: 15443
+        name: tls
+        protocol: TLS
+      tls:
+        mode: AUTO_PASSTHROUGH
+      hosts:
+        - "*.local"
+{{ end }}

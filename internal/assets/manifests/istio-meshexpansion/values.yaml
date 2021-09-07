@@ -1,0 +1,11 @@
+revision: ""
+
+exposeIstiod: true
+exposeWebhook: true
+exposeClusterServices: true
+
+runAsRoot: false
+metadata: {}
+deployment: {}
+service:
+  type: LoadBalancer

@@ -1,0 +1,34 @@
+{{ if or .Values.exposeIstiod .Values.exposeWebhook }}
+apiVersion: networking.istio.io/v1alpha3
+kind: VirtualService
+metadata:
+  name: {{ include "name-with-revision" (dict "name" "istiod-expansion" "context" $) }}
+spec:
+  hosts:
+  - "*"
+  gateways:
+  - {{ include "name-with-revision" (dict "name" "istiod-expansion" "context" $) }}
+  tls:
+{{ if .Values.exposeIstiod }}
+  - match:
+    - port: 15012
+      sniHosts:
+      - "*"
+    route:
+    - destination:
+        host: "{{ include "name-with-revision" ( dict "name" "istiod" "context" $) }}.{{ .Release.Namespace }}.svc.cluster.local"
+        port:
+          number: 15012
+{{ end }}
+{{ if .Values.exposeWebhook }}
+  - match:
+    - port: 15017
+      sniHosts:
+      - "*"
+    route:
+    - destination:
+        host: "{{ include "name-with-revision" ( dict "name" "istiod" "context" $) }}.{{ .Release.Namespace }}.svc.cluster.local"
+        port:
+          number: 443
+{{ end }}
+{{ end }}
