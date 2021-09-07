@@ -260,6 +260,7 @@ rules:
   - servicemesh.cisco.com
   resources:
   - istiocontrolplanes
+  - istiomeshes
   verbs:
   - create
   - delete
@@ -272,6 +273,7 @@ rules:
   - servicemesh.cisco.com
   resources:
   - istiocontrolplanes/status
+  - istiomeshes/status
   verbs:
   - get
   - patch
