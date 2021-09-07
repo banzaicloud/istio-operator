@@ -10,6 +10,17 @@ revision: {{ .Properties.Revision | quote }}
 runAsRoot: {{ .GetSpec.GetRunAsRoot }}
 {{- end }}
 
+{{ define "global" }}
+{{ valueIf (dict "key" "imagePullPolicy" "value" (default $.Properties.GetIstioControlPlane.GetSpec.GetContainerImageConfiguration.GetImagePullPolicy .GetSpec.GetDeployment.GetImagePullPolicy)) }}
+{{ toYamlIf (dict "key" "imagePullSecrets" "value" (default $.Properties.GetIstioControlPlane.GetSpec.GetContainerImageConfiguration.GetImagePullSecrets .GetSpec.GetDeployment.GetImagePullSecrets)) }}
+{{ end }}
+
+{{- $x := (include "global" .) | reformatYaml }}
+{{- if ne $x "" }}
+global:
+{{ $x | indent 2 }}
+{{- end }}
+
 deployment:
   name: {{ .Name | quote }}
   enablePrometheusMerge: {{ .Properties.EnablePrometheusMerge }}
@@ -17,8 +28,6 @@ deployment:
 {{ toYamlIf (dict "value" .GetDeploymentStrategy "key" "deploymentStrategy") | indent 2 }}
 {{ toYamlIf (dict "value" .GetMetadata "key" "metadata") | indent 2 }}
 {{ toYamlIf (dict "value" .GetEnv "key" "env") | indent 2 }}
-  imagePullPolicy: {{ .GetImagePullPolicy | quote }}
-{{ toYamlIf (dict "value" .GetImagePullSecrets "key" "imagePullSecrets") | indent 2 }}
 {{ toYamlIf (dict "value" .GetAffinity "key" "affinity") | indent 2 }}
 {{ toYamlIf (dict "value" .GetNodeSelector "key" "nodeSelector") | indent 2 }}
   priorityClassName: {{ .GetPriorityClassName | quote }}

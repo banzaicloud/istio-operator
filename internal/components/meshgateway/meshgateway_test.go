@@ -38,6 +38,9 @@ import (
 //go:embed testdata/mgw-test-cr.yaml
 var mgwTestCR []byte
 
+//go:embed testdata/icp-test-cr.yaml
+var icpTestCR []byte
+
 //go:embed testdata/mgw-expected-values.yaml
 var mgwExpectedValues []byte
 
@@ -52,6 +55,11 @@ func TestMGWResourceDump(t *testing.T) {
 		t.Fatal(err)
 	}
 
+	var icp *v1alpha1.IstioControlPlane
+	if err := yaml.Unmarshal(icpTestCR, &icp); err != nil {
+		t.Fatal(err)
+	}
+
 	reconciler := meshgateway.NewChartReconciler(
 		templatereconciler.NewHelmReconciler(nil, nil, nil, fake.NewSimpleClientset().Discovery(), []reconciler.NativeReconcilerOpt{
 			reconciler.NativeReconcilerSetControllerRef(),
@@ -62,6 +70,7 @@ func TestMGWResourceDump(t *testing.T) {
 			InjectionTemplate:     "gateway",
 			InjectionChecksum:     "08fdba0c89f9bbd6624201d98758746d1bddc78e9004b00259f33b20b7f9efba",
 			MeshConfigChecksum:    "319ffd3f807ef4516499c6ad68279a1cd07778f5847e65f9aef908eceb1693e3",
+			IstioControlPlane:     icp,
 		},
 	)
 
@@ -96,6 +105,11 @@ func TestMGWTemplateTransform(t *testing.T) {
 		t.Fatal(err)
 	}
 
+	var icp *v1alpha1.IstioControlPlane
+	if err := yaml.Unmarshal(icpTestCR, &icp); err != nil {
+		t.Fatal(err)
+	}
+
 	obj := &v1alpha1.MeshGatewayWithProperties{
 		MeshGateway: mgw,
 		Properties: v1alpha1.MeshGatewayProperties{
@@ -104,6 +118,7 @@ func TestMGWTemplateTransform(t *testing.T) {
 			InjectionTemplate:     "gateway",
 			InjectionChecksum:     "08fdba0c89f9bbd6624201d98758746d1bddc78e9004b00259f33b20b7f9efba",
 			MeshConfigChecksum:    "319ffd3f807ef4516499c6ad68279a1cd07778f5847e65f9aef908eceb1693e3",
+			IstioControlPlane:     icp,
 		},
 	}
 	obj.SetDefaults()

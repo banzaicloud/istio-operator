@@ -18,8 +18,6 @@ deployment:
     labels: {}
     annotations: {}
   env: {}
-  imagePullPolicy: IfNotPresent
-  imagePullSecrets: []
   affinity: {}
   nodeSelector: {}
   priorityClassName: ""
@@ -51,3 +49,7 @@ service:
   metadata: {}
   ports: []
   selector: {}
+
+global:
+  imagePullPolicy: "IfNotPresent"
+  imagePullSecrets: []

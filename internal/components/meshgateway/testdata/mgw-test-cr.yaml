@@ -52,6 +52,7 @@ spec:
     imagePullSecrets:
     - name: pullsecret-1
     - name: pullsecret-2
+    - name: pullsecret-3
     priorityClassName: "high-priority"
     tolerations:
     - key: "key1"
