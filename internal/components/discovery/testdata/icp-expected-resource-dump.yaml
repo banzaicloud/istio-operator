@@ -1073,7 +1073,7 @@ data:
         "meshNetworks": {},
         "mountMtlsCerts": false,
         "multiCluster": {
-          "clusterName": "",
+          "clusterName": "demo-cluster1",
           "enabled": false
         },
         "network": "",
@@ -1687,7 +1687,7 @@ spec:
         - name: PILOT_ENABLE_ANALYSIS
           value: "false"
         - name: CLUSTER_ID
-          value: Kubernetes
+          value: demo-cluster1
         image: "container-hub/image-name:tag"
         imagePullPolicy: Never
         name: discovery

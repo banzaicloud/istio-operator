@@ -54,6 +54,8 @@ global:
   caAddress: localhost
   distribution: official
   meshID: mesh1
+  multiCluster:
+    clusterName: demo-cluster1
 pilot:
   image: "container-hub/image-name:tag"
   deploymentAnnotations:

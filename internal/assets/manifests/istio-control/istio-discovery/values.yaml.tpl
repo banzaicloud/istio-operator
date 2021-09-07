@@ -149,6 +149,8 @@ sds:
   token:
     aud: {{ .GetSpec.GetSds.GetTokenAudience }}
 {{- end }}
+multiCluster:
+{{ valueIf (dict "key" "clusterName" "value" .GetSpec.GetClusterID) | indent 2 }}
 {{- end }}
 
 {{- $x := (include "global" .) | reformatYaml }}
