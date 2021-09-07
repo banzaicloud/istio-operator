@@ -1,0 +1,24 @@
+revision: cp-v111x
+exposeClusterServices: true
+exposeIstiod: true
+exposeWebhook: true
+deployment:
+  metadata:
+    annotations:
+      deploymentannotation: value
+  env:
+  - name: ISTIO_BOGUS_ENV
+    value: "true"
+metadata:
+  annotations:
+    mgw-annotation: annotationvalue
+  labels:
+    mgw-label: labelvalue
+runAsRoot: true
+service:
+  type: ClusterIP
+  ports:
+  - name: tcp-smt
+    port: 56000
+    protocol: TCP
+    targetPort: 56000

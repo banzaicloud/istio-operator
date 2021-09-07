@@ -1,0 +1,36 @@
+apiVersion: servicemesh.cisco.com/v1alpha1
+kind: IstioControlPlane
+metadata:
+  name: cp-v111x
+  namespace: istio-system
+spec:
+  version: "1.11.0"
+  meshExpansion:
+    enabled: true
+    istiod:
+      expose: true
+    webhook:
+      expose: true
+    clusterServices:
+      expose: true
+    gateway:
+      metadata:
+        labels:
+          mgw-label: labelvalue
+        annotations:
+          mgw-annotation: annotationvalue
+      runAsRoot: true
+      service:
+        ports:
+        - name: tcp-smt
+          port: 56000
+          protocol: TCP
+          targetPort: 56000
+        type: ClusterIP
+      deployment:
+        env:
+        - name: ISTIO_BOGUS_ENV
+          value: "true"
+        metadata:
+          annotations:
+            deploymentannotation: value
