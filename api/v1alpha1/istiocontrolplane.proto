@@ -99,8 +99,10 @@ message IstioControlPlaneSpec {
     string meshID = 17;
     // Global configuration for container images.
     ContainerImageConfiguration containerImageConfiguration = 18;
-
+    // Mesh expansion configuration
     MeshExpansionConfiguration meshExpansion = 19;
+    // Cluster ID
+    string clusterID = 20;
 }
 
 message MeshExpansionConfiguration {
