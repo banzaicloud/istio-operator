@@ -2070,7 +2070,7 @@ apiVersion: networking.istio.io/v1alpha3
 kind: EnvoyFilter
 metadata:
   labels:
-    istio.io/rev: cp-v111x
+    istio.io/rev: cp-v111x.istio-system
   name: metadata-exchange-1.11-cp-v111x
   namespace: istio-system
 spec:
@@ -2377,7 +2377,7 @@ apiVersion: networking.istio.io/v1alpha3
 kind: EnvoyFilter
 metadata:
   labels:
-    istio.io/rev: cp-v111x
+    istio.io/rev: cp-v111x.istio-system
   name: stats-filter-1.11-cp-v111x
   namespace: istio-system
 spec:
@@ -2696,7 +2696,7 @@ apiVersion: networking.istio.io/v1alpha3
 kind: EnvoyFilter
 metadata:
   labels:
-    istio.io/rev: cp-v111x
+    istio.io/rev: cp-v111x.istio-system
   name: tcp-metadata-exchange-1.11-cp-v111x
   namespace: istio-system
 spec:
@@ -2927,7 +2927,7 @@ apiVersion: networking.istio.io/v1alpha3
 kind: EnvoyFilter
 metadata:
   labels:
-    istio.io/rev: cp-v111x
+    istio.io/rev: cp-v111x.istio-system
   name: tcp-stats-filter-1.11-cp-v111x
   namespace: istio-system
 spec:

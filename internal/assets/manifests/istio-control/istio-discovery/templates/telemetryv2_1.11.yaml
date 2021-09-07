@@ -10,7 +10,7 @@ metadata:
   namespace: {{ .Release.Namespace }}
   {{- end }}
   labels:
-    istio.io/rev: {{ .Values.revision | default "default" }}
+    istio.io/rev: {{ include "namespaced-revision" . }}
 spec:
   configPatches:
     - applyTo: HTTP_FILTER
@@ -129,7 +129,7 @@ metadata:
   namespace: {{ .Release.Namespace }}
   {{- end }}
   labels:
-    istio.io/rev: {{ .Values.revision | default "default" }}
+    istio.io/rev: {{ include "namespaced-revision" . }}
 spec:
   configPatches:
     - applyTo: NETWORK_FILTER
@@ -192,7 +192,7 @@ metadata:
   namespace: {{ .Release.Namespace }}
   {{- end }}
   labels:
-    istio.io/rev: {{ .Values.revision | default "default" }}
+    istio.io/rev: {{ include "namespaced-revision" . }}
 spec:
   configPatches:
     - applyTo: HTTP_FILTER
@@ -355,7 +355,7 @@ metadata:
   namespace: {{ .Release.Namespace }}
   {{- end }}
   labels:
-    istio.io/rev: {{ .Values.revision | default "default" }}
+    istio.io/rev: {{ include "namespaced-revision" . }}
 spec:
   configPatches:
     - applyTo: NETWORK_FILTER
@@ -511,7 +511,7 @@ metadata:
   namespace: {{ .Release.Namespace }}
   {{- end }}
   labels:
-    istio.io/rev: {{ .Values.revision | default "default" }}
+    istio.io/rev: {{ include "namespaced-revision" . }}
 spec:
   configPatches:
 {{- if not .Values.telemetry.v2.stackdriver.disableOutbound }}
@@ -629,7 +629,7 @@ metadata:
   namespace: {{ .Release.Namespace }}
   {{- end }}
   labels:
-    istio.io/rev: {{ .Values.revision | default "default" }}
+    istio.io/rev: {{ include "namespaced-revision" . }}
 spec:
   configPatches:
   {{- if not .Values.telemetry.v2.stackdriver.disableOutbound }}
@@ -742,7 +742,7 @@ metadata:
   namespace: {{ .Release.Namespace }}
   {{- end }}
   labels:
-    istio.io/rev: {{ .Values.revision | default "default" }}
+    istio.io/rev: {{ include "namespaced-revision" . }}
 spec:
   configPatches:
     - applyTo: HTTP_FILTER
