@@ -1,0 +1,132 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  creationTimestamp: null
+  name: istio-system
+spec: {}
+status: {}
+
+---
+apiVersion: networking.istio.io/v1alpha3
+kind: Gateway
+metadata:
+  name: istio-cross-network-cp-v111x
+spec:
+  selector:
+    gateway-name: istio-meshexpansion-cp-v111x
+    gateway-type: ingress
+  servers:
+  - hosts:
+    - '*.local'
+    port:
+      name: tls
+      number: 15443
+      protocol: TLS
+    tls:
+      mode: AUTO_PASSTHROUGH
+
+---
+apiVersion: networking.istio.io/v1alpha3
+kind: Gateway
+metadata:
+  name: istiod-expansion-cp-v111x
+spec:
+  selector:
+    gateway-name: istio-meshexpansion-cp-v111x
+    gateway-type: ingress
+  servers:
+  - hosts:
+    - '*'
+    port:
+      name: tls-istiod
+      number: 15012
+      protocol: tls
+    tls:
+      mode: PASSTHROUGH
+  - hosts:
+    - '*'
+    port:
+      name: tls-istiodwebhook
+      number: 15017
+      protocol: tls
+    tls:
+      mode: PASSTHROUGH
+
+---
+apiVersion: networking.istio.io/v1alpha3
+kind: VirtualService
+metadata:
+  name: istiod-expansion-cp-v111x
+spec:
+  gateways:
+  - istiod-expansion-cp-v111x
+  hosts:
+  - '*'
+  tls:
+  - match:
+    - port: 15012
+      sniHosts:
+      - '*'
+    route:
+    - destination:
+        host: istiod-cp-v111x.istio-system.svc.cluster.local
+        port:
+          number: 15012
+  - match:
+    - port: 15017
+      sniHosts:
+      - '*'
+    route:
+    - destination:
+        host: istiod-cp-v111x.istio-system.svc.cluster.local
+        port:
+          number: 443
+
+---
+apiVersion: servicemesh.cisco.com/v1alpha1
+kind: MeshGateway
+metadata:
+  name: istio-meshexpansion-cp-v111x
+  metadata:
+    annotations:
+      mgw-annotation: annotationvalue
+    labels:
+      mgw-label: labelvalue
+spec:
+  istioControlPlane:
+    name: cp-v111x
+    namespace: istio-system
+  runAsRoot: true
+  deployment:
+    metadata:
+      annotations:
+        deploymentannotation: value
+    env:
+    - name: ISTIO_META_ROUTER_MODE
+      value: sni-dnat
+    - name: ISTIO_BOGUS_ENV
+      value: "true"
+  service:
+    ports:
+    - name: http-status-port
+      port: 15021
+      protocol: TCP
+      targetPort: 15021
+    - name: tls-istiod
+      port: 15012
+      protocol: TCP
+      targetPort: 15012
+    - name: tls-istiodwebhook
+      port: 15017
+      protocol: TCP
+      targetPort: 15017
+    - name: tls
+      port: 15443
+      protocol: TCP
+      targetPort: 15443
+    - name: tcp-smt
+      port: 56000
+      protocol: TCP
+      targetPort: 56000
+    type: ClusterIP
+  type: ingress
