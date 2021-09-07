@@ -43,6 +43,7 @@ import (
 	"github.com/banzaicloud/istio-operator/v2/internal/components/meshgateway"
 	"github.com/banzaicloud/istio-operator/v2/internal/util"
 	"github.com/banzaicloud/istio-operator/v2/pkg/k8sutil"
+	"github.com/banzaicloud/operator-tools/pkg/utils"
 )
 
 const (
@@ -93,10 +94,15 @@ func (r *MeshGatewayReconciler) Reconcile(ctx context.Context, req ctrl.Request)
 		return ctrl.Result{}, err
 	}
 
+	enablePrometheusMerge := true
+	if icp.Status.GetMeshConfig().GetEnablePrometheusMerge() != nil {
+		enablePrometheusMerge = icp.Status.GetMeshConfig().GetEnablePrometheusMerge().Value
+	}
+
 	reconciler, err := NewComponentReconciler(r, func(helmReconciler *components.HelmReconciler) components.ComponentReconciler {
 		return meshgateway.NewChartReconciler(helmReconciler, servicemeshv1alpha1.MeshGatewayProperties{
 			Revision:              fmt.Sprintf("%s.%s", icp.GetName(), icp.GetNamespace()),
-			EnablePrometheusMerge: true,
+			EnablePrometheusMerge: utils.BoolPointer(enablePrometheusMerge),
 			InjectionTemplate:     "gateway",
 			InjectionChecksum:     icp.Status.GetChecksums().GetSidecarInjector(),
 			MeshConfigChecksum:    icp.Status.GetChecksums().GetMeshConfig(),
