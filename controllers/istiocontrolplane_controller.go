@@ -52,6 +52,7 @@ import (
 	"github.com/banzaicloud/istio-operator/v2/internal/components/base"
 	"github.com/banzaicloud/istio-operator/v2/internal/components/cni"
 	discovery_component "github.com/banzaicloud/istio-operator/v2/internal/components/discovery"
+	"github.com/banzaicloud/istio-operator/v2/internal/components/meshexpansion"
 	"github.com/banzaicloud/istio-operator/v2/internal/util"
 	"github.com/banzaicloud/operator-tools/pkg/reconciler"
 	"github.com/banzaicloud/operator-tools/pkg/utils"
@@ -163,6 +164,8 @@ func (r *IstioControlPlaneReconciler) Reconcile(ctx context.Context, req ctrl.Re
 		}
 	})
 
+	componentReconcilers := []components.ComponentReconciler{}
+
 	discoveryReconciler, err := NewComponentReconciler(r, func(helmReconciler *components.HelmReconciler) components.ComponentReconciler {
 		return discovery_component.NewChartReconciler(helmReconciler, servicemeshv1alpha1.IstioControlPlaneProperties{
 			Mesh: istioMesh,
@@ -171,20 +174,25 @@ func (r *IstioControlPlaneReconciler) Reconcile(ctx context.Context, req ctrl.Re
 	if err != nil {
 		return ctrl.Result{}, err
 	}
-
-	result, err = discoveryReconciler.Reconcile(icp)
-	if err != nil {
-		return result, err
-	}
+	componentReconcilers = append(componentReconcilers, discoveryReconciler)
 
 	cniReconciler, err := NewComponentReconciler(r, cni.NewChartReconciler, r.Log.WithName("cni"))
 	if err != nil {
 		return ctrl.Result{}, err
 	}
+	componentReconcilers = append(componentReconcilers, cniReconciler)
 
-	result, err = cniReconciler.Reconcile(icp)
+	meshExpansionReconciler, err := NewComponentReconciler(r, meshexpansion.NewChartReconciler, r.Log.WithName("meshexpansion"))
 	if err != nil {
-		return result, err
+		return ctrl.Result{}, err
+	}
+	componentReconcilers = append(componentReconcilers, meshExpansionReconciler)
+
+	for _, r := range componentReconcilers {
+		result, err = r.Reconcile(icp)
+		if err != nil {
+			return result, err
+		}
 	}
 
 	err = r.setSidecarInjectorChecksumToStatus(ctx, icp)
