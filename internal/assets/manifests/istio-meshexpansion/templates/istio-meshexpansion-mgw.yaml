@@ -1,0 +1,47 @@
+{{- define "service" }}
+ports:
+- name: http-status-port
+  port: 15027
+  protocol: TCP
+  targetPort: 15027
+{{ if .Values.exposeIstiod }}
+- name: tls-istiod
+  port: 15012
+  protocol: TCP
+  targetPort: 15012
+{{ end }}
+{{ if .Values.exposeWebhook }}
+- name: tls-istiodwebhook
+  port: 15017
+  protocol: TCP
+  targetPort: 15017
+{{ end }}
+{{ if .Values.exposeClusterServices }}
+- name: tls
+  port: 15443
+  protocol: TCP
+  targetPort: 15443
+{{ end }}
+{{- include "toYamlIf" (dict "value" .Values.service.ports) }}
+{{- end }}
+
+{{- define "deployment" }}
+env:
+- name: ISTIO_META_ROUTER_MODE
+  value: sni-dnat
+{{- include "toYamlIf" (dict "value" .Values.deployment.env) }}
+{{- end }}
+
+apiVersion: servicemesh.cisco.com/v1alpha1
+kind: MeshGateway
+metadata:
+  name: {{ include "name-with-revision" (dict "name" "istio-meshexpansion" "context" $) }}
+{{- include "toYamlIf" (dict "value" .Values.metadata "key" "metadata" "indent" 2) | indent 2 }}
+spec:
+  istioControlPlane:
+    name: {{ .Values.revision }}
+    namespace: {{ .Release.Namespace }}
+  runAsRoot: {{ .Values.runAsRoot }}
+{{- include "toYamlIf" (dict "value" (merge (include "service" . | fromYaml) .Values.service) "key" "service" "indent" 2) | indent 2 }}
+{{- include "toYamlIf" (dict "value" (merge (include "deployment" . | fromYaml) .Values.deployment) "key" "deployment" "indent" 2) | indent 2 }}
+  type: ingress

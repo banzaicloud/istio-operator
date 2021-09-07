@@ -1,0 +1,31 @@
+{{ if or .Values.exposeIstiod .Values.exposeWebhook }}
+apiVersion: networking.istio.io/v1alpha3
+kind: Gateway
+metadata:
+  name: {{ include "name-with-revision" (dict "name" "istiod-expansion" "context" $) }}
+spec:
+  selector:
+    gateway-name: {{ include "name-with-revision" (dict "name" "istio-meshexpansion" "context" $) }}
+    gateway-type: ingress
+  servers:
+{{ if .Values.exposeIstiod }}
+    - port:
+        name: tls-istiod
+        number: 15012
+        protocol: tls
+      tls:
+        mode: PASSTHROUGH
+      hosts:
+        - "*"
+{{ end }}
+{{ if .Values.exposeWebhook }}
+    - port:
+        name: tls-istiodwebhook
+        number: 15017
+        protocol: tls
+      tls:
+        mode: PASSTHROUGH
+      hosts:
+        - "*"
+{{ end }}
+{{ end }}
