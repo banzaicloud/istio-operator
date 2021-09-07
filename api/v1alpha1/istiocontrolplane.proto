@@ -15,6 +15,7 @@
 syntax = "proto3";
 
 import "api/v1alpha1/common.proto";
+import "api/v1alpha1/meshgateway.proto";
 import "k8s.io/api/core/v1/generated.proto";
 import "mesh/v1alpha1/config.proto";
 import "gogoproto/gogo.proto";
@@ -98,6 +99,40 @@ message IstioControlPlaneSpec {
     string meshID = 17;
     // Global configuration for container images.
     ContainerImageConfiguration containerImageConfiguration = 18;
+
+    MeshExpansionConfiguration meshExpansion = 19;
+}
+
+message MeshExpansionConfiguration {
+    google.protobuf.BoolValue enabled = 1 [(gogoproto.wktpointer) = true];
+    message Istiod {
+        google.protobuf.BoolValue expose = 1 [(gogoproto.wktpointer) = true];
+    }
+    message Webhook {
+        google.protobuf.BoolValue expose = 1 [(gogoproto.wktpointer) = true];
+    }
+    message ClusterServices {
+        google.protobuf.BoolValue expose = 1 [(gogoproto.wktpointer) = true];
+    }
+    message MeshGatewayConfiguration {
+        // Mesh gateway metadata
+        K8sObjectMeta metadata = 1;
+        // Deployment spec
+        BaseKubernetesResourceConfig deployment = 2;
+        // Service spec
+        UnprotectedService service = 3;
+        // Whether to run the gateway in a privileged container
+        google.protobuf.BoolValue runAsRoot = 4 [(gogoproto.wktpointer) = true];
+        // K8s resource overlay patches
+        repeated K8sResourceOverlayPatch k8sResourceOverlays = 5;
+    }
+    MeshGatewayConfiguration gateway = 2;
+    // istiod component configuration
+    Istiod istiod = 3;
+    // webhook component configuration
+    Webhook webhook = 4;
+    // cluster services configuration
+    ClusterServices clusterServices = 5;
 }
 
 // Comma-separated minimum per-scope logging level of messages to output, in the form of <scope>:<level>,<scope>:<level>
