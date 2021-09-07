@@ -84,6 +84,15 @@ type MeshGatewayProperties struct {
 	InjectionTemplate     string
 	InjectionChecksum     string
 	MeshConfigChecksum    string
+	IstioControlPlane     *IstioControlPlane
+}
+
+func (p MeshGatewayProperties) GetIstioControlPlane() *IstioControlPlane {
+	if p.IstioControlPlane != nil {
+		return p.IstioControlPlane
+	}
+
+	return &IstioControlPlane{}
 }
 
 // +kubebuilder:object:root=true

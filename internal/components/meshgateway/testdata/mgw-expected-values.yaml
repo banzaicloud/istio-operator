@@ -8,6 +8,13 @@ revision: "cp-revision-1"
 
 runAsRoot: true
 
+global:
+  imagePullPolicy: Always
+  imagePullSecrets:
+  - name: pullsecret-1
+  - name: pullsecret-2
+  - name: pullsecret-3
+
 deployment:
   enablePrometheusMerge: false
   deploymentStrategy:
@@ -26,10 +33,6 @@ deployment:
     value: "true"
   - name: ISTIO_META_ROUTER_MODE
     value: "standard"
-  imagePullPolicy: Always
-  imagePullSecrets:
-  - name: pullsecret-1
-  - name: pullsecret-2
   affinity:
     nodeAffinity:
       requiredDuringSchedulingIgnoredDuringExecution:

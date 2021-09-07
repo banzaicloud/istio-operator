@@ -100,6 +100,7 @@ func (r *MeshGatewayReconciler) Reconcile(ctx context.Context, req ctrl.Request)
 			InjectionTemplate:     "gateway",
 			InjectionChecksum:     icp.Status.GetChecksums().GetSidecarInjector(),
 			MeshConfigChecksum:    icp.Status.GetChecksums().GetMeshConfig(),
+			IstioControlPlane:     icp,
 		})
 	}, r.Log.WithName("meshgateway"))
 	if err != nil {
