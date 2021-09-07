@@ -45,6 +45,9 @@ spec:
                 description: The customized CA address to retrieve certificates for
                   the pods in the cluster.
                 type: string
+              clusterID:
+                description: Cluster ID.
+                type: string
               containerImageConfiguration:
                 description: Global configuration for container images.
                 properties:
@@ -3396,6 +3399,7 @@ spec:
                     type: boolean
                 type: object
               meshExpansion:
+                description: Mesh expansion configuration.
                 properties:
                   clusterServices:
                     description: cluster services configuration.
@@ -9397,6 +9401,9 @@ spec:
                 description: The customized CA address to retrieve certificates for
                   the pods in the cluster.
                 type: string
+              clusterID:
+                description: Cluster ID.
+                type: string
               containerImageConfiguration:
                 description: Global configuration for container images.
                 properties:
@@ -12748,6 +12755,7 @@ spec:
                     type: boolean
                 type: object
               meshExpansion:
+                description: Mesh expansion configuration.
                 properties:
                   clusterServices:
                     description: cluster services configuration.
