@@ -111,6 +111,17 @@ func (this *Service) UnmarshalJSON(b []byte) error {
 	return CommonUnmarshaler.Unmarshal(bytes.NewReader(b), this)
 }
 
+// MarshalJSON is a custom marshaler for UnprotectedService
+func (this *UnprotectedService) MarshalJSON() ([]byte, error) {
+	str, err := CommonMarshaler.MarshalToString(this)
+	return []byte(str), err
+}
+
+// UnmarshalJSON is a custom unmarshaler for UnprotectedService
+func (this *UnprotectedService) UnmarshalJSON(b []byte) error {
+	return CommonUnmarshaler.Unmarshal(bytes.NewReader(b), this)
+}
+
 // MarshalJSON is a custom marshaler for ServicePort
 func (this *ServicePort) MarshalJSON() ([]byte, error) {
 	str, err := CommonMarshaler.MarshalToString(this)
