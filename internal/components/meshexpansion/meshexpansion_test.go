@@ -39,13 +39,13 @@ import (
 //go:embed testdata/icp-test-cr.yaml
 var icpTestCR []byte
 
-//go:embed testdata/icp-expected-values.yaml
+//go:embed testdata/mex-expected-values.yaml
 var icpExpectedValues []byte
 
-//go:embed testdata/icp-expected-resource-dump.yaml
+//go:embed testdata/mex-expected-resource-dump.yaml
 var icpExpectedResourceDump []byte
 
-func TestICPCNIResourceDump(t *testing.T) {
+func TestICPMeshExpansionResourceDump(t *testing.T) {
 	t.Parallel()
 
 	var icp *v1alpha1.IstioControlPlane
@@ -65,8 +65,6 @@ func TestICPCNIResourceDump(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-
-	// t.Log(string(dd))
 
 	report, err := util.CompareYAMLs(icpExpectedResourceDump, dd)
 	if err != nil {
