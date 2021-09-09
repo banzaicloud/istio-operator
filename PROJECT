@@ -5,6 +5,12 @@ resources:
   kind: IstioControlPlane
   version: v1alpha1
 - group: servicemesh
-  kind: MeshGateway
+  kind: IstioMeshGateway
+  version: v1alpha1
+- group: servicemesh
+  kind: IstioMesh
+  version: v1alpha1
+- group: servicemesh
+  kind: PeerIstioControlPlane
   version: v1alpha1
 version: "2"

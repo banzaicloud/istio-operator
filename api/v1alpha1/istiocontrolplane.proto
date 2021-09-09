@@ -15,7 +15,7 @@
 syntax = "proto3";
 
 import "api/v1alpha1/common.proto";
-import "api/v1alpha1/meshgateway.proto";
+import "api/v1alpha1/istiomeshgateway.proto";
 import "k8s.io/api/core/v1/generated.proto";
 import "mesh/v1alpha1/config.proto";
 import "gogoproto/gogo.proto";
@@ -116,7 +116,7 @@ message MeshExpansionConfiguration {
     message ClusterServices {
         google.protobuf.BoolValue expose = 1 [(gogoproto.wktpointer) = true];
     }
-    message MeshGatewayConfiguration {
+    message IstioMeshGatewayConfiguration {
         // Mesh gateway metadata
         K8sObjectMeta metadata = 1;
         // Deployment spec
@@ -128,7 +128,7 @@ message MeshExpansionConfiguration {
         // K8s resource overlay patches
         repeated K8sResourceOverlayPatch k8sResourceOverlays = 5;
     }
-    MeshGatewayConfiguration gateway = 2;
+    IstioMeshGatewayConfiguration gateway = 2;
     // istiod component configuration
     Istiod istiod = 3;
     // webhook component configuration

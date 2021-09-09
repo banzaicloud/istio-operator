@@ -1,13 +1,13 @@
-# permissions for end users to edit meshgateways.
+# permissions for end users to edit istiomeshgateways.
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRole
 metadata:
-  name: meshgateway-editor-role
+  name: istiomeshgateway-editor-role
 rules:
 - apiGroups:
   - servicemesh.cisco.com
   resources:
-  - meshgateways
+  - istiomeshgateways
   verbs:
   - create
   - delete
@@ -19,6 +19,6 @@ rules:
 - apiGroups:
   - servicemesh.cisco.com
   resources:
-  - meshgateways/status
+  - istiomeshgateways/status
   verbs:
   - get

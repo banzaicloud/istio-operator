@@ -33,7 +33,7 @@ env:
 {{- end }}
 
 apiVersion: servicemesh.cisco.com/v1alpha1
-kind: MeshGateway
+kind: IstioMeshGateway
 metadata:
   name: {{ include "name-with-revision" (dict "name" "istio-meshexpansion" "context" $) }}
 {{- include "toYamlIf" (dict "value" .Values.metadata "key" "metadata" "indent" 2) | indent 2 }}

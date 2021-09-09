@@ -299,7 +299,7 @@ rules:
 - apiGroups:
   - servicemesh.cisco.com
   resources:
-  - meshgateways
+  - istiomeshgateways
   verbs:
   - create
   - delete
@@ -311,7 +311,7 @@ rules:
 - apiGroups:
   - servicemesh.cisco.com
   resources:
-  - meshgateways/status
+  - istiomeshgateways/status
   verbs:
   - get
   - patch

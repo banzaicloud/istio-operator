@@ -1,13 +1,13 @@
-# permissions for end users to view meshgateways.
+# permissions for end users to view istiomeshgateways.
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRole
 metadata:
-  name: meshgateway-viewer-role
+  name: istiomeshgateway-viewer-role
 rules:
 - apiGroups:
   - servicemesh.cisco.com
   resources:
-  - meshgateways
+  - istiomeshgateways
   verbs:
   - get
   - list
@@ -15,6 +15,6 @@ rules:
 - apiGroups:
   - servicemesh.cisco.com
   resources:
-  - meshgateways/status
+  - istiomeshgateways/status
   verbs:
   - get
