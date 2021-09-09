@@ -606,7 +606,7 @@ func (m *MeshExpansionConfiguration_ClusterServices) GetExpose() *bool {
 }
 
 type MeshExpansionConfiguration_IstioMeshGatewayConfiguration struct {
-	// Mesh gateway metadata
+	// Istio Mesh gateway metadata
 	Metadata *K8SObjectMeta `protobuf:"bytes,1,opt,name=metadata,proto3" json:"metadata,omitempty"`
 	// Deployment spec
 	Deployment *BaseKubernetesResourceConfig `protobuf:"bytes,2,opt,name=deployment,proto3" json:"deployment,omitempty"`

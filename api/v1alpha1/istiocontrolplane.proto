@@ -117,7 +117,7 @@ message MeshExpansionConfiguration {
         google.protobuf.BoolValue expose = 1 [(gogoproto.wktpointer) = true];
     }
     message IstioMeshGatewayConfiguration {
-        // Mesh gateway metadata
+        // Istio Mesh gateway metadata
         K8sObjectMeta metadata = 1;
         // Deployment spec
         BaseKubernetesResourceConfig deployment = 2;

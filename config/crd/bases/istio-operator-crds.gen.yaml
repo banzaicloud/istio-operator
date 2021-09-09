@@ -5304,7 +5304,7 @@ spec:
                           type: object
                         type: array
                       metadata:
-                        description: Mesh gateway metadata.
+                        description: Istio Mesh gateway metadata.
                         properties:
                           annotations:
                             additionalProperties:
@@ -14661,7 +14661,7 @@ spec:
                           type: object
                         type: array
                       metadata:
-                        description: Mesh gateway metadata.
+                        description: Istio Mesh gateway metadata.
                         properties:
                           annotations:
                             additionalProperties:
@@ -22218,7 +22218,7 @@ spec:
                   type: string
                 type: array
               Status:
-                description: Reconciliation status of the mesh gateway.
+                description: Reconciliation status of the istio mesh gateway.
                 enum:
                 - Unspecified
                 - Created
