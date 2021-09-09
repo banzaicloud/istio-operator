@@ -4,6 +4,7 @@ metadata:
   name: icp-v11x-sample
 spec:
   version: 1.11.0
+  mode: ACTIVE
   logging:
     level: "default:info"
   mountMtlsCerts: false

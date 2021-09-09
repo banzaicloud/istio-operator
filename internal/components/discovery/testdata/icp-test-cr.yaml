@@ -7,6 +7,7 @@ spec:
   meshID: mesh1
   clusterID: demo-cluster1
   version: "1.11.0"
+  mode: ACTIVE
   containerImageConfiguration:
     hub: gcr.io/istio-testing
     tag: latest

@@ -4,7 +4,7 @@ description: Istio control plane descriptor
 layout: protoc-gen-docs
 generator: protoc-gen-docs
 schema: istio-operator.api.v1alpha1.IstioControlPlaneSpec
-number_of_entries: 36
+number_of_entries: 37
 ---
 <h2 id="IstioControlPlaneSpec">IstioControlPlaneSpec</h2>
 <section>
@@ -26,6 +26,23 @@ number_of_entries: 36
 <td>
 <p>Contains the intended version for the Istio control plane.
 +kubebuilder:validation:Pattern=^1.</p>
+
+</td>
+<td>
+Yes
+</td>
+</tr>
+<tr id="IstioControlPlaneSpec-mode">
+<td><code>mode</code></td>
+<td><code><a href="#ModeType">ModeType</a></code></td>
+<td>
+<p>Configure the mode for this control plane.
+Currently, two options are supported: &ldquo;ACTIVE&rdquo; and &ldquo;PASSIVE&rdquo;.
+ACTIVE mode means that a full-fledged Istio control plane will be deployed and operated
+(usually called primary cluster in upstream Istio terminology).
+PASSIVE mode means that only a few resources will be installed for sidecar injection and cross-cluster
+communication, it is used for multi cluster setups (this is the remote cluster in upstream Istio terminology).
++kubebuilder:validation:Enum=ACTIVE;PASSIVE</p>
 
 </td>
 <td>
@@ -2232,6 +2249,34 @@ Cannot be updated.
 </td>
 <td>
 No
+</td>
+</tr>
+</tbody>
+</table>
+</section>
+<h2 id="ModeType">ModeType</h2>
+<section>
+<table class="enum-values">
+<thead>
+<tr>
+<th>Name</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr id="ModeType-UNSPECIFIED">
+<td><code>UNSPECIFIED</code></td>
+<td>
+</td>
+</tr>
+<tr id="ModeType-ACTIVE">
+<td><code>ACTIVE</code></td>
+<td>
+</td>
+</tr>
+<tr id="ModeType-PASSIVE">
+<td><code>PASSIVE</code></td>
+<td>
 </td>
 </tr>
 </tbody>

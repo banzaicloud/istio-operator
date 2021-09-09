@@ -5484,6 +5484,12 @@ spec:
               meshID:
                 description: Name of the Mesh to which this control plane belongs.
                 type: string
+              mode:
+                description: Configure the mode for this control plane.
+                enum:
+                - ACTIVE
+                - PASSIVE
+                type: string
               mountMtlsCerts:
                 description: Use the user-specified, secret volume mounted key and
                   certs for Pilot and workloads.
@@ -7924,6 +7930,7 @@ spec:
                 nullable: true
                 type: boolean
             required:
+            - mode
             - version
             type: object
           status:
@@ -14841,6 +14848,12 @@ spec:
               meshID:
                 description: Name of the Mesh to which this control plane belongs.
                 type: string
+              mode:
+                description: Configure the mode for this control plane.
+                enum:
+                - ACTIVE
+                - PASSIVE
+                type: string
               mountMtlsCerts:
                 description: Use the user-specified, secret volume mounted key and
                   certs for Pilot and workloads.
@@ -17281,6 +17294,7 @@ spec:
                 nullable: true
                 type: boolean
             required:
+            - mode
             - version
             type: object
           status:
