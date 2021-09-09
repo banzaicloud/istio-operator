@@ -41,6 +41,7 @@ import (
 	ctrl "sigs.k8s.io/controller-runtime"
 	ctrlBuilder "sigs.k8s.io/controller-runtime/pkg/builder"
 	"sigs.k8s.io/controller-runtime/pkg/client"
+	"sigs.k8s.io/controller-runtime/pkg/client/config"
 	"sigs.k8s.io/controller-runtime/pkg/controller"
 	"sigs.k8s.io/controller-runtime/pkg/handler"
 	"sigs.k8s.io/controller-runtime/pkg/reconcile"
@@ -102,11 +103,16 @@ type IstioControlPlaneReconciler struct {
 // +kubebuilder:rbac:groups=servicemesh.cisco.com,resources=istiocontrolplanes/status;istiomeshes/status,verbs=get;update;patch
 
 func (r *IstioControlPlaneReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Result, error) {
-	_ = context.Background()
 	logger := r.Log.WithValues("istiocontrolplane", req.NamespacedName)
 
+	// Get a config to talk to the apiserver
+	k8sConfig, err := config.GetConfig()
+	if err != nil {
+		logger.Error(err, "unable to set up kube client config")
+	}
+
 	icp := &servicemeshv1alpha1.IstioControlPlane{}
-	err := r.Get(context.TODO(), req.NamespacedName, icp)
+	err = r.Get(ctx, req.NamespacedName, icp)
 	if err != nil {
 		if k8serrors.IsNotFound(err) {
 			// Object not found, return.  Created objects are automatically garbage collected.
@@ -165,6 +171,8 @@ func (r *IstioControlPlaneReconciler) Reconcile(ctx context.Context, req ctrl.Re
 	})
 
 	componentReconcilers := []components.ComponentReconciler{}
+
+	setDynamicDefaults(icp, k8sConfig, logger)
 
 	discoveryReconciler, err := NewComponentReconciler(r, func(helmReconciler *components.HelmReconciler) components.ComponentReconciler {
 		return discovery_component.NewChartReconciler(helmReconciler, servicemeshv1alpha1.IstioControlPlaneProperties{

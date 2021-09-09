@@ -72,7 +72,6 @@ spec:
   proxyWasm:
     enabled: false
   watchOneNamespace: false
-  jwtPolicy: "THIRD_PARTY_JWT"
   caAddress: ""
   distribution: "official"
   httpProxyEnvs:
