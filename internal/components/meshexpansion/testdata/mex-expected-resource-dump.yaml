@@ -84,14 +84,14 @@ spec:
 
 ---
 apiVersion: servicemesh.cisco.com/v1alpha1
-kind: MeshGateway
+kind: IstioMeshGateway
 metadata:
   name: istio-meshexpansion-cp-v111x
   metadata:
     annotations:
-      mgw-annotation: annotationvalue
+      imgw-annotation: annotationvalue
     labels:
-      mgw-label: labelvalue
+      imgw-label: labelvalue
 spec:
   istioControlPlane:
     name: cp-v111x

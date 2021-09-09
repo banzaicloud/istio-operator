@@ -42,10 +42,10 @@ var (
 	meshExpansionChart embed.FS
 	MeshExpansionChart = GetSubFS(meshExpansionChart, "manifests/istio-meshexpansion")
 
-	//go:embed manifests/meshgateway
-	//go:embed manifests/meshgateway/templates/_helpers.tpl
-	meshGateway embed.FS
-	MeshGateway = GetSubFS(meshGateway, "manifests/meshgateway")
+	//go:embed manifests/istio-meshgateway
+	//go:embed manifests/istio-meshgateway/templates/_helpers.tpl
+	istioMeshGateway embed.FS
+	IstioMeshGateway = GetSubFS(istioMeshGateway, "manifests/istio-meshgateway")
 )
 
 func GetSubFS(fsys fs.FS, dir string) (subFS fs.FS) {

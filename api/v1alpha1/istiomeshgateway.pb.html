@@ -3,12 +3,12 @@ title: Istio Mesh Gateway Spec
 description: Istio Mesh Gateway descriptor
 layout: protoc-gen-docs
 generator: protoc-gen-docs
-schema: istio-operator.api.v1alpha1.MeshGatewaySpec
+schema: istio-operator.api.v1alpha1.IstioMeshGatewaySpec
 number_of_entries: 9
 ---
-<h2 id="MeshGatewaySpec">MeshGatewaySpec</h2>
+<h2 id="IstioMeshGatewaySpec">IstioMeshGatewaySpec</h2>
 <section>
-<p>MeshGateway defines an Istio ingress or egress gateway</p>
+<p>IstioMeshGateway defines an Istio ingress or egress gateway</p>
 
 <table class="message-fields">
 <thead>
@@ -20,7 +20,7 @@ number_of_entries: 9
 </tr>
 </thead>
 <tbody>
-<tr id="MeshGatewaySpec-deployment">
+<tr id="IstioMeshGatewaySpec-deployment">
 <td><code>deployment</code></td>
 <td><code><a href="#BaseKubernetesResourceConfig">BaseKubernetesResourceConfig</a></code></td>
 <td>
@@ -31,7 +31,7 @@ number_of_entries: 9
 No
 </td>
 </tr>
-<tr id="MeshGatewaySpec-service">
+<tr id="IstioMeshGatewaySpec-service">
 <td><code>service</code></td>
 <td><code><a href="#Service">Service</a></code></td>
 <td>
@@ -42,7 +42,7 @@ No
 Yes
 </td>
 </tr>
-<tr id="MeshGatewaySpec-runAsRoot">
+<tr id="IstioMeshGatewaySpec-runAsRoot">
 <td><code>runAsRoot</code></td>
 <td><code><a href="https://developers.google.com/protocol-buffers/docs/reference/google.protobuf#boolvalue">BoolValue</a></code></td>
 <td>
@@ -53,7 +53,7 @@ Yes
 No
 </td>
 </tr>
-<tr id="MeshGatewaySpec-type">
+<tr id="IstioMeshGatewaySpec-type">
 <td><code>type</code></td>
 <td><code><a href="#GatewayType">GatewayType</a></code></td>
 <td>
@@ -65,7 +65,7 @@ No
 Yes
 </td>
 </tr>
-<tr id="MeshGatewaySpec-istioControlPlane">
+<tr id="IstioMeshGatewaySpec-istioControlPlane">
 <td><code>istioControlPlane</code></td>
 <td><code><a href="#NamespacedName">NamespacedName</a></code></td>
 <td>
@@ -76,7 +76,7 @@ Yes
 Yes
 </td>
 </tr>
-<tr id="MeshGatewaySpec-k8sResourceOverlays">
+<tr id="IstioMeshGatewaySpec-k8sResourceOverlays">
 <td><code>k8sResourceOverlays</code></td>
 <td><code><a href="#K8sResourceOverlayPatch">K8sResourceOverlayPatch[]</a></code></td>
 <td>
@@ -114,7 +114,7 @@ No
 </tbody>
 </table>
 </section>
-<h2 id="MeshGatewayStatus">MeshGatewayStatus</h2>
+<h2 id="IstioMeshGatewayStatus">IstioMeshGatewayStatus</h2>
 <section>
 
 <table class="message-fields">
@@ -127,7 +127,7 @@ No
 </tr>
 </thead>
 <tbody>
-<tr id="MeshGatewayStatus-Status">
+<tr id="IstioMeshGatewayStatus-Status">
 <td><code>Status</code></td>
 <td><code><a href="#ConfigState">ConfigState</a></code></td>
 <td>
@@ -138,7 +138,7 @@ No
 No
 </td>
 </tr>
-<tr id="MeshGatewayStatus-GatewayAddress">
+<tr id="IstioMeshGatewayStatus-GatewayAddress">
 <td><code>GatewayAddress</code></td>
 <td><code>string[]</code></td>
 <td>
@@ -149,7 +149,7 @@ No
 No
 </td>
 </tr>
-<tr id="MeshGatewayStatus-ErrorMessage">
+<tr id="IstioMeshGatewayStatus-ErrorMessage">
 <td><code>ErrorMessage</code></td>
 <td><code>string</code></td>
 <td>

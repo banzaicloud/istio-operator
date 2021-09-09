@@ -544,15 +544,15 @@ func RemoveFinalizers(c client.Client) error {
 		}
 	}
 
-	var mgws servicemeshv1alpha1.MeshGatewayList
-	err = c.List(context.Background(), &mgws)
+	var imgws servicemeshv1alpha1.IstioMeshGatewayList
+	err = c.List(context.Background(), &imgws)
 	if err != nil {
-		return errors.WrapIf(err, "could not list mesh gateway resources")
+		return errors.WrapIf(err, "could not list istio mesh gateway resources")
 	}
 
-	for _, mgw := range mgws.Items {
-		mgw := mgw
-		err = util.RemoveFinalizer(c, &mgw, meshGatewayFinalizerID)
+	for _, imgw := range imgws.Items {
+		imgw := imgw
+		err = util.RemoveFinalizer(c, &imgw, istioMeshGatewayFinalizerID)
 		if err != nil {
 			return err
 		}

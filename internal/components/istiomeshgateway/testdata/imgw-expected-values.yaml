@@ -27,7 +27,7 @@ deployment:
     labels:
       app: demo-gw
     annotations:
-      mgw.banzaicloud.io/type: ingress
+      imgw.banzaicloud.io/type: ingress
   env:
   - name: ISTIO_META_LOCAL_ENDPOINTS_ONLY
     value: "true"

@@ -76,14 +76,14 @@ func (this *MeshExpansionConfiguration_ClusterServices) UnmarshalJSON(b []byte) 
 	return IstiocontrolplaneUnmarshaler.Unmarshal(bytes.NewReader(b), this)
 }
 
-// MarshalJSON is a custom marshaler for MeshExpansionConfiguration_MeshGatewayConfiguration
-func (this *MeshExpansionConfiguration_MeshGatewayConfiguration) MarshalJSON() ([]byte, error) {
+// MarshalJSON is a custom marshaler for MeshExpansionConfiguration_IstioMeshGatewayConfiguration
+func (this *MeshExpansionConfiguration_IstioMeshGatewayConfiguration) MarshalJSON() ([]byte, error) {
 	str, err := IstiocontrolplaneMarshaler.MarshalToString(this)
 	return []byte(str), err
 }
 
-// UnmarshalJSON is a custom unmarshaler for MeshExpansionConfiguration_MeshGatewayConfiguration
-func (this *MeshExpansionConfiguration_MeshGatewayConfiguration) UnmarshalJSON(b []byte) error {
+// UnmarshalJSON is a custom unmarshaler for MeshExpansionConfiguration_IstioMeshGatewayConfiguration
+func (this *MeshExpansionConfiguration_IstioMeshGatewayConfiguration) UnmarshalJSON(b []byte) error {
 	return IstiocontrolplaneUnmarshaler.Unmarshal(bytes.NewReader(b), this)
 }
 

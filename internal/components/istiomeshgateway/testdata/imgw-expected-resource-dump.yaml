@@ -16,7 +16,7 @@ metadata:
     gateway-name: demo-gw
     gateway-type: ingress
     istio.io/rev: cp-v110x.istio-system
-    release: meshgateway
+    release: istio-meshgateway
   name: demo-gw
   namespace: default
 spec:
@@ -29,7 +29,7 @@ spec:
       gateway-type: ingress
       istio.io/rev: cp-v110x.istio-system
       podlabel: podlabelvalue
-      release: meshgateway
+      release: istio-meshgateway
 ---
 apiVersion: v1
 imagePullSecrets:
@@ -43,7 +43,7 @@ metadata:
     gateway-name: demo-gw
     gateway-type: ingress
     istio.io/rev: cp-v110x.istio-system
-    release: meshgateway
+    release: istio-meshgateway
   name: demo-gw-service-account
   namespace: default
 
@@ -56,7 +56,7 @@ metadata:
     gateway-name: demo-gw
     gateway-type: ingress
     istio.io/rev: cp-v110x.istio-system
-    release: meshgateway
+    release: istio-meshgateway
   name: demo-gw-sds
   namespace: default
 rules:
@@ -78,7 +78,7 @@ metadata:
     gateway-name: demo-gw
     gateway-type: ingress
     istio.io/rev: cp-v110x.istio-system
-    release: meshgateway
+    release: istio-meshgateway
   name: demo-gw-sds
   namespace: default
 roleRef:
@@ -100,7 +100,7 @@ metadata:
     gateway-name: demo-gw
     gateway-type: ingress
     istio.io/rev: cp-v110x.istio-system
-    release: meshgateway
+    release: istio-meshgateway
   name: demo-gw
   namespace: default
 spec:
@@ -123,7 +123,7 @@ spec:
     gateway-type: ingress
     istio.io/rev: cp-v110x.istio-system
     podlabel: podlabelvalue
-    release: meshgateway
+    release: istio-meshgateway
   type: LoadBalancer
 
 ---
@@ -131,13 +131,13 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   annotations:
-    mgw.banzaicloud.io/type: ingress
+    imgw.banzaicloud.io/type: ingress
   labels:
     app: demo-gw
     gateway-name: demo-gw
     gateway-type: ingress
     istio.io/rev: cp-v110x.istio-system
-    release: meshgateway
+    release: istio-meshgateway
   name: demo-gw
   namespace: default
 spec:
@@ -149,7 +149,7 @@ spec:
       gateway-type: ingress
       istio.io/rev: cp-v110x.istio-system
       podlabel: podlabelvalue
-      release: meshgateway
+      release: istio-meshgateway
   strategy:
     type: RollingUpdate
     rollingUpdate:
@@ -171,7 +171,7 @@ spec:
         gateway-name: demo-gw
         gateway-type: ingress
         istio.io/rev: cp-v110x.istio-system
-        release: meshgateway
+        release: istio-meshgateway
         sidecar.istio.io/inject: "true"
         podlabel: podlabelvalue
     spec:
@@ -265,7 +265,7 @@ metadata:
     gateway-name: demo-gw
     gateway-type: ingress
     istio.io/rev: cp-v110x.istio-system
-    release: meshgateway
+    release: istio-meshgateway
 spec:
   maxReplicas: 3
   minReplicas: 1

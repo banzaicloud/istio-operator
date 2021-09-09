@@ -14,7 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package meshgateway
+package istiomeshgateway
 
 import (
 	"net/http"
@@ -31,9 +31,9 @@ import (
 )
 
 const (
-	componentName = "meshgateway"
+	componentName = "istio-meshgateway"
 	chartName     = "istio-meshgateway"
-	releaseName   = "meshgateway"
+	releaseName   = "istio-meshgateway"
 
 	valuesTemplateFileName = "values.yaml.tpl"
 )
@@ -41,10 +41,10 @@ const (
 var _ components.MinimalComponent = &Component{}
 
 type Component struct {
-	properties v1alpha1.MeshGatewayProperties
+	properties v1alpha1.IstioMeshGatewayProperties
 }
 
-func NewChartReconciler(helmReconciler *components.HelmReconciler, properties v1alpha1.MeshGatewayProperties) components.ComponentReconciler {
+func NewChartReconciler(helmReconciler *components.HelmReconciler, properties v1alpha1.IstioMeshGatewayProperties) components.ComponentReconciler {
 	return &components.Base{
 		HelmReconciler: helmReconciler,
 		Component: &Component{
@@ -58,24 +58,24 @@ func (rec *Component) Name() string {
 }
 
 func (rec *Component) Enabled(object runtime.Object) bool {
-	if mgw, ok := object.(*v1alpha1.MeshGateway); ok {
-		return mgw.DeletionTimestamp.IsZero()
+	if imgw, ok := object.(*v1alpha1.IstioMeshGateway); ok {
+		return imgw.DeletionTimestamp.IsZero()
 	}
 
 	return true
 }
 
 func (rec *Component) ReleaseData(object runtime.Object) (*templatereconciler.ReleaseData, error) {
-	if mgw, ok := object.(*v1alpha1.MeshGateway); ok {
+	if imgw, ok := object.(*v1alpha1.IstioMeshGateway); ok {
 		values, err := rec.values(object)
 		if err != nil {
 			return nil, err
 		}
 
 		return &templatereconciler.ReleaseData{
-			Chart:       http.FS(assets.MeshGateway),
+			Chart:       http.FS(assets.IstioMeshGateway),
 			Values:      values,
-			Namespace:   mgw.Namespace,
+			Namespace:   imgw.Namespace,
 			ChartName:   chartName,
 			ReleaseName: releaseName,
 		}, nil
@@ -85,20 +85,20 @@ func (rec *Component) ReleaseData(object runtime.Object) (*templatereconciler.Re
 }
 
 func (rec *Component) values(object runtime.Object) (helm.Strimap, error) {
-	mgw, ok := object.(*v1alpha1.MeshGateway)
+	imgw, ok := object.(*v1alpha1.IstioMeshGateway)
 	if !ok {
-		return nil, errors.WrapIff(errors.NewPlain("object cannot be converted to a MeshGateway"), "%+v", object)
+		return nil, errors.WrapIff(errors.NewPlain("object cannot be converted to a IstioMeshGateway"), "%+v", object)
 	}
 
-	obj := &v1alpha1.MeshGatewayWithProperties{
-		MeshGateway: mgw,
-		Properties:  rec.properties,
+	obj := &v1alpha1.IstioMeshGatewayWithProperties{
+		IstioMeshGateway: imgw,
+		Properties:       rec.properties,
 	}
 	obj.SetDefaults()
 
-	values, err := util.TransformStructToStriMapWithTemplate(obj, assets.MeshGateway, valuesTemplateFileName)
+	values, err := util.TransformStructToStriMapWithTemplate(obj, assets.IstioMeshGateway, valuesTemplateFileName)
 	if err != nil {
-		return nil, errors.WrapIff(err, "MeshGateway cannot be converted into a map[string]interface{}")
+		return nil, errors.WrapIff(err, "IstioMeshGateway cannot be converted into a map[string]interface{}")
 	}
 
 	return values, nil

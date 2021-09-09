@@ -40,7 +40,7 @@ import (
 
 	servicemeshv1alpha1 "github.com/banzaicloud/istio-operator/v2/api/v1alpha1"
 	"github.com/banzaicloud/istio-operator/v2/internal/components"
-	"github.com/banzaicloud/istio-operator/v2/internal/components/meshgateway"
+	"github.com/banzaicloud/istio-operator/v2/internal/components/istiomeshgateway"
 	"github.com/banzaicloud/istio-operator/v2/internal/util"
 	"github.com/banzaicloud/istio-operator/v2/pkg/k8sutil"
 	"github.com/banzaicloud/operator-tools/pkg/utils"
@@ -49,25 +49,24 @@ import (
 const (
 	hostnameSyncWaitDuration      = time.Second * 300
 	pendingGatewayRequeueDuration = time.Second * 30
-	meshGatewayFinalizerID        = "istio-meshgateway.servicemesh.cisco.com"
+	istioMeshGatewayFinalizerID   = "istio-meshgateway.servicemesh.cisco.com"
 )
 
-// MeshGatewayReconciler reconciles a MeshGateway object
-type MeshGatewayReconciler struct {
+// IstioMeshGatewayReconciler reconciles a IstioMeshGateway object
+type IstioMeshGatewayReconciler struct {
 	client.Client
 	Log    logr.Logger
 	Scheme *runtime.Scheme
 }
 
-// +kubebuilder:rbac:groups=servicemesh.cisco.com,resources=meshgateways,verbs=get;list;watch;create;update;patch;delete
-// +kubebuilder:rbac:groups=servicemesh.cisco.com,resources=meshgateways/status,verbs=get;update;patch
+// +kubebuilder:rbac:groups=servicemesh.cisco.com,resources=istiomeshgateways,verbs=get;list;watch;create;update;patch;delete
+// +kubebuilder:rbac:groups=servicemesh.cisco.com,resources=istiomeshgateways/status,verbs=get;update;patch
 
-func (r *MeshGatewayReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Result, error) {
-	_ = context.Background()
-	logger := r.Log.WithValues("meshgateway", req.NamespacedName)
+func (r *IstioMeshGatewayReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Result, error) {
+	logger := r.Log.WithValues("istiomeshgateway", req.NamespacedName)
 
-	mgw := &servicemeshv1alpha1.MeshGateway{}
-	err := r.Get(context.TODO(), req.NamespacedName, mgw)
+	imgw := &servicemeshv1alpha1.IstioMeshGateway{}
+	err := r.Get(ctx, req.NamespacedName, imgw)
 	if err != nil {
 		if k8serrors.IsNotFound(err) {
 			// Object not found, return.  Created objects are automatically garbage collected.
@@ -80,7 +79,7 @@ func (r *MeshGatewayReconciler) Reconcile(ctx context.Context, req ctrl.Request)
 
 	logger.Info("reconciling")
 
-	icp, err := r.getRelatedIstioControlPlane(ctx, r.GetClient(), mgw, logger)
+	icp, err := r.getRelatedIstioControlPlane(ctx, r.GetClient(), imgw, logger)
 	if err != nil {
 		return ctrl.Result{}, err
 	}
@@ -89,7 +88,7 @@ func (r *MeshGatewayReconciler) Reconcile(ctx context.Context, req ctrl.Request)
 		return ctrl.Result{}, nil
 	}
 
-	err = util.AddFinalizer(r.Client, mgw, meshGatewayFinalizerID)
+	err = util.AddFinalizer(r.Client, imgw, istioMeshGatewayFinalizerID)
 	if err != nil {
 		return ctrl.Result{}, err
 	}
@@ -100,7 +99,7 @@ func (r *MeshGatewayReconciler) Reconcile(ctx context.Context, req ctrl.Request)
 	}
 
 	reconciler, err := NewComponentReconciler(r, func(helmReconciler *components.HelmReconciler) components.ComponentReconciler {
-		return meshgateway.NewChartReconciler(helmReconciler, servicemeshv1alpha1.MeshGatewayProperties{
+		return istiomeshgateway.NewChartReconciler(helmReconciler, servicemeshv1alpha1.IstioMeshGatewayProperties{
 			Revision:              fmt.Sprintf("%s.%s", icp.GetName(), icp.GetNamespace()),
 			EnablePrometheusMerge: utils.BoolPointer(enablePrometheusMerge),
 			InjectionTemplate:     "gateway",
@@ -108,14 +107,14 @@ func (r *MeshGatewayReconciler) Reconcile(ctx context.Context, req ctrl.Request)
 			MeshConfigChecksum:    icp.Status.GetChecksums().GetMeshConfig(),
 			IstioControlPlane:     icp,
 		})
-	}, r.Log.WithName("meshgateway"))
+	}, r.Log.WithName("istiomeshgateway"))
 	if err != nil {
 		return ctrl.Result{}, err
 	}
 
-	result, err := reconciler.Reconcile(mgw)
+	result, err := reconciler.Reconcile(imgw)
 	if err != nil {
-		return result, errors.WrapIf(err, "could not reconcile mesh gateway")
+		return result, errors.WrapIf(err, "could not reconcile istio mesh gateway")
 	}
 
 	if result.Requeue {
@@ -124,12 +123,12 @@ func (r *MeshGatewayReconciler) Reconcile(ctx context.Context, req ctrl.Request)
 		return result, nil
 	}
 
-	result, err = r.setGatewayAddress(ctx, r.GetClient(), mgw, logger, result)
+	result, err = r.setGatewayAddress(ctx, r.GetClient(), imgw, logger, result)
 	if err != nil {
 		return result, errors.WrapIf(err, "could not set gateway address")
 	}
 
-	err = util.RemoveFinalizer(r.Client, mgw, meshGatewayFinalizerID)
+	err = util.RemoveFinalizer(r.Client, imgw, istioMeshGatewayFinalizerID)
 	if err != nil {
 		return result, err
 	}
@@ -137,19 +136,19 @@ func (r *MeshGatewayReconciler) Reconcile(ctx context.Context, req ctrl.Request)
 	return result, nil
 }
 
-func (r *MeshGatewayReconciler) GetClient() client.Client {
+func (r *IstioMeshGatewayReconciler) GetClient() client.Client {
 	return r.Client
 }
 
-func (r *MeshGatewayReconciler) GetScheme() *runtime.Scheme {
+func (r *IstioMeshGatewayReconciler) GetScheme() *runtime.Scheme {
 	return r.Scheme
 }
 
-func (r *MeshGatewayReconciler) SetupWithManager(mgr ctrl.Manager) error {
+func (r *IstioMeshGatewayReconciler) SetupWithManager(mgr ctrl.Manager) error {
 	builder := ctrl.NewControllerManagedBy(mgr)
 
 	ctrl, err := builder.
-		For(&servicemeshv1alpha1.MeshGateway{}, ctrlBuilder.WithPredicates(util.ObjectChangePredicate{})).
+		For(&servicemeshv1alpha1.IstioMeshGateway{}, ctrlBuilder.WithPredicates(util.ObjectChangePredicate{})).
 		Owns(&appsv1.Deployment{
 			TypeMeta: metav1.TypeMeta{
 				Kind:       "Deployment",
@@ -215,21 +214,21 @@ func (r *MeshGatewayReconciler) SetupWithManager(mgr ctrl.Manager) error {
 			return nil
 		}
 
-		mgws := &servicemeshv1alpha1.MeshGatewayList{}
-		err := r.Client.List(context.Background(), mgws)
+		imgws := &servicemeshv1alpha1.IstioMeshGatewayList{}
+		err := r.Client.List(context.Background(), imgws)
 		if err != nil {
-			r.Log.Error(err, "could not list meshgateway resources")
+			r.Log.Error(err, "could not list istiomeshgateway resources")
 
 			return nil
 		}
 
 		resources := make([]reconcile.Request, 0)
-		for _, mgw := range mgws.Items {
-			if icp.GetName() == mgw.GetSpec().GetIstioControlPlane().GetName() && icp.GetNamespace() == mgw.GetSpec().GetIstioControlPlane().GetNamespace() {
+		for _, imgw := range imgws.Items {
+			if icp.GetName() == imgw.GetSpec().GetIstioControlPlane().GetName() && icp.GetNamespace() == imgw.GetSpec().GetIstioControlPlane().GetNamespace() {
 				resources = append(resources, reconcile.Request{
 					NamespacedName: client.ObjectKey{
-						Name:      mgw.GetName(),
-						Namespace: mgw.GetNamespace(),
+						Name:      imgw.GetName(),
+						Namespace: imgw.GetNamespace(),
 					},
 				})
 			}
@@ -244,17 +243,17 @@ func (r *MeshGatewayReconciler) SetupWithManager(mgr ctrl.Manager) error {
 	return nil
 }
 
-func (r *MeshGatewayReconciler) getRelatedIstioControlPlane(ctx context.Context, c client.Client, mgw *servicemeshv1alpha1.MeshGateway, logger logr.Logger) (*servicemeshv1alpha1.IstioControlPlane, error) {
+func (r *IstioMeshGatewayReconciler) getRelatedIstioControlPlane(ctx context.Context, c client.Client, imgw *servicemeshv1alpha1.IstioMeshGateway, logger logr.Logger) (*servicemeshv1alpha1.IstioControlPlane, error) {
 	icp := &servicemeshv1alpha1.IstioControlPlane{}
 
 	err := c.Get(ctx, client.ObjectKey{
-		Name:      mgw.GetSpec().GetIstioControlPlane().GetName(),
-		Namespace: mgw.GetSpec().GetIstioControlPlane().GetNamespace(),
+		Name:      imgw.GetSpec().GetIstioControlPlane().GetName(),
+		Namespace: imgw.GetSpec().GetIstioControlPlane().GetNamespace(),
 	}, icp)
 	if err != nil {
-		updateErr := components.UpdateStatus(ctx, c, mgw, components.ConvertConfigStateToReconcileStatus(servicemeshv1alpha1.ConfigState_ReconcileFailed), err.Error())
+		updateErr := components.UpdateStatus(ctx, c, imgw, components.ConvertConfigStateToReconcileStatus(servicemeshv1alpha1.ConfigState_ReconcileFailed), err.Error())
 		if updateErr != nil {
-			logger.Error(updateErr, "failed to update mesh gateway state")
+			logger.Error(updateErr, "failed to update istio mesh gateway state")
 
 			return nil, errors.WithStack(err)
 		}
@@ -265,14 +264,14 @@ func (r *MeshGatewayReconciler) getRelatedIstioControlPlane(ctx context.Context,
 	return icp, nil
 }
 
-func (r *MeshGatewayReconciler) getGatewayAddress(mgw *servicemeshv1alpha1.MeshGateway) ([]string, bool, error) {
+func (r *IstioMeshGatewayReconciler) getGatewayAddress(imgw *servicemeshv1alpha1.IstioMeshGateway) ([]string, bool, error) {
 	var service corev1.Service
 	var ips []string
 	var hasHostname bool
 
 	err := r.Get(context.Background(), client.ObjectKey{
-		Name:      mgw.GetName(),
-		Namespace: mgw.GetNamespace(),
+		Name:      imgw.GetName(),
+		Namespace: imgw.GetNamespace(),
 	}, &service)
 	if err != nil {
 		return nil, hasHostname, err
@@ -286,18 +285,18 @@ func (r *MeshGatewayReconciler) getGatewayAddress(mgw *servicemeshv1alpha1.MeshG
 	return ips, hasHostname, nil
 }
 
-func (r *MeshGatewayReconciler) setGatewayAddress(ctx context.Context, c client.Client, mgw *servicemeshv1alpha1.MeshGateway, logger logr.Logger, result ctrl.Result) (ctrl.Result, error) {
+func (r *IstioMeshGatewayReconciler) setGatewayAddress(ctx context.Context, c client.Client, imgw *servicemeshv1alpha1.IstioMeshGateway, logger logr.Logger, result ctrl.Result) (ctrl.Result, error) {
 	var gatewayHasHostname bool
 	var err error
 
-	if !mgw.DeletionTimestamp.IsZero() {
+	if !imgw.DeletionTimestamp.IsZero() {
 		return ctrl.Result{}, nil
 	}
 
-	mgw.Status.GatewayAddress, gatewayHasHostname, err = r.getGatewayAddress(mgw)
+	imgw.Status.GatewayAddress, gatewayHasHostname, err = r.getGatewayAddress(imgw)
 	if err != nil {
 		logger.Info(fmt.Sprintf("gateway address pending: %s", err.Error()))
-		updateErr := components.UpdateStatus(ctx, c, mgw, components.ConvertConfigStateToReconcileStatus(servicemeshv1alpha1.ConfigState_ReconcileFailed), errors.Cause(err).Error())
+		updateErr := components.UpdateStatus(ctx, c, imgw, components.ConvertConfigStateToReconcileStatus(servicemeshv1alpha1.ConfigState_ReconcileFailed), errors.Cause(err).Error())
 		if updateErr != nil {
 			logger.Error(updateErr, "failed to update state")
 
@@ -309,7 +308,7 @@ func (r *MeshGatewayReconciler) setGatewayAddress(ctx context.Context, c client.
 		return result, nil
 	}
 
-	updateErr := components.UpdateStatus(ctx, c, mgw, components.ConvertConfigStateToReconcileStatus(servicemeshv1alpha1.ConfigState_Available), "")
+	updateErr := components.UpdateStatus(ctx, c, imgw, components.ConvertConfigStateToReconcileStatus(servicemeshv1alpha1.ConfigState_Available), "")
 	if updateErr != nil {
 		logger.Error(updateErr, "failed to update state")
 

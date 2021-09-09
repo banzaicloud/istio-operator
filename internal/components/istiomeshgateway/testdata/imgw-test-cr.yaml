@@ -1,5 +1,5 @@
 apiVersion: servicemesh.cisco.com/v1alpha1
-kind: MeshGateway
+kind: IstioMeshGateway
 metadata:
   name: demo-gw
   namespace: default
@@ -7,7 +7,7 @@ spec:
   deployment:
     metadata:
       annotations:
-        mgw.banzaicloud.io/type: "ingress"
+        imgw.banzaicloud.io/type: "ingress"
       labels:
         app: demo-gw
     image: container-hub/image-name:tag

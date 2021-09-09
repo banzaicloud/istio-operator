@@ -27,39 +27,39 @@ const (
 
 // +kubebuilder:object:root=true
 
-// MeshGateway is the Schema for the meshgateways API
-type MeshGateway struct {
+// IstioMeshGateway is the Schema for the istiomeshgateways API
+type IstioMeshGateway struct {
 	metav1.TypeMeta   `json:",inline"`
 	metav1.ObjectMeta `json:"metadata,omitempty" protobuf:"bytes,1,opt,name=metadata"`
 
-	Spec   *MeshGatewaySpec  `json:"spec,omitempty" protobuf:"bytes,2,opt,name=spec"`
-	Status MeshGatewayStatus `json:"status,omitempty"`
+	Spec   *IstioMeshGatewaySpec  `json:"spec,omitempty" protobuf:"bytes,2,opt,name=spec"`
+	Status IstioMeshGatewayStatus `json:"status,omitempty"`
 }
 
-func (mgw *MeshGateway) SetStatus(status ConfigState, errorMessage string) {
-	mgw.Status.Status = status
-	mgw.Status.ErrorMessage = errorMessage
+func (imgw *IstioMeshGateway) SetStatus(status ConfigState, errorMessage string) {
+	imgw.Status.Status = status
+	imgw.Status.ErrorMessage = errorMessage
 }
 
-func (mgw *MeshGateway) GetStatus() MeshGatewayStatus {
-	return mgw.Status
+func (imgw *IstioMeshGateway) GetStatus() IstioMeshGatewayStatus {
+	return imgw.Status
 }
 
-func (mgw *MeshGateway) GetSpec() *MeshGatewaySpec {
-	if mgw.Spec != nil {
-		return mgw.Spec
+func (imgw *IstioMeshGateway) GetSpec() *IstioMeshGatewaySpec {
+	if imgw.Spec != nil {
+		return imgw.Spec
 	}
 
 	return nil
 }
 
-type MeshGatewayWithProperties struct {
-	*MeshGateway
-	Properties MeshGatewayProperties
+type IstioMeshGatewayWithProperties struct {
+	*IstioMeshGateway
+	Properties IstioMeshGatewayProperties
 }
 
-func (p *MeshGatewayWithProperties) SetDefaults() {
-	annotations := p.MeshGateway.GetSpec().GetDeployment().GetPodMetadata().GetAnnotations()
+func (p *IstioMeshGatewayWithProperties) SetDefaults() {
+	annotations := p.IstioMeshGateway.GetSpec().GetDeployment().GetPodMetadata().GetAnnotations()
 	if annotations == nil {
 		annotations = make(map[string]string)
 	}
@@ -69,16 +69,16 @@ func (p *MeshGatewayWithProperties) SetDefaults() {
 	if p.Properties.MeshConfigChecksum != "" {
 		annotations[MeshConfigChecksumAnnotation] = p.Properties.MeshConfigChecksum
 	}
-	if p.MeshGateway.GetSpec().GetDeployment() == nil {
-		p.MeshGateway.GetSpec().Deployment = &BaseKubernetesResourceConfig{}
+	if p.IstioMeshGateway.GetSpec().GetDeployment() == nil {
+		p.IstioMeshGateway.GetSpec().Deployment = &BaseKubernetesResourceConfig{}
 	}
-	if p.MeshGateway.GetSpec().GetDeployment().GetPodMetadata() == nil {
-		p.MeshGateway.GetSpec().GetDeployment().PodMetadata = &K8SObjectMeta{}
+	if p.IstioMeshGateway.GetSpec().GetDeployment().GetPodMetadata() == nil {
+		p.IstioMeshGateway.GetSpec().GetDeployment().PodMetadata = &K8SObjectMeta{}
 	}
-	p.MeshGateway.GetSpec().GetDeployment().GetPodMetadata().Annotations = annotations
+	p.IstioMeshGateway.GetSpec().GetDeployment().GetPodMetadata().Annotations = annotations
 }
 
-type MeshGatewayProperties struct {
+type IstioMeshGatewayProperties struct {
 	Revision              string
 	EnablePrometheusMerge *bool
 	InjectionTemplate     string
@@ -87,7 +87,7 @@ type MeshGatewayProperties struct {
 	IstioControlPlane     *IstioControlPlane
 }
 
-func (p MeshGatewayProperties) GetIstioControlPlane() *IstioControlPlane {
+func (p IstioMeshGatewayProperties) GetIstioControlPlane() *IstioControlPlane {
 	if p.IstioControlPlane != nil {
 		return p.IstioControlPlane
 	}
@@ -97,13 +97,13 @@ func (p MeshGatewayProperties) GetIstioControlPlane() *IstioControlPlane {
 
 // +kubebuilder:object:root=true
 
-// MeshGatewayList contains a list of MeshGateway
-type MeshGatewayList struct {
+// IstioMeshGatewayList contains a list of IstioMeshGateway
+type IstioMeshGatewayList struct {
 	metav1.TypeMeta `json:",inline"`
 	metav1.ListMeta `json:"metadata,omitempty" protobuf:"bytes,1,opt,name=metadata"`
-	Items           []MeshGateway `json:"items" protobuf:"bytes,2,rep,name=items"`
+	Items           []IstioMeshGateway `json:"items" protobuf:"bytes,2,rep,name=items"`
 }
 
 func init() {
-	SchemeBuilder.Register(&MeshGateway{}, &MeshGatewayList{})
+	SchemeBuilder.Register(&IstioMeshGateway{}, &IstioMeshGatewayList{})
 }

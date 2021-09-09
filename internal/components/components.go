@@ -209,22 +209,22 @@ func ConvertConfigStateToReconcileStatus(state v1alpha1.ConfigState) types.Recon
 }
 
 func UpdateStatus(ctx context.Context, c client.Client, object runtime.Object, status types.ReconcileStatus, message string) error {
-	if mgw, ok := object.(ObjectWithStatus); ok {
+	if imgw, ok := object.(ObjectWithStatus); ok {
 		current := &unstructured.Unstructured{}
-		current.SetGroupVersionKind(mgw.GetObjectKind().GroupVersionKind())
+		current.SetGroupVersionKind(imgw.GetObjectKind().GroupVersionKind())
 		err := c.Get(context.TODO(), client.ObjectKey{
-			Namespace: mgw.GetNamespace(),
-			Name:      mgw.GetName(),
+			Namespace: imgw.GetNamespace(),
+			Name:      imgw.GetName(),
 		}, current)
 		if err != nil {
 			return errors.WrapIf(err, "could not get resource for updating status")
 		}
 
 		patch := client.MergeFrom(current)
-		mgw.SetResourceVersion(current.GetResourceVersion())
-		mgw.SetStatus(ConvertReconcileStatusToConfigState(status), message)
+		imgw.SetResourceVersion(current.GetResourceVersion())
+		imgw.SetStatus(ConvertReconcileStatusToConfigState(status), message)
 
-		return c.Status().Patch(context.Background(), mgw, patch)
+		return c.Status().Patch(context.Background(), imgw, patch)
 	}
 
 	return nil

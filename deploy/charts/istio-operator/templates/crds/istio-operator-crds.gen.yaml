@@ -20172,17 +20172,17 @@ kind: CustomResourceDefinition
 metadata:
   annotations:
     "helm.sh/resource-policy": keep
-  name: meshgateways.servicemesh.cisco.com
+  name: istiomeshgateways.servicemesh.cisco.com
 spec:
   group: servicemesh.cisco.com
   names:
-    kind: MeshGateway
-    listKind: MeshGatewayList
-    plural: meshgateways
+    kind: IstioMeshGateway
+    listKind: IstioMeshGatewayList
+    plural: istiomeshgateways
     shortNames:
-    - mgw
-    - meshgw
-    singular: meshgateway
+    - imgw
+    - istiomgw
+    singular: istiomeshgateway
   scope: Namespaced
   versions:
   - additionalPrinterColumns:
@@ -20217,7 +20217,7 @@ spec:
       openAPIV3Schema:
         properties:
           spec:
-            description: MeshGateway defines an Istio ingress or egress gateway.
+            description: IstioMeshGateway defines an Istio ingress or egress gateway.
             properties:
               deployment:
                 description: Deployment spec.

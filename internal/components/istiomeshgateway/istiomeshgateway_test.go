@@ -13,7 +13,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 */
-package meshgateway_test
+package istiomeshgateway_test
 
 import (
 	_ "embed"
@@ -29,30 +29,30 @@ import (
 
 	"github.com/banzaicloud/istio-operator/v2/api/v1alpha1"
 	"github.com/banzaicloud/istio-operator/v2/internal/assets"
-	"github.com/banzaicloud/istio-operator/v2/internal/components/meshgateway"
+	"github.com/banzaicloud/istio-operator/v2/internal/components/istiomeshgateway"
 	"github.com/banzaicloud/istio-operator/v2/internal/util"
 	"github.com/banzaicloud/operator-tools/pkg/helm/templatereconciler"
 	"github.com/banzaicloud/operator-tools/pkg/reconciler"
 	"github.com/banzaicloud/operator-tools/pkg/utils"
 )
 
-//go:embed testdata/mgw-test-cr.yaml
-var mgwTestCR []byte
+//go:embed testdata/imgw-test-cr.yaml
+var imgwTestCR []byte
 
 //go:embed testdata/icp-test-cr.yaml
 var icpTestCR []byte
 
-//go:embed testdata/mgw-expected-values.yaml
-var mgwExpectedValues []byte
+//go:embed testdata/imgw-expected-values.yaml
+var imgwExpectedValues []byte
 
-//go:embed testdata/mgw-expected-resource-dump.yaml
-var mgwExpectedResourceDump []byte
+//go:embed testdata/imgw-expected-resource-dump.yaml
+var imgwExpectedResourceDump []byte
 
-func TestMGWResourceDump(t *testing.T) {
+func TestIMGWResourceDump(t *testing.T) {
 	t.Parallel()
 
-	var mgw *v1alpha1.MeshGateway
-	if err := yaml.Unmarshal(mgwTestCR, &mgw); err != nil {
+	var imgw *v1alpha1.IstioMeshGateway
+	if err := yaml.Unmarshal(imgwTestCR, &imgw); err != nil {
 		t.Fatal(err)
 	}
 
@@ -61,11 +61,11 @@ func TestMGWResourceDump(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	reconciler := meshgateway.NewChartReconciler(
+	reconciler := istiomeshgateway.NewChartReconciler(
 		templatereconciler.NewHelmReconciler(nil, nil, nil, fake.NewSimpleClientset().Discovery(), []reconciler.NativeReconcilerOpt{
 			reconciler.NativeReconcilerSetControllerRef(),
 		}),
-		v1alpha1.MeshGatewayProperties{
+		v1alpha1.IstioMeshGatewayProperties{
 			Revision:              "cp-v110x.istio-system",
 			EnablePrometheusMerge: utils.BoolPointer(true),
 			InjectionTemplate:     "gateway",
@@ -75,12 +75,12 @@ func TestMGWResourceDump(t *testing.T) {
 		},
 	)
 
-	dd, err := reconciler.GetManifest(mgw)
+	dd, err := reconciler.GetManifest(imgw)
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	report, err := util.CompareYAMLs(mgwExpectedResourceDump, dd)
+	report, err := util.CompareYAMLs(imgwExpectedResourceDump, dd)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -98,11 +98,11 @@ func TestMGWResourceDump(t *testing.T) {
 	}
 }
 
-func TestMGWTemplateTransform(t *testing.T) {
+func TestIMGWTemplateTransform(t *testing.T) {
 	t.Parallel()
 
-	var mgw *v1alpha1.MeshGateway
-	if err := yaml.Unmarshal(mgwTestCR, &mgw); err != nil {
+	var imgw *v1alpha1.IstioMeshGateway
+	if err := yaml.Unmarshal(imgwTestCR, &imgw); err != nil {
 		t.Fatal(err)
 	}
 
@@ -111,9 +111,9 @@ func TestMGWTemplateTransform(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	obj := &v1alpha1.MeshGatewayWithProperties{
-		MeshGateway: mgw,
-		Properties: v1alpha1.MeshGatewayProperties{
+	obj := &v1alpha1.IstioMeshGatewayWithProperties{
+		IstioMeshGateway: imgw,
+		Properties: v1alpha1.IstioMeshGatewayProperties{
 			Revision:              "cp-revision-1",
 			EnablePrometheusMerge: utils.BoolPointer(false),
 			InjectionTemplate:     "gateway",
@@ -124,7 +124,7 @@ func TestMGWTemplateTransform(t *testing.T) {
 	}
 	obj.SetDefaults()
 
-	values, err := util.TransformStructToStriMapWithTemplate(obj, assets.MeshGateway, "values.yaml.tpl")
+	values, err := util.TransformStructToStriMapWithTemplate(obj, assets.IstioMeshGateway, "values.yaml.tpl")
 	if err != nil {
 		kv := keyval.ToMap(errors.GetDetails(err))
 		if t, ok := kv["template"]; ok {
@@ -138,7 +138,7 @@ func TestMGWTemplateTransform(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	report, err := util.CompareYAMLs(mgwExpectedValues, valuesYaml)
+	report, err := util.CompareYAMLs(imgwExpectedValues, valuesYaml)
 	if err != nil {
 		t.Fatal(err)
 	}

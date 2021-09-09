@@ -11,9 +11,9 @@ deployment:
     value: "true"
 metadata:
   annotations:
-    mgw-annotation: annotationvalue
+    imgw-annotation: annotationvalue
   labels:
-    mgw-label: labelvalue
+    imgw-label: labelvalue
 runAsRoot: true
 service:
   type: ClusterIP

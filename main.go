@@ -90,12 +90,12 @@ func main() {
 		setupLog.Error(err, "unable to create controller", "controller", "IstioControlPlane")
 		os.Exit(1)
 	}
-	if err = (&controllers.MeshGatewayReconciler{
+	if err = (&controllers.IstioMeshGatewayReconciler{
 		Client: mgr.GetClient(),
-		Log:    ctrl.Log.WithName("controllers").WithName("MeshGateway"),
+		Log:    ctrl.Log.WithName("controllers").WithName("IstioMeshGateway"),
 		Scheme: mgr.GetScheme(),
 	}).SetupWithManager(mgr); err != nil {
-		setupLog.Error(err, "unable to create controller", "controller", "MeshGateway")
+		setupLog.Error(err, "unable to create controller", "controller", "IstioMeshGateway")
 		os.Exit(1)
 	}
 	// +kubebuilder:scaffold:builder
