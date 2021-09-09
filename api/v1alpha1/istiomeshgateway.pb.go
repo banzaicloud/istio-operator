@@ -226,7 +226,7 @@ func (m *Properties) GetName() string {
 // +k8s:deepcopy-gen=true
 // -->
 type IstioMeshGatewayStatus struct {
-	// Reconciliation status of the mesh gateway
+	// Reconciliation status of the istio mesh gateway
 	Status ConfigState `protobuf:"varint,1,opt,name=Status,proto3,enum=istio_operator.v2.api.v1alpha1.ConfigState" json:"Status,omitempty"`
 	// Current address for the gateway
 	GatewayAddress []string `protobuf:"bytes,2,rep,name=GatewayAddress,proto3" json:"GatewayAddress,omitempty"`

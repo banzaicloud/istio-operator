@@ -89,7 +89,7 @@ enum GatewayType {
 // +k8s:deepcopy-gen=true
 // -->
 message IstioMeshGatewayStatus {
-    // Reconciliation status of the mesh gateway
+    // Reconciliation status of the istio mesh gateway
     ConfigState Status = 1;
 
     // Current address for the gateway
