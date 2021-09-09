@@ -103,7 +103,6 @@ type IstioControlPlaneReconciler struct {
 // +kubebuilder:rbac:groups=servicemesh.cisco.com,resources=istiocontrolplanes/status;istiomeshes/status,verbs=get;update;patch
 
 func (r *IstioControlPlaneReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Result, error) {
-	_ = context.Background()
 	logger := r.Log.WithValues("istiocontrolplane", req.NamespacedName)
 
 	// Get a config to talk to the apiserver
@@ -113,7 +112,7 @@ func (r *IstioControlPlaneReconciler) Reconcile(ctx context.Context, req ctrl.Re
 	}
 
 	icp := &servicemeshv1alpha1.IstioControlPlane{}
-	err = r.Get(context.TODO(), req.NamespacedName, icp)
+	err = r.Get(ctx, req.NamespacedName, icp)
 	if err != nil {
 		if k8serrors.IsNotFound(err) {
 			// Object not found, return.  Created objects are automatically garbage collected.
