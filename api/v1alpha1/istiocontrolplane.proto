@@ -58,51 +58,65 @@ message IstioControlPlaneSpec {
     // Contains the intended version for the Istio control plane.
     // +kubebuilder:validation:Pattern=^1.
     string version = 1 [(google.api.field_behavior) = REQUIRED];
+    // Configure the mode for this control plane.
+    // Currently, two options are supported: "ACTIVE" and "PASSIVE".
+    // ACTIVE mode means that a full-fledged Istio control plane will be deployed and operated
+    // (usually called primary cluster in upstream Istio terminology).
+    // PASSIVE mode means that only a few resources will be installed for sidecar injection and cross-cluster
+    // communication, it is used for multi cluster setups (this is the remote cluster in upstream Istio terminology).
+    // +kubebuilder:validation:Enum=ACTIVE;PASSIVE
+    ModeType mode = 2 [(google.api.field_behavior) = REQUIRED];
     // Logging configurations.
-    LoggingConfiguration logging = 2;
+    LoggingConfiguration logging = 3;
     // Use the user-specified, secret volume mounted key and certs for Pilot and workloads.
-    google.protobuf.BoolValue mountMtlsCerts = 3 [(gogoproto.wktpointer) = true];
+    google.protobuf.BoolValue mountMtlsCerts = 4 [(gogoproto.wktpointer) = true];
     // Istiod configuration.
-    IstiodConfiguration istiod = 4;
+    IstiodConfiguration istiod = 5;
     // Proxy configuration options.
-    ProxyConfiguration proxy = 5;
+    ProxyConfiguration proxy = 6;
     // Proxy Init configuration options.
-    ProxyInitConfiguration proxyInit = 6;
+    ProxyInitConfiguration proxyInit = 7;
     // Telemetry V2 configuration.
-    TelemetryV2Configuration telemetryV2 = 7;
+    TelemetryV2Configuration telemetryV2 = 8;
     // If SDS is configured, mTLS certificates for the sidecars will be distributed through the
     // SecretDiscoveryService instead of using K8S secrets to mount the certificates.
-    SDSConfiguration sds = 8;
+    SDSConfiguration sds = 9;
     // ProxyWasm configuration options.
-    ProxyWasmConfiguration proxyWasm = 9;
+    ProxyWasmConfiguration proxyWasm = 10;
     // Whether to restrict the applications namespace the controller manages.
     // If not set, controller watches all namespaces
-    google.protobuf.BoolValue watchOneNamespace = 10 [(gogoproto.wktpointer) = true];
+    google.protobuf.BoolValue watchOneNamespace = 11 [(gogoproto.wktpointer) = true];
     // Configure the policy for validating JWT.
     // Currently, two options are supported: "third-party-jwt" and "first-party-jwt".
     // +kubebuilder:validation:Enum=THIRD_PARTY_JWT;FIRST_PARTY_JWT
-    JWTPolicyType jwtPolicy = 11;
+    JWTPolicyType jwtPolicy = 12;
     // The customized CA address to retrieve certificates for the pods in the cluster.
     // CSR clients such as the Istio Agent and ingress gateways can use this to specify the CA endpoint.
-    string caAddress = 12;
+    string caAddress = 13;
     // Contains the intended distribution for the Istio control plane.
     // The official distribution is used by default unless special preserved distribution value is set.
     // The only preserved distribution is "cisco" as of now.
-    string distribution = 13;
+    string distribution = 14;
     // Upstream HTTP proxy properties to be injected as environment variables to the pod containers.
-    HTTPProxyEnvsConfiguration httpProxyEnvs = 14;
+    HTTPProxyEnvsConfiguration httpProxyEnvs = 15;
     // Defines mesh-wide settings for the Istio control plane.
-    istio.mesh.v1alpha1.MeshConfig mesh_config = 15;
+    istio.mesh.v1alpha1.MeshConfig mesh_config = 16;
     // K8s resource overlay patches
-    repeated K8sResourceOverlayPatch k8sResourceOverlays = 16;
+    repeated K8sResourceOverlayPatch k8sResourceOverlays = 17;
     // Name of the Mesh to which this control plane belongs.
-    string meshID = 17;
+    string meshID = 18;
     // Global configuration for container images.
-    ContainerImageConfiguration containerImageConfiguration = 18;
+    ContainerImageConfiguration containerImageConfiguration = 19;
     // Mesh expansion configuration
-    MeshExpansionConfiguration meshExpansion = 19;
+    MeshExpansionConfiguration meshExpansion = 20;
     // Cluster ID
-    string clusterID = 20;
+    string clusterID = 21;
+}
+
+enum ModeType {
+    UNSPECIFIED = 0;
+    ACTIVE = 1;
+    PASSIVE = 2;
 }
 
 message MeshExpansionConfiguration {

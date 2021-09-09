@@ -5,6 +5,7 @@ metadata:
   namespace: istio-system
 spec:
   version: "1.11.0"
+  mode: ACTIVE
   containerImageConfiguration:
     hub: gcr.io/istio-testing
     tag: latest
