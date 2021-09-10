@@ -47,6 +47,7 @@ global:
   istiod:
     enableAnalysis: false
   mountMtlsCerts: false
+  network: network1
   externalIstiod: false
   pilotCertProvider: istiod
   sds:

@@ -146,6 +146,7 @@ jwtPolicy: {{ .GetSpec.GetJwtPolicy | toString | lower | replace "_" "-" }}
 {{- end }}
 {{ valueIf (dict "key" "meshID" "value" .GetSpec.GetMeshID) }}
 {{ valueIf (dict "key" "mountMtlsCerts" "value" .GetSpec.GetMountMtlsCerts) }}
+{{ valueIf (dict "key" "network" "value" .GetSpec.GetNetworkName) }}
 {{- if .GetSpec.GetIstiod.GetCertProvider }}
 pilotCertProvider: {{ .GetSpec.GetIstiod.GetCertProvider | toString | lower }}
 {{- end }}

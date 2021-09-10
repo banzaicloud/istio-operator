@@ -5,6 +5,7 @@ metadata:
 spec:
   version: 1.11.0
   mode: ACTIVE
+  networkName: network1
   logging:
     level: "default:info"
   mountMtlsCerts: false

@@ -1076,7 +1076,7 @@ data:
           "clusterName": "demo-cluster1",
           "enabled": false
         },
-        "network": "",
+        "network": "network1",
         "omitSidecarInjectorConfigMap": false,
         "oneNamespace": false,
         "operatorManageWebhooks": false,

@@ -478,7 +478,7 @@ global:
 
   # Network defines the network this cluster belong to. This name
   # corresponds to the networks in the map of mesh networks.
-  network: ""
+  network: "network1"
 
   # Configure the certificate provider for control plane communication.
   # Currently, two providers are supported: "kubernetes" and "istiod".
