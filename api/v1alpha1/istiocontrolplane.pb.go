@@ -165,6 +165,7 @@ func (JWTPolicyType) EnumDescriptor() ([]byte, []int) {
 // +cue-gen:IstioControlPlane:subresource:status
 // +cue-gen:IstioControlPlane:scope:Namespaced
 // +cue-gen:IstioControlPlane:resource:shortNames=icp,istiocp
+// +cue-gen:IstioControlPlane:printerColumn:name="Mode",type="string",JSONPath=".spec.mode",description="Mode for the Istio control plane"
 // +cue-gen:IstioControlPlane:printerColumn:name="Status",type="string",JSONPath=".status.status",description="Status of the resource"
 // +cue-gen:IstioControlPlane:printerColumn:name="Error",type="string",JSONPath=".status.errorMessage",description="Error message"
 // +cue-gen:IstioControlPlane:printerColumn:name=Age,type=date,JSONPath=.metadata.creationTimestamp,description="CreationTimestamp is a timestamp

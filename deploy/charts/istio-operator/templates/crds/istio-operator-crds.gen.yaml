@@ -18,6 +18,10 @@ spec:
   scope: Namespaced
   versions:
   - additionalPrinterColumns:
+    - description: Mode for the Istio control plane
+      jsonPath: .spec.mode
+      name: Mode
+      type: string
     - description: Status of the resource
       jsonPath: .status.status
       name: Status
@@ -9382,6 +9386,10 @@ spec:
   scope: Namespaced
   versions:
   - additionalPrinterColumns:
+    - description: Mode for the Istio control plane
+      jsonPath: .spec.mode
+      name: Mode
+      type: string
     - description: Status of the resource
       jsonPath: .status.status
       name: Status
