@@ -22,6 +22,10 @@ spec:
       jsonPath: .spec.mode
       name: Mode
       type: string
+    - description: The network this cluster belongs to
+      jsonPath: .spec.networkName
+      name: Network
+      type: string
     - description: Status of the resource
       jsonPath: .status.status
       name: Status
@@ -5499,6 +5503,9 @@ spec:
                   certs for Pilot and workloads.
                 nullable: true
                 type: boolean
+              networkName:
+                description: Network defines the network this cluster belongs to.
+                type: string
               proxy:
                 description: Proxy configuration options.
                 properties:
@@ -9390,6 +9397,10 @@ spec:
       jsonPath: .spec.mode
       name: Mode
       type: string
+    - description: The network this cluster belongs to
+      jsonPath: .spec.networkName
+      name: Network
+      type: string
     - description: Status of the resource
       jsonPath: .status.status
       name: Status
@@ -14867,6 +14878,9 @@ spec:
                   certs for Pilot and workloads.
                 nullable: true
                 type: boolean
+              networkName:
+                description: Network defines the network this cluster belongs to.
+                type: string
               proxy:
                 description: Proxy configuration options.
                 properties:
