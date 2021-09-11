@@ -1,0 +1,119 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "name-with-revision" ( dict "name" "istio-sidecar-injector" "context" $) }}
+  namespace: {{ .Release.Namespace }}
+  labels:
+{{- include "generic.labels" . | indent 4 }}
+{{- include "toYamlIf" (dict "value" .Values.deployment.metadata.annotations "key" "annotations" "indent" 2) | indent 2 }}
+spec:
+  replicas: {{ .Values.deployment.replicas.count | default 1 }}
+  selector:
+    matchLabels:
+{{- include "pod.labels" . | indent 6 }}
+  strategy:
+{{- if .Values.deployment.deploymentStrategy }}
+{{ .Values.deployment.deploymentStrategy | toYaml | indent 4 }}
+{{- end }}
+  template:
+    metadata:
+      labels:
+        sidecar.istio.io/inject: "false"
+{{- include "pod.labels" . | indent 8 }}
+      annotations:
+        scheduler.alpha.kubernetes.io/critical-pod: ""
+        sidecar.istio.io/inject: "false"
+{{- include "toYamlIf" (dict "value" .Values.deployment.podMetadata.annotations) | indent 8 }}
+    spec:
+{{- include "toYamlIf" (dict "value" .Values.deployment.securityContext "key" "securityContext" "indent" 2) | indent 6 }}
+      serviceAccountName: {{ include "name-with-revision" ( dict "name" "istio-sidecar-injector" "context" $) }}
+{{- if .Values.deployment.priorityClassName }}
+      priorityClassName: "{{ .Values.deployment.priorityClassName }}"
+{{- end }}
+      containers:
+        - name: sidecar-injector-webhook
+{{- include "dockerImage" (dict "image" .Values.deployment.image "hub" .Values.global.hub "tag" .Values.global.tag) | indent 10 -}}
+{{- if .Values.global.imagePullPolicy }}
+          imagePullPolicy: {{ .Values.global.imagePullPolicy }}
+{{- end }}
+          args:
+          - "--caCertFile=/etc/istio/certs/ca.crt"
+          - "--tlsCertFile=/etc/istio/certs/tls.crt"
+          - "--tlsKeyFile=/etc/istio/certs/tls.key"
+          - "--injectConfig=/etc/istio/inject/config"
+          - "--meshConfig=/etc/istio/config/mesh"
+          - "--healthCheckInterval=2s"
+          - "--healthCheckFile=/tmp/health"
+          - "--reconcileWebhookConfig=true"
+          - "--webhookConfigName={{ include "name-with-revision" (dict "name" "istio-sidecar-injector" "context" $) }}"
+          ports:
+            {{- range $key, $val := .Values.service.ports }}
+            - containerPort: {{ $val.targetPort | default $val.port }}
+              protocol: {{ $val.protocol | default "TCP" }}
+            {{- end }}
+            - containerPort: 15090
+              protocol: TCP
+              name: http-envoy-prom
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop:
+              - ALL
+            privileged: false
+            runAsGroup: 1337
+            runAsNonRoot: true
+            runAsUser: 1337
+{{ include "toYamlIf" (dict "value" .Values.deployment.resources "key" "resources" "indent" 2) | indent 10 }}
+          env:
+          - name: REVISION
+            value: "{{ include "namespaced-revision" . }}"
+          - name: CERT_DNS_NAMES
+            value: "{{ include "serviceHostnames" . }}"
+{{ include "toYamlIf" (dict "value" .Values.deployment.env) | indent 10 }}
+          volumeMounts:
+          - name: "config-volume"
+            mountPath: "/etc/istio/config"
+            readOnly: true
+          - name: "certs"
+            mountPath: "/etc/istio/certs"
+            readOnly: false
+          - name: "inject-config"
+            mountPath: "/etc/istio/inject"
+          {{- if eq .Values.global.jwtPolicy "third-party-jwt" }}
+          - name: istio-token
+            mountPath: /var/run/secrets/tokens
+            readOnly: true
+          {{- end -}}
+{{ include "toYamlIf" (dict "value" .Values.deployment.volumeMounts) | indent 10 }}
+{{ include "toYamlIf" (dict "value" .Values.deployment.livenessProbe "key" "livenessProbe" "indent" 2) | indent 10 }}
+{{ include "toYamlIf" (dict "value" .Values.deployment.readinessProbe "key" "readinessProbe" "indent" 2) | indent 10 }}
+      volumes:
+      - configMap:
+          defaultMode: 420
+          name: {{ include "name-with-revision-by-distribution" ( dict "name" "istio" "context" $) }}
+        name: config-volume
+      - configMap:
+          defaultMode: 420
+          items:
+          - key: config
+            path: config
+          - key: values
+            path: values
+          name: {{ include "name-with-revision-by-distribution" ( dict "name" "istio-sidecar-injector" "context" $) }}
+        name: inject-config
+      - emptyDir:
+          medium: Memory
+        name: certs
+      {{- if eq .Values.global.jwtPolicy "third-party-jwt" }}
+      - name: istio-token
+        projected:
+          sources:
+            - serviceAccountToken:
+                audience: {{ .Values.global.sds.token.aud }}
+                expirationSeconds: 43200
+                path: istio-token
+      {{- end }}
+{{ include "toYamlIf" (dict "value" .Values.deployment.volumes) | indent 6 }}
+{{ include "toYamlIf" (dict "value" .Values.deployment.affinity "key" "affinity" "indent" 2) | indent 6 }}
+{{ include "toYamlIf" (dict "value" .Values.deployment.nodeSelector "key" "nodeSelector" "indent" 2) | indent 6 }}
+{{ include "toYamlIf" (dict "value" .Values.deployment.tolerations "key" "tolerations" "indent" 2) | indent 6 }}

@@ -1,0 +1,19 @@
+{{- if or (gt (.Values.deployment.podDisruptionBudget.minAvailable | int) 0) (gt (.Values.deployment.podDisruptionBudget.maxUnavailable | int) 0) }}
+apiVersion: policy/v1beta1
+kind: PodDisruptionBudget
+metadata:
+  name: {{ include "name-with-revision" ( dict "name" "istio-sidecar-injector" "context" $) }}
+  namespace: {{ .Release.Namespace }}
+  labels:
+{{- include "generic.labels" . | indent 4 }}
+spec:
+{{- if gt (.Values.deployment.podDisruptionBudget.minAvailable | int) 0 }}
+  minAvailable: {{ .Values.deployment.podDisruptionBudget.minAvailable }}
+{{- end }}
+{{- if gt (.Values.deployment.podDisruptionBudget.maxUnavailable | int) 0 }}
+  maxUnavailable: {{ .Values.deployment.podDisruptionBudget.maxUnavailable }}
+{{- end }}
+  selector:
+    matchLabels:
+{{- include "pod.labels" . | indent 6 }}
+{{- end }}

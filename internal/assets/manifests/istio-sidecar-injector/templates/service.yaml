@@ -1,0 +1,30 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "name-with-revision" ( dict "name" "istio-sidecar-injector" "context" $) }}
+  namespace: {{ .Release.Namespace }}
+{{- include "toYamlIf" (dict "value" .Values.service.metadata.annotations "key" "annotations") | indent 8 }}
+  labels:
+{{- include "generic.labels" . | indent 4 }}
+spec:
+{{- if .Values.service.loadBalancerIP }}
+  loadBalancerIP: "{{ .Values.service.loadBalancerIP }}"
+{{- end }}
+{{- if .Values.service.loadBalancerSourceRanges }}
+  loadBalancerSourceRanges:
+{{ toYaml .Values.service.loadBalancerSourceRanges | indent 4 }}
+{{- end }}
+{{- if .Values.service.externalTrafficPolicy }}
+  externalTrafficPolicy: {{ .Values.service.externalTrafficPolicy }}
+{{- end }}
+  type: {{ .Values.service.type }}
+  selector:
+{{- include "pod.labels" . | indent 4 }}
+  ports:
+    {{- range $key, $val := .Values.service.ports }}
+    -
+      {{- range $pkey, $pval := $val }}
+      {{ $pkey}}: {{ $pval }}
+      {{- end }}
+    {{- end }}
+---
