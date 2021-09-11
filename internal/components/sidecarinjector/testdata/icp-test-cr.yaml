@@ -1,0 +1,107 @@
+apiVersion: servicemesh.cisco.com/v1alpha1
+kind: IstioControlPlane
+metadata:
+  name: cp-v111x
+  namespace: istio-system
+spec:
+  version: "1.11.0"
+  mode: PASSIVE
+  distribution: cisco
+  containerImageConfiguration:
+    hub: gcr.io/istio-testing
+    tag: latest
+    imagePullPolicy: Always
+    imagePullSecrets:
+    - name: pullsecret-1
+    - name: pullsecret-2
+  sidecarInjector:
+    deployment:
+      metadata:
+        annotations:
+          daemonset-annotation: value
+        labels:
+          daemonset-label: value
+      podMetadata:
+        annotations:
+          podannotation: podannotationvalue
+        labels:
+          podlabel: podlabelvalue
+      deploymentStrategy:
+        type: RollingUpdate
+        rollingUpdate:
+          maxUnavailable: 1
+      image: banzaicloud/istio-sidecar-injector:v1.10.4-bzc.1
+      env:
+      - name: CNI_ENV_NAME
+        value: "true"
+      - name: CNI_ANOTHER_ENV_NAME
+        value: "standard"
+      nodeSelector:
+        disktype: ssd
+      affinity:
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+            - matchExpressions:
+              - key: kubernetes.io/e2e-az-name
+                operator: In
+                values:
+                - e2e-az1
+                - e2e-az2
+        podAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+          - labelSelector:
+              matchExpressions:
+              - key: security
+                operator: In
+                values:
+                - S1
+            topologyKey: topology.kubernetes.io/zone
+      tolerations:
+      - key: "key1"
+        operator: "Equal"
+        value: "value1"
+        effect: "NoSchedule"
+        tolerationSeconds: 5
+      volumes:
+      - name: "dddemo"
+        volumeSource:
+          secret:
+            secretName: "ssname"
+            optional: true
+      - name: config-vol
+        volumeSource:
+          configMap:
+            localObjectReference:
+              name: log-config
+            items:
+              - key: log_level
+                path: log_level
+      volumeMounts:
+      - name: config-vol
+        mountPath: /etc/config
+      readinessProbe:
+        handler:
+          exec:
+            command:
+            - /usr/local/bin/sidecar-injector
+            - probe
+            - --probe-path=/tmp/health
+            - --interval=4s
+        failureThreshold: 3
+        initialDelaySeconds: 4
+        periodSeconds: 4
+        successThreshold: 1
+        timeoutSeconds: 1
+      resources:
+        limits:
+          cpu: "3"
+          memory: 2Gi
+        requests:
+          cpu: 100m
+          memory: 128Mi
+      securityContext:
+        runAsUser: 1337
+        runAsGroup: 1337
+        runAsNonRoot: true
+      priorityClassName: system-node-critical

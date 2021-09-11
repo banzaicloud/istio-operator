@@ -54,6 +54,7 @@ import (
 	"github.com/banzaicloud/istio-operator/v2/internal/components/cni"
 	discovery_component "github.com/banzaicloud/istio-operator/v2/internal/components/discovery"
 	"github.com/banzaicloud/istio-operator/v2/internal/components/meshexpansion"
+	"github.com/banzaicloud/istio-operator/v2/internal/components/sidecarinjector"
 	"github.com/banzaicloud/istio-operator/v2/internal/util"
 	"github.com/banzaicloud/operator-tools/pkg/reconciler"
 	"github.com/banzaicloud/operator-tools/pkg/utils"
@@ -223,6 +224,12 @@ func (r *IstioControlPlaneReconciler) reconcile(ctx context.Context, icp *servic
 		return ctrl.Result{}, err
 	}
 	componentReconcilers = append(componentReconcilers, meshExpansionReconciler)
+
+	sidecarInjectorReconciler, err := NewComponentReconciler(r, sidecarinjector.NewChartReconciler, r.Log.WithName("sidecanInjector"))
+	if err != nil {
+		return ctrl.Result{}, err
+	}
+	componentReconcilers = append(componentReconcilers, sidecarInjectorReconciler)
 
 	for _, r := range componentReconcilers {
 		result, err = r.Reconcile(icp)

@@ -1,0 +1,95 @@
+revision: cp-v111x
+deployment:
+  image: banzaicloud/istio-sidecar-injector:v1.10.4-bzc.1
+  metadata:
+    annotations:
+      daemonset-annotation: value
+    labels:
+      daemonset-label: value
+  podMetadata:
+    annotations:
+      podannotation: podannotationvalue
+    labels:
+      podlabel: podlabelvalue
+  deploymentStrategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxUnavailable: 1
+  env:
+  - name: CNI_ENV_NAME
+    value: "true"
+  - name: CNI_ANOTHER_ENV_NAME
+    value: "standard"
+  nodeSelector:
+    disktype: ssd
+  affinity:
+    nodeAffinity:
+      requiredDuringSchedulingIgnoredDuringExecution:
+        nodeSelectorTerms:
+        - matchExpressions:
+          - key: kubernetes.io/e2e-az-name
+            operator: In
+            values:
+            - e2e-az1
+            - e2e-az2
+    podAffinity:
+      requiredDuringSchedulingIgnoredDuringExecution:
+      - labelSelector:
+          matchExpressions:
+          - key: security
+            operator: In
+            values:
+            - S1
+        topologyKey: topology.kubernetes.io/zone
+  tolerations:
+  - key: key1
+    effect: NoSchedule
+    operator: Equal
+    tolerationSeconds: 5
+    value: value1
+  volumes:
+  - name: dddemo
+    secret:
+      optional: true
+      secretName: ssname
+  - name: config-vol
+    configMap:
+      name: log-config
+      items:
+      - key: log_level
+        path: log_level
+  volumeMounts:
+  - name: config-vol
+    mountPath: /etc/config
+  resources:
+    limits:
+      cpu: "3"
+      memory: 2Gi
+    requests:
+      cpu: 100m
+      memory: 128Mi
+  securityContext:
+    runAsGroup: 1337
+    runAsNonRoot: true
+    runAsUser: 1337
+  priorityClassName: system-node-critical
+  readinessProbe:
+    exec:
+      command:
+      - /usr/local/bin/sidecar-injector
+      - probe
+      - --probe-path=/tmp/health
+      - --interval=4s
+    failureThreshold: 3
+    initialDelaySeconds: 4
+    periodSeconds: 4
+    successThreshold: 1
+    timeoutSeconds: 1
+global:
+  distribution: cisco
+  hub: gcr.io/istio-testing
+  tag: latest
+  imagePullPolicy: Always
+  imagePullSecrets:
+  - name: pullsecret-1
+  - name: pullsecret-2

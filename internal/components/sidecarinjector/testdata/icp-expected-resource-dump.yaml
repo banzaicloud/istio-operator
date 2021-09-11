@@ -1,0 +1,285 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  creationTimestamp: null
+  name: istio-system
+spec: {}
+status: {}
+
+---
+apiVersion: v1
+imagePullSecrets:
+- name: pullsecret-1
+- name: pullsecret-2
+kind: ServiceAccount
+metadata:
+  labels:
+    app: istio-sidecar-injector
+    istio.io/rev: cp-v111x
+    release: istio-sidecar-injector
+  name: istio-sidecar-injector-cp-v111x
+  namespace: istio-system
+
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  labels:
+    app: istio-sidecar-injector
+    release: istio-sidecar-injector
+  name: istio-sidecar-injector-cp-v111x-istio-system
+rules:
+- apiGroups:
+  - ""
+  resources:
+  - configmaps
+  verbs:
+  - get
+  - list
+  - watch
+- apiGroups:
+  - admissionregistration.k8s.io
+  resources:
+  - mutatingwebhookconfigurations
+  verbs:
+  - get
+  - list
+  - watch
+  - update
+  - patch
+
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  labels:
+    app: istio-sidecar-injector
+    release: istio-sidecar-injector
+  name: istio-sidecar-injector-cp-v111x-istio-system
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: istio-sidecar-injector-cp-v111x-istio-system
+subjects:
+- kind: ServiceAccount
+  name: istio-sidecar-injector-cp-v111x
+  namespace: istio-system
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: istio-sidecar-injector
+    istio.io/rev: cp-v111x
+    release: istio-sidecar-injector
+  name: istio-sidecar-injector-cp-v111x
+  namespace: istio-system
+spec:
+  ports:
+  - name: https-inject
+    port: 443
+    protocol: TCP
+    targetPort: 9443
+  - name: http-monitoring
+    port: 15014
+    protocol: TCP
+    targetPort: 15014
+  selector:
+    app: istio-sidecar-injector
+    istio.io/rev: cp-v111x
+    podlabel: podlabelvalue
+    release: istio-sidecar-injector
+  type: ClusterIP
+
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  annotations:
+    daemonset-annotation: value
+  labels:
+    app: istio-sidecar-injector
+    istio.io/rev: cp-v111x
+    release: istio-sidecar-injector
+  name: istio-sidecar-injector-cp-v111x
+  namespace: istio-system
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: istio-sidecar-injector
+      istio.io/rev: cp-v111x
+      podlabel: podlabelvalue
+      release: istio-sidecar-injector
+  strategy:
+    rollingUpdate:
+      maxSurge: 100%
+      maxUnavailable: 1
+    type: RollingUpdate
+  template:
+    metadata:
+      annotations:
+        podannotation: podannotationvalue
+        scheduler.alpha.kubernetes.io/critical-pod: ""
+        sidecar.istio.io/inject: "false"
+      labels:
+        app: istio-sidecar-injector
+        istio.io/rev: cp-v111x
+        podlabel: podlabelvalue
+        release: istio-sidecar-injector
+        sidecar.istio.io/inject: "false"
+    spec:
+      affinity:
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+            - matchExpressions:
+              - key: kubernetes.io/e2e-az-name
+                operator: In
+                values:
+                - e2e-az1
+                - e2e-az2
+        podAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+          - labelSelector:
+              matchExpressions:
+              - key: security
+                operator: In
+                values:
+                - S1
+            topologyKey: topology.kubernetes.io/zone
+      containers:
+      - args:
+        - --caCertFile=/etc/istio/certs/ca.crt
+        - --tlsCertFile=/etc/istio/certs/tls.crt
+        - --tlsKeyFile=/etc/istio/certs/tls.key
+        - --injectConfig=/etc/istio/inject/config
+        - --meshConfig=/etc/istio/config/mesh
+        - --healthCheckInterval=2s
+        - --healthCheckFile=/tmp/health
+        - --reconcileWebhookConfig=true
+        - --webhookConfigName=istio-sidecar-injector-cp-v111x
+        env:
+        - name: REVISION
+          value: cp-v111x.istio-system
+        - name: CERT_DNS_NAMES
+          value: istio-sidecar-injector-cp-v111x.istio-system,istio-sidecar-injector-cp-v111x.istio-system.svc,istio-sidecar-injector-cp-v111x.istio-system.svc.cluster.local
+        - name: CNI_ENV_NAME
+          value: "true"
+        - name: CNI_ANOTHER_ENV_NAME
+          value: standard
+        image: banzaicloud/istio-sidecar-injector:v1.10.4-bzc.1
+        imagePullPolicy: Always
+        name: sidecar-injector-webhook
+        ports:
+        - containerPort: 9443
+          protocol: TCP
+        - containerPort: 15014
+          protocol: TCP
+        - containerPort: 15090
+          name: http-envoy-prom
+          protocol: TCP
+        livenessProbe:
+          exec:
+            command:
+            - /usr/local/bin/sidecar-injector
+            - probe
+            - --probe-path=/tmp/health
+            - --interval=4s
+          failureThreshold: 3
+          initialDelaySeconds: 4
+          periodSeconds: 4
+          successThreshold: 1
+          timeoutSeconds: 1
+        readinessProbe:
+          exec:
+            command:
+            - /usr/local/bin/sidecar-injector
+            - probe
+            - --probe-path=/tmp/health
+            - --interval=4s
+          failureThreshold: 3
+          initialDelaySeconds: 4
+          periodSeconds: 4
+          successThreshold: 1
+          timeoutSeconds: 1
+        resources:
+          limits:
+            cpu: "3"
+            memory: 2Gi
+          requests:
+            cpu: 100m
+            memory: 128Mi
+        securityContext:
+          allowPrivilegeEscalation: false
+          capabilities:
+            drop:
+            - ALL
+          privileged: false
+          runAsGroup: 1337
+          runAsNonRoot: true
+          runAsUser: 1337
+        volumeMounts:
+        - mountPath: /etc/istio/config
+          name: config-volume
+          readOnly: true
+        - mountPath: /etc/istio/certs
+          name: certs
+          readOnly: false
+        - mountPath: /etc/istio/inject
+          name: inject-config
+        - mountPath: /var/run/secrets/tokens
+          name: istio-token
+          readOnly: true
+        - mountPath: /etc/config
+          name: config-vol
+      nodeSelector:
+        disktype: ssd
+      priorityClassName: system-node-critical
+      securityContext:
+        fsGroup: 1337
+        runAsGroup: 1337
+        runAsNonRoot: true
+        runAsUser: 1337
+      serviceAccountName: istio-sidecar-injector-cp-v111x
+      tolerations:
+      - effect: NoSchedule
+        key: key1
+        operator: Equal
+        tolerationSeconds: 5
+        value: value1
+      volumes:
+      - configMap:
+          defaultMode: 420
+          name: istio-cp-v111x
+        name: config-volume
+      - configMap:
+          defaultMode: 420
+          items:
+          - key: config
+            path: config
+          - key: values
+            path: values
+          name: istio-sidecar-injector-cp-v111x
+        name: inject-config
+      - emptyDir:
+          medium: Memory
+        name: certs
+      - name: istio-token
+        projected:
+          sources:
+          - serviceAccountToken:
+              audience: istio-ca
+              expirationSeconds: 43200
+              path: istio-token
+      - name: dddemo
+        secret:
+          optional: true
+          secretName: ssname
+      - configMap:
+          items:
+          - key: log_level
+            path: log_level
+          name: log-config
+        name: config-vol
