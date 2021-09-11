@@ -8,7 +8,11 @@ a unique prefix to each. */}}
     url: "{{ .Values.istiodRemote.injectionURL }}"
     {{- else }}
     service:
+{{- if eq .Values.global.mode "ACTIVE" }}
       name: {{ include "name-with-revision" ( dict "name" "istiod" "context" $) }}
+{{- else }}
+      name: {{ include "name-with-revision" ( dict "name" "istio-sidecar-injector" "context" $) }}
+{{- end }}
       namespace: {{ .Release.Namespace }}
       {{- if .Values.istiodRemote.injectionURL }}
       path: "/inject"

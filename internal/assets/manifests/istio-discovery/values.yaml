@@ -223,6 +223,7 @@ meshConfig:
   # No hurry to do this in 1.6, we're trying to prove the code.
 
 global:
+  mode: ACTIVE
   distribution: official
   # Used to locate istiod.
   istioNamespace: istio-system
