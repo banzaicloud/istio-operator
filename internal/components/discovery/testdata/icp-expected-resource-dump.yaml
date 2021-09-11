@@ -1071,6 +1071,7 @@ data:
         },
         "meshID": "mesh1",
         "meshNetworks": {},
+        "mode": "ACTIVE",
         "mountMtlsCerts": false,
         "multiCluster": {
           "clusterName": "demo-cluster1",
