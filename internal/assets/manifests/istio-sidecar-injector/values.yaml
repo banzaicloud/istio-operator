@@ -1,0 +1,91 @@
+revision: "default"
+
+deployment:
+  image: banzaicloud/istio-sidecar-injector:v1.10.4-bzc.1
+  enablePrometheusMerge: true
+  deploymentStrategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 100%
+      maxUnavailable: 25%
+  metadata:
+    labels: {}
+    annotations: {}
+  env: {}
+  affinity: {}
+  nodeSelector: {}
+  priorityClassName: ""
+  replicas:
+    count: 1
+    min: 1
+    max: 1
+  resources:
+    limits:
+      cpu: "250m"
+      memory: 256Mi
+    requests:
+      cpu: 100m
+      memory: 128Mi
+  securityContext:
+    fsGroup: 1337
+    runAsGroup: 1337
+    runAsNonRoot: true
+    runAsUser: 1337
+  tolerations: []
+  volumeMounts: []
+  volumes: []
+  podDisruptionBudget: {}
+  podMetadata:
+    labels: {}
+    annotations: {}
+  livenessProbe:
+    exec:
+      command:
+      - /usr/local/bin/sidecar-injector
+      - probe
+      - --probe-path=/tmp/health
+      - --interval=4s
+    failureThreshold: 3
+    initialDelaySeconds: 4
+    periodSeconds: 4
+    successThreshold: 1
+    timeoutSeconds: 1
+  name: sidecar-injector-webhook
+  readinessProbe:
+    exec:
+      command:
+      - /usr/local/bin/sidecar-injector
+      - probe
+      - --probe-path=/tmp/health
+      - --interval=4s
+    failureThreshold: 3
+    initialDelaySeconds: 4
+    periodSeconds: 4
+    successThreshold: 1
+    timeoutSeconds: 1
+
+service:
+  type: ClusterIP
+  metadata: {}
+  ports:
+  - name: https-inject
+    port: 443
+    targetPort: 9443
+    protocol: TCP
+  - name: http-monitoring
+    port: 15014
+    targetPort: 15014
+    protocol: TCP
+  selector: {}
+
+global:
+  distribution: official
+  hub: gcr.io/istio-testing
+  tag: latest
+  imagePullPolicy: ""
+  imagePullSecrets: []
+  clusterDomain: "cluster.local"
+  jwtPolicy: "third-party-jwt"
+  sds:
+    token:
+      aud: istio-ca

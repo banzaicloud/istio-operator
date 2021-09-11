@@ -1,0 +1,15 @@
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: {{ include "name-with-namespaced-revision" ( dict "name" "istio-sidecar-injector" "context" $) }}
+  labels:
+    app: istio-sidecar-injector
+    release: {{ .Release.Name }}
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: {{ include "name-with-namespaced-revision" ( dict "name" "istio-sidecar-injector" "context" $) }}
+subjects:
+  - kind: ServiceAccount
+    name: {{ include "name-with-revision" ( dict "name" "istio-sidecar-injector" "context" $) }}
+    namespace: {{ .Release.Namespace }}
