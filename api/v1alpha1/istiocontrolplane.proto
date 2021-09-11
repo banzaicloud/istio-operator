@@ -119,12 +119,21 @@ message IstioControlPlaneSpec {
     // corresponds to the networks in the map of mesh networks.
     // +default=network1
     string networkName = 22;
+    // Standalone sidecar injector configuration.
+    SidecarInjectorConfiguration sidecarInjector = 23;
 }
 
 enum ModeType {
     UNSPECIFIED = 0;
     ACTIVE = 1;
     PASSIVE = 2;
+}
+
+message SidecarInjectorConfiguration {
+    // Deployment spec
+    BaseKubernetesResourceConfig deployment = 1;
+    // Service spec
+    Service service = 2;
 }
 
 message MeshExpansionConfiguration {
