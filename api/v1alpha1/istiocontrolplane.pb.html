@@ -4,7 +4,7 @@ description: Istio control plane descriptor
 layout: protoc-gen-docs
 generator: protoc-gen-docs
 schema: istio-operator.api.v1alpha1.IstioControlPlaneSpec
-number_of_entries: 37
+number_of_entries: 39
 ---
 <h2 id="IstioControlPlaneSpec">IstioControlPlaneSpec</h2>
 <section>
@@ -272,6 +272,54 @@ No
 <p>Network defines the network this cluster belongs to. This name
 corresponds to the networks in the map of mesh networks.
 +default=network1</p>
+
+</td>
+<td>
+No
+</td>
+</tr>
+<tr id="IstioControlPlaneSpec-sidecarInjector">
+<td><code>sidecarInjector</code></td>
+<td><code><a href="#SidecarInjectorConfiguration">SidecarInjectorConfiguration</a></code></td>
+<td>
+<p>Standalone sidecar injector configuration.</p>
+
+</td>
+<td>
+No
+</td>
+</tr>
+</tbody>
+</table>
+</section>
+<h2 id="SidecarInjectorConfiguration">SidecarInjectorConfiguration</h2>
+<section>
+<table class="message-fields">
+<thead>
+<tr>
+<th>Field</th>
+<th>Type</th>
+<th>Description</th>
+<th>Required</th>
+</tr>
+</thead>
+<tbody>
+<tr id="SidecarInjectorConfiguration-deployment">
+<td><code>deployment</code></td>
+<td><code><a href="#BaseKubernetesResourceConfig">BaseKubernetesResourceConfig</a></code></td>
+<td>
+<p>Deployment spec</p>
+
+</td>
+<td>
+No
+</td>
+</tr>
+<tr id="SidecarInjectorConfiguration-service">
+<td><code>service</code></td>
+<td><code><a href="#Service">Service</a></code></td>
+<td>
+<p>Service spec</p>
 
 </td>
 <td>
@@ -1549,106 +1597,6 @@ No
 </tbody>
 </table>
 </section>
-<h2 id="k8s-io-api-core-v1-Lifecycle">k8s.io.api.core.v1.Lifecycle</h2>
-<section>
-<p>Lifecycle describes actions that the management system should take in response to container lifecycle
-events. For the PostStart and PreStop lifecycle handlers, management of the container blocks
-until the action is complete, unless the container process fails, in which case the handler is aborted.</p>
-
-<table class="message-fields">
-<thead>
-<tr>
-<th>Field</th>
-<th>Type</th>
-<th>Description</th>
-<th>Required</th>
-</tr>
-</thead>
-<tbody>
-<tr id="k8s-io-api-core-v1-Lifecycle-postStart">
-<td><code>postStart</code></td>
-<td><code><a href="#k8s-io-api-core-v1-Handler">Handler</a></code></td>
-<td>
-<p>PostStart is called immediately after a container is created. If the handler fails,
-the container is terminated and restarted according to its restart policy.
-Other management of the container blocks until the hook completes.
-More info: https://kubernetes.io/docs/concepts/containers/container-lifecycle-hooks/#container-hooks
-+optional</p>
-
-</td>
-<td>
-No
-</td>
-</tr>
-<tr id="k8s-io-api-core-v1-Lifecycle-preStop">
-<td><code>preStop</code></td>
-<td><code><a href="#k8s-io-api-core-v1-Handler">Handler</a></code></td>
-<td>
-<p>PreStop is called immediately before a container is terminated due to an
-API request or management event such as liveness probe failure,
-preemption, resource contention, etc. The handler is not called if the
-container crashes or exits. The reason for termination is passed to the
-handler. The Pod&rsquo;s termination grace period countdown begins before the
-PreStop hooked is executed. Regardless of the outcome of the handler, the
-container will eventually terminate within the Pod&rsquo;s termination grace
-period. Other management of the container blocks until the hook completes
-or until the termination grace period is reached.
-More info: https://kubernetes.io/docs/concepts/containers/container-lifecycle-hooks/#container-hooks
-+optional</p>
-
-</td>
-<td>
-No
-</td>
-</tr>
-</tbody>
-</table>
-</section>
-<h2 id="ResourceRequirements">ResourceRequirements</h2>
-<section>
-<p>ResourceRequirements describes the compute resource requirements.</p>
-
-<table class="message-fields">
-<thead>
-<tr>
-<th>Field</th>
-<th>Type</th>
-<th>Description</th>
-<th>Required</th>
-</tr>
-</thead>
-<tbody>
-<tr id="ResourceRequirements-limits">
-<td><code>limits</code></td>
-<td><code>map&lt;string,&nbsp;<a href="#Quantity">Quantity</a>&gt;</code></td>
-<td>
-<p>Limits describes the maximum amount of compute resources allowed.
-More info: https://kubernetes.io/docs/concepts/configuration/manage-compute-resources-container/
-+optional</p>
-
-</td>
-<td>
-No
-</td>
-</tr>
-<tr id="ResourceRequirements-requests">
-<td><code>requests</code></td>
-<td><code>map&lt;string,&nbsp;<a href="#Quantity">Quantity</a>&gt;</code></td>
-<td>
-<p>Requests describes the minimum amount of compute resources required.
-If Requests is omitted for a container, it defaults to Limits if that is explicitly specified,
-otherwise to an implementation-defined value.
-More info: https://kubernetes.io/docs/concepts/configuration/manage-compute-resources-container/
-+optional</p>
-
-</td>
-<td>
-No
-</td>
-</tr>
-</tbody>
-</table>
-</section>
 <h2 id="BaseKubernetesResourceConfig">BaseKubernetesResourceConfig</h2>
 <section>
 <table class="message-fields">
@@ -1873,6 +1821,401 @@ No
 <td><code><a href="#k8s-io-api-core-v1-PodSecurityContext">PodSecurityContext</a></code></td>
 <td>
 <p>Standard Kubernetes pod security context configuration</p>
+
+</td>
+<td>
+No
+</td>
+</tr>
+<tr id="BaseKubernetesResourceConfig-livenessProbe">
+<td><code>livenessProbe</code></td>
+<td><code><a href="#k8s-io-api-core-v1-Probe">Probe</a></code></td>
+<td>
+<p>Periodic probe of container liveness.
+Container will be restarted if the probe fails.
+Cannot be updated.
+More info: https://kubernetes.io/docs/concepts/workloads/pods/pod-lifecycle#container-probes
++optional</p>
+
+</td>
+<td>
+No
+</td>
+</tr>
+<tr id="BaseKubernetesResourceConfig-readinessProbe">
+<td><code>readinessProbe</code></td>
+<td><code><a href="#k8s-io-api-core-v1-Probe">Probe</a></code></td>
+<td>
+<p>Periodic probe of container service readiness.
+Container will be removed from service endpoints if the probe fails.
+Cannot be updated.
+More info: https://kubernetes.io/docs/concepts/workloads/pods/pod-lifecycle#container-probes
++optional</p>
+
+</td>
+<td>
+No
+</td>
+</tr>
+</tbody>
+</table>
+</section>
+<h2 id="Service">Service</h2>
+<section>
+<p>Service describes the attributes that a user creates on a service.</p>
+
+<table class="message-fields">
+<thead>
+<tr>
+<th>Field</th>
+<th>Type</th>
+<th>Description</th>
+<th>Required</th>
+</tr>
+</thead>
+<tbody>
+<tr id="Service-metadata">
+<td><code>metadata</code></td>
+<td><code><a href="#K8sObjectMeta">K8sObjectMeta</a></code></td>
+<td>
+</td>
+<td>
+No
+</td>
+</tr>
+<tr id="Service-ports">
+<td><code>ports</code></td>
+<td><code><a href="#ServicePort">ServicePort[]</a></code></td>
+<td>
+<p>The list of ports that are exposed by this service.
+More info: https://kubernetes.io/docs/concepts/services-networking/service/#virtual-ips-and-service-proxies
++patchMergeKey=port
++patchStrategy=merge
++listType=map
++listMapKey=port
++listMapKey=protocol
++kubebuilder:validation:MinItems=1</p>
+
+</td>
+<td>
+Yes
+</td>
+</tr>
+<tr id="Service-selector">
+<td><code>selector</code></td>
+<td><code>map&lt;string,&nbsp;string&gt;</code></td>
+<td>
+<p>Route service traffic to pods with label keys and values matching this
+selector. If empty or not present, the service is assumed to have an
+external process managing its endpoints, which Kubernetes will not
+modify. Only applies to types ClusterIP, NodePort, and LoadBalancer.
+Ignored if type is ExternalName.
+More info: https://kubernetes.io/docs/concepts/services-networking/service/
++optional</p>
+
+</td>
+<td>
+No
+</td>
+</tr>
+<tr id="Service-clusterIP">
+<td><code>clusterIP</code></td>
+<td><code>string</code></td>
+<td>
+<p>clusterIP is the IP address of the service and is usually assigned
+randomly by the master. If an address is specified manually and is not in
+use by others, it will be allocated to the service; otherwise, creation
+of the service will fail. This field can not be changed through updates.
+Valid values are &ldquo;None&rdquo;, empty string (&ldquo;&rdquo;), or a valid IP address. &ldquo;None&rdquo;
+can be specified for headless services when proxying is not required.
+Only applies to types ClusterIP, NodePort, and LoadBalancer. Ignored if
+type is ExternalName.
+More info: https://kubernetes.io/docs/concepts/services-networking/service/#virtual-ips-and-service-proxies
++optional</p>
+
+</td>
+<td>
+No
+</td>
+</tr>
+<tr id="Service-type">
+<td><code>type</code></td>
+<td><code>string</code></td>
+<td>
+<p>type determines how the Service is exposed. Defaults to ClusterIP. Valid
+options are ExternalName, ClusterIP, NodePort, and LoadBalancer.
+&ldquo;ExternalName&rdquo; maps to the specified externalName.
+&ldquo;ClusterIP&rdquo; allocates a cluster-internal IP address for load-balancing to
+endpoints. Endpoints are determined by the selector or if that is not
+specified, by manual construction of an Endpoints object. If clusterIP is
+&ldquo;None&rdquo;, no virtual IP is allocated and the endpoints are published as a
+set of endpoints rather than a stable IP.
+&ldquo;NodePort&rdquo; builds on ClusterIP and allocates a port on every node which
+routes to the clusterIP.
+&ldquo;LoadBalancer&rdquo; builds on NodePort and creates an
+external load-balancer (if supported in the current cloud) which routes
+to the clusterIP.
+More info: https://kubernetes.io/docs/concepts/services-networking/service/#publishing-services-service-types
++optional
++kubebuilder:validation:Enum=ClusterIP;NodePort;LoadBalancer</p>
+
+</td>
+<td>
+Yes
+</td>
+</tr>
+<tr id="Service-externalIPs">
+<td><code>externalIPs</code></td>
+<td><code>string[]</code></td>
+<td>
+<p>externalIPs is a list of IP addresses for which nodes in the cluster
+will also accept traffic for this service.  These IPs are not managed by
+Kubernetes.  The user is responsible for ensuring that traffic arrives
+at a node with this IP.  A common example is external load-balancers
+that are not part of the Kubernetes system.
++optional</p>
+
+</td>
+<td>
+No
+</td>
+</tr>
+<tr id="Service-sessionAffinity">
+<td><code>sessionAffinity</code></td>
+<td><code>string</code></td>
+<td>
+<p>Supports &ldquo;ClientIP&rdquo; and &ldquo;None&rdquo;. Used to maintain session affinity.
+Enable client IP based session affinity.
+Must be ClientIP or None.
+Defaults to None.
+More info: https://kubernetes.io/docs/concepts/services-networking/service/#virtual-ips-and-service-proxies
++optional</p>
+
+</td>
+<td>
+No
+</td>
+</tr>
+<tr id="Service-loadBalancerIP">
+<td><code>loadBalancerIP</code></td>
+<td><code>string</code></td>
+<td>
+<p>Only applies to Service Type: LoadBalancer
+LoadBalancer will get created with the IP specified in this field.
+This feature depends on whether the underlying cloud-provider supports specifying
+the loadBalancerIP when a load balancer is created.
+This field will be ignored if the cloud-provider does not support the feature.
++optional</p>
+
+</td>
+<td>
+No
+</td>
+</tr>
+<tr id="Service-loadBalancerSourceRanges">
+<td><code>loadBalancerSourceRanges</code></td>
+<td><code>string[]</code></td>
+<td>
+<p>If specified and supported by the platform, this will restrict traffic through the cloud-provider
+load-balancer will be restricted to the specified client IPs. This field will be ignored if the
+cloud-provider does not support the feature.&rdquo;
+More info: https://kubernetes.io/docs/tasks/access-application-cluster/configure-cloud-provider-firewall/
++optional</p>
+
+</td>
+<td>
+No
+</td>
+</tr>
+<tr id="Service-externalName">
+<td><code>externalName</code></td>
+<td><code>string</code></td>
+<td>
+<p>externalName is the external reference that kubedns or equivalent will
+return as a CNAME record for this service. No proxying will be involved.
+Must be a valid RFC-1123 hostname (https://tools.ietf.org/html/rfc1123)
+and requires Type to be ExternalName.
++optional</p>
+
+</td>
+<td>
+No
+</td>
+</tr>
+<tr id="Service-externalTrafficPolicy">
+<td><code>externalTrafficPolicy</code></td>
+<td><code>string</code></td>
+<td>
+<p>externalTrafficPolicy denotes if this Service desires to route external
+traffic to node-local or cluster-wide endpoints. &ldquo;Local&rdquo; preserves the
+client source IP and avoids a second hop for LoadBalancer and Nodeport
+type services, but risks potentially imbalanced traffic spreading.
+&ldquo;Cluster&rdquo; obscures the client source IP and may cause a second hop to
+another node, but should have good overall load-spreading.
++optional</p>
+
+</td>
+<td>
+No
+</td>
+</tr>
+<tr id="Service-healthCheckNodePort">
+<td><code>healthCheckNodePort</code></td>
+<td><code>int32</code></td>
+<td>
+<p>healthCheckNodePort specifies the healthcheck nodePort for the service.
+If not specified, HealthCheckNodePort is created by the service api
+backend with the allocated nodePort. Will use user-specified nodePort value
+if specified by the client. Only effects when Type is set to LoadBalancer
+and ExternalTrafficPolicy is set to Local.
++optional</p>
+
+</td>
+<td>
+No
+</td>
+</tr>
+<tr id="Service-publishNotReadyAddresses">
+<td><code>publishNotReadyAddresses</code></td>
+<td><code><a href="https://developers.google.com/protocol-buffers/docs/reference/google.protobuf#boolvalue">BoolValue</a></code></td>
+<td>
+<p>publishNotReadyAddresses, when set to true, indicates that DNS implementations
+must publish the notReadyAddresses of subsets for the Endpoints associated with
+the Service. The default value is false.
+The primary use case for setting this field is to use a StatefulSet&rsquo;s Headless Service
+to propagate SRV records for its Pods without respect to their readiness for purpose
+of peer discovery.
++optional</p>
+
+</td>
+<td>
+No
+</td>
+</tr>
+<tr id="Service-sessionAffinityConfig">
+<td><code>sessionAffinityConfig</code></td>
+<td><code><a href="#k8s-io-api-core-v1-SessionAffinityConfig">SessionAffinityConfig</a></code></td>
+<td>
+<p>sessionAffinityConfig contains the configurations of session affinity.
++optional</p>
+
+</td>
+<td>
+No
+</td>
+</tr>
+<tr id="Service-ipFamily">
+<td><code>ipFamily</code></td>
+<td><code>string</code></td>
+<td>
+<p>ipFamily specifies whether this Service has a preference for a particular IP family (e.g. IPv4 vs.
+IPv6).  If a specific IP family is requested, the clusterIP field will be allocated from that family, if it is
+available in the cluster.  If no IP family is requested, the cluster&rsquo;s primary IP family will be used.
+Other IP fields (loadBalancerIP, loadBalancerSourceRanges, externalIPs) and controllers which
+allocate external load-balancers should use the same IP family.  Endpoints for this Service will be of
+this family.  This field is immutable after creation. Assigning a ServiceIPFamily not available in the
+cluster (e.g. IPv6 in IPv4 only cluster) is an error condition and will fail during clusterIP assignment.
++optional</p>
+
+</td>
+<td>
+No
+</td>
+</tr>
+</tbody>
+</table>
+</section>
+<h2 id="k8s-io-api-core-v1-Lifecycle">k8s.io.api.core.v1.Lifecycle</h2>
+<section>
+<p>Lifecycle describes actions that the management system should take in response to container lifecycle
+events. For the PostStart and PreStop lifecycle handlers, management of the container blocks
+until the action is complete, unless the container process fails, in which case the handler is aborted.</p>
+
+<table class="message-fields">
+<thead>
+<tr>
+<th>Field</th>
+<th>Type</th>
+<th>Description</th>
+<th>Required</th>
+</tr>
+</thead>
+<tbody>
+<tr id="k8s-io-api-core-v1-Lifecycle-postStart">
+<td><code>postStart</code></td>
+<td><code><a href="#k8s-io-api-core-v1-Handler">Handler</a></code></td>
+<td>
+<p>PostStart is called immediately after a container is created. If the handler fails,
+the container is terminated and restarted according to its restart policy.
+Other management of the container blocks until the hook completes.
+More info: https://kubernetes.io/docs/concepts/containers/container-lifecycle-hooks/#container-hooks
++optional</p>
+
+</td>
+<td>
+No
+</td>
+</tr>
+<tr id="k8s-io-api-core-v1-Lifecycle-preStop">
+<td><code>preStop</code></td>
+<td><code><a href="#k8s-io-api-core-v1-Handler">Handler</a></code></td>
+<td>
+<p>PreStop is called immediately before a container is terminated due to an
+API request or management event such as liveness probe failure,
+preemption, resource contention, etc. The handler is not called if the
+container crashes or exits. The reason for termination is passed to the
+handler. The Pod&rsquo;s termination grace period countdown begins before the
+PreStop hooked is executed. Regardless of the outcome of the handler, the
+container will eventually terminate within the Pod&rsquo;s termination grace
+period. Other management of the container blocks until the hook completes
+or until the termination grace period is reached.
+More info: https://kubernetes.io/docs/concepts/containers/container-lifecycle-hooks/#container-hooks
++optional</p>
+
+</td>
+<td>
+No
+</td>
+</tr>
+</tbody>
+</table>
+</section>
+<h2 id="ResourceRequirements">ResourceRequirements</h2>
+<section>
+<p>ResourceRequirements describes the compute resource requirements.</p>
+
+<table class="message-fields">
+<thead>
+<tr>
+<th>Field</th>
+<th>Type</th>
+<th>Description</th>
+<th>Required</th>
+</tr>
+</thead>
+<tbody>
+<tr id="ResourceRequirements-limits">
+<td><code>limits</code></td>
+<td><code>map&lt;string,&nbsp;<a href="#Quantity">Quantity</a>&gt;</code></td>
+<td>
+<p>Limits describes the maximum amount of compute resources allowed.
+More info: https://kubernetes.io/docs/concepts/configuration/manage-compute-resources-container/
++optional</p>
+
+</td>
+<td>
+No
+</td>
+</tr>
+<tr id="ResourceRequirements-requests">
+<td><code>requests</code></td>
+<td><code>map&lt;string,&nbsp;<a href="#Quantity">Quantity</a>&gt;</code></td>
+<td>
+<p>Requests describes the minimum amount of compute resources required.
+If Requests is omitted for a container, it defaults to Limits if that is explicitly specified,
+otherwise to an implementation-defined value.
+More info: https://kubernetes.io/docs/concepts/configuration/manage-compute-resources-container/
++optional</p>
 
 </td>
 <td>

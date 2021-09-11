@@ -2,7 +2,7 @@
 title: istio_operator.v2.api.v1alpha1
 layout: protoc-gen-docs
 generator: protoc-gen-docs
-number_of_entries: 29
+number_of_entries: 30
 ---
 <h2 id="K8sObjectMeta">K8sObjectMeta</h2>
 <section>
@@ -413,6 +413,36 @@ No
 <td><code><a href="#k8s-io-api-core-v1-PodSecurityContext">PodSecurityContext</a></code></td>
 <td>
 <p>Standard Kubernetes pod security context configuration</p>
+
+</td>
+<td>
+No
+</td>
+</tr>
+<tr id="BaseKubernetesResourceConfig-livenessProbe">
+<td><code>livenessProbe</code></td>
+<td><code><a href="#k8s-io-api-core-v1-Probe">Probe</a></code></td>
+<td>
+<p>Periodic probe of container liveness.
+Container will be restarted if the probe fails.
+Cannot be updated.
+More info: https://kubernetes.io/docs/concepts/workloads/pods/pod-lifecycle#container-probes
++optional</p>
+
+</td>
+<td>
+No
+</td>
+</tr>
+<tr id="BaseKubernetesResourceConfig-readinessProbe">
+<td><code>readinessProbe</code></td>
+<td><code><a href="#k8s-io-api-core-v1-Probe">Probe</a></code></td>
+<td>
+<p>Periodic probe of container service readiness.
+Container will be removed from service endpoints if the probe fails.
+Cannot be updated.
+More info: https://kubernetes.io/docs/concepts/workloads/pods/pod-lifecycle#container-probes
++optional</p>
 
 </td>
 <td>
@@ -2135,6 +2165,101 @@ No
 <td>
 <p>Sysctls hold a list of namespaced sysctls used for the pod. Pods with unsupported
 sysctls (by the container runtime) might fail to launch.
++optional</p>
+
+</td>
+<td>
+No
+</td>
+</tr>
+</tbody>
+</table>
+</section>
+<h2 id="k8s-io-api-core-v1-Probe">k8s.io.api.core.v1.Probe</h2>
+<section>
+<p>Probe describes a health check to be performed against a container to determine whether it is
+alive or ready to receive traffic.</p>
+
+<table class="message-fields">
+<thead>
+<tr>
+<th>Field</th>
+<th>Type</th>
+<th>Description</th>
+<th>Required</th>
+</tr>
+</thead>
+<tbody>
+<tr id="k8s-io-api-core-v1-Probe-handler">
+<td><code>handler</code></td>
+<td><code><a href="#k8s-io-api-core-v1-Handler">Handler</a></code></td>
+<td>
+<p>The action taken to determine the health of a container</p>
+
+</td>
+<td>
+No
+</td>
+</tr>
+<tr id="k8s-io-api-core-v1-Probe-initialDelaySeconds">
+<td><code>initialDelaySeconds</code></td>
+<td><code>int32</code></td>
+<td>
+<p>Number of seconds after the container has started before liveness probes are initiated.
+More info: https://kubernetes.io/docs/concepts/workloads/pods/pod-lifecycle#container-probes
++optional</p>
+
+</td>
+<td>
+No
+</td>
+</tr>
+<tr id="k8s-io-api-core-v1-Probe-timeoutSeconds">
+<td><code>timeoutSeconds</code></td>
+<td><code>int32</code></td>
+<td>
+<p>Number of seconds after which the probe times out.
+Defaults to 1 second. Minimum value is 1.
+More info: https://kubernetes.io/docs/concepts/workloads/pods/pod-lifecycle#container-probes
++optional</p>
+
+</td>
+<td>
+No
+</td>
+</tr>
+<tr id="k8s-io-api-core-v1-Probe-periodSeconds">
+<td><code>periodSeconds</code></td>
+<td><code>int32</code></td>
+<td>
+<p>How often (in seconds) to perform the probe.
+Default to 10 seconds. Minimum value is 1.
++optional</p>
+
+</td>
+<td>
+No
+</td>
+</tr>
+<tr id="k8s-io-api-core-v1-Probe-successThreshold">
+<td><code>successThreshold</code></td>
+<td><code>int32</code></td>
+<td>
+<p>Minimum consecutive successes for the probe to be considered successful after having failed.
+Defaults to 1. Must be 1 for liveness. Minimum value is 1.
++optional</p>
+
+</td>
+<td>
+No
+</td>
+</tr>
+<tr id="k8s-io-api-core-v1-Probe-failureThreshold">
+<td><code>failureThreshold</code></td>
+<td><code>int32</code></td>
+<td>
+<p>Minimum consecutive failures for the probe to be considered failed after having succeeded.
+Defaults to 3. Minimum value is 1.
 +optional</p>
 
 </td>
