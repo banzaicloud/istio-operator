@@ -105,14 +105,8 @@ type IstioControlPlaneReconciler struct {
 func (r *IstioControlPlaneReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Result, error) {
 	logger := r.Log.WithValues("istiocontrolplane", req.NamespacedName)
 
-	// Get a config to talk to the apiserver
-	k8sConfig, err := config.GetConfig()
-	if err != nil {
-		logger.Error(err, "unable to set up kube client config")
-	}
-
 	icp := &servicemeshv1alpha1.IstioControlPlane{}
-	err = r.Get(ctx, req.NamespacedName, icp)
+	err := r.Get(ctx, req.NamespacedName, icp)
 	if err != nil {
 		if k8serrors.IsNotFound(err) {
 			// Object not found, return.  Created objects are automatically garbage collected.
@@ -141,7 +135,41 @@ func (r *IstioControlPlaneReconciler) Reconcile(ctx context.Context, req ctrl.Re
 		}, nil
 	}
 
+	result, err := r.reconcile(ctx, icp, logger)
+	if err != nil {
+		updateErr := components.UpdateStatus(ctx, r.Client, icp, components.ConvertConfigStateToReconcileStatus(servicemeshv1alpha1.ConfigState_ReconcileFailed), err.Error())
+		if updateErr != nil {
+			logger.Error(updateErr, "failed to update state")
+
+			return result, errors.WithStack(err)
+		}
+
+		return result, err
+	}
+
+	updateErr := components.UpdateStatus(ctx, r.Client, icp, components.ConvertConfigStateToReconcileStatus(servicemeshv1alpha1.ConfigState_Available), "")
+	if updateErr != nil {
+		logger.Error(updateErr, "failed to update state")
+
+		return result, errors.WithStack(err)
+	}
+
+	err = util.RemoveFinalizer(r.Client, icp, istioControlPlaneFinalizerID)
+	if err != nil {
+		return result, err
+	}
+
+	return result, nil
+}
+
+func (r *IstioControlPlaneReconciler) reconcile(ctx context.Context, icp *servicemeshv1alpha1.IstioControlPlane, logger logr.Logger) (ctrl.Result, error) {
 	logger.Info("reconciling")
+
+	// Get a config to talk to the apiserver
+	k8sConfig, err := config.GetConfig()
+	if err != nil {
+		logger.Error(err, "unable to set up kube client config")
+	}
 
 	err = util.AddFinalizer(r.Client, icp, istioControlPlaneFinalizerID)
 	if err != nil {
@@ -213,14 +241,7 @@ func (r *IstioControlPlaneReconciler) Reconcile(ctx context.Context, req ctrl.Re
 		return ctrl.Result{}, err
 	}
 
-	updateErr := components.UpdateStatus(ctx, r.Client, icp, components.ConvertConfigStateToReconcileStatus(servicemeshv1alpha1.ConfigState_Available), "")
-	if updateErr != nil {
-		logger.Error(updateErr, "failed to update state")
-
-		return result, errors.WithStack(err)
-	}
-
-	err = util.RemoveFinalizer(r.Client, icp, istioControlPlaneFinalizerID)
+	err = r.setMeshExpansionGWAddressToStatus(ctx, icp)
 	if err != nil {
 		return ctrl.Result{}, err
 	}
@@ -426,6 +447,39 @@ func (r *IstioControlPlaneReconciler) getRelatedIstioMesh(ctx context.Context, c
 	}
 
 	return mesh, nil
+}
+
+func (r *IstioControlPlaneReconciler) setMeshExpansionGWAddressToStatus(ctx context.Context, icp *servicemeshv1alpha1.IstioControlPlane) error {
+	if !utils.PointerToBool(icp.GetSpec().GetMeshExpansion().GetEnabled()) {
+		icp.Status.GatewayAddress = nil
+		return nil
+	}
+
+	l := &servicemeshv1alpha1.IstioMeshGatewayList{}
+	err := r.Client.List(ctx, l, client.InNamespace(icp.GetNamespace()), client.MatchingLabels{
+		"istio.io/rev": icp.NamespacedRevision(),
+		"app":          "istio-meshexpansion-gateway",
+	})
+	if err != nil {
+		return err
+	}
+
+	if len(l.Items) == 0 {
+		return errors.New("could not find mesh expansion gateway")
+	}
+
+	if len(l.Items) > 1 {
+		return errors.New("multiple mesh expansion gateways were found")
+	}
+
+	imgw := l.Items[0]
+	if imgw.GetStatus().Status != servicemeshv1alpha1.ConfigState_Available {
+		return errors.New(imgw.GetStatus().ErrorMessage)
+	}
+
+	icp.Status.GatewayAddress = imgw.GetStatus().GatewayAddress
+
+	return nil
 }
 
 func (r *IstioControlPlaneReconciler) setMeshConfigToStatus(ctx context.Context, icp *servicemeshv1alpha1.IstioControlPlane) error {

@@ -5,7 +5,9 @@ exposeWebhook: true
 exposeClusterServices: true
 
 runAsRoot: false
-metadata: {}
+metadata:
+  labels: {}
+  annotations: {}
 deployment: {}
 service:
   type: LoadBalancer
