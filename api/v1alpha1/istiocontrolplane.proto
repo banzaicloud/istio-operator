@@ -114,6 +114,7 @@ message IstioControlPlaneSpec {
     // Mesh expansion configuration
     MeshExpansionConfiguration meshExpansion = 20;
     // Cluster ID
+    // +default=Kubernetes
     string clusterID = 21;
     // Network defines the network this cluster belongs to. This name
     // corresponds to the networks in the map of mesh networks.
