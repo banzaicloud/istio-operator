@@ -239,6 +239,7 @@ type IstioControlPlaneSpec struct {
 	// Mesh expansion configuration
 	MeshExpansion *MeshExpansionConfiguration `protobuf:"bytes,20,opt,name=meshExpansion,proto3" json:"meshExpansion,omitempty"`
 	// Cluster ID
+	// +default=Kubernetes
 	ClusterID string `protobuf:"bytes,21,opt,name=clusterID,proto3" json:"clusterID,omitempty"`
 	// Network defines the network this cluster belongs to. This name
 	// corresponds to the networks in the map of mesh networks.
