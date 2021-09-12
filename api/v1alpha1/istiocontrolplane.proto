@@ -117,6 +117,7 @@ message IstioControlPlaneSpec {
     string clusterID = 21;
     // Network defines the network this cluster belongs to. This name
     // corresponds to the networks in the map of mesh networks.
+    // +default=network1
     string networkName = 22;
 }
 
