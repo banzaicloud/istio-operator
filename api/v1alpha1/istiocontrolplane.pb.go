@@ -168,6 +168,8 @@ func (JWTPolicyType) EnumDescriptor() ([]byte, []int) {
 // +cue-gen:IstioControlPlane:printerColumn:name="Mode",type="string",JSONPath=".spec.mode",description="Mode for the Istio control plane"
 // +cue-gen:IstioControlPlane:printerColumn:name="Network",type="string",JSONPath=".spec.networkName",description="The network this cluster belongs to"
 // +cue-gen:IstioControlPlane:printerColumn:name="Status",type="string",JSONPath=".status.status",description="Status of the resource"
+// +cue-gen:IstioControlPlane:printerColumn:name="Mesh expansion",type="string",JSONPath=".spec.meshExpansion.enabled",description="Whether mesh expansion is enabled"
+// +cue-gen:IstioControlPlane:printerColumn:name="Expansion GW IPs",type="string",JSONPath=".status.gatewayAddress",description="IP addresses of the mesh expansion gateway"
 // +cue-gen:IstioControlPlane:printerColumn:name="Error",type="string",JSONPath=".status.errorMessage",description="Error message"
 // +cue-gen:IstioControlPlane:printerColumn:name=Age,type=date,JSONPath=.metadata.creationTimestamp,description="CreationTimestamp is a timestamp
 // representing the server time when this object was created. It is not guaranteed to be set in happens-before order across separate operations.
@@ -240,6 +242,7 @@ type IstioControlPlaneSpec struct {
 	ClusterID string `protobuf:"bytes,21,opt,name=clusterID,proto3" json:"clusterID,omitempty"`
 	// Network defines the network this cluster belongs to. This name
 	// corresponds to the networks in the map of mesh networks.
+	// +default=network1
 	NetworkName          string   `protobuf:"bytes,22,opt,name=networkName,proto3" json:"networkName,omitempty"`
 	XXX_NoUnkeyedLiteral struct{} `json:"-"`
 	XXX_unrecognized     []byte   `json:"-"`
