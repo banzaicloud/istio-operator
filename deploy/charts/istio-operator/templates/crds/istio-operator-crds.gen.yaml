@@ -59,6 +59,7 @@ spec:
               caAddress:
                 type: string
               clusterID:
+                default: Kubernetes
                 type: string
               containerImageConfiguration:
                 properties:
@@ -7373,6 +7374,7 @@ spec:
               caAddress:
                 type: string
               clusterID:
+                default: Kubernetes
                 type: string
               containerImageConfiguration:
                 properties:
