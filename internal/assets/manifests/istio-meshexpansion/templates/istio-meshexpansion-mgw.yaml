@@ -36,7 +36,11 @@ apiVersion: servicemesh.cisco.com/v1alpha1
 kind: IstioMeshGateway
 metadata:
   name: {{ include "name-with-revision" (dict "name" "istio-meshexpansion" "context" $) }}
-{{- include "toYamlIf" (dict "value" .Values.metadata "key" "metadata" "indent" 2) | indent 2 }}
+  labels:
+    istio.io/rev: {{ include "namespaced-revision" . }}
+    app: istio-meshexpansion-gateway
+{{- include "toYamlIf" (dict "value" .Values.metadata.labels) | indent 4 }}
+{{- include "toYamlIf" (dict "value" .Values.metadata.annotations "key" "annotations" "indent" 2) | indent 2 }}
 spec:
   istioControlPlane:
     name: {{ .Values.revision }}
