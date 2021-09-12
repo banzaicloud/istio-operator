@@ -133,6 +133,10 @@ func (rec *Base) IsOptional() bool {
 }
 
 func (rec *Base) UpdateStatus(object runtime.Object, status types.ReconcileStatus, message string) error {
+	if obj, ok := object.(client.Object); ok && !obj.GetDeletionTimestamp().IsZero() {
+		return nil
+	}
+
 	if c, ok := rec.Component.(interface {
 		UpdateStatus(object runtime.Object, status types.ReconcileStatus, message string) error
 	}); ok {

@@ -21,7 +21,9 @@ import (
 	"crypto/sha256"
 	"encoding/json"
 	"fmt"
+	"strings"
 	"sync"
+	"time"
 
 	"emperror.dev/errors"
 	"github.com/go-logr/logr"
@@ -38,6 +40,8 @@ import (
 	k8serrors "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
+	"k8s.io/apimachinery/pkg/types"
+	"k8s.io/client-go/rest"
 	ctrl "sigs.k8s.io/controller-runtime"
 	ctrlBuilder "sigs.k8s.io/controller-runtime/pkg/builder"
 	"sigs.k8s.io/controller-runtime/pkg/client"
@@ -56,12 +60,16 @@ import (
 	"github.com/banzaicloud/istio-operator/v2/internal/components/meshexpansion"
 	"github.com/banzaicloud/istio-operator/v2/internal/components/sidecarinjector"
 	"github.com/banzaicloud/istio-operator/v2/internal/util"
+	pkgUtil "github.com/banzaicloud/istio-operator/v2/pkg/util"
 	"github.com/banzaicloud/operator-tools/pkg/reconciler"
 	"github.com/banzaicloud/operator-tools/pkg/utils"
 )
 
 const (
-	istioControlPlaneFinalizerID = "istio-controlplane.servicemesh.cisco.com"
+	istioControlPlaneFinalizerID               = "istio-controlplane.servicemesh.cisco.com"
+	meshExpansionGatewayRemovalRequeueDuration = time.Second * 30
+	readerServiceAccountName                   = "istio-reader"
+	readerSecretType                           = "k8s.cisco.com/istio-reader-secret"
 )
 
 // IstioControlPlaneReconciler reconciles a IstioControlPlane object
@@ -143,6 +151,10 @@ func (r *IstioControlPlaneReconciler) Reconcile(ctx context.Context, req ctrl.Re
 			logger.Error(updateErr, "failed to update state")
 
 			return result, errors.WithStack(err)
+		}
+
+		if result.Requeue {
+			return result, nil
 		}
 
 		return result, err
@@ -238,19 +250,42 @@ func (r *IstioControlPlaneReconciler) reconcile(ctx context.Context, icp *servic
 		}
 	}
 
+	err = r.reconcileClusterReaderSecret(ctx, icp, k8sConfig, logger)
+	if err != nil {
+		return result, err
+	}
+
+	// icp is marked for deletion
+	if !icp.DeletionTimestamp.IsZero() {
+		err = r.waitForMeshExpansionGatewayRemoval(ctx, icp)
+		if err != nil {
+			result.Requeue = true
+			result.RequeueAfter = meshExpansionGatewayRemovalRequeueDuration
+
+			return result, err
+		}
+
+		return result, nil
+	}
+
 	err = r.setSidecarInjectorChecksumToStatus(ctx, icp)
 	if err != nil {
-		return ctrl.Result{}, err
+		return result, err
 	}
 
 	err = r.setMeshConfigToStatus(ctx, icp)
 	if err != nil {
-		return ctrl.Result{}, err
+		return result, err
 	}
 
 	err = r.setMeshExpansionGWAddressToStatus(ctx, icp)
 	if err != nil {
-		return ctrl.Result{}, err
+		logger.Info(fmt.Sprintf("mesh expansion gateway is pending: %s", err.Error()))
+		_ = components.UpdateStatus(ctx, r.Client, icp, components.ConvertConfigStateToReconcileStatus(servicemeshv1alpha1.ConfigState_ReconcileFailed), err.Error())
+		result.Requeue = true
+		result.RequeueAfter = pendingGatewayRequeueDuration
+
+		return result, err
 	}
 
 	return result, nil
@@ -456,18 +491,95 @@ func (r *IstioControlPlaneReconciler) getRelatedIstioMesh(ctx context.Context, c
 	return mesh, nil
 }
 
+func (r *IstioControlPlaneReconciler) reconcileClusterReaderSecret(ctx context.Context, icp *servicemeshv1alpha1.IstioControlPlane, kubeConfig *rest.Config, logger logr.Logger) error {
+	var err error
+	state := reconciler.StateAbsent
+	secret := &corev1.Secret{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      icp.WithRevision(strings.ToLower(icp.GetSpec().GetClusterID())),
+			Namespace: icp.GetNamespace(),
+		},
+	}
+
+	if icp.DeletionTimestamp.IsZero() && icp.GetSpec().GetMode() == servicemeshv1alpha1.ModeType_PASSIVE {
+		state = reconciler.StatePresent
+		secret, err = pkgUtil.GetReaderSecretForCluster(
+			ctx,
+			r.Client,
+			kubeConfig,
+			icp.GetSpec().GetClusterID(),
+			types.NamespacedName{
+				Name:      secret.GetName(),
+				Namespace: secret.GetNamespace(),
+			},
+			types.NamespacedName{
+				Name:      icp.WithRevision(readerServiceAccountName),
+				Namespace: icp.GetNamespace(),
+			},
+		)
+		if err != nil {
+			return errors.WithStackIf(err)
+		}
+
+		secret.Type = corev1.SecretType(readerSecretType)
+		secret.OwnerReferences = append(secret.OwnerReferences, metav1.OwnerReference{
+			APIVersion:         icp.GroupVersionKind().GroupVersion().String(),
+			Kind:               icp.GroupVersionKind().Kind,
+			Name:               icp.GetName(),
+			UID:                icp.GetUID(),
+			Controller:         utils.BoolPointer(true),
+			BlockOwnerDeletion: utils.BoolPointer(true),
+		})
+		secret.Labels = icp.RevisionLabels()
+	}
+
+	rec := reconciler.NewReconcilerWith(r.GetClient(),
+		reconciler.WithLog(logger),
+		reconciler.WithRecreateImmediately(),
+		reconciler.WithEnableRecreateWorkload(),
+		reconciler.WithRecreateEnabledForAll(),
+	)
+
+	_, err = rec.ReconcileResource(secret, state)
+
+	return errors.WithStackIf(err)
+}
+
+func (r *IstioControlPlaneReconciler) waitForMeshExpansionGatewayRemoval(ctx context.Context, icp *servicemeshv1alpha1.IstioControlPlane) error {
+	if icp.DeletionTimestamp.IsZero() || !utils.PointerToBool(icp.GetSpec().GetMeshExpansion().GetEnabled()) {
+		return nil
+	}
+
+	l := &servicemeshv1alpha1.IstioMeshGatewayList{}
+	err := r.Client.List(ctx, l, client.InNamespace(icp.GetNamespace()), client.MatchingLabels(
+		utils.MergeLabels(icp.RevisionLabels(), map[string]string{
+			"app": "istio-meshexpansion-gateway",
+		}),
+	))
+	if err != nil {
+		return err
+	}
+
+	if len(l.Items) > 0 {
+		return errors.New("mesh expansion gateway still exists")
+	}
+
+	return nil
+}
+
 func (r *IstioControlPlaneReconciler) setMeshExpansionGWAddressToStatus(ctx context.Context, icp *servicemeshv1alpha1.IstioControlPlane) error {
-	if !utils.PointerToBool(icp.GetSpec().GetMeshExpansion().GetEnabled()) {
+	if icp.DeletionTimestamp.IsZero() && !utils.PointerToBool(icp.GetSpec().GetMeshExpansion().GetEnabled()) {
 		icp.Status.GatewayAddress = nil
 
 		return nil
 	}
 
 	l := &servicemeshv1alpha1.IstioMeshGatewayList{}
-	err := r.Client.List(ctx, l, client.InNamespace(icp.GetNamespace()), client.MatchingLabels{
-		"istio.io/rev": icp.NamespacedRevision(),
-		"app":          "istio-meshexpansion-gateway",
-	})
+	err := r.Client.List(ctx, l, client.InNamespace(icp.GetNamespace()), client.MatchingLabels(
+		utils.MergeLabels(icp.RevisionLabels(), map[string]string{
+			"app": "istio-meshexpansion-gateway",
+		}),
+	))
 	if err != nil {
 		return err
 	}
