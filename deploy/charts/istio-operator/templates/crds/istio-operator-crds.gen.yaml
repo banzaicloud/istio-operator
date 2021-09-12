@@ -30,6 +30,14 @@ spec:
       jsonPath: .status.status
       name: Status
       type: string
+    - description: Whether mesh expansion is enabled
+      jsonPath: .spec.meshExpansion.enabled
+      name: Mesh expansion
+      type: string
+    - description: IP addresses of the mesh expansion gateway
+      jsonPath: .status.gatewayAddress
+      name: Expansion GW IPs
+      type: string
     - description: Error message
       jsonPath: .status.errorMessage
       name: Error
@@ -5504,6 +5512,7 @@ spec:
                 nullable: true
                 type: boolean
               networkName:
+                default: network1
                 description: Network defines the network this cluster belongs to.
                 type: string
               proxy:
@@ -9405,6 +9414,14 @@ spec:
       jsonPath: .status.status
       name: Status
       type: string
+    - description: Whether mesh expansion is enabled
+      jsonPath: .spec.meshExpansion.enabled
+      name: Mesh expansion
+      type: string
+    - description: IP addresses of the mesh expansion gateway
+      jsonPath: .status.gatewayAddress
+      name: Expansion GW IPs
+      type: string
     - description: Error message
       jsonPath: .status.errorMessage
       name: Error
@@ -14879,6 +14896,7 @@ spec:
                 nullable: true
                 type: boolean
               networkName:
+                default: network1
                 description: Network defines the network this cluster belongs to.
                 type: string
               proxy:
