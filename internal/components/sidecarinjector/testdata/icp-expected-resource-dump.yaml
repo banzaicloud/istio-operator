@@ -188,7 +188,7 @@ spec:
             - --probe-path=/tmp/health
             - --interval=4s
           failureThreshold: 3
-          initialDelaySeconds: 4
+          initialDelaySeconds: 15
           periodSeconds: 4
           successThreshold: 1
           timeoutSeconds: 1
