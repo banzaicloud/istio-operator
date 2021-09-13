@@ -26,14 +26,11 @@ spec:
       - command:
         - /manager
         args:
-        - --enable-leader-election
+        - --leader-election-enabled
         image: controller:latest
         name: manager
         resources:
-          limits:
-            cpu: 100m
-            memory: 30Mi
           requests:
-            cpu: 100m
-            memory: 20Mi
-      terminationGracePeriodSeconds: 10
+            cpu: 200m
+            memory: 256Mi
+      terminationGracePeriodSeconds: 60

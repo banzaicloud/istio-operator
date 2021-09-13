@@ -1,7 +1,7 @@
 apiVersion: servicemesh.cisco.com/v1alpha1
 kind: IstioControlPlane
 metadata:
-  name: icp-v11x-sample
+  name: icp-v111x-sample
 spec:
   version: 1.11.0
   mode: ACTIVE
@@ -9,6 +9,8 @@ spec:
   logging:
     level: "default:info"
   mountMtlsCerts: false
+  meshExpansion:
+    enabled: false
   istiod:
     deployment:
       replicas:
@@ -100,7 +102,6 @@ spec:
       serviceCluster: istio-proxy
       drainDuration: 45s
       parentShutdownDuration: 60s
-      discoveryAddress: istiod-icp-v11x-sample.istio-system.svc:15012
       proxyAdminPort: 15000
       controlPlaneAuthPolicy: MUTUAL_TLS
       concurrency: 2

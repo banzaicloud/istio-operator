@@ -6,6 +6,9 @@
 {{ valueIf (dict "key" "tag" "value" .GetSpec.GetContainerImageConfiguration.GetTag) }}
 {{ valueIf (dict "key" "imagePullPolicy" "value" (default .GetSpec.GetContainerImageConfiguration.GetImagePullPolicy .GetSpec.GetSidecarInjector.GetDeployment.GetImagePullPolicy)) }}
 {{ toYamlIf (dict "key" "imagePullSecrets" "value" (default .GetSpec.GetContainerImageConfiguration.GetImagePullSecrets .GetSpec.GetSidecarInjector.GetDeployment.GetImagePullSecrets)) }}
+{{- if .GetSpec.GetJwtPolicy }}
+jwtPolicy: {{ .GetSpec.GetJwtPolicy | toString | lower | replace "_" "-" }}
+{{- end }}
 {{ end }}
 
 {{- $x := (include "global" .) | reformatYaml }}
