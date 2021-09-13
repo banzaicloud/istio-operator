@@ -1276,6 +1276,10 @@ metadata:
   name: istiod-cp-v111x
   namespace: istio-system
 spec:
+  type: ClusterIP
+  clusterIP: None
+  clusterIPs:
+  - None
   ports:
   - name: grpc-xds
     port: 15010
@@ -1290,9 +1294,6 @@ spec:
   - name: http-monitoring
     port: 15014
     protocol: TCP
-  selector:
-    app: istiod
-    istio.io/rev: cp-v111x.istio-system
 
 ---
 apiVersion: admissionregistration.k8s.io/v1
