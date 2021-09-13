@@ -225,7 +225,7 @@ func (r *IstioControlPlaneReconciler) reconcile(ctx context.Context, icp *servic
 	}
 	componentReconcilers = append(componentReconcilers, meshExpansionReconciler)
 
-	sidecarInjectorReconciler, err := NewComponentReconciler(r, sidecarinjector.NewChartReconciler, r.Log.WithName("sidecanInjector"))
+	sidecarInjectorReconciler, err := NewComponentReconciler(r, sidecarinjector.NewChartReconciler, r.Log.WithName("sidecarInjector"))
 	if err != nil {
 		return ctrl.Result{}, err
 	}
