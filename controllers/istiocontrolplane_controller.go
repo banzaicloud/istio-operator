@@ -195,22 +195,24 @@ func (r *IstioControlPlaneReconciler) reconcile(ctx context.Context, icp *servic
 		return ctrl.Result{}, err
 	}
 
-	baseComponent, err := NewComponentReconciler(r, base.NewComponentReconciler, r.Log.WithName("base"))
-	if err != nil {
-		return ctrl.Result{}, err
-	}
-
-	result, err := baseComponent.Reconcile(icp)
-	if err != nil {
-		return result, err
-	}
-
-	r.watchersInitOnce.Do(func() {
-		err = r.watchIstioCRs()
+	if icp.GetSpec().GetMode() == servicemeshv1alpha1.ModeType_ACTIVE {
+		baseComponent, err := NewComponentReconciler(r, base.NewComponentReconciler, r.Log.WithName("base"))
 		if err != nil {
-			logger.Error(err, "unable to watch Istio Custom Resources")
+			return ctrl.Result{}, err
 		}
-	})
+
+		result, err := baseComponent.Reconcile(icp)
+		if err != nil {
+			return result, err
+		}
+
+		r.watchersInitOnce.Do(func() {
+			err = r.watchIstioCRs()
+			if err != nil {
+				logger.Error(err, "unable to watch Istio Custom Resources")
+			}
+		})
+	}
 
 	componentReconcilers := []components.ComponentReconciler{}
 
@@ -244,6 +246,7 @@ func (r *IstioControlPlaneReconciler) reconcile(ctx context.Context, icp *servic
 	}
 	componentReconcilers = append(componentReconcilers, sidecarInjectorReconciler)
 
+	var result ctrl.Result
 	for _, r := range componentReconcilers {
 		result, err = r.Reconcile(icp)
 		if err != nil {
