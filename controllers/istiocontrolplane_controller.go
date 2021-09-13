@@ -69,7 +69,8 @@ const (
 	istioControlPlaneFinalizerID               = "istio-controlplane.servicemesh.cisco.com"
 	meshExpansionGatewayRemovalRequeueDuration = time.Second * 30
 	readerServiceAccountName                   = "istio-reader"
-	readerSecretType                           = "k8s.cisco.com/istio-reader-secret"
+	// nolint:gosec
+	readerSecretType = "k8s.cisco.com/istio-reader-secret"
 )
 
 // IstioControlPlaneReconciler reconciles a IstioControlPlane object
