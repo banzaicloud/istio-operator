@@ -1,0 +1,20 @@
+global:
+  meshID: mesh1
+  mode: PASSIVE
+  multiCluster:
+    clusterName: demo-cluster2
+  network: network1
+meshConfig:
+  connectTimeout: 5s
+  rootNamespace: istio-system
+pilot:
+  env:
+  - name: INJECTION_WEBHOOK_CONFIG_NAME
+    value: istio-sidecar-injector-cp-v111x-istio-system
+  - name: ISTIOD_CUSTOM_HOST
+    value: istiod-cp-v111x.istio-system.svc
+  - name: PILOT_ENABLE_STATUS
+    value: "false"
+  - name: VALIDATION_WEBHOOK_CONFIG_NAME
+    value: istiod-cp-v111x-istio-system
+revision: cp-v111x

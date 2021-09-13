@@ -1,4 +1,4 @@
-{{- if .Values.global.configValidation }}
+{{- if and (eq .Values.global.mode "ACTIVE") .Values.global.configValidation }}
 apiVersion: admissionregistration.k8s.io/v1
 kind: ValidatingWebhookConfiguration
 metadata:

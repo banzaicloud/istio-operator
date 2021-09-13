@@ -1,4 +1,4 @@
-{{- if .Values.pilot.jwksResolverExtraRootCA }}
+{{- if and (eq .Values.global.mode "ACTIVE") .Values.pilot.jwksResolverExtraRootCA }}
 apiVersion: v1
 kind: ConfigMap
 metadata:

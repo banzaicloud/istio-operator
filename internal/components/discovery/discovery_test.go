@@ -48,6 +48,15 @@ var icpExpectedValues []byte
 //go:embed testdata/icp-expected-resource-dump.yaml
 var icpExpectedResourceDump []byte
 
+//go:embed testdata/icp-passive-test-cr.yaml
+var icpPassiveTestCR []byte
+
+//go:embed testdata/icp-passive-expected-values.yaml
+var icpPassiveExpectedValues []byte
+
+//go:embed testdata/icp-passive-expected-resource-dump.yaml
+var icpPassiveExpectedResourceDump []byte
+
 func TestICPDiscoveryResourceDump(t *testing.T) {
 	t.Parallel()
 
@@ -132,6 +141,108 @@ func TestICPDiscoveryValuesTemplateTransform(t *testing.T) {
 	}
 
 	report, err := util.CompareYAMLs(icpExpectedValues, valuesYaml)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	if len(report.Diffs) > 0 {
+		if err := (&dyff.HumanReport{
+			Report:       report,
+			OmitHeader:   false,
+			NoTableStyle: true,
+		}).WriteReport(os.Stdout); err != nil {
+			t.Fatal(err)
+		}
+
+		t.Fatal(errors.NewPlain("generated template values not equals with expected"))
+	}
+}
+
+func TestPassiveICPDiscoveryResourceDump(t *testing.T) {
+	t.Parallel()
+
+	var icp *v1alpha1.IstioControlPlane
+	if err := yaml.Unmarshal(icpPassiveTestCR, &icp); err != nil {
+		t.Fatal(err)
+	}
+
+	reconciler := discovery.NewChartReconciler(
+		templatereconciler.NewHelmReconciler(nil, nil, logr.TestLogger{
+			T: t,
+		}, fake.NewSimpleClientset().Discovery(), []reconciler.NativeReconcilerOpt{
+			reconciler.NativeReconcilerSetControllerRef(),
+		}),
+		v1alpha1.IstioControlPlaneProperties{
+			Mesh: &v1alpha1.IstioMesh{
+				Spec: &v1alpha1.IstioMeshSpec{
+					Config: &istio_mesh_v1alpha1.MeshConfig{
+						ConnectTimeout: types.DurationProto(5 * time.Second),
+					},
+				},
+			},
+		},
+	)
+
+	dd, err := reconciler.GetManifest(icp)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	report, err := util.CompareYAMLs(icpPassiveExpectedResourceDump, dd)
+	if err != nil {
+		t.Log(string(dd))
+		t.Fatal(err)
+	}
+
+	if len(report.Diffs) > 0 {
+		if err := (&dyff.HumanReport{
+			Report:       report,
+			OmitHeader:   false,
+			NoTableStyle: true,
+		}).WriteReport(os.Stdout); err != nil {
+			t.Fatal(err)
+		}
+
+		t.Fatal(errors.NewPlain("generated resource dump not equals with expected"))
+	}
+}
+
+func TestPassiveICPDiscoveryValuesTemplateTransform(t *testing.T) {
+	t.Parallel()
+
+	var icp *v1alpha1.IstioControlPlane
+	if err := yaml.Unmarshal(icpPassiveTestCR, &icp); err != nil {
+		t.Fatal(err)
+	}
+
+	obj := v1alpha1.IstioControlPlaneWithProperties{
+		IstioControlPlane: icp,
+		Properties: v1alpha1.IstioControlPlaneProperties{
+			Mesh: &v1alpha1.IstioMesh{
+				Spec: &v1alpha1.IstioMeshSpec{
+					Config: &istio_mesh_v1alpha1.MeshConfig{
+						ConnectTimeout: types.DurationProto(5 * time.Second),
+					},
+				},
+			},
+		},
+	}
+
+	values, err := util.TransformStructToStriMapWithTemplate(obj, assets.DiscoveryChart, "values.yaml.tpl")
+	if err != nil {
+		kv := keyval.ToMap(errors.GetDetails(err))
+		if t, ok := kv["template"]; ok {
+			fmt.Printf("%s\n", t.(string))
+		}
+		t.Fatal(err)
+	}
+
+	valuesYaml, err := yaml.Marshal(values)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	report, err := util.CompareYAMLs(icpPassiveExpectedValues, valuesYaml)
 	if err != nil {
 		t.Fatal(err)
 	}

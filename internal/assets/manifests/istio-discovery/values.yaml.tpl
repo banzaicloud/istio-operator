@@ -16,7 +16,11 @@ env:
   - name: ISTIOD_CUSTOM_HOST
     value: istiod-cp-v111x.istio-system.svc
   - name: PILOT_ENABLE_STATUS
+{{ if .GetSpec.GetIstiod.GetEnableStatus }}
     value: "{{ .GetSpec.GetIstiod.GetEnableStatus }}"
+{{ else }}
+    value: "false"
+{{ end }}
   - name: VALIDATION_WEBHOOK_CONFIG_NAME
     value: istiod-cp-v111x-istio-system
 {{ toYamlIf (dict "value" .GetSpec.GetIstiod.GetDeployment.GetEnv) | indent 2 }}
@@ -100,6 +104,9 @@ telemetry:
 
 {{- define "global" }}
 {{ valueIf (dict "key" "distribution" "value" .GetSpec.GetDistribution) }}
+{{- if .GetSpec.GetMode }}
+mode: {{ .GetSpec.GetMode | toString }}
+{{- end }}
 {{- if .GetSpec.GetIstiod.GetEnableAnalysis }}
 istiod:
   enableAnalysis: {{ .GetSpec.GetIstiod.GetEnableAnalysis }}

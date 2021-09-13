@@ -159,7 +159,7 @@ spec:
         - --healthCheckInterval=2s
         - --healthCheckFile=/tmp/health
         - --reconcileWebhookConfig=true
-        - --webhookConfigName=istio-sidecar-injector-cp-v111x
+        - --webhookConfigName=istio-sidecar-injector-cp-v111x-istio-system
         env:
         - name: REVISION
           value: cp-v111x.istio-system

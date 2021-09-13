@@ -10,6 +10,14 @@
 {{- end -}}
 {{- end -}}
 
+{{- define "name-with-namespaced-revision-by-distribution" -}}
+{{- if eq .context.Values.global.distribution "cisco" -}}
+{{ include "name-with-namespaced-revision" ( dict "name" .name "context" .context) }}
+{{- else -}}
+{{ .name }}{{ if not (eq .context.Values.revision "") }}-{{ .context.Values.revision }}.{{ .context.Release.Namespace }}{{- end }}
+{{- end -}}
+{{- end -}}
+
 {{- define "serviceHostnames" }}
 {{- $servicename := include "name-with-revision" ( dict "name" "istio-sidecar-injector" "context" $) -}}
 {{ $servicename }}.{{ .Release.Namespace }},{{ $servicename }}.{{ .Release.Namespace }}.svc,{{ $servicename }}.{{ .Release.Namespace }}.svc.{{ .Values.global.clusterDomain }}

@@ -57,6 +57,7 @@ global:
   caAddress: localhost
   distribution: official
   meshID: mesh1
+  mode: ACTIVE
   multiCluster:
     clusterName: demo-cluster1
 pilot:

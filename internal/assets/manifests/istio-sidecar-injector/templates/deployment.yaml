@@ -45,7 +45,7 @@ spec:
           - "--healthCheckInterval=2s"
           - "--healthCheckFile=/tmp/health"
           - "--reconcileWebhookConfig=true"
-          - "--webhookConfigName={{ include "name-with-revision" (dict "name" "istio-sidecar-injector" "context" $) }}"
+          - "--webhookConfigName={{ include "name-with-namespaced-revision-by-distribution" ( dict "name" "istio-sidecar-injector" "context" $) }}"
           ports:
             {{- range $key, $val := .Values.service.ports }}
             - containerPort: {{ $val.targetPort | default $val.port }}
