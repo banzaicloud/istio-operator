@@ -452,6 +452,7 @@ func (r *IstioControlPlaneReconciler) getRelatedIstioMesh(ctx context.Context, c
 func (r *IstioControlPlaneReconciler) setMeshExpansionGWAddressToStatus(ctx context.Context, icp *servicemeshv1alpha1.IstioControlPlane) error {
 	if !utils.PointerToBool(icp.GetSpec().GetMeshExpansion().GetEnabled()) {
 		icp.Status.GatewayAddress = nil
+
 		return nil
 	}
 
