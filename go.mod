@@ -40,7 +40,6 @@ require (
 
 replace (
 	github.com/banzaicloud/istio-operator/v2/api => ./api
-	github.com/banzaicloud/istio-operator/v2/static => ./static
 
 	// needs a fork to support int64/uint64 marshalling to integers
 	github.com/gogo/protobuf => github.com/waynz0r/protobuf v1.3.3-0.20210811122234-64636cae0910
