@@ -137,7 +137,7 @@ type IstioControlPlaneList struct {
 }
 
 // PeerIstioControlPlane is the Schema for the clone of the istiocontrolplanes API
-// +kubebuilder:object:generate=true
+// +kubebuilder:object:root=true
 type PeerIstioControlPlane struct {
 	metav1.TypeMeta   `json:",inline"`
 	metav1.ObjectMeta `json:"metadata,omitempty"`
@@ -147,7 +147,7 @@ type PeerIstioControlPlane struct {
 }
 
 // PeerIstioControlPlaneList contains a list of PeerIstioControlPlane
-// +kubebuilder:object:generate=true
+// +kubebuilder:object:root=true
 type PeerIstioControlPlaneList struct {
 	metav1.TypeMeta `json:",inline"`
 	metav1.ListMeta `json:"metadata,omitempty"`
