@@ -146,7 +146,7 @@ type PeerIstioControlPlane struct {
 	Status IstioControlPlaneStatus `json:"status,omitempty"`
 }
 
-// IstioControlPlaneList contains a list of PeerIstioControlPlane
+// PeerIstioControlPlaneList contains a list of PeerIstioControlPlane
 // +kubebuilder:object:generate=true
 type PeerIstioControlPlaneList struct {
 	metav1.TypeMeta `json:",inline"`
