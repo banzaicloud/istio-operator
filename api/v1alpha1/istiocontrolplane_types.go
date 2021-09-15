@@ -136,6 +136,24 @@ type IstioControlPlaneList struct {
 	Items           []IstioControlPlane `json:"items"`
 }
 
+// PeerIstioControlPlane is the Schema for the clone of the istiocontrolplanes API
+// +kubebuilder:object:generate=true
+type PeerIstioControlPlane struct {
+	metav1.TypeMeta   `json:",inline"`
+	metav1.ObjectMeta `json:"metadata,omitempty"`
+
+	Spec   *IstioControlPlaneSpec  `json:"spec,omitempty"`
+	Status IstioControlPlaneStatus `json:"status,omitempty"`
+}
+
+// IstioControlPlaneList contains a list of PeerIstioControlPlane
+// +kubebuilder:object:generate=true
+type PeerIstioControlPlaneList struct {
+	metav1.TypeMeta `json:",inline"`
+	metav1.ListMeta `json:"metadata,omitempty"`
+	Items           []PeerIstioControlPlane `json:"items"`
+}
+
 func init() {
-	SchemeBuilder.Register(&IstioControlPlane{}, &IstioControlPlaneList{})
+	SchemeBuilder.Register(&IstioControlPlane{}, &IstioControlPlaneList{}, &PeerIstioControlPlane{}, &PeerIstioControlPlaneList{})
 }
