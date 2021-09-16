@@ -60,6 +60,7 @@ import (
 	"github.com/banzaicloud/istio-operator/v2/internal/components/meshexpansion"
 	"github.com/banzaicloud/istio-operator/v2/internal/components/sidecarinjector"
 	"github.com/banzaicloud/istio-operator/v2/internal/util"
+	"github.com/banzaicloud/istio-operator/v2/pkg/k8sutil"
 	pkgUtil "github.com/banzaicloud/istio-operator/v2/pkg/util"
 	"github.com/banzaicloud/operator-tools/pkg/reconciler"
 	"github.com/banzaicloud/operator-tools/pkg/utils"
@@ -76,11 +77,12 @@ const (
 // IstioControlPlaneReconciler reconciles a IstioControlPlane object
 type IstioControlPlaneReconciler struct {
 	client.Client
-	Log              logr.Logger
-	Scheme           *runtime.Scheme
-	watchersInitOnce sync.Once
-	builder          *ctrlBuilder.Builder
-	ctrl             controller.Controller
+	Log                logr.Logger
+	Scheme             *runtime.Scheme
+	ResourceReconciler reconciler.ResourceReconciler
+	watchersInitOnce   sync.Once
+	builder            *ctrlBuilder.Builder
+	ctrl               controller.Controller
 }
 
 // +kubebuilder:rbac:groups="",resources=nodes;replicationcontrollers,verbs=get;list;watch
@@ -254,7 +256,12 @@ func (r *IstioControlPlaneReconciler) reconcile(ctx context.Context, icp *servic
 		}
 	}
 
-	err = r.reconcileClusterReaderSecret(ctx, icp, k8sConfig, logger)
+	err = r.reconcileIstiodEndpoint(ctx, icp)
+	if err != nil {
+		return result, err
+	}
+
+	err = r.reconcileClusterReaderSecret(ctx, icp, k8sConfig)
 	if err != nil {
 		return result, err
 	}
@@ -340,6 +347,12 @@ func (r *IstioControlPlaneReconciler) SetupWithManager(mgr ctrl.Manager) error {
 		Owns(&corev1.Service{
 			TypeMeta: metav1.TypeMeta{
 				Kind:       "Service",
+				APIVersion: corev1.SchemeGroupVersion.String(),
+			},
+		}, ctrlBuilder.WithPredicates(util.ObjectChangePredicate{})).
+		Owns(&corev1.Endpoints{
+			TypeMeta: metav1.TypeMeta{
+				Kind:       "Endpoints",
 				APIVersion: corev1.SchemeGroupVersion.String(),
 			},
 		}, ctrlBuilder.WithPredicates(util.ObjectChangePredicate{})).
@@ -495,7 +508,43 @@ func (r *IstioControlPlaneReconciler) getRelatedIstioMesh(ctx context.Context, c
 	return mesh, nil
 }
 
-func (r *IstioControlPlaneReconciler) reconcileClusterReaderSecret(ctx context.Context, icp *servicemeshv1alpha1.IstioControlPlane, kubeConfig *rest.Config, logger logr.Logger) error {
+// reconcileIstiodEndpoint creates the k8s Endpoint resource for the headless istiod service
+// on PASSIVE Istio Control planes to be able to connect to istiod pods on active clusters
+func (r *IstioControlPlaneReconciler) reconcileIstiodEndpoint(ctx context.Context, icp *servicemeshv1alpha1.IstioControlPlane) error {
+	if !icp.DeletionTimestamp.IsZero() || icp.GetSpec().GetMode() != servicemeshv1alpha1.ModeType_PASSIVE {
+		// In active mode the k8s endpoint controller takes care of creating/updating the Endpoint
+		// resource based on the istiod service with selector, so istio operator does nothing
+		return nil
+	}
+
+	serviceName := icp.WithRevision("istiod")
+	serviceNamespace := icp.GetNamespace()
+
+	istiodEndpointAddresses, err := pkgUtil.GetIstiodEndpointAddresses(ctx, r.Client, serviceNamespace)
+	if err != nil {
+		return errors.WithStackIf(err)
+	}
+	if len(istiodEndpointAddresses) == 0 {
+		return errors.New("no valid istiod address found")
+	}
+
+	istiodEndpointPorts, err := pkgUtil.GetIstiodEndpointPorts(ctx, r.Client, serviceName, serviceNamespace)
+	if err != nil {
+		return errors.WithStackIf(err)
+	}
+
+	endpoints := k8sutil.CreateK8sEndpoints(serviceName, serviceNamespace, istiodEndpointAddresses, istiodEndpointPorts)
+	pkgUtil.SetICPMetadataOnObject(endpoints, icp)
+
+	_, err = r.ResourceReconciler.ReconcileResource(endpoints, reconciler.StatePresent)
+	if err != nil {
+		return errors.WithStackIf(err)
+	}
+
+	return nil
+}
+
+func (r *IstioControlPlaneReconciler) reconcileClusterReaderSecret(ctx context.Context, icp *servicemeshv1alpha1.IstioControlPlane, kubeConfig *rest.Config) error {
 	var err error
 	state := reconciler.StateAbsent
 	secret := &corev1.Secret{
@@ -525,26 +574,14 @@ func (r *IstioControlPlaneReconciler) reconcileClusterReaderSecret(ctx context.C
 			return errors.WithStackIf(err)
 		}
 
-		secret.Type = corev1.SecretType(readerSecretType)
-		secret.OwnerReferences = append(secret.OwnerReferences, metav1.OwnerReference{
-			APIVersion:         icp.GroupVersionKind().GroupVersion().String(),
-			Kind:               icp.GroupVersionKind().Kind,
-			Name:               icp.GetName(),
-			UID:                icp.GetUID(),
-			Controller:         utils.BoolPointer(true),
-			BlockOwnerDeletion: utils.BoolPointer(true),
-		})
-		secret.Labels = icp.RevisionLabels()
+		secret.Type = readerSecretType
+		pkgUtil.SetICPMetadataOnObject(secret, icp)
 	}
 
-	rec := reconciler.NewReconcilerWith(r.GetClient(),
-		reconciler.WithLog(logger),
-		reconciler.WithRecreateImmediately(),
-		reconciler.WithEnableRecreateWorkload(),
-		reconciler.WithRecreateEnabledForAll(),
-	)
-
-	_, err = rec.ReconcileResource(secret, state)
+	_, err = r.ResourceReconciler.ReconcileResource(secret, state)
+	if err != nil {
+		return errors.WithStackIf(err)
+	}
 
 	return errors.WithStackIf(err)
 }
