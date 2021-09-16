@@ -522,7 +522,7 @@ func (r *IstioControlPlaneReconciler) reconcileIstiodEndpoint(ctx context.Contex
 	serviceName := icp.WithRevision("istiod")
 	serviceNamespace := icp.GetNamespace()
 
-	istiodEndpointAddresses, err := pkgUtil.GetIstiodEndpointAddresses(ctx, r.Client, serviceNamespace)
+	istiodEndpointAddresses, err := pkgUtil.GetIstiodEndpointAddresses(ctx, r.Client, icp.GetName(), serviceNamespace)
 	if err != nil {
 		return errors.WithStackIf(err)
 	}

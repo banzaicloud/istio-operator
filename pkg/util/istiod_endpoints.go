@@ -27,7 +27,7 @@ import (
 	servicemeshv1alpha1 "github.com/banzaicloud/istio-operator/v2/api/v1alpha1"
 )
 
-func GetIstiodEndpointAddresses(ctx context.Context, kubeClient client.Client, namespace string) ([]corev1.EndpointAddress, error) {
+func GetIstiodEndpointAddresses(ctx context.Context, kubeClient client.Client, icpName string, namespace string) ([]corev1.EndpointAddress, error) {
 	var gatewayAddresses []corev1.EndpointAddress
 
 	picpList := &servicemeshv1alpha1.PeerIstioControlPlaneList{}
@@ -37,13 +37,14 @@ func GetIstiodEndpointAddresses(ctx context.Context, kubeClient client.Client, n
 	}
 
 	for _, picp := range picpList.Items {
-		// TODO: only if control plane in status is same as this one
-		// TODO: mgw ip in different network, istiod pod ip in case of flat network
-		for _, address := range picp.Status.GatewayAddress {
-			gatewayAddresses = append(gatewayAddresses,
-				corev1.EndpointAddress{
-					IP: address,
-				})
+		if picp.Status.IstioControlPlaneName == icpName {
+			// TODO: mgw ip in different network, istiod pod ip in case of flat network
+			for _, address := range picp.Status.GatewayAddress {
+				gatewayAddresses = append(gatewayAddresses,
+					corev1.EndpointAddress{
+						IP: address,
+					})
+			}
 		}
 	}
 
