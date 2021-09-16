@@ -352,15 +352,20 @@ message IstioControlPlaneStatus {
     // Reconciliation status of the Istio control plane
     ConfigState status = 1;
 
+    // Name of the IstioControlPlane resource
+    // It is used on remote clusters in the PeerIstioControlPlane resource status
+    // to identify the original Istio control plane
+    string istioControlPlaneName = 2;
+
     // Current addresses for the corresponding gateways
-    repeated string gatewayAddress = 2;
+    repeated string gatewayAddress = 3;
 
     // Reconciliation error message if any
-    string errorMessage = 3;
+    string errorMessage = 4;
 
-    istio.mesh.v1alpha1.MeshConfig meshConfig = 4;
+    istio.mesh.v1alpha1.MeshConfig meshConfig = 5;
 
-    StatusChecksums checksums = 5;
+    StatusChecksums checksums = 6;
 }
 
 // <!-- go code generation tags
