@@ -13,6 +13,7 @@ linters:
     - gochecknoglobals
     - funlen
     - godot
+    - godox
     - wsl
     - dupl
     - wrapcheck
@@ -21,7 +22,6 @@ linters:
 
     # - goconst
     # - gocritic
-    # - godox
     # - gocognit
     # - gomnd
     # - nestif
