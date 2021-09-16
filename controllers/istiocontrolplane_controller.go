@@ -284,6 +284,8 @@ func (r *IstioControlPlaneReconciler) reconcile(ctx context.Context, icp *servic
 		return result, err
 	}
 
+	r.setControlPlaneNameToStatus(icp)
+
 	err = r.setMeshConfigToStatus(ctx, icp)
 	if err != nil {
 		return result, err
@@ -641,6 +643,10 @@ func (r *IstioControlPlaneReconciler) setMeshExpansionGWAddressToStatus(ctx cont
 	icp.Status.GatewayAddress = imgw.GetStatus().GatewayAddress
 
 	return nil
+}
+
+func (r *IstioControlPlaneReconciler) setControlPlaneNameToStatus(icp *servicemeshv1alpha1.IstioControlPlane) {
+	icp.Status.IstioControlPlaneName = icp.GetName()
 }
 
 func (r *IstioControlPlaneReconciler) setMeshConfigToStatus(ctx context.Context, icp *servicemeshv1alpha1.IstioControlPlane) error {
