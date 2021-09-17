@@ -39,6 +39,7 @@ import (
 	rbacv1 "k8s.io/api/rbac/v1"
 	k8serrors "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/labels"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/client-go/rest"
@@ -48,6 +49,7 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/client/config"
 	"sigs.k8s.io/controller-runtime/pkg/controller"
 	"sigs.k8s.io/controller-runtime/pkg/handler"
+	"sigs.k8s.io/controller-runtime/pkg/predicate"
 	"sigs.k8s.io/controller-runtime/pkg/reconcile"
 	"sigs.k8s.io/controller-runtime/pkg/source"
 	"sigs.k8s.io/yaml"
@@ -441,6 +443,58 @@ func (r *IstioControlPlaneReconciler) SetupWithManager(mgr ctrl.Manager) error {
 
 	err = r.ctrl.Watch(
 		&source.Kind{
+			Type: &servicemeshv1alpha1.IstioMeshGateway{
+				TypeMeta: metav1.TypeMeta{
+					Kind:       "IstioMeshGateway",
+					APIVersion: servicemeshv1alpha1.SchemeBuilder.GroupVersion.String(),
+				},
+			},
+		},
+		handler.EnqueueRequestsFromMapFunc(func(obj client.Object) []reconcile.Request {
+			var imgw *servicemeshv1alpha1.IstioMeshGateway
+			var ok bool
+			if imgw, ok = obj.(*servicemeshv1alpha1.IstioMeshGateway); !ok {
+				return nil
+			}
+
+			icp := imgw.GetSpec().GetIstioControlPlane()
+			if icp == nil {
+				return nil
+			}
+
+			// only act on mesh expansion gateway
+			sel := labels.SelectorFromValidatedSet((&servicemeshv1alpha1.IstioControlPlane{
+				ObjectMeta: metav1.ObjectMeta{
+					Name:      icp.Name,
+					Namespace: icp.Namespace,
+				},
+			}).MeshExpansionGatewayLabels())
+			if !sel.Matches(labels.Set(imgw.GetLabels())) {
+				return nil
+			}
+
+			r.Log.V(1).Info("trigger reconcile by mesh expansion gateway change")
+
+			return []reconcile.Request{
+				{
+					NamespacedName: client.ObjectKey{
+						Name:      icp.GetName(),
+						Namespace: icp.GetNamespace(),
+					},
+				},
+			}
+		}),
+		predicate.Or(
+			util.ObjectChangePredicate{},
+			util.IMGWAddressChangePredicate{},
+		),
+	)
+	if err != nil {
+		return err
+	}
+
+	err = r.ctrl.Watch(
+		&source.Kind{
 			Type: &servicemeshv1alpha1.IstioMesh{
 				TypeMeta: metav1.TypeMeta{
 					Kind:       "IstioMesh",
@@ -448,10 +502,10 @@ func (r *IstioControlPlaneReconciler) SetupWithManager(mgr ctrl.Manager) error {
 				},
 			},
 		},
-		handler.EnqueueRequestsFromMapFunc(func(a client.Object) []reconcile.Request {
+		handler.EnqueueRequestsFromMapFunc(func(obj client.Object) []reconcile.Request {
 			var imesh *servicemeshv1alpha1.IstioMesh
 			var ok bool
-			if imesh, ok = a.(*servicemeshv1alpha1.IstioMesh); !ok {
+			if imesh, ok = obj.(*servicemeshv1alpha1.IstioMesh); !ok {
 				return nil
 			}
 
@@ -594,11 +648,7 @@ func (r *IstioControlPlaneReconciler) waitForMeshExpansionGatewayRemoval(ctx con
 	}
 
 	l := &servicemeshv1alpha1.IstioMeshGatewayList{}
-	err := r.Client.List(ctx, l, client.InNamespace(icp.GetNamespace()), client.MatchingLabels(
-		utils.MergeLabels(icp.RevisionLabels(), map[string]string{
-			"app": "istio-meshexpansion-gateway",
-		}),
-	))
+	err := r.Client.List(ctx, l, client.InNamespace(icp.GetNamespace()), client.MatchingLabels(icp.MeshExpansionGatewayLabels()))
 	if err != nil {
 		return err
 	}
