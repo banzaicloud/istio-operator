@@ -83,6 +83,13 @@ func (icp *IstioControlPlane) RevisionLabels() map[string]string {
 	}
 }
 
+func (icp *IstioControlPlane) MeshExpansionGatewayLabels() map[string]string {
+	return map[string]string{
+		RevisionedAutoInjectionLabelKey: icp.NamespacedRevision(),
+		"app":                           "istio-meshexpansion-gateway",
+	}
+}
+
 func (icp *IstioControlPlane) WithRevision(s string) string {
 	return fmt.Sprintf("%s-%s", s, icp.Revision())
 }

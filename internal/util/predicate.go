@@ -18,6 +18,7 @@ package util
 
 import (
 	"encoding/json"
+	"reflect"
 	"strings"
 
 	"emperror.dev/errors"
@@ -178,5 +179,27 @@ func (p ICPInjectorChangePredicate) Update(e event.UpdateEvent) bool {
 }
 
 func (p ICPInjectorChangePredicate) Generic(e event.GenericEvent) bool {
+	return false
+}
+
+type IMGWAddressChangePredicate struct{}
+
+func (p IMGWAddressChangePredicate) Create(e event.CreateEvent) bool {
+	return false
+}
+
+func (p IMGWAddressChangePredicate) Update(e event.UpdateEvent) bool {
+	if o, ok := e.ObjectOld.(*v1alpha1.IstioMeshGateway); ok {
+		return !reflect.DeepEqual(o.GetStatus().GatewayAddress, e.ObjectNew.(*v1alpha1.IstioMeshGateway).GetStatus().GatewayAddress)
+	}
+
+	return false
+}
+
+func (p IMGWAddressChangePredicate) Delete(e event.DeleteEvent) bool {
+	return false
+}
+
+func (p IMGWAddressChangePredicate) Generic(e event.GenericEvent) bool {
 	return false
 }

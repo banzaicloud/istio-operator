@@ -32,7 +32,7 @@ func setDynamicDefaults(icp *v1alpha1.IstioControlPlane, k8sConfig *rest.Config,
 			logger.Error(err, "could not detect supported jwt policy")
 		} else {
 			icp.Spec.JwtPolicy = supportedJWTPolicy
-			logger.Info("supported jwt policy", "policy", icp.Spec.JwtPolicy)
+			logger.V(1).Info("supported jwt policy", "policy", icp.Spec.JwtPolicy)
 		}
 	}
 }
