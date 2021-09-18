@@ -64,6 +64,7 @@ import (
 	"github.com/banzaicloud/istio-operator/v2/internal/util"
 	"github.com/banzaicloud/istio-operator/v2/pkg/k8sutil"
 	pkgUtil "github.com/banzaicloud/istio-operator/v2/pkg/util"
+	"github.com/banzaicloud/k8s-objectmatcher/patch"
 	"github.com/banzaicloud/operator-tools/pkg/reconciler"
 	"github.com/banzaicloud/operator-tools/pkg/utils"
 )
@@ -222,9 +223,15 @@ func (r *IstioControlPlaneReconciler) reconcile(ctx context.Context, icp *servic
 
 	setDynamicDefaults(icp, k8sConfig, logger)
 
+	meshNetworks, err := r.getMeshNetworks(ctx, icp)
+	if err != nil {
+		return ctrl.Result{}, err
+	}
+
 	discoveryReconciler, err := NewComponentReconciler(r, func(helmReconciler *components.HelmReconciler) components.ComponentReconciler {
 		return discovery_component.NewChartReconciler(helmReconciler, servicemeshv1alpha1.IstioControlPlaneProperties{
-			Mesh: istioMesh,
+			Mesh:         istioMesh,
+			MeshNetworks: meshNetworks,
 		}, r.Log)
 	}, r.Log.WithName("discovery"))
 	if err != nil {
@@ -398,6 +405,7 @@ func (r *IstioControlPlaneReconciler) SetupWithManager(mgr ctrl.Manager) error {
 		}, ctrlBuilder.WithPredicates(util.ObjectChangePredicate{
 			CalculateOptions: []util.CalculateOption{
 				util.IgnoreMetadataAnnotations("autoscaling.alpha.kubernetes.io"),
+				patch.IgnoreStatusFields(),
 			},
 		})).
 		Build(r)
@@ -495,6 +503,41 @@ func (r *IstioControlPlaneReconciler) SetupWithManager(mgr ctrl.Manager) error {
 
 	err = r.ctrl.Watch(
 		&source.Kind{
+			Type: &servicemeshv1alpha1.PeerIstioControlPlane{
+				TypeMeta: metav1.TypeMeta{
+					Kind:       "PeerIstioControlPlane",
+					APIVersion: servicemeshv1alpha1.SchemeBuilder.GroupVersion.String(),
+				},
+			},
+		},
+		handler.EnqueueRequestsFromMapFunc(func(obj client.Object) []reconcile.Request {
+			var picp *servicemeshv1alpha1.PeerIstioControlPlane
+			var ok bool
+			if picp, ok = obj.(*servicemeshv1alpha1.PeerIstioControlPlane); !ok {
+				return nil
+			}
+
+			return []reconcile.Request{
+				{
+					NamespacedName: client.ObjectKey{
+						Name:      picp.GetStatus().IstioControlPlaneName,
+						Namespace: picp.GetNamespace(),
+					},
+				},
+			}
+		}),
+		util.ObjectChangePredicate{
+			CalculateOptions: []util.CalculateOption{
+				reconciler.IgnoreManagedFields(),
+			},
+		},
+	)
+	if err != nil {
+		return err
+	}
+
+	err = r.ctrl.Watch(
+		&source.Kind{
 			Type: &servicemeshv1alpha1.IstioMesh{
 				TypeMeta: metav1.TypeMeta{
 					Kind:       "IstioMesh",
@@ -538,6 +581,59 @@ func (r *IstioControlPlaneReconciler) SetupWithManager(mgr ctrl.Manager) error {
 	}
 
 	return nil
+}
+
+func (r *IstioControlPlaneReconciler) getMeshNetworks(ctx context.Context, icp *servicemeshv1alpha1.IstioControlPlane) (*v1alpha1.MeshNetworks, error) {
+	networks := make(map[string]*v1alpha1.Network)
+
+	type ControlPlane interface {
+		GetName() string
+		GetStatus() servicemeshv1alpha1.IstioControlPlaneStatus
+		GetSpec() *servicemeshv1alpha1.IstioControlPlaneSpec
+	}
+
+	cps := make([]ControlPlane, 0)
+	cps = append(cps, icp)
+
+	picpList := &servicemeshv1alpha1.PeerIstioControlPlaneList{}
+	err := r.GetClient().List(ctx, picpList, client.InNamespace(icp.GetNamespace()))
+	if err != nil {
+		return nil, errors.WithStackIf(err)
+	}
+
+	for _, picp := range picpList.Items {
+		picp := picp
+		if picp.Status.IstioControlPlaneName == icp.GetName() {
+			cps = append(cps, &picp)
+		}
+	}
+
+	for _, cp := range cps {
+		gateways := make([]*v1alpha1.Network_IstioNetworkGateway, 0)
+		for _, address := range cp.GetStatus().GatewayAddress {
+			gateways = append(gateways, &v1alpha1.Network_IstioNetworkGateway{
+				Gw: &v1alpha1.Network_IstioNetworkGateway_Address{
+					Address: address,
+				},
+				Port: 15443, // nolint:gomnd
+			})
+		}
+
+		networkName := cp.GetSpec().GetNetworkName()
+		if networks[networkName] == nil {
+			networks[networkName] = &v1alpha1.Network{}
+		}
+		networks[networkName].Endpoints = append(networks[networkName].Endpoints, &v1alpha1.Network_NetworkEndpoints{
+			Ne: &v1alpha1.Network_NetworkEndpoints_FromRegistry{
+				FromRegistry: cp.GetSpec().GetClusterID(),
+			},
+		})
+		networks[networkName].Gateways = append(networks[networkName].Gateways, gateways...)
+	}
+
+	return &v1alpha1.MeshNetworks{
+		Networks: networks,
+	}, nil
 }
 
 func (r *IstioControlPlaneReconciler) getRelatedIstioMesh(ctx context.Context, c client.Client, icp *servicemeshv1alpha1.IstioControlPlane, logger logr.Logger) (*servicemeshv1alpha1.IstioMesh, error) {

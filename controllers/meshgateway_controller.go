@@ -43,6 +43,7 @@ import (
 	"github.com/banzaicloud/istio-operator/v2/internal/components/istiomeshgateway"
 	"github.com/banzaicloud/istio-operator/v2/internal/util"
 	"github.com/banzaicloud/istio-operator/v2/pkg/k8sutil"
+	"github.com/banzaicloud/k8s-objectmatcher/patch"
 	"github.com/banzaicloud/operator-tools/pkg/utils"
 )
 
@@ -193,6 +194,7 @@ func (r *IstioMeshGatewayReconciler) SetupWithManager(mgr ctrl.Manager) error {
 		}, ctrlBuilder.WithPredicates(util.ObjectChangePredicate{
 			CalculateOptions: []util.CalculateOption{
 				util.IgnoreMetadataAnnotations("autoscaling.alpha.kubernetes.io"),
+				patch.IgnoreStatusFields(),
 			},
 		})).
 		Build(r)

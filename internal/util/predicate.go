@@ -43,8 +43,10 @@ func (p ObjectChangePredicate) Update(e event.UpdateEvent) bool {
 	defer e.ObjectOld.SetResourceVersion(oldRV)
 
 	options := []CalculateOption{
-		patch.IgnoreStatusFields(),
 		reconciler.IgnoreManagedFields(),
+	}
+	if len(p.CalculateOptions) == 0 {
+		p.CalculateOptions = append(p.CalculateOptions, patch.IgnoreStatusFields())
 	}
 	options = append(options, p.CalculateOptions...)
 

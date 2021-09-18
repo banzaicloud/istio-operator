@@ -152,6 +152,10 @@ proxy_init:
 jwtPolicy: {{ .GetSpec.GetJwtPolicy | toString | lower | replace "_" "-" }}
 {{- end }}
 {{ valueIf (dict "key" "meshID" "value" .GetSpec.GetMeshID) }}
+{{ if .Properties.MeshNetworks.GetNetworks }}
+meshNetworks:
+{{ toYaml (.Properties.MeshNetworks | toJsonPB | fromJson).networks | indent 2 }}
+{{ end }}
 {{ valueIf (dict "key" "mountMtlsCerts" "value" .GetSpec.GetMountMtlsCerts) }}
 {{ valueIf (dict "key" "network" "value" .GetSpec.GetNetworkName) }}
 {{- if .GetSpec.GetIstiod.GetCertProvider }}
