@@ -9,7 +9,7 @@ require (
 	github.com/Masterminds/sprig v2.22.0+incompatible
 	github.com/banzaicloud/istio-operator/v2/api v0.0.1
 	github.com/banzaicloud/k8s-objectmatcher v1.5.2
-	github.com/banzaicloud/operator-tools v0.24.1-0.20210823142428-2095ccb7f5e6
+	github.com/banzaicloud/operator-tools v0.24.1-0.20210917222015-90c6c0b3cffe
 	github.com/fatih/color v1.12.0 // indirect
 	github.com/go-logr/logr v0.4.0
 	github.com/gogo/protobuf v1.3.2

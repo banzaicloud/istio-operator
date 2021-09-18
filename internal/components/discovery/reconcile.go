@@ -20,8 +20,11 @@ import (
 	"net/http"
 
 	"emperror.dev/errors"
+	"github.com/go-logr/logr"
 	admissionregistrationv1 "k8s.io/api/admissionregistration/v1"
+	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/runtime"
+	"sigs.k8s.io/controller-runtime/pkg/client"
 
 	"github.com/banzaicloud/istio-operator/v2/api/v1alpha1"
 	assets "github.com/banzaicloud/istio-operator/v2/internal/assets"
@@ -45,13 +48,15 @@ var _ components.MinimalComponent = &Component{}
 
 type Component struct {
 	properties v1alpha1.IstioControlPlaneProperties
+	logger     logr.Logger
 }
 
-func NewChartReconciler(helmReconciler *templatereconciler.HelmReconciler, properties v1alpha1.IstioControlPlaneProperties) components.ComponentReconciler {
+func NewChartReconciler(helmReconciler *templatereconciler.HelmReconciler, properties v1alpha1.IstioControlPlaneProperties, logger logr.Logger) components.ComponentReconciler {
 	return &components.Base{
 		HelmReconciler: helmReconciler,
 		Component: &Component{
 			properties: properties,
+			logger:     logger,
 		},
 	}
 }
@@ -107,6 +112,35 @@ func (rec *Component) ReleaseData(object runtime.Object) (*templatereconciler.Re
 					}
 
 					return !patchResult.IsEmpty(), nil
+				},
+			},
+			{
+				GVK: corev1.SchemeGroupVersion.WithKind("Service"),
+				ObjectKey: client.ObjectKey{
+					Name:      icp.WithRevision("istiod"),
+					Namespace: icp.Namespace,
+				},
+			}: reconciler.DynamicDesiredState{
+				BeforeUpdateFunc: func(current, desired runtime.Object) error {
+					var currentSvc, desiredSvc *corev1.Service
+					var ok bool
+
+					if currentSvc, ok = current.(*corev1.Service); !ok {
+						return nil
+					}
+					if desiredSvc, ok = desired.(*corev1.Service); !ok {
+						return nil
+					}
+
+					message := "istiod service must be re-created, the following error can be safely ignored"
+					if icp.GetSpec().GetMode() == v1alpha1.ModeType_PASSIVE && currentSvc.Spec.ClusterIP != "None" {
+						rec.logger.Info(message)
+					} else if icp.GetSpec().GetMode() == v1alpha1.ModeType_ACTIVE && currentSvc.Spec.ClusterIP == "None" {
+						rec.logger.Info(message)
+						desiredSvc.Spec.ClusterIP = "127.0.0.1"
+					}
+
+					return nil
 				},
 			},
 		},

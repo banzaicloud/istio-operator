@@ -119,8 +119,8 @@ github.com/aws/aws-sdk-go-v2 v0.18.0/go.mod h1:JWVYvqSMppoMJC0x5wdwiImzgXTI9FuZw
 github.com/banzaicloud/k8s-objectmatcher v1.5.1/go.mod h1:9MWY5HsM/OaTmoTirczhlO8UALbH722WgdpaaR7Y8OE=
 github.com/banzaicloud/k8s-objectmatcher v1.5.2 h1:wY3YBAVnh36Gm957IIlvtZbKVXbg4b+6fwrhoTz3opE=
 github.com/banzaicloud/k8s-objectmatcher v1.5.2/go.mod h1:gygKEl9wM3mB8fkkw7J/x8Myfaef69oeYMaUEm2jSX4=
-github.com/banzaicloud/operator-tools v0.24.1-0.20210823142428-2095ccb7f5e6 h1:9/QkSowERUb4rhNv/raMDaTxOq+ARbWsm66QPzipOmw=
-github.com/banzaicloud/operator-tools v0.24.1-0.20210823142428-2095ccb7f5e6/go.mod h1:KkeGXkPknUBJnXNNUoVz6b+DWePS38a/dwvyQjCoKcc=
+github.com/banzaicloud/operator-tools v0.24.1-0.20210917222015-90c6c0b3cffe h1:WGFQSG1oy6Vd0zKoPhGx4UtPlIyLgnvC+hfIp0NA78c=
+github.com/banzaicloud/operator-tools v0.24.1-0.20210917222015-90c6c0b3cffe/go.mod h1:KkeGXkPknUBJnXNNUoVz6b+DWePS38a/dwvyQjCoKcc=
 github.com/benbjohnson/clock v1.1.0 h1:Q92kusRqC1XV2MjkWETPvjJVqKetz1OzxZB7mHJLju8=
 github.com/benbjohnson/clock v1.1.0/go.mod h1:J11/hYXuz8f4ySSvYwY0FKfm+ezbsZBKZxNJlLklBHA=
 github.com/beorn7/perks v0.0.0-20160804104726-4c0e84591b9a/go.mod h1:Dwedo/Wpr24TaqPxmxbtue+5NUziq4I4S80YR8gNf3Q=

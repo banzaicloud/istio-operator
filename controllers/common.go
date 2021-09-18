@@ -38,8 +38,18 @@ func NewComponentReconciler(r components.Reconciler, newComponentFunc components
 	}
 
 	return newComponentFunc(
-		templatereconciler.NewHelmReconciler(r.GetClient(), r.GetScheme(), logger, d, []reconciler.NativeReconcilerOpt{
-			reconciler.NativeReconcilerSetControllerRef(),
-		}),
+		templatereconciler.NewHelmReconcilerWith(
+			r.GetClient(),
+			r.GetScheme(),
+			logger,
+			d,
+			templatereconciler.WithNativeReconcilerOptions(
+				reconciler.NativeReconcilerSetControllerRef(),
+			),
+			templatereconciler.WithGenericReconcilerOptions(
+				reconciler.WithEnableRecreateWorkload(),
+				reconciler.WithRecreateErrorMessageIgnored(),
+			),
+		),
 	), nil
 }
