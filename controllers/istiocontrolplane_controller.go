@@ -225,7 +225,7 @@ func (r *IstioControlPlaneReconciler) reconcile(ctx context.Context, icp *servic
 	discoveryReconciler, err := NewComponentReconciler(r, func(helmReconciler *components.HelmReconciler) components.ComponentReconciler {
 		return discovery_component.NewChartReconciler(helmReconciler, servicemeshv1alpha1.IstioControlPlaneProperties{
 			Mesh: istioMesh,
-		})
+		}, r.Log)
 	}, r.Log.WithName("discovery"))
 	if err != nil {
 		return ctrl.Result{}, err

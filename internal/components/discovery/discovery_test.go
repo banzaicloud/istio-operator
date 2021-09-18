@@ -24,7 +24,8 @@ import (
 
 	"emperror.dev/errors"
 	"emperror.dev/errors/utils/keyval"
-	logr "github.com/go-logr/logr/testing"
+	"github.com/go-logr/logr"
+	testlogr "github.com/go-logr/logr/testing"
 	"github.com/gogo/protobuf/types"
 	"github.com/homeport/dyff/pkg/dyff"
 	istio_mesh_v1alpha1 "istio.io/api/mesh/v1alpha1"
@@ -66,7 +67,7 @@ func TestICPDiscoveryResourceDump(t *testing.T) {
 	}
 
 	reconciler := discovery.NewChartReconciler(
-		templatereconciler.NewHelmReconciler(nil, nil, logr.TestLogger{
+		templatereconciler.NewHelmReconciler(nil, nil, testlogr.TestLogger{
 			T: t,
 		}, fake.NewSimpleClientset().Discovery(), []reconciler.NativeReconcilerOpt{
 			reconciler.NativeReconcilerSetControllerRef(),
@@ -80,6 +81,7 @@ func TestICPDiscoveryResourceDump(t *testing.T) {
 				},
 			},
 		},
+		logr.DiscardLogger{},
 	)
 
 	dd, err := reconciler.GetManifest(icp)
@@ -167,7 +169,7 @@ func TestPassiveICPDiscoveryResourceDump(t *testing.T) {
 	}
 
 	reconciler := discovery.NewChartReconciler(
-		templatereconciler.NewHelmReconciler(nil, nil, logr.TestLogger{
+		templatereconciler.NewHelmReconciler(nil, nil, testlogr.TestLogger{
 			T: t,
 		}, fake.NewSimpleClientset().Discovery(), []reconciler.NativeReconcilerOpt{
 			reconciler.NativeReconcilerSetControllerRef(),
@@ -181,6 +183,7 @@ func TestPassiveICPDiscoveryResourceDump(t *testing.T) {
 				},
 			},
 		},
+		logr.DiscardLogger{},
 	)
 
 	dd, err := reconciler.GetManifest(icp)
