@@ -17,6 +17,7 @@ limitations under the License.
 package util
 
 import (
+	"encoding/json"
 	"fmt"
 	"reflect"
 	"strings"
@@ -62,6 +63,16 @@ func toJSONPBTemplateFunc(value interface{}) (string, error) {
 	}
 
 	return "", nil
+}
+
+func fromJSONTemplateFunc(value string) (map[string]interface{}, error) {
+	var out map[string]interface{}
+	err := json.Unmarshal([]byte(value), &out)
+	if err != nil {
+		return nil, err
+	}
+
+	return out, nil
 }
 
 func fromYamlTemplateFunc(value string) (map[string]interface{}, error) {

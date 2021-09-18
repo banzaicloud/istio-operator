@@ -20,6 +20,7 @@ import (
 	fmt "fmt"
 	"strings"
 
+	v1alpha1 "istio.io/api/mesh/v1alpha1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/types"
 )
@@ -127,7 +128,8 @@ type IstioControlPlaneWithProperties struct {
 }
 
 type IstioControlPlaneProperties struct {
-	Mesh *IstioMesh
+	Mesh         *IstioMesh
+	MeshNetworks *v1alpha1.MeshNetworks
 }
 
 func (p IstioControlPlaneProperties) GetMesh() *IstioMesh {
@@ -151,6 +153,18 @@ type PeerIstioControlPlane struct {
 
 	Spec   *IstioControlPlaneSpec  `json:"spec,omitempty"`
 	Status IstioControlPlaneStatus `json:"status,omitempty"`
+}
+
+func (icp *PeerIstioControlPlane) GetStatus() IstioControlPlaneStatus {
+	return icp.Status
+}
+
+func (icp *PeerIstioControlPlane) GetSpec() *IstioControlPlaneSpec {
+	if icp.Spec != nil {
+		return icp.Spec
+	}
+
+	return nil
 }
 
 // PeerIstioControlPlaneList contains a list of PeerIstioControlPlane

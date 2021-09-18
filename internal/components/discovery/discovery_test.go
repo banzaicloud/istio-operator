@@ -80,6 +80,7 @@ func TestICPDiscoveryResourceDump(t *testing.T) {
 					},
 				},
 			},
+			MeshNetworks: getTestMeshNetworks(),
 		},
 		logr.DiscardLogger{},
 	)
@@ -107,6 +108,31 @@ func TestICPDiscoveryResourceDump(t *testing.T) {
 	}
 }
 
+func getTestMeshNetworks() *istio_mesh_v1alpha1.MeshNetworks {
+	return &istio_mesh_v1alpha1.MeshNetworks{
+		Networks: map[string]*istio_mesh_v1alpha1.Network{
+			"network1": {
+				Endpoints: []*istio_mesh_v1alpha1.Network_NetworkEndpoints{
+					{
+						Ne: &istio_mesh_v1alpha1.Network_NetworkEndpoints_FromRegistry{
+							FromRegistry: "demo-cluster2",
+						},
+					},
+				},
+				Gateways: []*istio_mesh_v1alpha1.Network_IstioNetworkGateway{
+					{
+						Gw: &istio_mesh_v1alpha1.Network_IstioNetworkGateway_Address{
+							Address: "127.0.0.1",
+						},
+						Port:     uint32(15443),
+						Locality: "us-east-1a",
+					},
+				},
+			},
+		},
+	}
+}
+
 func TestICPDiscoveryValuesTemplateTransform(t *testing.T) {
 	t.Parallel()
 
@@ -125,6 +151,7 @@ func TestICPDiscoveryValuesTemplateTransform(t *testing.T) {
 					},
 				},
 			},
+			MeshNetworks: getTestMeshNetworks(),
 		},
 	}
 

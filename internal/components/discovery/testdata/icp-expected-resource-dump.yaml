@@ -38,7 +38,15 @@ data:
     enablePrometheusMerge: true
     rootNamespace: istio-system
     trustDomain: cluster.local
-  meshNetworks: 'networks: {}'
+  meshNetworks: |-
+    networks:
+      network1:
+        endpoints:
+        - fromRegistry: demo-cluster2
+        gateways:
+        - address: 127.0.0.1
+          locality: us-east-1a
+          port: 15443
 kind: ConfigMap
 metadata:
   labels:
@@ -1070,7 +1078,22 @@ data:
           "level": "default:warning"
         },
         "meshID": "mesh1",
-        "meshNetworks": {},
+        "meshNetworks": {
+          "network1": {
+            "endpoints": [
+              {
+                "fromRegistry": "demo-cluster2"
+              }
+            ],
+            "gateways": [
+              {
+                "address": "127.0.0.1",
+                "locality": "us-east-1a",
+                "port": 15443
+              }
+            ]
+          }
+        },
         "mode": "ACTIVE",
         "mountMtlsCerts": false,
         "multiCluster": {

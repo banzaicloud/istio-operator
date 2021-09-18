@@ -57,6 +57,14 @@ global:
   caAddress: localhost
   distribution: official
   meshID: mesh1
+  meshNetworks:
+    network1:
+      endpoints:
+      - fromRegistry: demo-cluster2
+      gateways:
+      - address: 127.0.0.1
+        locality: us-east-1a
+        port: 15443
   mode: ACTIVE
   multiCluster:
     clusterName: demo-cluster1

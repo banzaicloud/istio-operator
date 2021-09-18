@@ -44,6 +44,7 @@ func TransformStructToStriMapWithTemplate(data interface{}, filesystem fs.FS, te
 		"include":      includeTemplateFunc(t),
 		"toYaml":       toYamlTemplateFunc,
 		"fromYaml":     fromYamlTemplateFunc,
+		"fromJson":     fromJSONTemplateFunc,
 		"valueIf":      valueIfTemplateFunc,
 		"reformatYaml": reformatYamlTemplateFunc,
 		"toYamlIf":     toYamlIfTemplateFunc,
