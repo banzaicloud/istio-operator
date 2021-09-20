@@ -27,28 +27,36 @@ import (
 	"github.com/banzaicloud/istio-operator/v2/pkg/k8sutil"
 )
 
-func GetIstiodEndpointAddresses(ctx context.Context, kubeClient client.Client, icpName string, namespace string) ([]corev1.EndpointAddress, error) {
-	var gatewayAddresses []corev1.EndpointAddress
+func GetIstiodEndpointAddresses(ctx context.Context, kubeClient client.Client, icpName string, icpNetworkName string, namespace string) ([]corev1.EndpointAddress, error) {
+	var istiodEndpointAddresses []corev1.EndpointAddress
 
 	picpList := &servicemeshv1alpha1.PeerIstioControlPlaneList{}
 	err := kubeClient.List(ctx, picpList, client.InNamespace(namespace))
 	if err != nil {
-		return gatewayAddresses, errors.WithStackIf(err)
+		return istiodEndpointAddresses, errors.WithStackIf(err)
 	}
 
 	for _, picp := range picpList.Items {
 		if picp.Status.IstioControlPlaneName == icpName {
-			// TODO: mgw ip in different network, istiod pod ip in case of flat network
-			for _, address := range picp.Status.GatewayAddress {
-				gatewayAddresses = append(gatewayAddresses,
-					corev1.EndpointAddress{
-						IP: address,
-					})
+			if picp.Spec.GetNetworkName() == icpNetworkName {
+				for _, address := range picp.Status.IstiodAddresses {
+					istiodEndpointAddresses = append(istiodEndpointAddresses,
+						corev1.EndpointAddress{
+							IP: address,
+						})
+				}
+			} else {
+				for _, address := range picp.Status.GatewayAddress {
+					istiodEndpointAddresses = append(istiodEndpointAddresses,
+						corev1.EndpointAddress{
+							IP: address,
+						})
+				}
 			}
 		}
 	}
 
-	return gatewayAddresses, nil
+	return istiodEndpointAddresses, nil
 }
 
 func GetIstiodEndpointPorts(ctx context.Context, kubeClient client.Client, serviceName string, serviceNamespace string) ([]corev1.EndpointPort, error) {
