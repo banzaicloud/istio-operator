@@ -360,12 +360,15 @@ message IstioControlPlaneStatus {
     // Current addresses for the corresponding gateways
     repeated string gatewayAddress = 3;
 
+    // Current addresses for the corresponding istiod pods
+    repeated string istiodAddresses = 4;
+
     // Reconciliation error message if any
-    string errorMessage = 4;
+    string errorMessage = 5;
 
-    istio.mesh.v1alpha1.MeshConfig meshConfig = 5;
+    istio.mesh.v1alpha1.MeshConfig meshConfig = 6;
 
-    StatusChecksums checksums = 6;
+    StatusChecksums checksums = 7;
 }
 
 // <!-- go code generation tags
