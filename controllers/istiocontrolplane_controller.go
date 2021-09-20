@@ -676,7 +676,7 @@ func (r *IstioControlPlaneReconciler) reconcileIstiodEndpoint(ctx context.Contex
 	serviceName := icp.WithRevision("istiod")
 	serviceNamespace := icp.GetNamespace()
 
-	istiodEndpointAddresses, err := pkgUtil.GetIstiodEndpointAddresses(ctx, r.Client, icp.GetName(), serviceNamespace)
+	istiodEndpointAddresses, err := pkgUtil.GetIstiodEndpointAddresses(ctx, r.Client, icp.GetName(), icp.GetSpec().GetNetworkName(), serviceNamespace)
 	if err != nil {
 		return errors.WithStackIf(err)
 	}
@@ -761,6 +761,13 @@ func (r *IstioControlPlaneReconciler) waitForMeshExpansionGatewayRemoval(ctx con
 }
 
 func (r *IstioControlPlaneReconciler) setIstiodAddressesToStatus(ctx context.Context, icp *servicemeshv1alpha1.IstioControlPlane) error {
+	if icp.GetSpec().GetMode() != servicemeshv1alpha1.ModeType_ACTIVE {
+		// istiod pods should only be present on ACTIVE clusters so it only make sense set pod IPs on those clusters
+		icp.Status.IstiodAddresses = nil
+
+		return nil
+	}
+
 	pods, err := k8sutil.GetPodsForService(ctx, r.Client, icp.WithRevision("istiod"), icp.GetNamespace())
 	if err != nil {
 		return errors.WithStackIf(err)
