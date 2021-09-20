@@ -6408,6 +6408,10 @@ spec:
                 type: array
               istioControlPlaneName:
                 type: string
+              istiodAddresses:
+                items:
+                  type: string
+                type: array
               meshConfig:
                 properties:
                   accessLogEncoding:
@@ -13725,6 +13729,10 @@ spec:
                 type: array
               istioControlPlaneName:
                 type: string
+              istiodAddresses:
+                items:
+                  type: string
+                type: array
               meshConfig:
                 properties:
                   accessLogEncoding:
