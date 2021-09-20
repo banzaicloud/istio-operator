@@ -38,19 +38,21 @@ func GetIstiodEndpointAddresses(ctx context.Context, kubeClient client.Client, i
 
 	for _, picp := range picpList.Items {
 		if picp.Status.IstioControlPlaneName == icpName {
-			if picp.Spec.GetNetworkName() == icpNetworkName {
-				for _, address := range picp.Status.IstiodAddresses {
-					istiodEndpointAddresses = append(istiodEndpointAddresses,
-						corev1.EndpointAddress{
-							IP: address,
-						})
-				}
-			} else {
-				for _, address := range picp.Status.GatewayAddress {
-					istiodEndpointAddresses = append(istiodEndpointAddresses,
-						corev1.EndpointAddress{
-							IP: address,
-						})
+			if picp.Spec.GetMode() == servicemeshv1alpha1.ModeType_ACTIVE {
+				if picp.Spec.GetNetworkName() == icpNetworkName {
+					for _, address := range picp.Status.IstiodAddresses {
+						istiodEndpointAddresses = append(istiodEndpointAddresses,
+							corev1.EndpointAddress{
+								IP: address,
+							})
+					}
+				} else {
+					for _, address := range picp.Status.GatewayAddress {
+						istiodEndpointAddresses = append(istiodEndpointAddresses,
+							corev1.EndpointAddress{
+								IP: address,
+							})
+					}
 				}
 			}
 		}
