@@ -300,6 +300,11 @@ func (r *IstioControlPlaneReconciler) reconcile(ctx context.Context, icp *servic
 		return result, err
 	}
 
+	err = r.setIstiodAddressesToStatus(ctx, icp)
+	if err != nil {
+		return result, err
+	}
+
 	err = r.setMeshExpansionGWAddressToStatus(ctx, icp)
 	if err != nil {
 		logger.Info(fmt.Sprintf("mesh expansion gateway is pending: %s", err.Error()))
@@ -751,6 +756,17 @@ func (r *IstioControlPlaneReconciler) waitForMeshExpansionGatewayRemoval(ctx con
 	if len(l.Items) > 0 {
 		return errors.New("mesh expansion gateway still exists")
 	}
+
+	return nil
+}
+
+func (r *IstioControlPlaneReconciler) setIstiodAddressesToStatus(ctx context.Context, icp *servicemeshv1alpha1.IstioControlPlane) error {
+	pods, err := k8sutil.GetPodsForService(ctx, r.Client, icp.WithRevision("istiod"), icp.GetNamespace())
+	if err != nil {
+		return errors.WithStackIf(err)
+	}
+
+	icp.Status.IstiodAddresses = k8sutil.GetPodIPsForPodList(pods)
 
 	return nil
 }

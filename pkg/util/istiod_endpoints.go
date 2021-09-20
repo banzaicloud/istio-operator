@@ -21,10 +21,10 @@ import (
 
 	"emperror.dev/errors"
 	corev1 "k8s.io/api/core/v1"
-	"k8s.io/apimachinery/pkg/types"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
 	servicemeshv1alpha1 "github.com/banzaicloud/istio-operator/v2/api/v1alpha1"
+	"github.com/banzaicloud/istio-operator/v2/pkg/k8sutil"
 )
 
 func GetIstiodEndpointAddresses(ctx context.Context, kubeClient client.Client, icpName string, namespace string) ([]corev1.EndpointAddress, error) {
@@ -51,14 +51,10 @@ func GetIstiodEndpointAddresses(ctx context.Context, kubeClient client.Client, i
 	return gatewayAddresses, nil
 }
 
-func GetIstiodEndpointPorts(ctx context.Context, kubeClient client.Client, name string, namespace string) ([]corev1.EndpointPort, error) {
+func GetIstiodEndpointPorts(ctx context.Context, kubeClient client.Client, serviceName string, serviceNamespace string) ([]corev1.EndpointPort, error) {
 	istiodPorts := []corev1.EndpointPort{}
 
-	service := &corev1.Service{}
-	err := kubeClient.Get(ctx, types.NamespacedName{
-		Name:      name,
-		Namespace: namespace,
-	}, service)
+	service, err := k8sutil.GetService(ctx, kubeClient, serviceName, serviceNamespace)
 	if err != nil {
 		return istiodPorts, errors.WithStackIf(err)
 	}
