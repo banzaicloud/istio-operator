@@ -18,10 +18,14 @@ package k8sutil
 
 import (
 	"bytes"
+	"context"
 	"net"
 	"sort"
 
+	"emperror.dev/errors"
 	corev1 "k8s.io/api/core/v1"
+	"k8s.io/apimachinery/pkg/types"
+	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
 const (
@@ -102,4 +106,17 @@ func getIPsForHostname(hostname string) ([]string, error) {
 	}
 
 	return ips, nil
+}
+
+func GetService(ctx context.Context, kubeClient client.Client, serviceName string, serviceNamespace string) (*corev1.Service, error) {
+	service := &corev1.Service{}
+	err := kubeClient.Get(ctx, types.NamespacedName{
+		Name:      serviceName,
+		Namespace: serviceNamespace,
+	}, service)
+	if err != nil {
+		return service, errors.WithStackIf(err)
+	}
+
+	return service, nil
 }
