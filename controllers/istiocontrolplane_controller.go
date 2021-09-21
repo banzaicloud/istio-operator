@@ -768,12 +768,11 @@ func (r *IstioControlPlaneReconciler) setIstiodAddressesToStatus(ctx context.Con
 		return nil
 	}
 
-	pods, err := k8sutil.GetPodsForService(ctx, r.Client, icp.WithRevision("istiod"), icp.GetNamespace())
+	endpoints, err := k8sutil.GetEndpoints(ctx, r.Client, icp.WithRevision("istiod"), icp.GetNamespace())
 	if err != nil {
 		return errors.WithStackIf(err)
 	}
-
-	icp.Status.IstiodAddresses = k8sutil.GetPodIPsForPodList(pods)
+	icp.Status.IstiodAddresses = k8sutil.GetIPsForEndpoints(endpoints)
 
 	return nil
 }
