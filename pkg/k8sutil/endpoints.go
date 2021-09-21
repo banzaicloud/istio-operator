@@ -17,8 +17,13 @@ limitations under the License.
 package k8sutil
 
 import (
+	"context"
+
+	"emperror.dev/errors"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/types"
+	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
 func CreateK8sEndpoints(name string, namespace string, addresses []corev1.EndpointAddress, ports []corev1.EndpointPort) *corev1.Endpoints {
@@ -38,4 +43,28 @@ func CreateK8sEndpoints(name string, namespace string, addresses []corev1.Endpoi
 			},
 		},
 	}
+}
+
+func GetEndpoints(ctx context.Context, kubeClient client.Client, name string, namespace string) (*corev1.Endpoints, error) {
+	endpoints := &corev1.Endpoints{}
+	err := kubeClient.Get(ctx, types.NamespacedName{
+		Name:      name,
+		Namespace: namespace,
+	}, endpoints)
+	if err != nil {
+		return endpoints, errors.WithStackIf(err)
+	}
+
+	return endpoints, nil
+}
+
+func GetIPsForEndpoints(endpoints *corev1.Endpoints) []string {
+	var endpointAddresses []string
+	for _, subset := range endpoints.Subsets {
+		for _, address := range subset.Addresses {
+			endpointAddresses = append(endpointAddresses, address.IP)
+		}
+	}
+
+	return endpointAddresses
 }
