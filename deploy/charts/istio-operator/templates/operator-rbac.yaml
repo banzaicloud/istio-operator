@@ -316,6 +316,13 @@ rules:
   - get
   - patch
   - update
+- apiGroups:
+  - servicemesh.cisco.com
+  resources:
+  - peeristiocontrolplanes
+  verbs:
+  - list
+  - watch
 ---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRoleBinding
