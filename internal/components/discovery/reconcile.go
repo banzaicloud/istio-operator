@@ -137,6 +137,7 @@ func (rec *Component) ReleaseData(object runtime.Object) (*templatereconciler.Re
 						rec.logger.Info(message)
 					} else if icp.GetSpec().GetMode() == v1alpha1.ModeType_ACTIVE && currentSvc.Spec.ClusterIP == "None" {
 						rec.logger.Info(message)
+						// bogus ip is set to trigger re-creation of the service
 						desiredSvc.Spec.ClusterIP = "127.0.0.1"
 					}
 
