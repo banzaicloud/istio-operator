@@ -122,11 +122,13 @@ func NamespacedNameFromRevision(revision string) types.NamespacedName {
 	return nn
 }
 
+// +kubebuilder:object:generate=false
 type IstioControlPlaneWithProperties struct {
 	*IstioControlPlane
 	Properties IstioControlPlaneProperties
 }
 
+// +kubebuilder:object:generate=false
 type IstioControlPlaneProperties struct {
 	Mesh         *IstioMesh
 	MeshNetworks *v1alpha1.MeshNetworks

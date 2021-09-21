@@ -43,10 +43,8 @@ func (p ObjectChangePredicate) Update(e event.UpdateEvent) bool {
 	defer e.ObjectOld.SetResourceVersion(oldRV)
 
 	options := []CalculateOption{
+		patch.IgnoreStatusFields(),
 		reconciler.IgnoreManagedFields(),
-	}
-	if len(p.CalculateOptions) == 0 {
-		p.CalculateOptions = append(p.CalculateOptions, patch.IgnoreStatusFields())
 	}
 	options = append(options, p.CalculateOptions...)
 
@@ -203,5 +201,27 @@ func (p IMGWAddressChangePredicate) Delete(e event.DeleteEvent) bool {
 }
 
 func (p IMGWAddressChangePredicate) Generic(e event.GenericEvent) bool {
+	return false
+}
+
+type PICPStatusChangePredicate struct{}
+
+func (p PICPStatusChangePredicate) Create(e event.CreateEvent) bool {
+	return false
+}
+
+func (p PICPStatusChangePredicate) Update(e event.UpdateEvent) bool {
+	if o, ok := e.ObjectOld.(*v1alpha1.PeerIstioControlPlane); ok {
+		return !reflect.DeepEqual(o.GetStatus(), e.ObjectNew.(*v1alpha1.PeerIstioControlPlane).GetStatus())
+	}
+
+	return false
+}
+
+func (p PICPStatusChangePredicate) Delete(e event.DeleteEvent) bool {
+	return false
+}
+
+func (p PICPStatusChangePredicate) Generic(e event.GenericEvent) bool {
 	return false
 }
