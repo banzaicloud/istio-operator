@@ -116,6 +116,7 @@ type IstioControlPlaneReconciler struct {
 // +kubebuilder:rbac:groups=security.istio.io;telemetry.istio.io;authentication.istio.io;config.istio.io;rbac.istio.io,resources=*,verbs=get;watch;list;update
 // +kubebuilder:rbac:groups=servicemesh.cisco.com,resources=istiocontrolplanes;istiomeshes,verbs=get;list;watch;create;update;patch;delete
 // +kubebuilder:rbac:groups=servicemesh.cisco.com,resources=istiocontrolplanes/status;istiomeshes/status,verbs=get;update;patch
+// +kubebuilder:rbac:groups=servicemesh.cisco.com,resources=peeristiocontrolplanes,verbs=list;watch
 
 func (r *IstioControlPlaneReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Result, error) {
 	logger := r.Log.WithValues("istiocontrolplane", req.NamespacedName)

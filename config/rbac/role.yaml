@@ -306,3 +306,10 @@ rules:
   - get
   - patch
   - update
+- apiGroups:
+  - servicemesh.cisco.com
+  resources:
+  - peeristiocontrolplanes
+  verbs:
+  - list
+  - watch
