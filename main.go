@@ -31,6 +31,7 @@ import (
 	// +kubebuilder:scaffold:imports
 	servicemeshv1alpha1 "github.com/banzaicloud/istio-operator/v2/api/v1alpha1"
 	"github.com/banzaicloud/istio-operator/v2/controllers"
+	"github.com/banzaicloud/istio-operator/v2/internal/models"
 	"github.com/banzaicloud/istio-operator/v2/pkg/util"
 	"github.com/banzaicloud/operator-tools/pkg/reconciler"
 )
@@ -62,6 +63,8 @@ func main() {
 	flag.StringVar(&leaderElectionNamespace, "leader-election-namespace", "istio-system", "Determines the namespace in which the leader election configmap will be created.")
 	var leaderElectionName string
 	flag.StringVar(&leaderElectionName, "leader-election-name", "istio-operator-leader-election", "Determines the name of the leader election configmap.")
+	var clusterRegistryConfiguration models.ClusterRegistryConfiguration
+	flag.BoolVar(&clusterRegistryConfiguration.ClusterAPI.Enabled, "cluster-registry-api-enabled", false, "Enable using cluster registry API from the cluster when applicable.")
 	var webhookServerPort uint
 	flag.UintVar(&webhookServerPort, "webhook-server-port", 9443, "The port that the webhook server serves at.")
 	var verboseLogging bool
@@ -94,6 +97,7 @@ func main() {
 			reconciler.WithEnableRecreateWorkload(),
 			reconciler.WithRecreateEnabledForAll(),
 		),
+		ClusterRegistry: clusterRegistryConfiguration,
 	}).SetupWithManager(mgr); err != nil {
 		setupLog.Error(err, "unable to create controller", "controller", "IstioControlPlane")
 		os.Exit(1)

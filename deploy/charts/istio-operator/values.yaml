@@ -51,3 +51,7 @@ leaderElection:
   enabled: true
   namespace: "istio-system"
   nameOverride: ""
+
+clusterRegistry:
+  clusterAPI:
+    enabled: false

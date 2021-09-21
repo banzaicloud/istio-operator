@@ -61,6 +61,7 @@ import (
 	discovery_component "github.com/banzaicloud/istio-operator/v2/internal/components/discovery"
 	"github.com/banzaicloud/istio-operator/v2/internal/components/meshexpansion"
 	"github.com/banzaicloud/istio-operator/v2/internal/components/sidecarinjector"
+	"github.com/banzaicloud/istio-operator/v2/internal/models"
 	"github.com/banzaicloud/istio-operator/v2/internal/util"
 	"github.com/banzaicloud/istio-operator/v2/pkg/k8sutil"
 	pkgUtil "github.com/banzaicloud/istio-operator/v2/pkg/util"
@@ -83,9 +84,11 @@ type IstioControlPlaneReconciler struct {
 	Log                logr.Logger
 	Scheme             *runtime.Scheme
 	ResourceReconciler reconciler.ResourceReconciler
-	watchersInitOnce   sync.Once
-	builder            *ctrlBuilder.Builder
-	ctrl               controller.Controller
+	ClusterRegistry    models.ClusterRegistryConfiguration
+
+	watchersInitOnce sync.Once
+	builder          *ctrlBuilder.Builder
+	ctrl             controller.Controller
 }
 
 // +kubebuilder:rbac:groups="",resources=nodes;replicationcontrollers,verbs=get;list;watch
