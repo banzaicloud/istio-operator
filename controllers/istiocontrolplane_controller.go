@@ -526,11 +526,10 @@ func (r *IstioControlPlaneReconciler) SetupWithManager(mgr ctrl.Manager) error {
 				},
 			}
 		}),
-		util.ObjectChangePredicate{
-			CalculateOptions: []util.CalculateOption{
-				reconciler.IgnoreManagedFields(),
-			},
-		},
+		predicate.Or(
+			util.ObjectChangePredicate{},
+			util.PICPStatusChangePredicate{},
+		),
 	)
 	if err != nil {
 		return err
