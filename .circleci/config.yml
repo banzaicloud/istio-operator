@@ -10,7 +10,7 @@ executors:
 jobs:
   build:
     docker:
-    - image: circleci/golang:1.16
+    - image: circleci/golang:1.17
 
     working_directory: /go/src/github.com/banzaicloud/istio-operator
     steps:
