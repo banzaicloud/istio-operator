@@ -54,6 +54,7 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/source"
 	"sigs.k8s.io/yaml"
 
+	clusterregistryv1alpha1 "github.com/banzaicloud/cluster-registry/api/v1alpha1"
 	servicemeshv1alpha1 "github.com/banzaicloud/istio-operator/v2/api/v1alpha1"
 	"github.com/banzaicloud/istio-operator/v2/internal/components"
 	"github.com/banzaicloud/istio-operator/v2/internal/components/base"
@@ -588,6 +589,59 @@ func (r *IstioControlPlaneReconciler) SetupWithManager(mgr ctrl.Manager) error {
 	)
 	if err != nil {
 		return err
+	}
+
+	if r.ClusterRegistry.ClusterAPI.Enabled {
+		err = r.ctrl.Watch(
+			&source.Kind{
+				Type: &clusterregistryv1alpha1.Cluster{
+					TypeMeta: metav1.TypeMeta{
+						Kind:       "Cluster",
+						APIVersion: clusterregistryv1alpha1.SchemeBuilder.GroupVersion.String(),
+					},
+				},
+			},
+			handler.EnqueueRequestsFromMapFunc(func(obj client.Object) []reconcile.Request {
+				var cluster *clusterregistryv1alpha1.Cluster
+				var ok bool
+				if cluster, ok = obj.(*clusterregistryv1alpha1.Cluster); !ok {
+					return nil
+				}
+
+				if cluster.Status.Type != clusterregistryv1alpha1.ClusterTypeLocal {
+					return nil
+				}
+
+				icps := &servicemeshv1alpha1.IstioControlPlaneList{}
+				err := r.Client.List(context.Background(), icps)
+				if err != nil {
+					r.Log.Error(err, "could not list Istio control plane resources")
+
+					return nil
+				}
+
+				resources := make([]reconcile.Request, len(icps.Items))
+				for i, icp := range icps.Items {
+					resources[i] = reconcile.Request{
+						NamespacedName: client.ObjectKey{
+							Name:      icp.GetName(),
+							Namespace: icp.GetNamespace(),
+						},
+					}
+				}
+
+				r.Log.V(1).Info("trigger reconcile by cluster change")
+
+				return resources
+			}),
+			predicate.Or(
+				util.ObjectChangePredicate{},
+				util.ClusterTypeChangePredicate{},
+			),
+		)
+		if err != nil {
+			return err
+		}
 	}
 
 	return nil
