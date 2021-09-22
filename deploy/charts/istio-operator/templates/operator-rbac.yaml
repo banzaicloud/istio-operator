@@ -170,6 +170,13 @@ rules:
   verbs:
   - approve
 - apiGroups:
+  - clusterregistry.k8s.cisco.com
+  resources:
+  - clusters
+  verbs:
+  - list
+  - watch
+- apiGroups:
   - coordination.k8s.io
   resources:
   - leases
