@@ -34,6 +34,7 @@ import (
 	"sigs.k8s.io/yaml"
 
 	clusterregistryv1alpha1 "github.com/banzaicloud/cluster-registry/api/v1alpha1"
+	"github.com/banzaicloud/istio-operator/v2/pkg/k8sutil"
 )
 
 func GetExternalAddressOfAPIServer(kubeConfig *rest.Config) (string, error) {
@@ -89,27 +90,9 @@ func GetReaderSecretForCluster(ctx context.Context, kubeClient client.Client, ku
 	}
 
 	if clusterRegistryAPIEnabled {
-		clusters := &clusterregistryv1alpha1.ClusterList{}
-		err := kubeClient.List(ctx, clusters)
+		cluster, err := k8sutil.GetLocalCluster(ctx, kubeClient)
 		if err != nil {
 			return nil, errors.WithStackIf(err)
-		}
-
-		var cluster *clusterregistryv1alpha1.Cluster
-		counter := 0
-		for _, c := range clusters.Items {
-			c := c
-			if c.Status.Type == clusterregistryv1alpha1.ClusterTypeLocal {
-				counter++
-				if counter > 1 {
-					return nil, errors.WithStackIf(errors.New("multiple local Cluster CR found, there should only be one"))
-				}
-				cluster = &c
-			}
-		}
-
-		if counter == 0 {
-			return nil, errors.WithStackIf(errors.New("no local Cluster CR found, either there should be one or cluster-registry-api-enabled arg should be set to false"))
 		}
 
 		// add overrides specified in the cluster resource without network specified
