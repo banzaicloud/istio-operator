@@ -25,6 +25,7 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/event"
 	"sigs.k8s.io/controller-runtime/pkg/predicate"
 
+	clusterregistryv1alpha1 "github.com/banzaicloud/cluster-registry/api/v1alpha1"
 	"github.com/banzaicloud/istio-operator/v2/api/v1alpha1"
 	"github.com/banzaicloud/k8s-objectmatcher/patch"
 	"github.com/banzaicloud/operator-tools/pkg/reconciler"
@@ -223,5 +224,27 @@ func (p PICPStatusChangePredicate) Delete(e event.DeleteEvent) bool {
 }
 
 func (p PICPStatusChangePredicate) Generic(e event.GenericEvent) bool {
+	return false
+}
+
+type ClusterTypeChangePredicate struct{}
+
+func (p ClusterTypeChangePredicate) Create(e event.CreateEvent) bool {
+	return false
+}
+
+func (p ClusterTypeChangePredicate) Update(e event.UpdateEvent) bool {
+	if o, ok := e.ObjectOld.(*clusterregistryv1alpha1.Cluster); ok {
+		return !reflect.DeepEqual(o.Status.State, e.ObjectNew.(*clusterregistryv1alpha1.Cluster).Status.State)
+	}
+
+	return false
+}
+
+func (p ClusterTypeChangePredicate) Delete(e event.DeleteEvent) bool {
+	return false
+}
+
+func (p ClusterTypeChangePredicate) Generic(e event.GenericEvent) bool {
 	return false
 }

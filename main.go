@@ -29,8 +29,10 @@ import (
 	ctrl "sigs.k8s.io/controller-runtime"
 
 	// +kubebuilder:scaffold:imports
+	clusterregistryv1alpha1 "github.com/banzaicloud/cluster-registry/api/v1alpha1"
 	servicemeshv1alpha1 "github.com/banzaicloud/istio-operator/v2/api/v1alpha1"
 	"github.com/banzaicloud/istio-operator/v2/controllers"
+	"github.com/banzaicloud/istio-operator/v2/internal/models"
 	"github.com/banzaicloud/istio-operator/v2/pkg/util"
 	"github.com/banzaicloud/operator-tools/pkg/reconciler"
 )
@@ -45,6 +47,7 @@ func init() {
 	_ = istionetworkingv1alpha3.AddToScheme(scheme)
 	_ = istiosecurityv1beta1.AddToScheme(scheme)
 	_ = apiextensionv1.AddToScheme(scheme)
+	_ = clusterregistryv1alpha1.AddToScheme(scheme)
 
 	_ = servicemeshv1alpha1.AddToScheme(scheme)
 	// +kubebuilder:scaffold:scheme
@@ -62,6 +65,10 @@ func main() {
 	flag.StringVar(&leaderElectionNamespace, "leader-election-namespace", "istio-system", "Determines the namespace in which the leader election configmap will be created.")
 	var leaderElectionName string
 	flag.StringVar(&leaderElectionName, "leader-election-name", "istio-operator-leader-election", "Determines the name of the leader election configmap.")
+	var clusterRegistryConfiguration models.ClusterRegistryConfiguration
+	flag.BoolVar(&clusterRegistryConfiguration.ClusterAPI.Enabled, "cluster-registry-api-enabled", false, "Enable using cluster registry API from the cluster when applicable.")
+	var apiServerEndpointAddress string
+	flag.StringVar(&apiServerEndpointAddress, "apiserver-endpoint-address", "", "Endpoint address of the API server of the cluster the controller is running on.")
 	var webhookServerPort uint
 	flag.UintVar(&webhookServerPort, "webhook-server-port", 9443, "The port that the webhook server serves at.")
 	var verboseLogging bool
@@ -94,6 +101,8 @@ func main() {
 			reconciler.WithEnableRecreateWorkload(),
 			reconciler.WithRecreateEnabledForAll(),
 		),
+		ClusterRegistry:          clusterRegistryConfiguration,
+		APIServerEndpointAddress: apiServerEndpointAddress,
 	}).SetupWithManager(mgr); err != nil {
 		setupLog.Error(err, "unable to create controller", "controller", "IstioControlPlane")
 		os.Exit(1)

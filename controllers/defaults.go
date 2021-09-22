@@ -17,14 +17,18 @@ limitations under the License.
 package controllers
 
 import (
+	"context"
+
+	"emperror.dev/errors"
 	"github.com/go-logr/logr"
 	"k8s.io/client-go/rest"
+	"sigs.k8s.io/controller-runtime/pkg/client"
 
 	"github.com/banzaicloud/istio-operator/v2/api/v1alpha1"
 	"github.com/banzaicloud/istio-operator/v2/pkg/k8sutil"
 )
 
-func setDynamicDefaults(icp *v1alpha1.IstioControlPlane, k8sConfig *rest.Config, logger logr.Logger) {
+func setDynamicDefaults(ctx context.Context, kubeClient client.Client, icp *v1alpha1.IstioControlPlane, k8sConfig *rest.Config, logger logr.Logger, clusterRegistryAPIEnabled bool) error {
 	if icp.Spec.JwtPolicy == v1alpha1.JWTPolicyType_UNSPECIFIED {
 		// try to detect supported jwt policy
 		supportedJWTPolicy, err := k8sutil.DetectSupportedJWTPolicy(k8sConfig)
@@ -35,4 +39,15 @@ func setDynamicDefaults(icp *v1alpha1.IstioControlPlane, k8sConfig *rest.Config,
 			logger.V(1).Info("supported jwt policy", "policy", icp.Spec.JwtPolicy)
 		}
 	}
+
+	if icp.Spec.ClusterID == "" && clusterRegistryAPIEnabled {
+		cluster, err := k8sutil.GetLocalCluster(ctx, kubeClient)
+		if err != nil {
+			return errors.WithStackIf(err)
+		}
+
+		icp.Spec.ClusterID = cluster.GetName()
+	}
+
+	return nil
 }

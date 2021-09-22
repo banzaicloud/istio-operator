@@ -54,6 +54,7 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/source"
 	"sigs.k8s.io/yaml"
 
+	clusterregistryv1alpha1 "github.com/banzaicloud/cluster-registry/api/v1alpha1"
 	servicemeshv1alpha1 "github.com/banzaicloud/istio-operator/v2/api/v1alpha1"
 	"github.com/banzaicloud/istio-operator/v2/internal/components"
 	"github.com/banzaicloud/istio-operator/v2/internal/components/base"
@@ -61,6 +62,7 @@ import (
 	discovery_component "github.com/banzaicloud/istio-operator/v2/internal/components/discovery"
 	"github.com/banzaicloud/istio-operator/v2/internal/components/meshexpansion"
 	"github.com/banzaicloud/istio-operator/v2/internal/components/sidecarinjector"
+	"github.com/banzaicloud/istio-operator/v2/internal/models"
 	"github.com/banzaicloud/istio-operator/v2/internal/util"
 	"github.com/banzaicloud/istio-operator/v2/pkg/k8sutil"
 	pkgUtil "github.com/banzaicloud/istio-operator/v2/pkg/util"
@@ -80,12 +82,15 @@ const (
 // IstioControlPlaneReconciler reconciles a IstioControlPlane object
 type IstioControlPlaneReconciler struct {
 	client.Client
-	Log                logr.Logger
-	Scheme             *runtime.Scheme
-	ResourceReconciler reconciler.ResourceReconciler
-	watchersInitOnce   sync.Once
-	builder            *ctrlBuilder.Builder
-	ctrl               controller.Controller
+	Log                      logr.Logger
+	Scheme                   *runtime.Scheme
+	ResourceReconciler       reconciler.ResourceReconciler
+	ClusterRegistry          models.ClusterRegistryConfiguration
+	APIServerEndpointAddress string
+
+	watchersInitOnce sync.Once
+	builder          *ctrlBuilder.Builder
+	ctrl             controller.Controller
 }
 
 // +kubebuilder:rbac:groups="",resources=nodes;replicationcontrollers,verbs=get;list;watch
@@ -117,6 +122,7 @@ type IstioControlPlaneReconciler struct {
 // +kubebuilder:rbac:groups=servicemesh.cisco.com,resources=istiocontrolplanes;istiomeshes,verbs=get;list;watch;create;update;patch;delete
 // +kubebuilder:rbac:groups=servicemesh.cisco.com,resources=istiocontrolplanes/status;istiomeshes/status,verbs=get;update;patch
 // +kubebuilder:rbac:groups=servicemesh.cisco.com,resources=peeristiocontrolplanes,verbs=list;watch
+// +kubebuilder:rbac:groups=clusterregistry.k8s.cisco.com,resources=clusters,verbs=list;watch
 
 func (r *IstioControlPlaneReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Result, error) {
 	logger := r.Log.WithValues("istiocontrolplane", req.NamespacedName)
@@ -222,7 +228,10 @@ func (r *IstioControlPlaneReconciler) reconcile(ctx context.Context, icp *servic
 
 	componentReconcilers := []components.ComponentReconciler{}
 
-	setDynamicDefaults(icp, k8sConfig, logger)
+	err = setDynamicDefaults(ctx, r.Client, icp, k8sConfig, logger, r.ClusterRegistry.ClusterAPI.Enabled)
+	if err != nil {
+		return ctrl.Result{}, err
+	}
 
 	meshNetworks, err := r.getMeshNetworks(ctx, icp)
 	if err != nil {
@@ -585,6 +594,59 @@ func (r *IstioControlPlaneReconciler) SetupWithManager(mgr ctrl.Manager) error {
 		return err
 	}
 
+	if r.ClusterRegistry.ClusterAPI.Enabled {
+		err = r.ctrl.Watch(
+			&source.Kind{
+				Type: &clusterregistryv1alpha1.Cluster{
+					TypeMeta: metav1.TypeMeta{
+						Kind:       "Cluster",
+						APIVersion: clusterregistryv1alpha1.SchemeBuilder.GroupVersion.String(),
+					},
+				},
+			},
+			handler.EnqueueRequestsFromMapFunc(func(obj client.Object) []reconcile.Request {
+				var cluster *clusterregistryv1alpha1.Cluster
+				var ok bool
+				if cluster, ok = obj.(*clusterregistryv1alpha1.Cluster); !ok {
+					return nil
+				}
+
+				if cluster.Status.Type != clusterregistryv1alpha1.ClusterTypeLocal {
+					return nil
+				}
+
+				icps := &servicemeshv1alpha1.IstioControlPlaneList{}
+				err := r.Client.List(context.Background(), icps)
+				if err != nil {
+					r.Log.Error(err, "could not list Istio control plane resources")
+
+					return nil
+				}
+
+				resources := make([]reconcile.Request, len(icps.Items))
+				for i, icp := range icps.Items {
+					resources[i] = reconcile.Request{
+						NamespacedName: client.ObjectKey{
+							Name:      icp.GetName(),
+							Namespace: icp.GetNamespace(),
+						},
+					}
+				}
+
+				r.Log.V(1).Info("trigger reconcile by cluster change")
+
+				return resources
+			}),
+			predicate.Or(
+				util.ObjectChangePredicate{},
+				util.ClusterTypeChangePredicate{},
+			),
+		)
+		if err != nil {
+			return err
+		}
+	}
+
 	return nil
 }
 
@@ -726,6 +788,8 @@ func (r *IstioControlPlaneReconciler) reconcileClusterReaderSecret(ctx context.C
 				Name:      icp.WithRevision(readerServiceAccountName),
 				Namespace: icp.GetNamespace(),
 			},
+			r.APIServerEndpointAddress,
+			r.ClusterRegistry.ClusterAPI.Enabled,
 		)
 		if err != nil {
 			return errors.WithStackIf(err)
