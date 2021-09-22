@@ -29,6 +29,7 @@ import (
 	ctrl "sigs.k8s.io/controller-runtime"
 
 	// +kubebuilder:scaffold:imports
+	clusterregistryv1alpha1 "github.com/banzaicloud/cluster-registry/api/v1alpha1"
 	servicemeshv1alpha1 "github.com/banzaicloud/istio-operator/v2/api/v1alpha1"
 	"github.com/banzaicloud/istio-operator/v2/controllers"
 	"github.com/banzaicloud/istio-operator/v2/internal/models"
@@ -46,6 +47,7 @@ func init() {
 	_ = istionetworkingv1alpha3.AddToScheme(scheme)
 	_ = istiosecurityv1beta1.AddToScheme(scheme)
 	_ = apiextensionv1.AddToScheme(scheme)
+	_ = clusterregistryv1alpha1.AddToScheme(scheme)
 
 	_ = servicemeshv1alpha1.AddToScheme(scheme)
 	// +kubebuilder:scaffold:scheme
