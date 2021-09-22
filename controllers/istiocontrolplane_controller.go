@@ -228,7 +228,10 @@ func (r *IstioControlPlaneReconciler) reconcile(ctx context.Context, icp *servic
 
 	componentReconcilers := []components.ComponentReconciler{}
 
-	setDynamicDefaults(icp, k8sConfig, logger)
+	err = setDynamicDefaults(ctx, r.Client, icp, k8sConfig, logger, r.ClusterRegistry.ClusterAPI.Enabled)
+	if err != nil {
+		return ctrl.Result{}, err
+	}
 
 	meshNetworks, err := r.getMeshNetworks(ctx, icp)
 	if err != nil {
