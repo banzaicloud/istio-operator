@@ -730,6 +730,8 @@ func (r *IstioControlPlaneReconciler) reconcileClusterReaderSecret(ctx context.C
 				Name:      icp.WithRevision(readerServiceAccountName),
 				Namespace: icp.GetNamespace(),
 			},
+			r.APIServerEndpointAddress,
+			r.ClusterRegistry.ClusterAPI.Enabled,
 		)
 		if err != nil {
 			return errors.WithStackIf(err)

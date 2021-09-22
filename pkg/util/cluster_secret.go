@@ -21,6 +21,7 @@ import (
 	"context"
 	"net"
 	"net/url"
+	"strings"
 
 	"emperror.dev/errors"
 	corev1 "k8s.io/api/core/v1"
@@ -31,6 +32,8 @@ import (
 	k8sclientapiv1 "k8s.io/client-go/tools/clientcmd/api/v1"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/yaml"
+
+	clusterregistryv1alpha1 "github.com/banzaicloud/cluster-registry/api/v1alpha1"
 )
 
 func GetExternalAddressOfAPIServer(kubeConfig *rest.Config) (string, error) {
@@ -60,7 +63,7 @@ func GetExternalAddressOfAPIServer(kubeConfig *rest.Config) (string, error) {
 	return "", errors.New("could not determine external apiserver address")
 }
 
-func GetReaderSecretForCluster(ctx context.Context, kubeClient client.Client, kubeConfig *rest.Config, clusterName string, secretRef types.NamespacedName, saRef types.NamespacedName) (*corev1.Secret, error) {
+func GetReaderSecretForCluster(ctx context.Context, kubeClient client.Client, kubeConfig *rest.Config, clusterName string, secretRef types.NamespacedName, saRef types.NamespacedName, apiServerEndpointAddress string, clusterRegistryAPIEnabled bool) (*corev1.Secret, error) {
 	sa := &corev1.ServiceAccount{}
 	err := kubeClient.Get(ctx, saRef, sa)
 	if err != nil {
@@ -85,14 +88,51 @@ func GetReaderSecretForCluster(ctx context.Context, kubeClient client.Client, ku
 		caData = append(append(caData, []byte("\n")...), kubeConfig.CAData...)
 	}
 
-	// try to get external ip address from api server
-	apiServerAddress, _ := GetExternalAddressOfAPIServer(kubeConfig)
+	if clusterRegistryAPIEnabled {
+		clusters := &clusterregistryv1alpha1.ClusterList{}
+		err := kubeClient.List(ctx, clusters)
+		if err != nil {
+			return nil, errors.WithStackIf(err)
+		}
 
-	if apiServerAddress == "" {
-		apiServerAddress = kubeConfig.Host
+		var cluster *clusterregistryv1alpha1.Cluster
+		counter := 0
+		for _, c := range clusters.Items {
+			c := c
+			if c.Status.Type == clusterregistryv1alpha1.ClusterTypeLocal {
+				counter++
+				if counter > 1 {
+					return nil, errors.WithStackIf(errors.New("multiple local Cluster CR found, there should only be one"))
+				}
+				cluster = &c
+			}
+		}
+
+		if counter == 0 {
+			return nil, errors.WithStackIf(errors.New("no local Cluster CR found, either there should be one or cluster-registry-api-enabled arg should be set to false"))
+		}
+
+		// add overrides specified in the cluster resource without network specified
+		endpoint := GetEndpointForClusterByNetwork(cluster, "")
+		if endpoint.ServerAddress != "" {
+			apiServerEndpointAddress = endpoint.ServerAddress
+		}
+		if len(endpoint.CABundle) > 0 {
+			caData = append(append(caData, []byte("\n")...), endpoint.CABundle...)
+		}
 	}
 
-	kubeconfig, err := GetKubeconfigWithSAToken(secretRef.Name, sa.GetName(), apiServerAddress, caData, string(secret.Data["token"]))
+	// try to get external ip address from api server
+	if apiServerEndpointAddress == "" {
+		apiServerEndpointAddress, _ = GetExternalAddressOfAPIServer(kubeConfig)
+	}
+
+	// try to get endpoint from used kubeconfig
+	if apiServerEndpointAddress == "" {
+		apiServerEndpointAddress = kubeConfig.Host
+	}
+
+	kubeconfig, err := GetKubeconfigWithSAToken(secretRef.Name, sa.GetName(), apiServerEndpointAddress, caData, string(secret.Data["token"]))
 	if err != nil {
 		return nil, errors.WithStackIf(err)
 	}
@@ -112,7 +152,18 @@ func GetReaderSecretForCluster(ctx context.Context, kubeClient client.Client, ku
 	}, nil
 }
 
-func GetKubeconfigWithSAToken(name, username, url string, caData []byte, saToken string) (string, error) {
+func GetKubeconfigWithSAToken(name, username, endpointURL string, caData []byte, saToken string) (string, error) {
+	if !strings.Contains(endpointURL, "//") {
+		endpointURL = "//" + endpointURL
+	}
+	u, err := url.Parse(endpointURL)
+	if err != nil {
+		return "", err
+	}
+	if u.Scheme == "" {
+		u.Scheme = "https"
+	}
+
 	config := k8sclientapiv1.Config{
 		APIVersion: k8sclientapiv1.SchemeGroupVersion.Version,
 		Kind:       "Config",
@@ -121,7 +172,7 @@ func GetKubeconfigWithSAToken(name, username, url string, caData []byte, saToken
 				Name: name,
 				Cluster: k8sclientapiv1.Cluster{
 					CertificateAuthorityData: caData,
-					Server:                   url,
+					Server:                   u.String(),
 				},
 			},
 		},
@@ -151,4 +202,22 @@ func GetKubeconfigWithSAToken(name, username, url string, caData []byte, saToken
 	}
 
 	return string(y), nil
+}
+
+func GetEndpointForClusterByNetwork(cluster *clusterregistryv1alpha1.Cluster, networkName string) clusterregistryv1alpha1.KubernetesAPIEndpoint {
+	var endpoint clusterregistryv1alpha1.KubernetesAPIEndpoint
+
+	for _, apiEndpoint := range cluster.Spec.KubernetesAPIEndpoints {
+		if apiEndpoint.ClientNetwork == networkName {
+			endpoint = apiEndpoint
+
+			break
+		}
+		// use for every network if the endpoint is not network specific
+		if apiEndpoint.ClientNetwork == "" {
+			endpoint = apiEndpoint
+		}
+	}
+
+	return endpoint
 }
