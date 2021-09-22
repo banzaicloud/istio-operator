@@ -81,10 +81,11 @@ const (
 // IstioControlPlaneReconciler reconciles a IstioControlPlane object
 type IstioControlPlaneReconciler struct {
 	client.Client
-	Log                logr.Logger
-	Scheme             *runtime.Scheme
-	ResourceReconciler reconciler.ResourceReconciler
-	ClusterRegistry    models.ClusterRegistryConfiguration
+	Log                      logr.Logger
+	Scheme                   *runtime.Scheme
+	ResourceReconciler       reconciler.ResourceReconciler
+	ClusterRegistry          models.ClusterRegistryConfiguration
+	APIServerEndpointAddress string
 
 	watchersInitOnce sync.Once
 	builder          *ctrlBuilder.Builder

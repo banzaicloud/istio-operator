@@ -58,3 +58,4 @@ Parameter | Description | Default
 `leaderElection.namespace` | Namespace for the leader election configmap | `istio-system`
 `leaderElection.nameOverride` | Name override for the leader election configmap | `""`
 `clusterRegistry.clusterAPI.enabled` | If true, [cluster registry](https://github.com/banzaicloud/cluster-registry) API is used from the cluster | `false`
+`apiServerEndpointAddress` | Endpoint address of the API server of the cluster the controller is running on | `""`

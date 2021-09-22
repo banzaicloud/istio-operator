@@ -65,6 +65,8 @@ func main() {
 	flag.StringVar(&leaderElectionName, "leader-election-name", "istio-operator-leader-election", "Determines the name of the leader election configmap.")
 	var clusterRegistryConfiguration models.ClusterRegistryConfiguration
 	flag.BoolVar(&clusterRegistryConfiguration.ClusterAPI.Enabled, "cluster-registry-api-enabled", false, "Enable using cluster registry API from the cluster when applicable.")
+	var apiServerEndpointAddress string
+	flag.StringVar(&apiServerEndpointAddress, "apiserver-endpoint-address", "", "Endpoint address of the API server of the cluster the controller is running on.")
 	var webhookServerPort uint
 	flag.UintVar(&webhookServerPort, "webhook-server-port", 9443, "The port that the webhook server serves at.")
 	var verboseLogging bool
@@ -97,7 +99,8 @@ func main() {
 			reconciler.WithEnableRecreateWorkload(),
 			reconciler.WithRecreateEnabledForAll(),
 		),
-		ClusterRegistry: clusterRegistryConfiguration,
+		ClusterRegistry:          clusterRegistryConfiguration,
+		APIServerEndpointAddress: apiServerEndpointAddress,
 	}).SetupWithManager(mgr); err != nil {
 		setupLog.Error(err, "unable to create controller", "controller", "IstioControlPlane")
 		os.Exit(1)
