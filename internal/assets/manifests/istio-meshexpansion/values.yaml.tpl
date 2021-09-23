@@ -10,3 +10,6 @@
 {{ toYamlIf (dict "value" .GetDeployment "key" "deployment") }}
 {{ toYamlIf (dict "value" .GetService "key" "service") }}
 {{ end }}
+{{- if .GetSpec.GetMode }}
+mode: {{ .GetSpec.GetMode | toString }}
+{{- end }}

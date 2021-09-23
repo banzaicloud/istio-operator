@@ -4,6 +4,8 @@ exposeIstiod: true
 exposeWebhook: true
 exposeClusterServices: true
 
+mode: ACTIVE
+
 runAsRoot: false
 metadata:
   labels: {}

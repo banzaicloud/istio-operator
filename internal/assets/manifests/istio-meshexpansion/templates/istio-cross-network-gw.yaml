@@ -1,4 +1,4 @@
-{{ if .Values.exposeClusterServices }}
+{{ if and (eq .Values.mode "ACTIVE") .Values.exposeClusterServices }}
 apiVersion: networking.istio.io/v1alpha3
 kind: Gateway
 metadata:
