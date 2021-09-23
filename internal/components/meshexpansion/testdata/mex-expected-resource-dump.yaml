@@ -109,7 +109,7 @@ spec:
       value: "true"
   service:
     ports:
-    - name: http-status-port
+    - name: tcp-status-port
       port: 15021
       protocol: TCP
       targetPort: 15021

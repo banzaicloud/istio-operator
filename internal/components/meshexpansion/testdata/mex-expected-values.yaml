@@ -22,3 +22,4 @@ service:
     port: 56000
     protocol: TCP
     targetPort: 56000
+mode: ACTIVE
