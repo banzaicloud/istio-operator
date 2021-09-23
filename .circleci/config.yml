@@ -19,7 +19,7 @@ jobs:
     - restore_cache:
         name: Restore build dependencies
         keys:
-        - build-deps-v1-{{ .Branch }}-{{ checksum "scripts/download-deps.sh" }}
+        - build-deps-v2-{{ .Branch }}-{{ checksum "scripts/download-deps.sh" }}
 
     - restore_cache:
         name: Restore license cache
@@ -58,7 +58,7 @@ jobs:
 
     - save_cache:
         name: Save build dependencies
-        key: build-deps-v1-{{ .Branch }}-{{ checksum "scripts/download-deps.sh" }}
+        key: build-deps-v2-{{ .Branch }}-{{ checksum "scripts/download-deps.sh" }}
         paths:
         - bin/
 
