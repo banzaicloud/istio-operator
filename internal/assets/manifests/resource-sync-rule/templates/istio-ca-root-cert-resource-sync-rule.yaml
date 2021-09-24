@@ -13,7 +13,7 @@ spec:
     version: v1
   rules:
   - match:
-      objectKey:
+    - objectKey:
         {{- if eq .Values.distribution "cisco" }}
         name: {{ include "name-with-revision" (dict "name" "istio-ca-root-cert" "context" $) }}
         {{- else }}

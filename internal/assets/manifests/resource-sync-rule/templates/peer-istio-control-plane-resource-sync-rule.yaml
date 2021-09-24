@@ -13,7 +13,7 @@ spec:
     version: v1alpha1
   rules:
   - match:
-      objectKey:
+    - objectKey:
         name: {{ .Values.revision }}
         namespace: {{ .Release.Namespace }}
   - mutations:
@@ -25,5 +25,5 @@ spec:
         - parseValue: false
           path: /metadata/name
           type: replace
-          value: '{{`printf "%s-%s" .Object.GetName .Cluster.GetName`}}'
+          value: {{`'{{ printf "%s-%s" .Object.GetName .Cluster.GetName }}'`}}
       syncStatus: true
