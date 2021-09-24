@@ -288,6 +288,7 @@ rules:
   resources:
   - istiocontrolplanes
   - istiomeshes
+  - peeristiocontrolplanes
   verbs:
   - create
   - delete
@@ -301,6 +302,7 @@ rules:
   resources:
   - istiocontrolplanes/status
   - istiomeshes/status
+  - peeristiocontrolplanes/status
   verbs:
   - get
   - patch
@@ -325,10 +327,3 @@ rules:
   - get
   - patch
   - update
-- apiGroups:
-  - servicemesh.cisco.com
-  resources:
-  - peeristiocontrolplanes
-  verbs:
-  - list
-  - watch

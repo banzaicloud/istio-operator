@@ -10,8 +10,6 @@ rules:
     resources:
     - istiocontrolplanes
     - peeristiocontrolplanes
-    - istiocontrolplanes/status
-    - peeristiocontrolplanes/status
     verbs:
     - create
     - update
@@ -20,3 +18,11 @@ rules:
     - get
     - list
     - watch
+  - apiGroups: ["servicemesh.cisco.com"]
+    resources:
+    - istiocontrolplanes/status
+    - peeristiocontrolplanes/status
+    verbs:
+    - get
+    - update
+    - patch
