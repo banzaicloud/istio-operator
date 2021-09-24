@@ -6399,6 +6399,8 @@ spec:
                   sidecarInjector:
                     type: string
                 type: object
+              clusterID:
+                type: string
               errorMessage:
                 type: string
               gatewayAddress:
@@ -13719,6 +13721,8 @@ spec:
                   sidecarInjector:
                     type: string
                 type: object
+              clusterID:
+                type: string
               errorMessage:
                 type: string
               gatewayAddress:
