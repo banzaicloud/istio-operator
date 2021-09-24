@@ -57,5 +57,6 @@ Parameter | Description | Default
 `leaderElection.enabled` | If true, leader election is enabled for the operator deployment | `false`
 `leaderElection.namespace` | Namespace for the leader election configmap | `istio-system`
 `leaderElection.nameOverride` | Name override for the leader election configmap | `""`
-`clusterRegistry.clusterAPI.enabled` | If true, [cluster registry](https://github.com/banzaicloud/cluster-registry) API is used from the cluster | `false`
 `apiServerEndpointAddress` | Endpoint address of the API server of the cluster the controller is running on | `""`
+`clusterRegistry.clusterAPI.enabled` | If true, [cluster registry](https://github.com/banzaicloud/cluster-registry) API is used from the cluster | `false`
+`clusterRegistry.resourceSyncRules.enabled` | If true, the necessary ResourceSyncRule resources from the [cluster registry](https://github.com/banzaicloud/cluster-registry) API are automatically created for multi cluster setups | `false`

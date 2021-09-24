@@ -65,10 +65,11 @@ func main() {
 	flag.StringVar(&leaderElectionNamespace, "leader-election-namespace", "istio-system", "Determines the namespace in which the leader election configmap will be created.")
 	var leaderElectionName string
 	flag.StringVar(&leaderElectionName, "leader-election-name", "istio-operator-leader-election", "Determines the name of the leader election configmap.")
-	var clusterRegistryConfiguration models.ClusterRegistryConfiguration
-	flag.BoolVar(&clusterRegistryConfiguration.ClusterAPI.Enabled, "cluster-registry-api-enabled", false, "Enable using cluster registry API from the cluster when applicable.")
 	var apiServerEndpointAddress string
 	flag.StringVar(&apiServerEndpointAddress, "apiserver-endpoint-address", "", "Endpoint address of the API server of the cluster the controller is running on.")
+	var clusterRegistryConfiguration models.ClusterRegistryConfiguration
+	flag.BoolVar(&clusterRegistryConfiguration.ClusterAPI.Enabled, "cluster-registry-api-enabled", false, "Enable using cluster registry API from the cluster when applicable.")
+	flag.BoolVar(&clusterRegistryConfiguration.ResourceSyncRules.Enabled, "cluster-registry-sync-rules-enabled", false, "Enable automatically creating the necessary ResourceSyncRule resources from the cluster registry API for multi cluster setups.")
 	var webhookServerPort uint
 	flag.UintVar(&webhookServerPort, "webhook-server-port", 9443, "The port that the webhook server serves at.")
 	var verboseLogging bool

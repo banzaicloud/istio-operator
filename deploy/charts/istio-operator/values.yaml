@@ -56,3 +56,5 @@ apiServerEndpointAddress: ""
 clusterRegistry:
   clusterAPI:
     enabled: false
+  resourceSyncRules:
+    enabled: false
