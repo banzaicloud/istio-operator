@@ -14,7 +14,7 @@ spec:
     version: v1alpha1
   rules:
   - match:
-      objectKey:
+    - objectKey:
         name: {{ .Values.meshID }}
         namespace: {{ .Release.Namespace }}
       syncStatus: true

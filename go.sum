@@ -128,8 +128,8 @@ github.com/aws/aws-lambda-go v1.13.3/go.mod h1:4UKl9IzQMoD+QF79YdCuzCwp8VbmG4VAQ
 github.com/aws/aws-sdk-go v1.15.11/go.mod h1:mFuSZ37Z9YOHbQEwBWztmVzqXrEkub65tZoCYDt7FT0=
 github.com/aws/aws-sdk-go v1.27.0/go.mod h1:KmX6BPdI08NWTb3/sm4ZGu5ShLoqVDhKgpiN924inxo=
 github.com/aws/aws-sdk-go-v2 v0.18.0/go.mod h1:JWVYvqSMppoMJC0x5wdwiImzgXTI9FuZwxzkQq9wy+g=
-github.com/banzaicloud/cluster-registry v0.0.4 h1:xhQmmUxraGrlVv/WpRDDzEnVJv345TqGNmuRrTUqPik=
-github.com/banzaicloud/cluster-registry v0.0.4/go.mod h1:2tcT4bq6UaWOOeIBsjcrqawOfrybamYUJSM4jRVHQic=
+github.com/banzaicloud/cluster-registry v0.0.5 h1:mUfDexjyAtrZ6Ylqp0/55u2G4ie0Ea5iYUDTdeh39yw=
+github.com/banzaicloud/cluster-registry v0.0.5/go.mod h1:2tcT4bq6UaWOOeIBsjcrqawOfrybamYUJSM4jRVHQic=
 github.com/banzaicloud/k8s-objectmatcher v1.5.0/go.mod h1:9MWY5HsM/OaTmoTirczhlO8UALbH722WgdpaaR7Y8OE=
 github.com/banzaicloud/k8s-objectmatcher v1.5.1/go.mod h1:9MWY5HsM/OaTmoTirczhlO8UALbH722WgdpaaR7Y8OE=
 github.com/banzaicloud/k8s-objectmatcher v1.5.2 h1:wY3YBAVnh36Gm957IIlvtZbKVXbg4b+6fwrhoTz3opE=
