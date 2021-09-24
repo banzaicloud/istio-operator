@@ -62,6 +62,8 @@ func TestResourceSyncRuleResourceDump(t *testing.T) {
 }
 
 func testResourceSyncRuleResourceDump(t *testing.T, icpTestCR, rsrExpectedResourceDump []byte) {
+	t.Helper()
+
 	var icp *v1alpha1.IstioControlPlane
 	if err := yaml.Unmarshal(icpTestCR, &icp); err != nil {
 		t.Fatal(err)
@@ -108,6 +110,8 @@ func TestResourceSyncRuleValuesTemplateTransform(t *testing.T) {
 }
 
 func testResourceSyncRuleValuesTemplateTransform(t *testing.T, icpTestCR, rsrExpectedValues []byte) {
+	t.Helper()
+
 	var icp *v1alpha1.IstioControlPlane
 	if err := yaml.Unmarshal(icpTestCR, &icp); err != nil {
 		t.Fatal(err)
