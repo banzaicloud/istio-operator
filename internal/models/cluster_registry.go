@@ -18,9 +18,14 @@ package models
 
 // ClusterRegistryConfiguration contains the settings to cooperate with the cluster registry APIs
 type ClusterRegistryConfiguration struct {
-	ClusterAPI ClusterAPIConfiguration `json:"clusterApi,omitempty"`
+	ClusterAPI        ClusterAPIConfiguration        `json:"clusterApi,omitempty"`
+	ResourceSyncRules ResourceSyncRulesConfiguration `json:"resourceSyncRules,omitempty"`
 }
 
 type ClusterAPIConfiguration struct {
+	Enabled bool `json:"enabled,omitempty"`
+}
+
+type ResourceSyncRulesConfiguration struct {
 	Enabled bool `json:"enabled,omitempty"`
 }

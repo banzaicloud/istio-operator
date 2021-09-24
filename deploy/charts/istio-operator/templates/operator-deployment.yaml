@@ -61,10 +61,13 @@ spec:
           {{- end }}
           - "--leader-election-namespace={{ .Values.leaderElection.namespace }}"
           {{- end }}
+          - "--apiserver-endpoint-address={{ .Values.apiServerEndpointAddress }}"
           {{- if .Values.clusterRegistry.clusterAPI.enabled }}
           - "--cluster-registry-api-enabled"
           {{- end }}
-          - "--apiserver-endpoint-address={{ .Values.apiServerEndpointAddress }}"
+          {{- if .Values.clusterRegistry.resourceSyncRules.enabled }}
+          - "--cluster-registry-sync-rules-enabled"
+          {{- end }}
           {{- range $value := .Values.extraArgs }}
           - {{ quote $value }}
           {{- end }}
