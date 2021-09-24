@@ -1,0 +1,9 @@
+apiVersion: servicemesh.cisco.com/v1alpha1
+kind: IstioControlPlane
+metadata:
+  name: cp-v111x
+  namespace: istio-system
+spec:
+  version: "1.11.0"
+  mode: ACTIVE
+  distribution: cisco

@@ -1,0 +1,119 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  creationTimestamp: null
+  name: istio-system
+spec: {}
+status: {}
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  labels:
+    cluster-registry.k8s.cisco.com/reader-aggregated: "true"
+    release: istio-resource-sync-rule
+  name: istio-ca-root-cert-reader-cp-v111x
+rules:
+  - apiGroups:
+      - ""
+    resources:
+      - configmaps
+    verbs:
+      - get
+      - list
+      - watch
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  labels:
+    cluster-registry.k8s.cisco.com/controller-aggregated: "true"
+    release: istio-resource-sync-rule
+  name: peeristiocontrolplane-controller-cp-v111x
+rules:
+  - apiGroups:
+      - servicemesh.cisco.com
+    resources:
+      - istiocontrolplanes
+      - peeristiocontrolplanes
+      - istiocontrolplanes/status
+      - peeristiocontrolplanes/status
+    verbs:
+      - create
+      - update
+      - delete
+      - patch
+      - get
+      - list
+      - watch
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  labels:
+    cluster-registry.k8s.cisco.com/reader-aggregated: "true"
+    release: istio-resource-sync-rule
+  name: peeristiocontrolplane-reader-cp-v111x
+rules:
+  - apiGroups:
+      - servicemesh.cisco.com
+    resources:
+      - istiocontrolplanes
+    verbs:
+      - get
+      - list
+      - watch
+---
+apiVersion: clusterregistry.k8s.cisco.com/v1alpha1
+kind: ResourceSyncRule
+metadata:
+  annotations:
+    cluster-registry.k8s.cisco.com/resource-sync-disabled: "true"
+  labels:
+    release: istio-resource-sync-rule
+  name: istio-multi-cluster-secret-cp-v111x
+spec:
+  groupVersionKind:
+    kind: Secret
+    version: v1
+  rules:
+    - match:
+        content:
+          - key: type
+            value: k8s.cisco.com/istio-reader-secret
+        labels:
+          - matchLabels:
+              istio.io/rev: cp-v111x.istio-system
+      mutations:
+        labels:
+          add:
+            istio/multiCluster: "true"
+---
+apiVersion: clusterregistry.k8s.cisco.com/v1alpha1
+kind: ResourceSyncRule
+metadata:
+  annotations:
+    cluster-registry.k8s.cisco.com/resource-sync-disabled: "true"
+  labels:
+    release: istio-resource-sync-rule
+  name: peeristiocontrolplane-cp-v111x
+spec:
+  groupVersionKind:
+    group: servicemesh.cisco.com
+    kind: IstioControlPlane
+    version: v1alpha1
+  rules:
+    - match:
+        objectKey:
+          name: cp-v111x
+    - mutations:
+        overrides:
+          - parseValue: false
+            path: /kind
+            type: replace
+            value: PeerIstioControlPlane
+          - parseValue: false
+            path: /metadata/name
+            type: replace
+            value: printf "%s-%s" .Object.GetName .Cluster.GetName
+        syncStatus: true
