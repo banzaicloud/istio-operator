@@ -1,0 +1,18 @@
+{{- if eq .Values.mode "ACTIVE" }}
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: {{ include "name-with-revision" (dict "name" "istio-ca-root-cert-reader" "context" $) }}
+  labels:
+    cluster-registry.k8s.cisco.com/reader-aggregated: "true"
+    release: {{ .Release.Name }}
+rules:
+  - apiGroups:
+    - ""
+    resources:
+    - configmaps
+    verbs:
+    - get
+    - list
+    - watch
+{{- end }}

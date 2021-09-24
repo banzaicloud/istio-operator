@@ -1,0 +1,22 @@
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: {{ include "name-with-revision" (dict "name" "peeristiocontrolplane-controller" "context" $) }}
+  labels:
+    cluster-registry.k8s.cisco.com/controller-aggregated: "true"
+    release: {{ .Release.Name }}
+rules:
+  - apiGroups: ["servicemesh.cisco.com"]
+    resources:
+    - istiocontrolplanes
+    - peeristiocontrolplanes
+    - istiocontrolplanes/status
+    - peeristiocontrolplanes/status
+    verbs:
+    - create
+    - update
+    - delete
+    - patch
+    - get
+    - list
+    - watch

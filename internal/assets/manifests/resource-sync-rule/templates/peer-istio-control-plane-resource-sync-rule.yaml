@@ -1,0 +1,28 @@
+apiVersion: clusterregistry.k8s.cisco.com/v1alpha1
+kind: ResourceSyncRule
+metadata:
+  name: {{ include "name-with-revision" (dict "name" "peeristiocontrolplane" "context" $) }}
+  annotations:
+    cluster-registry.k8s.cisco.com/resource-sync-disabled: "true"
+  labels:
+    release: {{ .Release.Name }}
+spec:
+  groupVersionKind:
+    group: servicemesh.cisco.com
+    kind: IstioControlPlane
+    version: v1alpha1
+  rules:
+  - match:
+      objectKey:
+        name: {{ .Values.revision }}
+  - mutations:
+      overrides:
+        - parseValue: false
+          path: /kind
+          type: replace
+          value: PeerIstioControlPlane
+        - parseValue: false
+          path: /metadata/name
+          type: replace
+          value: '{{`printf "%s-%s" .Object.GetName .Cluster.GetName`}}'
+      syncStatus: true

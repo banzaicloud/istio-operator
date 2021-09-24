@@ -51,6 +51,11 @@ var (
 	//go:embed manifests/istio-sidecar-injector/templates/_helpers.tpl
 	istioSidecarInjector embed.FS
 	IstioSidecarInjector = GetSubFS(istioSidecarInjector, "manifests/istio-sidecar-injector")
+
+	//go:embed manifests/resource-sync-rule
+	//go:embed manifests/resource-sync-rule/templates/_helpers.tpl
+	resourceSyncRule embed.FS
+	ResourceSyncRule = GetSubFS(resourceSyncRule, "manifests/resource-sync-rule")
 )
 
 func GetSubFS(fsys fs.FS, dir string) (subFS fs.FS) {
