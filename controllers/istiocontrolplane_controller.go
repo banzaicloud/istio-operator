@@ -61,6 +61,7 @@ import (
 	"github.com/banzaicloud/istio-operator/v2/internal/components/cni"
 	discovery_component "github.com/banzaicloud/istio-operator/v2/internal/components/discovery"
 	"github.com/banzaicloud/istio-operator/v2/internal/components/meshexpansion"
+	"github.com/banzaicloud/istio-operator/v2/internal/components/resourcesyncrule"
 	"github.com/banzaicloud/istio-operator/v2/internal/components/sidecarinjector"
 	"github.com/banzaicloud/istio-operator/v2/internal/models"
 	"github.com/banzaicloud/istio-operator/v2/internal/util"
@@ -266,6 +267,14 @@ func (r *IstioControlPlaneReconciler) reconcile(ctx context.Context, icp *servic
 		return ctrl.Result{}, err
 	}
 	componentReconcilers = append(componentReconcilers, sidecarInjectorReconciler)
+
+	resourceSyncRuleReconciler, err := NewComponentReconciler(r, func(helmReconciler *components.HelmReconciler) components.ComponentReconciler {
+		return resourcesyncrule.NewChartReconciler(helmReconciler, r.ClusterRegistry.ResourceSyncRules.Enabled)
+	}, r.Log.WithName("resourcesyncrule"))
+	if err != nil {
+		return ctrl.Result{}, err
+	}
+	componentReconcilers = append(componentReconcilers, resourceSyncRuleReconciler)
 
 	var result ctrl.Result
 	for _, r := range componentReconcilers {

@@ -1,0 +1,22 @@
+{{- if eq .Values.mode "PASSIVE" }}
+apiVersion: clusterregistry.k8s.cisco.com/v1alpha1
+kind: ResourceSyncRule
+metadata:
+  name: {{ include "name-with-revision" (dict "name" "istio-ca-root-cert" "context" $) }}
+  annotations:
+    cluster-registry.k8s.cisco.com/resource-sync-disabled: "true"
+  labels:
+    release: {{ .Release.Name }}
+spec:
+  groupVersionKind:
+    kind: ConfigMap
+    version: v1
+  rules:
+  - match:
+      objectKey:
+        {{- if eq .Values.distribution "cisco" }}
+        name: {{ include "name-with-revision" (dict "name" "istio-ca-root-cert" "context" $) }}
+        {{- else }}
+        name: istio-ca-root-cert
+        {{- end }}
+{{- end }}
