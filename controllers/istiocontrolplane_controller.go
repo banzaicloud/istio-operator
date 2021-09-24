@@ -234,6 +234,9 @@ func (r *IstioControlPlaneReconciler) reconcile(ctx context.Context, icp *servic
 		return ctrl.Result{}, err
 	}
 
+	// set cluster ID to status as it is not always in the stored spec
+	icp.Status.ClusterID = icp.Spec.ClusterID
+
 	meshNetworks, err := r.getMeshNetworks(ctx, icp)
 	if err != nil {
 		return ctrl.Result{}, err
@@ -701,7 +704,7 @@ func (r *IstioControlPlaneReconciler) getMeshNetworks(ctx context.Context, icp *
 		}
 		networks[networkName].Endpoints = append(networks[networkName].Endpoints, &v1alpha1.Network_NetworkEndpoints{
 			Ne: &v1alpha1.Network_NetworkEndpoints_FromRegistry{
-				FromRegistry: cp.GetSpec().GetClusterID(),
+				FromRegistry: cp.GetStatus().ClusterID,
 			},
 		})
 		networks[networkName].Gateways = append(networks[networkName].Gateways, gateways...)
