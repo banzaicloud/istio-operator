@@ -7,3 +7,4 @@ spec:
   version: "1.11.0"
   mode: PASSIVE
   distribution: cisco
+  meshID: mesh1
