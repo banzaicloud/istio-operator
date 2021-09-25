@@ -6407,6 +6407,10 @@ spec:
                 items:
                   type: string
                 type: array
+              injectionNamespaces:
+                items:
+                  type: string
+                type: array
               istioControlPlaneName:
                 type: string
               istiodAddresses:
@@ -13726,6 +13730,10 @@ spec:
               errorMessage:
                 type: string
               gatewayAddress:
+                items:
+                  type: string
+                type: array
+              injectionNamespaces:
                 items:
                   type: string
                 type: array
