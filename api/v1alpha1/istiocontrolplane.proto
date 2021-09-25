@@ -365,12 +365,15 @@ message IstioControlPlaneStatus {
     // Current addresses for the corresponding istiod pods
     repeated string istiodAddresses = 5;
 
+    // Namespaces which are set for injection for this control plane
+    repeated string injectionNamespaces = 6;
+
     // Reconciliation error message if any
-    string errorMessage = 6;
+    string errorMessage = 7;
 
-    istio.mesh.v1alpha1.MeshConfig meshConfig = 7;
+    istio.mesh.v1alpha1.MeshConfig meshConfig = 8;
 
-    StatusChecksums checksums = 8;
+    StatusChecksums checksums = 9;
 }
 
 // <!-- go code generation tags
