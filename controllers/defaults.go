@@ -40,13 +40,16 @@ func setDynamicDefaults(ctx context.Context, kubeClient client.Client, icp *v1al
 		}
 	}
 
-	if icp.Spec.ClusterID == "" && clusterRegistryAPIEnabled {
-		cluster, err := k8sutil.GetLocalCluster(ctx, kubeClient)
-		if err != nil {
-			return errors.WithStackIf(err)
-		}
+	if icp.Spec.ClusterID == "" {
+		icp.Spec.ClusterID = "Kubernetes"
+		if clusterRegistryAPIEnabled {
+			cluster, err := k8sutil.GetLocalCluster(ctx, kubeClient)
+			if err != nil {
+				return errors.WithStackIf(err)
+			}
 
-		icp.Spec.ClusterID = cluster.GetName()
+			icp.Spec.ClusterID = cluster.GetName()
+		}
 	}
 
 	return nil
