@@ -27,6 +27,7 @@ import (
 
 	clusterregistryv1alpha1 "github.com/banzaicloud/cluster-registry/api/v1alpha1"
 	"github.com/banzaicloud/istio-operator/v2/api/v1alpha1"
+	servicemeshv1alpha1 "github.com/banzaicloud/istio-operator/v2/api/v1alpha1"
 	"github.com/banzaicloud/k8s-objectmatcher/patch"
 	"github.com/banzaicloud/operator-tools/pkg/reconciler"
 )
@@ -213,7 +214,12 @@ func (p PICPStatusChangePredicate) Create(e event.CreateEvent) bool {
 
 func (p PICPStatusChangePredicate) Update(e event.UpdateEvent) bool {
 	if o, ok := e.ObjectOld.(*v1alpha1.PeerIstioControlPlane); ok {
-		return !reflect.DeepEqual(o.GetStatus(), e.ObjectNew.(*v1alpha1.PeerIstioControlPlane).GetStatus())
+		oldStatus := o.GetStatus()
+		oldStatus.Status = servicemeshv1alpha1.ConfigState_Unspecified
+		newStatus := e.ObjectNew.(*v1alpha1.PeerIstioControlPlane).GetStatus()
+		newStatus.Status = servicemeshv1alpha1.ConfigState_Unspecified
+
+		return !reflect.DeepEqual(oldStatus, newStatus)
 	}
 
 	return false
@@ -246,5 +252,38 @@ func (p ClusterTypeChangePredicate) Delete(e event.DeleteEvent) bool {
 }
 
 func (p ClusterTypeChangePredicate) Generic(e event.GenericEvent) bool {
+	return false
+}
+
+type NamespaceRevisionLabelChange struct{}
+
+func (p NamespaceRevisionLabelChange) Create(e event.CreateEvent) bool {
+	return true
+}
+
+func (p NamespaceRevisionLabelChange) Update(e event.UpdateEvent) bool {
+	// label is already set
+	if oldValue, ok := e.ObjectOld.GetLabels()[servicemeshv1alpha1.RevisionedAutoInjectionLabel]; ok {
+		// and was removed or value was changed
+		if newValue, ok := e.ObjectNew.GetLabels()[servicemeshv1alpha1.RevisionedAutoInjectionLabel]; !ok || oldValue != newValue {
+			return true
+		}
+	} else if _, ok := e.ObjectNew.GetLabels()[servicemeshv1alpha1.RevisionedAutoInjectionLabel]; ok {
+		// label set on new object
+		return true
+	}
+
+	return false
+}
+
+func (p NamespaceRevisionLabelChange) Delete(e event.DeleteEvent) bool {
+	if _, ok := e.Object.GetLabels()[servicemeshv1alpha1.RevisionedAutoInjectionLabel]; ok {
+		return true
+	}
+
+	return false
+}
+
+func (p NamespaceRevisionLabelChange) Generic(e event.GenericEvent) bool {
 	return false
 }

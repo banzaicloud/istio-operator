@@ -25,7 +25,10 @@ import (
 	"k8s.io/apimachinery/pkg/types"
 )
 
-const RevisionedAutoInjectionLabelKey = "istio.io/rev"
+const (
+	RevisionedAutoInjectionLabel       = "istio.io/rev"
+	NamespaceInjectionSourceAnnotation = "controlplane.istio.servicemesh.cisco.com/namespace-injection-source"
+)
 
 type SortableIstioControlPlaneItems []IstioControlPlane
 
@@ -80,14 +83,14 @@ func (icp *IstioControlPlane) NamespacedRevision() string {
 
 func (icp *IstioControlPlane) RevisionLabels() map[string]string {
 	return map[string]string{
-		RevisionedAutoInjectionLabelKey: icp.NamespacedRevision(),
+		RevisionedAutoInjectionLabel: icp.NamespacedRevision(),
 	}
 }
 
 func (icp *IstioControlPlane) MeshExpansionGatewayLabels() map[string]string {
 	return map[string]string{
-		RevisionedAutoInjectionLabelKey: icp.NamespacedRevision(),
-		"app":                           "istio-meshexpansion-gateway",
+		RevisionedAutoInjectionLabel: icp.NamespacedRevision(),
+		"app":                        "istio-meshexpansion-gateway",
 	}
 }
 

@@ -287,6 +287,16 @@ func (r *IstioControlPlaneReconciler) reconcile(ctx context.Context, icp *servic
 		}
 	}
 
+	err = r.reconcileNamespaceInjectionLabels(ctx, icp)
+	if err != nil {
+		return result, err
+	}
+
+	err = r.setInjectionNamespacesToStatus(ctx, icp)
+	if err != nil {
+		return result, err
+	}
+
 	err = r.reconcileIstiodEndpoint(ctx, icp)
 	if err != nil {
 		return result, err
@@ -548,7 +558,11 @@ func (r *IstioControlPlaneReconciler) SetupWithManager(mgr ctrl.Manager) error {
 			}
 		}),
 		predicate.Or(
-			util.ObjectChangePredicate{},
+			util.ObjectChangePredicate{
+				CalculateOptions: []patch.CalculateOption{
+					util.IgnoreMetadataAnnotations(patch.LastAppliedConfig),
+				},
+			},
 			util.PICPStatusChangePredicate{},
 		),
 	)
@@ -600,6 +614,44 @@ func (r *IstioControlPlaneReconciler) SetupWithManager(mgr ctrl.Manager) error {
 		return err
 	}
 
+	err = r.ctrl.Watch(
+		&source.Kind{
+			Type: &corev1.Namespace{
+				TypeMeta: metav1.TypeMeta{
+					Kind:       "Namespace",
+					APIVersion: corev1.SchemeGroupVersion.String(),
+				},
+			},
+		},
+		handler.EnqueueRequestsFromMapFunc(func(obj client.Object) []reconcile.Request {
+			var ok bool
+			var revision string
+			if revision, ok = obj.GetLabels()[servicemeshv1alpha1.RevisionedAutoInjectionLabel]; !ok {
+				resources, err := r.getICPReconcileRequests(context.Background())
+				if err != nil {
+					r.Log.Error(err, "")
+
+					return nil
+				}
+
+				return resources
+			}
+
+			nn := servicemeshv1alpha1.NamespacedNameFromRevision(revision)
+			if nn.Namespace != "" {
+				r.Log.Info("trigger reconcile by namespace change")
+				return []reconcile.Request{
+					{
+						NamespacedName: nn,
+					},
+				}
+			}
+
+			return nil
+		}),
+		util.NamespaceRevisionLabelChange{},
+	)
+
 	if r.ClusterRegistry.ClusterAPI.Enabled {
 		err = r.ctrl.Watch(
 			&source.Kind{
@@ -621,22 +673,11 @@ func (r *IstioControlPlaneReconciler) SetupWithManager(mgr ctrl.Manager) error {
 					return nil
 				}
 
-				icps := &servicemeshv1alpha1.IstioControlPlaneList{}
-				err := r.Client.List(context.Background(), icps)
+				resources, err := r.getICPReconcileRequests(context.Background())
 				if err != nil {
 					r.Log.Error(err, "could not list Istio control plane resources")
 
 					return nil
-				}
-
-				resources := make([]reconcile.Request, len(icps.Items))
-				for i, icp := range icps.Items {
-					resources[i] = reconcile.Request{
-						NamespacedName: client.ObjectKey{
-							Name:      icp.GetName(),
-							Namespace: icp.GetNamespace(),
-						},
-					}
 				}
 
 				r.Log.V(1).Info("trigger reconcile by cluster change")
@@ -943,6 +984,128 @@ func (r *IstioControlPlaneReconciler) setSidecarInjectorChecksumToStatus(ctx con
 		}
 		cs.SidecarInjector = fmt.Sprintf("%x", sha256.Sum256(jm))
 		icp.Status.Checksums = cs
+	}
+
+	return nil
+}
+
+func (r *IstioControlPlaneReconciler) setInjectionNamespacesToStatus(ctx context.Context, icp *servicemeshv1alpha1.IstioControlPlane) error {
+	namespaces := &corev1.NamespaceList{}
+	err := r.GetClient().List(ctx, namespaces, client.MatchingLabels(icp.RevisionLabels()))
+	if err != nil {
+		return errors.WrapIf(err, "could not list namespaces")
+	}
+
+	names := []string{}
+	for _, ns := range namespaces.Items {
+		names = append(names, ns.GetName())
+	}
+
+	icp.Status.InjectionNamespaces = names
+
+	return nil
+}
+
+func (r *IstioControlPlaneReconciler) getICPReconcileRequests(ctx context.Context) ([]reconcile.Request, error) {
+	icps := &servicemeshv1alpha1.IstioControlPlaneList{}
+	err := r.Client.List(context.Background(), icps)
+	if err != nil {
+		return nil, errors.WrapIf(err, "could not list Istio control plane resources")
+	}
+
+	resources := make([]reconcile.Request, len(icps.Items))
+	for i, icp := range icps.Items {
+		resources[i] = reconcile.Request{
+			NamespacedName: client.ObjectKey{
+				Name:      icp.GetName(),
+				Namespace: icp.GetNamespace(),
+			},
+		}
+	}
+
+	return resources, nil
+}
+
+func (r *IstioControlPlaneReconciler) getNamespaceInjectionSourcePICP(ctx context.Context, cp client.ObjectKey) (*servicemeshv1alpha1.PeerIstioControlPlane, error) {
+	picpList := &servicemeshv1alpha1.PeerIstioControlPlaneList{}
+	err := r.GetClient().List(ctx, picpList, client.InNamespace(cp.Namespace))
+	if err != nil {
+		return nil, errors.WithStackIf(err)
+	}
+
+	var sourceICP *servicemeshv1alpha1.PeerIstioControlPlane
+	for _, picp := range picpList.Items {
+		picp := picp
+		if v, ok := picp.GetAnnotations()[servicemeshv1alpha1.NamespaceInjectionSourceAnnotation]; ok && v == "true" && picp.Status.IstioControlPlaneName == cp.Name {
+			sourceICP = &picp
+		}
+	}
+
+	return sourceICP, nil
+}
+
+func (r *IstioControlPlaneReconciler) reconcileNamespaceInjectionLabels(ctx context.Context, icp *servicemeshv1alpha1.IstioControlPlane) error {
+	if a, ok := icp.GetAnnotations()[servicemeshv1alpha1.NamespaceInjectionSourceAnnotation]; ok && a == "true" {
+		return nil
+	}
+
+	sourceICP, err := r.getNamespaceInjectionSourcePICP(ctx, client.ObjectKeyFromObject(icp))
+	if err != nil {
+		return err
+	}
+
+	if sourceICP == nil {
+		return nil
+	}
+
+	r.Log.Info("sync namespace injection labels")
+
+	namespaces := make(map[string]struct{}, 0)
+	for _, name := range sourceICP.Status.InjectionNamespaces {
+		namespaces[name] = struct{}{}
+	}
+
+	localNamespacesWithInjectionLabel := make(map[string]struct{}, 0)
+	localNamespaces := &corev1.NamespaceList{}
+	err = r.GetClient().List(ctx, localNamespaces, client.MatchingLabels(icp.RevisionLabels()))
+	if err != nil {
+		return errors.WrapIf(err, "could not list namespaces")
+	}
+	for _, ns := range localNamespaces.Items {
+		if _, ok := namespaces[ns.GetName()]; !ok {
+			labels := ns.GetLabels()
+			delete(labels, servicemeshv1alpha1.RevisionedAutoInjectionLabel)
+			ns.SetLabels(labels)
+			r.Log.Info("remove injection label from namespace", "namespace", ns.GetName(), "label", servicemeshv1alpha1.RevisionedAutoInjectionLabel)
+			err = r.GetClient().Update(ctx, &ns)
+			if err != nil {
+				return errors.WrapIfWithDetails(err, "could not remove injection label from namespace", "namespace", ns.GetName())
+			}
+		} else {
+			localNamespacesWithInjectionLabel[ns.GetName()] = struct{}{}
+		}
+	}
+
+	for name := range namespaces {
+		if _, ok := localNamespacesWithInjectionLabel[name]; ok {
+			continue
+		}
+		ns := &corev1.Namespace{}
+		err = r.GetClient().Get(ctx, client.ObjectKey{
+			Name: name,
+		}, ns)
+		if k8serrors.IsNotFound(err) {
+			continue
+		}
+		if err != nil {
+			return errors.WrapIfWithDetails(err, "could not get namespace", "namespace", name)
+		}
+		ns.SetLabels(utils.MergeLabels(ns.GetLabels(), icp.RevisionLabels()))
+		r.Log.Info("add injection label to namespace", "namespace", ns.GetName(), "label", servicemeshv1alpha1.RevisionedAutoInjectionLabel)
+		err = r.GetClient().Update(ctx, ns)
+		if err != nil {
+			return errors.WrapIfWithDetails(err, "could not update namespace", "namespace", name)
+		}
 	}
 
 	return nil
