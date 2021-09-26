@@ -2,7 +2,7 @@
 TAG ?= $(shell git describe --tags --abbrev=0 --match '[0-9].*[0-9].*[0-9]' 2>/dev/null )
 IMG ?= banzaicloud/istio-operator:$(TAG)
 
-GOLANGCI_VERSION = 1.41.1
+GOLANGCI_VERSION = 1.42.1
 LICENSEI_VERSION = 0.4.0
 KUBEBUILDER_VERSION = 2.3.2
 KUSTOMIZE_VERSION = 4.1.2

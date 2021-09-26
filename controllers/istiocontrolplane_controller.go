@@ -640,6 +640,7 @@ func (r *IstioControlPlaneReconciler) SetupWithManager(mgr ctrl.Manager) error {
 			nn := servicemeshv1alpha1.NamespacedNameFromRevision(revision)
 			if nn.Namespace != "" {
 				r.Log.Info("trigger reconcile by namespace change")
+
 				return []reconcile.Request{
 					{
 						NamespacedName: nn,
@@ -651,6 +652,9 @@ func (r *IstioControlPlaneReconciler) SetupWithManager(mgr ctrl.Manager) error {
 		}),
 		util.NamespaceRevisionLabelChange{},
 	)
+	if err != nil {
+		return err
+	}
 
 	if r.ClusterRegistry.ClusterAPI.Enabled {
 		err = r.ctrl.Watch(
@@ -1008,7 +1012,7 @@ func (r *IstioControlPlaneReconciler) setInjectionNamespacesToStatus(ctx context
 
 func (r *IstioControlPlaneReconciler) getICPReconcileRequests(ctx context.Context) ([]reconcile.Request, error) {
 	icps := &servicemeshv1alpha1.IstioControlPlaneList{}
-	err := r.Client.List(context.Background(), icps)
+	err := r.Client.List(ctx, icps)
 	if err != nil {
 		return nil, errors.WrapIf(err, "could not list Istio control plane resources")
 	}
@@ -1060,18 +1064,19 @@ func (r *IstioControlPlaneReconciler) reconcileNamespaceInjectionLabels(ctx cont
 
 	r.Log.Info("sync namespace injection labels")
 
-	namespaces := make(map[string]struct{}, 0)
+	namespaces := make(map[string]struct{})
 	for _, name := range sourceICP.Status.InjectionNamespaces {
 		namespaces[name] = struct{}{}
 	}
 
-	localNamespacesWithInjectionLabel := make(map[string]struct{}, 0)
+	localNamespacesWithInjectionLabel := make(map[string]struct{})
 	localNamespaces := &corev1.NamespaceList{}
 	err = r.GetClient().List(ctx, localNamespaces, client.MatchingLabels(icp.RevisionLabels()))
 	if err != nil {
 		return errors.WrapIf(err, "could not list namespaces")
 	}
 	for _, ns := range localNamespaces.Items {
+		ns := ns
 		if _, ok := namespaces[ns.GetName()]; !ok {
 			labels := ns.GetLabels()
 			delete(labels, servicemeshv1alpha1.RevisionedAutoInjectionLabel)
