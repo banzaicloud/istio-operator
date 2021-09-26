@@ -26,7 +26,6 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/predicate"
 
 	clusterregistryv1alpha1 "github.com/banzaicloud/cluster-registry/api/v1alpha1"
-	"github.com/banzaicloud/istio-operator/v2/api/v1alpha1"
 	servicemeshv1alpha1 "github.com/banzaicloud/istio-operator/v2/api/v1alpha1"
 	"github.com/banzaicloud/k8s-objectmatcher/patch"
 	"github.com/banzaicloud/operator-tools/pkg/reconciler"
@@ -158,14 +157,14 @@ func (p ICPInjectorChangePredicate) Delete(e event.DeleteEvent) bool {
 
 func (p ICPInjectorChangePredicate) Update(e event.UpdateEvent) bool {
 	var ok bool
-	var oldICP *v1alpha1.IstioControlPlane
-	var newICP *v1alpha1.IstioControlPlane
+	var oldICP *servicemeshv1alpha1.IstioControlPlane
+	var newICP *servicemeshv1alpha1.IstioControlPlane
 
-	if oldICP, ok = e.ObjectOld.(*v1alpha1.IstioControlPlane); !ok {
+	if oldICP, ok = e.ObjectOld.(*servicemeshv1alpha1.IstioControlPlane); !ok {
 		return false
 	}
 
-	if newICP, ok = e.ObjectNew.(*v1alpha1.IstioControlPlane); !ok {
+	if newICP, ok = e.ObjectNew.(*servicemeshv1alpha1.IstioControlPlane); !ok {
 		return false
 	}
 
@@ -191,8 +190,8 @@ func (p IMGWAddressChangePredicate) Create(e event.CreateEvent) bool {
 }
 
 func (p IMGWAddressChangePredicate) Update(e event.UpdateEvent) bool {
-	if o, ok := e.ObjectOld.(*v1alpha1.IstioMeshGateway); ok {
-		return !reflect.DeepEqual(o.GetStatus().GatewayAddress, e.ObjectNew.(*v1alpha1.IstioMeshGateway).GetStatus().GatewayAddress)
+	if o, ok := e.ObjectOld.(*servicemeshv1alpha1.IstioMeshGateway); ok {
+		return !reflect.DeepEqual(o.GetStatus().GatewayAddress, e.ObjectNew.(*servicemeshv1alpha1.IstioMeshGateway).GetStatus().GatewayAddress)
 	}
 
 	return false
@@ -213,10 +212,10 @@ func (p PICPStatusChangePredicate) Create(e event.CreateEvent) bool {
 }
 
 func (p PICPStatusChangePredicate) Update(e event.UpdateEvent) bool {
-	if o, ok := e.ObjectOld.(*v1alpha1.PeerIstioControlPlane); ok {
+	if o, ok := e.ObjectOld.(*servicemeshv1alpha1.PeerIstioControlPlane); ok {
 		oldStatus := o.GetStatus()
 		oldStatus.Status = servicemeshv1alpha1.ConfigState_Unspecified
-		newStatus := e.ObjectNew.(*v1alpha1.PeerIstioControlPlane).GetStatus()
+		newStatus := e.ObjectNew.(*servicemeshv1alpha1.PeerIstioControlPlane).GetStatus()
 		newStatus.Status = servicemeshv1alpha1.ConfigState_Unspecified
 
 		return !reflect.DeepEqual(oldStatus, newStatus)
