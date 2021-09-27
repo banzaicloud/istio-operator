@@ -21,6 +21,7 @@ import (
 	"crypto/sha256"
 	"encoding/json"
 	"fmt"
+	"sort"
 	"strings"
 	"sync"
 	"time"
@@ -1004,6 +1005,8 @@ func (r *IstioControlPlaneReconciler) setInjectionNamespacesToStatus(ctx context
 	for _, ns := range namespaces.Items {
 		names = append(names, ns.GetName())
 	}
+
+	sort.Strings(names)
 
 	icp.Status.InjectionNamespaces = names
 
