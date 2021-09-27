@@ -400,12 +400,6 @@ func (r *IstioControlPlaneReconciler) SetupWithManager(mgr ctrl.Manager) error {
 				APIVersion: corev1.SchemeGroupVersion.String(),
 			},
 		}, ctrlBuilder.WithPredicates(util.ObjectChangePredicate{})).
-		Owns(&policyv1beta1.PodSecurityPolicy{
-			TypeMeta: metav1.TypeMeta{
-				Kind:       "PodSecurityPolicy",
-				APIVersion: policyv1beta1.SchemeGroupVersion.String(),
-			},
-		}, ctrlBuilder.WithPredicates(util.ObjectChangePredicate{})).
 		Owns(&policyv1beta1.PodDisruptionBudget{
 			TypeMeta: metav1.TypeMeta{
 				Kind:       "PodDisruptionBudget",
