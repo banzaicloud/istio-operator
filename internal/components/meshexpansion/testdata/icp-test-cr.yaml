@@ -6,6 +6,8 @@ metadata:
 spec:
   version: "1.11.0"
   mode: ACTIVE
+  networkName: network-bogus
+  distribution: cisco
   meshExpansion:
     enabled: true
     istiod:

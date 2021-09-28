@@ -13,3 +13,5 @@
 {{- if .GetSpec.GetMode }}
 mode: {{ .GetSpec.GetMode | toString }}
 {{- end }}
+{{ valueIf (dict "key" "distribution" "value" .GetSpec.GetDistribution) }}
+{{ valueIf (dict "key" "network" "value" .GetSpec.GetNetworkName) }}
