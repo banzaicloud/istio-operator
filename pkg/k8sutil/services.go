@@ -63,7 +63,7 @@ func GetServiceEndpointIPs(service corev1.Service) ([]string, bool, error) {
 		return ips, true, nil
 	}
 
-	switch service.Spec.Type { // nolint:exhaustive
+	switch service.Spec.Type {
 	case corev1.ServiceTypeClusterIP:
 		if service.Spec.ClusterIP != corev1.ClusterIPNone {
 			ips = []string{
