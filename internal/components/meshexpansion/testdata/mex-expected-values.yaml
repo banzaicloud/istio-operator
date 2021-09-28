@@ -1,4 +1,6 @@
 revision: cp-v111x
+network: network-bogus
+distribution: cisco
 exposeClusterServices: true
 exposeIstiod: true
 exposeWebhook: true

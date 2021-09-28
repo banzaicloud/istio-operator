@@ -19,6 +19,7 @@ linters:
     - wrapcheck
     - forbidigo
     - golint
+    - exhaustive
 
     # - goconst
     # - gocritic

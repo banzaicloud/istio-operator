@@ -1,4 +1,7 @@
 apiVersion: servicemesh.cisco.com/v1alpha1
 kind: IstioMesh
 metadata:
-  name: sample-mesh
+  name: mesh1
+spec:
+  config:
+    connectTimeout: 9s

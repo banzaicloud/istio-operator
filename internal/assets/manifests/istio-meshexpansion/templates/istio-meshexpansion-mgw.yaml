@@ -29,6 +29,12 @@ ports:
 env:
 - name: ISTIO_META_ROUTER_MODE
   value: sni-dnat
+- name: ISTIO_META_REQUESTED_NETWORK_VIEW
+  value: {{ .Values.network }}
+{{- if eq .Values.distribution "cisco" }}
+- name: ISTIO_META_LOCAL_ENDPOINTS_ONLY
+  value: "true"
+{{- end }}
 {{- include "toYamlIf" (dict "value" .Values.deployment.env) }}
 {{- end }}
 

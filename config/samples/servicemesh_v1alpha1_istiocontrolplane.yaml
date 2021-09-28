@@ -5,6 +5,7 @@ metadata:
 spec:
   version: 1.11.0
   mode: ACTIVE
+  meshId: mesh1
   networkName: network1
   logging:
     level: "default:info"
@@ -105,7 +106,6 @@ spec:
       proxyAdminPort: 15000
       controlPlaneAuthPolicy: MUTUAL_TLS
       concurrency: 2
-      meshId: cluster.local
     outboundTrafficPolicy:
       mode: ALLOW_ANY
     enableAutoMtls: true
