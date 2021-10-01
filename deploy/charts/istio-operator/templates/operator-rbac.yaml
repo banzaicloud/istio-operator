@@ -172,13 +172,7 @@ rules:
 - apiGroups:
   - clusterregistry.k8s.cisco.com
   resources:
-  - clusters
-  verbs:
-  - list
-  - watch
-- apiGroups:
-  - clusterregistry.k8s.cisco.com
-  resources:
+  - clusterfeatures
   - resourcesyncrules
   verbs:
   - create
@@ -187,6 +181,13 @@ rules:
   - list
   - patch
   - update
+  - watch
+- apiGroups:
+  - clusterregistry.k8s.cisco.com
+  resources:
+  - clusters
+  verbs:
+  - list
   - watch
 - apiGroups:
   - coordination.k8s.io
