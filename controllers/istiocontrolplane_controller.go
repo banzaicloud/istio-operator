@@ -359,6 +359,7 @@ func (r *IstioControlPlaneReconciler) GetScheme() *runtime.Scheme {
 	return r.Scheme
 }
 
+//nolint: gocognit
 func (r *IstioControlPlaneReconciler) SetupWithManager(mgr ctrl.Manager) error {
 	r.builder = ctrl.NewControllerManagedBy(mgr)
 
@@ -716,6 +717,7 @@ func (r *IstioControlPlaneReconciler) SetupWithManager(mgr ctrl.Manager) error {
 		}
 	}
 
+	// nolint:nestif
 	if r.ClusterRegistry.ResourceSyncRules.Enabled {
 		err = r.ctrl.Watch(
 			&source.Kind{
