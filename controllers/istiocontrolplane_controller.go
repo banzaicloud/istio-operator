@@ -474,6 +474,23 @@ func (r *IstioControlPlaneReconciler) SetupWithManager(mgr ctrl.Manager) error {
 		},
 	}
 
+	if r.ClusterRegistry.ResourceSyncRules.Enabled {
+		types = append(types, []client.Object{
+			&clusterregistryv1alpha1.ResourceSyncRule{
+				TypeMeta: metav1.TypeMeta{
+					Kind:       "ResourceSyncRule",
+					APIVersion: clusterregistryv1alpha1.SchemeBuilder.GroupVersion.String(),
+				},
+			},
+			&clusterregistryv1alpha1.ClusterFeature{
+				TypeMeta: metav1.TypeMeta{
+					Kind:       "ClusterFeature",
+					APIVersion: clusterregistryv1alpha1.SchemeBuilder.GroupVersion.String(),
+				},
+			},
+		}...)
+	}
+
 	for _, t := range types {
 		err := r.ctrl.Watch(&source.Kind{Type: t}, handler.EnqueueRequestsFromMapFunc(reconciler.EnqueueByOwnerAnnotationMapper()), util.ObjectChangePredicate{})
 		if err != nil {
