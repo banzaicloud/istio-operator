@@ -716,6 +716,70 @@ func (r *IstioControlPlaneReconciler) SetupWithManager(mgr ctrl.Manager) error {
 		}
 	}
 
+	if r.ClusterRegistry.ResourceSyncRules.Enabled {
+		err = r.ctrl.Watch(
+			&source.Kind{
+				Type: &clusterregistryv1alpha1.ResourceSyncRule{
+					TypeMeta: metav1.TypeMeta{
+						Kind:       "ResourceSyncRule",
+						APIVersion: clusterregistryv1alpha1.SchemeBuilder.GroupVersion.String(),
+					},
+				},
+			},
+			handler.EnqueueRequestsFromMapFunc(func(obj client.Object) []reconcile.Request {
+				if _, ok := obj.(*clusterregistryv1alpha1.ResourceSyncRule); !ok {
+					return nil
+				}
+
+				resources, err := r.getICPReconcileRequests(context.Background())
+				if err != nil {
+					r.Log.Error(err, "could not list Istio control plane resources")
+
+					return nil
+				}
+
+				r.Log.V(1).Info("trigger reconcile by ResourceSyncRule change")
+
+				return resources
+			}),
+			util.ObjectChangePredicate{},
+		)
+		if err != nil {
+			return err
+		}
+
+		err = r.ctrl.Watch(
+			&source.Kind{
+				Type: &clusterregistryv1alpha1.ClusterFeature{
+					TypeMeta: metav1.TypeMeta{
+						Kind:       "ClusterFeature",
+						APIVersion: clusterregistryv1alpha1.SchemeBuilder.GroupVersion.String(),
+					},
+				},
+			},
+			handler.EnqueueRequestsFromMapFunc(func(obj client.Object) []reconcile.Request {
+				if _, ok := obj.(*clusterregistryv1alpha1.ClusterFeature); !ok {
+					return nil
+				}
+
+				resources, err := r.getICPReconcileRequests(context.Background())
+				if err != nil {
+					r.Log.Error(err, "could not list Istio control plane resources")
+
+					return nil
+				}
+
+				r.Log.V(1).Info("trigger reconcile by ClusterFeature change")
+
+				return resources
+			}),
+			util.ObjectChangePredicate{},
+		)
+		if err != nil {
+			return err
+		}
+	}
+
 	return nil
 }
 
