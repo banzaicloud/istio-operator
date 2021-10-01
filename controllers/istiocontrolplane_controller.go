@@ -124,7 +124,7 @@ type IstioControlPlaneReconciler struct {
 // +kubebuilder:rbac:groups=servicemesh.cisco.com,resources=istiocontrolplanes;peeristiocontrolplanes;istiomeshes,verbs=get;list;watch;create;update;patch;delete
 // +kubebuilder:rbac:groups=servicemesh.cisco.com,resources=istiocontrolplanes/status;peeristiocontrolplanes/status;istiomeshes/status,verbs=get;update;patch
 // +kubebuilder:rbac:groups=clusterregistry.k8s.cisco.com,resources=clusters,verbs=list;watch
-// +kubebuilder:rbac:groups=clusterregistry.k8s.cisco.com,resources=resourcesyncrules,verbs=get;list;watch;create;update;patch;delete
+// +kubebuilder:rbac:groups=clusterregistry.k8s.cisco.com,resources=resourcesyncrules;clusterfeatures,verbs=get;list;watch;create;update;patch;delete
 
 func (r *IstioControlPlaneReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Result, error) {
 	logger := r.Log.WithValues("istiocontrolplane", req.NamespacedName)
