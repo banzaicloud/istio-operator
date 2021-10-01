@@ -139,6 +139,26 @@ rules:
       - watch
 ---
 apiVersion: clusterregistry.k8s.cisco.com/v1alpha1
+kind: ClusterFeature
+metadata:
+  labels:
+    istio.io/rev: cp-v111x.istio-system
+    release: istio-resource-sync-rule
+  name: istio-multi-cluster-secret-cp-v111x
+spec:
+  featureName: istio-multi-cluster-secret
+---
+apiVersion: clusterregistry.k8s.cisco.com/v1alpha1
+kind: ClusterFeature
+metadata:
+  labels:
+    istio.io/rev: cp-v111x.istio-system
+    release: istio-resource-sync-rule
+  name: peeristiocontrolplane-cp-v111x
+spec:
+  featureName: peeristiocontrolplane
+---
+apiVersion: clusterregistry.k8s.cisco.com/v1alpha1
 kind: ResourceSyncRule
 metadata:
   annotations:
@@ -147,13 +167,17 @@ metadata:
     release: istio-resource-sync-rule
   name: istio-ca-root-cert-cp-v111x
 spec:
+  clusterFeatureMatch:
+    - featureName: istio-ca-root-cert
+      matchLabels:
+        istio.io/rev: cp-v111x.istio-system
   groupVersionKind:
     kind: ConfigMap
     version: v1
   rules:
     - match:
-      - objectKey:
-          name: istio-ca-root-cert-cp-v111x
+        - objectKey:
+            name: istio-ca-root-cert-cp-v111x
 ---
 apiVersion: clusterregistry.k8s.cisco.com/v1alpha1
 kind: ResourceSyncRule
@@ -164,16 +188,20 @@ metadata:
     release: istio-resource-sync-rule
   name: mesh-cp-v111x
 spec:
+  clusterFeatureMatch:
+    - featureName: mesh
+      matchLabels:
+        istio.io/rev: cp-v111x.istio-system
   groupVersionKind:
     group: servicemesh.cisco.com
     kind: IstioMesh
     version: v1alpha1
   rules:
     - match:
-      - objectKey:
-          name: mesh1
-          namespace: istio-system
-        syncStatus: true
+        - objectKey:
+            name: mesh1
+            namespace: istio-system
+          syncStatus: true
 ---
 apiVersion: clusterregistry.k8s.cisco.com/v1alpha1
 kind: ResourceSyncRule
@@ -184,15 +212,19 @@ metadata:
     release: istio-resource-sync-rule
   name: peeristiocontrolplane-cp-v111x
 spec:
+  clusterFeatureMatch:
+    - featureName: peeristiocontrolplane
+      matchLabels:
+        istio.io/rev: cp-v111x.istio-system
   groupVersionKind:
     group: servicemesh.cisco.com
     kind: IstioControlPlane
     version: v1alpha1
   rules:
     - match:
-      - objectKey:
-          name: cp-v111x
-          namespace: istio-system
+        - objectKey:
+            name: cp-v111x
+            namespace: istio-system
     - mutations:
         overrides:
           - parseValue: false
