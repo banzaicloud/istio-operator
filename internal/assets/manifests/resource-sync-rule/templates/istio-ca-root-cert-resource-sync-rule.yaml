@@ -8,6 +8,10 @@ metadata:
   labels:
     release: {{ .Release.Name }}
 spec:
+  clusterFeatureMatch:
+  - featureName: "istio-ca-root-cert"
+    matchLabels:
+      istio.io/rev: {{ include "namespaced-revision" . }}
   groupVersionKind:
     kind: ConfigMap
     version: v1

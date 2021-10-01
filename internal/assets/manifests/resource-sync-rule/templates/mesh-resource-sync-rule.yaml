@@ -8,6 +8,10 @@ metadata:
   labels:
     release: {{ .Release.Name }}
 spec:
+  clusterFeatureMatch:
+    - featureName: "mesh"
+      matchLabels:
+        istio.io/rev: {{ include "namespaced-revision" . }}
   groupVersionKind:
     group: servicemesh.cisco.com
     kind: IstioMesh

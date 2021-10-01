@@ -825,7 +825,7 @@ func (r *IstioControlPlaneReconciler) reconcileClusterReaderSecret(ctx context.C
 		},
 	}
 
-	if icp.DeletionTimestamp.IsZero() && icp.GetSpec().GetMode() == servicemeshv1alpha1.ModeType_PASSIVE {
+	if icp.DeletionTimestamp.IsZero() {
 		state = reconciler.StatePresent
 		secret, err = pkgUtil.GetReaderSecretForCluster(
 			ctx,

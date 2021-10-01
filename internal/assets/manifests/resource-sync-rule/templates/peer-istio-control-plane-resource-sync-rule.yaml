@@ -7,6 +7,10 @@ metadata:
   labels:
     release: {{ .Release.Name }}
 spec:
+  clusterFeatureMatch:
+    - featureName: "peeristiocontrolplane"
+      matchLabels:
+        istio.io/rev: {{ include "namespaced-revision" . }}
   groupVersionKind:
     group: servicemesh.cisco.com
     kind: IstioControlPlane
