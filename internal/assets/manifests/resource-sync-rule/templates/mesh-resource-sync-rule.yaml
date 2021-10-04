@@ -2,14 +2,14 @@
 apiVersion: clusterregistry.k8s.cisco.com/v1alpha1
 kind: ResourceSyncRule
 metadata:
-  name: {{ include "name-with-revision" (dict "name" "mesh" "context" $) }}
+  name: {{ include "name-with-revision" (dict "name" "istio.servicemesh.cisco.com/mesh-sink" "context" $) }}
   annotations:
     cluster-registry.k8s.cisco.com/resource-sync-disabled: "true"
   labels:
     release: {{ .Release.Name }}
 spec:
   clusterFeatureMatch:
-    - featureName: "mesh"
+    - featureName: "istio.servicemesh.cisco.com/mesh-source"
       matchLabels:
         istio.io/rev: {{ include "namespaced-revision" . }}
   groupVersionKind:

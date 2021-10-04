@@ -1,9 +1,9 @@
 apiVersion: clusterregistry.k8s.cisco.com/v1alpha1
 kind: ClusterFeature
 metadata:
-  name: {{ include "name-with-revision" (dict "name" "peeristiocontrolplane" "context" $) }}
+  name: {{ include "name-with-revision" (dict "name" "istio.servicemesh.cisco.com/peeristiocontrolplane-source" "context" $) }}
   labels:
     release: {{ .Release.Name }}
     istio.io/rev: {{ include "namespaced-revision" . }}
 spec:
-  featureName: "peeristiocontrolplane"
+  featureName: "istio.servicemesh.cisco.com/peeristiocontrolplane-source"
