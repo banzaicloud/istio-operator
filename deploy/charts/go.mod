@@ -1,3 +1,3 @@
-module github.com/banzaicloud/istio-operator/v2/deploy/charts
+module github.com/banzaicloud/istio-operator/deploy/charts/v2
 
 go 1.17
