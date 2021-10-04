@@ -2,7 +2,7 @@
 apiVersion: clusterregistry.k8s.cisco.com/v1alpha1
 kind: ClusterFeature
 metadata:
-  name: {{ include "name-with-revision" (dict "name" "istio.servicemesh.cisco.com/mesh-source" "context" $) }}
+  name: {{ include "name-with-revision" (dict "name" "istio-mesh-source" "context" $) }}
   labels:
     release: {{ .Release.Name }}
     istio.io/rev: {{ include "namespaced-revision" . }}

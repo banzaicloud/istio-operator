@@ -1,7 +1,7 @@
 apiVersion: clusterregistry.k8s.cisco.com/v1alpha1
 kind: ResourceSyncRule
 metadata:
-  name: {{ include "name-with-revision" (dict "name" "istio.servicemesh.cisco.com/peeristiocontrolplane-sink" "context" $) }}
+  name: {{ include "name-with-revision" (dict "name" "istio-peeristiocontrolplane-sink" "context" $) }}
   annotations:
     cluster-registry.k8s.cisco.com/resource-sync-disabled: "true"
   labels:
