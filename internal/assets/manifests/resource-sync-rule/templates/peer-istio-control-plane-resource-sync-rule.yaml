@@ -20,12 +20,10 @@ spec:
     - objectKey:
         name: {{ .Values.revision }}
         namespace: {{ .Release.Namespace }}
-  - mutations:
+    mutations:
+      groupVersionKind:
+        kind: PeerIstioControlPlane
       overrides:
-        - parseValue: false
-          path: /kind
-          type: replace
-          value: PeerIstioControlPlane
         - parseValue: false
           path: /metadata/name
           type: replace
