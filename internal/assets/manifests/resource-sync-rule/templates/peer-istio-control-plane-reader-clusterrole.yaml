@@ -1,7 +1,7 @@
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRole
 metadata:
-  name: {{ include "name-with-revision" (dict "name" "peeristiocontrolplane-reader" "context" $) }}
+  name: {{ include "name-with-revision" (dict "name" "istio-peeristiocontrolplane-reader" "context" $) }}
   labels:
     cluster-registry.k8s.cisco.com/reader-aggregated: "true"
     release: {{ .Release.Name }}

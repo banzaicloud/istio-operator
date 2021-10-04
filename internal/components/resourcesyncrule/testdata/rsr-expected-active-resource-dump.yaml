@@ -29,7 +29,7 @@ metadata:
   labels:
     cluster-registry.k8s.cisco.com/reader-aggregated: "true"
     release: istio-resource-sync-rule
-  name: mesh-reader-cp-v111x
+  name: istio-mesh-reader-cp-v111x
 rules:
   - apiGroups:
       - servicemesh.cisco.com
@@ -46,7 +46,7 @@ metadata:
   labels:
     cluster-registry.k8s.cisco.com/controller-aggregated: "true"
     release: istio-resource-sync-rule
-  name: peeristiocontrolplane-controller-cp-v111x
+  name: istio-peeristiocontrolplane-controller-cp-v111x
 rules:
   - apiGroups:
       - servicemesh.cisco.com
@@ -77,7 +77,7 @@ metadata:
   labels:
     cluster-registry.k8s.cisco.com/reader-aggregated: "true"
     release: istio-resource-sync-rule
-  name: peeristiocontrolplane-reader-cp-v111x
+  name: istio-peeristiocontrolplane-reader-cp-v111x
 rules:
   - apiGroups:
       - servicemesh.cisco.com
