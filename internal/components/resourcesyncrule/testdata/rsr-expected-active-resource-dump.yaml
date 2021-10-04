@@ -94,7 +94,7 @@ metadata:
   labels:
     istio.io/rev: cp-v111x.istio-system
     release: istio-resource-sync-rule
-  name: istio.servicemesh.cisco.com/ca-root-cert-source-cp-v111x
+  name: istio-ca-root-cert-source-cp-v111x
 spec:
   featureName: istio.servicemesh.cisco.com/ca-root-cert-source
 ---
@@ -104,7 +104,7 @@ metadata:
   labels:
     istio.io/rev: cp-v111x.istio-system
     release: istio-resource-sync-rule
-  name: istio.servicemesh.cisco.com/mesh-source-cp-v111x
+  name: istio-mesh-source-cp-v111x
 spec:
   featureName: istio.servicemesh.cisco.com/mesh-source
 ---
@@ -114,7 +114,7 @@ metadata:
   labels:
     istio.io/rev: cp-v111x.istio-system
     release: istio-resource-sync-rule
-  name: istio.servicemesh.cisco.com/multi-cluster-secret-source-cp-v111x
+  name: istio-multi-cluster-secret-source-cp-v111x
 spec:
   featureName: istio.servicemesh.cisco.com/multi-cluster-secret-source
 ---
@@ -124,7 +124,7 @@ metadata:
   labels:
     istio.io/rev: cp-v111x.istio-system
     release: istio-resource-sync-rule
-  name: istio.servicemesh.cisco.com/peeristiocontrolplane-source-cp-v111x
+  name: istio-peeristiocontrolplane-source-cp-v111x
 spec:
   featureName: istio.servicemesh.cisco.com/peeristiocontrolplane-source
 ---
@@ -135,7 +135,7 @@ metadata:
     cluster-registry.k8s.cisco.com/resource-sync-disabled: "true"
   labels:
     release: istio-resource-sync-rule
-  name: istio.servicemesh.cisco.com/multi-cluster-secret-sink-cp-v111x
+  name: istio-multi-cluster-secret-sink-cp-v111x
 spec:
   clusterFeatureMatch:
     - featureName: istio.servicemesh.cisco.com/multi-cluster-secret-source
@@ -164,7 +164,7 @@ metadata:
     cluster-registry.k8s.cisco.com/resource-sync-disabled: "true"
   labels:
     release: istio-resource-sync-rule
-  name: istio.servicemesh.cisco.com/peeristiocontrolplane-sink-cp-v111x
+  name: istio-peeristiocontrolplane-sink-cp-v111x
 spec:
   clusterFeatureMatch:
     - featureName: istio.servicemesh.cisco.com/peeristiocontrolplane-source
