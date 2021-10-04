@@ -2,14 +2,14 @@
 apiVersion: clusterregistry.k8s.cisco.com/v1alpha1
 kind: ResourceSyncRule
 metadata:
-  name: {{ include "name-with-revision" (dict "name" "istio-ca-root-cert" "context" $) }}
+  name: {{ include "name-with-revision" (dict "name" "istio.servicemesh.cisco.com/ca-root-cert-sink" "context" $) }}
   annotations:
     cluster-registry.k8s.cisco.com/resource-sync-disabled: "true"
   labels:
     release: {{ .Release.Name }}
 spec:
   clusterFeatureMatch:
-  - featureName: "istio-ca-root-cert"
+  - featureName: "istio.servicemesh.cisco.com/ca-root-cert-source"
     matchLabels:
       istio.io/rev: {{ include "namespaced-revision" . }}
   groupVersionKind:

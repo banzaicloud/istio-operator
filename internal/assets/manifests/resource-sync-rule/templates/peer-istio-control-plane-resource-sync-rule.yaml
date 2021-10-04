@@ -1,14 +1,14 @@
 apiVersion: clusterregistry.k8s.cisco.com/v1alpha1
 kind: ResourceSyncRule
 metadata:
-  name: {{ include "name-with-revision" (dict "name" "peeristiocontrolplane" "context" $) }}
+  name: {{ include "name-with-revision" (dict "name" "istio.servicemesh.cisco.com/peeristiocontrolplane-sink" "context" $) }}
   annotations:
     cluster-registry.k8s.cisco.com/resource-sync-disabled: "true"
   labels:
     release: {{ .Release.Name }}
 spec:
   clusterFeatureMatch:
-    - featureName: "peeristiocontrolplane"
+    - featureName: "istio.servicemesh.cisco.com/peeristiocontrolplane-source"
       matchLabels:
         istio.io/rev: {{ include "namespaced-revision" . }}
   groupVersionKind:
