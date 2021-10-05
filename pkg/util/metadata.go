@@ -19,7 +19,7 @@ package util
 import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
-	"github.com/banzaicloud/istio-operator/v2/api/v1alpha1"
+	"github.com/banzaicloud/istio-operator/api/v2/v1alpha1"
 	"github.com/banzaicloud/operator-tools/pkg/utils"
 )
 

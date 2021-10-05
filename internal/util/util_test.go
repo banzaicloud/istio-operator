@@ -23,7 +23,7 @@ import (
 	"github.com/kylelemons/godebug/pretty"
 	"sigs.k8s.io/yaml"
 
-	"github.com/banzaicloud/istio-operator/v2/api/v1alpha1"
+	"github.com/banzaicloud/istio-operator/api/v2/v1alpha1"
 	"github.com/banzaicloud/istio-operator/v2/internal/util"
 )
 

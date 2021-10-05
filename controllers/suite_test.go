@@ -31,7 +31,7 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/log/zap"
 
 	// +kubebuilder:scaffold:imports
-	servicemeshv1alpha1 "github.com/banzaicloud/istio-operator/v2/api/v1alpha1"
+	servicemeshv1alpha1 "github.com/banzaicloud/istio-operator/api/v2/v1alpha1"
 )
 
 // These tests use Ginkgo (BDD-style Go testing framework). Refer to
