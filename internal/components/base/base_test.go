@@ -28,7 +28,7 @@ import (
 	"k8s.io/client-go/kubernetes/fake"
 	"sigs.k8s.io/yaml"
 
-	"github.com/banzaicloud/istio-operator/v2/api/v1alpha1"
+	"github.com/banzaicloud/istio-operator/api/v2/v1alpha1"
 	"github.com/banzaicloud/istio-operator/v2/internal/assets"
 	"github.com/banzaicloud/istio-operator/v2/internal/components/base"
 	"github.com/banzaicloud/istio-operator/v2/internal/util"

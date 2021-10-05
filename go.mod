@@ -8,7 +8,7 @@ require (
 	github.com/Masterminds/semver v1.5.0 // indirect
 	github.com/Masterminds/sprig v2.22.0+incompatible
 	github.com/banzaicloud/cluster-registry v0.0.7
-	github.com/banzaicloud/istio-operator/v2/api v0.0.1
+	github.com/banzaicloud/istio-operator/api/v2 v2.0.0
 	github.com/banzaicloud/k8s-objectmatcher v1.5.2
 	github.com/banzaicloud/operator-tools v0.24.1-0.20210917222015-90c6c0b3cffe
 	github.com/fatih/color v1.12.0 // indirect
@@ -185,7 +185,7 @@ require (
 )
 
 replace (
-	github.com/banzaicloud/istio-operator/v2/api => ./api
+	github.com/banzaicloud/istio-operator/api/v2 => ./api
 
 	// needs a fork to support int64/uint64 marshalling to integers
 	github.com/gogo/protobuf => github.com/waynz0r/protobuf v1.3.3-0.20210811122234-64636cae0910

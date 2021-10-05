@@ -23,7 +23,7 @@ import (
 	corev1 "k8s.io/api/core/v1"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
-	servicemeshv1alpha1 "github.com/banzaicloud/istio-operator/v2/api/v1alpha1"
+	servicemeshv1alpha1 "github.com/banzaicloud/istio-operator/api/v2/v1alpha1"
 	"github.com/banzaicloud/istio-operator/v2/pkg/k8sutil"
 )
 

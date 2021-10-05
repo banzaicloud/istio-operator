@@ -24,7 +24,7 @@ import (
 	"k8s.io/client-go/rest"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
-	"github.com/banzaicloud/istio-operator/v2/api/v1alpha1"
+	"github.com/banzaicloud/istio-operator/api/v2/v1alpha1"
 	"github.com/banzaicloud/istio-operator/v2/pkg/k8sutil"
 )
 

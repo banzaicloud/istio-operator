@@ -20,7 +20,7 @@ import (
 	"k8s.io/client-go/discovery"
 	"k8s.io/client-go/rest"
 
-	servicemeshv1alpha1 "github.com/banzaicloud/istio-operator/v2/api/v1alpha1"
+	servicemeshv1alpha1 "github.com/banzaicloud/istio-operator/api/v2/v1alpha1"
 )
 
 func DetectSupportedJWTPolicy(k8sConfig *rest.Config) (servicemeshv1alpha1.JWTPolicyType, error) {

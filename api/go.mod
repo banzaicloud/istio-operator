@@ -1,4 +1,4 @@
-module github.com/banzaicloud/istio-operator/v2/api
+module github.com/banzaicloud/istio-operator/api/v2
 
 go 1.17
 
