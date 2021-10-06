@@ -1,0 +1,11 @@
+{{- if eq .Values.mode "ACTIVE" }}
+apiVersion: clusterregistry.k8s.cisco.com/v1alpha1
+kind: ClusterFeature
+metadata:
+  name: {{ include "name-with-revision" (dict "name" "istio-custom-resource-source" "context" $) }}
+  labels:
+    release: {{ .Release.Name }}
+    istio.io/rev: {{ include "namespaced-revision" . }}
+spec:
+  featureName: "istio.servicemesh.cisco.com/custom-resources-source"
+{{- end }}

@@ -1,0 +1,385 @@
+{{- if eq .Values.mode "ACTIVE" }}
+apiVersion: clusterregistry.k8s.cisco.com/v1alpha1
+kind: ResourceSyncRule
+metadata:
+  name: {{ include "name-with-revision" (dict "name" "istio-virtualservices-sink" "context" $) }}
+  annotations:
+    cluster-registry.k8s.cisco.com/resource-sync-disabled: "true"
+  labels:
+    release: {{ .Release.Name }}
+spec:
+  clusterFeatureMatch:
+    - featureName: "istio.servicemesh.cisco.com/custom-resources-source"
+      matchLabels:
+        istio.io/rev: {{ include "namespaced-revision" . }}
+  groupVersionKind:
+    group: networking.istio.io
+    version: v1beta1
+    kind: VirtualService
+  rules:
+  - match:
+    - labels:
+      - matchExpressions:
+        - key: banzaicloud.io/related-to
+          operator: DoesNotExist
+        - key: istio.io/rev
+          operator: DoesNotExist
+    - labels:
+      - matchExpressions:
+        - key: banzaicloud.io/related-to
+          operator: DoesNotExist
+        matchLabels:
+          istio.io/rev: {{ include "namespaced-revision" . }}
+---
+apiVersion: clusterregistry.k8s.cisco.com/v1alpha1
+kind: ResourceSyncRule
+metadata:
+  name: {{ include "name-with-revision" (dict "name" "istio-destinationrules-sink" "context" $) }}
+  annotations:
+    cluster-registry.k8s.cisco.com/resource-sync-disabled: "true"
+  labels:
+    release: {{ .Release.Name }}
+spec:
+  clusterFeatureMatch:
+    - featureName: "istio.servicemesh.cisco.com/custom-resources-source"
+      matchLabels:
+        istio.io/rev: {{ include "namespaced-revision" . }}
+  groupVersionKind:
+    group: networking.istio.io
+    version: v1beta1
+    kind: DestinationRule
+  rules:
+  - match:
+    - labels:
+      - matchExpressions:
+        - key: banzaicloud.io/related-to
+          operator: DoesNotExist
+        - key: istio.io/rev
+          operator: DoesNotExist
+    - labels:
+      - matchExpressions:
+        - key: banzaicloud.io/related-to
+          operator: DoesNotExist
+        matchLabels:
+          istio.io/rev: {{ include "namespaced-revision" . }}
+---
+apiVersion: clusterregistry.k8s.cisco.com/v1alpha1
+kind: ResourceSyncRule
+metadata:
+  name: {{ include "name-with-revision" (dict "name" "istio-envoyfilters-sink" "context" $) }}
+  annotations:
+    cluster-registry.k8s.cisco.com/resource-sync-disabled: "true"
+  labels:
+    release: {{ .Release.Name }}
+spec:
+  clusterFeatureMatch:
+    - featureName: "istio.servicemesh.cisco.com/custom-resources-source"
+      matchLabels:
+        istio.io/rev: {{ include "namespaced-revision" . }}
+  groupVersionKind:
+    group: networking.istio.io
+    version: v1alpha3
+    kind: EnvoyFilter
+  rules:
+  - match:
+    - labels:
+      - matchExpressions:
+        - key: banzaicloud.io/related-to
+          operator: DoesNotExist
+        - key: istio.io/rev
+          operator: DoesNotExist
+    - labels:
+      - matchExpressions:
+        - key: banzaicloud.io/related-to
+          operator: DoesNotExist
+        matchLabels:
+          istio.io/rev: {{ include "namespaced-revision" . }}
+---
+apiVersion: clusterregistry.k8s.cisco.com/v1alpha1
+kind: ResourceSyncRule
+metadata:
+  name: {{ include "name-with-revision" (dict "name" "istio-gateways-sink" "context" $) }}
+  annotations:
+    cluster-registry.k8s.cisco.com/resource-sync-disabled: "true"
+  labels:
+    release: {{ .Release.Name }}
+spec:
+  clusterFeatureMatch:
+    - featureName: "istio.servicemesh.cisco.com/custom-resources-source"
+      matchLabels:
+        istio.io/rev: {{ include "namespaced-revision" . }}
+  groupVersionKind:
+    group: networking.istio.io
+    version: v1beta1
+    kind: Gateway
+  rules:
+  - match:
+    - labels:
+      - matchExpressions:
+        - key: banzaicloud.io/related-to
+          operator: DoesNotExist
+        - key: istio.io/rev
+          operator: DoesNotExist
+    - labels:
+      - matchExpressions:
+        - key: banzaicloud.io/related-to
+          operator: DoesNotExist
+        matchLabels:
+          istio.io/rev: {{ include "namespaced-revision" . }}
+---
+apiVersion: clusterregistry.k8s.cisco.com/v1alpha1
+kind: ResourceSyncRule
+metadata:
+  name: {{ include "name-with-revision" (dict "name" "istio-serviceentries-sink" "context" $) }}
+  annotations:
+    cluster-registry.k8s.cisco.com/resource-sync-disabled: "true"
+  labels:
+    release: {{ .Release.Name }}
+spec:
+  clusterFeatureMatch:
+    - featureName: "istio.servicemesh.cisco.com/custom-resources-source"
+      matchLabels:
+        istio.io/rev: {{ include "namespaced-revision" . }}
+  groupVersionKind:
+    group: networking.istio.io
+    version: v1beta1
+    kind: ServiceEntry
+  rules:
+  - match:
+    - labels:
+      - matchExpressions:
+        - key: banzaicloud.io/related-to
+          operator: DoesNotExist
+        - key: istio.io/rev
+          operator: DoesNotExist
+    - labels:
+      - matchExpressions:
+        - key: banzaicloud.io/related-to
+          operator: DoesNotExist
+        matchLabels:
+          istio.io/rev: {{ include "namespaced-revision" . }}
+---
+apiVersion: clusterregistry.k8s.cisco.com/v1alpha1
+kind: ResourceSyncRule
+metadata:
+  name: {{ include "name-with-revision" (dict "name" "istio-sidecars-sink" "context" $) }}
+  annotations:
+    cluster-registry.k8s.cisco.com/resource-sync-disabled: "true"
+  labels:
+    release: {{ .Release.Name }}
+spec:
+  clusterFeatureMatch:
+    - featureName: "istio.servicemesh.cisco.com/custom-resources-source"
+      matchLabels:
+        istio.io/rev: {{ include "namespaced-revision" . }}
+  groupVersionKind:
+    group: networking.istio.io
+    version: v1beta1
+    kind: Sidecar
+  rules:
+  - match:
+    - labels:
+      - matchExpressions:
+        - key: banzaicloud.io/related-to
+          operator: DoesNotExist
+        - key: istio.io/rev
+          operator: DoesNotExist
+    - labels:
+      - matchExpressions:
+        - key: banzaicloud.io/related-to
+          operator: DoesNotExist
+        matchLabels:
+          istio.io/rev: {{ include "namespaced-revision" . }}
+---
+apiVersion: clusterregistry.k8s.cisco.com/v1alpha1
+kind: ResourceSyncRule
+metadata:
+  name: {{ include "name-with-revision" (dict "name" "istio-workloadentries-sink" "context" $) }}
+  annotations:
+    cluster-registry.k8s.cisco.com/resource-sync-disabled: "true"
+  labels:
+    release: {{ .Release.Name }}
+spec:
+  clusterFeatureMatch:
+    - featureName: "istio.servicemesh.cisco.com/custom-resources-source"
+      matchLabels:
+        istio.io/rev: {{ include "namespaced-revision" . }}
+  groupVersionKind:
+    group: networking.istio.io
+    version: v1beta1
+    kind: WorkloadEntry
+  rules:
+  - match:
+    - labels:
+      - matchExpressions:
+        - key: banzaicloud.io/related-to
+          operator: DoesNotExist
+        - key: istio.io/rev
+          operator: DoesNotExist
+    - labels:
+      - matchExpressions:
+        - key: banzaicloud.io/related-to
+          operator: DoesNotExist
+        matchLabels:
+          istio.io/rev: {{ include "namespaced-revision" . }}
+---
+apiVersion: clusterregistry.k8s.cisco.com/v1alpha1
+kind: ResourceSyncRule
+metadata:
+  name: {{ include "name-with-revision" (dict "name" "istio-workloadgroups-sink" "context" $) }}
+  annotations:
+    cluster-registry.k8s.cisco.com/resource-sync-disabled: "true"
+  labels:
+    release: {{ .Release.Name }}
+spec:
+  clusterFeatureMatch:
+    - featureName: "istio.servicemesh.cisco.com/custom-resources-source"
+      matchLabels:
+        istio.io/rev: {{ include "namespaced-revision" . }}
+  groupVersionKind:
+    group: networking.istio.io
+    version: v1alpha3
+    kind: WorkloadGroup
+  rules:
+  - match:
+    - labels:
+      - matchExpressions:
+        - key: banzaicloud.io/related-to
+          operator: DoesNotExist
+        - key: istio.io/rev
+          operator: DoesNotExist
+    - labels:
+      - matchExpressions:
+        - key: banzaicloud.io/related-to
+          operator: DoesNotExist
+        matchLabels:
+          istio.io/rev: {{ include "namespaced-revision" . }}
+---
+apiVersion: clusterregistry.k8s.cisco.com/v1alpha1
+kind: ResourceSyncRule
+metadata:
+  name: {{ include "name-with-revision" (dict "name" "istio-peerauthentications-resources-sink" "context" $) }}
+  annotations:
+    cluster-registry.k8s.cisco.com/resource-sync-disabled: "true"
+  labels:
+    release: {{ .Release.Name }}
+spec:
+  clusterFeatureMatch:
+    - featureName: "istio.servicemesh.cisco.com/custom-resources-source"
+      matchLabels:
+        istio.io/rev: {{ include "namespaced-revision" . }}
+  groupVersionKind:
+    group: security.istio.io
+    version: v1beta1
+    kind: PeerAuthentication
+  rules:
+  - match:
+    - labels:
+      - matchExpressions:
+        - key: banzaicloud.io/related-to
+          operator: DoesNotExist
+        - key: istio.io/rev
+          operator: DoesNotExist
+    - labels:
+      - matchExpressions:
+        - key: banzaicloud.io/related-to
+          operator: DoesNotExist
+        matchLabels:
+          istio.io/rev: {{ include "namespaced-revision" . }}
+---
+apiVersion: clusterregistry.k8s.cisco.com/v1alpha1
+kind: ResourceSyncRule
+metadata:
+  name: {{ include "name-with-revision" (dict "name" "istio-authorizationpolicies-resources-sink" "context" $) }}
+  annotations:
+    cluster-registry.k8s.cisco.com/resource-sync-disabled: "true"
+  labels:
+    release: {{ .Release.Name }}
+spec:
+  clusterFeatureMatch:
+    - featureName: "istio.servicemesh.cisco.com/custom-resources-source"
+      matchLabels:
+        istio.io/rev: {{ include "namespaced-revision" . }}
+  groupVersionKind:
+    group: security.istio.io
+    version: v1beta1
+    kind: AuthorizationPolicy
+  rules:
+  - match:
+    - labels:
+      - matchExpressions:
+        - key: banzaicloud.io/related-to
+          operator: DoesNotExist
+        - key: istio.io/rev
+          operator: DoesNotExist
+    - labels:
+      - matchExpressions:
+        - key: banzaicloud.io/related-to
+          operator: DoesNotExist
+        matchLabels:
+          istio.io/rev: {{ include "namespaced-revision" . }}
+---
+apiVersion: clusterregistry.k8s.cisco.com/v1alpha1
+kind: ResourceSyncRule
+metadata:
+  name: {{ include "name-with-revision" (dict "name" "istio-requestauthentications-resources-sink" "context" $) }}
+  annotations:
+    cluster-registry.k8s.cisco.com/resource-sync-disabled: "true"
+  labels:
+    release: {{ .Release.Name }}
+spec:
+  clusterFeatureMatch:
+    - featureName: "istio.servicemesh.cisco.com/custom-resources-source"
+      matchLabels:
+        istio.io/rev: {{ include "namespaced-revision" . }}
+  groupVersionKind:
+    group: security.istio.io
+    version: v1beta1
+    kind: RequestAuthentication
+  rules:
+  - match:
+    - labels:
+      - matchExpressions:
+        - key: banzaicloud.io/related-to
+          operator: DoesNotExist
+        - key: istio.io/rev
+          operator: DoesNotExist
+    - labels:
+      - matchExpressions:
+        - key: banzaicloud.io/related-to
+          operator: DoesNotExist
+        matchLabels:
+          istio.io/rev: {{ include "namespaced-revision" . }}
+---
+apiVersion: clusterregistry.k8s.cisco.com/v1alpha1
+kind: ResourceSyncRule
+metadata:
+  name: {{ include "name-with-revision" (dict "name" "istio-telemetries-sink" "context" $) }}
+  annotations:
+    cluster-registry.k8s.cisco.com/resource-sync-disabled: "true"
+  labels:
+    release: {{ .Release.Name }}
+spec:
+  clusterFeatureMatch:
+    - featureName: "istio.servicemesh.cisco.com/custom-resources-source"
+      matchLabels:
+        istio.io/rev: {{ include "namespaced-revision" . }}
+  groupVersionKind:
+    group: telemetry.istio.io
+    kind: Telemetry
+    version: v1alpha1
+  rules:
+  - match:
+    - labels:
+      - matchExpressions:
+        - key: banzaicloud.io/related-to
+          operator: DoesNotExist
+        - key: istio.io/rev
+          operator: DoesNotExist
+    - labels:
+      - matchExpressions:
+        - key: banzaicloud.io/related-to
+          operator: DoesNotExist
+        matchLabels:
+          istio.io/rev: {{ include "namespaced-revision" . }}
+{{- end }}
