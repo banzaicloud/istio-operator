@@ -719,16 +719,30 @@ func (r *IstioControlPlaneReconciler) SetupWithManager(mgr ctrl.Manager) error {
 	return nil
 }
 
+type ControlPlane interface {
+	GetName() string
+	GetStatus() servicemeshv1alpha1.IstioControlPlaneStatus
+	GetSpec() *servicemeshv1alpha1.IstioControlPlaneSpec
+}
+
+type SortableControlPlanes []ControlPlane
+
+func (list SortableControlPlanes) Len() int {
+	return len(list)
+}
+
+func (list SortableControlPlanes) Swap(i, j int) {
+	list[i], list[j] = list[j], list[i]
+}
+
+func (list SortableControlPlanes) Less(i, j int) bool {
+	return list[i].GetName() > list[j].GetName()
+}
+
 func (r *IstioControlPlaneReconciler) getMeshNetworks(ctx context.Context, icp *servicemeshv1alpha1.IstioControlPlane) (*v1alpha1.MeshNetworks, error) {
 	networks := make(map[string]*v1alpha1.Network)
 
-	type ControlPlane interface {
-		GetName() string
-		GetStatus() servicemeshv1alpha1.IstioControlPlaneStatus
-		GetSpec() *servicemeshv1alpha1.IstioControlPlaneSpec
-	}
-
-	cps := make([]ControlPlane, 0)
+	cps := make(SortableControlPlanes, 0)
 	cps = append(cps, icp)
 
 	picpList := &servicemeshv1alpha1.PeerIstioControlPlaneList{}
@@ -744,8 +758,11 @@ func (r *IstioControlPlaneReconciler) getMeshNetworks(ctx context.Context, icp *
 		}
 	}
 
+	sort.Sort(cps)
+
 	for _, cp := range cps {
 		gateways := make([]*v1alpha1.Network_IstioNetworkGateway, 0)
+		sort.Strings(cp.GetStatus().GatewayAddress)
 		for _, address := range cp.GetStatus().GatewayAddress {
 			gateways = append(gateways, &v1alpha1.Network_IstioNetworkGateway{
 				Gw: &v1alpha1.Network_IstioNetworkGateway_Address{
