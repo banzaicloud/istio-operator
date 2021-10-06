@@ -115,14 +115,18 @@ rules:
 - apiGroups:
   - authentication.istio.io
   - config.istio.io
+  - networking.istio.io
   - rbac.istio.io
   - security.istio.io
   - telemetry.istio.io
   resources:
   - '*'
   verbs:
+  - create
+  - delete
   - get
   - list
+  - patch
   - update
   - watch
 - apiGroups:
@@ -229,18 +233,6 @@ rules:
   - delete
   - get
   - list
-  - watch
-- apiGroups:
-  - networking.istio.io
-  resources:
-  - '*'
-  verbs:
-  - create
-  - delete
-  - get
-  - list
-  - patch
-  - update
   - watch
 - apiGroups:
   - networking.k8s.io

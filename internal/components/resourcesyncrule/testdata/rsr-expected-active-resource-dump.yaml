@@ -27,6 +27,50 @@ apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRole
 metadata:
   labels:
+    cluster-registry.k8s.cisco.com/controller-aggregated: "true"
+    release: istio-resource-sync-rule
+  name: istio-custom-resources-controller-cp-v111x
+rules:
+  - apiGroups:
+      - networking.istio.io
+      - telemetry.istio.io
+      - security.istio.io
+    resources:
+      - '*'
+    verbs:
+      - create
+      - update
+      - delete
+      - patch
+      - get
+      - list
+      - watch
+
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  labels:
+    cluster-registry.k8s.cisco.com/reader-aggregated: "true"
+    release: istio-resource-sync-rule
+  name: istio-custom-resources-reader-cp-v111x
+rules:
+  - apiGroups:
+      - networking.istio.io
+      - telemetry.istio.io
+      - security.istio.io
+    resources:
+      - '*'
+    verbs:
+      - get
+      - list
+      - watch
+
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  labels:
     cluster-registry.k8s.cisco.com/reader-aggregated: "true"
     release: istio-resource-sync-rule
   name: istio-mesh-reader-cp-v111x
@@ -98,6 +142,18 @@ metadata:
 spec:
   featureName: istio.servicemesh.cisco.com/ca-root-cert-source
 ---
+
+apiVersion: clusterregistry.k8s.cisco.com/v1alpha1
+kind: ClusterFeature
+metadata:
+  labels:
+    istio.io/rev: cp-v111x.istio-system
+    release: istio-resource-sync-rule
+  name: istio-custom-resource-source-cp-v111x
+spec:
+  featureName: istio.servicemesh.cisco.com/custom-resources-source
+
+---
 apiVersion: clusterregistry.k8s.cisco.com/v1alpha1
 kind: ClusterFeature
 metadata:
@@ -135,6 +191,137 @@ metadata:
     cluster-registry.k8s.cisco.com/resource-sync-disabled: "true"
   labels:
     release: istio-resource-sync-rule
+  name: istio-authorizationpolicies-resources-sink-cp-v111x
+spec:
+  clusterFeatureMatch:
+  - featureName: istio.servicemesh.cisco.com/custom-resources-source
+    matchLabels:
+      istio.io/rev: cp-v111x.istio-system
+  groupVersionKind:
+    group: security.istio.io
+    kind: AuthorizationPolicy
+    version: v1beta1
+  rules:
+  - match:
+    - labels:
+      - matchExpressions:
+        - key: banzaicloud.io/related-to
+          operator: DoesNotExist
+        - key: istio.io/rev
+          operator: DoesNotExist
+    - labels:
+      - matchExpressions:
+        - key: banzaicloud.io/related-to
+          operator: DoesNotExist
+        matchLabels:
+          istio.io/rev: cp-v111x.istio-system
+
+---
+apiVersion: clusterregistry.k8s.cisco.com/v1alpha1
+kind: ResourceSyncRule
+metadata:
+  annotations:
+    cluster-registry.k8s.cisco.com/resource-sync-disabled: "true"
+  labels:
+    release: istio-resource-sync-rule
+  name: istio-destinationrules-sink-cp-v111x
+spec:
+  clusterFeatureMatch:
+  - featureName: istio.servicemesh.cisco.com/custom-resources-source
+    matchLabels:
+      istio.io/rev: cp-v111x.istio-system
+  groupVersionKind:
+    group: networking.istio.io
+    kind: DestinationRule
+    version: v1beta1
+  rules:
+  - match:
+    - labels:
+      - matchExpressions:
+        - key: banzaicloud.io/related-to
+          operator: DoesNotExist
+        - key: istio.io/rev
+          operator: DoesNotExist
+    - labels:
+      - matchExpressions:
+        - key: banzaicloud.io/related-to
+          operator: DoesNotExist
+        matchLabels:
+          istio.io/rev: cp-v111x.istio-system
+
+---
+apiVersion: clusterregistry.k8s.cisco.com/v1alpha1
+kind: ResourceSyncRule
+metadata:
+  annotations:
+    cluster-registry.k8s.cisco.com/resource-sync-disabled: "true"
+  labels:
+    release: istio-resource-sync-rule
+  name: istio-envoyfilters-sink-cp-v111x
+spec:
+  clusterFeatureMatch:
+  - featureName: istio.servicemesh.cisco.com/custom-resources-source
+    matchLabels:
+      istio.io/rev: cp-v111x.istio-system
+  groupVersionKind:
+    group: networking.istio.io
+    kind: EnvoyFilter
+    version: v1alpha3
+  rules:
+  - match:
+    - labels:
+      - matchExpressions:
+        - key: banzaicloud.io/related-to
+          operator: DoesNotExist
+        - key: istio.io/rev
+          operator: DoesNotExist
+    - labels:
+      - matchExpressions:
+        - key: banzaicloud.io/related-to
+          operator: DoesNotExist
+        matchLabels:
+          istio.io/rev: cp-v111x.istio-system
+
+---
+apiVersion: clusterregistry.k8s.cisco.com/v1alpha1
+kind: ResourceSyncRule
+metadata:
+  annotations:
+    cluster-registry.k8s.cisco.com/resource-sync-disabled: "true"
+  labels:
+    release: istio-resource-sync-rule
+  name: istio-gateways-sink-cp-v111x
+spec:
+  clusterFeatureMatch:
+  - featureName: istio.servicemesh.cisco.com/custom-resources-source
+    matchLabels:
+      istio.io/rev: cp-v111x.istio-system
+  groupVersionKind:
+    group: networking.istio.io
+    kind: Gateway
+    version: v1beta1
+  rules:
+  - match:
+    - labels:
+      - matchExpressions:
+        - key: banzaicloud.io/related-to
+          operator: DoesNotExist
+        - key: istio.io/rev
+          operator: DoesNotExist
+    - labels:
+      - matchExpressions:
+        - key: banzaicloud.io/related-to
+          operator: DoesNotExist
+        matchLabels:
+          istio.io/rev: cp-v111x.istio-system
+---
+apiVersion: clusterregistry.k8s.cisco.com/v1alpha1
+kind: ResourceSyncRule
+metadata:
+  annotations:
+    cluster-registry.k8s.cisco.com/resource-sync-disabled: "true"
+  labels:
+    release: istio-resource-sync-rule
   name: istio-multi-cluster-secret-sink-cp-v111x
 spec:
   clusterFeatureMatch:
@@ -156,6 +343,40 @@ spec:
         labels:
           add:
             istio/multiCluster: "true"
+
+---
+apiVersion: clusterregistry.k8s.cisco.com/v1alpha1
+kind: ResourceSyncRule
+metadata:
+  annotations:
+    cluster-registry.k8s.cisco.com/resource-sync-disabled: "true"
+  labels:
+    release: istio-resource-sync-rule
+  name: istio-peerauthentications-resources-sink-cp-v111x
+spec:
+  clusterFeatureMatch:
+  - featureName: istio.servicemesh.cisco.com/custom-resources-source
+    matchLabels:
+      istio.io/rev: cp-v111x.istio-system
+  groupVersionKind:
+    group: security.istio.io
+    kind: PeerAuthentication
+    version: v1beta1
+  rules:
+  - match:
+    - labels:
+      - matchExpressions:
+        - key: banzaicloud.io/related-to
+          operator: DoesNotExist
+        - key: istio.io/rev
+          operator: DoesNotExist
+    - labels:
+      - matchExpressions:
+        - key: banzaicloud.io/related-to
+          operator: DoesNotExist
+        matchLabels:
+          istio.io/rev: cp-v111x.istio-system
+
 ---
 apiVersion: clusterregistry.k8s.cisco.com/v1alpha1
 kind: ResourceSyncRule
@@ -188,3 +409,234 @@ spec:
             type: replace
             value: '{{ printf "%s-%s" .Object.GetName .Cluster.GetName }}'
         syncStatus: true
+
+---
+apiVersion: clusterregistry.k8s.cisco.com/v1alpha1
+kind: ResourceSyncRule
+metadata:
+  annotations:
+    cluster-registry.k8s.cisco.com/resource-sync-disabled: "true"
+  labels:
+    release: istio-resource-sync-rule
+  name: istio-requestauthentications-resources-sink-cp-v111x
+spec:
+  clusterFeatureMatch:
+  - featureName: istio.servicemesh.cisco.com/custom-resources-source
+    matchLabels:
+      istio.io/rev: cp-v111x.istio-system
+  groupVersionKind:
+    group: security.istio.io
+    kind: RequestAuthentication
+    version: v1beta1
+  rules:
+  - match:
+    - labels:
+      - matchExpressions:
+        - key: banzaicloud.io/related-to
+          operator: DoesNotExist
+        - key: istio.io/rev
+          operator: DoesNotExist
+    - labels:
+      - matchExpressions:
+        - key: banzaicloud.io/related-to
+          operator: DoesNotExist
+        matchLabels:
+          istio.io/rev: cp-v111x.istio-system
+
+---
+apiVersion: clusterregistry.k8s.cisco.com/v1alpha1
+kind: ResourceSyncRule
+metadata:
+  annotations:
+    cluster-registry.k8s.cisco.com/resource-sync-disabled: "true"
+  labels:
+    release: istio-resource-sync-rule
+  name: istio-serviceentries-sink-cp-v111x
+spec:
+  clusterFeatureMatch:
+  - featureName: istio.servicemesh.cisco.com/custom-resources-source
+    matchLabels:
+      istio.io/rev: cp-v111x.istio-system
+  groupVersionKind:
+    group: networking.istio.io
+    kind: ServiceEntry
+    version: v1beta1
+  rules:
+  - match:
+    - labels:
+      - matchExpressions:
+        - key: banzaicloud.io/related-to
+          operator: DoesNotExist
+        - key: istio.io/rev
+          operator: DoesNotExist
+    - labels:
+      - matchExpressions:
+        - key: banzaicloud.io/related-to
+          operator: DoesNotExist
+        matchLabels:
+          istio.io/rev: cp-v111x.istio-system
+
+---
+apiVersion: clusterregistry.k8s.cisco.com/v1alpha1
+kind: ResourceSyncRule
+metadata:
+  annotations:
+    cluster-registry.k8s.cisco.com/resource-sync-disabled: "true"
+  labels:
+    release: istio-resource-sync-rule
+  name: istio-sidecars-sink-cp-v111x
+spec:
+  clusterFeatureMatch:
+  - featureName: istio.servicemesh.cisco.com/custom-resources-source
+    matchLabels:
+      istio.io/rev: cp-v111x.istio-system
+  groupVersionKind:
+    group: networking.istio.io
+    kind: Sidecar
+    version: v1beta1
+  rules:
+  - match:
+    - labels:
+      - matchExpressions:
+        - key: banzaicloud.io/related-to
+          operator: DoesNotExist
+        - key: istio.io/rev
+          operator: DoesNotExist
+    - labels:
+      - matchExpressions:
+        - key: banzaicloud.io/related-to
+          operator: DoesNotExist
+        matchLabels:
+          istio.io/rev: cp-v111x.istio-system
+
+---
+apiVersion: clusterregistry.k8s.cisco.com/v1alpha1
+kind: ResourceSyncRule
+metadata:
+  annotations:
+    cluster-registry.k8s.cisco.com/resource-sync-disabled: "true"
+  labels:
+    release: istio-resource-sync-rule
+  name: istio-telemetries-sink-cp-v111x
+spec:
+  clusterFeatureMatch:
+  - featureName: istio.servicemesh.cisco.com/custom-resources-source
+    matchLabels:
+      istio.io/rev: cp-v111x.istio-system
+  groupVersionKind:
+    group: telemetry.istio.io
+    kind: Telemetry
+    version: v1alpha1
+  rules:
+  - match:
+    - labels:
+      - matchExpressions:
+        - key: banzaicloud.io/related-to
+          operator: DoesNotExist
+        - key: istio.io/rev
+          operator: DoesNotExist
+    - labels:
+      - matchExpressions:
+        - key: banzaicloud.io/related-to
+          operator: DoesNotExist
+        matchLabels:
+          istio.io/rev: cp-v111x.istio-system
+
+---
+apiVersion: clusterregistry.k8s.cisco.com/v1alpha1
+kind: ResourceSyncRule
+metadata:
+  annotations:
+    cluster-registry.k8s.cisco.com/resource-sync-disabled: "true"
+  labels:
+    release: istio-resource-sync-rule
+  name: istio-virtualservices-sink-cp-v111x
+spec:
+  clusterFeatureMatch:
+  - featureName: istio.servicemesh.cisco.com/custom-resources-source
+    matchLabels:
+      istio.io/rev: cp-v111x.istio-system
+  groupVersionKind:
+    group: networking.istio.io
+    kind: VirtualService
+    version: v1beta1
+  rules:
+  - match:
+    - labels:
+      - matchExpressions:
+        - key: banzaicloud.io/related-to
+          operator: DoesNotExist
+        - key: istio.io/rev
+          operator: DoesNotExist
+    - labels:
+      - matchExpressions:
+        - key: banzaicloud.io/related-to
+          operator: DoesNotExist
+        matchLabels:
+          istio.io/rev: cp-v111x.istio-system
+
+---
+apiVersion: clusterregistry.k8s.cisco.com/v1alpha1
+kind: ResourceSyncRule
+metadata:
+  annotations:
+    cluster-registry.k8s.cisco.com/resource-sync-disabled: "true"
+  labels:
+    release: istio-resource-sync-rule
+  name: istio-workloadentries-sink-cp-v111x
+spec:
+  clusterFeatureMatch:
+  - featureName: istio.servicemesh.cisco.com/custom-resources-source
+    matchLabels:
+      istio.io/rev: cp-v111x.istio-system
+  groupVersionKind:
+    group: networking.istio.io
+    kind: WorkloadEntry
+    version: v1beta1
+  rules:
+  - match:
+    - labels:
+      - matchExpressions:
+        - key: banzaicloud.io/related-to
+          operator: DoesNotExist
+        - key: istio.io/rev
+          operator: DoesNotExist
+    - labels:
+      - matchExpressions:
+        - key: banzaicloud.io/related-to
+          operator: DoesNotExist
+        matchLabels:
+          istio.io/rev: cp-v111x.istio-system
+
+---
+apiVersion: clusterregistry.k8s.cisco.com/v1alpha1
+kind: ResourceSyncRule
+metadata:
+  annotations:
+    cluster-registry.k8s.cisco.com/resource-sync-disabled: "true"
+  labels:
+    release: istio-resource-sync-rule
+  name: istio-workloadgroups-sink-cp-v111x
+spec:
+  clusterFeatureMatch:
+  - featureName: istio.servicemesh.cisco.com/custom-resources-source
+    matchLabels:
+      istio.io/rev: cp-v111x.istio-system
+  groupVersionKind:
+    group: networking.istio.io
+    kind: WorkloadGroup
+    version: v1alpha3
+  rules:
+  - match:
+    - labels:
+      - matchExpressions:
+        - key: banzaicloud.io/related-to
+          operator: DoesNotExist
+        - key: istio.io/rev
+          operator: DoesNotExist
+    - labels:
+      - matchExpressions:
+        - key: banzaicloud.io/related-to
+          operator: DoesNotExist
+        matchLabels:
+          istio.io/rev: cp-v111x.istio-system
