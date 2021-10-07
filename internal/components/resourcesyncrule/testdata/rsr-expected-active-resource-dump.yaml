@@ -149,7 +149,7 @@ metadata:
   labels:
     istio.io/rev: cp-v111x.istio-system
     release: istio-resource-sync-rule
-  name: istio-custom-resource-source-cp-v111x
+  name: istio-custom-resources-source-cp-v111x
 spec:
   featureName: istio.servicemesh.cisco.com/custom-resources-source
 
@@ -191,7 +191,7 @@ metadata:
     cluster-registry.k8s.cisco.com/resource-sync-disabled: "true"
   labels:
     release: istio-resource-sync-rule
-  name: istio-authorizationpolicies-resources-sink-cp-v111x
+  name: istio-authorizationpolicies-sink-cp-v111x
 spec:
   clusterFeatureMatch:
   - featureName: istio.servicemesh.cisco.com/custom-resources-source
@@ -352,7 +352,7 @@ metadata:
     cluster-registry.k8s.cisco.com/resource-sync-disabled: "true"
   labels:
     release: istio-resource-sync-rule
-  name: istio-peerauthentications-resources-sink-cp-v111x
+  name: istio-peerauthentications-sink-cp-v111x
 spec:
   clusterFeatureMatch:
   - featureName: istio.servicemesh.cisco.com/custom-resources-source
@@ -418,7 +418,7 @@ metadata:
     cluster-registry.k8s.cisco.com/resource-sync-disabled: "true"
   labels:
     release: istio-resource-sync-rule
-  name: istio-requestauthentications-resources-sink-cp-v111x
+  name: istio-requestauthentications-sink-cp-v111x
 spec:
   clusterFeatureMatch:
   - featureName: istio.servicemesh.cisco.com/custom-resources-source
