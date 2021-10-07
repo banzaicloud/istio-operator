@@ -258,7 +258,7 @@ spec:
 apiVersion: clusterregistry.k8s.cisco.com/v1alpha1
 kind: ResourceSyncRule
 metadata:
-  name: {{ include "name-with-revision" (dict "name" "istio-peerauthentications-resources-sink" "context" $) }}
+  name: {{ include "name-with-revision" (dict "name" "istio-peerauthentications-sink" "context" $) }}
   annotations:
     cluster-registry.k8s.cisco.com/resource-sync-disabled: "true"
   labels:
@@ -290,7 +290,7 @@ spec:
 apiVersion: clusterregistry.k8s.cisco.com/v1alpha1
 kind: ResourceSyncRule
 metadata:
-  name: {{ include "name-with-revision" (dict "name" "istio-authorizationpolicies-resources-sink" "context" $) }}
+  name: {{ include "name-with-revision" (dict "name" "istio-authorizationpolicies-sink" "context" $) }}
   annotations:
     cluster-registry.k8s.cisco.com/resource-sync-disabled: "true"
   labels:
@@ -322,7 +322,7 @@ spec:
 apiVersion: clusterregistry.k8s.cisco.com/v1alpha1
 kind: ResourceSyncRule
 metadata:
-  name: {{ include "name-with-revision" (dict "name" "istio-requestauthentications-resources-sink" "context" $) }}
+  name: {{ include "name-with-revision" (dict "name" "istio-requestauthentications-sink" "context" $) }}
   annotations:
     cluster-registry.k8s.cisco.com/resource-sync-disabled: "true"
   labels:
