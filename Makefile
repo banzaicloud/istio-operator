@@ -155,4 +155,6 @@ release: check_release
 	git tag -a ${REL_TAG} -m ${RELEASE_MSG}
 	git tag -a ${API_REL_TAG} -m ${API_RELEASE_MSG}
 	git tag -a ${CHART_REL_TAG} -m ${CHART_RELEASE_MSG}
-	git push origin ${REL_TAG} ${API_REL_TAG} ${CHART_REL_TAG}
+	git push origin ${REL_TAG}
+	git push origin ${API_REL_TAG}
+	git push origin ${CHART_REL_TAG}
