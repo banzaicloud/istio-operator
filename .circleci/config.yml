@@ -134,4 +134,4 @@ workflows:
             branches:
               ignore: /.*/
             tags:
-              only: /deploy\/charts\/\d+.\d+.\d+/
+              only: /deploy\/charts\/v?\d+.\d+.\d+/

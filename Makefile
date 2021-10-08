@@ -3,6 +3,8 @@ TAG ?= $(shell git describe --tags --abbrev=0 --match '[0-9].*[0-9].*[0-9]' 2>/d
 IMAGE_REPOSITORY ?= banzaicloud/istio-operator
 IMG ?= ${IMAGE_REPOSITORY}:$(TAG)
 
+CHART_VERSION ?= $(shell sed -nr '/version:/ s/.*version: ([^"]+).*/\1/p' deploy/charts/istio-operator/Chart.yaml)
+
 RELEASE_TYPE ?= p
 RELEASE_MSG ?= "istio operator release"
 API_RELEASE_MSG ?= "istio operator api release"
@@ -10,7 +12,7 @@ CHART_RELEASE_MSG ?= "istio operator chart release"
 
 REL_TAG = $(shell ./scripts/increment_version.sh -${RELEASE_TYPE} ${TAG})
 API_REL_TAG ?= api/${REL_TAG}
-CHART_REL_TAG ?= deploy/charts/${REL_TAG}
+CHART_REL_TAG ?= deploy/charts/v${CHART_VERSION}
 
 GOLANGCI_VERSION = 1.42.1
 LICENSEI_VERSION = 0.4.0
