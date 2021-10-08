@@ -1,11 +1,35 @@
 version: 2.1
 orbs:
   helm: banzaicloud/helm@0.0.8
+  docker: banzaicloud/docker@0.0.5
 
 executors:
   helm311:
     docker:
       - image: ghcr.io/banzaicloud/helm:0.0.7
+
+commands:
+  publish-with-latests:
+    steps:
+      - docker/push:
+          registry: ghcr.io
+          image: banzaicloud/istio-operator
+          tag: ${CIRCLE_TAG}
+      - docker/version-check:
+          version: ${CIRCLE_TAG}
+          halt: true
+      - run:
+          name: Publish latest
+          command: |
+            minor="$(echo ${CIRCLE_TAG} | cut -d '.' -f2)"
+            docker tag "banzaicloud/istio-operator:${CIRCLE_TAG}" "ghcr.io/banzaicloud/istio-operator:latest-1.${minor}"
+            docker push "ghcr.io/banzaicloud/istio-operator:latest-1.${minor}"
+
+            latest="$(git tag | grep -E '^[0-9]+\.[0-9]+\.[0-9]+$' | cut -d '.' -f2 | sort -urn | head -n 1)"
+            if [ "${latest}" -eq "${minor}" ]; then
+              docker tag "banzaicloud/istio-operator:${CIRCLE_TAG}" "ghcr.io/banzaicloud/istio-operator:latest"
+              docker push "ghcr.io/banzaicloud/istio-operator:latest"
+            fi
 
 jobs:
   build:
@@ -68,6 +92,31 @@ workflows:
     jobs:
     - build
 
+    - docker/build:
+        name: Build docker image
+        executor: docker/machine-dlc
+        image: banzaicloud/istio-operator
+        tag: ${CIRCLE_BRANCH//\//-}
+        filters:
+          tags:
+            ignore: /.*/
+
+    - docker/custom-publish:
+        name: Publish tagged & latest docker image
+        executor: docker/machine-dlc
+        context:
+          - github
+        image: banzaicloud/istio-operator
+        login:
+          - docker/ghcr-login
+        push:
+          - publish-with-latests
+        filters:
+          tags:
+            only: /^v?[0-9]+\.[0-9]+\.[0-9]+(?:-(?:dev|rc)\.[0-9]+)?$/
+          branches:
+            ignore: /.*/
+
   helm-chart:
     jobs:
       - helm/lint-chart:
@@ -76,3 +125,13 @@ workflows:
           filters:
             tags:
               ignore: /.*/
+
+      - helm/publish-chart:
+          context: helm
+          executor: helm311
+          charts-dir: deploy/charts
+          filters:
+            branches:
+              ignore: /.*/
+            tags:
+              only: /deploy\/charts\/\d+.\d+.\d+/
