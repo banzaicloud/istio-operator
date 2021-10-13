@@ -12,9 +12,9 @@ autoscaleEnabled: {{ and (gt (.GetSpec.GetIstiod.GetDeployment.GetReplicas.GetMi
 {{ toYamlIf (dict "value" .GetSpec.GetIstiod.GetDeployment.GetResources "key" "resources") }}
 env:
   - name: INJECTION_WEBHOOK_CONFIG_NAME
-    value: istio-sidecar-injector-cp-v111x-istio-system
+    value: {{ .WithNamespacedRevision "istio-sidecar-injector" }}
   - name: ISTIOD_CUSTOM_HOST
-    value: istiod-cp-v111x.istio-system.svc
+    value: {{ .WithRevision "istiod" }}.{{ .Namespace }}.svc
   - name: PILOT_ENABLE_STATUS
 {{ if .GetSpec.GetIstiod.GetEnableStatus }}
     value: "{{ .GetSpec.GetIstiod.GetEnableStatus }}"
@@ -22,7 +22,21 @@ env:
     value: "false"
 {{ end }}
   - name: VALIDATION_WEBHOOK_CONFIG_NAME
-    value: istiod-cp-v111x-istio-system
+    value: {{ .WithNamespacedRevision "istio-validator" }}
+{{ if eq .GetSpec.GetDistribution "cisco" }}
+  - name: NAMESPACE_LE_NAME
+    value: {{ .WithRevision "istio-namespace-controller-election" }}
+  - name: VALIDATION_LE_NAME
+    value: {{ .WithRevision "istio-validation-controller-election" }}
+  - name: INGRESS_LE_NAME
+    value: {{ .WithRevision "istio-leader" }}
+  - name: CACERT_CONFIG_NAME
+    value: {{ .WithRevision "istio-ca-root-cert" }}
+  - name: MESHCONFIG_CONFIGMAP_NAME
+    value: {{ .WithRevision "istio" }}
+  - name: INJECTOR_CONFIGMAP_NAME
+    value: {{ .WithRevision "istio-sidecar-injector" }}
+{{ end }}
 {{ toYamlIf (dict "value" .GetSpec.GetIstiod.GetDeployment.GetEnv) | indent 2 }}
 
 {{ valueIf (dict "key" "enableProtocolSniffingForOutbound" "value" .GetSpec.GetIstiod.GetEnableProtocolSniffingOutbound) }}
@@ -74,7 +88,7 @@ logLevel: {{ .GetSpec.GetProxy.GetLogLevel | toString | lower }}
 {{ valueIf (dict "key" "revision" "value" .Name) }}
 
 {{- $x := (include "pilot" .) | reformatYaml }}
-{{- if ne $x "" }}
+{{- if and (ne $x "") (eq (.GetSpec.GetMode | toString) "ACTIVE" ) }}
 pilot:
 {{ $x | indent 2 }}
 {{- end }}
@@ -120,7 +134,13 @@ istiod:
 {{ valueIf (dict "key" "hub" "value" .GetSpec.GetContainerImageConfiguration.GetHub) }}
 {{ valueIf (dict "key" "tag" "value" .GetSpec.GetContainerImageConfiguration.GetTag) }}
 {{ valueIf (dict "key" "imagePullPolicy" "value" (default $.GetSpec.GetContainerImageConfiguration.GetImagePullPolicy .GetSpec.GetIstiod.GetDeployment.GetImagePullPolicy) ) }}
-{{ toYamlIf (dict "value" (default $.GetSpec.GetContainerImageConfiguration.GetImagePullSecrets .GetSpec.GetIstiod.GetDeployment.GetImagePullSecrets) "key" "imagePullSecrets") }}
+
+{{ with default $.GetSpec.GetContainerImageConfiguration.GetImagePullSecrets .GetSpec.GetIstiod.GetDeployment.GetImagePullSecrets }}
+imagePullSecrets:
+{{ range . }}
+- {{ .Name }}
+{{ end }}
+{{ end }}
 
 {{- if or .GetSpec.GetIstiod.GetDeployment.GetPodDisruptionBudget.GetMinAvailable .GetSpec.GetIstiod.GetDeployment.GetPodDisruptionBudget.GetMaxUnavailable }}
 defaultPodDisruptionBudget:
