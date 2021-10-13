@@ -53,7 +53,7 @@ metadata:
     istio: meshconfig
     istio.io/rev: cp-v111x.istio-system
     release: istio-operator-discovery
-  name: istio-cp-v111x.istio-system
+  name: istio-cp-v111x
   namespace: istio-system
 
 ---
@@ -1056,17 +1056,13 @@ data:
             "cpu": "10m"
           }
         },
-        "distribution": "official",
+        "distribution": "cisco",
         "externalIstiod": false,
         "hub": "gcr.io/istio-testing",
         "imagePullPolicy": "Never",
         "imagePullSecrets": [
-          {
-            "name": "pullsecret-1"
-          },
-          {
-            "name": "pullsecret-2"
-          }
+          "pullsecret-1",
+          "pullsecret-2"
         ],
         "istioNamespace": "istio-system",
         "istiod": {
@@ -1216,7 +1212,7 @@ metadata:
     istio: sidecar-injector
     istio.io/rev: cp-v111x.istio-system
     release: istio-operator-discovery
-  name: istio-sidecar-injector-cp-v111x.istio-system
+  name: istio-sidecar-injector-cp-v111x
   namespace: istio-system
 
 ---
@@ -1698,7 +1694,19 @@ spec:
         - name: PILOT_ENABLE_STATUS
           value: "true"
         - name: VALIDATION_WEBHOOK_CONFIG_NAME
-          value: istiod-cp-v111x-istio-system
+          value: istio-validator-cp-v111x-istio-system
+        - name: NAMESPACE_LE_NAME
+          value: istio-namespace-controller-election-cp-v111x
+        - name: VALIDATION_LE_NAME
+          value: istio-validation-controller-election-cp-v111x
+        - name: INGRESS_LE_NAME
+          value: istio-leader-cp-v111x
+        - name: CACERT_CONFIG_NAME
+          value: istio-ca-root-cert-cp-v111x
+        - name: MESHCONFIG_CONFIGMAP_NAME
+          value: istio-cp-v111x
+        - name: INJECTOR_CONFIGMAP_NAME
+          value: istio-sidecar-injector-cp-v111x
         - name: TEST_ENV
           value: test-env-value
         - name: PILOT_TRACE_SAMPLING
@@ -1849,7 +1857,7 @@ metadata:
     istio: istiod
     istio.io/rev: cp-v111x.istio-system
     release: istio-operator-discovery
-  name: istio-validator-cp-v111x.istio-system-istio-system
+  name: istio-validator-cp-v111x-istio-system
 webhooks:
 - admissionReviewVersions:
   - v1beta1
@@ -1919,7 +1927,7 @@ metadata:
     app: sidecar-injector
     istio.io/rev: cp-v111x.istio-system
     release: istio-operator-discovery
-  name: istio-sidecar-injector-cp-v111x.istio-system
+  name: istio-sidecar-injector-cp-v111x-istio-system
 webhooks:
 - admissionReviewVersions:
   - v1beta1

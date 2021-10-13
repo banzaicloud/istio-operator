@@ -163,7 +163,7 @@ spec:
   watchOneNamespace: false
   jwtPolicy: THIRD_PARTY_JWT
   caAddress: localhost
-  distribution: official
+  distribution: cisco
   httpProxyEnvs:
     noProxy: "localhost"
   meshConfig:
