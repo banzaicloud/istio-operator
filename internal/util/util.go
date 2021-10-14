@@ -105,12 +105,12 @@ func RemoveString(slice []string, s string) (result []string) {
 	return
 }
 
-func AddFinalizer(c client.Client, obj client.Object, finalizerID string) error {
+func AddFinalizer(ctx context.Context, c client.Client, obj client.Object, finalizerID string) error {
 	finalizers := obj.GetFinalizers()
 	if obj.GetDeletionTimestamp().IsZero() && !ContainsString(finalizers, finalizerID) {
 		finalizers = append(finalizers, finalizerID)
 		obj.SetFinalizers(finalizers)
-		if err := c.Update(context.Background(), obj); err != nil {
+		if err := c.Update(ctx, obj); err != nil {
 			return errors.WrapIf(err, "could not add finalizer to resource")
 		}
 	}
@@ -118,13 +118,17 @@ func AddFinalizer(c client.Client, obj client.Object, finalizerID string) error 
 	return nil
 }
 
-func RemoveFinalizer(c client.Client, obj client.Object, finalizerID string) error {
+func RemoveFinalizer(ctx context.Context, c client.Client, obj client.Object, finalizerID string, onDeleteOnly bool) error {
 	finalizers := obj.GetFinalizers()
 
-	if !obj.GetDeletionTimestamp().IsZero() && ContainsString(finalizers, finalizerID) {
+	if onDeleteOnly && obj.GetDeletionTimestamp().IsZero() {
+		return nil
+	}
+
+	if ContainsString(finalizers, finalizerID) {
 		finalizers = RemoveString(finalizers, finalizerID)
 		obj.SetFinalizers(finalizers)
-		if err := c.Update(context.Background(), obj); err != nil {
+		if err := c.Update(ctx, obj); err != nil {
 			return errors.WrapIf(err, "could not remove finalizer from resource")
 		}
 	}

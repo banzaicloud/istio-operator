@@ -181,7 +181,7 @@ func (r *IstioControlPlaneReconciler) Reconcile(ctx context.Context, req ctrl.Re
 		return result, errors.WithStack(err)
 	}
 
-	err = util.RemoveFinalizer(r.Client, icp, istioControlPlaneFinalizerID)
+	err = util.RemoveFinalizer(ctx, r.Client, icp, istioControlPlaneFinalizerID, true)
 	if err != nil {
 		return result, err
 	}
@@ -198,7 +198,7 @@ func (r *IstioControlPlaneReconciler) reconcile(ctx context.Context, icp *servic
 		logger.Error(err, "unable to set up kube client config")
 	}
 
-	err = util.AddFinalizer(r.Client, icp, istioControlPlaneFinalizerID)
+	err = util.AddFinalizer(ctx, r.Client, icp, istioControlPlaneFinalizerID)
 	if err != nil {
 		return ctrl.Result{}, err
 	}
@@ -314,6 +314,10 @@ func (r *IstioControlPlaneReconciler) reconcile(ctx context.Context, icp *servic
 			result.Requeue = true
 			result.RequeueAfter = meshExpansionGatewayRemovalRequeueDuration
 
+			return result, err
+		}
+
+		if err := r.removeFinalizerFromRelatedMeshGateways(ctx, icp); err != nil {
 			return result, err
 		}
 
@@ -892,6 +896,28 @@ func (r *IstioControlPlaneReconciler) reconcileClusterReaderSecret(ctx context.C
 	return errors.WithStackIf(err)
 }
 
+func (r *IstioControlPlaneReconciler) removeFinalizerFromRelatedMeshGateways(ctx context.Context, icp *servicemeshv1alpha1.IstioControlPlane) error {
+	r.Log.Info("remove finalizers from related meshgateways")
+	var imgws servicemeshv1alpha1.IstioMeshGatewayList
+	err := r.Client.List(ctx, &imgws)
+	if err != nil {
+		return errors.WrapIf(err, "could not list istio mesh gateway resources")
+	}
+
+	for _, imgw := range imgws.Items {
+		imgw := imgw
+		if imgw.GetSpec().GetIstioControlPlane().Name != icp.Name || imgw.GetSpec().GetIstioControlPlane().Namespace != icp.Namespace {
+			continue
+		}
+		err = util.RemoveFinalizer(ctx, r.Client, &imgw, istioMeshGatewayFinalizerID, false)
+		if err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
 func (r *IstioControlPlaneReconciler) waitForMeshExpansionGatewayRemoval(ctx context.Context, icp *servicemeshv1alpha1.IstioControlPlane) error {
 	if icp.DeletionTimestamp.IsZero() || !utils.PointerToBool(icp.GetSpec().GetMeshExpansion().GetEnabled()) {
 		return nil
@@ -1192,7 +1218,7 @@ func (r *IstioControlPlaneReconciler) watchIstioCRs() error {
 	return nil
 }
 
-func RemoveFinalizers(c client.Client) error {
+func RemoveFinalizers(ctx context.Context, c client.Client) error {
 	var icps servicemeshv1alpha1.IstioControlPlaneList
 	err := c.List(context.Background(), &icps)
 	if err != nil {
@@ -1201,7 +1227,7 @@ func RemoveFinalizers(c client.Client) error {
 
 	for _, istio := range icps.Items {
 		istio := istio
-		err = util.RemoveFinalizer(c, &istio, istioControlPlaneFinalizerID)
+		err = util.RemoveFinalizer(ctx, c, &istio, istioControlPlaneFinalizerID, false)
 		if err != nil {
 			return err
 		}
@@ -1215,7 +1241,7 @@ func RemoveFinalizers(c client.Client) error {
 
 	for _, imgw := range imgws.Items {
 		imgw := imgw
-		err = util.RemoveFinalizer(c, &imgw, istioMeshGatewayFinalizerID)
+		err = util.RemoveFinalizer(ctx, c, &imgw, istioMeshGatewayFinalizerID, false)
 		if err != nil {
 			return err
 		}

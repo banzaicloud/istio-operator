@@ -82,6 +82,10 @@ func (r *IstioMeshGatewayReconciler) Reconcile(ctx context.Context, req ctrl.Req
 
 	icp, err := r.getRelatedIstioControlPlane(ctx, r.GetClient(), imgw, logger)
 	if err != nil {
+		if err := util.RemoveFinalizer(ctx, r.Client, imgw, istioMeshGatewayFinalizerID, false); err != nil {
+			return ctrl.Result{}, err
+		}
+
 		return ctrl.Result{}, err
 	}
 
@@ -89,7 +93,7 @@ func (r *IstioMeshGatewayReconciler) Reconcile(ctx context.Context, req ctrl.Req
 		return ctrl.Result{}, nil
 	}
 
-	err = util.AddFinalizer(r.Client, imgw, istioMeshGatewayFinalizerID)
+	err = util.AddFinalizer(ctx, r.Client, imgw, istioMeshGatewayFinalizerID)
 	if err != nil {
 		return ctrl.Result{}, err
 	}
@@ -129,7 +133,7 @@ func (r *IstioMeshGatewayReconciler) Reconcile(ctx context.Context, req ctrl.Req
 		return result, errors.WrapIf(err, "could not set gateway address")
 	}
 
-	err = util.RemoveFinalizer(r.Client, imgw, istioMeshGatewayFinalizerID)
+	err = util.RemoveFinalizer(ctx, r.Client, imgw, istioMeshGatewayFinalizerID, true)
 	if err != nil {
 		return result, err
 	}
