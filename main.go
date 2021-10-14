@@ -17,6 +17,7 @@ limitations under the License.
 package main
 
 import (
+	"context"
 	"flag"
 	"os"
 
@@ -126,7 +127,7 @@ func main() {
 
 	// remove finalizers
 	setupLog.Info("removing finalizer from controlled resources")
-	err = controllers.RemoveFinalizers(mgr.GetClient())
+	err = controllers.RemoveFinalizers(context.Background(), mgr.GetClient())
 	if err != nil {
 		setupLog.Error(err, "could not remove finalizers from controlled resources")
 	}
