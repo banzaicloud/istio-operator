@@ -47,7 +47,7 @@ func (c *Cluster) reconcileNamespaceInjectionLabels(remoteConfig *istiov1beta1.R
 
 	remoteNamespaces := &corev1.NamespaceList{}
 	// remote -> local
-	c.ctrlRuntimeClient.List(context.Background(), remoteNamespaces, client.MatchingLabels(istio.RevisionLabels()))
+	err = c.ctrlRuntimeClient.List(context.Background(), remoteNamespaces, client.MatchingLabels(istio.RevisionLabels()))
 	if err != nil {
 		return err
 	}

@@ -17,7 +17,7 @@ limitations under the License.
 package sidecarinjector
 
 import (
-	admissionregistrationv1beta1 "k8s.io/api/admissionregistration/v1beta1"
+	admissionregistrationv1 "k8s.io/api/admissionregistration/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 
@@ -28,9 +28,9 @@ import (
 )
 
 func (r *Reconciler) webhook() runtime.Object {
-	fail := admissionregistrationv1beta1.Fail
-	noneSideEffects := admissionregistrationv1beta1.SideEffectClassNone
-	scope := admissionregistrationv1beta1.AllScopes
+	fail := admissionregistrationv1.Fail
+	noneSideEffects := admissionregistrationv1.SideEffectClassNone
+	scope := admissionregistrationv1.AllScopes
 	service := serviceName
 	if !util.PointerToBool(r.Config.Spec.SidecarInjector.Enabled) && util.PointerToBool(r.Config.Spec.Istiod.Enabled) {
 		service = istiod.ServiceNameIstiod
@@ -82,28 +82,28 @@ func (r *Reconciler) webhook() runtime.Object {
 		},
 	}
 
-	webhookConfiguration := &admissionregistrationv1beta1.MutatingWebhookConfiguration{
+	webhookConfiguration := &admissionregistrationv1.MutatingWebhookConfiguration{
 		ObjectMeta: templates.ObjectMetaClusterScopeWithRevision(webhookName, sidecarInjectorLabels, r.Config),
-		Webhooks:   []admissionregistrationv1beta1.MutatingWebhook{},
+		Webhooks:   []admissionregistrationv1.MutatingWebhook{},
 	}
 
-	webhook := &admissionregistrationv1beta1.MutatingWebhook{
+	webhook := &admissionregistrationv1.MutatingWebhook{
 		Name:                    "sidecar-injector.istio.io",
 		AdmissionReviewVersions: []string{"v1beta1", "v1"},
-		ClientConfig: admissionregistrationv1beta1.WebhookClientConfig{
-			Service: &admissionregistrationv1beta1.ServiceReference{
+		ClientConfig: admissionregistrationv1.WebhookClientConfig{
+			Service: &admissionregistrationv1.ServiceReference{
 				Name:      r.Config.WithRevision(service),
 				Namespace: r.Config.Namespace,
 				Path:      util.StrPointer("/inject"),
 			},
 			CABundle: nil,
 		},
-		Rules: []admissionregistrationv1beta1.RuleWithOperations{
+		Rules: []admissionregistrationv1.RuleWithOperations{
 			{
-				Operations: []admissionregistrationv1beta1.OperationType{
-					admissionregistrationv1beta1.Create,
+				Operations: []admissionregistrationv1.OperationType{
+					admissionregistrationv1.Create,
 				},
-				Rule: admissionregistrationv1beta1.Rule{
+				Rule: admissionregistrationv1.Rule{
 					Resources:   []string{"pods"},
 					APIGroups:   []string{""},
 					APIVersions: []string{"v1"},

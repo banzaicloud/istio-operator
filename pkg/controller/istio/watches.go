@@ -21,7 +21,7 @@ import (
 	"reflect"
 
 	"github.com/pkg/errors"
-	admissionregistrationv1beta1 "k8s.io/api/admissionregistration/v1beta1"
+	admissionregistrationv1 "k8s.io/api/admissionregistration/v1"
 	appsv1 "k8s.io/api/apps/v1"
 	autoscalingv2beta2 "k8s.io/api/autoscaling/v2beta2"
 	corev1 "k8s.io/api/core/v1"
@@ -79,7 +79,7 @@ func (r *ReconcileIstio) initWatches(watchCreatedResourcesEvents bool) error {
 		&appsv1.Deployment{TypeMeta: metav1.TypeMeta{Kind: "Deployment", APIVersion: appsv1.SchemeGroupVersion.String()}},
 		&appsv1.DaemonSet{TypeMeta: metav1.TypeMeta{Kind: "DaemonSet", APIVersion: appsv1.SchemeGroupVersion.String()}},
 		&autoscalingv2beta2.HorizontalPodAutoscaler{TypeMeta: metav1.TypeMeta{Kind: "HorizontalPodAutoscaler", APIVersion: autoscalingv2beta2.SchemeGroupVersion.String()}},
-		&admissionregistrationv1beta1.MutatingWebhookConfiguration{TypeMeta: metav1.TypeMeta{Kind: "MutatingWebhookConfiguration", APIVersion: admissionregistrationv1beta1.SchemeGroupVersion.String()}},
+		&admissionregistrationv1.MutatingWebhookConfiguration{TypeMeta: metav1.TypeMeta{Kind: "MutatingWebhookConfiguration", APIVersion: admissionregistrationv1.SchemeGroupVersion.String()}},
 	}
 
 	// Watch for changes to resources managed by the operator
@@ -299,10 +299,10 @@ func (r *ReconcileIstio) watchMeshWidePolicy(nn types.NamespacedName) error {
 func (r *ReconcileIstio) watchValidatingWebhookConfiguration() error {
 	err := r.ctrl.Watch(
 		&source.Kind{
-			Type: &admissionregistrationv1beta1.ValidatingWebhookConfiguration{
+			Type: &admissionregistrationv1.ValidatingWebhookConfiguration{
 				TypeMeta: metav1.TypeMeta{
 					Kind:       "ValidatingWebhookConfiguration",
-					APIVersion: admissionregistrationv1beta1.SchemeGroupVersion.String(),
+					APIVersion: admissionregistrationv1.SchemeGroupVersion.String(),
 				},
 			},
 		},
@@ -331,14 +331,14 @@ func (r *ReconcileIstio) watchValidatingWebhookConfiguration() error {
 		predicate.Funcs{
 			UpdateFunc: func(e event.UpdateEvent) bool {
 				var ok bool
-				var o, n *admissionregistrationv1beta1.ValidatingWebhookConfiguration
+				var o, n *admissionregistrationv1.ValidatingWebhookConfiguration
 
-				o, ok = e.ObjectOld.(*admissionregistrationv1beta1.ValidatingWebhookConfiguration)
+				o, ok = e.ObjectOld.(*admissionregistrationv1.ValidatingWebhookConfiguration)
 				if !ok {
 					return false
 				}
 
-				n, ok = e.ObjectNew.(*admissionregistrationv1beta1.ValidatingWebhookConfiguration)
+				n, ok = e.ObjectNew.(*admissionregistrationv1.ValidatingWebhookConfiguration)
 				if !ok {
 					return false
 				}

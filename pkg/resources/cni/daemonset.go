@@ -177,7 +177,7 @@ func (r *Reconciler) container() []apiv1.Container {
 			Name:  "repair-cni",
 			Image: image,
 			Command: []string{
-				"/opt/cni/bin/istio-cni-repair",
+				"/opt/local/bin/istio-cni-repair",
 			},
 			Env: []apiv1.EnvVar{
 				{
@@ -226,7 +226,7 @@ func (r *Reconciler) container() []apiv1.Container {
 			Name:  "taint-controller",
 			Image: image,
 			Command: []string{
-				"/opt/cni/bin/istio-cni-taint",
+				"/opt/local/bin/istio-cni-taint",
 			},
 			Env: []apiv1.EnvVar{
 				{
