@@ -26,7 +26,7 @@ import (
 	appsv1 "k8s.io/api/apps/v1"
 	autoscalingv1 "k8s.io/api/autoscaling/v1"
 	corev1 "k8s.io/api/core/v1"
-	policyv1beta1 "k8s.io/api/policy/v1beta1"
+	policyv1 "k8s.io/api/policy/v1"
 	rbacv1 "k8s.io/api/rbac/v1"
 	k8serrors "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -172,10 +172,10 @@ func (r *IstioMeshGatewayReconciler) SetupWithManager(mgr ctrl.Manager) error {
 				APIVersion: corev1.SchemeGroupVersion.String(),
 			},
 		}, ctrlBuilder.WithPredicates(util.ObjectChangePredicate{})).
-		Owns(&policyv1beta1.PodDisruptionBudget{
+		Owns(&policyv1.PodDisruptionBudget{
 			TypeMeta: metav1.TypeMeta{
 				Kind:       "PodDisruptionBudget",
-				APIVersion: policyv1beta1.SchemeGroupVersion.String(),
+				APIVersion: policyv1.SchemeGroupVersion.String(),
 			},
 		}, ctrlBuilder.WithPredicates(util.ObjectChangePredicate{})).
 		Owns(&rbacv1.Role{
