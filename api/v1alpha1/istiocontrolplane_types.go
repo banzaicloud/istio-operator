@@ -179,6 +179,10 @@ func (r *ResourceRequirements) ConvertToK8sRR() *corev1.ResourceRequirements {
 		Requests: make(corev1.ResourceList),
 	}
 
+	if r == nil {
+		return rr
+	}
+
 	for k, v := range r.Limits {
 		rr.Limits[corev1.ResourceName(k)] = v.Quantity
 	}
@@ -190,6 +194,10 @@ func InitResourceRequirementsFromK8sRR(rr *corev1.ResourceRequirements) *Resourc
 	r := &ResourceRequirements{
 		Limits:   make(map[string]*Quantity),
 		Requests: make(map[string]*Quantity),
+	}
+
+	if rr == nil {
+		return r
 	}
 
 	for k, v := range rr.Limits {
