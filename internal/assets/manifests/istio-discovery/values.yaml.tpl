@@ -38,7 +38,7 @@ env:
     value: {{ .WithRevision "istio-sidecar-injector" }}
 {{ else }}
   - name: INJECTION_WEBHOOK_CONFIG_NAME
-    value: istio-sidecar-injector{{- if not (eq .Name "") }}-{{ .Name }}.{ .Namespace }}{{- end }}
+    value: istio-sidecar-injector{{- if not (eq .Name "") }}-{{ .Name }}.{{ .Namespace }}{{- end }}
   - name: VALIDATION_WEBHOOK_CONFIG_NAME
     value: istio-validator{{- if not (eq .Name "") }}-{{ .Name }}.{{ .Namespace }}-{{ .Namespace }}{{- end }}
 {{ end }}
