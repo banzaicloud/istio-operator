@@ -89,12 +89,12 @@ pilot:
   - name: config-vol
     mountPath: /etc/config
   env:
-    - name: INJECTION_WEBHOOK_CONFIG_NAME
-      value: istio-sidecar-injector-cp-v111x-istio-system
     - name: ISTIOD_CUSTOM_HOST
       value: istiod-cp-v111x.istio-system.svc
     - name: PILOT_ENABLE_STATUS
       value: "true"
+    - name: INJECTION_WEBHOOK_CONFIG_NAME
+      value: istio-sidecar-injector-cp-v111x-istio-system
     - name: VALIDATION_WEBHOOK_CONFIG_NAME
       value: istio-validator-cp-v111x-istio-system
     - name: NAMESPACE_LE_NAME
