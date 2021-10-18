@@ -187,6 +187,10 @@ func (r *ResourceRequirements) ConvertToK8sRR() *corev1.ResourceRequirements {
 		rr.Limits[corev1.ResourceName(k)] = v.Quantity
 	}
 
+	for k, v := range r.Requests {
+		rr.Requests[corev1.ResourceName(k)] = v.Quantity
+	}
+
 	return rr
 }
 
@@ -202,6 +206,12 @@ func InitResourceRequirementsFromK8sRR(rr *corev1.ResourceRequirements) *Resourc
 
 	for k, v := range rr.Limits {
 		r.Limits[string(k)] = &Quantity{
+			Quantity: v,
+		}
+	}
+
+	for k, v := range rr.Requests {
+		r.Requests[string(k)] = &Quantity{
 			Quantity: v,
 		}
 	}
