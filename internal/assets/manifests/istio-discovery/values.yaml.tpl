@@ -11,8 +11,6 @@ autoscaleEnabled: {{ and (gt (.GetSpec.GetIstiod.GetDeployment.GetReplicas.GetMi
 
 {{ toYamlIf (dict "value" .GetSpec.GetIstiod.GetDeployment.GetResources "key" "resources") }}
 env:
-  - name: INJECTION_WEBHOOK_CONFIG_NAME
-    value: {{ .WithNamespacedRevision "istio-sidecar-injector" }}
   - name: ISTIOD_CUSTOM_HOST
     value: {{ .WithRevision "istiod" }}.{{ .Namespace }}.svc
   - name: PILOT_ENABLE_STATUS
@@ -21,9 +19,11 @@ env:
 {{ else }}
     value: "false"
 {{ end }}
+{{ if eq .GetSpec.GetDistribution "cisco" }}
+  - name: INJECTION_WEBHOOK_CONFIG_NAME
+    value: {{ .WithNamespacedRevision "istio-sidecar-injector" }}
   - name: VALIDATION_WEBHOOK_CONFIG_NAME
     value: {{ .WithNamespacedRevision "istio-validator" }}
-{{ if eq .GetSpec.GetDistribution "cisco" }}
   - name: NAMESPACE_LE_NAME
     value: {{ .WithRevision "istio-namespace-controller-election" }}
   - name: VALIDATION_LE_NAME
@@ -36,6 +36,11 @@ env:
     value: {{ .WithRevision "istio" }}
   - name: INJECTOR_CONFIGMAP_NAME
     value: {{ .WithRevision "istio-sidecar-injector" }}
+{{ else }}
+  - name: INJECTION_WEBHOOK_CONFIG_NAME
+    value: istio-sidecar-injector{{- if not (eq .Name "") }}-{{ .Name }}.{ .Namespace }}{{- end }}
+  - name: VALIDATION_WEBHOOK_CONFIG_NAME
+    value: istio-validator{{- if not (eq .Name "") }}-{{ .Name }}.{{ .Namespace }}-{{ .Namespace }}{{- end }}
 {{ end }}
 {{ toYamlIf (dict "value" .GetSpec.GetIstiod.GetDeployment.GetEnv) | indent 2 }}
 
