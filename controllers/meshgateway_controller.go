@@ -83,7 +83,7 @@ func (r *IstioMeshGatewayReconciler) Reconcile(ctx context.Context, req ctrl.Req
 	icp, err := r.getRelatedIstioControlPlane(ctx, r.GetClient(), imgw, logger)
 	if err != nil {
 		if err := util.RemoveFinalizer(ctx, r.Client, imgw, istioMeshGatewayFinalizerID, false); err != nil {
-			return ctrl.Result{}, err
+			return ctrl.Result{}, errors.WithStack(err)
 		}
 
 		return ctrl.Result{}, err
@@ -135,7 +135,7 @@ func (r *IstioMeshGatewayReconciler) Reconcile(ctx context.Context, req ctrl.Req
 
 	err = util.RemoveFinalizer(ctx, r.Client, imgw, istioMeshGatewayFinalizerID, true)
 	if err != nil {
-		return result, err
+		return result, errors.WithStack(err)
 	}
 
 	return result, nil

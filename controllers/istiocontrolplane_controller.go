@@ -183,7 +183,7 @@ func (r *IstioControlPlaneReconciler) Reconcile(ctx context.Context, req ctrl.Re
 
 	err = util.RemoveFinalizer(ctx, r.Client, icp, istioControlPlaneFinalizerID, true)
 	if err != nil {
-		return result, err
+		return result, errors.WithStack(err)
 	}
 
 	return result, nil
@@ -911,7 +911,7 @@ func (r *IstioControlPlaneReconciler) removeFinalizerFromRelatedMeshGateways(ctx
 		}
 		err = util.RemoveFinalizer(ctx, r.Client, &imgw, istioMeshGatewayFinalizerID, false)
 		if err != nil {
-			return err
+			return errors.WithStack(err)
 		}
 	}
 
@@ -1229,7 +1229,7 @@ func RemoveFinalizers(ctx context.Context, c client.Client) error {
 		istio := istio
 		err = util.RemoveFinalizer(ctx, c, &istio, istioControlPlaneFinalizerID, false)
 		if err != nil {
-			return err
+			return errors.WithStack(err)
 		}
 	}
 
@@ -1243,7 +1243,7 @@ func RemoveFinalizers(ctx context.Context, c client.Client) error {
 		imgw := imgw
 		err = util.RemoveFinalizer(ctx, c, &imgw, istioMeshGatewayFinalizerID, false)
 		if err != nil {
-			return err
+			return errors.WithStack(err)
 		}
 	}
 
