@@ -224,7 +224,11 @@ spec:
   {{- if eq .Values.global.pilotCertProvider "istiod" }}
   - name: istiod-ca-cert
     configMap:
+      {{- if eq .Values.global.distribution "cisco" }}
+      name: istio-ca-root-cert-{{ .Values.revision }}
+      {{- else }}
       name: istio-ca-root-cert
+      {{- end }}
   {{- end }}
   {{- if isset .ObjectMeta.Annotations `sidecar.istio.io/userVolume` }}
   {{range $index, $value := fromJSON (index .ObjectMeta.Annotations `sidecar.istio.io/userVolume`) }}
