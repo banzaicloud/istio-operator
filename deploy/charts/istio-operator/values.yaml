@@ -1,6 +1,6 @@
 image:
   repository: ghcr.io/banzaicloud/istio-operator
-  tag: "v2.11.0-rc.0"
+  tag: "v2.11.0-rc.4"
   pullPolicy: IfNotPresent
 replicaCount: 1
 extraArgs: []
