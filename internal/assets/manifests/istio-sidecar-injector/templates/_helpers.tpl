@@ -25,9 +25,10 @@
 
 {{- define "generic.labels" }}
 release: {{ .Release.Name }}
+istio: "sidecar-injector"
 app: "istio-sidecar-injector"
 {{- if .Values.revision }}
-istio.io/rev: {{ .Values.revision }}
+istio.io/rev: {{ include "namespaced-revision" . }}
 {{- end }}
 {{- end }}
 
