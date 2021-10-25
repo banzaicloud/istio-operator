@@ -156,7 +156,7 @@ If you find this project useful here's how you can help:
 
 ### Community support
 
-If you encounter any problems that is not addressed in our documentation, [open an issue](https://github.com/banzaicloud/istio-operator/issues) or talk to us on the [Banzai Cloud Slack channel #istio-operator.](https://pages.banzaicloud.com/invite-slack).
+If you encounter any problems that is not addressed in our documentation, [open an issue](https://github.com/banzaicloud/istio-operator/issues) or talk to us on the [Banzai Cloud Slack channel #istio-operator.](https://banzaicloud.com/invite-slack/).
 
 ### Commercial support
 
