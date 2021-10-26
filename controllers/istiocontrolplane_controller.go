@@ -1167,7 +1167,9 @@ func (r *IstioControlPlaneReconciler) reconcileNamespaceInjectionLabels(ctx cont
 		if err != nil {
 			return errors.WrapIfWithDetails(err, "could not get namespace", "namespace", name)
 		}
-		ns.SetLabels(utils.MergeLabels(ns.GetLabels(), icp.RevisionLabels()))
+		labels := utils.MergeLabels(ns.GetLabels(), icp.RevisionLabels())
+		delete(labels, servicemeshv1alpha1.DeprecatedAutoInjectionLabel)
+		ns.SetLabels(labels)
 		r.Log.Info("add injection label to namespace", "namespace", ns.GetName(), "label", servicemeshv1alpha1.RevisionedAutoInjectionLabel)
 		err = r.GetClient().Update(ctx, ns)
 		if err != nil {

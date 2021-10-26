@@ -28,6 +28,7 @@ import (
 
 const (
 	RevisionedAutoInjectionLabel       = "istio.io/rev"
+	DeprecatedAutoInjectionLabel       = "istio-injection"
 	NamespaceInjectionSourceAnnotation = "controlplane.istio.servicemesh.cisco.com/namespace-injection-source"
 )
 
