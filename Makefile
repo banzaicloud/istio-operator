@@ -158,3 +158,8 @@ release: check_release
 	git push origin ${REL_TAG}
 	git push origin ${API_REL_TAG}
 	git push origin ${CHART_REL_TAG}
+
+.PHONY: tidy
+tidy: ## Execute go mod tidy
+	go mod tidy
+	go mod download all

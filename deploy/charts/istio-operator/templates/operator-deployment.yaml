@@ -65,7 +65,7 @@ spec:
           {{- if .Values.clusterRegistry.clusterAPI.enabled }}
           - "--cluster-registry-api-enabled"
           {{- end }}
-          {{- if .Values.clusterRegistry.resourceSyncRules.enabled }}
+          {{- if and .Values.clusterRegistry.clusterAPI.enabled .Values.clusterRegistry.resourceSyncRules.enabled }}
           - "--cluster-registry-sync-rules-enabled"
           {{- end }}
           {{- range $value := .Values.extraArgs }}
