@@ -11,6 +11,7 @@ rules:
   resources:
   - configmaps
   - endpoints
+  - resourcequotas
   - secrets
   - serviceaccounts
   - services
@@ -28,6 +29,12 @@ rules:
   - events
   verbs:
   - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
 - apiGroups:
   - ""
   resources:
@@ -52,9 +59,12 @@ rules:
   resources:
   - pods
   verbs:
+  - delete
   - deletecollection
   - get
   - list
+  - patch
+  - update
   - watch
 - apiGroups:
   - admissionregistration.k8s.io

@@ -10,6 +10,7 @@ rules:
 - apiGroups: [""]
   resources:
   - pods
+  - namespaces
   - nodes
   verbs:
   - get

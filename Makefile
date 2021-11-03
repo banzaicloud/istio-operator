@@ -162,3 +162,8 @@ release: check_release
 	git push origin ${API_REL_TAG}
 	git push origin ${EMBEDDED_CHART_REL_TAG}
 	git push origin ${HELM_CHART_REL_TAG}
+
+.PHONY: tidy
+tidy: ## Execute go mod tidy
+	go mod tidy
+	go mod download all
