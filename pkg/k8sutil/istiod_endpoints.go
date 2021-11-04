@@ -14,7 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package util
+package k8sutil
 
 import (
 	"context"
@@ -24,7 +24,6 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
 	servicemeshv1alpha1 "github.com/banzaicloud/istio-operator/api/v2/v1alpha1"
-	"github.com/banzaicloud/istio-operator/v2/pkg/k8sutil"
 )
 
 func GetIstiodEndpointAddresses(ctx context.Context, kubeClient client.Client, icpName string, icpNetworkName string, namespace string) ([]corev1.EndpointAddress, error) {
@@ -64,7 +63,7 @@ func GetIstiodEndpointAddresses(ctx context.Context, kubeClient client.Client, i
 func GetIstiodEndpointPorts(ctx context.Context, kubeClient client.Client, serviceName string, serviceNamespace string) ([]corev1.EndpointPort, error) {
 	istiodPorts := []corev1.EndpointPort{}
 
-	service, err := k8sutil.GetService(ctx, kubeClient, serviceName, serviceNamespace)
+	service, err := GetService(ctx, kubeClient, serviceName, serviceNamespace)
 	if err != nil {
 		return istiodPorts, errors.WithStackIf(err)
 	}
