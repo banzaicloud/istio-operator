@@ -74,7 +74,7 @@ manager: generate manifests fmt vet build
 # Build manager binary
 .PHONY: build
 build:
-	go build -o bin/manager main.go
+	go build -ldflags="-X main.SupportedIstioVersion=${ISTIO_VERSION} -X main.Version=${TAG}" -o bin/manager main.go
 
 # Run against the configured Kubernetes cluster in ~/.kube/config
 run: generate fmt vet manifests

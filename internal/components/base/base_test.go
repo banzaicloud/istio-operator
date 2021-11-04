@@ -59,6 +59,10 @@ func TestICPBaseResourceDump(t *testing.T) {
 		}, fake.NewSimpleClientset().Discovery(), []reconciler.NativeReconcilerOpt{
 			reconciler.NativeReconcilerSetControllerRef(),
 		}),
+		logr.TestLogger{
+			T: t,
+		},
+		"1.11.4",
 	)
 
 	dd, err := reconciler.GetManifest(icp)
