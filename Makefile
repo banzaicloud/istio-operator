@@ -20,7 +20,7 @@ GOLANGCI_VERSION = 1.42.1
 LICENSEI_VERSION = 0.4.0
 KUBEBUILDER_VERSION = 2.3.2
 KUSTOMIZE_VERSION = 4.1.2
-ISTIO_VERSION = 1.11.0
+ISTIO_VERSION = 1.11.4
 BUF_VERSION = 0.41.0
 
 PATH := $(PATH):$(PWD)/bin
@@ -105,6 +105,7 @@ deploy: install-kustomize manifests
 manifests: download-deps update-istio-deps
 	bin/controller-gen rbac:roleName=manager-role webhook paths="./..."
 	bin/cue-gen -paths=build -f=cue.yaml -crd
+	./scripts/label-crds.sh $(ISTIO_VERSION)
 	cp -a config/crd/bases/ deploy/charts/istio-operator/crds
 
 # Run go fmt against code
