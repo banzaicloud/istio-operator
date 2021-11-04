@@ -129,3 +129,17 @@ func MergeYAMLs(mergoOptions []MergoOption, yamls ...string) ([]byte, error) {
 
 	return yaml.Marshal(l)
 }
+
+func MergeStringMaps(l map[string]string, l2 map[string]string) map[string]string {
+	merged := make(map[string]string)
+	if l == nil {
+		l = make(map[string]string)
+	}
+	for lKey, lValue := range l {
+		merged[lKey] = lValue
+	}
+	for lKey, lValue := range l2 {
+		merged[lKey] = lValue
+	}
+	return merged
+}

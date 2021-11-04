@@ -67,7 +67,6 @@ import (
 	"github.com/banzaicloud/istio-operator/v2/internal/models"
 	"github.com/banzaicloud/istio-operator/v2/internal/util"
 	"github.com/banzaicloud/istio-operator/v2/pkg/k8sutil"
-	pkgUtil "github.com/banzaicloud/istio-operator/v2/pkg/util"
 	"github.com/banzaicloud/k8s-objectmatcher/patch"
 	"github.com/banzaicloud/operator-tools/pkg/reconciler"
 	"github.com/banzaicloud/operator-tools/pkg/utils"
@@ -828,7 +827,7 @@ func (r *IstioControlPlaneReconciler) reconcileIstiodEndpoint(ctx context.Contex
 	serviceName := icp.WithRevision("istiod")
 	serviceNamespace := icp.GetNamespace()
 
-	istiodEndpointAddresses, err := pkgUtil.GetIstiodEndpointAddresses(ctx, r.Client, icp.GetName(), icp.GetSpec().GetNetworkName(), serviceNamespace)
+	istiodEndpointAddresses, err := k8sutil.GetIstiodEndpointAddresses(ctx, r.Client, icp.GetName(), icp.GetSpec().GetNetworkName(), serviceNamespace)
 	if err != nil {
 		return errors.WithStackIf(err)
 	}
@@ -836,13 +835,13 @@ func (r *IstioControlPlaneReconciler) reconcileIstiodEndpoint(ctx context.Contex
 		return errors.New("no valid istiod address found")
 	}
 
-	istiodEndpointPorts, err := pkgUtil.GetIstiodEndpointPorts(ctx, r.Client, serviceName, serviceNamespace)
+	istiodEndpointPorts, err := k8sutil.GetIstiodEndpointPorts(ctx, r.Client, serviceName, serviceNamespace)
 	if err != nil {
 		return errors.WithStackIf(err)
 	}
 
 	endpoints := k8sutil.CreateK8sEndpoints(serviceName, serviceNamespace, istiodEndpointAddresses, istiodEndpointPorts)
-	pkgUtil.SetICPMetadataOnObject(endpoints, icp)
+	k8sutil.SetICPMetadataOnObject(endpoints, icp)
 
 	_, err = r.ResourceReconciler.ReconcileResource(endpoints, reconciler.StatePresent)
 	if err != nil {
@@ -864,7 +863,7 @@ func (r *IstioControlPlaneReconciler) reconcileClusterReaderSecret(ctx context.C
 
 	if icp.DeletionTimestamp.IsZero() {
 		state = reconciler.StatePresent
-		secret, err = pkgUtil.GetReaderSecretForCluster(
+		secret, err = k8sutil.GetReaderSecretForCluster(
 			ctx,
 			r.Client,
 			kubeConfig,
@@ -885,7 +884,7 @@ func (r *IstioControlPlaneReconciler) reconcileClusterReaderSecret(ctx context.C
 		}
 
 		secret.Type = readerSecretType
-		pkgUtil.SetICPMetadataOnObject(secret, icp)
+		k8sutil.SetICPMetadataOnObject(secret, icp)
 	}
 
 	_, err = r.ResourceReconciler.ReconcileResource(secret, state)

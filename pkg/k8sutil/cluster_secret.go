@@ -14,7 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package util
+package k8sutil
 
 import (
 	"bytes"
@@ -34,7 +34,6 @@ import (
 	"sigs.k8s.io/yaml"
 
 	clusterregistryv1alpha1 "github.com/banzaicloud/cluster-registry/api/v1alpha1"
-	"github.com/banzaicloud/istio-operator/v2/pkg/k8sutil"
 )
 
 func GetExternalAddressOfAPIServer(kubeConfig *rest.Config) (string, error) {
@@ -90,7 +89,7 @@ func GetReaderSecretForCluster(ctx context.Context, kubeClient client.Client, ku
 	}
 
 	if clusterRegistryAPIEnabled {
-		cluster, err := k8sutil.GetLocalCluster(ctx, kubeClient)
+		cluster, err := GetLocalCluster(ctx, kubeClient)
 		if err != nil {
 			return nil, errors.WithStackIf(err)
 		}
