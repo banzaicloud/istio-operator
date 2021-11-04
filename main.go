@@ -41,6 +41,9 @@ import (
 var (
 	scheme   = runtime.NewScheme()
 	setupLog = ctrl.Log.WithName("setup")
+
+	SupportedIstioVersion string
+	Version               string
 )
 
 func init() {
@@ -105,6 +108,8 @@ func main() {
 		),
 		ClusterRegistry:          clusterRegistryConfiguration,
 		APIServerEndpointAddress: apiServerEndpointAddress,
+		SupportedIstioVersion:    SupportedIstioVersion,
+		Version:                  Version,
 	}).SetupWithManager(mgr); err != nil {
 		setupLog.Error(err, "unable to create controller", "controller", "IstioControlPlane")
 		os.Exit(1)

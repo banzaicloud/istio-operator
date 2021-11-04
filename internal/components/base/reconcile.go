@@ -17,9 +17,11 @@ limitations under the License.
 package base
 
 import (
+	"fmt"
 	"net/http"
 
 	"emperror.dev/errors"
+	"github.com/go-logr/logr"
 	apiextensionv1 "k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
@@ -28,6 +30,7 @@ import (
 	"github.com/banzaicloud/istio-operator/v2/internal/assets"
 	"github.com/banzaicloud/istio-operator/v2/internal/components"
 	"github.com/banzaicloud/istio-operator/v2/internal/util"
+	"github.com/banzaicloud/istio-operator/v2/pkg/k8sutil"
 	"github.com/banzaicloud/operator-tools/pkg/helm"
 	"github.com/banzaicloud/operator-tools/pkg/helm/templatereconciler"
 	"github.com/banzaicloud/operator-tools/pkg/reconciler"
@@ -39,17 +42,25 @@ const (
 	chartName     = "base"
 	releaseName   = "istio-operator-base"
 
+	managedByValue = "istio-operator"
+
 	valuesTemplateFileName = "values.yaml.tpl"
 )
 
 var _ components.MinimalComponent = &Component{}
 
-type Component struct{}
+type Component struct {
+	logger                logr.Logger
+	supportedIstioVersion string
+}
 
-func NewComponentReconciler(helmReconciler *templatereconciler.HelmReconciler) components.ComponentReconciler {
+func NewComponentReconciler(helmReconciler *templatereconciler.HelmReconciler, logger logr.Logger, supportedIstioVersion string) components.ComponentReconciler {
 	return &components.Base{
 		HelmReconciler: helmReconciler,
-		Component:      &Component{},
+		Component: &Component{
+			logger:                logger,
+			supportedIstioVersion: supportedIstioVersion,
+		},
 	}
 }
 
@@ -86,16 +97,54 @@ func (rec *Component) ReleaseData(object runtime.Object) (*templatereconciler.Re
 			{
 				GVK: apiextensionv1.SchemeGroupVersion.WithKind("CustomResourceDefinition"),
 			}: reconciler.DynamicDesiredState{
-				DesiredState: reconciler.StateCreated,
+				DesiredState: reconciler.StatePresent,
 				BeforeCreateFunc: func(desired runtime.Object) error {
 					if o, ok := desired.(client.Object); ok {
 						annotations := o.GetAnnotations()
 						delete(annotations, types.BanzaiCloudManagedComponent)
 						delete(annotations, types.BanzaiCloudRelatedTo)
 						o.SetAnnotations(annotations)
+						k8sutil.SetResourceRevisionLabel(o, rec.supportedIstioVersion)
+						k8sutil.SetManagedByLabel(o, managedByValue)
 					}
 
 					return nil
+				},
+				BeforeUpdateFunc: func(current, desired runtime.Object) error {
+					if o, ok := desired.(client.Object); ok {
+						annotations := o.GetAnnotations()
+						delete(annotations, types.BanzaiCloudManagedComponent)
+						delete(annotations, types.BanzaiCloudRelatedTo)
+						o.SetAnnotations(annotations)
+						k8sutil.SetResourceRevisionLabel(o, rec.supportedIstioVersion)
+						k8sutil.SetManagedByLabel(o, managedByValue)
+					}
+
+					return nil
+				},
+				ShouldUpdateFunc: func(current, desired runtime.Object) (bool, error) {
+					var obj client.Object
+					var ok bool
+					if obj, ok = current.(client.Object); !ok {
+						return false, errors.New("invalid object")
+					}
+
+					if k8sutil.GetManagedByLabel(obj) != managedByValue {
+						rec.logger.V(1).Info("current crd is not owned by us, skip update", "name", obj.GetName())
+
+						return false, nil
+					}
+
+					ok, err := k8sutil.CheckResourceRevision(obj, fmt.Sprintf("<=%s", rec.supportedIstioVersion))
+					if err != nil {
+						return false, errors.WithStackIf(err)
+					}
+
+					if !ok {
+						rec.logger.V(1).Info("current crd is newer, skip update", "name", obj.GetName())
+					}
+
+					return ok, nil
 				},
 			},
 		},

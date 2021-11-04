@@ -88,6 +88,8 @@ type IstioControlPlaneReconciler struct {
 	ResourceReconciler       reconciler.ResourceReconciler
 	ClusterRegistry          models.ClusterRegistryConfiguration
 	APIServerEndpointAddress string
+	SupportedIstioVersion    string
+	Version                  string
 
 	watchersInitOnce sync.Once
 	builder          *ctrlBuilder.Builder
@@ -208,7 +210,9 @@ func (r *IstioControlPlaneReconciler) reconcile(ctx context.Context, icp *servic
 	}
 
 	if icp.GetSpec().GetMode() == servicemeshv1alpha1.ModeType_ACTIVE {
-		baseComponent, err := NewComponentReconciler(r, base.NewComponentReconciler, r.Log.WithName("base"))
+		baseComponent, err := NewComponentReconciler(r, func(helmReconciler *components.HelmReconciler) components.ComponentReconciler {
+			return base.NewComponentReconciler(helmReconciler, r.Log.WithName("base"), r.SupportedIstioVersion)
+		}, r.Log.WithName("base"))
 		if err != nil {
 			return ctrl.Result{}, err
 		}
