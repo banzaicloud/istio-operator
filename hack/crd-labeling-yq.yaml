@@ -1,0 +1,4 @@
+- command: update
+  path: metadata.labels
+  value:
+    resource.alpha.banzaicloud.io/revision: {{ISTIO_VERSION}}

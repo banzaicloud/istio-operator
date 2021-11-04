@@ -7,6 +7,7 @@ controller_gen_version=v0.6.2
 istio_deps_version=v1.11.0-bzc.2
 istio_tools_replacement_module_name=github.com/waynz0r/istio-tools
 gogo_protobuf_version=v1.3.2
+yq_version=3.4.1
 
 script_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" >/dev/null 2>&1 && pwd)"
 binpath=${script_dir}/../bin
@@ -56,5 +57,6 @@ ensure-binary-version protoc-gen-deepcopy ${istio_deps_version} "istio.io/tools"
 ensure-binary-version protoc-gen-jsonshim ${istio_deps_version} "istio.io/tools" "/cmd/protoc-gen-jsonshim" "${istio_tools_replacement_module_name}"
 ensure-binary-version protoc-gen-docs ${istio_deps_version} "istio.io/tools" "/cmd/protoc-gen-docs" "${istio_tools_replacement_module_name}"
 ensure-binary-version protoc-gen-gogofast ${gogo_protobuf_version} "github.com/gogo" "/protobuf/protoc-gen-gogofast"
+ensure-binary-version yq ${yq_version} "github.com/mikefarah/yq" "/v3"
 
 go mod tidy
