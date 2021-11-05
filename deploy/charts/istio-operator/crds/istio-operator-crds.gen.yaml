@@ -16981,7 +16981,3 @@ spec:
       storage: true
       subresources:
         status: {}
----
-metadata:
-  labels:
-    resource.alpha.banzaicloud.io/revision: 1.11.4
