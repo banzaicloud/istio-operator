@@ -31,7 +31,6 @@ import (
 	apiextensionsv1 "k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1"
 	apiextensionsv1beta1 "k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1beta1"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
-	"k8s.io/apimachinery/pkg/api/meta"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/runtime/serializer/json"
 	"k8s.io/client-go/kubernetes/scheme"
@@ -187,13 +186,18 @@ func (r *CRDReconciler) Reconcile(config *istiov1beta1.Istio, log logr.Logger) e
 		}
 		if apierrors.IsNotFound(err) {
 			if err := patch.DefaultAnnotator.SetLastAppliedAnnotation(crd); err != nil {
-				log.Error(err, "Failed to set last applied annotation", "crd", crd)
+				log.Error(err, "failed to set last applied annotation", "crd", crd)
 			}
 			if err := r.client.Create(context.Background(), crd); err != nil {
 				return emperror.WrapWith(err, "creating CRD failed", "kind", kind)
 			}
 			log.Info("CRD created")
 		} else {
+			if current.GetLabels()[createdByLabel] != createdBy {
+				log.V(1).Info("current crd is not created by us, skip update", "name", current.GetName())
+				continue
+			}
+
 			if ok, err := k8sutil.CheckResourceRevision(current, fmt.Sprintf("<=%s", r.revision)); !ok {
 				if err != nil {
 					log.Error(err, "could not check resource revision")
@@ -202,13 +206,8 @@ func (r *CRDReconciler) Reconcile(config *istiov1beta1.Istio, log logr.Logger) e
 				}
 				continue
 			}
-			metaAccessor := meta.NewAccessor()
-			currentResourceVersion, err := metaAccessor.ResourceVersion(current)
-			if err != nil {
-				return err
-			}
 
-			metaAccessor.SetResourceVersion(crd, currentResourceVersion)
+			crd.SetResourceVersion(current.GetResourceVersion())
 
 			patchResult, err := patch.DefaultPatchMaker.Calculate(current, crd, patch.IgnoreStatusFields())
 			if err != nil {
@@ -225,7 +224,7 @@ func (r *CRDReconciler) Reconcile(config *istiov1beta1.Istio, log logr.Logger) e
 			}
 
 			if err := patch.DefaultAnnotator.SetLastAppliedAnnotation(crd); err != nil {
-				log.Error(err, "Failed to set last applied annotation", "crd", crd)
+				log.Error(err, "failed to set last applied annotation", "crd", crd)
 			}
 
 			if err := r.client.Update(context.Background(), crd); err != nil {
