@@ -134,4 +134,4 @@ workflows:
             branches:
               ignore: /.*/
             tags:
-              only: /deploy\/charts\/v?\d+.\d+.\d+/
+              only: /chart\/istio-operator\/\d+.\d+.\d+/
