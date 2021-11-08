@@ -1,5 +1,5 @@
 # Image URL to use all building/pushing image targets
-TAG ?= $(shell git describe --tags --abbrev=0 --match '[0-9].*[0-9].*[0-9]' 2>/dev/null )
+TAG ?= $(shell git describe --tags --abbrev=0 --match 'v[0-9].*[0-9].*[0-9]' 2>/dev/null )
 IMAGE_REPOSITORY ?= banzaicloud/istio-operator
 IMG ?= ${IMAGE_REPOSITORY}:$(TAG)
 
@@ -8,11 +8,13 @@ CHART_VERSION ?= $(shell sed -nr '/version:/ s/.*version: ([^"]+).*/\1/p' deploy
 RELEASE_TYPE ?= p
 RELEASE_MSG ?= "istio operator release"
 API_RELEASE_MSG ?= "istio operator api release"
-CHART_RELEASE_MSG ?= "istio operator chart release"
+EMBEDDED_CHART_RELEASE_MSG ?= "istio operator embedded chart release"
+HELM_CHART_RELEASE_MSG ?= "istio operator helm chart release"
 
 REL_TAG = $(shell ./scripts/increment_version.sh -${RELEASE_TYPE} ${TAG})
 API_REL_TAG ?= api/${REL_TAG}
-CHART_REL_TAG ?= deploy/charts/v${CHART_VERSION}
+EMBEDDED_CHART_REL_TAG ?= deploy/charts/v${CHART_VERSION}
+HELM_CHART_REL_TAG ?= chart/istio-operator/${CHART_VERSION}
 
 GOLANGCI_VERSION = 1.42.1
 LICENSEI_VERSION = 0.4.0
@@ -149,12 +151,14 @@ docker-push:
 	docker push ${IMG}
 
 check_release:
-	@echo "New tags (${REL_TAG}, ${API_REL_TAG} and ${CHART_REL_TAG}) will be pushed to Github, a new Docker image (${REL_TAG}) will be released, and a new Helm chart (${CHART_REL_TAG}) will be released. Are you sure? [y/N] " && read -r ans && [ "$${ans:-N}" = y ]
+	@echo "New tags (${REL_TAG}, ${API_REL_TAG}, ${EMBEDDED_CHART_REL_TAG} and ${HELM_CHART_REL_TAG}) will be pushed to Github, a new Docker image (${REL_TAG}) will be released, and a new Helm chart (${HELM_CHART_REL_TAG}) will be released. Are you sure? [y/N] " && read -r ans && [ "$${ans:-N}" = y ]
 
 release: check_release
 	git tag -a ${REL_TAG} -m ${RELEASE_MSG}
 	git tag -a ${API_REL_TAG} -m ${API_RELEASE_MSG}
-	git tag -a ${CHART_REL_TAG} -m ${CHART_RELEASE_MSG}
+	git tag -a ${EMBEDDED_CHART_REL_TAG} -m ${EMBEDDED_CHART_RELEASE_MSG}
+	git tag -a ${HELM_CHART_REL_TAG} -m ${HELM_CHART_RELEASE_MSG}
 	git push origin ${REL_TAG}
 	git push origin ${API_REL_TAG}
-	git push origin ${CHART_REL_TAG}
+	git push origin ${EMBEDDED_CHART_REL_TAG}
+	git push origin ${HELM_CHART_REL_TAG}

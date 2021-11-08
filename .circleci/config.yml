@@ -22,12 +22,12 @@ commands:
           name: Publish latest
           command: |
             minor="$(echo ${CIRCLE_TAG} | cut -d '.' -f2)"
-            docker tag "banzaicloud/istio-operator:${CIRCLE_TAG}" "ghcr.io/banzaicloud/istio-operator:latest-1.${minor}"
+            docker tag "ghcr.io/banzaicloud/istio-operator:${CIRCLE_TAG}" "ghcr.io/banzaicloud/istio-operator:latest-1.${minor}"
             docker push "ghcr.io/banzaicloud/istio-operator:latest-1.${minor}"
 
-            latest="$(git tag | grep -E '^[0-9]+\.[0-9]+\.[0-9]+$' | cut -d '.' -f2 | sort -urn | head -n 1)"
+            latest="$(git tag | grep -E '^v?[0-9]+\.[0-9]+\.[0-9]+$' | cut -d '.' -f2 | sort -urn | head -n 1)"
             if [ "${latest}" -eq "${minor}" ]; then
-              docker tag "banzaicloud/istio-operator:${CIRCLE_TAG}" "ghcr.io/banzaicloud/istio-operator:latest"
+              docker tag "ghcr.io/banzaicloud/istio-operator:${CIRCLE_TAG}" "ghcr.io/banzaicloud/istio-operator:latest"
               docker push "ghcr.io/banzaicloud/istio-operator:latest"
             fi
 
@@ -134,4 +134,4 @@ workflows:
             branches:
               ignore: /.*/
             tags:
-              only: /deploy\/charts\/v?\d+.\d+.\d+/
+              only: /chart\/istio-operator\/\d+.\d+.\d+/
