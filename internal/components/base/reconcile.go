@@ -87,6 +87,15 @@ func (rec *Component) ReleaseData(object runtime.Object) (*templatereconciler.Re
 		return nil, err
 	}
 
+	prepareCRDFunc := func(obj client.Object) {
+		annotations := obj.GetAnnotations()
+		delete(annotations, types.BanzaiCloudManagedComponent)
+		delete(annotations, types.BanzaiCloudRelatedTo)
+		obj.SetAnnotations(annotations)
+		k8sutil.SetResourceRevisionLabel(obj, rec.supportedIstioVersion)
+		k8sutil.SetManagedByLabel(obj, managedByValue)
+	}
+
 	return &templatereconciler.ReleaseData{
 		Chart:       http.FS(assets.BaseChart),
 		Values:      values,
@@ -100,24 +109,14 @@ func (rec *Component) ReleaseData(object runtime.Object) (*templatereconciler.Re
 				DesiredState: reconciler.StatePresent,
 				BeforeCreateFunc: func(desired runtime.Object) error {
 					if o, ok := desired.(client.Object); ok {
-						annotations := o.GetAnnotations()
-						delete(annotations, types.BanzaiCloudManagedComponent)
-						delete(annotations, types.BanzaiCloudRelatedTo)
-						o.SetAnnotations(annotations)
-						k8sutil.SetResourceRevisionLabel(o, rec.supportedIstioVersion)
-						k8sutil.SetManagedByLabel(o, managedByValue)
+						prepareCRDFunc(o)
 					}
 
 					return nil
 				},
 				BeforeUpdateFunc: func(current, desired runtime.Object) error {
 					if o, ok := desired.(client.Object); ok {
-						annotations := o.GetAnnotations()
-						delete(annotations, types.BanzaiCloudManagedComponent)
-						delete(annotations, types.BanzaiCloudRelatedTo)
-						o.SetAnnotations(annotations)
-						k8sutil.SetResourceRevisionLabel(o, rec.supportedIstioVersion)
-						k8sutil.SetManagedByLabel(o, managedByValue)
+						prepareCRDFunc(o)
 					}
 
 					return nil
