@@ -46,12 +46,13 @@ import (
 	istio_crds "github.com/banzaicloud/istio-operator/pkg/manifests/istio-crds/generated"
 	"github.com/banzaicloud/istio-operator/pkg/util"
 	"github.com/banzaicloud/k8s-objectmatcher/patch"
+	"github.com/banzaicloud/operator-tools/pkg/types"
 )
 
 const (
 	componentName     = "crds"
 	createdByLabel    = "banzaicloud.io/created-by"
-	createdBy         = "istio-operator"
+	managedBy         = "istio-operator"
 	eventRecorderName = "istio-crd-controller"
 )
 
@@ -136,7 +137,8 @@ func (r *CRDReconciler) load(f io.Reader) error {
 			crd.Status = apiextensionsv1.CustomResourceDefinitionStatus{}
 			crd.SetGroupVersionKind(apiextensionsv1.SchemeGroupVersion.WithKind("CustomResourceDefinition"))
 			crd.SetLabels(util.MergeStringMaps(crd.GetLabels(), map[string]string{
-				createdByLabel: createdBy,
+				createdByLabel:       managedBy,
+				types.ManagedByLabel: managedBy,
 			}))
 			r.crds = append(r.crds, crd)
 			continue
@@ -146,7 +148,8 @@ func (r *CRDReconciler) load(f io.Reader) error {
 			crd.Status = apiextensionsv1beta1.CustomResourceDefinitionStatus{}
 			crd.SetGroupVersionKind(apiextensionsv1beta1.SchemeGroupVersion.WithKind("CustomResourceDefinition"))
 			crd.SetLabels(util.MergeStringMaps(crd.GetLabels(), map[string]string{
-				createdByLabel: createdBy,
+				createdByLabel:       managedBy,
+				types.ManagedByLabel: managedBy,
 			}))
 			r.crds = append(r.crds, crd)
 		}
@@ -193,7 +196,12 @@ func (r *CRDReconciler) Reconcile(config *istiov1beta1.Istio, log logr.Logger) e
 			}
 			log.Info("CRD created")
 		} else {
-			if current.GetLabels()[createdByLabel] != createdBy {
+			managedByUs := false
+			if current.GetLabels()[createdByLabel] == managedBy || current.GetLabels()[types.ManagedByLabel] == managedBy {
+				managedByUs = true
+			}
+
+			if managedByUs {
 				log.V(1).Info("current crd is not created by us, skip update", "name", current.GetName())
 				continue
 			}
@@ -254,13 +262,16 @@ func GetWatchPredicateForCRDs() predicate.Funcs {
 			return false
 		},
 		DeleteFunc: func(e event.DeleteEvent) bool {
-			if e.Object.GetLabels()[createdByLabel] == createdBy {
+			if e.Object.GetLabels()[createdByLabel] == managedBy || e.Object.GetLabels()[types.ManagedByLabel] == managedBy {
 				return true
 			}
 			return true
 		},
 		UpdateFunc: func(e event.UpdateEvent) bool {
-			if e.ObjectOld.GetLabels()[createdByLabel] == createdBy || e.ObjectNew.GetLabels()[createdByLabel] == createdBy {
+			if e.ObjectOld.GetLabels()[createdByLabel] == managedBy || e.ObjectNew.GetLabels()[createdByLabel] == managedBy {
+				return true
+			}
+			if e.ObjectOld.GetLabels()[types.ManagedByLabel] == managedBy || e.ObjectNew.GetLabels()[types.ManagedByLabel] == managedBy {
 				return true
 			}
 			return false
