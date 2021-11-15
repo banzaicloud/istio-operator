@@ -265,7 +265,7 @@ func GetWatchPredicateForCRDs() predicate.Funcs {
 			if e.Object.GetLabels()[createdByLabel] == managedBy || e.Object.GetLabels()[types.ManagedByLabel] == managedBy {
 				return true
 			}
-			return true
+			return false
 		},
 		UpdateFunc: func(e event.UpdateEvent) bool {
 			if e.ObjectOld.GetLabels()[createdByLabel] == managedBy || e.ObjectNew.GetLabels()[createdByLabel] == managedBy {
