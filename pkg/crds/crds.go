@@ -201,8 +201,8 @@ func (r *CRDReconciler) Reconcile(config *istiov1beta1.Istio, log logr.Logger) e
 				managedByUs = true
 			}
 
-			if managedByUs {
-				log.V(1).Info("current crd is not created by us, skip update", "name", current.GetName())
+			if !managedByUs {
+				log.V(1).Info("current crd is not managed by us, skip update", "name", current.GetName())
 				continue
 			}
 
