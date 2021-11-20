@@ -5,11 +5,11 @@ package v1alpha1
 
 import (
 	fmt "fmt"
-	_ "github.com/gogo/protobuf/gogoproto"
-	proto "github.com/gogo/protobuf/proto"
-	descriptor "github.com/gogo/protobuf/protoc-gen-gogo/descriptor"
-	_ "github.com/gogo/protobuf/types"
-	github_com_gogo_protobuf_types "github.com/gogo/protobuf/types"
+	_ "github.com/waynz0r/protobuf/gogoproto"
+	proto "github.com/waynz0r/protobuf/proto"
+	descriptor "github.com/waynz0r/protobuf/protoc-gen-gogo/descriptor"
+	_ "github.com/waynz0r/protobuf/types"
+	github_com_waynz0r_protobuf_types "github.com/waynz0r/protobuf/types"
 	io "io"
 	_ "istio.io/gogo-genproto/googleapis/google/api"
 	_ "k8s.io/api/apps/v1"
@@ -2617,7 +2617,7 @@ func (m *Service) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 		dAtA[i] = 0x72
 	}
 	if m.PublishNotReadyAddresses != nil {
-		n21, err21 := github_com_gogo_protobuf_types.StdBoolMarshalTo(*m.PublishNotReadyAddresses, dAtA[i-github_com_gogo_protobuf_types.SizeOfStdBool(*m.PublishNotReadyAddresses):])
+		n21, err21 := github_com_waynz0r_protobuf_types.StdBoolMarshalTo(*m.PublishNotReadyAddresses, dAtA[i-github_com_waynz0r_protobuf_types.SizeOfStdBool(*m.PublishNotReadyAddresses):])
 		if err21 != nil {
 			return 0, err21
 		}
@@ -2785,7 +2785,7 @@ func (m *UnprotectedService) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 		dAtA[i] = 0x72
 	}
 	if m.PublishNotReadyAddresses != nil {
-		n24, err24 := github_com_gogo_protobuf_types.StdBoolMarshalTo(*m.PublishNotReadyAddresses, dAtA[i-github_com_gogo_protobuf_types.SizeOfStdBool(*m.PublishNotReadyAddresses):])
+		n24, err24 := github_com_waynz0r_protobuf_types.StdBoolMarshalTo(*m.PublishNotReadyAddresses, dAtA[i-github_com_waynz0r_protobuf_types.SizeOfStdBool(*m.PublishNotReadyAddresses):])
 		if err24 != nil {
 			return 0, err24
 		}
@@ -3103,7 +3103,7 @@ func (m *Replicas) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 		copy(dAtA[i:], m.XXX_unrecognized)
 	}
 	if m.TargetCPUUtilizationPercentage != nil {
-		n28, err28 := github_com_gogo_protobuf_types.StdInt32MarshalTo(*m.TargetCPUUtilizationPercentage, dAtA[i-github_com_gogo_protobuf_types.SizeOfStdInt32(*m.TargetCPUUtilizationPercentage):])
+		n28, err28 := github_com_waynz0r_protobuf_types.StdInt32MarshalTo(*m.TargetCPUUtilizationPercentage, dAtA[i-github_com_waynz0r_protobuf_types.SizeOfStdInt32(*m.TargetCPUUtilizationPercentage):])
 		if err28 != nil {
 			return 0, err28
 		}
@@ -3113,7 +3113,7 @@ func (m *Replicas) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 		dAtA[i] = 0x22
 	}
 	if m.Max != nil {
-		n29, err29 := github_com_gogo_protobuf_types.StdInt32MarshalTo(*m.Max, dAtA[i-github_com_gogo_protobuf_types.SizeOfStdInt32(*m.Max):])
+		n29, err29 := github_com_waynz0r_protobuf_types.StdInt32MarshalTo(*m.Max, dAtA[i-github_com_waynz0r_protobuf_types.SizeOfStdInt32(*m.Max):])
 		if err29 != nil {
 			return 0, err29
 		}
@@ -3123,7 +3123,7 @@ func (m *Replicas) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 		dAtA[i] = 0x1a
 	}
 	if m.Min != nil {
-		n30, err30 := github_com_gogo_protobuf_types.StdInt32MarshalTo(*m.Min, dAtA[i-github_com_gogo_protobuf_types.SizeOfStdInt32(*m.Min):])
+		n30, err30 := github_com_waynz0r_protobuf_types.StdInt32MarshalTo(*m.Min, dAtA[i-github_com_waynz0r_protobuf_types.SizeOfStdInt32(*m.Min):])
 		if err30 != nil {
 			return 0, err30
 		}
@@ -3133,7 +3133,7 @@ func (m *Replicas) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 		dAtA[i] = 0x12
 	}
 	if m.Count != nil {
-		n31, err31 := github_com_gogo_protobuf_types.StdInt32MarshalTo(*m.Count, dAtA[i-github_com_gogo_protobuf_types.SizeOfStdInt32(*m.Count):])
+		n31, err31 := github_com_waynz0r_protobuf_types.StdInt32MarshalTo(*m.Count, dAtA[i-github_com_waynz0r_protobuf_types.SizeOfStdInt32(*m.Count):])
 		if err31 != nil {
 			return 0, err31
 		}
@@ -3649,7 +3649,7 @@ func (m *Service) Size() (n int) {
 		n += 1 + sovCommon(uint64(m.HealthCheckNodePort))
 	}
 	if m.PublishNotReadyAddresses != nil {
-		l = github_com_gogo_protobuf_types.SizeOfStdBool(*m.PublishNotReadyAddresses)
+		l = github_com_waynz0r_protobuf_types.SizeOfStdBool(*m.PublishNotReadyAddresses)
 		n += 1 + l + sovCommon(uint64(l))
 	}
 	if m.SessionAffinityConfig != nil {
@@ -3730,7 +3730,7 @@ func (m *UnprotectedService) Size() (n int) {
 		n += 1 + sovCommon(uint64(m.HealthCheckNodePort))
 	}
 	if m.PublishNotReadyAddresses != nil {
-		l = github_com_gogo_protobuf_types.SizeOfStdBool(*m.PublishNotReadyAddresses)
+		l = github_com_waynz0r_protobuf_types.SizeOfStdBool(*m.PublishNotReadyAddresses)
 		n += 1 + l + sovCommon(uint64(l))
 	}
 	if m.SessionAffinityConfig != nil {
@@ -3846,19 +3846,19 @@ func (m *Replicas) Size() (n int) {
 	var l int
 	_ = l
 	if m.Count != nil {
-		l = github_com_gogo_protobuf_types.SizeOfStdInt32(*m.Count)
+		l = github_com_waynz0r_protobuf_types.SizeOfStdInt32(*m.Count)
 		n += 1 + l + sovCommon(uint64(l))
 	}
 	if m.Min != nil {
-		l = github_com_gogo_protobuf_types.SizeOfStdInt32(*m.Min)
+		l = github_com_waynz0r_protobuf_types.SizeOfStdInt32(*m.Min)
 		n += 1 + l + sovCommon(uint64(l))
 	}
 	if m.Max != nil {
-		l = github_com_gogo_protobuf_types.SizeOfStdInt32(*m.Max)
+		l = github_com_waynz0r_protobuf_types.SizeOfStdInt32(*m.Max)
 		n += 1 + l + sovCommon(uint64(l))
 	}
 	if m.TargetCPUUtilizationPercentage != nil {
-		l = github_com_gogo_protobuf_types.SizeOfStdInt32(*m.TargetCPUUtilizationPercentage)
+		l = github_com_waynz0r_protobuf_types.SizeOfStdInt32(*m.TargetCPUUtilizationPercentage)
 		n += 1 + l + sovCommon(uint64(l))
 	}
 	if m.XXX_unrecognized != nil {
@@ -6360,7 +6360,7 @@ func (m *Service) Unmarshal(dAtA []byte) error {
 			if m.PublishNotReadyAddresses == nil {
 				m.PublishNotReadyAddresses = new(bool)
 			}
-			if err := github_com_gogo_protobuf_types.StdBoolUnmarshal(m.PublishNotReadyAddresses, dAtA[iNdEx:postIndex]); err != nil {
+			if err := github_com_waynz0r_protobuf_types.StdBoolUnmarshal(m.PublishNotReadyAddresses, dAtA[iNdEx:postIndex]); err != nil {
 				return err
 			}
 			iNdEx = postIndex
@@ -6987,7 +6987,7 @@ func (m *UnprotectedService) Unmarshal(dAtA []byte) error {
 			if m.PublishNotReadyAddresses == nil {
 				m.PublishNotReadyAddresses = new(bool)
 			}
-			if err := github_com_gogo_protobuf_types.StdBoolUnmarshal(m.PublishNotReadyAddresses, dAtA[iNdEx:postIndex]); err != nil {
+			if err := github_com_waynz0r_protobuf_types.StdBoolUnmarshal(m.PublishNotReadyAddresses, dAtA[iNdEx:postIndex]); err != nil {
 				return err
 			}
 			iNdEx = postIndex
@@ -7791,7 +7791,7 @@ func (m *Replicas) Unmarshal(dAtA []byte) error {
 			if m.Count == nil {
 				m.Count = new(int32)
 			}
-			if err := github_com_gogo_protobuf_types.StdInt32Unmarshal(m.Count, dAtA[iNdEx:postIndex]); err != nil {
+			if err := github_com_waynz0r_protobuf_types.StdInt32Unmarshal(m.Count, dAtA[iNdEx:postIndex]); err != nil {
 				return err
 			}
 			iNdEx = postIndex
@@ -7827,7 +7827,7 @@ func (m *Replicas) Unmarshal(dAtA []byte) error {
 			if m.Min == nil {
 				m.Min = new(int32)
 			}
-			if err := github_com_gogo_protobuf_types.StdInt32Unmarshal(m.Min, dAtA[iNdEx:postIndex]); err != nil {
+			if err := github_com_waynz0r_protobuf_types.StdInt32Unmarshal(m.Min, dAtA[iNdEx:postIndex]); err != nil {
 				return err
 			}
 			iNdEx = postIndex
@@ -7863,7 +7863,7 @@ func (m *Replicas) Unmarshal(dAtA []byte) error {
 			if m.Max == nil {
 				m.Max = new(int32)
 			}
-			if err := github_com_gogo_protobuf_types.StdInt32Unmarshal(m.Max, dAtA[iNdEx:postIndex]); err != nil {
+			if err := github_com_waynz0r_protobuf_types.StdInt32Unmarshal(m.Max, dAtA[iNdEx:postIndex]); err != nil {
 				return err
 			}
 			iNdEx = postIndex
@@ -7899,7 +7899,7 @@ func (m *Replicas) Unmarshal(dAtA []byte) error {
 			if m.TargetCPUUtilizationPercentage == nil {
 				m.TargetCPUUtilizationPercentage = new(int32)
 			}
-			if err := github_com_gogo_protobuf_types.StdInt32Unmarshal(m.TargetCPUUtilizationPercentage, dAtA[iNdEx:postIndex]); err != nil {
+			if err := github_com_waynz0r_protobuf_types.StdInt32Unmarshal(m.TargetCPUUtilizationPercentage, dAtA[iNdEx:postIndex]); err != nil {
 				return err
 			}
 			iNdEx = postIndex

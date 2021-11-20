@@ -5,10 +5,10 @@ package v1alpha1
 
 import (
 	fmt "fmt"
-	_ "github.com/gogo/protobuf/gogoproto"
-	proto "github.com/gogo/protobuf/proto"
-	_ "github.com/gogo/protobuf/types"
-	github_com_gogo_protobuf_types "github.com/gogo/protobuf/types"
+	_ "github.com/waynz0r/protobuf/gogoproto"
+	proto "github.com/waynz0r/protobuf/proto"
+	_ "github.com/waynz0r/protobuf/types"
+	github_com_waynz0r_protobuf_types "github.com/waynz0r/protobuf/types"
 	io "io"
 	_ "istio.io/gogo-genproto/googleapis/google/api"
 	_ "k8s.io/api/core/v1"
@@ -399,7 +399,7 @@ func (m *IstioMeshGatewaySpec) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 		dAtA[i] = 0x20
 	}
 	if m.RunAsRoot != nil {
-		n2, err2 := github_com_gogo_protobuf_types.StdBoolMarshalTo(*m.RunAsRoot, dAtA[i-github_com_gogo_protobuf_types.SizeOfStdBool(*m.RunAsRoot):])
+		n2, err2 := github_com_waynz0r_protobuf_types.StdBoolMarshalTo(*m.RunAsRoot, dAtA[i-github_com_waynz0r_protobuf_types.SizeOfStdBool(*m.RunAsRoot):])
 		if err2 != nil {
 			return 0, err2
 		}
@@ -543,7 +543,7 @@ func (m *IstioMeshGatewaySpec) Size() (n int) {
 		n += 1 + l + sovIstiomeshgateway(uint64(l))
 	}
 	if m.RunAsRoot != nil {
-		l = github_com_gogo_protobuf_types.SizeOfStdBool(*m.RunAsRoot)
+		l = github_com_waynz0r_protobuf_types.SizeOfStdBool(*m.RunAsRoot)
 		n += 1 + l + sovIstiomeshgateway(uint64(l))
 	}
 	if m.Type != 0 {
@@ -745,7 +745,7 @@ func (m *IstioMeshGatewaySpec) Unmarshal(dAtA []byte) error {
 			if m.RunAsRoot == nil {
 				m.RunAsRoot = new(bool)
 			}
-			if err := github_com_gogo_protobuf_types.StdBoolUnmarshal(m.RunAsRoot, dAtA[iNdEx:postIndex]); err != nil {
+			if err := github_com_waynz0r_protobuf_types.StdBoolUnmarshal(m.RunAsRoot, dAtA[iNdEx:postIndex]); err != nil {
 				return err
 			}
 			iNdEx = postIndex

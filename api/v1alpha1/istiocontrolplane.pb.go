@@ -5,10 +5,10 @@ package v1alpha1
 
 import (
 	fmt "fmt"
-	_ "github.com/gogo/protobuf/gogoproto"
-	proto "github.com/gogo/protobuf/proto"
-	_ "github.com/gogo/protobuf/types"
-	github_com_gogo_protobuf_types "github.com/gogo/protobuf/types"
+	_ "github.com/waynz0r/protobuf/gogoproto"
+	proto "github.com/waynz0r/protobuf/proto"
+	_ "github.com/waynz0r/protobuf/types"
+	github_com_waynz0r_protobuf_types "github.com/waynz0r/protobuf/types"
 	io "io"
 	v1alpha1 "istio.io/api/mesh/v1alpha1"
 	_ "istio.io/gogo-genproto/googleapis/google/api"
@@ -2493,7 +2493,7 @@ func (m *IstioControlPlaneSpec) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 		dAtA[i] = 0x60
 	}
 	if m.WatchOneNamespace != nil {
-		n6, err6 := github_com_gogo_protobuf_types.StdBoolMarshalTo(*m.WatchOneNamespace, dAtA[i-github_com_gogo_protobuf_types.SizeOfStdBool(*m.WatchOneNamespace):])
+		n6, err6 := github_com_waynz0r_protobuf_types.StdBoolMarshalTo(*m.WatchOneNamespace, dAtA[i-github_com_waynz0r_protobuf_types.SizeOfStdBool(*m.WatchOneNamespace):])
 		if err6 != nil {
 			return 0, err6
 		}
@@ -2575,7 +2575,7 @@ func (m *IstioControlPlaneSpec) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 		dAtA[i] = 0x2a
 	}
 	if m.MountMtlsCerts != nil {
-		n13, err13 := github_com_gogo_protobuf_types.StdBoolMarshalTo(*m.MountMtlsCerts, dAtA[i-github_com_gogo_protobuf_types.SizeOfStdBool(*m.MountMtlsCerts):])
+		n13, err13 := github_com_waynz0r_protobuf_types.StdBoolMarshalTo(*m.MountMtlsCerts, dAtA[i-github_com_waynz0r_protobuf_types.SizeOfStdBool(*m.MountMtlsCerts):])
 		if err13 != nil {
 			return 0, err13
 		}
@@ -2735,7 +2735,7 @@ func (m *MeshExpansionConfiguration) MarshalToSizedBuffer(dAtA []byte) (int, err
 		dAtA[i] = 0x12
 	}
 	if m.Enabled != nil {
-		n21, err21 := github_com_gogo_protobuf_types.StdBoolMarshalTo(*m.Enabled, dAtA[i-github_com_gogo_protobuf_types.SizeOfStdBool(*m.Enabled):])
+		n21, err21 := github_com_waynz0r_protobuf_types.StdBoolMarshalTo(*m.Enabled, dAtA[i-github_com_waynz0r_protobuf_types.SizeOfStdBool(*m.Enabled):])
 		if err21 != nil {
 			return 0, err21
 		}
@@ -2772,7 +2772,7 @@ func (m *MeshExpansionConfiguration_Istiod) MarshalToSizedBuffer(dAtA []byte) (i
 		copy(dAtA[i:], m.XXX_unrecognized)
 	}
 	if m.Expose != nil {
-		n22, err22 := github_com_gogo_protobuf_types.StdBoolMarshalTo(*m.Expose, dAtA[i-github_com_gogo_protobuf_types.SizeOfStdBool(*m.Expose):])
+		n22, err22 := github_com_waynz0r_protobuf_types.StdBoolMarshalTo(*m.Expose, dAtA[i-github_com_waynz0r_protobuf_types.SizeOfStdBool(*m.Expose):])
 		if err22 != nil {
 			return 0, err22
 		}
@@ -2809,7 +2809,7 @@ func (m *MeshExpansionConfiguration_Webhook) MarshalToSizedBuffer(dAtA []byte) (
 		copy(dAtA[i:], m.XXX_unrecognized)
 	}
 	if m.Expose != nil {
-		n23, err23 := github_com_gogo_protobuf_types.StdBoolMarshalTo(*m.Expose, dAtA[i-github_com_gogo_protobuf_types.SizeOfStdBool(*m.Expose):])
+		n23, err23 := github_com_waynz0r_protobuf_types.StdBoolMarshalTo(*m.Expose, dAtA[i-github_com_waynz0r_protobuf_types.SizeOfStdBool(*m.Expose):])
 		if err23 != nil {
 			return 0, err23
 		}
@@ -2846,7 +2846,7 @@ func (m *MeshExpansionConfiguration_ClusterServices) MarshalToSizedBuffer(dAtA [
 		copy(dAtA[i:], m.XXX_unrecognized)
 	}
 	if m.Expose != nil {
-		n24, err24 := github_com_gogo_protobuf_types.StdBoolMarshalTo(*m.Expose, dAtA[i-github_com_gogo_protobuf_types.SizeOfStdBool(*m.Expose):])
+		n24, err24 := github_com_waynz0r_protobuf_types.StdBoolMarshalTo(*m.Expose, dAtA[i-github_com_waynz0r_protobuf_types.SizeOfStdBool(*m.Expose):])
 		if err24 != nil {
 			return 0, err24
 		}
@@ -2897,7 +2897,7 @@ func (m *MeshExpansionConfiguration_IstioMeshGatewayConfiguration) MarshalToSize
 		}
 	}
 	if m.RunAsRoot != nil {
-		n25, err25 := github_com_gogo_protobuf_types.StdBoolMarshalTo(*m.RunAsRoot, dAtA[i-github_com_gogo_protobuf_types.SizeOfStdBool(*m.RunAsRoot):])
+		n25, err25 := github_com_waynz0r_protobuf_types.StdBoolMarshalTo(*m.RunAsRoot, dAtA[i-github_com_waynz0r_protobuf_types.SizeOfStdBool(*m.RunAsRoot):])
 		if err25 != nil {
 			return 0, err25
 		}
@@ -3090,7 +3090,7 @@ func (m *ProxyConfiguration) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 		dAtA[i] = 0x42
 	}
 	if m.HoldApplicationUntilProxyStarts != nil {
-		n31, err31 := github_com_gogo_protobuf_types.StdBoolMarshalTo(*m.HoldApplicationUntilProxyStarts, dAtA[i-github_com_gogo_protobuf_types.SizeOfStdBool(*m.HoldApplicationUntilProxyStarts):])
+		n31, err31 := github_com_waynz0r_protobuf_types.StdBoolMarshalTo(*m.HoldApplicationUntilProxyStarts, dAtA[i-github_com_waynz0r_protobuf_types.SizeOfStdBool(*m.HoldApplicationUntilProxyStarts):])
 		if err31 != nil {
 			return 0, err31
 		}
@@ -3119,7 +3119,7 @@ func (m *ProxyConfiguration) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 		dAtA[i] = 0x20
 	}
 	if m.EnableCoreDump != nil {
-		n32, err32 := github_com_gogo_protobuf_types.StdBoolMarshalTo(*m.EnableCoreDump, dAtA[i-github_com_gogo_protobuf_types.SizeOfStdBool(*m.EnableCoreDump):])
+		n32, err32 := github_com_waynz0r_protobuf_types.StdBoolMarshalTo(*m.EnableCoreDump, dAtA[i-github_com_waynz0r_protobuf_types.SizeOfStdBool(*m.EnableCoreDump):])
 		if err32 != nil {
 			return 0, err32
 		}
@@ -3129,7 +3129,7 @@ func (m *ProxyConfiguration) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 		dAtA[i] = 0x1a
 	}
 	if m.Privileged != nil {
-		n33, err33 := github_com_gogo_protobuf_types.StdBoolMarshalTo(*m.Privileged, dAtA[i-github_com_gogo_protobuf_types.SizeOfStdBool(*m.Privileged):])
+		n33, err33 := github_com_waynz0r_protobuf_types.StdBoolMarshalTo(*m.Privileged, dAtA[i-github_com_waynz0r_protobuf_types.SizeOfStdBool(*m.Privileged):])
 		if err33 != nil {
 			return 0, err33
 		}
@@ -3332,7 +3332,7 @@ func (m *CNIConfiguration) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 		dAtA[i] = 0x22
 	}
 	if m.Chained != nil {
-		n40, err40 := github_com_gogo_protobuf_types.StdBoolMarshalTo(*m.Chained, dAtA[i-github_com_gogo_protobuf_types.SizeOfStdBool(*m.Chained):])
+		n40, err40 := github_com_waynz0r_protobuf_types.StdBoolMarshalTo(*m.Chained, dAtA[i-github_com_waynz0r_protobuf_types.SizeOfStdBool(*m.Chained):])
 		if err40 != nil {
 			return 0, err40
 		}
@@ -3342,7 +3342,7 @@ func (m *CNIConfiguration) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 		dAtA[i] = 0x12
 	}
 	if m.Enabled != nil {
-		n41, err41 := github_com_gogo_protobuf_types.StdBoolMarshalTo(*m.Enabled, dAtA[i-github_com_gogo_protobuf_types.SizeOfStdBool(*m.Enabled):])
+		n41, err41 := github_com_waynz0r_protobuf_types.StdBoolMarshalTo(*m.Enabled, dAtA[i-github_com_waynz0r_protobuf_types.SizeOfStdBool(*m.Enabled):])
 		if err41 != nil {
 			return 0, err41
 		}
@@ -3400,7 +3400,7 @@ func (m *CNIConfiguration_RepairConfiguration) MarshalToSizedBuffer(dAtA []byte)
 		dAtA[i] = 0x22
 	}
 	if m.DeletePods != nil {
-		n42, err42 := github_com_gogo_protobuf_types.StdBoolMarshalTo(*m.DeletePods, dAtA[i-github_com_gogo_protobuf_types.SizeOfStdBool(*m.DeletePods):])
+		n42, err42 := github_com_waynz0r_protobuf_types.StdBoolMarshalTo(*m.DeletePods, dAtA[i-github_com_waynz0r_protobuf_types.SizeOfStdBool(*m.DeletePods):])
 		if err42 != nil {
 			return 0, err42
 		}
@@ -3410,7 +3410,7 @@ func (m *CNIConfiguration_RepairConfiguration) MarshalToSizedBuffer(dAtA []byte)
 		dAtA[i] = 0x1a
 	}
 	if m.LabelPods != nil {
-		n43, err43 := github_com_gogo_protobuf_types.StdBoolMarshalTo(*m.LabelPods, dAtA[i-github_com_gogo_protobuf_types.SizeOfStdBool(*m.LabelPods):])
+		n43, err43 := github_com_waynz0r_protobuf_types.StdBoolMarshalTo(*m.LabelPods, dAtA[i-github_com_waynz0r_protobuf_types.SizeOfStdBool(*m.LabelPods):])
 		if err43 != nil {
 			return 0, err43
 		}
@@ -3420,7 +3420,7 @@ func (m *CNIConfiguration_RepairConfiguration) MarshalToSizedBuffer(dAtA []byte)
 		dAtA[i] = 0x12
 	}
 	if m.Enabled != nil {
-		n44, err44 := github_com_gogo_protobuf_types.StdBoolMarshalTo(*m.Enabled, dAtA[i-github_com_gogo_protobuf_types.SizeOfStdBool(*m.Enabled):])
+		n44, err44 := github_com_waynz0r_protobuf_types.StdBoolMarshalTo(*m.Enabled, dAtA[i-github_com_waynz0r_protobuf_types.SizeOfStdBool(*m.Enabled):])
 		if err44 != nil {
 			return 0, err44
 		}
@@ -3469,7 +3469,7 @@ func (m *CNIConfiguration_TaintConfiguration) MarshalToSizedBuffer(dAtA []byte) 
 		dAtA[i] = 0x12
 	}
 	if m.Enabled != nil {
-		n46, err46 := github_com_gogo_protobuf_types.StdBoolMarshalTo(*m.Enabled, dAtA[i-github_com_gogo_protobuf_types.SizeOfStdBool(*m.Enabled):])
+		n46, err46 := github_com_waynz0r_protobuf_types.StdBoolMarshalTo(*m.Enabled, dAtA[i-github_com_waynz0r_protobuf_types.SizeOfStdBool(*m.Enabled):])
 		if err46 != nil {
 			return 0, err46
 		}
@@ -3522,7 +3522,7 @@ func (m *CNIConfiguration_ResourceQuotas) MarshalToSizedBuffer(dAtA []byte) (int
 		dAtA[i] = 0x12
 	}
 	if m.Enabled != nil {
-		n47, err47 := github_com_gogo_protobuf_types.StdBoolMarshalTo(*m.Enabled, dAtA[i-github_com_gogo_protobuf_types.SizeOfStdBool(*m.Enabled):])
+		n47, err47 := github_com_waynz0r_protobuf_types.StdBoolMarshalTo(*m.Enabled, dAtA[i-github_com_waynz0r_protobuf_types.SizeOfStdBool(*m.Enabled):])
 		if err47 != nil {
 			return 0, err47
 		}
@@ -3576,7 +3576,7 @@ func (m *IstiodConfiguration) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 		dAtA[i] = 0x40
 	}
 	if m.EnableProtocolSniffingInbound != nil {
-		n49, err49 := github_com_gogo_protobuf_types.StdBoolMarshalTo(*m.EnableProtocolSniffingInbound, dAtA[i-github_com_gogo_protobuf_types.SizeOfStdBool(*m.EnableProtocolSniffingInbound):])
+		n49, err49 := github_com_waynz0r_protobuf_types.StdBoolMarshalTo(*m.EnableProtocolSniffingInbound, dAtA[i-github_com_waynz0r_protobuf_types.SizeOfStdBool(*m.EnableProtocolSniffingInbound):])
 		if err49 != nil {
 			return 0, err49
 		}
@@ -3586,7 +3586,7 @@ func (m *IstiodConfiguration) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 		dAtA[i] = 0x3a
 	}
 	if m.EnableProtocolSniffingOutbound != nil {
-		n50, err50 := github_com_gogo_protobuf_types.StdBoolMarshalTo(*m.EnableProtocolSniffingOutbound, dAtA[i-github_com_gogo_protobuf_types.SizeOfStdBool(*m.EnableProtocolSniffingOutbound):])
+		n50, err50 := github_com_waynz0r_protobuf_types.StdBoolMarshalTo(*m.EnableProtocolSniffingOutbound, dAtA[i-github_com_waynz0r_protobuf_types.SizeOfStdBool(*m.EnableProtocolSniffingOutbound):])
 		if err50 != nil {
 			return 0, err50
 		}
@@ -3596,7 +3596,7 @@ func (m *IstiodConfiguration) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 		dAtA[i] = 0x32
 	}
 	if m.TraceSampling != nil {
-		n51, err51 := github_com_gogo_protobuf_types.StdFloatMarshalTo(*m.TraceSampling, dAtA[i-github_com_gogo_protobuf_types.SizeOfStdFloat(*m.TraceSampling):])
+		n51, err51 := github_com_waynz0r_protobuf_types.StdFloatMarshalTo(*m.TraceSampling, dAtA[i-github_com_waynz0r_protobuf_types.SizeOfStdFloat(*m.TraceSampling):])
 		if err51 != nil {
 			return 0, err51
 		}
@@ -3618,7 +3618,7 @@ func (m *IstiodConfiguration) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 		dAtA[i] = 0x22
 	}
 	if m.EnableStatus != nil {
-		n53, err53 := github_com_gogo_protobuf_types.StdBoolMarshalTo(*m.EnableStatus, dAtA[i-github_com_gogo_protobuf_types.SizeOfStdBool(*m.EnableStatus):])
+		n53, err53 := github_com_waynz0r_protobuf_types.StdBoolMarshalTo(*m.EnableStatus, dAtA[i-github_com_waynz0r_protobuf_types.SizeOfStdBool(*m.EnableStatus):])
 		if err53 != nil {
 			return 0, err53
 		}
@@ -3628,7 +3628,7 @@ func (m *IstiodConfiguration) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 		dAtA[i] = 0x1a
 	}
 	if m.EnableAnalysis != nil {
-		n54, err54 := github_com_gogo_protobuf_types.StdBoolMarshalTo(*m.EnableAnalysis, dAtA[i-github_com_gogo_protobuf_types.SizeOfStdBool(*m.EnableAnalysis):])
+		n54, err54 := github_com_waynz0r_protobuf_types.StdBoolMarshalTo(*m.EnableAnalysis, dAtA[i-github_com_waynz0r_protobuf_types.SizeOfStdBool(*m.EnableAnalysis):])
 		if err54 != nil {
 			return 0, err54
 		}
@@ -3677,7 +3677,7 @@ func (m *ExternalIstiodConfiguration) MarshalToSizedBuffer(dAtA []byte) (int, er
 		copy(dAtA[i:], m.XXX_unrecognized)
 	}
 	if m.Enabled != nil {
-		n56, err56 := github_com_gogo_protobuf_types.StdBoolMarshalTo(*m.Enabled, dAtA[i-github_com_gogo_protobuf_types.SizeOfStdBool(*m.Enabled):])
+		n56, err56 := github_com_waynz0r_protobuf_types.StdBoolMarshalTo(*m.Enabled, dAtA[i-github_com_waynz0r_protobuf_types.SizeOfStdBool(*m.Enabled):])
 		if err56 != nil {
 			return 0, err56
 		}
@@ -3753,7 +3753,7 @@ func (m *OperatorEndpointsConfiguration) MarshalToSizedBuffer(dAtA []byte) (int,
 		copy(dAtA[i:], m.XXX_unrecognized)
 	}
 	if m.Enabled != nil {
-		n58, err58 := github_com_gogo_protobuf_types.StdBoolMarshalTo(*m.Enabled, dAtA[i-github_com_gogo_protobuf_types.SizeOfStdBool(*m.Enabled):])
+		n58, err58 := github_com_waynz0r_protobuf_types.StdBoolMarshalTo(*m.Enabled, dAtA[i-github_com_waynz0r_protobuf_types.SizeOfStdBool(*m.Enabled):])
 		if err58 != nil {
 			return 0, err58
 		}
@@ -3790,7 +3790,7 @@ func (m *TelemetryV2Configuration) MarshalToSizedBuffer(dAtA []byte) (int, error
 		copy(dAtA[i:], m.XXX_unrecognized)
 	}
 	if m.Enabled != nil {
-		n59, err59 := github_com_gogo_protobuf_types.StdBoolMarshalTo(*m.Enabled, dAtA[i-github_com_gogo_protobuf_types.SizeOfStdBool(*m.Enabled):])
+		n59, err59 := github_com_waynz0r_protobuf_types.StdBoolMarshalTo(*m.Enabled, dAtA[i-github_com_waynz0r_protobuf_types.SizeOfStdBool(*m.Enabled):])
 		if err59 != nil {
 			return 0, err59
 		}
@@ -3827,7 +3827,7 @@ func (m *ProxyWasmConfiguration) MarshalToSizedBuffer(dAtA []byte) (int, error) 
 		copy(dAtA[i:], m.XXX_unrecognized)
 	}
 	if m.Enabled != nil {
-		n60, err60 := github_com_gogo_protobuf_types.StdBoolMarshalTo(*m.Enabled, dAtA[i-github_com_gogo_protobuf_types.SizeOfStdBool(*m.Enabled):])
+		n60, err60 := github_com_waynz0r_protobuf_types.StdBoolMarshalTo(*m.Enabled, dAtA[i-github_com_waynz0r_protobuf_types.SizeOfStdBool(*m.Enabled):])
 		if err60 != nil {
 			return 0, err60
 		}
@@ -3864,7 +3864,7 @@ func (m *PDBConfiguration) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 		copy(dAtA[i:], m.XXX_unrecognized)
 	}
 	if m.Enabled != nil {
-		n61, err61 := github_com_gogo_protobuf_types.StdBoolMarshalTo(*m.Enabled, dAtA[i-github_com_gogo_protobuf_types.SizeOfStdBool(*m.Enabled):])
+		n61, err61 := github_com_waynz0r_protobuf_types.StdBoolMarshalTo(*m.Enabled, dAtA[i-github_com_waynz0r_protobuf_types.SizeOfStdBool(*m.Enabled):])
 		if err61 != nil {
 			return 0, err61
 		}
@@ -4098,7 +4098,7 @@ func (m *IstioControlPlaneSpec) Size() (n int) {
 		n += 1 + l + sovIstiocontrolplane(uint64(l))
 	}
 	if m.MountMtlsCerts != nil {
-		l = github_com_gogo_protobuf_types.SizeOfStdBool(*m.MountMtlsCerts)
+		l = github_com_waynz0r_protobuf_types.SizeOfStdBool(*m.MountMtlsCerts)
 		n += 1 + l + sovIstiocontrolplane(uint64(l))
 	}
 	if m.Istiod != nil {
@@ -4126,7 +4126,7 @@ func (m *IstioControlPlaneSpec) Size() (n int) {
 		n += 1 + l + sovIstiocontrolplane(uint64(l))
 	}
 	if m.WatchOneNamespace != nil {
-		l = github_com_gogo_protobuf_types.SizeOfStdBool(*m.WatchOneNamespace)
+		l = github_com_waynz0r_protobuf_types.SizeOfStdBool(*m.WatchOneNamespace)
 		n += 1 + l + sovIstiocontrolplane(uint64(l))
 	}
 	if m.JwtPolicy != 0 {
@@ -4211,7 +4211,7 @@ func (m *MeshExpansionConfiguration) Size() (n int) {
 	var l int
 	_ = l
 	if m.Enabled != nil {
-		l = github_com_gogo_protobuf_types.SizeOfStdBool(*m.Enabled)
+		l = github_com_waynz0r_protobuf_types.SizeOfStdBool(*m.Enabled)
 		n += 1 + l + sovIstiocontrolplane(uint64(l))
 	}
 	if m.Gateway != nil {
@@ -4243,7 +4243,7 @@ func (m *MeshExpansionConfiguration_Istiod) Size() (n int) {
 	var l int
 	_ = l
 	if m.Expose != nil {
-		l = github_com_gogo_protobuf_types.SizeOfStdBool(*m.Expose)
+		l = github_com_waynz0r_protobuf_types.SizeOfStdBool(*m.Expose)
 		n += 1 + l + sovIstiocontrolplane(uint64(l))
 	}
 	if m.XXX_unrecognized != nil {
@@ -4259,7 +4259,7 @@ func (m *MeshExpansionConfiguration_Webhook) Size() (n int) {
 	var l int
 	_ = l
 	if m.Expose != nil {
-		l = github_com_gogo_protobuf_types.SizeOfStdBool(*m.Expose)
+		l = github_com_waynz0r_protobuf_types.SizeOfStdBool(*m.Expose)
 		n += 1 + l + sovIstiocontrolplane(uint64(l))
 	}
 	if m.XXX_unrecognized != nil {
@@ -4275,7 +4275,7 @@ func (m *MeshExpansionConfiguration_ClusterServices) Size() (n int) {
 	var l int
 	_ = l
 	if m.Expose != nil {
-		l = github_com_gogo_protobuf_types.SizeOfStdBool(*m.Expose)
+		l = github_com_waynz0r_protobuf_types.SizeOfStdBool(*m.Expose)
 		n += 1 + l + sovIstiocontrolplane(uint64(l))
 	}
 	if m.XXX_unrecognized != nil {
@@ -4303,7 +4303,7 @@ func (m *MeshExpansionConfiguration_IstioMeshGatewayConfiguration) Size() (n int
 		n += 1 + l + sovIstiocontrolplane(uint64(l))
 	}
 	if m.RunAsRoot != nil {
-		l = github_com_gogo_protobuf_types.SizeOfStdBool(*m.RunAsRoot)
+		l = github_com_waynz0r_protobuf_types.SizeOfStdBool(*m.RunAsRoot)
 		n += 1 + l + sovIstiocontrolplane(uint64(l))
 	}
 	if len(m.K8SResourceOverlays) > 0 {
@@ -4361,11 +4361,11 @@ func (m *ProxyConfiguration) Size() (n int) {
 		n += 1 + l + sovIstiocontrolplane(uint64(l))
 	}
 	if m.Privileged != nil {
-		l = github_com_gogo_protobuf_types.SizeOfStdBool(*m.Privileged)
+		l = github_com_waynz0r_protobuf_types.SizeOfStdBool(*m.Privileged)
 		n += 1 + l + sovIstiocontrolplane(uint64(l))
 	}
 	if m.EnableCoreDump != nil {
-		l = github_com_gogo_protobuf_types.SizeOfStdBool(*m.EnableCoreDump)
+		l = github_com_waynz0r_protobuf_types.SizeOfStdBool(*m.EnableCoreDump)
 		n += 1 + l + sovIstiocontrolplane(uint64(l))
 	}
 	if m.LogLevel != 0 {
@@ -4380,7 +4380,7 @@ func (m *ProxyConfiguration) Size() (n int) {
 		n += 1 + l + sovIstiocontrolplane(uint64(l))
 	}
 	if m.HoldApplicationUntilProxyStarts != nil {
-		l = github_com_gogo_protobuf_types.SizeOfStdBool(*m.HoldApplicationUntilProxyStarts)
+		l = github_com_waynz0r_protobuf_types.SizeOfStdBool(*m.HoldApplicationUntilProxyStarts)
 		n += 1 + l + sovIstiocontrolplane(uint64(l))
 	}
 	if m.Lifecycle != nil {
@@ -4444,11 +4444,11 @@ func (m *CNIConfiguration) Size() (n int) {
 	var l int
 	_ = l
 	if m.Enabled != nil {
-		l = github_com_gogo_protobuf_types.SizeOfStdBool(*m.Enabled)
+		l = github_com_waynz0r_protobuf_types.SizeOfStdBool(*m.Enabled)
 		n += 1 + l + sovIstiocontrolplane(uint64(l))
 	}
 	if m.Chained != nil {
-		l = github_com_gogo_protobuf_types.SizeOfStdBool(*m.Chained)
+		l = github_com_waynz0r_protobuf_types.SizeOfStdBool(*m.Chained)
 		n += 1 + l + sovIstiocontrolplane(uint64(l))
 	}
 	l = len(m.BinDir)
@@ -4512,15 +4512,15 @@ func (m *CNIConfiguration_RepairConfiguration) Size() (n int) {
 	var l int
 	_ = l
 	if m.Enabled != nil {
-		l = github_com_gogo_protobuf_types.SizeOfStdBool(*m.Enabled)
+		l = github_com_waynz0r_protobuf_types.SizeOfStdBool(*m.Enabled)
 		n += 1 + l + sovIstiocontrolplane(uint64(l))
 	}
 	if m.LabelPods != nil {
-		l = github_com_gogo_protobuf_types.SizeOfStdBool(*m.LabelPods)
+		l = github_com_waynz0r_protobuf_types.SizeOfStdBool(*m.LabelPods)
 		n += 1 + l + sovIstiocontrolplane(uint64(l))
 	}
 	if m.DeletePods != nil {
-		l = github_com_gogo_protobuf_types.SizeOfStdBool(*m.DeletePods)
+		l = github_com_waynz0r_protobuf_types.SizeOfStdBool(*m.DeletePods)
 		n += 1 + l + sovIstiocontrolplane(uint64(l))
 	}
 	l = len(m.InitContainerName)
@@ -4548,7 +4548,7 @@ func (m *CNIConfiguration_TaintConfiguration) Size() (n int) {
 	var l int
 	_ = l
 	if m.Enabled != nil {
-		l = github_com_gogo_protobuf_types.SizeOfStdBool(*m.Enabled)
+		l = github_com_waynz0r_protobuf_types.SizeOfStdBool(*m.Enabled)
 		n += 1 + l + sovIstiocontrolplane(uint64(l))
 	}
 	if m.Container != nil {
@@ -4568,7 +4568,7 @@ func (m *CNIConfiguration_ResourceQuotas) Size() (n int) {
 	var l int
 	_ = l
 	if m.Enabled != nil {
-		l = github_com_gogo_protobuf_types.SizeOfStdBool(*m.Enabled)
+		l = github_com_waynz0r_protobuf_types.SizeOfStdBool(*m.Enabled)
 		n += 1 + l + sovIstiocontrolplane(uint64(l))
 	}
 	l = len(m.Pods)
@@ -4598,11 +4598,11 @@ func (m *IstiodConfiguration) Size() (n int) {
 		n += 1 + l + sovIstiocontrolplane(uint64(l))
 	}
 	if m.EnableAnalysis != nil {
-		l = github_com_gogo_protobuf_types.SizeOfStdBool(*m.EnableAnalysis)
+		l = github_com_waynz0r_protobuf_types.SizeOfStdBool(*m.EnableAnalysis)
 		n += 1 + l + sovIstiocontrolplane(uint64(l))
 	}
 	if m.EnableStatus != nil {
-		l = github_com_gogo_protobuf_types.SizeOfStdBool(*m.EnableStatus)
+		l = github_com_waynz0r_protobuf_types.SizeOfStdBool(*m.EnableStatus)
 		n += 1 + l + sovIstiocontrolplane(uint64(l))
 	}
 	if m.ExternalIstiod != nil {
@@ -4610,15 +4610,15 @@ func (m *IstiodConfiguration) Size() (n int) {
 		n += 1 + l + sovIstiocontrolplane(uint64(l))
 	}
 	if m.TraceSampling != nil {
-		l = github_com_gogo_protobuf_types.SizeOfStdFloat(*m.TraceSampling)
+		l = github_com_waynz0r_protobuf_types.SizeOfStdFloat(*m.TraceSampling)
 		n += 1 + l + sovIstiocontrolplane(uint64(l))
 	}
 	if m.EnableProtocolSniffingOutbound != nil {
-		l = github_com_gogo_protobuf_types.SizeOfStdBool(*m.EnableProtocolSniffingOutbound)
+		l = github_com_waynz0r_protobuf_types.SizeOfStdBool(*m.EnableProtocolSniffingOutbound)
 		n += 1 + l + sovIstiocontrolplane(uint64(l))
 	}
 	if m.EnableProtocolSniffingInbound != nil {
-		l = github_com_gogo_protobuf_types.SizeOfStdBool(*m.EnableProtocolSniffingInbound)
+		l = github_com_waynz0r_protobuf_types.SizeOfStdBool(*m.EnableProtocolSniffingInbound)
 		n += 1 + l + sovIstiocontrolplane(uint64(l))
 	}
 	if m.CertProvider != 0 {
@@ -4641,7 +4641,7 @@ func (m *ExternalIstiodConfiguration) Size() (n int) {
 	var l int
 	_ = l
 	if m.Enabled != nil {
-		l = github_com_gogo_protobuf_types.SizeOfStdBool(*m.Enabled)
+		l = github_com_waynz0r_protobuf_types.SizeOfStdBool(*m.Enabled)
 		n += 1 + l + sovIstiocontrolplane(uint64(l))
 	}
 	if m.XXX_unrecognized != nil {
@@ -4673,7 +4673,7 @@ func (m *OperatorEndpointsConfiguration) Size() (n int) {
 	var l int
 	_ = l
 	if m.Enabled != nil {
-		l = github_com_gogo_protobuf_types.SizeOfStdBool(*m.Enabled)
+		l = github_com_waynz0r_protobuf_types.SizeOfStdBool(*m.Enabled)
 		n += 1 + l + sovIstiocontrolplane(uint64(l))
 	}
 	if m.XXX_unrecognized != nil {
@@ -4689,7 +4689,7 @@ func (m *TelemetryV2Configuration) Size() (n int) {
 	var l int
 	_ = l
 	if m.Enabled != nil {
-		l = github_com_gogo_protobuf_types.SizeOfStdBool(*m.Enabled)
+		l = github_com_waynz0r_protobuf_types.SizeOfStdBool(*m.Enabled)
 		n += 1 + l + sovIstiocontrolplane(uint64(l))
 	}
 	if m.XXX_unrecognized != nil {
@@ -4705,7 +4705,7 @@ func (m *ProxyWasmConfiguration) Size() (n int) {
 	var l int
 	_ = l
 	if m.Enabled != nil {
-		l = github_com_gogo_protobuf_types.SizeOfStdBool(*m.Enabled)
+		l = github_com_waynz0r_protobuf_types.SizeOfStdBool(*m.Enabled)
 		n += 1 + l + sovIstiocontrolplane(uint64(l))
 	}
 	if m.XXX_unrecognized != nil {
@@ -4721,7 +4721,7 @@ func (m *PDBConfiguration) Size() (n int) {
 	var l int
 	_ = l
 	if m.Enabled != nil {
-		l = github_com_gogo_protobuf_types.SizeOfStdBool(*m.Enabled)
+		l = github_com_waynz0r_protobuf_types.SizeOfStdBool(*m.Enabled)
 		n += 1 + l + sovIstiocontrolplane(uint64(l))
 	}
 	if m.XXX_unrecognized != nil {
@@ -4981,7 +4981,7 @@ func (m *IstioControlPlaneSpec) Unmarshal(dAtA []byte) error {
 			if m.MountMtlsCerts == nil {
 				m.MountMtlsCerts = new(bool)
 			}
-			if err := github_com_gogo_protobuf_types.StdBoolUnmarshal(m.MountMtlsCerts, dAtA[iNdEx:postIndex]); err != nil {
+			if err := github_com_waynz0r_protobuf_types.StdBoolUnmarshal(m.MountMtlsCerts, dAtA[iNdEx:postIndex]); err != nil {
 				return err
 			}
 			iNdEx = postIndex
@@ -5233,7 +5233,7 @@ func (m *IstioControlPlaneSpec) Unmarshal(dAtA []byte) error {
 			if m.WatchOneNamespace == nil {
 				m.WatchOneNamespace = new(bool)
 			}
-			if err := github_com_gogo_protobuf_types.StdBoolUnmarshal(m.WatchOneNamespace, dAtA[iNdEx:postIndex]); err != nil {
+			if err := github_com_waynz0r_protobuf_types.StdBoolUnmarshal(m.WatchOneNamespace, dAtA[iNdEx:postIndex]); err != nil {
 				return err
 			}
 			iNdEx = postIndex
@@ -5836,7 +5836,7 @@ func (m *MeshExpansionConfiguration) Unmarshal(dAtA []byte) error {
 			if m.Enabled == nil {
 				m.Enabled = new(bool)
 			}
-			if err := github_com_gogo_protobuf_types.StdBoolUnmarshal(m.Enabled, dAtA[iNdEx:postIndex]); err != nil {
+			if err := github_com_waynz0r_protobuf_types.StdBoolUnmarshal(m.Enabled, dAtA[iNdEx:postIndex]); err != nil {
 				return err
 			}
 			iNdEx = postIndex
@@ -6067,7 +6067,7 @@ func (m *MeshExpansionConfiguration_Istiod) Unmarshal(dAtA []byte) error {
 			if m.Expose == nil {
 				m.Expose = new(bool)
 			}
-			if err := github_com_gogo_protobuf_types.StdBoolUnmarshal(m.Expose, dAtA[iNdEx:postIndex]); err != nil {
+			if err := github_com_waynz0r_protobuf_types.StdBoolUnmarshal(m.Expose, dAtA[iNdEx:postIndex]); err != nil {
 				return err
 			}
 			iNdEx = postIndex
@@ -6154,7 +6154,7 @@ func (m *MeshExpansionConfiguration_Webhook) Unmarshal(dAtA []byte) error {
 			if m.Expose == nil {
 				m.Expose = new(bool)
 			}
-			if err := github_com_gogo_protobuf_types.StdBoolUnmarshal(m.Expose, dAtA[iNdEx:postIndex]); err != nil {
+			if err := github_com_waynz0r_protobuf_types.StdBoolUnmarshal(m.Expose, dAtA[iNdEx:postIndex]); err != nil {
 				return err
 			}
 			iNdEx = postIndex
@@ -6241,7 +6241,7 @@ func (m *MeshExpansionConfiguration_ClusterServices) Unmarshal(dAtA []byte) erro
 			if m.Expose == nil {
 				m.Expose = new(bool)
 			}
-			if err := github_com_gogo_protobuf_types.StdBoolUnmarshal(m.Expose, dAtA[iNdEx:postIndex]); err != nil {
+			if err := github_com_waynz0r_protobuf_types.StdBoolUnmarshal(m.Expose, dAtA[iNdEx:postIndex]); err != nil {
 				return err
 			}
 			iNdEx = postIndex
@@ -6436,7 +6436,7 @@ func (m *MeshExpansionConfiguration_IstioMeshGatewayConfiguration) Unmarshal(dAt
 			if m.RunAsRoot == nil {
 				m.RunAsRoot = new(bool)
 			}
-			if err := github_com_gogo_protobuf_types.StdBoolUnmarshal(m.RunAsRoot, dAtA[iNdEx:postIndex]); err != nil {
+			if err := github_com_waynz0r_protobuf_types.StdBoolUnmarshal(m.RunAsRoot, dAtA[iNdEx:postIndex]); err != nil {
 				return err
 			}
 			iNdEx = postIndex
@@ -6755,7 +6755,7 @@ func (m *ProxyConfiguration) Unmarshal(dAtA []byte) error {
 			if m.Privileged == nil {
 				m.Privileged = new(bool)
 			}
-			if err := github_com_gogo_protobuf_types.StdBoolUnmarshal(m.Privileged, dAtA[iNdEx:postIndex]); err != nil {
+			if err := github_com_waynz0r_protobuf_types.StdBoolUnmarshal(m.Privileged, dAtA[iNdEx:postIndex]); err != nil {
 				return err
 			}
 			iNdEx = postIndex
@@ -6791,7 +6791,7 @@ func (m *ProxyConfiguration) Unmarshal(dAtA []byte) error {
 			if m.EnableCoreDump == nil {
 				m.EnableCoreDump = new(bool)
 			}
-			if err := github_com_gogo_protobuf_types.StdBoolUnmarshal(m.EnableCoreDump, dAtA[iNdEx:postIndex]); err != nil {
+			if err := github_com_waynz0r_protobuf_types.StdBoolUnmarshal(m.EnableCoreDump, dAtA[iNdEx:postIndex]); err != nil {
 				return err
 			}
 			iNdEx = postIndex
@@ -6910,7 +6910,7 @@ func (m *ProxyConfiguration) Unmarshal(dAtA []byte) error {
 			if m.HoldApplicationUntilProxyStarts == nil {
 				m.HoldApplicationUntilProxyStarts = new(bool)
 			}
-			if err := github_com_gogo_protobuf_types.StdBoolUnmarshal(m.HoldApplicationUntilProxyStarts, dAtA[iNdEx:postIndex]); err != nil {
+			if err := github_com_waynz0r_protobuf_types.StdBoolUnmarshal(m.HoldApplicationUntilProxyStarts, dAtA[iNdEx:postIndex]); err != nil {
 				return err
 			}
 			iNdEx = postIndex
@@ -7352,7 +7352,7 @@ func (m *CNIConfiguration) Unmarshal(dAtA []byte) error {
 			if m.Enabled == nil {
 				m.Enabled = new(bool)
 			}
-			if err := github_com_gogo_protobuf_types.StdBoolUnmarshal(m.Enabled, dAtA[iNdEx:postIndex]); err != nil {
+			if err := github_com_waynz0r_protobuf_types.StdBoolUnmarshal(m.Enabled, dAtA[iNdEx:postIndex]); err != nil {
 				return err
 			}
 			iNdEx = postIndex
@@ -7388,7 +7388,7 @@ func (m *CNIConfiguration) Unmarshal(dAtA []byte) error {
 			if m.Chained == nil {
 				m.Chained = new(bool)
 			}
-			if err := github_com_gogo_protobuf_types.StdBoolUnmarshal(m.Chained, dAtA[iNdEx:postIndex]); err != nil {
+			if err := github_com_waynz0r_protobuf_types.StdBoolUnmarshal(m.Chained, dAtA[iNdEx:postIndex]); err != nil {
 				return err
 			}
 			iNdEx = postIndex
@@ -7843,7 +7843,7 @@ func (m *CNIConfiguration_RepairConfiguration) Unmarshal(dAtA []byte) error {
 			if m.Enabled == nil {
 				m.Enabled = new(bool)
 			}
-			if err := github_com_gogo_protobuf_types.StdBoolUnmarshal(m.Enabled, dAtA[iNdEx:postIndex]); err != nil {
+			if err := github_com_waynz0r_protobuf_types.StdBoolUnmarshal(m.Enabled, dAtA[iNdEx:postIndex]); err != nil {
 				return err
 			}
 			iNdEx = postIndex
@@ -7879,7 +7879,7 @@ func (m *CNIConfiguration_RepairConfiguration) Unmarshal(dAtA []byte) error {
 			if m.LabelPods == nil {
 				m.LabelPods = new(bool)
 			}
-			if err := github_com_gogo_protobuf_types.StdBoolUnmarshal(m.LabelPods, dAtA[iNdEx:postIndex]); err != nil {
+			if err := github_com_waynz0r_protobuf_types.StdBoolUnmarshal(m.LabelPods, dAtA[iNdEx:postIndex]); err != nil {
 				return err
 			}
 			iNdEx = postIndex
@@ -7915,7 +7915,7 @@ func (m *CNIConfiguration_RepairConfiguration) Unmarshal(dAtA []byte) error {
 			if m.DeletePods == nil {
 				m.DeletePods = new(bool)
 			}
-			if err := github_com_gogo_protobuf_types.StdBoolUnmarshal(m.DeletePods, dAtA[iNdEx:postIndex]); err != nil {
+			if err := github_com_waynz0r_protobuf_types.StdBoolUnmarshal(m.DeletePods, dAtA[iNdEx:postIndex]); err != nil {
 				return err
 			}
 			iNdEx = postIndex
@@ -8098,7 +8098,7 @@ func (m *CNIConfiguration_TaintConfiguration) Unmarshal(dAtA []byte) error {
 			if m.Enabled == nil {
 				m.Enabled = new(bool)
 			}
-			if err := github_com_gogo_protobuf_types.StdBoolUnmarshal(m.Enabled, dAtA[iNdEx:postIndex]); err != nil {
+			if err := github_com_waynz0r_protobuf_types.StdBoolUnmarshal(m.Enabled, dAtA[iNdEx:postIndex]); err != nil {
 				return err
 			}
 			iNdEx = postIndex
@@ -8221,7 +8221,7 @@ func (m *CNIConfiguration_ResourceQuotas) Unmarshal(dAtA []byte) error {
 			if m.Enabled == nil {
 				m.Enabled = new(bool)
 			}
-			if err := github_com_gogo_protobuf_types.StdBoolUnmarshal(m.Enabled, dAtA[iNdEx:postIndex]); err != nil {
+			if err := github_com_waynz0r_protobuf_types.StdBoolUnmarshal(m.Enabled, dAtA[iNdEx:postIndex]); err != nil {
 				return err
 			}
 			iNdEx = postIndex
@@ -8408,7 +8408,7 @@ func (m *IstiodConfiguration) Unmarshal(dAtA []byte) error {
 			if m.EnableAnalysis == nil {
 				m.EnableAnalysis = new(bool)
 			}
-			if err := github_com_gogo_protobuf_types.StdBoolUnmarshal(m.EnableAnalysis, dAtA[iNdEx:postIndex]); err != nil {
+			if err := github_com_waynz0r_protobuf_types.StdBoolUnmarshal(m.EnableAnalysis, dAtA[iNdEx:postIndex]); err != nil {
 				return err
 			}
 			iNdEx = postIndex
@@ -8444,7 +8444,7 @@ func (m *IstiodConfiguration) Unmarshal(dAtA []byte) error {
 			if m.EnableStatus == nil {
 				m.EnableStatus = new(bool)
 			}
-			if err := github_com_gogo_protobuf_types.StdBoolUnmarshal(m.EnableStatus, dAtA[iNdEx:postIndex]); err != nil {
+			if err := github_com_waynz0r_protobuf_types.StdBoolUnmarshal(m.EnableStatus, dAtA[iNdEx:postIndex]); err != nil {
 				return err
 			}
 			iNdEx = postIndex
@@ -8516,7 +8516,7 @@ func (m *IstiodConfiguration) Unmarshal(dAtA []byte) error {
 			if m.TraceSampling == nil {
 				m.TraceSampling = new(float32)
 			}
-			if err := github_com_gogo_protobuf_types.StdFloatUnmarshal(m.TraceSampling, dAtA[iNdEx:postIndex]); err != nil {
+			if err := github_com_waynz0r_protobuf_types.StdFloatUnmarshal(m.TraceSampling, dAtA[iNdEx:postIndex]); err != nil {
 				return err
 			}
 			iNdEx = postIndex
@@ -8552,7 +8552,7 @@ func (m *IstiodConfiguration) Unmarshal(dAtA []byte) error {
 			if m.EnableProtocolSniffingOutbound == nil {
 				m.EnableProtocolSniffingOutbound = new(bool)
 			}
-			if err := github_com_gogo_protobuf_types.StdBoolUnmarshal(m.EnableProtocolSniffingOutbound, dAtA[iNdEx:postIndex]); err != nil {
+			if err := github_com_waynz0r_protobuf_types.StdBoolUnmarshal(m.EnableProtocolSniffingOutbound, dAtA[iNdEx:postIndex]); err != nil {
 				return err
 			}
 			iNdEx = postIndex
@@ -8588,7 +8588,7 @@ func (m *IstiodConfiguration) Unmarshal(dAtA []byte) error {
 			if m.EnableProtocolSniffingInbound == nil {
 				m.EnableProtocolSniffingInbound = new(bool)
 			}
-			if err := github_com_gogo_protobuf_types.StdBoolUnmarshal(m.EnableProtocolSniffingInbound, dAtA[iNdEx:postIndex]); err != nil {
+			if err := github_com_waynz0r_protobuf_types.StdBoolUnmarshal(m.EnableProtocolSniffingInbound, dAtA[iNdEx:postIndex]); err != nil {
 				return err
 			}
 			iNdEx = postIndex
@@ -8730,7 +8730,7 @@ func (m *ExternalIstiodConfiguration) Unmarshal(dAtA []byte) error {
 			if m.Enabled == nil {
 				m.Enabled = new(bool)
 			}
-			if err := github_com_gogo_protobuf_types.StdBoolUnmarshal(m.Enabled, dAtA[iNdEx:postIndex]); err != nil {
+			if err := github_com_waynz0r_protobuf_types.StdBoolUnmarshal(m.Enabled, dAtA[iNdEx:postIndex]); err != nil {
 				return err
 			}
 			iNdEx = postIndex
@@ -8904,7 +8904,7 @@ func (m *OperatorEndpointsConfiguration) Unmarshal(dAtA []byte) error {
 			if m.Enabled == nil {
 				m.Enabled = new(bool)
 			}
-			if err := github_com_gogo_protobuf_types.StdBoolUnmarshal(m.Enabled, dAtA[iNdEx:postIndex]); err != nil {
+			if err := github_com_waynz0r_protobuf_types.StdBoolUnmarshal(m.Enabled, dAtA[iNdEx:postIndex]); err != nil {
 				return err
 			}
 			iNdEx = postIndex
@@ -8991,7 +8991,7 @@ func (m *TelemetryV2Configuration) Unmarshal(dAtA []byte) error {
 			if m.Enabled == nil {
 				m.Enabled = new(bool)
 			}
-			if err := github_com_gogo_protobuf_types.StdBoolUnmarshal(m.Enabled, dAtA[iNdEx:postIndex]); err != nil {
+			if err := github_com_waynz0r_protobuf_types.StdBoolUnmarshal(m.Enabled, dAtA[iNdEx:postIndex]); err != nil {
 				return err
 			}
 			iNdEx = postIndex
@@ -9078,7 +9078,7 @@ func (m *ProxyWasmConfiguration) Unmarshal(dAtA []byte) error {
 			if m.Enabled == nil {
 				m.Enabled = new(bool)
 			}
-			if err := github_com_gogo_protobuf_types.StdBoolUnmarshal(m.Enabled, dAtA[iNdEx:postIndex]); err != nil {
+			if err := github_com_waynz0r_protobuf_types.StdBoolUnmarshal(m.Enabled, dAtA[iNdEx:postIndex]); err != nil {
 				return err
 			}
 			iNdEx = postIndex
@@ -9165,7 +9165,7 @@ func (m *PDBConfiguration) Unmarshal(dAtA []byte) error {
 			if m.Enabled == nil {
 				m.Enabled = new(bool)
 			}
-			if err := github_com_gogo_protobuf_types.StdBoolUnmarshal(m.Enabled, dAtA[iNdEx:postIndex]); err != nil {
+			if err := github_com_waynz0r_protobuf_types.StdBoolUnmarshal(m.Enabled, dAtA[iNdEx:postIndex]); err != nil {
 				return err
 			}
 			iNdEx = postIndex

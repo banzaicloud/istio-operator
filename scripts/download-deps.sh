@@ -4,9 +4,9 @@ set -euo pipefail
 
 code_generator_version=v0.22.0
 controller_gen_version=v0.6.2
-istio_deps_version=v1.11.0-bzc.2
+istio_deps_version=v1.11.4-bzc.1
 istio_tools_replacement_module_name=github.com/waynz0r/istio-tools
-gogo_protobuf_version=v1.3.2
+gogo_protobuf_version=v1.3.2-bzc
 yq_version=3.4.1
 
 script_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" >/dev/null 2>&1 && pwd)"
@@ -56,7 +56,7 @@ ensure-binary-version cue-gen ${istio_deps_version} "istio.io/tools" "/cmd/cue-g
 ensure-binary-version protoc-gen-deepcopy ${istio_deps_version} "istio.io/tools" "/cmd/protoc-gen-deepcopy" "${istio_tools_replacement_module_name}"
 ensure-binary-version protoc-gen-jsonshim ${istio_deps_version} "istio.io/tools" "/cmd/protoc-gen-jsonshim" "${istio_tools_replacement_module_name}"
 ensure-binary-version protoc-gen-docs ${istio_deps_version} "istio.io/tools" "/cmd/protoc-gen-docs" "${istio_tools_replacement_module_name}"
-ensure-binary-version protoc-gen-gogofast ${gogo_protobuf_version} "github.com/gogo" "/protobuf/protoc-gen-gogofast"
+ensure-binary-version protoc-gen-gogofast ${gogo_protobuf_version} "github.com/waynz0r" "/protobuf/protoc-gen-gogofast"
 ensure-binary-version yq ${yq_version} "github.com/mikefarah/yq" "/v3"
 
 go mod tidy

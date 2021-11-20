@@ -19,7 +19,7 @@ package v1alpha1
 import (
 	"strconv"
 
-	"github.com/gogo/protobuf/jsonpb"
+	"github.com/waynz0r/protobuf/jsonpb"
 	"k8s.io/apimachinery/pkg/api/resource"
 	"k8s.io/apimachinery/pkg/util/intstr"
 )

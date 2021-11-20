@@ -6,10 +6,10 @@ package v1alpha1
 import (
 	bytes "bytes"
 	fmt "fmt"
-	_ "github.com/gogo/protobuf/gogoproto"
-	github_com_gogo_protobuf_jsonpb "github.com/gogo/protobuf/jsonpb"
-	proto "github.com/gogo/protobuf/proto"
-	_ "github.com/gogo/protobuf/types"
+	_ "github.com/waynz0r/protobuf/gogoproto"
+	github_com_waynz0r_protobuf_jsonpb "github.com/waynz0r/protobuf/jsonpb"
+	proto "github.com/waynz0r/protobuf/proto"
+	_ "github.com/waynz0r/protobuf/types"
 	_ "istio.io/gogo-genproto/googleapis/google/api"
 	_ "k8s.io/api/core/v1"
 	math "math"
@@ -54,6 +54,6 @@ func (this *IstioMeshGatewayStatus) UnmarshalJSON(b []byte) error {
 }
 
 var (
-	IstiomeshgatewayMarshaler   = &github_com_gogo_protobuf_jsonpb.Marshaler{Int64Uint64asIntegers: true}
-	IstiomeshgatewayUnmarshaler = &github_com_gogo_protobuf_jsonpb.Unmarshaler{AllowUnknownFields: true}
+	IstiomeshgatewayMarshaler   = &github_com_waynz0r_protobuf_jsonpb.Marshaler{Int64Uint64asIntegers: true}
+	IstiomeshgatewayUnmarshaler = &github_com_waynz0r_protobuf_jsonpb.Unmarshaler{AllowUnknownFields: true}
 )
