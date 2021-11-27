@@ -10,7 +10,7 @@ require (
 	github.com/banzaicloud/cluster-registry v0.0.7
 	github.com/banzaicloud/istio-operator/api/v2 v2.0.0
 	github.com/banzaicloud/k8s-objectmatcher v1.5.2
-	github.com/banzaicloud/operator-tools v0.26.1
+	github.com/banzaicloud/operator-tools v0.26.3
 	github.com/fatih/color v1.12.0 // indirect
 	github.com/go-logr/logr v0.4.0
 	github.com/gogo/protobuf v1.3.2
