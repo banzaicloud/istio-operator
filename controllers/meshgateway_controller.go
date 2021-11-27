@@ -50,6 +50,7 @@ import (
 const (
 	hostnameSyncWaitDuration      = time.Second * 300
 	pendingGatewayRequeueDuration = time.Second * 30
+	nsTerminationRequeueDuration  = time.Second * 5
 	istioMeshGatewayFinalizerID   = "istio-meshgateway.servicemesh.cisco.com"
 )
 
@@ -75,6 +76,15 @@ func (r *IstioMeshGatewayReconciler) Reconcile(ctx context.Context, req ctrl.Req
 			return ctrl.Result{}, nil
 		}
 		// Error reading the object - requeue the request.
+		return ctrl.Result{}, err
+	}
+
+	if requeueNeeded, err := k8sutil.IsReqeueNeededCosNamespaceTermination(ctx, r.GetClient(), imgw); requeueNeeded && err == nil {
+		logger.Info("namespace is terminating, requeue needed")
+		return ctrl.Result{
+			RequeueAfter: nsTerminationRequeueDuration,
+		}, nil
+	} else if err != nil {
 		return ctrl.Result{}, err
 	}
 
