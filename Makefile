@@ -18,7 +18,7 @@ HELM_CHART_REL_TAG ?= chart/istio-operator/${CHART_VERSION}
 
 GOLANGCI_VERSION = 1.42.1
 LICENSEI_VERSION = 0.4.0
-KUBEBUILDER_VERSION = 2.3.2
+ENVTEST_K8S_VERSION = 1.21.4
 KUSTOMIZE_VERSION = 4.1.2
 ISTIO_VERSION = 1.11.4
 BUF_VERSION = 0.41.0
@@ -64,8 +64,10 @@ license-cache: bin/licensei ## Generate license cache
 
 # Run tests
 .PHONY: test
-test: install-kubebuilder
-	KUBEBUILDER_ASSETS="$${PWD}/bin/kubebuilder/bin" go test ./... -coverprofile cover.out
+test: install-envtest
+ifneq (${SKIP_TESTS}, 1)
+	KUBEBUILDER_ASSETS="$${PWD}/bin/envtest/bin" go test ./... -coverprofile cover.out
+endif
 
 # Build manager binary
 .PHONY: manager
@@ -84,9 +86,9 @@ run: generate fmt vet manifests
 install-kustomize:
 	scripts/install_kustomize.sh ${KUSTOMIZE_VERSION}
 
-# Install kubebuilder
-install-kubebuilder:
-	scripts/install_kubebuilder.sh ${KUBEBUILDER_VERSION}
+# Install envtest
+install-envtest:
+	scripts/install_envtest.sh ${ENVTEST_K8S_VERSION}
 
 # Install CRDs into a cluster
 install: install-kustomize manifests
