@@ -161,6 +161,7 @@ func (r *IstioControlPlaneReconciler) Reconcile(ctx context.Context, req ctrl.Re
 
 	if requeueNeeded, err := k8sutil.IsReqeueNeededCosNamespaceTermination(ctx, r.GetClient(), icp); requeueNeeded && err == nil {
 		logger.Info("namespace is terminating, requeue needed")
+
 		return ctrl.Result{
 			RequeueAfter: nsTerminationRequeueDuration,
 		}, nil

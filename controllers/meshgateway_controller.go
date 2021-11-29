@@ -81,6 +81,7 @@ func (r *IstioMeshGatewayReconciler) Reconcile(ctx context.Context, req ctrl.Req
 
 	if requeueNeeded, err := k8sutil.IsReqeueNeededCosNamespaceTermination(ctx, r.GetClient(), imgw); requeueNeeded && err == nil {
 		logger.Info("namespace is terminating, requeue needed")
+
 		return ctrl.Result{
 			RequeueAfter: nsTerminationRequeueDuration,
 		}, nil
