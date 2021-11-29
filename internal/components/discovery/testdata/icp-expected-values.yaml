@@ -173,6 +173,9 @@ revision: cp-v111x
 meshConfig:
   rootNamespace: istio-system
   connectTimeout: 5s
+  caCertificates:
+  - pem: "<pem content>"
+
 telemetry:
   v2:
     enabled: true

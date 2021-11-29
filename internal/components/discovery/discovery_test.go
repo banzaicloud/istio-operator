@@ -80,7 +80,8 @@ func TestICPDiscoveryResourceDump(t *testing.T) {
 					},
 				},
 			},
-			MeshNetworks: getTestMeshNetworks(),
+			MeshNetworks:                 getTestMeshNetworks(),
+			TrustedRootCACertificatePEMs: []string{"<pem content from peer>"},
 		},
 		logr.DiscardLogger{},
 	)

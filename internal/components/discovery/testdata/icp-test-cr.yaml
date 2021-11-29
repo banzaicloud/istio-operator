@@ -168,6 +168,8 @@ spec:
     noProxy: "localhost"
   meshConfig:
     rootNamespace: "istio-system"
+    caCertificates:
+    - pem: "<pem content>"
   k8sResourceOverlays:
   - groupVersionKind:
       kind: Deployment

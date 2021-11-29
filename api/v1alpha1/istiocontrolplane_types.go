@@ -135,8 +135,9 @@ type IstioControlPlaneWithProperties struct {
 
 // +kubebuilder:object:generate=false
 type IstioControlPlaneProperties struct {
-	Mesh         *IstioMesh
-	MeshNetworks *v1alpha1.MeshNetworks
+	Mesh                         *IstioMesh
+	MeshNetworks                 *v1alpha1.MeshNetworks
+	TrustedRootCACertificatePEMs []string
 }
 
 func (p IstioControlPlaneProperties) GetMesh() *IstioMesh {

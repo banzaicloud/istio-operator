@@ -6390,6 +6390,8 @@ spec:
               type: object
             status:
               properties:
+                caRootCertificate:
+                  type: string
                 checksums:
                   properties:
                     meshConfig:
@@ -13713,6 +13715,8 @@ spec:
               type: object
             status:
               properties:
+                caRootCertificate:
+                  type: string
                 checksums:
                   properties:
                     meshConfig:
