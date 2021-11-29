@@ -42,6 +42,7 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/labels"
 	"k8s.io/apimachinery/pkg/runtime"
+	"k8s.io/apimachinery/pkg/selection"
 	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/client-go/rest"
 	ctrl "sigs.k8s.io/controller-runtime"
@@ -255,10 +256,22 @@ func (r *IstioControlPlaneReconciler) reconcile(ctx context.Context, icp *servic
 		return ctrl.Result{}, err
 	}
 
+	trustedCACertificates, err := r.getCACertificatesFromPeers(ctx, icp)
+	if err != nil {
+		return ctrl.Result{}, err
+	}
+
+	logger.Info("delete root ca configmaps")
+	err = r.deleteIstioRootCAConfigmapsOnPassive(ctx, icp)
+	if err != nil {
+		return ctrl.Result{}, err
+	}
+
 	discoveryReconciler, err := NewComponentReconciler(r, func(helmReconciler *components.HelmReconciler) components.ComponentReconciler {
 		return discovery_component.NewChartReconciler(helmReconciler, servicemeshv1alpha1.IstioControlPlaneProperties{
-			Mesh:         istioMesh,
-			MeshNetworks: meshNetworks,
+			Mesh:                         istioMesh,
+			MeshNetworks:                 meshNetworks,
+			TrustedRootCACertificatePEMs: trustedCACertificates,
 		}, r.Log)
 	}, r.Log.WithName("discovery"))
 	if err != nil {
@@ -350,6 +363,11 @@ func (r *IstioControlPlaneReconciler) reconcile(ctx context.Context, icp *servic
 	}
 
 	err = r.setIstiodAddressesToStatus(ctx, icp)
+	if err != nil {
+		return result, err
+	}
+
+	err = r.setIstioCARootCertToStatus(ctx, icp)
 	if err != nil {
 		return result, err
 	}
@@ -755,6 +773,35 @@ func (list SortableControlPlanes) Less(i, j int) bool {
 	return list[i].GetName() > list[j].GetName()
 }
 
+func (r *IstioControlPlaneReconciler) getCACertificatesFromPeers(ctx context.Context, icp *servicemeshv1alpha1.IstioControlPlane) ([]string, error) {
+	certData := make([]string, 0)
+
+	cps := make(SortableControlPlanes, 0)
+
+	picpList := &servicemeshv1alpha1.PeerIstioControlPlaneList{}
+	err := r.GetClient().List(ctx, picpList, client.InNamespace(icp.GetNamespace()))
+	if err != nil {
+		return nil, errors.WithStackIf(err)
+	}
+
+	for _, picp := range picpList.Items {
+		picp := picp
+		if picp.Status.IstioControlPlaneName == icp.GetName() && picp.Spec.Mode == servicemeshv1alpha1.ModeType_ACTIVE {
+			cps = append(cps, &picp)
+		}
+	}
+
+	sort.Sort(cps)
+
+	for _, cp := range cps {
+		if cp.GetStatus().CaRootCertificate != "" {
+			certData = append(certData, cp.GetStatus().CaRootCertificate)
+		}
+	}
+
+	return certData, nil
+}
+
 func (r *IstioControlPlaneReconciler) getMeshNetworks(ctx context.Context, icp *servicemeshv1alpha1.IstioControlPlane) (*v1alpha1.MeshNetworks, error) {
 	networks := make(map[string]*v1alpha1.Network)
 
@@ -1081,6 +1128,65 @@ func (r *IstioControlPlaneReconciler) setInjectionNamespacesToStatus(ctx context
 	sort.Strings(names)
 
 	icp.Status.InjectionNamespaces = names
+
+	return nil
+}
+
+func (r *IstioControlPlaneReconciler) deleteIstioRootCAConfigmapsOnPassive(ctx context.Context, icp *servicemeshv1alpha1.IstioControlPlane) error {
+	if icp.GetSpec().GetMode() == servicemeshv1alpha1.ModeType_ACTIVE {
+		return nil
+	}
+
+	configmaps := &corev1.ConfigMapList{}
+	crOwnershipFilter, err := labels.NewRequirement(clusterregistryv1alpha1.OwnershipAnnotation, selection.DoesNotExist, nil)
+	if err != nil {
+		return err
+	}
+	err = r.GetClient().List(ctx, configmaps, client.MatchingLabelsSelector{
+		Selector: labels.NewSelector().Add(*crOwnershipFilter),
+	}, client.MatchingLabels(utils.MergeLabels(
+		map[string]string{
+			"istio.io/config": "true",
+		},
+		icp.RevisionLabels(),
+	)))
+	if err != nil {
+		return err
+	}
+
+	for _, cm := range configmaps.Items {
+		cm := cm
+		err = r.GetClient().Delete(ctx, &cm)
+		if err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (r *IstioControlPlaneReconciler) setIstioCARootCertToStatus(ctx context.Context, icp *servicemeshv1alpha1.IstioControlPlane) error {
+	if icp.GetSpec().GetMode() != servicemeshv1alpha1.ModeType_ACTIVE {
+		icp.Status.CaRootCertificate = ""
+
+		return nil
+	}
+
+	secret := &corev1.Secret{}
+	err := r.GetClient().Get(ctx, client.ObjectKey{
+		Name:      "istio-ca-secret",
+		Namespace: icp.GetNamespace(),
+	}, secret)
+	if k8serrors.IsNotFound(err) {
+		icp.Status.CaRootCertificate = ""
+
+		return nil
+	}
+	if err != nil {
+		return err
+	}
+
+	icp.Status.CaRootCertificate = string(secret.Data["ca-cert.pem"])
 
 	return nil
 }

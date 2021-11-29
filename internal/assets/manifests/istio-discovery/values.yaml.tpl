@@ -209,6 +209,24 @@ rootNamespace: {{ .Namespace }}
 
 {{- $mesh := mergeOverwrite (.Properties.GetMesh.GetSpec.GetConfig | toJsonPB | fromYaml) (.GetSpec.GetMeshConfig | toJsonPB | fromYaml) (include "mesh" . | fromYaml) }}
 
+{{ $caCertificates := list }}
+
+{{- if $mesh.caCertificates }}
+{{- range $mesh.caCertificates }}
+{{- $caCertificates = append $caCertificates . -}}
+{{- end }}
+{{- end }}
+
+{{- if .Properties.TrustedRootCACertificatePEMs }}
+{{- range .Properties.TrustedRootCACertificatePEMs }}
+{{- $caCertificates = append $caCertificates (dict "pem" .) -}}
+{{- end }}
+{{- end }}
+
+{{- if $caCertificates }}
+{{- $mesh = mergeOverwrite $mesh (dict "caCertificates" $caCertificates) }}
+{{- end }}
+
 meshConfig:
 {{ toYaml $mesh | indent 2}}
 

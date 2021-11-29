@@ -28,6 +28,9 @@ spec:
 apiVersion: v1
 data:
   mesh: |-
+    caCertificates:
+    - pem: <pem content>
+    - pem: <pem content from peer>
     connectTimeout: 5s
     defaultConfig:
       discoveryAddress: istiod-cp-v111x.istio-system.svc:15012

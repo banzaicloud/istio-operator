@@ -368,12 +368,15 @@ message IstioControlPlaneStatus {
     // Namespaces which are set for injection for this control plane
     repeated string injectionNamespaces = 6;
 
+    // Istio CA root certificate
+    string caRootCertificate = 7;
+
     // Reconciliation error message if any
-    string errorMessage = 7;
+    string errorMessage = 8;
 
-    istio.mesh.v1alpha1.MeshConfig meshConfig = 8;
+    istio.mesh.v1alpha1.MeshConfig meshConfig = 9;
 
-    StatusChecksums checksums = 9;
+    StatusChecksums checksums = 10;
 }
 
 // <!-- go code generation tags
