@@ -24,8 +24,8 @@ import (
 	"text/template"
 
 	"github.com/Masterminds/sprig"
-	"github.com/gogo/protobuf/jsonpb"
 	"github.com/golang/protobuf/proto"
+	"github.com/waynz0r/protobuf/jsonpb"
 	"sigs.k8s.io/yaml"
 )
 

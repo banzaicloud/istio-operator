@@ -20,8 +20,8 @@ import (
 	"encoding/json"
 
 	"github.com/go-logr/logr"
-	"github.com/gogo/protobuf/jsonpb"
 	"github.com/imdario/mergo"
+	"github.com/waynz0r/protobuf/jsonpb"
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
 	"istio.io/api/mesh/v1alpha1"

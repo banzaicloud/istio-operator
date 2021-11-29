@@ -5,10 +5,10 @@ package v1alpha1
 
 import (
 	fmt "fmt"
-	_ "github.com/gogo/protobuf/gogoproto"
-	proto "github.com/gogo/protobuf/proto"
-	_ "github.com/gogo/protobuf/protoc-gen-gogo/descriptor"
-	_ "github.com/gogo/protobuf/types"
+	_ "github.com/waynz0r/protobuf/gogoproto"
+	proto "github.com/waynz0r/protobuf/proto"
+	_ "github.com/waynz0r/protobuf/protoc-gen-gogo/descriptor"
+	_ "github.com/waynz0r/protobuf/types"
 	_ "istio.io/gogo-genproto/googleapis/google/api"
 	_ "k8s.io/api/apps/v1"
 	_ "k8s.io/api/core/v1"

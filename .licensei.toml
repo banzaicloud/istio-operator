@@ -8,6 +8,7 @@ approved = [
 
 ignored = [
   "github.com/ghodss/yaml",
+  "github.com/waynz0r/protobuf",
   "github.com/gogo/protobuf",
   "google.golang.org/protobuf",
   "sigs.k8s.io/yaml",

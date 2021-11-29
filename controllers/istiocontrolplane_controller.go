@@ -28,7 +28,7 @@ import (
 
 	"emperror.dev/errors"
 	"github.com/go-logr/logr"
-	"github.com/gogo/protobuf/jsonpb"
+	"github.com/waynz0r/protobuf/jsonpb"
 	"istio.io/api/mesh/v1alpha1"
 	istionetworkingv1alpha3 "istio.io/client-go/pkg/apis/networking/v1alpha3"
 	istiosecurityv1beta1 "istio.io/client-go/pkg/apis/security/v1beta1"
