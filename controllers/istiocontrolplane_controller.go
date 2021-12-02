@@ -261,12 +261,6 @@ func (r *IstioControlPlaneReconciler) reconcile(ctx context.Context, icp *servic
 		return ctrl.Result{}, err
 	}
 
-	logger.Info("delete root ca configmaps")
-	err = r.deleteIstioRootCAConfigmapsOnPassive(ctx, icp)
-	if err != nil {
-		return ctrl.Result{}, err
-	}
-
 	discoveryReconciler, err := NewComponentReconciler(r, func(helmReconciler *components.HelmReconciler) components.ComponentReconciler {
 		return discovery_component.NewChartReconciler(helmReconciler, servicemeshv1alpha1.IstioControlPlaneProperties{
 			Mesh:                         istioMesh,
@@ -311,6 +305,12 @@ func (r *IstioControlPlaneReconciler) reconcile(ctx context.Context, icp *servic
 		if err != nil {
 			return result, err
 		}
+	}
+
+	logger.Info("delete root ca configmaps")
+	err = r.deleteIstioRootCAConfigmapsOnPassive(ctx, icp)
+	if err != nil {
+		return ctrl.Result{}, err
 	}
 
 	err = r.reconcileNamespaceInjectionLabels(ctx, icp)
@@ -1140,7 +1140,7 @@ func (r *IstioControlPlaneReconciler) deleteIstioRootCAConfigmapsOnPassive(ctx c
 	configmaps := &corev1.ConfigMapList{}
 	crOwnershipFilter, err := labels.NewRequirement(clusterregistryv1alpha1.OwnershipAnnotation, selection.DoesNotExist, nil)
 	if err != nil {
-		return err
+		return errors.WithStackIf(err)
 	}
 	err = r.GetClient().List(ctx, configmaps, client.MatchingLabelsSelector{
 		Selector: labels.NewSelector().Add(*crOwnershipFilter),
@@ -1151,14 +1151,25 @@ func (r *IstioControlPlaneReconciler) deleteIstioRootCAConfigmapsOnPassive(ctx c
 		icp.RevisionLabels(),
 	)))
 	if err != nil {
-		return err
+		return errors.WrapIf(err, "could not list root ca configmaps")
 	}
 
 	for _, cm := range configmaps.Items {
 		cm := cm
-		err = r.GetClient().Delete(ctx, &cm)
+		annotations := cm.GetAnnotations()
+		if annotations == nil {
+			annotations = make(map[string]string)
+		}
+		annotations[clusterregistryv1alpha1.OwnershipAnnotation] = "set-to-trigger-resync"
+		cm.SetAnnotations(annotations)
+		err = r.GetClient().Update(ctx, &cm)
 		if err != nil {
-			return err
+			return errors.WrapIf(err, "could not update root ca configmap")
+		}
+
+		err = r.GetClient().Delete(ctx, &cm, client.PropagationPolicy(metav1.DeletePropagationForeground))
+		if err != nil {
+			return errors.WrapIf(err, "could not delete root ca configmap")
 		}
 	}
 
