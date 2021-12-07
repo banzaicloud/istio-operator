@@ -307,8 +307,7 @@ func (r *IstioControlPlaneReconciler) reconcile(ctx context.Context, icp *servic
 		}
 	}
 
-	logger.Info("delete root ca configmaps")
-	err = r.deleteIstioRootCAConfigmapsOnPassive(ctx, icp)
+	err = r.deleteIstioRootCAConfigmapsOnPassive(ctx, icp, logger)
 	if err != nil {
 		return ctrl.Result{}, err
 	}
@@ -1132,24 +1131,41 @@ func (r *IstioControlPlaneReconciler) setInjectionNamespacesToStatus(ctx context
 	return nil
 }
 
-func (r *IstioControlPlaneReconciler) deleteIstioRootCAConfigmapsOnPassive(ctx context.Context, icp *servicemeshv1alpha1.IstioControlPlane) error {
+// deleteIstioRootCAConfigmapsOnPassive deletes the istio-ca-root-cert-<revision> configmaps from passive clusters
+// to gracefully handle the ACTIVE --> PASSIVE ICP mode switch and letting the cluster registry controller to recreate
+// the configmap for the passive cluster
+// NOTE: if cluster registry controller is not used, these configmaps need to be recreated manually
+func (r *IstioControlPlaneReconciler) deleteIstioRootCAConfigmapsOnPassive(ctx context.Context, icp *servicemeshv1alpha1.IstioControlPlane, logger logr.Logger) error {
 	if icp.GetSpec().GetMode() == servicemeshv1alpha1.ModeType_ACTIVE {
 		return nil
 	}
 
 	configmaps := &corev1.ConfigMapList{}
+	selectors := labels.NewSelector()
+
 	crOwnershipFilter, err := labels.NewRequirement(clusterregistryv1alpha1.OwnershipAnnotation, selection.DoesNotExist, nil)
 	if err != nil {
 		return errors.WithStackIf(err)
 	}
+	selectors = selectors.Add(*crOwnershipFilter)
+
+	istioConfigFilter, err := labels.NewRequirement("istio.io/config", selection.Equals, []string{"true"})
+	if err != nil {
+		return errors.WithStackIf(err)
+	}
+	selectors = selectors.Add(*istioConfigFilter)
+
+	for key, value := range icp.RevisionLabels() {
+		revisionLabelFilter, err := labels.NewRequirement(key, selection.Equals, []string{value})
+		if err != nil {
+			return errors.WithStackIf(err)
+		}
+		selectors = selectors.Add(*revisionLabelFilter)
+	}
+
 	err = r.GetClient().List(ctx, configmaps, client.MatchingLabelsSelector{
-		Selector: labels.NewSelector().Add(*crOwnershipFilter),
-	}, client.MatchingLabels(utils.MergeLabels(
-		map[string]string{
-			"istio.io/config": "true",
-		},
-		icp.RevisionLabels(),
-	)))
+		Selector: selectors,
+	})
 	if err != nil {
 		return errors.WrapIf(err, "could not list root ca configmaps")
 	}
@@ -1171,6 +1187,8 @@ func (r *IstioControlPlaneReconciler) deleteIstioRootCAConfigmapsOnPassive(ctx c
 		if err != nil {
 			return errors.WrapIf(err, "could not delete root ca configmap")
 		}
+
+		logger.Info(fmt.Sprintf("deleted root ca configmap %s.%s", cm.GetName(), cm.GetNamespace()))
 	}
 
 	return nil
