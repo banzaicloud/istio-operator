@@ -66,12 +66,13 @@ func TestIMGWResourceDump(t *testing.T) {
 			reconciler.NativeReconcilerSetControllerRef(),
 		}),
 		v1alpha1.IstioMeshGatewayProperties{
-			Revision:              "cp-v110x.istio-system",
-			EnablePrometheusMerge: utils.BoolPointer(true),
-			InjectionTemplate:     "gateway",
-			InjectionChecksum:     "08fdba0c89f9bbd6624201d98758746d1bddc78e9004b00259f33b20b7f9efba",
-			MeshConfigChecksum:    "319ffd3f807ef4516499c6ad68279a1cd07778f5847e65f9aef908eceb1693e3",
-			IstioControlPlane:     icp,
+			Revision:                "cp-v110x.istio-system",
+			EnablePrometheusMerge:   utils.BoolPointer(true),
+			InjectionTemplate:       "gateway",
+			InjectionChecksum:       "08fdba0c89f9bbd6624201d98758746d1bddc78e9004b00259f33b20b7f9efba",
+			MeshConfigChecksum:      "319ffd3f807ef4516499c6ad68279a1cd07778f5847e65f9aef908eceb1693e3",
+			IstioControlPlane:       icp,
+			GenerateExternalService: true,
 		},
 	)
 
@@ -114,12 +115,13 @@ func TestIMGWTemplateTransform(t *testing.T) {
 	obj := &v1alpha1.IstioMeshGatewayWithProperties{
 		IstioMeshGateway: imgw,
 		Properties: v1alpha1.IstioMeshGatewayProperties{
-			Revision:              "cp-revision-1",
-			EnablePrometheusMerge: utils.BoolPointer(false),
-			InjectionTemplate:     "gateway",
-			InjectionChecksum:     "08fdba0c89f9bbd6624201d98758746d1bddc78e9004b00259f33b20b7f9efba",
-			MeshConfigChecksum:    "319ffd3f807ef4516499c6ad68279a1cd07778f5847e65f9aef908eceb1693e3",
-			IstioControlPlane:     icp,
+			Revision:                "cp-revision-1",
+			EnablePrometheusMerge:   utils.BoolPointer(false),
+			InjectionTemplate:       "gateway",
+			InjectionChecksum:       "08fdba0c89f9bbd6624201d98758746d1bddc78e9004b00259f33b20b7f9efba",
+			MeshConfigChecksum:      "319ffd3f807ef4516499c6ad68279a1cd07778f5847e65f9aef908eceb1693e3",
+			IstioControlPlane:       icp,
+			GenerateExternalService: true,
 		},
 	}
 	obj.SetDefaults()

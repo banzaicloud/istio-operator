@@ -79,12 +79,13 @@ func (p *IstioMeshGatewayWithProperties) SetDefaults() {
 }
 
 type IstioMeshGatewayProperties struct {
-	Revision              string
-	EnablePrometheusMerge *bool
-	InjectionTemplate     string
-	InjectionChecksum     string
-	MeshConfigChecksum    string
-	IstioControlPlane     *IstioControlPlane
+	Revision                string
+	EnablePrometheusMerge   *bool
+	InjectionTemplate       string
+	InjectionChecksum       string
+	MeshConfigChecksum      string
+	IstioControlPlane       *IstioControlPlane
+	GenerateExternalService bool
 }
 
 func (p IstioMeshGatewayProperties) GetIstioControlPlane() *IstioControlPlane {

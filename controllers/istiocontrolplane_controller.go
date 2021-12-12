@@ -1250,7 +1250,7 @@ func (r *IstioControlPlaneReconciler) getNamespaceInjectionSourcePICP(ctx contex
 	var sourceICP *servicemeshv1alpha1.PeerIstioControlPlane
 	for _, picp := range picpList.Items {
 		picp := picp
-		if v, ok := picp.GetAnnotations()[servicemeshv1alpha1.NamespaceInjectionSourceAnnotation]; ok && v == "true" && picp.Status.IstioControlPlaneName == cp.Name {
+		if v, ok := picp.GetAnnotations()[servicemeshv1alpha1.NamespaceInjectionSourceAnnotation]; ok && v == "true" && picp.Status.IstioControlPlaneName == cp.Name { // nolint:goconst
 			sourceICP = &picp
 		}
 	}

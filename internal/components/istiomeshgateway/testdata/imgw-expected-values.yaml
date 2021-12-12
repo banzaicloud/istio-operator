@@ -136,3 +136,7 @@ service:
     clientIP:
       timeoutSeconds: 3600
   ipFamily: IPv4
+
+externalService:
+  addresses:
+  - 34.147.29.25

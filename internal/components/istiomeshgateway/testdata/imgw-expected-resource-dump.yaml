@@ -127,6 +127,27 @@ spec:
   type: LoadBalancer
 
 ---
+apiVersion: v1
+kind: Service
+metadata:
+  name: demo-gw-external
+  namespace: default
+  labels:
+    meshgateway.istio.servicemesh.cisco.com/external-service: "true"
+spec:
+  clusterIP: None
+  ports:
+  - name: tcp-als-tls
+    port: 50600
+    protocol: TCP
+    targetPort: 50600
+  - name: tcp-zipkin-tls
+    port: 59411
+    protocol: TCP
+    targetPort: 59411
+  type: ClusterIP
+
+---
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -278,3 +299,24 @@ spec:
       resource:
         name: cpu
         targetAverageUtilization: 80
+
+---
+apiVersion: v1
+kind: Endpoints
+metadata:
+  name: demo-gw-external
+  namespace: default
+  labels:
+    meshgateway.istio.servicemesh.cisco.com/external-service: "true"
+subsets:
+- addresses:
+  - ip: 34.147.29.25
+  ports:
+  - name: tcp-als-tls
+    port: 50600
+    protocol: TCP
+    targetPort: 50600
+  - name: tcp-zipkin-tls
+    port: 59411
+    protocol: TCP
+    targetPort: 59411

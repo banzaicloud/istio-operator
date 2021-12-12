@@ -1,0 +1,42 @@
+{{- $gateway := .Values.deployment }}
+{{- $service := .Values.service -}}
+{{- if and .Values.externalService.addresses (eq $service.type "LoadBalancer") }}
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ $gateway.name }}-external
+  namespace: {{ .Release.Namespace }}
+  labels:
+    meshgateway.istio.servicemesh.cisco.com/external-service: "true"
+spec:
+  type: ClusterIP
+  clusterIP: None
+  ports:
+    {{- range $key, $val := $service.ports }}
+    -
+      {{- range $pkey, $pval := $val }}
+      {{ $pkey}}: {{ $pval }}
+      {{- end }}
+    {{- end }}
+---
+apiVersion: v1
+kind: Endpoints
+metadata:
+  name: {{ $gateway.name }}-external
+  namespace: {{ .Release.Namespace }}
+  labels:
+    meshgateway.istio.servicemesh.cisco.com/external-service: "true"
+subsets:
+- addresses:
+  {{- range $val := .Values.externalService.addresses }}
+  - ip: {{ $val }}
+  {{- end }}
+  ports:
+    {{- range $key, $val := $service.ports }}
+    -
+      {{- range $pkey, $pval := $val }}
+      {{ $pkey}}: {{ $pval }}
+      {{- end }}
+    {{- end }}
+---
+{{- end }}

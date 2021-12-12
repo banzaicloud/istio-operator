@@ -50,6 +50,9 @@ service:
   ports: []
   selector: {}
 
+externalService:
+  addresses: {}
+
 global:
   imagePullPolicy: "IfNotPresent"
   imagePullSecrets: []

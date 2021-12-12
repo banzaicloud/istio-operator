@@ -19,6 +19,7 @@ package controllers
 import (
 	"context"
 	"fmt"
+	"reflect"
 	"time"
 
 	"emperror.dev/errors"
@@ -52,6 +53,8 @@ const (
 	pendingGatewayRequeueDuration = time.Second * 30
 	nsTerminationRequeueDuration  = time.Second * 5
 	istioMeshGatewayFinalizerID   = "istio-meshgateway.servicemesh.cisco.com"
+
+	generateExternalServiceAnnotation = "meshgateway.istio.servicemesh.cisco.com/generate-external-service"
 )
 
 // IstioMeshGatewayReconciler reconciles a IstioMeshGateway object
@@ -114,14 +117,20 @@ func (r *IstioMeshGatewayReconciler) Reconcile(ctx context.Context, req ctrl.Req
 		enablePrometheusMerge = icp.Status.GetMeshConfig().GetEnablePrometheusMerge().Value
 	}
 
+	generateExternalService := false
+	if v, ok := imgw.GetAnnotations()[generateExternalServiceAnnotation]; ok && v == "true" {
+		generateExternalService = true
+	}
+
 	reconciler, err := NewComponentReconciler(r, func(helmReconciler *components.HelmReconciler) components.ComponentReconciler {
 		return istiomeshgateway.NewChartReconciler(helmReconciler, servicemeshv1alpha1.IstioMeshGatewayProperties{
-			Revision:              fmt.Sprintf("%s.%s", icp.GetName(), icp.GetNamespace()),
-			EnablePrometheusMerge: utils.BoolPointer(enablePrometheusMerge),
-			InjectionTemplate:     "gateway",
-			InjectionChecksum:     icp.Status.GetChecksums().GetSidecarInjector(),
-			MeshConfigChecksum:    icp.Status.GetChecksums().GetMeshConfig(),
-			IstioControlPlane:     icp,
+			Revision:                fmt.Sprintf("%s.%s", icp.GetName(), icp.GetNamespace()),
+			EnablePrometheusMerge:   utils.BoolPointer(enablePrometheusMerge),
+			InjectionTemplate:       "gateway",
+			InjectionChecksum:       icp.Status.GetChecksums().GetSidecarInjector(),
+			MeshConfigChecksum:      icp.Status.GetChecksums().GetMeshConfig(),
+			IstioControlPlane:       icp,
+			GenerateExternalService: generateExternalService,
 		})
 	}, r.Log.WithName("istiomeshgateway"))
 	if err != nil {
@@ -307,9 +316,10 @@ func (r *IstioMeshGatewayReconciler) setGatewayAddress(ctx context.Context, c cl
 	var err error
 
 	if !imgw.DeletionTimestamp.IsZero() {
-		return ctrl.Result{}, nil
+		return result, nil
 	}
 
+	currentGatewayAddress := imgw.Status.GatewayAddress
 	imgw.Status.GatewayAddress, gatewayHasHostname, err = r.getGatewayAddress(imgw)
 	if err != nil {
 		logger.Info(fmt.Sprintf("gateway address pending: %s", err.Error()))
@@ -330,6 +340,11 @@ func (r *IstioMeshGatewayReconciler) setGatewayAddress(ctx context.Context, c cl
 		logger.Error(updateErr, "failed to update state")
 
 		return result, errors.WithStack(err)
+	}
+
+	if !reflect.DeepEqual(currentGatewayAddress, imgw.Status.GatewayAddress) {
+		logger.Info("gateway address has changed, trigger reconciler by requeuing")
+		result.Requeue = true
 	}
 
 	if gatewayHasHostname {
