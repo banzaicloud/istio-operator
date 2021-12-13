@@ -42,6 +42,8 @@ apiVersion: servicemesh.cisco.com/v1alpha1
 kind: IstioMeshGateway
 metadata:
   name: {{ include "name-with-revision" (dict "name" "istio-meshexpansion" "context" $) }}
+  annotations:
+    meshgateway.istio.servicemesh.cisco.com/generate-external-service: "true"
   labels:
     istio.io/rev: {{ include "namespaced-revision" . }}
     app: istio-meshexpansion-gateway

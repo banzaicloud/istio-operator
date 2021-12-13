@@ -52,3 +52,10 @@ service:
 {{ toYamlIf (dict "value" .GetSessionAffinityConfig "key" "sessionAffinityConfig") | indent 2 }}
 {{ valueIf (dict "value" .GetIpFamily "key" "ipFamily") | indent 2 }}
 {{- end }}
+
+{{- if $.Properties.GenerateExternalService }}
+{{- with $.Status.GetGatewayAddress }}
+externalService:
+{{ toYamlIf (dict "value" . "key" "addresses") | indent 2 }}
+{{- end }}
+{{- end }}

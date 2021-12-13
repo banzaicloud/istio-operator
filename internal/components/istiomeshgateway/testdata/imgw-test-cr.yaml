@@ -148,3 +148,6 @@ spec:
           httpCookie:
             name: user
             ttl: 0s
+status:
+  GatewayAddress:
+  - 34.147.29.25
