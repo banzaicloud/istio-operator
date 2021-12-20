@@ -8,6 +8,10 @@ directories:
   api/v1alpha1:
     - mode: perFile
 
+all:
+  title: OpenAPI descriptor for Istio operator types
+  oapiFilename: api/v1alpha1/istio-operator.gen.json
+
 crd:
   dir: config/crd/bases
   filename: istio-operator-crds
