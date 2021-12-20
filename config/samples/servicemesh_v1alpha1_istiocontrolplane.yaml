@@ -5,7 +5,7 @@ metadata:
 spec:
   version: 1.11.0
   mode: ACTIVE
-  meshId: mesh1
+  meshID: mesh1
   networkName: network1
   logging:
     level: "default:info"
