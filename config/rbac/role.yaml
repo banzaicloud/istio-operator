@@ -167,8 +167,6 @@ rules:
   - watch
 - apiGroups:
   - certificates.k8s.io
-  resourceNames:
-  - kubernetes.io/legacy-unknown
   resources:
   - signers
   verbs:
