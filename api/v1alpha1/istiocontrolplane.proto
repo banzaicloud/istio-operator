@@ -60,7 +60,7 @@ option go_package = "github.com/banzaicloud/istio-operator/v2/api/v1alpha1";
 // -->
 message IstioControlPlaneSpec {
     // Contains the intended version for the Istio control plane.
-    // +kubebuilder:validation:Pattern=^1.
+    // +kubebuilder:validation:Pattern=^1\.
     string version = 1 [(google.api.field_behavior) = REQUIRED];
     // Configure the mode for this control plane.
     // Currently, two options are supported: "ACTIVE" and "PASSIVE".

@@ -6379,7 +6379,7 @@ spec:
                       type: boolean
                   type: object
                 version:
-                  pattern: ^1.
+                  pattern: ^1\.
                   type: string
                 watchOneNamespace:
                   nullable: true
@@ -13704,7 +13704,7 @@ spec:
                       type: boolean
                   type: object
                 version:
-                  pattern: ^1.
+                  pattern: ^1\.
                   type: string
                 watchOneNamespace:
                   nullable: true

@@ -151,7 +151,7 @@ func (r *IstioControlPlaneReconciler) Reconcile(ctx context.Context, req ctrl.Re
 		}, nil
 	}
 
-	if !isIstioVersionSupported(icp.Spec.Version) {
+	if !IsIstioVersionSupported(icp.Spec.Version) {
 		err = errors.New("intended Istio version is unsupported by this version of the operator")
 		logger.Error(err, "", "version", icp.Spec.Version)
 

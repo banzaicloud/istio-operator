@@ -185,7 +185,7 @@ func (JWTPolicyType) EnumDescriptor() ([]byte, []int) {
 // -->
 type IstioControlPlaneSpec struct {
 	// Contains the intended version for the Istio control plane.
-	// +kubebuilder:validation:Pattern=^1.
+	// +kubebuilder:validation:Pattern=^1\.
 	Version string `protobuf:"bytes,1,opt,name=version,proto3" json:"version,omitempty"`
 	// Configure the mode for this control plane.
 	// Currently, two options are supported: "ACTIVE" and "PASSIVE".
