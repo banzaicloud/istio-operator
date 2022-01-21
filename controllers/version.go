@@ -19,7 +19,7 @@ package controllers
 import "regexp"
 
 const (
-	supportedIstioMinorVersionRegex = "^1\\.11"
+	supportedIstioMinorVersionRegex = "^1\\.11(\\.[0-9]+)?(-.+)?$"
 )
 
 func IsIstioVersionSupported(version string) bool {
