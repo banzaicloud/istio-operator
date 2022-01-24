@@ -1,4 +1,5 @@
 global:
+  istioNamespace: istio-system
   proxy:
     image: proxyv2
     privileged: false
