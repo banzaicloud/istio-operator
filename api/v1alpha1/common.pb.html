@@ -1354,13 +1354,16 @@ No
 </section>
 <h2 id="Quantity">Quantity</h2>
 <section>
-<p>Synthetic type for generating Go structs.
+<p>Quantity is a fixed-point representation of a number. It provides convenient marshaling/unmarshaling in JSON and YAML, in addition to String() and Int64() accessors.
++cue-gen-param:intorstring=true
++cue-gen-param:set=pattern:^(\+|-)?(([0-9]+(\.[0-9]<em>)?)|(\.[0-9]+))(([KMGTPE]i)|[numkMGTPE]|(<a href="\+|-">eE</a>?(([0-9]+(\.[0-9]</em>)?)|(\.[0-9]+))))?$
 GOTYPE: *Quantity</p>
 
 </section>
 <h2 id="IntOrString">IntOrString</h2>
 <section>
-<p>Synthetic type for generating Go structs.
+<p>IntOrString is a type that can hold an int32 or a string. When used in JSON or YAML marshalling and unmarshalling, it produces or consumes the inner type. This allows you to have, for example, a JSON field that can accept a name or number.
++cue-gen-param:intorstring=true
 GOTYPE: *IntOrString</p>
 
 </section>
