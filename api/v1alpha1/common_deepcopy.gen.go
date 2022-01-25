@@ -5,6 +5,7 @@ package v1alpha1
 
 import (
 	fmt "fmt"
+	_ "github.com/banzaicloud/istio-operator/api/v2/options"
 	_ "github.com/gogo/protobuf/gogoproto"
 	proto "github.com/gogo/protobuf/proto"
 	_ "github.com/gogo/protobuf/protoc-gen-gogo/descriptor"
