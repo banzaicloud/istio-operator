@@ -45,6 +45,7 @@ import (
 	"k8s.io/apimachinery/pkg/selection"
 	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/client-go/rest"
+	"k8s.io/client-go/tools/record"
 	ctrl "sigs.k8s.io/controller-runtime"
 	ctrlBuilder "sigs.k8s.io/controller-runtime/pkg/builder"
 	"sigs.k8s.io/controller-runtime/pkg/client"
@@ -91,6 +92,7 @@ type IstioControlPlaneReconciler struct {
 	APIServerEndpointAddress string
 	SupportedIstioVersion    string
 	Version                  string
+	Recorder                 record.EventRecorder
 
 	watchersInitOnce sync.Once
 	builder          *ctrlBuilder.Builder
@@ -1294,8 +1296,30 @@ func (r *IstioControlPlaneReconciler) reconcileNamespaceInjectionLabels(ctx cont
 			r.Log.Info("remove injection label from namespace", "namespace", ns.GetName(), "label", servicemeshv1alpha1.RevisionedAutoInjectionLabel)
 			err = r.GetClient().Update(ctx, &ns)
 			if err != nil {
-				return errors.WrapIfWithDetails(err, "could not remove injection label from namespace", "namespace", ns.GetName())
+				errMsg := "could not remove injection label from namespace"
+				r.Recorder.Event(
+					&ns,
+					corev1.EventTypeWarning,
+					"IstioInjectionLabelRemovalError",
+					errMsg,
+				)
+
+				return errors.WrapIfWithDetails(err, errMsg, "namespace", ns.GetName())
 			}
+			r.Recorder.Eventf(
+				&ns,
+				corev1.EventTypeNormal,
+				"IstioInjectionLabelRemoval",
+				"%s label removed from namespace %s, because the namespace either "+
+					"does not exist or does not have %s label in the cluster %s, where the ICP %s "+
+					"is present with the %s annotation",
+				servicemeshv1alpha1.RevisionedAutoInjectionLabel,
+				ns.GetName(),
+				servicemeshv1alpha1.RevisionedAutoInjectionLabel,
+				sourceICP.GetSpec().GetClusterID(),
+				icp.GetName(),
+				servicemeshv1alpha1.NamespaceInjectionSourceAnnotation,
+			)
 		} else {
 			localNamespacesWithInjectionLabel[ns.GetName()] = struct{}{}
 		}
@@ -1321,8 +1345,30 @@ func (r *IstioControlPlaneReconciler) reconcileNamespaceInjectionLabels(ctx cont
 		r.Log.Info("add injection label to namespace", "namespace", ns.GetName(), "label", servicemeshv1alpha1.RevisionedAutoInjectionLabel)
 		err = r.GetClient().Update(ctx, ns)
 		if err != nil {
-			return errors.WrapIfWithDetails(err, "could not update namespace", "namespace", name)
+			errMsg := "could not update namespace"
+			r.Recorder.Event(
+				ns,
+				corev1.EventTypeWarning,
+				"IstioInjectionLabelAdditionError",
+				errMsg,
+			)
+
+			return errors.WrapIfWithDetails(err, errMsg, "namespace", name)
 		}
+		r.Recorder.Eventf(
+			ns,
+			corev1.EventTypeNormal,
+			"IstioInjectionLabelAddition",
+			"%s label added to namespace %s, because the namespace "+
+				"has %s label in the cluster %s, where the ICP %s is present "+
+				"with the %s annotation",
+			servicemeshv1alpha1.RevisionedAutoInjectionLabel,
+			name,
+			servicemeshv1alpha1.RevisionedAutoInjectionLabel,
+			sourceICP.GetSpec().GetClusterID(),
+			icp.GetName(),
+			servicemeshv1alpha1.NamespaceInjectionSourceAnnotation,
+		)
 	}
 
 	return nil
