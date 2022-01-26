@@ -21,18 +21,11 @@ import "k8s.io/api/core/v1/generated.proto";
 import "k8s.io/api/apps/v1/generated.proto";
 import "k8s.io/apimachinery/pkg/apis/meta/v1/generated.proto";
 import "google/protobuf/descriptor.proto";
+import "api/options/options.proto";
 
 package istio_operator.v2.api.v1alpha1;
 
 option go_package = "github.com/banzaicloud/istio-operator/v2/api/v1alpha1";
-
-// mark whether the field is IntOrString type
-// available values:
-// "true": single field
-// "map": map of fields
-extend google.protobuf.FieldOptions {
-	optional string intorstring = 800815;
-}
 
 // Generic k8s resource metadata
 message K8sObjectMeta {
@@ -183,8 +176,8 @@ message BaseKubernetesResourceConfig {
 
 message DeploymentStrategy {
     message RollingUpdateDeployment {
-        IntOrString maxUnavailable = 1 [(intorstring) = "true"];
-        IntOrString maxSurge = 2 [(intorstring) = "true"];
+        IntOrString maxUnavailable = 1 [(options.intorstring) = "true"];
+        IntOrString maxSurge = 2 [(options.intorstring) = "true"];
     }
 
     // Type of deployment. Can be "Recreate" or "RollingUpdate". Default is RollingUpdate.
@@ -204,14 +197,14 @@ message PodDisruptionBudget {
     // absence of the evicted pod.  So for example you can prevent all voluntary
     // evictions by specifying "100%".
     // +optional
-    IntOrString minAvailable = 1 [(intorstring) = "true"];
+    IntOrString minAvailable = 1 [(options.intorstring) = "true"];
 
     // An eviction is allowed if at most "maxUnavailable" pods selected by
     // "selector" are unavailable after the eviction, i.e. even in absence of
     // the evicted pod. For example, one can prevent all voluntary evictions
     // by specifying 0. This is a mutually exclusive setting with "minAvailable".
     // +optional
-    IntOrString maxUnavailable = 2 [(intorstring) = "true"];
+    IntOrString maxUnavailable = 2 [(options.intorstring) = "true"];
 }
 
 // Service describes the attributes that a user creates on a service.
@@ -505,7 +498,7 @@ message ServicePort {
     // omitted or set equal to the 'port' field.
     // More info: https://kubernetes.io/docs/concepts/services-networking/service/#defining-a-service
     // +optional
-    IntOrString targetPort = 4 [(intorstring) = "true"];
+    IntOrString targetPort = 4 [(options.intorstring) = "true"];
 
     // The port on each node on which this service is exposed when type=NodePort or LoadBalancer.
     // Usually assigned by the system. If specified, it will be allocated to the service
@@ -529,14 +522,14 @@ message ResourceRequirements {
     // Limits describes the maximum amount of compute resources allowed.
     // More info: https://kubernetes.io/docs/concepts/configuration/manage-compute-resources-container/
     // +optional
-    map<string, Quantity> limits = 1 [(intorstring)="map"];
+    map<string, Quantity> limits = 1 [(options.intorstring)="map"];
 
     // Requests describes the minimum amount of compute resources required.
     // If Requests is omitted for a container, it defaults to Limits if that is explicitly specified,
     // otherwise to an implementation-defined value.
     // More info: https://kubernetes.io/docs/concepts/configuration/manage-compute-resources-container/
     // +optional
-    map<string, Quantity> requests = 2 [(intorstring)="map"];
+    map<string, Quantity> requests = 2 [(options.intorstring)="map"];
 }
 
 // Replicas contains pod replica configuration
@@ -594,10 +587,13 @@ enum ConfigState {
     Unmanaged = 5;
 }
 
-// Synthetic type for generating Go structs.
+// Quantity is a fixed-point representation of a number. It provides convenient marshaling/unmarshaling in JSON and YAML, in addition to String() and Int64() accessors.
+// +cue-gen-param:intorstring=true
+// +cue-gen-param:set=pattern:^(\\+|-)?(([0-9]+(\\.[0-9]*)?)|(\\.[0-9]+))(([KMGTPE]i)|[numkMGTPE]|([eE](\\+|-)?(([0-9]+(\\.[0-9]*)?)|(\\.[0-9]+))))?$
 // GOTYPE: *Quantity
 message Quantity {}
 
-// Synthetic type for generating Go structs.
+// IntOrString is a type that can hold an int32 or a string. When used in JSON or YAML marshalling and unmarshalling, it produces or consumes the inner type. This allows you to have, for example, a JSON field that can accept a name or number.
+// +cue-gen-param:intorstring=true
 // GOTYPE: *IntOrString
 message IntOrString {}

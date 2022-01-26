@@ -103,9 +103,10 @@ deploy: install-kustomize manifests
 	cd config/manager && ../../bin/kustomize edit set image controller=${IMG}
 	bin/kustomize build config/default | kubectl apply -f -
 
-# Generate manifests e.g. CRD, RBAC etc.
+# Generate manifests e.g. CRD, RBAC, OpenAPI etc.
 manifests: download-deps update-istio-deps
 	bin/controller-gen rbac:roleName=manager-role webhook paths="./..."
+	bin/cue-gen -paths=build -f=cue.yaml
 	bin/cue-gen -paths=build -f=cue.yaml -crd
 	./scripts/label-crds.sh $(ISTIO_VERSION)
 	cp -a config/crd/bases/ deploy/charts/istio-operator/crds
