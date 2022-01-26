@@ -18,7 +18,7 @@ import "google/protobuf/descriptor.proto";
 
 package istio_operator.v2.api.options;
 
-option go_package = "github.com/banzaicloud/istio-operator/api/v2/options;options";
+option go_package = "github.com/banzaicloud/istio-operator/api/v2/options";
 
 // mark whether the field is IntOrString type
 // available values:
