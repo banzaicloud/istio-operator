@@ -1,4 +1,5 @@
 global:
+  istioNamespace: istio-system
   meshID: mesh1
   mode: PASSIVE
   multiCluster:

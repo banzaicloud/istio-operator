@@ -103,7 +103,7 @@ func (r *IstioMeshGatewayReconciler) Reconcile(ctx context.Context, req ctrl.Req
 		return ctrl.Result{}, err
 	}
 
-	if !isIstioVersionSupported(icp.Spec.Version) {
+	if !IsIstioVersionSupported(icp.Spec.Version) {
 		return ctrl.Result{}, nil
 	}
 

@@ -122,6 +122,7 @@ telemetry:
 {{- end }}
 
 {{- define "global" }}
+istioNamespace: "{{ .Namespace }}"
 {{ valueIf (dict "key" "distribution" "value" .GetSpec.GetDistribution) }}
 {{- if .GetSpec.GetMode }}
 mode: {{ .GetSpec.GetMode | toString }}
