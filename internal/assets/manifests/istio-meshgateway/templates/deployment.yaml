@@ -54,6 +54,9 @@ spec:
             - containerPort: 15090
               protocol: TCP
               name: http-envoy-prom
+            - containerPort: 15020
+              protocol: TCP
+              name: status
         {{- if not $gateway.runAsRoot }}
           securityContext:
             allowPrivilegeEscalation: false

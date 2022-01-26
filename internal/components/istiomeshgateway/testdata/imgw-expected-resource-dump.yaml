@@ -233,6 +233,9 @@ spec:
         - containerPort: 15090
           name: http-envoy-prom
           protocol: TCP
+        - containerPort: 15020
+          name: status
+          protocol: TCP
         resources:
           limits:
             cpu: "2"
