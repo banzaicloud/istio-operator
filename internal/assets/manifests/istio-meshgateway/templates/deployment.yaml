@@ -48,12 +48,15 @@ spec:
             - containerPort: {{ $val.targetPort | default $val.port }}
               protocol: {{ $val.protocol | default "TCP" }}
             {{- end }}
+            - containerPort: 15020
+              protocol: TCP
+              name: http-merged-prom
+            - containerPort: 15021
+              protocol: TCP
+              name: http-health-check
             - containerPort: 15090
               protocol: TCP
               name: http-envoy-prom
-            - containerPort: 15020
-              protocol: TCP
-              name: status
         {{- if not $gateway.runAsRoot }}
           securityContext:
             allowPrivilegeEscalation: false

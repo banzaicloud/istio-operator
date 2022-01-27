@@ -229,11 +229,14 @@ spec:
           protocol: TCP
         - containerPort: 59411
           protocol: TCP
+        - containerPort: 15020
+          protocol: TCP
+          name: http-merged-prom
+        - containerPort: 15021
+          protocol: TCP
+          name: http-health-check
         - containerPort: 15090
           name: http-envoy-prom
-          protocol: TCP
-        - containerPort: 15020
-          name: status
           protocol: TCP
         resources:
           limits:
