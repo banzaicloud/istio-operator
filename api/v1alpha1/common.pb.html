@@ -1273,7 +1273,9 @@ No
 <td><code>min</code></td>
 <td><code><a href="https://developers.google.com/protocol-buffers/docs/reference/google.protobuf#int32value">Int32Value</a></code></td>
 <td>
-<p>Standard Kubernetes minimum replicas configuration
+<p>min is the lower limit for the number of replicas to which the autoscaler
+can scale down.
+min and max both needs to be set the turn on autoscaling.
 +kubebuilder:validation:Minimum=0</p>
 
 </td>
@@ -1285,8 +1287,10 @@ No
 <td><code>max</code></td>
 <td><code><a href="https://developers.google.com/protocol-buffers/docs/reference/google.protobuf#int32value">Int32Value</a></code></td>
 <td>
-<p>Standard Kubernetes maximum replicas configuration
-+kubebuilder:validation:Minimum=0</p>
+<p>max is the upper limit for the number of replicas to which the autoscaler can scale up.
+min and max both needs to be set the turn on autoscaling.
+It cannot be less that min.
++kubebuilder:validation:Minimum=1</p>
 
 </td>
 <td>
@@ -1298,7 +1302,7 @@ No
 <td><code><a href="https://developers.google.com/protocol-buffers/docs/reference/google.protobuf#int32value">Int32Value</a></code></td>
 <td>
 <p>target average CPU utilization (represented as a percentage of requested CPU) over all the pods;
-if not specified the default autoscaling policy will be used.
+default 80% will be used if not specified.
 +optional
 +kubebuilder:validation:Minimum=0</p>
 

@@ -331,17 +331,17 @@
             "nullable": true
           },
           "max": {
-            "description": "Standard Kubernetes maximum replicas configuration",
+            "description": "max is the upper limit for the number of replicas to which the autoscaler can scale up. min and max both needs to be set the turn on autoscaling. It cannot be less that min.",
             "type": "integer",
             "nullable": true
           },
           "min": {
-            "description": "Standard Kubernetes minimum replicas configuration",
+            "description": "min is the lower limit for the number of replicas to which the autoscaler can scale down. min and max both needs to be set the turn on autoscaling.",
             "type": "integer",
             "nullable": true
           },
           "targetCPUUtilizationPercentage": {
-            "description": "target average CPU utilization (represented as a percentage of requested CPU) over all the pods; if not specified the default autoscaling policy will be used.",
+            "description": "target average CPU utilization (represented as a percentage of requested CPU) over all the pods; default 80% will be used if not specified.",
             "type": "integer",
             "nullable": true
           }

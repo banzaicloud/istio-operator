@@ -620,7 +620,7 @@ spec:
                               nullable: true
                               type: integer
                             max:
-                              minimum: 0
+                              minimum: 1
                               nullable: true
                               type: integer
                             min:
@@ -2769,7 +2769,7 @@ spec:
                                   nullable: true
                                   type: integer
                                 max:
-                                  minimum: 0
+                                  minimum: 1
                                   nullable: true
                                   type: integer
                                 min:
@@ -4251,7 +4251,7 @@ spec:
                                   nullable: true
                                   type: integer
                                 max:
-                                  minimum: 0
+                                  minimum: 1
                                   nullable: true
                                   type: integer
                                 min:
@@ -5643,7 +5643,7 @@ spec:
                               nullable: true
                               type: integer
                             max:
-                              minimum: 0
+                              minimum: 1
                               nullable: true
                               type: integer
                             min:
@@ -7945,7 +7945,7 @@ spec:
                               nullable: true
                               type: integer
                             max:
-                              minimum: 0
+                              minimum: 1
                               nullable: true
                               type: integer
                             min:
@@ -10094,7 +10094,7 @@ spec:
                                   nullable: true
                                   type: integer
                                 max:
-                                  minimum: 0
+                                  minimum: 1
                                   nullable: true
                                   type: integer
                                 min:
@@ -11576,7 +11576,7 @@ spec:
                                   nullable: true
                                   type: integer
                                 max:
-                                  minimum: 0
+                                  minimum: 1
                                   nullable: true
                                   type: integer
                                 min:
@@ -12968,7 +12968,7 @@ spec:
                               nullable: true
                               type: integer
                             max:
-                              minimum: 0
+                              minimum: 1
                               nullable: true
                               type: integer
                             min:
@@ -16174,7 +16174,7 @@ spec:
                           nullable: true
                           type: integer
                         max:
-                          minimum: 0
+                          minimum: 1
                           nullable: true
                           type: integer
                         min:
