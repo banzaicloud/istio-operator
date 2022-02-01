@@ -189,7 +189,7 @@ func (r *IstioControlPlaneReconciler) Reconcile(ctx context.Context, req ctrl.Re
 	}
 
 	updateErr := components.UpdateStatus(ctx, r.Client, icp, components.ConvertConfigStateToReconcileStatus(servicemeshv1alpha1.ConfigState_Available), "")
-	if updateErr != nil {
+	if updateErr != nil && !k8serrors.IsNotFound(updateErr) {
 		logger.Error(updateErr, "failed to update state")
 
 		return result, errors.WithStack(err)
