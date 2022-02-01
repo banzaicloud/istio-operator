@@ -23,6 +23,7 @@ deployment:
 {{ toYamlIf (dict "value" .GetEnv "key" "env") | indent 2 }}
 {{ toYamlIf (dict "value" .GetAffinity "key" "affinity") | indent 2 }}
 {{ toYamlIf (dict "value" .GetNodeSelector "key" "nodeSelector") | indent 2 }}
+{{ valueIf (dict "value" .GetImage "key" "image") | indent 2 }}
 {{ valueIf (dict "value" .GetPriorityClassName "key" "priorityClassName") | indent 2 }}
 {{ toYamlIf (dict "value" .GetReplicas "key" "replicas") | indent 2 }}
 {{ toYamlIf (dict "value" .GetResources "key" "resources") | indent 2 }}

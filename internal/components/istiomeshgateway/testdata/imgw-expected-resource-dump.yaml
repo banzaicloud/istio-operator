@@ -4,8 +4,8 @@ kind: Namespace
 metadata:
   creationTimestamp: null
   name: default
-spec: {}
-status: {}
+spec: { }
+status: { }
 
 ---
 apiVersion: policy/v1beta1
@@ -33,9 +33,9 @@ spec:
 ---
 apiVersion: v1
 imagePullSecrets:
-- name: pullsecret-1
-- name: pullsecret-2
-- name: pullsecret-3
+  - name: pullsecret-1
+  - name: pullsecret-2
+  - name: pullsecret-3
 kind: ServiceAccount
 metadata:
   labels:
@@ -60,14 +60,14 @@ metadata:
   name: demo-gw-sds
   namespace: default
 rules:
-- apiGroups:
-  - ""
-  resources:
-  - secrets
-  verbs:
-  - get
-  - watch
-  - list
+  - apiGroups:
+      - ""
+    resources:
+      - secrets
+    verbs:
+      - get
+      - watch
+      - list
 
 ---
 apiVersion: rbac.authorization.k8s.io/v1
@@ -86,8 +86,8 @@ roleRef:
   kind: Role
   name: demo-gw-sds
 subjects:
-- kind: ServiceAccount
-  name: demo-gw-service-account
+  - kind: ServiceAccount
+    name: demo-gw-service-account
 
 ---
 apiVersion: v1
@@ -107,16 +107,16 @@ spec:
   externalTrafficPolicy: Cluster
   loadBalancerIP: 192.168.0.100
   loadBalancerSourceRanges:
-  - 192.168.0.0/16
+    - 192.168.0.0/16
   ports:
-  - name: tcp-als-tls
-    port: 50600
-    protocol: TCP
-    targetPort: 50600
-  - name: tcp-zipkin-tls
-    port: 59411
-    protocol: TCP
-    targetPort: 59411
+    - name: tcp-als-tls
+      port: 50600
+      protocol: TCP
+      targetPort: 50600
+    - name: tcp-zipkin-tls
+      port: 59411
+      protocol: TCP
+      targetPort: 59411
   selector:
     app: demo-gw
     gateway-name: demo-gw
@@ -137,14 +137,14 @@ metadata:
 spec:
   clusterIP: None
   ports:
-  - name: tcp-als-tls
-    port: 50600
-    protocol: TCP
-    targetPort: 50600
-  - name: tcp-zipkin-tls
-    port: 59411
-    protocol: TCP
-    targetPort: 59411
+    - name: tcp-als-tls
+      port: 50600
+      protocol: TCP
+      targetPort: 50600
+    - name: tcp-zipkin-tls
+      port: 59411
+      protocol: TCP
+      targetPort: 59411
   type: ClusterIP
 
 ---
@@ -200,55 +200,55 @@ spec:
         nodeAffinity:
           requiredDuringSchedulingIgnoredDuringExecution:
             nodeSelectorTerms:
-            - matchExpressions:
-              - key: kubernetes.io/e2e-az-name
-                operator: In
-                values:
-                - e2e-az1
-                - e2e-az2
+              - matchExpressions:
+                  - key: kubernetes.io/e2e-az-name
+                    operator: In
+                    values:
+                      - e2e-az1
+                      - e2e-az2
         podAffinity:
           requiredDuringSchedulingIgnoredDuringExecution:
-          - labelSelector:
-              matchExpressions:
-              - key: security
-                operator: In
-                values:
-                - S1
-            topologyKey: topology.kubernetes.io/zone
+            - labelSelector:
+                matchExpressions:
+                  - key: security
+                    operator: In
+                    values:
+                      - S1
+              topologyKey: topology.kubernetes.io/zone
       containers:
-      - env:
-        - name: ISTIO_META_LOCAL_ENDPOINTS_ONLY
-          value: "true"
-        - name: ISTIO_META_ROUTER_MODE
-          value: standard
-        image: auto
-        name: istio-proxy
-        imagePullPolicy: Always
-        ports:
-        - containerPort: 50600
-          protocol: TCP
-        - containerPort: 59411
-          protocol: TCP
-        - containerPort: 15090
-          name: http-envoy-prom
-          protocol: TCP
-        resources:
-          limits:
-            cpu: "2"
-            memory: 1Gi
-          requests:
-            cpu: 100m
-            memory: 128Mi
-        securityContext:
-          allowPrivilegeEscalation: false
-          capabilities:
-            drop:
-            - ALL
-          privileged: false
-          readOnlyRootFilesystem: true
-        volumeMounts:
-        - mountPath: /etc/config
-          name: config-vol
+        - env:
+            - name: ISTIO_META_LOCAL_ENDPOINTS_ONLY
+              value: "true"
+            - name: ISTIO_META_ROUTER_MODE
+              value: standard
+          image: container-hub/image-name:tag
+          name: istio-proxy
+          imagePullPolicy: Always
+          ports:
+            - containerPort: 50600
+              protocol: TCP
+            - containerPort: 59411
+              protocol: TCP
+            - containerPort: 15090
+              name: http-envoy-prom
+              protocol: TCP
+          resources:
+            limits:
+              cpu: "2"
+              memory: 1Gi
+            requests:
+              cpu: 100m
+              memory: 128Mi
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop:
+                - ALL
+            privileged: false
+            readOnlyRootFilesystem: true
+          volumeMounts:
+            - mountPath: /etc/config
+              name: config-vol
       nodeSelector:
         disktype: ssd
       priorityClassName: high-priority
@@ -258,22 +258,22 @@ spec:
         runAsUser: 1337
       serviceAccountName: demo-gw-service-account
       tolerations:
-      - effect: NoSchedule
-        key: key1
-        operator: Equal
-        tolerationSeconds: 5
-        value: value1
+        - effect: NoSchedule
+          key: key1
+          operator: Equal
+          tolerationSeconds: 5
+          value: value1
       volumes:
-      - name: dddemo
-        secret:
-          optional: true
-          secretName: ssname
-      - configMap:
-          items:
-          - key: log_level
-            path: log_level
-          name: log-config
-        name: config-vol
+        - name: dddemo
+          secret:
+            optional: true
+            secretName: ssname
+        - configMap:
+            items:
+              - key: log_level
+                path: log_level
+            name: log-config
+          name: config-vol
 
 ---
 apiVersion: autoscaling/v2beta1
@@ -309,14 +309,14 @@ metadata:
   labels:
     meshgateway.istio.servicemesh.cisco.com/external-service: "true"
 subsets:
-- addresses:
-  - ip: 34.147.29.25
-  ports:
-  - name: tcp-als-tls
-    port: 50600
-    protocol: TCP
-    targetPort: 50600
-  - name: tcp-zipkin-tls
-    port: 59411
-    protocol: TCP
-    targetPort: 59411
+  - addresses:
+      - ip: 34.147.29.25
+    ports:
+      - name: tcp-als-tls
+        port: 50600
+        protocol: TCP
+        targetPort: 50600
+      - name: tcp-zipkin-tls
+        port: 59411
+        protocol: TCP
+        targetPort: 59411

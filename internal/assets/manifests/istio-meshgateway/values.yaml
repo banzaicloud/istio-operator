@@ -8,6 +8,7 @@ type: ingress
 runAsRoot: true
 
 deployment:
+  image: auto
   enablePrometheusMerge: true
   deploymentStrategy:
     type: RollingUpdate
@@ -15,11 +16,11 @@ deployment:
       maxSurge: 100%
       maxUnavailable: 25%
   metadata:
-    labels: {}
-    annotations: {}
-  env: {}
-  affinity: {}
-  nodeSelector: {}
+    labels: { }
+    annotations: { }
+  env: { }
+  affinity: { }
+  nodeSelector: { }
   priorityClassName: ""
   replicas:
     count: 1
@@ -36,23 +37,23 @@ deployment:
     runAsUser: 1337
     runAsGroup: 1337
     runAsNonRoot: true
-  tolerations: []
-  volumeMounts: []
-  volumes: []
-  podDisruptionBudget: {}
+  tolerations: [ ]
+  volumeMounts: [ ]
+  volumes: [ ]
+  podDisruptionBudget: { }
   podMetadata:
-    labels: {}
-    annotations: {}
+    labels: { }
+    annotations: { }
 
 service:
   type: ClusterIP
-  metadata: {}
-  ports: []
-  selector: {}
+  metadata: { }
+  ports: [ ]
+  selector: { }
 
 externalService:
-  addresses: {}
+  addresses: { }
 
 global:
   imagePullPolicy: "IfNotPresent"
-  imagePullSecrets: []
+  imagePullSecrets: [ ]

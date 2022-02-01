@@ -39,7 +39,7 @@ spec:
 {{- end }}
       containers:
         - name: istio-proxy
-          image: auto
+          image: {{ $gateway.image }}
 {{- if .Values.global.imagePullPolicy }}
           imagePullPolicy: {{ .Values.global.imagePullPolicy }}
 {{- end }}
@@ -56,15 +56,15 @@ spec:
             allowPrivilegeEscalation: false
             capabilities:
               drop:
-              - ALL
+                - ALL
             privileged: false
             readOnlyRootFilesystem: true
         {{- end }}
 {{ include "toYamlIf" (dict "value" $gateway.resources "key" "resources" "indent" 2) | indent 10 }}
           env:
           {{- if not .Values.runAsRoot }}
-          - name: ISTIO_META_UNPRIVILEGED_POD
-            value: "true"
+            - name: ISTIO_META_UNPRIVILEGED_POD
+              value: "true"
           {{- end }}
 {{ include "toYamlIf" (dict "value" $gateway.env) | indent 10 }}
 {{ include "toYamlIf" (dict "value" $gateway.volumeMounts "key" "volumeMounts" "indent" 2) | indent 10 }}

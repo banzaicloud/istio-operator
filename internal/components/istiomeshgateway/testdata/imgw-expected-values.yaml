@@ -16,6 +16,7 @@ global:
   - name: pullsecret-3
 
 deployment:
+  image: container-hub/image-name:tag
   enablePrometheusMerge: false
   deploymentStrategy:
     type: RollingUpdate
