@@ -1,0 +1,81 @@
+name: CI
+
+on:
+  pull_request:
+
+env:
+  GO_VERSION: 1.17
+  GOFLAGS: -mod=readonly
+
+jobs:
+  build:
+    name: Build project
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check out code
+        uses: actions/checkout@v2
+
+      - name: Setup Go
+        uses: actions/setup-go@v2
+        with:
+          go-version: ${{ env.GO_VERSION }}
+
+      - name: Cache Go module dependencies
+        id: cache-go-module-dependencies
+        uses: actions/cache@v2
+        with:
+          path: ~/go/pkg/mod
+          key: go-mod-cache-${{ runner.os }}-${{ env.GO_VERSION }}-${{ hashFiles('go.sum') }}
+          restore-keys: |
+            go-mod-cache-${{ runner.os }}-${{ env.GO_VERSION }}
+            go-mod-cache-${{ runner.os }}
+            go-mod-cache
+
+      - name: Set Git refname
+        id: set-git-refname
+        run: echo ::set-output name=git_refname::$(echo "${{ github.ref }}" | sed -r 's@refs/(heads|pull|tags)/@@g' )
+
+      - name: Cache build dependencies
+        id: cache-build-dependencies
+        uses: actions/cache@v2
+        with:
+          path: bin/
+          key: build-deps-v2-${{ steps.set-git-refname.outputs.git_refname }}-{{ hashFiles('scripts/download-deps.sh') }}
+          restore-keys: |
+            build-deps-v2-${{ steps.set-git-refname.outputs.git_refname }}
+            build-deps-v2
+
+      - name: Cache licenses
+        id: cache-licenses
+        uses: actions/cache@v2
+        with:
+          path: .licensei.cache
+          key: licensei-v1-${{ steps.set-git-refname.outputs.git_refname }}-${{ hashFiles('go.sum') }}
+          restore-keys: |
+            licensei-v1-${{ steps.set-git-refname.outputs.git_refname }}
+            licensei-v1
+
+      - name: Download license information for dependencies
+        env:
+          GITHUB_TOKEN: ${{ github.token }} # Note: this is required for licensei auth in steps to avoid rate-limiting.
+        run: make license-cache
+
+      - name: List license information for dependencies
+        env:
+          GITHUB_TOKEN: ${{ github.token }} # Note: this is required for licensei auth in steps to avoid rate-limiting.
+        run: ./bin/licensei list
+
+      - name: Check dependency licenses
+        env:
+          GITHUB_TOKEN: ${{ github.token }} # Note: this is required for licensei auth in steps to avoid rate-limiting.
+        run: make license-check
+
+      - name: Run unit tests, linter, etc.
+        run: make check
+
+      - name: Build
+        run: make build
+
+      - name: Check that all generated code was checked in to git
+        run: make check-all-code-generation
