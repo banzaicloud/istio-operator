@@ -1469,14 +1469,18 @@ type Replicas struct {
 	// Standard Kubernetes replica count configuration
 	// +kubebuilder:validation:Minimum=0
 	Count *int32 `protobuf:"bytes,1,opt,name=count,proto3,wktptr" json:"count,omitempty"`
-	// Standard Kubernetes minimum replicas configuration
+	// min is the lower limit for the number of replicas to which the autoscaler
+	// can scale down.
+	// min and max both needs to be set the turn on autoscaling.
 	// +kubebuilder:validation:Minimum=0
 	Min *int32 `protobuf:"bytes,2,opt,name=min,proto3,wktptr" json:"min,omitempty"`
-	// Standard Kubernetes maximum replicas configuration
-	// +kubebuilder:validation:Minimum=0
+	// max is the upper limit for the number of replicas to which the autoscaler can scale up.
+	// min and max both needs to be set the turn on autoscaling.
+	// It cannot be less that min.
+	// +kubebuilder:validation:Minimum=1
 	Max *int32 `protobuf:"bytes,3,opt,name=max,proto3,wktptr" json:"max,omitempty"`
 	// target average CPU utilization (represented as a percentage of requested CPU) over all the pods;
-	// if not specified the default autoscaling policy will be used.
+	// default 80% will be used if not specified.
 	// +optional
 	// +kubebuilder:validation:Minimum=0
 	TargetCPUUtilizationPercentage *int32   `protobuf:"bytes,4,opt,name=targetCPUUtilizationPercentage,proto3,wktptr" json:"targetCPUUtilizationPercentage,omitempty"`
