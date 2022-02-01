@@ -42,9 +42,7 @@ cni:
     - name: taint-config-vol
       mountPath: /etc/config
     securityContext:
-      runAsGroup: 1337
-      runAsNonRoot: true
-      runAsUser: 1337
+      allowPrivilegeEscalation: false
   metadata:
     annotations:
       daemonset-annotation: value
@@ -113,9 +111,7 @@ cni:
       cpu: 100m
       memory: 128Mi
   securityContext:
-    runAsGroup: 1337
-    runAsNonRoot: true
-    runAsUser: 1337
+    allowPrivilegeEscalation: false
   priorityClassName: system-node-critical
 global:
   hub: gcr.io/istio-testing

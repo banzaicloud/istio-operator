@@ -111,6 +111,7 @@ spec:
               name: cni-log-dir
 {{ include "toYamlIf" (dict "value" .Values.cni.volumeMounts) | indent 12 }}
 {{ include "toYamlIf" (dict "value" .Values.cni.resources "key" "resources" "indent" 2) | indent 10 }}
+{{ include "toYamlIf" (dict "value" .Values.cni.securityContext "key" "securityContext" "indent" 2) | indent 10 }}
 {{- if .Values.cni.taint.enabled }}
         - name: taint-controller
 {{- include "dockerImage" (dict "image" .Values.cni.taint.image "hub" .Values.global.hub "tag" .Values.global.tag) | indent 10 -}}
