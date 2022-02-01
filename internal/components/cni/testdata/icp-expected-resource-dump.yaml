@@ -320,6 +320,11 @@ spec:
           requests:
             cpu: 100m
             memory: 128Mi
+        securityContext:
+          runAsGroup: 0
+          runAsUser: 0
+          runAsNonRoot: false
+          allowPrivilegeEscalation: false
       - name: taint-controller
         image: "gcr.io/istio-testing/install-cni-taint:latest"
         imagePullPolicy: Always
@@ -348,6 +353,7 @@ spec:
           runAsGroup: 1337
           runAsNonRoot: true
           runAsUser: 1337
+          allowPrivilegeEscalation: false
       nodeSelector:
         kubernetes.io/os: linux
         disktype: ssd

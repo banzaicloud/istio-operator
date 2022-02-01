@@ -48,9 +48,7 @@ spec:
               cpu: 100m
               memory: 128Mi
           securityContext:
-            runAsUser: 1337
-            runAsGroup: 1337
-            runAsNonRoot: true
+            allowPrivilegeEscalation: false
           volumeMounts:
           - name: taint-config-vol
             mountPath: /etc/config
@@ -133,7 +131,5 @@ spec:
             cpu: 100m
             memory: 128Mi
         securityContext:
-          runAsUser: 1337
-          runAsGroup: 1337
-          runAsNonRoot: true
+          allowPrivilegeEscalation: false
         priorityClassName: system-node-critical

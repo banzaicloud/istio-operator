@@ -44,6 +44,10 @@ cni:
   # Experimental taint controller for further race condition mitigation
   taint:
     enabled: false
+    securityContext:
+      runAsUser: 1337
+      runAsGroup: 1337
+      runAsNonRoot: true
 
   resourceQuotas:
     enabled: true
@@ -70,7 +74,11 @@ cni:
   volumes: []
   volumeMounts: []
   resources: {}
-  securityContext: {}
+  securityContext:
+    runAsGroup: 0
+    runAsUser: 0
+    runAsNonRoot: false
+
   priorityClassName: system-node-critical
 
 # Revision is set as 'version' label and part of the resource names when installing multiple control planes.
