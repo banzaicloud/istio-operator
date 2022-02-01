@@ -22,6 +22,7 @@ import (
 	"encoding/json"
 	"io/fs"
 	"path"
+	"strings"
 	"text/template"
 
 	"emperror.dev/errors"
@@ -30,6 +31,7 @@ import (
 	"github.com/golang/protobuf/proto"
 	"github.com/gonvenience/ytbx"
 	"github.com/homeport/dyff/pkg/dyff"
+	k8serrors "k8s.io/apimachinery/pkg/api/errors"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/yaml"
 
@@ -128,12 +130,20 @@ func RemoveFinalizer(ctx context.Context, c client.Client, obj client.Object, fi
 	if ContainsString(finalizers, finalizerID) {
 		finalizers = RemoveString(finalizers, finalizerID)
 		obj.SetFinalizers(finalizers)
-		if err := c.Update(ctx, obj); err != nil {
+		if err := c.Update(ctx, obj); IgnoreK8sStorageError(err) != nil && k8serrors.IsNotFound(err) {
 			return errors.WrapIf(err, "could not remove finalizer from resource")
 		}
 	}
 
 	return nil
+}
+
+func IgnoreK8sStorageError(err error) error {
+	if status := k8serrors.APIStatus(nil); errors.As(err, &status) && strings.Contains(status.Status().Message, "StorageError: invalid object, Code: 4") {
+		return nil
+	}
+
+	return err
 }
 
 func CompareYAMLs(left, right []byte) (dyff.Report, error) {
