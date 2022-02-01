@@ -18,6 +18,6 @@ spec:
     - type: Resource
       resource:
         name: cpu
-        targetAverageUtilization: {{ $gateway.replicas.targetCPUUtilizationPercentage }}
+        targetAverageUtilization: {{ default 80 $gateway.replicas.targetCPUUtilizationPercentage }}
 ---
 {{- end }}

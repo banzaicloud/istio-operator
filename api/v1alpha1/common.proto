@@ -538,16 +538,20 @@ message Replicas {
     // +kubebuilder:validation:Minimum=0
     google.protobuf.Int32Value count = 1 [(gogoproto.wktpointer) = true];
 
-    // Standard Kubernetes minimum replicas configuration
+    // min is the lower limit for the number of replicas to which the autoscaler
+    // can scale down.
+    // min and max both needs to be set the turn on autoscaling.
     // +kubebuilder:validation:Minimum=0
     google.protobuf.Int32Value min = 2 [(gogoproto.wktpointer) = true];
 
-    // Standard Kubernetes maximum replicas configuration
-    // +kubebuilder:validation:Minimum=0
+    // max is the upper limit for the number of replicas to which the autoscaler can scale up.
+    // min and max both needs to be set the turn on autoscaling.
+    // It cannot be less that min.
+    // +kubebuilder:validation:Minimum=1
     google.protobuf.Int32Value max = 3 [(gogoproto.wktpointer) = true];
 
     // target average CPU utilization (represented as a percentage of requested CPU) over all the pods;
-	// if not specified the default autoscaling policy will be used.
+	// default 80% will be used if not specified.
 	// +optional
     // +kubebuilder:validation:Minimum=0
     google.protobuf.Int32Value targetCPUUtilizationPercentage = 4 [(gogoproto.wktpointer) = true];

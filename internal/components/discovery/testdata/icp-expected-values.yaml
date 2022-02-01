@@ -156,8 +156,6 @@ pilot:
   autoscaleMax: 5
   autoscaleMin: 1
   replicaCount: 1
-  cpu:
-    targetAverageUtilization: 80
   podAnnotations:
     podannotation: podannotationvalue
   podLabels:

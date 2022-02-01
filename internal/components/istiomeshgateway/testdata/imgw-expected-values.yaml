@@ -59,7 +59,6 @@ deployment:
     count: 1
     min: 1
     max: 3
-    targetCPUUtilizationPercentage: 80
   resources:
     limits:
       cpu: "2"
