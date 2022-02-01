@@ -232,7 +232,7 @@ spec:
           protocol: TCP
         - containerPort: 15020
           protocol: TCP
-          name: http-int-dbg
+          name: http-int-debug
         - containerPort: 15021
           protocol: TCP
           name: http-ext-health

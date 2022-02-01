@@ -47,13 +47,17 @@ spec:
           imagePullPolicy: {{ .Values.global.imagePullPolicy }}
 {{- end }}
           ports:
+            {{- $defaultPorts := list 15020 15021 15090 }}
             {{- range $key, $val := $service.ports }}
-            - containerPort: {{ $val.targetPort | default $val.port }}
+            {{- $port := (($val.targetPort | default $val.port) | int) }}
+            {{- if not (has $port $defaultPorts) }}
+            - containerPort: {{ $port }}
               protocol: {{ $val.protocol | default "TCP" }}
+            {{- end }}
             {{- end }}
             - containerPort: 15020
               protocol: TCP
-              name: http-int-dbg
+              name: http-int-debug
             - containerPort: 15021
               protocol: TCP
               name: http-ext-health
