@@ -50,10 +50,10 @@ spec:
             {{- end }}
             - containerPort: 15020
               protocol: TCP
-              name: http-merged-prom
+              name: http-int-dbg
             - containerPort: 15021
               protocol: TCP
-              name: http-health-check
+              name: http-ext-health
             - containerPort: 15090
               protocol: TCP
               name: http-envoy-prom
