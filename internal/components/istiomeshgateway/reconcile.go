@@ -72,12 +72,18 @@ func (rec *Component) ReleaseData(object runtime.Object) (*templatereconciler.Re
 			return nil, err
 		}
 
+		overlays, err := util.ConvertK8sOverlays(imgw.GetSpec().GetK8SResourceOverlays())
+		if err != nil {
+			return nil, errors.WrapIf(err, "could not convert k8s resource overlays")
+		}
+
 		return &templatereconciler.ReleaseData{
 			Chart:       http.FS(assets.IstioMeshGateway),
 			Values:      values,
 			Namespace:   imgw.Namespace,
 			ChartName:   chartName,
 			ReleaseName: releaseName,
+			Layers:      overlays,
 		}, nil
 	}
 
