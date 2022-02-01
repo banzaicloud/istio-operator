@@ -32,6 +32,7 @@ deployment:
 {{ toYamlIf (dict "value" .GetVolumes "key" "volumes") | indent 2 }}
 {{ toYamlIf (dict "value" .GetPodDisruptionBudget "key" "podDisruptionBudget") | indent 2 }}
 {{ toYamlIf (dict "value" .GetPodMetadata "key" "podMetadata") | indent 2 }}
+{{ valueIf (dict "value" .GetImage "key" "image") | indent 2 }}
 {{- end }}
 
 {{- with .GetSpec.GetService }}
