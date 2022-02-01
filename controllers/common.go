@@ -50,6 +50,7 @@ func NewComponentReconciler(r components.Reconciler, newComponentFunc components
 				reconciler.WithEnableRecreateWorkload(),
 				reconciler.WithRecreateErrorMessageIgnored(),
 			),
+			templatereconciler.ManageNamespace(false),
 		),
 	), nil
 }
