@@ -1,6 +1,6 @@
 # Istio-operator chart
 
-[Istio-operator](https://github.com/banzaicloud/istio-operator/tree/v2) is a Kubernetes operator to deploy and manage [Istio](https://istio.io/) resources for a Kubernetes cluster.
+[Istio-operator](https://github.com/banzaicloud/istio-operator/tree/release-1.11) is a Kubernetes operator to deploy and manage [Istio](https://istio.io/) resources for a Kubernetes cluster.
 
 ## Prerequisites
 
@@ -33,7 +33,7 @@ The following table lists the configurable parameters of the Banzaicloud Istio O
 Parameter | Description | Default
 --------- | ----------- | -------
 `image.repository` | Operator container image repository | `ghcr.io/banzaicloud/istio-operator`
-`image.tag` | Operator container image tag | `v2.11.5`
+`image.tag` | Operator container image tag | `v2.11.6`
 `image.pullPolicy` | Operator container image pull policy | `IfNotPresent`
 `replicaCount` | Operator deployment replica count | `1`
 `extraArgs` | Operator deployment arguments | `[]`

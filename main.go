@@ -110,6 +110,7 @@ func main() {
 		APIServerEndpointAddress: apiServerEndpointAddress,
 		SupportedIstioVersion:    SupportedIstioVersion,
 		Version:                  Version,
+		Recorder:                 mgr.GetEventRecorderFor("IstioControlPlane"),
 	}).SetupWithManager(mgr); err != nil {
 		setupLog.Error(err, "unable to create controller", "controller", "IstioControlPlane")
 		os.Exit(1)

@@ -30,6 +30,9 @@ spec:
         {{- end }}
         sidecar.istio.io/inject: "true"
         inject.istio.io/templates: "{{ .Values.injectionTemplate }}"
+        {{- if ne $gateway.image "" }}
+        sidecar.istio.io/proxyImage: {{ $gateway.image }}
+        {{- end }}
 {{ include "toYamlIf" (dict "value" $gateway.podMetadata.annotations) | indent 8 }}
     spec:
 {{ include "toYamlIf" (dict "value" $gateway.securityContext "key" "securityContext" "indent" 2) | indent 6 }}
