@@ -31,67 +31,10 @@ commands:
               docker push "ghcr.io/banzaicloud/istio-operator:latest"
             fi
 
-jobs:
-  build:
-    docker:
-    - image: circleci/golang:1.17
-
-    working_directory: /go/src/github.com/banzaicloud/istio-operator
-    steps:
-    - checkout
-
-    - restore_cache:
-        name: Restore build dependencies
-        keys:
-        - build-deps-v2-{{ .Branch }}-{{ checksum "scripts/download-deps.sh" }}
-
-    - restore_cache:
-        name: Restore license cache
-        keys:
-        - licensei-v1-{{ .Branch }}-{{ checksum "go.sum" }}
-        - licensei-v1-{{ .Branch }}
-        - licensei-v1-master
-        - licensei-v1
-
-    - run:
-        name: Download license information for dependencies
-        command: make license-cache
-
-    - save_cache:
-        name: Save license cache
-        key: licensei-v1-{{ .Branch }}-{{ checksum "go.sum" }}
-        paths:
-        - .licensei.cache
-
-    - run:
-        name: Check dependency licenses
-        command: make license-check
-
-    - run:
-        name: Run unit tests, linter, etc.
-        command: make check
-
-    - run:
-        name: Build
-        command:
-          make build
-
-    - run:
-        name: Check that all generated code was checked in to git
-        command: make check-all-code-generation
-
-    - save_cache:
-        name: Save build dependencies
-        key: build-deps-v2-{{ .Branch }}-{{ checksum "scripts/download-deps.sh" }}
-        paths:
-        - bin/
-
 workflows:
   version: 2
   ci:
     jobs:
-    - build
-
     - docker/build:
         name: Build docker image
         executor: docker/machine-dlc
