@@ -2313,12 +2313,12 @@
             "nullable": true
           },
           "max": {
-            "description": "max is the upper limit for the number of replicas to which the autoscaler can scale up. min and max both needs to be set the turn on autoscaling. It cannot be less that min.",
+            "description": "max is the upper limit for the number of replicas to which the autoscaler can scale up. min and max both need to be set the turn on autoscaling. It cannot be less than min.",
             "type": "integer",
             "nullable": true
           },
           "min": {
-            "description": "min is the lower limit for the number of replicas to which the autoscaler can scale down. min and max both needs to be set the turn on autoscaling.",
+            "description": "min is the lower limit for the number of replicas to which the autoscaler can scale down. min and max both need to be set the turn on autoscaling.",
             "type": "integer",
             "nullable": true
           },

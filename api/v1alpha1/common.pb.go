@@ -1471,12 +1471,12 @@ type Replicas struct {
 	Count *int32 `protobuf:"bytes,1,opt,name=count,proto3,wktptr" json:"count,omitempty"`
 	// min is the lower limit for the number of replicas to which the autoscaler
 	// can scale down.
-	// min and max both needs to be set the turn on autoscaling.
+	// min and max both need to be set the turn on autoscaling.
 	// +kubebuilder:validation:Minimum=0
 	Min *int32 `protobuf:"bytes,2,opt,name=min,proto3,wktptr" json:"min,omitempty"`
 	// max is the upper limit for the number of replicas to which the autoscaler can scale up.
-	// min and max both needs to be set the turn on autoscaling.
-	// It cannot be less that min.
+	// min and max both need to be set the turn on autoscaling.
+	// It cannot be less than min.
 	// +kubebuilder:validation:Minimum=1
 	Max *int32 `protobuf:"bytes,3,opt,name=max,proto3,wktptr" json:"max,omitempty"`
 	// target average CPU utilization (represented as a percentage of requested CPU) over all the pods;
