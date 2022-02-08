@@ -397,79 +397,82 @@ func (r *IstioControlPlaneReconciler) GetScheme() *runtime.Scheme {
 func (r *IstioControlPlaneReconciler) SetupWithManager(mgr ctrl.Manager) error {
 	r.builder = ctrl.NewControllerManagedBy(mgr)
 
+	objectChangePredicate := util.ObjectChangePredicate{Logger: r.Log}
+
 	ctrl, err := r.builder.
 		For(&servicemeshv1alpha1.IstioControlPlane{
 			TypeMeta: metav1.TypeMeta{
 				Kind:       "IstioControlPlane",
 				APIVersion: servicemeshv1alpha1.SchemeBuilder.GroupVersion.String(),
 			},
-		}, ctrlBuilder.WithPredicates(util.ObjectChangePredicate{})).
+		}, ctrlBuilder.WithPredicates(objectChangePredicate)).
 		Owns(&appsv1.Deployment{
 			TypeMeta: metav1.TypeMeta{
 				Kind:       "Deployment",
 				APIVersion: appsv1.SchemeGroupVersion.String(),
 			},
-		}, ctrlBuilder.WithPredicates(util.ObjectChangePredicate{})).
+		}, ctrlBuilder.WithPredicates(objectChangePredicate)).
 		Owns(&appsv1.DaemonSet{
 			TypeMeta: metav1.TypeMeta{
 				Kind:       "DaemonSet",
 				APIVersion: appsv1.SchemeGroupVersion.String(),
 			},
-		}, ctrlBuilder.WithPredicates(util.ObjectChangePredicate{})).
+		}, ctrlBuilder.WithPredicates(objectChangePredicate)).
 		Owns(&corev1.ConfigMap{
 			TypeMeta: metav1.TypeMeta{
 				Kind:       "ConfigMap",
 				APIVersion: corev1.SchemeGroupVersion.String(),
 			},
-		}, ctrlBuilder.WithPredicates(util.ObjectChangePredicate{})).
+		}, ctrlBuilder.WithPredicates(objectChangePredicate)).
 		Owns(&corev1.Secret{
 			TypeMeta: metav1.TypeMeta{
 				Kind:       "Secret",
 				APIVersion: corev1.SchemeGroupVersion.String(),
 			},
-		}, ctrlBuilder.WithPredicates(util.ObjectChangePredicate{})).
+		}, ctrlBuilder.WithPredicates(objectChangePredicate)).
 		Owns(&corev1.Service{
 			TypeMeta: metav1.TypeMeta{
 				Kind:       "Service",
 				APIVersion: corev1.SchemeGroupVersion.String(),
 			},
-		}, ctrlBuilder.WithPredicates(util.ObjectChangePredicate{})).
+		}, ctrlBuilder.WithPredicates(objectChangePredicate)).
 		Owns(&corev1.Endpoints{
 			TypeMeta: metav1.TypeMeta{
 				Kind:       "Endpoints",
 				APIVersion: corev1.SchemeGroupVersion.String(),
 			},
-		}, ctrlBuilder.WithPredicates(util.ObjectChangePredicate{})).
+		}, ctrlBuilder.WithPredicates(objectChangePredicate)).
 		Owns(&corev1.ServiceAccount{
 			TypeMeta: metav1.TypeMeta{
 				Kind:       "ServiceAccount",
 				APIVersion: corev1.SchemeGroupVersion.String(),
 			},
-		}, ctrlBuilder.WithPredicates(util.ObjectChangePredicate{})).
+		}, ctrlBuilder.WithPredicates(objectChangePredicate)).
 		Owns(&policyv1beta1.PodDisruptionBudget{
 			TypeMeta: metav1.TypeMeta{
 				Kind:       "PodDisruptionBudget",
 				APIVersion: policyv1beta1.SchemeGroupVersion.String(),
 			},
-		}, ctrlBuilder.WithPredicates(util.ObjectChangePredicate{})).
+		}, ctrlBuilder.WithPredicates(objectChangePredicate)).
 		Owns(&rbacv1.Role{
 			TypeMeta: metav1.TypeMeta{
 				Kind:       "Role",
 				APIVersion: rbacv1.SchemeGroupVersion.String(),
 			},
-		}, ctrlBuilder.WithPredicates(util.ObjectChangePredicate{})).
+		}, ctrlBuilder.WithPredicates(objectChangePredicate)).
 		Owns(&rbacv1.RoleBinding{
 			TypeMeta: metav1.TypeMeta{
 				Kind:       "RoleBinding",
 				APIVersion: rbacv1.SchemeGroupVersion.String(),
 			},
-		}, ctrlBuilder.WithPredicates(util.ObjectChangePredicate{})).
+		}, ctrlBuilder.WithPredicates(objectChangePredicate)).
 		Owns(&autoscalingv1.HorizontalPodAutoscaler{
 			TypeMeta: metav1.TypeMeta{
 				Kind:       "HorizontalPodAutoscaler",
 				APIVersion: autoscalingv1.SchemeGroupVersion.String(),
 			},
 		}, ctrlBuilder.WithPredicates(util.ObjectChangePredicate{
+			Logger: r.Log,
 			CalculateOptions: []util.CalculateOption{
 				util.IgnoreMetadataAnnotations("autoscaling.alpha.kubernetes.io"),
 				patch.IgnoreStatusFields(),
@@ -527,7 +530,7 @@ func (r *IstioControlPlaneReconciler) SetupWithManager(mgr ctrl.Manager) error {
 	}
 
 	for _, t := range types {
-		err := r.ctrl.Watch(&source.Kind{Type: t}, handler.EnqueueRequestsFromMapFunc(reconciler.EnqueueByOwnerAnnotationMapper()), util.ObjectChangePredicate{})
+		err := r.ctrl.Watch(&source.Kind{Type: t}, handler.EnqueueRequestsFromMapFunc(reconciler.EnqueueByOwnerAnnotationMapper()), objectChangePredicate)
 		if err != nil {
 			return err
 		}
@@ -577,7 +580,7 @@ func (r *IstioControlPlaneReconciler) SetupWithManager(mgr ctrl.Manager) error {
 			}
 		}),
 		predicate.Or(
-			util.ObjectChangePredicate{},
+			objectChangePredicate,
 			util.IMGWAddressChangePredicate{},
 		),
 	)
@@ -612,6 +615,7 @@ func (r *IstioControlPlaneReconciler) SetupWithManager(mgr ctrl.Manager) error {
 		}),
 		predicate.Or(
 			util.ObjectChangePredicate{
+				Logger: r.Log,
 				CalculateOptions: []patch.CalculateOption{
 					util.IgnoreMetadataAnnotations(patch.LastAppliedConfig),
 				},
@@ -661,7 +665,7 @@ func (r *IstioControlPlaneReconciler) SetupWithManager(mgr ctrl.Manager) error {
 
 			return resources
 		}),
-		util.ObjectChangePredicate{},
+		objectChangePredicate,
 	)
 	if err != nil {
 		return err
@@ -742,7 +746,7 @@ func (r *IstioControlPlaneReconciler) SetupWithManager(mgr ctrl.Manager) error {
 				return resources
 			}),
 			predicate.Or(
-				util.ObjectChangePredicate{},
+				objectChangePredicate,
 				util.ClusterTypeChangePredicate{},
 			),
 		)
@@ -1405,7 +1409,7 @@ func (r *IstioControlPlaneReconciler) watchIstioCRs() error {
 	}
 
 	for _, t := range types {
-		err := r.ctrl.Watch(&source.Kind{Type: t}, eventHandler, util.ObjectChangePredicate{})
+		err := r.ctrl.Watch(&source.Kind{Type: t}, eventHandler, util.ObjectChangePredicate{Logger: r.Log})
 		if err != nil {
 			return err
 		}

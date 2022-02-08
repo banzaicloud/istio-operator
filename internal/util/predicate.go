@@ -22,6 +22,7 @@ import (
 	"strings"
 
 	"emperror.dev/errors"
+	"github.com/go-logr/logr"
 	"sigs.k8s.io/controller-runtime/pkg/event"
 	"sigs.k8s.io/controller-runtime/pkg/predicate"
 
@@ -36,6 +37,7 @@ type CalculateOption = patch.CalculateOption
 type ObjectChangePredicate struct {
 	predicate.Funcs
 	CalculateOptions []CalculateOption
+	Logger           logr.Logger
 }
 
 func (p ObjectChangePredicate) Update(e event.UpdateEvent) bool {
@@ -51,6 +53,9 @@ func (p ObjectChangePredicate) Update(e event.UpdateEvent) bool {
 
 	patchResult, err := patch.DefaultPatchMaker.Calculate(e.ObjectOld, e.ObjectNew, options...)
 	if err != nil {
+		if p.Logger != nil {
+			p.Logger.Error(errors.WithStack(err), "could not calculate patch result")
+		}
 		return true
 	} else if patchResult.IsEmpty() {
 		return false
