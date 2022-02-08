@@ -81,6 +81,8 @@ func TestICPSidecarInjectorResourceDump(t *testing.T) {
 			t.Fatal(err)
 		}
 
+		util.DyffReportMultilineDiffOutput(report, os.Stdout)
+
 		t.Fatal(errors.NewPlain("generated resource dump not equals with expected"))
 	}
 }

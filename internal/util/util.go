@@ -17,9 +17,12 @@ limitations under the License.
 package util
 
 import (
+	"bufio"
 	"bytes"
 	"context"
 	"encoding/json"
+	"fmt"
+	"io"
 	"io/fs"
 	"path"
 	"strings"
@@ -30,6 +33,8 @@ import (
 	"github.com/golang/protobuf/jsonpb"
 	"github.com/golang/protobuf/proto"
 	"github.com/gonvenience/ytbx"
+	"github.com/hexops/gotextdiff"
+	"github.com/hexops/gotextdiff/myers"
 	"github.com/homeport/dyff/pkg/dyff"
 	k8serrors "k8s.io/apimachinery/pkg/api/errors"
 	"sigs.k8s.io/controller-runtime/pkg/client"
@@ -182,4 +187,28 @@ func ConvertK8sOverlays(overlays []*v1alpha1.K8SResourceOverlayPatch) ([]resourc
 	}
 
 	return o, nil
+}
+
+func DyffReportMultilineDiffOutput(report dyff.Report, out io.Writer) {
+	var nameDisplayed bool
+
+	writer := bufio.NewWriter(out)
+	defer writer.Flush()
+
+	writer.WriteString("multiline value diffs\n\n")
+
+	for _, f := range report.Diffs {
+		nameDisplayed = false
+		for _, d := range f.Details {
+			if d.From == nil || d.To == nil || (!strings.Contains(d.From.Value, "\n") && !strings.Contains(d.To.Value, "\n")) {
+				continue
+			}
+			if !nameDisplayed {
+				writer.WriteString(fmt.Sprintf("%s  (%s)\n", f.Path.ToDotStyle(), f.Path.Root.Names[f.Path.DocumentIdx]))
+				nameDisplayed = true
+			}
+			edits := myers.ComputeEdits("from", d.From.Value, d.To.Value)
+			writer.WriteString(fmt.Sprintf("%s\n", gotextdiff.ToUnified("from", "to", d.From.Value, edits)))
+		}
+	}
 }
