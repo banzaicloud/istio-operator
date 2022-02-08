@@ -56,6 +56,8 @@ spec:
               properties:
                 caAddress:
                   type: string
+                caProvider:
+                  type: string
                 clusterID:
                   type: string
                 containerImageConfiguration:
@@ -7380,6 +7382,8 @@ spec:
             spec:
               properties:
                 caAddress:
+                  type: string
+                caProvider:
                   type: string
                 clusterID:
                   type: string

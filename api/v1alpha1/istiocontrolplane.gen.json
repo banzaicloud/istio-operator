@@ -1835,6 +1835,10 @@
             "description": "The customized CA address to retrieve certificates for the pods in the cluster. CSR clients such as the Istio Agent and ingress gateways can use this to specify the CA endpoint.",
             "type": "string"
           },
+          "caProvider": {
+            "description": "The name of the CA for workload certificates.",
+            "type": "string"
+          },
           "distribution": {
             "description": "Contains the intended distribution for the Istio control plane. The official distribution is used by default unless special preserved distribution value is set. The only preserved distribution is \"cisco\" as of now.",
             "type": "string"
