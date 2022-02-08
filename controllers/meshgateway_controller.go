@@ -172,50 +172,53 @@ func (r *IstioMeshGatewayReconciler) GetScheme() *runtime.Scheme {
 func (r *IstioMeshGatewayReconciler) SetupWithManager(mgr ctrl.Manager) error {
 	builder := ctrl.NewControllerManagedBy(mgr)
 
+	objectChangePredicate := util.ObjectChangePredicate{Logger: r.Log}
+
 	ctrl, err := builder.
-		For(&servicemeshv1alpha1.IstioMeshGateway{}, ctrlBuilder.WithPredicates(util.ObjectChangePredicate{})).
+		For(&servicemeshv1alpha1.IstioMeshGateway{}, ctrlBuilder.WithPredicates(objectChangePredicate)).
 		Owns(&appsv1.Deployment{
 			TypeMeta: metav1.TypeMeta{
 				Kind:       "Deployment",
 				APIVersion: appsv1.SchemeGroupVersion.String(),
 			},
-		}, ctrlBuilder.WithPredicates(util.ObjectChangePredicate{})).
+		}, ctrlBuilder.WithPredicates(objectChangePredicate)).
 		Owns(&corev1.Service{
 			TypeMeta: metav1.TypeMeta{
 				Kind:       "Service",
 				APIVersion: corev1.SchemeGroupVersion.String(),
 			},
-		}, ctrlBuilder.WithPredicates(util.ObjectChangePredicate{})).
+		}, ctrlBuilder.WithPredicates(objectChangePredicate)).
 		Owns(&corev1.ServiceAccount{
 			TypeMeta: metav1.TypeMeta{
 				Kind:       "ServiceAccount",
 				APIVersion: corev1.SchemeGroupVersion.String(),
 			},
-		}, ctrlBuilder.WithPredicates(util.ObjectChangePredicate{})).
+		}, ctrlBuilder.WithPredicates(objectChangePredicate)).
 		Owns(&policyv1beta1.PodDisruptionBudget{
 			TypeMeta: metav1.TypeMeta{
 				Kind:       "PodDisruptionBudget",
 				APIVersion: policyv1beta1.SchemeGroupVersion.String(),
 			},
-		}, ctrlBuilder.WithPredicates(util.ObjectChangePredicate{})).
+		}, ctrlBuilder.WithPredicates(objectChangePredicate)).
 		Owns(&rbacv1.Role{
 			TypeMeta: metav1.TypeMeta{
 				Kind:       "Role",
 				APIVersion: rbacv1.SchemeGroupVersion.String(),
 			},
-		}, ctrlBuilder.WithPredicates(util.ObjectChangePredicate{})).
+		}, ctrlBuilder.WithPredicates(objectChangePredicate)).
 		Owns(&rbacv1.RoleBinding{
 			TypeMeta: metav1.TypeMeta{
 				Kind:       "RoleBinding",
 				APIVersion: rbacv1.SchemeGroupVersion.String(),
 			},
-		}, ctrlBuilder.WithPredicates(util.ObjectChangePredicate{})).
+		}, ctrlBuilder.WithPredicates(objectChangePredicate)).
 		Owns(&autoscalingv1.HorizontalPodAutoscaler{
 			TypeMeta: metav1.TypeMeta{
 				Kind:       "HorizontalPodAutoscaler",
 				APIVersion: autoscalingv1.SchemeGroupVersion.String(),
 			},
 		}, ctrlBuilder.WithPredicates(util.ObjectChangePredicate{
+			Logger: r.Log,
 			CalculateOptions: []util.CalculateOption{
 				util.IgnoreMetadataAnnotations("autoscaling.alpha.kubernetes.io"),
 				patch.IgnoreStatusFields(),
