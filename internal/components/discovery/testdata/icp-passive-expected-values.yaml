@@ -5,6 +5,7 @@ global:
   multiCluster:
     clusterName: demo-cluster2
   network: network1
+  caName: Citadel
 meshConfig:
   connectTimeout: 5s
   rootNamespace: istio-system

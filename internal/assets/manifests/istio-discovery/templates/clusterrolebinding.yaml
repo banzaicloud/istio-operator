@@ -14,4 +14,28 @@ subjects:
   - kind: ServiceAccount
     name: {{ include "name-with-revision" ( dict "name" "istiod" "context" $) }}
     namespace: {{ .Release.Namespace }}
+---
+{{- $gatewayAPIDeployment := true }}
+{{- range .Values.pilot.env }}
+{{- if and (eq .name "PILOT_ENABLE_GATEWAY_API_DEPLOYMENT_CONTROLLER") (eq .value "false") }}
+{{- $gatewayAPIDeployment = false }}
+{{- end }}
+{{- end }}
+{{- if $gatewayAPIDeployment }}
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: {{ include "name-with-namespaced-revision" ( dict "name" "istiod-gateway-controller" "context" $) }}
+  labels:
+    app: istiod
+    release: {{ .Release.Name }}
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: {{ include "name-with-namespaced-revision" ( dict "name" "istiod-gateway-controller" "context" $) }}
+subjects:
+- kind: ServiceAccount
+  name: {{ include "name-with-revision" ( dict "name" "istiod" "context" $) }}
+  namespace: {{ .Values.global.istioNamespace }}
+{{- end }}
 {{- end }}

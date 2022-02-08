@@ -172,6 +172,7 @@ proxy_init:
   # make sure they are consistent across your Istio helm charts                                #
   ##############################################################################################
 
+{{ valueIf (dict "key" "caName" "value" .GetSpec.GetCaProvider) }}
 {{ valueIf (dict "key" "caAddress" "value" .GetSpec.GetCaAddress) }}
 {{ valueIf (dict "key" "externalIstiod" "value" .GetSpec.GetIstiod.GetExternalIstiod.GetEnabled) }}
 {{- if .GetSpec.GetJwtPolicy }}
