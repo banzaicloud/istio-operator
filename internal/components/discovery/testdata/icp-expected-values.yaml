@@ -55,6 +55,7 @@ global:
     token:
       aud: istio-ca
   oneNamespace: false
+  caName: Citadel
   caAddress: localhost
   distribution: cisco
   meshID: mesh1

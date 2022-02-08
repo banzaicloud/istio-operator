@@ -117,6 +117,10 @@ spec:
                 fieldPath: spec.serviceAccountName
           - name: KUBECONFIG
             value: /var/run/secrets/remote/config
+          {{- if ne .Values.global.caName "" }}
+          - name: CA_PROVIDER
+            value: {{ .Values.global.caName }}
+          {{- end }}
 {{ include "toYamlIf" (dict "value" .Values.pilot.env) | indent 10 }}
 {{- if .Values.pilot.traceSampling }}
           - name: PILOT_TRACE_SAMPLING
@@ -132,10 +136,6 @@ spec:
             value: "{{ .Values.global.istiod.enableAnalysis }}"
           - name: CLUSTER_ID
             value: "{{ $.Values.global.multiCluster.clusterName | default `Kubernetes` }}"
-{{- if not .Values.telemetry.v2.enabled }}
-          - name: PILOT_ENDPOINT_TELEMETRY_LABEL
-            value: "false"
-{{- end }}
           resources:
 {{- if .Values.pilot.resources }}
 {{ toYaml .Values.pilot.resources | trim | indent 12 }}

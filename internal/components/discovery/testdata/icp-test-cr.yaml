@@ -162,6 +162,7 @@ spec:
   watchOneNamespace: false
   jwtPolicy: THIRD_PARTY_JWT
   caAddress: localhost
+  caProvider: Citadel
   distribution: cisco
   httpProxyEnvs:
     noProxy: "localhost"
