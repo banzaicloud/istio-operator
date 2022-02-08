@@ -236,7 +236,9 @@ func TestPassiveICPDiscoveryResourceDump(t *testing.T) {
 			t.Fatal(err)
 		}
 
-		util.DyffReportMultilineDiffOutput(report, os.Stdout)
+		if err := util.DyffReportMultilineDiffOutput(report, os.Stdout); err != nil {
+			t.Fatal(err)
+		}
 
 		t.Fatal(errors.NewPlain("generated resource dump not equals with expected"))
 	}
@@ -291,7 +293,9 @@ func TestPassiveICPDiscoveryValuesTemplateTransform(t *testing.T) {
 			t.Fatal(err)
 		}
 
-		util.DyffReportMultilineDiffOutput(report, os.Stdout)
+		if err := util.DyffReportMultilineDiffOutput(report, os.Stdout); err != nil {
+			t.Fatal(err)
+		}
 
 		t.Fatal(errors.NewPlain("generated template values not equals with expected"))
 	}
