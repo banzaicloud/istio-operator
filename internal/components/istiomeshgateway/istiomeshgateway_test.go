@@ -23,6 +23,7 @@ import (
 
 	"emperror.dev/errors"
 	"emperror.dev/errors/utils/keyval"
+	testlogr "github.com/go-logr/logr/testing"
 	"github.com/homeport/dyff/pkg/dyff"
 	"k8s.io/client-go/kubernetes/fake"
 	"sigs.k8s.io/yaml"
@@ -62,7 +63,9 @@ func TestIMGWResourceDump(t *testing.T) {
 	}
 
 	reconciler := istiomeshgateway.NewChartReconciler(
-		templatereconciler.NewHelmReconciler(nil, nil, nil, fake.NewSimpleClientset().Discovery(), []reconciler.NativeReconcilerOpt{
+		templatereconciler.NewHelmReconciler(nil, nil, testlogr.TestLogger{
+			T: t,
+		}, fake.NewSimpleClientset().Discovery(), []reconciler.NativeReconcilerOpt{
 			reconciler.NativeReconcilerSetControllerRef(),
 		}),
 		v1alpha1.IstioMeshGatewayProperties{
@@ -73,6 +76,9 @@ func TestIMGWResourceDump(t *testing.T) {
 			MeshConfigChecksum:      "319ffd3f807ef4516499c6ad68279a1cd07778f5847e65f9aef908eceb1693e3",
 			IstioControlPlane:       icp,
 			GenerateExternalService: true,
+		},
+		testlogr.TestLogger{
+			T: t,
 		},
 	)
 

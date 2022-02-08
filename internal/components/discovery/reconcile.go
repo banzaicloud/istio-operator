@@ -23,6 +23,7 @@ import (
 	"github.com/go-logr/logr"
 	admissionregistrationv1 "k8s.io/api/admissionregistration/v1"
 	corev1 "k8s.io/api/core/v1"
+	policyv1beta1 "k8s.io/api/policy/v1beta1"
 	"k8s.io/apimachinery/pkg/runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
@@ -108,6 +109,28 @@ func (rec *Component) ReleaseData(object runtime.Object) (*templatereconciler.Re
 
 					patchResult, err := patch.DefaultPatchMaker.Calculate(current, desired, options...)
 					if err != nil {
+						rec.logger.Error(err, "could not calculate patch result")
+
+						return false, err
+					}
+
+					return !patchResult.IsEmpty(), nil
+				},
+			},
+			{
+				GVK: policyv1beta1.SchemeGroupVersion.WithKind("PodDisruptionBudget"),
+			}: reconciler.DynamicDesiredState{
+				ShouldUpdateFunc: func(current, desired runtime.Object) (bool, error) {
+					options := []patch.CalculateOption{
+						patch.IgnoreStatusFields(),
+						reconciler.IgnoreManagedFields(),
+						patch.IgnorePDBSelector(),
+					}
+
+					patchResult, err := patch.DefaultPatchMaker.Calculate(current, desired, options...)
+					if err != nil {
+						rec.logger.Error(err, "could not calculate patch result")
+
 						return false, err
 					}
 

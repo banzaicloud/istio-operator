@@ -131,7 +131,7 @@ func (r *IstioMeshGatewayReconciler) Reconcile(ctx context.Context, req ctrl.Req
 			MeshConfigChecksum:      icp.Status.GetChecksums().GetMeshConfig(),
 			IstioControlPlane:       icp,
 			GenerateExternalService: generateExternalService,
-		})
+		}, r.Log)
 	}, r.Log.WithName("istiomeshgateway"))
 	if err != nil {
 		return ctrl.Result{}, err

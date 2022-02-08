@@ -20,14 +20,18 @@ import (
 	"net/http"
 
 	"emperror.dev/errors"
+	"github.com/go-logr/logr"
+	policyv1beta1 "k8s.io/api/policy/v1beta1"
 	"k8s.io/apimachinery/pkg/runtime"
 
 	"github.com/banzaicloud/istio-operator/api/v2/v1alpha1"
 	"github.com/banzaicloud/istio-operator/v2/internal/assets"
 	"github.com/banzaicloud/istio-operator/v2/internal/components"
 	"github.com/banzaicloud/istio-operator/v2/internal/util"
+	"github.com/banzaicloud/k8s-objectmatcher/patch"
 	"github.com/banzaicloud/operator-tools/pkg/helm"
 	"github.com/banzaicloud/operator-tools/pkg/helm/templatereconciler"
+	"github.com/banzaicloud/operator-tools/pkg/reconciler"
 )
 
 const (
@@ -42,13 +46,15 @@ var _ components.MinimalComponent = &Component{}
 
 type Component struct {
 	properties v1alpha1.IstioMeshGatewayProperties
+	logger     logr.Logger
 }
 
-func NewChartReconciler(helmReconciler *components.HelmReconciler, properties v1alpha1.IstioMeshGatewayProperties) components.ComponentReconciler {
+func NewChartReconciler(helmReconciler *components.HelmReconciler, properties v1alpha1.IstioMeshGatewayProperties, logger logr.Logger) components.ComponentReconciler {
 	return &components.Base{
 		HelmReconciler: helmReconciler,
 		Component: &Component{
 			properties: properties,
+			logger:     logger,
 		},
 	}
 }
@@ -84,6 +90,28 @@ func (rec *Component) ReleaseData(object runtime.Object) (*templatereconciler.Re
 			ChartName:   chartName,
 			ReleaseName: releaseName,
 			Layers:      overlays,
+			DesiredStateOverrides: map[reconciler.ObjectKeyWithGVK]reconciler.DesiredState{
+				{
+					GVK: policyv1beta1.SchemeGroupVersion.WithKind("PodDisruptionBudget"),
+				}: reconciler.DynamicDesiredState{
+					ShouldUpdateFunc: func(current, desired runtime.Object) (bool, error) {
+						options := []patch.CalculateOption{
+							patch.IgnoreStatusFields(),
+							reconciler.IgnoreManagedFields(),
+							patch.IgnorePDBSelector(),
+						}
+
+						patchResult, err := patch.DefaultPatchMaker.Calculate(current, desired, options...)
+						if err != nil {
+							rec.logger.Error(err, "could not calculate patch result")
+
+							return false, err
+						}
+
+						return !patchResult.IsEmpty(), nil
+					},
+				},
+			},
 		}, nil
 	}
 
