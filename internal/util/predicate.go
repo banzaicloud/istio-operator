@@ -56,6 +56,7 @@ func (p ObjectChangePredicate) Update(e event.UpdateEvent) bool {
 		if p.Logger != nil {
 			p.Logger.Error(errors.WithStack(err), "could not calculate patch result")
 		}
+
 		return true
 	} else if patchResult.IsEmpty() {
 		return false

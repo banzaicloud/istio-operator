@@ -83,7 +83,9 @@ func TestICPDiscoveryResourceDump(t *testing.T) {
 			MeshNetworks:                 getTestMeshNetworks(),
 			TrustedRootCACertificatePEMs: []string{"<pem content from peer>"},
 		},
-		logr.DiscardLogger{},
+		testlogr.TestLogger{
+			T: t,
+		},
 	)
 
 	dd, err := reconciler.GetManifest(icp)
