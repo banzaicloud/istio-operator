@@ -97,30 +97,32 @@ message IstioControlPlaneSpec {
     // The customized CA address to retrieve certificates for the pods in the cluster.
     // CSR clients such as the Istio Agent and ingress gateways can use this to specify the CA endpoint.
     string caAddress = 13;
+    // The name of the CA for workload certificates.
+    string caProvider = 14;
     // Contains the intended distribution for the Istio control plane.
     // The official distribution is used by default unless special preserved distribution value is set.
     // The only preserved distribution is "cisco" as of now.
-    string distribution = 14;
+    string distribution = 15;
     // Upstream HTTP proxy properties to be injected as environment variables to the pod containers.
-    HTTPProxyEnvsConfiguration httpProxyEnvs = 15;
+    HTTPProxyEnvsConfiguration httpProxyEnvs = 16;
     // Defines mesh-wide settings for the Istio control plane.
-    istio.mesh.v1alpha1.MeshConfig mesh_config = 16;
+    istio.mesh.v1alpha1.MeshConfig mesh_config = 17;
     // K8s resource overlay patches
-    repeated K8sResourceOverlayPatch k8sResourceOverlays = 17;
+    repeated K8sResourceOverlayPatch k8sResourceOverlays = 18;
     // Name of the Mesh to which this control plane belongs.
-    string meshID = 18;
+    string meshID = 19;
     // Global configuration for container images.
-    ContainerImageConfiguration containerImageConfiguration = 19;
+    ContainerImageConfiguration containerImageConfiguration = 20;
     // Mesh expansion configuration
-    MeshExpansionConfiguration meshExpansion = 20;
+    MeshExpansionConfiguration meshExpansion = 21;
     // Cluster ID
-    string clusterID = 21;
+    string clusterID = 22;
     // Network defines the network this cluster belongs to. This name
     // corresponds to the networks in the map of mesh networks.
     // +default=network1
-    string networkName = 22;
+    string networkName = 23;
     // Standalone sidecar injector configuration.
-    SidecarInjectorConfiguration sidecarInjector = 23;
+    SidecarInjectorConfiguration sidecarInjector = 24;
 }
 
 enum ModeType {
