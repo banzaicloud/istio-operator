@@ -189,13 +189,16 @@ func ConvertK8sOverlays(overlays []*v1alpha1.K8SResourceOverlayPatch) ([]resourc
 	return o, nil
 }
 
-func DyffReportMultilineDiffOutput(report dyff.Report, out io.Writer) {
+func DyffReportMultilineDiffOutput(report dyff.Report, out io.Writer) error {
 	var nameDisplayed bool
 
 	writer := bufio.NewWriter(out)
 	defer writer.Flush()
 
-	writer.WriteString("multiline value diffs\n\n")
+	_, err := writer.WriteString("multiline value diffs\n\n")
+	if err != nil {
+		return err
+	}
 
 	for _, f := range report.Diffs {
 		nameDisplayed = false
@@ -204,11 +207,16 @@ func DyffReportMultilineDiffOutput(report dyff.Report, out io.Writer) {
 				continue
 			}
 			if !nameDisplayed {
-				writer.WriteString(fmt.Sprintf("%s  (%s)\n", f.Path.ToDotStyle(), f.Path.Root.Names[f.Path.DocumentIdx]))
+				_, _ = writer.WriteString(fmt.Sprintf("%s  (%s)\n", f.Path.ToDotStyle(), f.Path.Root.Names[f.Path.DocumentIdx]))
 				nameDisplayed = true
 			}
 			edits := myers.ComputeEdits("from", d.From.Value, d.To.Value)
-			writer.WriteString(fmt.Sprintf("%s\n", gotextdiff.ToUnified("from", "to", d.From.Value, edits)))
+			_, err := writer.WriteString(fmt.Sprintf("%s\n", gotextdiff.ToUnified("from", "to", d.From.Value, edits)))
+			if err != nil {
+				return err
+			}
 		}
 	}
+
+	return nil
 }
