@@ -87,7 +87,7 @@
             "format": "int32"
           },
           "protocolDetectionTimeout": {
-            "description": "Automatic protocol detection uses a set of heuristics to determine whether the connection is using TLS or not (on the server side), as well as the application protocol being used (e.g., http vs tcp). These heuristics rely on the client sending the first bits of data. For server first protocols like MySQL, MongoDB, etc. Envoy will timeout on the protocol detection after the specified period, defaulting to non mTLS plain TCP traffic. Set this field to tweak the period that Envoy will wait for the client to send the first bits of data. (MUST BE \u003e=1ms or 0s to disable). Default detection timeout is 5s.",
+            "description": "Automatic protocol detection uses a set of heuristics to determine whether the connection is using TLS or not (on the server side), as well as the application protocol being used (e.g., http vs tcp). These heuristics rely on the client sending the first bits of data. For server first protocols like MySQL, MongoDB, etc. Envoy will timeout on the protocol detection after the specified period, defaulting to non mTLS plain TCP traffic. Set this field to tweak the period that Envoy will wait for the client to send the first bits of data. (MUST BE \u003e=1ms or 0s to disable). Default detection timeout is 0s (no timeout).",
             "type": "string"
           },
           "ingressClass": {
@@ -216,8 +216,8 @@
             "nullable": true
           },
           "verifyCertificateAtClient": {
-            "description": "`VerifyCertificateAtClient` sets the mesh global default for peer certificate validation at the client-side proxy when `SIMPLE` TLS or `MUTUAL` TLS (non `ISTIO_MUTUAL`) origination modes are used. This setting can be overridden at the host level via DestinationRule API. By default, `VerifyCertificateAtClient` is `true`. `CaCertificates`: If set, proxy verifies CA signature based on given CaCertificates. If unset, and VerifyCertificateAtClient is true, proxy uses default System CA bundle. If unset and `VerifyCertificateAtClient` is false, proxy will not verify the CA. `SubjectAltNames`: If set, proxy verifies subject alt names are present in the SAN. If unset, and `VerifyCertificateAtClient` is true, proxy uses host in destination rule to verify the SANs. If unset, and `VerifyCertificateAtClient` is false, proxy does not verify SANs. For SAN, client-side proxy will exact match host in `DestinationRule` as well as one level wildcard if the specified host in DestinationRule doesn't contain a wildcard. For example, if the host in `DestinationRule` is `x.y.com`, client-side proxy will match either `x.y.com` or `*.y.com` for the SAN in the presented server certificate. For wildcard host name in DestinationRule, client-side proxy will do a suffix match. For example, if host is `*.x.y.com`, client-side proxy will verify the presented server certificate SAN matches ``.x.y.com` suffix.",
             "type": "boolean",
+            "deprecated": true,
             "nullable": true
           },
           "ca": {
@@ -242,6 +242,9 @@
           },
           "pathNormalization": {
             "$ref": "#/components/schemas/istio.mesh.v1alpha1.MeshConfig.ProxyPathNormalization"
+          },
+          "defaultHttpRetryPolicy": {
+            "$ref": "#/components/schemas/istio.networking.v1alpha3.HTTPRetry"
           }
         }
       },
@@ -274,6 +277,22 @@
       },
       "istio.mesh.v1alpha1.MeshConfig.CertificateData": {
         "type": "object",
+        "properties": {
+          "certSigners": {
+            "description": "Optional. Specify the kubernetes signers (External CA) that use this trustAnchor when Istiod is acting as RA(registration authority) If set, they are used for these signers. Otherwise, this trustAnchor is used for all signers.",
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "trustDomains": {
+            "description": "Optional. Specify the list of trust domains to which this trustAnchor data belongs. If set, they are used for these trust domains. Otherwise, this trustAnchor is used for default trust domain and its aliases. Note that we can have multiple trustAnchor data for a same trust_domain. In that case, trustAnchors with a same trust domain will be merged and used together to verify peer certificates. If neither cert_signers nor trust_domains is set, this trustAnchor is used for all trust domains and all signers. If only trust_domains is set, this trustAnchor is used for these trust_domains and all signers. If only cert_signers is set, this trustAnchor is used for these cert_signers and all trust domains. If both cert_signers and trust_domains is set, this trustAnchor is only used for these signers and trust domains.",
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        },
         "oneOf": [
           {
             "not": {
@@ -693,6 +712,9 @@
         "description": "ProxyConfig defines variables for individual Envoy instances. This can be configured on a per-workload basis as well as by the mesh-wide defaults. To set the mesh wide defaults, configure the `defaultConfig` section of `meshConfig`. For example: ``` meshConfig: defaultConfig: discoveryAddress: istiod:15012 ``` This can also be configured on a per-workload basis by configuring the `proxy.istio.io/config` annotation on the pod. For example: ``` annotations: proxy.istio.io/config: | discoveryAddress: istiod:15012 ``` If both are configured, the two are merged with per field semantics; the field set in annotation will fully replace the field from mesh config defaults. This is different than a deep merge provided by protobuf. For example, `\"tracing\": { \"sampling\": 5 }` would completely override a setting configuring a tracing provider such as `\"tracing\": { \"zipkin\": { \"address\": \"...\" } }`. Note: fields in ProxyConfig are not dynamically configured; changes will require restart of workloads to take effect.",
         "type": "object",
         "properties": {
+          "image": {
+            "$ref": "#/components/schemas/istio.mesh.v1alpha1.ProxyImage"
+          },
           "readinessProbe": {
             "$ref": "#/components/schemas/istio.networking.v1alpha3.ReadinessProbe"
           },
@@ -861,6 +883,16 @@
             "items": {
               "type": "string"
             }
+          }
+        }
+      },
+      "istio.mesh.v1alpha1.ProxyImage": {
+        "description": "The following values are used to construct proxy image url. $hub/$image_name/$tag-$image_type example: docker.io/istio/proxyv2:1.11.1 or docker.io/istio/proxyv2:1.11.1-distroless This information was previously part of the Values API. $hide_from_docs",
+        "type": "object",
+        "properties": {
+          "imageType": {
+            "description": "The image type of the image. Istio publishes default, debug, and distroless images. Other values are allowed if those image types (example: centos) are published to the specified hub. supported values: default, debug, distroless.",
+            "type": "string"
           }
         }
       },
@@ -1200,7 +1232,7 @@
             "type": "string"
           },
           "credentialName": {
-            "description": "The name of the secret that holds the TLS certs for the client including the CA certificates. Secret must exist in the same namespace with the proxy using the certificates. The secret (of type `generic`)should contain the following keys and values: `key: \u003cprivateKey\u003e`, `cert: \u003cserverCert\u003e`, `cacert: \u003cCACertificate\u003e`. Secret of type tls for client certificates along with ca.crt key for CA certificates is also supported. Only one of client certificates and CA certificate or credentialName can be specified. **NOTE:** This field is currently applicable only at gateways. Sidecars will continue to use the certificate paths.",
+            "description": "The name of the secret that holds the TLS certs for the client including the CA certificates. Secret must exist in the same namespace with the proxy using the certificates. The secret (of type `generic`)should contain the following keys and values: `key: \u003cprivateKey\u003e`, `cert: \u003cclientCert\u003e`, `cacert: \u003cCACertificate\u003e`. Here CACertificate is used to verify the server certificate. Secret of type tls for client certificates along with ca.crt key for CA certificates is also supported. Only one of client certificates and CA certificate or credentialName can be specified. **NOTE:** This field is currently applicable only at gateways. Sidecars will continue to use the certificate paths.",
             "type": "string"
           },
           "subjectAltNames": {
@@ -1213,6 +1245,11 @@
           "sni": {
             "description": "SNI string to present to the server during TLS handshake.",
             "type": "string"
+          },
+          "insecureSkipVerify": {
+            "description": "InsecureSkipVerify specifies whether the proxy should skip verifying the CA signature and SAN for the server certificate corresponding to the host. This flag should only be set if global CA signature verifcation is enabled, `VerifyCertAtClient` environmental variable is set to `true`, but no verification is desired for a specific host. If enabled with or without `VerifyCertAtClient` enabled, verification of the CA signature and SAN will be skipped. `InsecureSkipVerify` is `false` by default. `VerifyCertAtClient` is `false` by default in Istio version 1.9 but will be `true` by default in a later version where, going forward, it will be enabled by default.",
+            "type": "boolean",
+            "nullable": true
           }
         }
       },
@@ -1297,22 +1334,53 @@
           }
         }
       },
+      "istio.networking.v1alpha3.HTTPRetry": {
+        "description": "Describes the retry policy to use when a HTTP request fails. For example, the following rule sets the maximum number of retries to 3 when calling ratings:v1 service, with a 2s timeout per retry attempt. A retry will be attempted if there is a connect-failure, refused_stream or when the upstream server responds with Service Unavailable(503). {{\u003ctabset category-name=\"example\"\u003e}} {{\u003ctab name=\"v1alpha3\" category-value=\"v1alpha3\"\u003e}} ```yaml apiVersion: networking.istio.io/v1alpha3 kind: VirtualService metadata: name: ratings-route spec: hosts: - ratings.prod.svc.cluster.local http: - route: - destination: host: ratings.prod.svc.cluster.local subset: v1 retries: attempts: 3 perTryTimeout: 2s retryOn: connect-failure,refused-stream,503 ``` {{\u003c/tab\u003e}} {{\u003ctab name=\"v1beta1\" category-value=\"v1beta1\"\u003e}} ```yaml apiVersion: networking.istio.io/v1beta1 kind: VirtualService metadata: name: ratings-route spec: hosts: - ratings.prod.svc.cluster.local http: - route: - destination: host: ratings.prod.svc.cluster.local subset: v1 retries: attempts: 3 perTryTimeout: 2s retryOn: gateway-error,connect-failure,refused-stream ``` {{\u003c/tab\u003e}} {{\u003c/tabset\u003e}}",
+        "type": "object",
+        "properties": {
+          "attempts": {
+            "description": "Number of retries to be allowed for a given request. The interval between retries will be determined automatically (25ms+). When request `timeout` of the [HTTP route](https://istio.io/docs/reference/config/networking/virtual-service/#HTTPRoute) or `per_try_timeout` is configured, the actual number of retries attempted also depends on the specified request `timeout` and `per_try_timeout` values.",
+            "type": "integer",
+            "format": "int32"
+          },
+          "perTryTimeout": {
+            "description": "Timeout per attempt for a given request, including the initial call and any retries. Format: 1h/1m/1s/1ms. MUST BE \u003e=1ms. Default is same value as request `timeout` of the [HTTP route](https://istio.io/docs/reference/config/networking/virtual-service/#HTTPRoute), which means no timeout.",
+            "type": "string"
+          },
+          "retryOn": {
+            "description": "Specifies the conditions under which retry takes place. One or more policies can be specified using a ‘,’ delimited list. If retry_on specifies a valid HTTP status, it will be added to retriable_status_codes retry policy. See the [retry policies](https://www.envoyproxy.io/docs/envoy/latest/configuration/http/http_filters/router_filter#x-envoy-retry-on) and [gRPC retry policies](https://www.envoyproxy.io/docs/envoy/latest/configuration/http/http_filters/router_filter#x-envoy-retry-grpc-on) for more details.",
+            "type": "string"
+          },
+          "retryRemoteLocalities": {
+            "description": "Flag to specify whether the retries should retry to other localities. See the [retry plugin configuration](https://www.envoyproxy.io/docs/envoy/latest/intro/arch_overview/http/http_connection_management#retry-plugin-configuration) for more details.",
+            "type": "boolean",
+            "nullable": true
+          }
+        }
+      },
       "istio.networking.v1alpha3.LocalityLoadBalancerSetting": {
         "description": "Locality-weighted load balancing allows administrators to control the distribution of traffic to endpoints based on the localities of where the traffic originates and where it will terminate. These localities are specified using arbitrary labels that designate a hierarchy of localities in {region}/{zone}/{sub-zone} form. For additional detail refer to [Locality Weight](https://www.envoyproxy.io/docs/envoy/latest/intro/arch_overview/upstream/load_balancing/locality_weight) The following example shows how to setup locality weights mesh-wide. Given a mesh with workloads and their service deployed to \"us-west/zone1/*\" and \"us-west/zone2/*\". This example specifies that when traffic accessing a service originates from workloads in \"us-west/zone1/*\", 80% of the traffic will be sent to endpoints in \"us-west/zone1/*\", i.e the same zone, and the remaining 20% will go to endpoints in \"us-west/zone2/*\". This setup is intended to favor routing traffic to endpoints in the same locality. A similar setting is specified for traffic originating in \"us-west/zone2/*\". ```yaml distribute: - from: us-west/zone1/* to: \"us-west/zone1/*\": 80 \"us-west/zone2/*\": 20 - from: us-west/zone2/* to: \"us-west/zone1/*\": 20 \"us-west/zone2/*\": 80 ``` If the goal of the operator is not to distribute load across zones and regions but rather to restrict the regionality of failover to meet other operational requirements an operator can set a 'failover' policy instead of a 'distribute' policy. The following example sets up a locality failover policy for regions. Assume a service resides in zones within us-east, us-west \u0026 eu-west this example specifies that when endpoints within us-east become unhealthy traffic should failover to endpoints in any zone or sub-zone within eu-west and similarly us-west should failover to us-east. ```yaml failover: - from: us-east to: eu-west - from: us-west to: us-east ``` Locality load balancing settings.",
         "type": "object",
         "properties": {
           "distribute": {
-            "description": "Optional: only one of distribute or failover can be set. Explicitly specify loadbalancing weight across different zones and geographical locations. Refer to [Locality weighted load balancing](https://www.envoyproxy.io/docs/envoy/latest/intro/arch_overview/upstream/load_balancing/locality_weight) If empty, the locality weight is set according to the endpoints number within it.",
+            "description": "Optional: only one of distribute, failover or failoverPriority can be set. Explicitly specify loadbalancing weight across different zones and geographical locations. Refer to [Locality weighted load balancing](https://www.envoyproxy.io/docs/envoy/latest/intro/arch_overview/upstream/load_balancing/locality_weight) If empty, the locality weight is set according to the endpoints number within it.",
             "type": "array",
             "items": {
               "$ref": "#/components/schemas/istio.networking.v1alpha3.LocalityLoadBalancerSetting.Distribute"
             }
           },
           "failover": {
-            "description": "Optional: only failover or distribute can be set. Explicitly specify the region traffic will land on when endpoints in local region becomes unhealthy. Should be used together with OutlierDetection to detect unhealthy endpoints. Note: if no OutlierDetection specified, this will not take effect.",
+            "description": "Optional: only one of distribute, failover or failoverPriority can be set. Explicitly specify the region traffic will land on when endpoints in local region becomes unhealthy. Should be used together with OutlierDetection to detect unhealthy endpoints. Note: if no OutlierDetection specified, this will not take effect.",
             "type": "array",
             "items": {
               "$ref": "#/components/schemas/istio.networking.v1alpha3.LocalityLoadBalancerSetting.Failover"
+            }
+          },
+          "failoverPriority": {
+            "description": "failoverPriority is an ordered list of labels used to sort endpoints to do priority based load balancing. This is to support traffic failover across different groups of endpoints. Suppose there are total N labels specified: 1. Endpoints matching all N labels with the client proxy have priority P(0) i.e. the highest priority. 2. Endpoints matching the first N-1 labels with the client proxy have priority P(1) i.e. second highest priority. 3. By extension of this logic, endpoints matching only the first label with the client proxy has priority P(N-1) i.e. second lowest priority. 4. All the other endpoints have priority P(N) i.e. lowest priority. Note: For a label to be considered for match, the previous labels must match, i.e. nth label would be considered matched only if first n-1 labels match. It can be any label specified on both client and server workloads. The following labels which have special semantic meaning are also supported: - `topology.istio.io/network` is used to match the network metadata of an endpoint, which can be specified by pod/namespace label `topology.istio.io/network`, sidecar env `ISTIO_META_NETWORK` or MeshNetworks. - `topology.istio.io/cluster` is used to match the clusterID of an endpoint, which can be specified by pod label `topology.istio.io/cluster` or pod env `ISTIO_META_CLUSTER_ID`. - `topology.kubernetes.io/region` is used to match the region metadata of an endpoint, which maps to Kubernetes node label `topology.kubernetes.io/region` or the deprecated label `failure-domain.beta.kubernetes.io/region`. - `topology.kubernetes.io/zone` is used to match the zone metadata of an endpoint, which maps to Kubernetes node label `topology.kubernetes.io/zone` or the deprecated label `failure-domain.beta.kubernetes.io/zone`. - `topology.istio.io/subzone` is used to match the subzone metadata of an endpoint, which maps to Istio node label `topology.istio.io/subzone`. The below topology config indicates the following priority levels: ```yaml failoverPriority: - \"topology.istio.io/network\" - \"topology.kubernetes.io/region\" - \"topology.kubernetes.io/zone\" - \"topology.istio.io/subzone\" ``` 1. endpoints match same [network, region, zone, subzone] label with the client proxy have the highest priority. 2. endpoints have same [network, region, zone] label but different [subzone] label with the client proxy have the second highest priority. 3. endpoints have same [network, region] label but different [zone] label with the client proxy have the third highest priority. 4. endpoints have same [network] but different [region] labels with the client proxy have the fourth highest priority. 5. all the other endpoints have the same lowest priority. Optional: only one of distribute, failover or failoverPriority can be set. And it should be used together with `OutlierDetection` to detect unhealthy endpoints, otherwise has no effect.",
+            "type": "array",
+            "items": {
+              "type": "string"
             }
           },
           "enabled": {
