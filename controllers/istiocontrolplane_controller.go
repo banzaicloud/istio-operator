@@ -118,12 +118,15 @@ type IstioControlPlaneReconciler struct {
 // +kubebuilder:rbac:groups="extensions",resources=ingresses,verbs=get;list;watch
 // +kubebuilder:rbac:groups="extensions",resources=ingresses/status,verbs=*
 // +kubebuilder:rbac:groups="multicluster.x-k8s.io",resources=serviceexports,verbs=get;watch;list;create;delete
+// +kubebuilder:rbac:groups="multicluster.x-k8s.io",resources=serviceimports,verbs=get;watch;list
 // +kubebuilder:rbac:groups="networking.k8s.io",resources=ingresses;ingressclasses,verbs=get;list;watch
 // +kubebuilder:rbac:groups="networking.k8s.io",resources=ingresses/status,verbs=*
-// +kubebuilder:rbac:groups="networking.x-k8s.io",resources=*,verbs=get;list;watch;update
+// +kubebuilder:rbac:groups="gateway.networking.k8s.io",resources=*,verbs=get;list;watch;update;patch
+// +kubebuilder:rbac:groups="networking.x-k8s.io",resources=*,verbs=get;list;watch;update;patch
 // +kubebuilder:rbac:groups="policy",resources=podsecuritypolicies;poddisruptionbudgets,verbs=get;list;watch;create;update;patch;delete
 // +kubebuilder:rbac:groups="rbac.authorization.k8s.io",resources=clusterroles;clusterrolebindings;roles;rolebindings,verbs=get;list;watch;create;update;patch;delete
 // +kubebuilder:rbac:groups=networking.istio.io;security.istio.io;telemetry.istio.io;authentication.istio.io;config.istio.io;rbac.istio.io,resources=*,verbs=get;list;watch;create;update;patch;delete
+// +kubebuilder:rbac:groups="extensions.istio.io",resources=*,verbs=get;list;watch
 // +kubebuilder:rbac:groups=servicemesh.cisco.com,resources=istiocontrolplanes;peeristiocontrolplanes;istiomeshes,verbs=get;list;watch;create;update;patch;delete
 // +kubebuilder:rbac:groups=servicemesh.cisco.com,resources=istiocontrolplanes/status;peeristiocontrolplanes/status;istiomeshes/status,verbs=get;update;patch
 // +kubebuilder:rbac:groups=clusterregistry.k8s.cisco.com,resources=clusters,verbs=list;watch
