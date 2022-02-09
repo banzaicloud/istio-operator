@@ -62,7 +62,7 @@ func TestICPBaseResourceDump(t *testing.T) {
 		logr.TestLogger{
 			T: t,
 		},
-		"1.11.4",
+		"1.12.2",
 	)
 
 	dd, err := reconciler.GetManifest(icp)
