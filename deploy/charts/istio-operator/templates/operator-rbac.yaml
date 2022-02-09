@@ -233,12 +233,38 @@ rules:
   verbs:
   - '*'
 - apiGroups:
+  - extensions.istio.io
+  resources:
+  - '*'
+  verbs:
+  - get
+  - list
+  - watch
+- apiGroups:
+  - gateway.networking.k8s.io
+  resources:
+  - '*'
+  verbs:
+  - get
+  - list
+  - patch
+  - update
+  - watch
+- apiGroups:
   - multicluster.x-k8s.io
   resources:
   - serviceexports
   verbs:
   - create
   - delete
+  - get
+  - list
+  - watch
+- apiGroups:
+  - multicluster.x-k8s.io
+  resources:
+  - serviceimports
+  verbs:
   - get
   - list
   - watch
@@ -264,6 +290,7 @@ rules:
   verbs:
   - get
   - list
+  - patch
   - update
   - watch
 - apiGroups:
