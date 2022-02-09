@@ -28,8 +28,8 @@ require (
 	github.com/rogpeppe/go-internal v1.6.2 // indirect
 	go.opencensus.io v0.23.0 // indirect
 	go.uber.org/zap v1.18.1
-	istio.io/api v0.0.0-20210809175348-eff556fb5d8a
-	istio.io/client-go v1.11.0
+	istio.io/api v0.0.0-20211213163208-276abc55e8b6
+	istio.io/client-go v1.12.2
 	k8s.io/api v0.21.3
 	k8s.io/apiextensions-apiserver v0.21.3
 	k8s.io/apimachinery v0.21.3
