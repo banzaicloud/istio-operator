@@ -5,14 +5,14 @@
 apiVersion: networking.istio.io/v1alpha3
 kind: EnvoyFilter
 metadata:
-  name: stats-filter-1.12{{- if not (eq .Values.revision "") }}-{{ .Values.revision }}{{- end }}
+  name: {{ include "name-with-revision" ( dict "name" "stats-filter-1.12" "context" $) }}
   {{- if .Values.meshConfig.rootNamespace }}
   namespace: {{ .Values.meshConfig.rootNamespace }}
   {{- else }}
   namespace: {{ .Release.Namespace }}
   {{- end }}
   labels:
-    istio.io/rev: {{ .Values.revision | default "default" }}
+    istio.io/rev: {{ include "namespaced-revision" . }}
 spec:
   configPatches:
     - applyTo: HTTP_FILTER
@@ -168,14 +168,14 @@ spec:
 apiVersion: networking.istio.io/v1alpha3
 kind: EnvoyFilter
 metadata:
-  name: tcp-stats-filter-1.12{{- if not (eq .Values.revision "") }}-{{ .Values.revision }}{{- end }}
+  name: {{ include "name-with-revision" ( dict "name" "tcp-stats-filter-1.12" "context" $) }}
   {{- if .Values.meshConfig.rootNamespace }}
   namespace: {{ .Values.meshConfig.rootNamespace }}
   {{- else }}
   namespace: {{ .Release.Namespace }}
   {{- end }}
   labels:
-    istio.io/rev: {{ .Values.revision | default "default" }}
+    istio.io/rev: {{ include "namespaced-revision" . }}
 spec:
   configPatches:
     - applyTo: NETWORK_FILTER
@@ -324,14 +324,14 @@ spec:
 apiVersion: networking.istio.io/v1alpha3
 kind: EnvoyFilter
 metadata:
-  name: stackdriver-filter-1.12{{- if not (eq .Values.revision "") }}-{{ .Values.revision }}{{- end }}
+  name: {{ include "name-with-revision" ( dict "name" "stackdriver-filter-1.12" "context" $) }}
   {{- if .Values.meshConfig.rootNamespace }}
   namespace: {{ .Values.meshConfig.rootNamespace }}
   {{- else }}
   namespace: {{ .Release.Namespace }}
   {{- end }}
   labels:
-    istio.io/rev: {{ .Values.revision | default "default" }}
+    istio.io/rev: {{ include "namespaced-revision" . }}
 spec:
   configPatches:
 {{- if not .Values.telemetry.v2.stackdriver.disableOutbound }}
@@ -442,14 +442,14 @@ spec:
 apiVersion: networking.istio.io/v1alpha3
 kind: EnvoyFilter
 metadata:
-  name: tcp-stackdriver-filter-1.12{{- if not (eq .Values.revision "") }}-{{ .Values.revision }}{{- end }}
+  name: {{ include "name-with-revision" ( dict "name" "tcp-stackdriver-filter-1.12" "context" $) }}
   {{- if .Values.meshConfig.rootNamespace }}
   namespace: {{ .Values.meshConfig.rootNamespace }}
   {{- else }}
   namespace: {{ .Release.Namespace }}
   {{- end }}
   labels:
-    istio.io/rev: {{ .Values.revision | default "default" }}
+    istio.io/rev: {{ include "namespaced-revision" . }}
 spec:
   configPatches:
   {{- if not .Values.telemetry.v2.stackdriver.disableOutbound }}
@@ -555,14 +555,14 @@ spec:
 apiVersion: networking.istio.io/v1alpha3
 kind: EnvoyFilter
 metadata:
-  name: stackdriver-sampling-accesslog-filter-1.12{{- if not (eq .Values.revision "") }}-{{ .Values.revision }}{{- end }}
+  name: {{ include "name-with-revision" ( dict "name" "stackdriver-sampling-accesslog-filter-1.12" "context" $) }}
   {{- if .Values.meshConfig.rootNamespace }}
   namespace: {{ .Values.meshConfig.rootNamespace }}
   {{- else }}
   namespace: {{ .Release.Namespace }}
   {{- end }}
   labels:
-    istio.io/rev: {{ .Values.revision | default "default" }}
+    istio.io/rev: {{ include "namespaced-revision" . }}
 spec:
   configPatches:
     - applyTo: HTTP_FILTER

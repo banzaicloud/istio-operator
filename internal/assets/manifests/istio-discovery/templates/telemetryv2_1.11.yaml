@@ -3,7 +3,7 @@
 apiVersion: networking.istio.io/v1alpha3
 kind: EnvoyFilter
 metadata:
-  name: metadata-exchange-1.11{{- if not (eq .Values.revision "") }}-{{ .Values.revision }}{{- end }}
+  name: {{ include "name-with-revision" ( dict "name" "metadata-exchange-1.11" "context" $) }}
   {{- if .Values.meshConfig.rootNamespace }}
   namespace: {{ .Values.meshConfig.rootNamespace }}
   {{- else }}
@@ -122,7 +122,7 @@ spec:
 apiVersion: networking.istio.io/v1alpha3
 kind: EnvoyFilter
 metadata:
-  name: tcp-metadata-exchange-1.11{{- if not (eq .Values.revision "") }}-{{ .Values.revision }}{{- end }}
+  name: {{ include "name-with-revision" ( dict "name" "tcp-metadata-exchange-1.11" "context" $) }}
   {{- if .Values.meshConfig.rootNamespace }}
   namespace: {{ .Values.meshConfig.rootNamespace }}
   {{- else }}
@@ -185,7 +185,7 @@ spec:
 apiVersion: networking.istio.io/v1alpha3
 kind: EnvoyFilter
 metadata:
-  name: stats-filter-1.11{{- if not (eq .Values.revision "") }}-{{ .Values.revision }}{{- end }}
+  name: {{ include "name-with-revision" ( dict "name" "stats-filter-1.11" "context" $) }}
   {{- if .Values.meshConfig.rootNamespace }}
   namespace: {{ .Values.meshConfig.rootNamespace }}
   {{- else }}
@@ -348,7 +348,7 @@ spec:
 apiVersion: networking.istio.io/v1alpha3
 kind: EnvoyFilter
 metadata:
-  name: tcp-stats-filter-1.11{{- if not (eq .Values.revision "") }}-{{ .Values.revision }}{{- end }}
+  name: {{ include "name-with-revision" ( dict "name" "tcp-stats-filter-1.11" "context" $) }}
   {{- if .Values.meshConfig.rootNamespace }}
   namespace: {{ .Values.meshConfig.rootNamespace }}
   {{- else }}
@@ -504,7 +504,7 @@ spec:
 apiVersion: networking.istio.io/v1alpha3
 kind: EnvoyFilter
 metadata:
-  name: stackdriver-filter-1.11{{- if not (eq .Values.revision "") }}-{{ .Values.revision }}{{- end }}
+  name: {{ include "name-with-revision" ( dict "name" "stackdriver-filter-1.11" "context" $) }}
   {{- if .Values.meshConfig.rootNamespace }}
   namespace: {{ .Values.meshConfig.rootNamespace }}
   {{- else }}
@@ -622,7 +622,7 @@ spec:
 apiVersion: networking.istio.io/v1alpha3
 kind: EnvoyFilter
 metadata:
-  name: tcp-stackdriver-filter-1.11{{- if not (eq .Values.revision "") }}-{{ .Values.revision }}{{- end }}
+  name: {{ include "name-with-revision" ( dict "name" "tcp-stackdriver-filter-1.11" "context" $) }}
   {{- if .Values.meshConfig.rootNamespace }}
   namespace: {{ .Values.meshConfig.rootNamespace }}
   {{- else }}
@@ -735,7 +735,7 @@ spec:
 apiVersion: networking.istio.io/v1alpha3
 kind: EnvoyFilter
 metadata:
-  name: stackdriver-sampling-accesslog-filter-1.11{{- if not (eq .Values.revision "") }}-{{ .Values.revision }}{{- end }}
+  name: {{ include "name-with-revision" ( dict "name" "stackdriver-sampling-accesslog-filter-1.11" "context" $) }}
   {{- if .Values.meshConfig.rootNamespace }}
   namespace: {{ .Values.meshConfig.rootNamespace }}
   {{- else }}
