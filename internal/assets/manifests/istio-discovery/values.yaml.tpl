@@ -24,12 +24,8 @@ env:
     value: {{ .WithNamespacedRevision "istio-sidecar-injector" }}
   - name: VALIDATION_WEBHOOK_CONFIG_NAME
     value: {{ .WithNamespacedRevision "istio-validator" }}
-  - name: NAMESPACE_LE_NAME
-    value: {{ .WithRevision "istio-namespace-controller-election" }}
-  - name: VALIDATION_LE_NAME
-    value: {{ .WithRevision "istio-validation-controller-election" }}
-  - name: INGRESS_LE_NAME
-    value: {{ .WithRevision "istio-leader" }}
+  - name: LEADER_ELECTION_NAME_SUFFIX
+    value: {{ .WithRevision "" }}
   - name: CACERT_CONFIG_NAME
     value: {{ .WithRevision "istio-ca-root-cert" }}
   - name: MESHCONFIG_CONFIGMAP_NAME
