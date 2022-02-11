@@ -99,12 +99,8 @@ pilot:
       value: istio-sidecar-injector-cp-v111x-istio-system
     - name: VALIDATION_WEBHOOK_CONFIG_NAME
       value: istio-validator-cp-v111x-istio-system
-    - name: NAMESPACE_LE_NAME
-      value: istio-namespace-controller-election-cp-v111x
-    - name: VALIDATION_LE_NAME
-      value: istio-validation-controller-election-cp-v111x
-    - name: INGRESS_LE_NAME
-      value: istio-leader-cp-v111x
+    - name: LEADER_ELECTION_NAME_SUFFIX
+      value: -cp-v111x
     - name: CACERT_CONFIG_NAME
       value: istio-ca-root-cert-cp-v111x
     - name: MESHCONFIG_CONFIGMAP_NAME
