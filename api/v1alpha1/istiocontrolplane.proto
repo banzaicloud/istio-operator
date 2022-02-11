@@ -106,7 +106,7 @@ message IstioControlPlaneSpec {
     // Upstream HTTP proxy properties to be injected as environment variables to the pod containers.
     HTTPProxyEnvsConfiguration httpProxyEnvs = 16;
     // Defines mesh-wide settings for the Istio control plane.
-    istio.mesh.v1alpha1.MeshConfig mesh_config = 17;
+    istio.mesh.v1alpha1.MeshConfig meshConfig = 17;
     // K8s resource overlay patches
     repeated K8sResourceOverlayPatch k8sResourceOverlays = 18;
     // Name of the Mesh to which this control plane belongs.
