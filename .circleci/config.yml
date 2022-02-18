@@ -1,7 +1,7 @@
 version: 2.1
 orbs:
   helm: banzaicloud/helm@0.0.8
-  docker: banzaicloud/docker@0.0.5
+  docker: banzaicloud/docker@0.0.7
 
 executors:
   helm311:
