@@ -40,6 +40,7 @@ require (
 	github.com/Masterminds/semver/v3 v3.1.1
 	github.com/hexops/gotextdiff v1.0.3
 	github.com/iancoleman/strcase v0.2.0
+	gotest.tools/v3 v3.0.3
 )
 
 // security fixes

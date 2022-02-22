@@ -27,6 +27,7 @@ import (
 	"github.com/banzaicloud/istio-operator/v2/internal/assets"
 	"github.com/banzaicloud/istio-operator/v2/internal/components"
 	"github.com/banzaicloud/istio-operator/v2/internal/util"
+	pkgUtil "github.com/banzaicloud/istio-operator/v2/pkg/util"
 	"github.com/banzaicloud/k8s-objectmatcher/patch"
 	"github.com/banzaicloud/operator-tools/pkg/helm"
 	"github.com/banzaicloud/operator-tools/pkg/helm/templatereconciler"
@@ -101,7 +102,7 @@ func (rec *Component) ReleaseData(object runtime.Object) (*templatereconciler.Re
 							patch.IgnorePDBSelector(),
 						}
 
-						patchResult, err := patch.DefaultPatchMaker.Calculate(current, desired, options...)
+						patchResult, err := pkgUtil.NewProtoCompatiblePatchMaker().Calculate(current, desired, options...)
 						if err != nil {
 							rec.logger.Error(err, "could not calculate patch result")
 
