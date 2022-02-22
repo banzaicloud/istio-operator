@@ -37,6 +37,7 @@ import (
 	"github.com/banzaicloud/istio-operator/v2/internal/components/discovery"
 	"github.com/banzaicloud/istio-operator/v2/internal/util"
 	"github.com/banzaicloud/operator-tools/pkg/helm/templatereconciler"
+	"github.com/banzaicloud/operator-tools/pkg/logger"
 	"github.com/banzaicloud/operator-tools/pkg/reconciler"
 )
 
@@ -67,9 +68,7 @@ func TestICPDiscoveryResourceDump(t *testing.T) {
 	}
 
 	reconciler := discovery.NewChartReconciler(
-		templatereconciler.NewHelmReconciler(nil, nil, testlogr.TestLogger{
-			T: t,
-		}, fake.NewSimpleClientset().Discovery(), []reconciler.NativeReconcilerOpt{
+		templatereconciler.NewHelmReconciler(nil, nil, testlogr.NewTestLogger(t), fake.NewSimpleClientset().Discovery(), []reconciler.NativeReconcilerOpt{
 			reconciler.NativeReconcilerSetControllerRef(),
 		}),
 		v1alpha1.IstioControlPlaneProperties{
@@ -83,9 +82,7 @@ func TestICPDiscoveryResourceDump(t *testing.T) {
 			MeshNetworks:                 getTestMeshNetworks(),
 			TrustedRootCACertificatePEMs: []string{"<pem content from peer>"},
 		},
-		testlogr.TestLogger{
-			T: t,
-		},
+		logger.NewWithLogrLogger(testlogr.NewTestLogger(t)),
 	)
 
 	dd, err := reconciler.GetManifest(icp)
@@ -199,9 +196,7 @@ func TestPassiveICPDiscoveryResourceDump(t *testing.T) {
 	}
 
 	reconciler := discovery.NewChartReconciler(
-		templatereconciler.NewHelmReconciler(nil, nil, testlogr.TestLogger{
-			T: t,
-		}, fake.NewSimpleClientset().Discovery(), []reconciler.NativeReconcilerOpt{
+		templatereconciler.NewHelmReconciler(nil, nil, testlogr.NewTestLogger(t), fake.NewSimpleClientset().Discovery(), []reconciler.NativeReconcilerOpt{
 			reconciler.NativeReconcilerSetControllerRef(),
 		}),
 		v1alpha1.IstioControlPlaneProperties{
@@ -213,7 +208,7 @@ func TestPassiveICPDiscoveryResourceDump(t *testing.T) {
 				},
 			},
 		},
-		logr.DiscardLogger{},
+		logger.NewWithLogrLogger(logr.Discard()),
 	)
 
 	dd, err := reconciler.GetManifest(icp)

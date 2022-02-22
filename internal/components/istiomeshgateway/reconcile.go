@@ -20,7 +20,6 @@ import (
 	"net/http"
 
 	"emperror.dev/errors"
-	"github.com/go-logr/logr"
 	policyv1beta1 "k8s.io/api/policy/v1beta1"
 	"k8s.io/apimachinery/pkg/runtime"
 
@@ -31,6 +30,7 @@ import (
 	"github.com/banzaicloud/k8s-objectmatcher/patch"
 	"github.com/banzaicloud/operator-tools/pkg/helm"
 	"github.com/banzaicloud/operator-tools/pkg/helm/templatereconciler"
+	"github.com/banzaicloud/operator-tools/pkg/logger"
 	"github.com/banzaicloud/operator-tools/pkg/reconciler"
 )
 
@@ -46,10 +46,10 @@ var _ components.MinimalComponent = &Component{}
 
 type Component struct {
 	properties v1alpha1.IstioMeshGatewayProperties
-	logger     logr.Logger
+	logger     logger.Logger
 }
 
-func NewChartReconciler(helmReconciler *components.HelmReconciler, properties v1alpha1.IstioMeshGatewayProperties, logger logr.Logger) components.ComponentReconciler {
+func NewChartReconciler(helmReconciler *components.HelmReconciler, properties v1alpha1.IstioMeshGatewayProperties, logger logger.Logger) components.ComponentReconciler {
 	return &components.Base{
 		HelmReconciler: helmReconciler,
 		Component: &Component{

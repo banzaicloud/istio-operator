@@ -21,7 +21,6 @@ import (
 	"net/http"
 
 	"emperror.dev/errors"
-	"github.com/go-logr/logr"
 	apiextensionv1 "k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
@@ -33,6 +32,7 @@ import (
 	"github.com/banzaicloud/istio-operator/v2/pkg/k8sutil"
 	"github.com/banzaicloud/operator-tools/pkg/helm"
 	"github.com/banzaicloud/operator-tools/pkg/helm/templatereconciler"
+	"github.com/banzaicloud/operator-tools/pkg/logger"
 	"github.com/banzaicloud/operator-tools/pkg/reconciler"
 	"github.com/banzaicloud/operator-tools/pkg/types"
 )
@@ -50,11 +50,11 @@ const (
 var _ components.MinimalComponent = &Component{}
 
 type Component struct {
-	logger                logr.Logger
+	logger                logger.Logger
 	supportedIstioVersion string
 }
 
-func NewComponentReconciler(helmReconciler *templatereconciler.HelmReconciler, logger logr.Logger, supportedIstioVersion string) components.ComponentReconciler {
+func NewComponentReconciler(helmReconciler *templatereconciler.HelmReconciler, logger logger.Logger, supportedIstioVersion string) components.ComponentReconciler {
 	return &components.Base{
 		HelmReconciler: helmReconciler,
 		Component: &Component{

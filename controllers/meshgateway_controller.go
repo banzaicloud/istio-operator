@@ -23,7 +23,6 @@ import (
 	"time"
 
 	"emperror.dev/errors"
-	"github.com/go-logr/logr"
 	appsv1 "k8s.io/api/apps/v1"
 	autoscalingv1 "k8s.io/api/autoscaling/v1"
 	corev1 "k8s.io/api/core/v1"
@@ -45,6 +44,7 @@ import (
 	"github.com/banzaicloud/istio-operator/v2/internal/util"
 	"github.com/banzaicloud/istio-operator/v2/pkg/k8sutil"
 	"github.com/banzaicloud/k8s-objectmatcher/patch"
+	"github.com/banzaicloud/operator-tools/pkg/logger"
 	"github.com/banzaicloud/operator-tools/pkg/utils"
 )
 
@@ -60,7 +60,7 @@ const (
 // IstioMeshGatewayReconciler reconciles a IstioMeshGateway object
 type IstioMeshGatewayReconciler struct {
 	client.Client
-	Log    logr.Logger
+	Log    logger.Logger
 	Scheme *runtime.Scheme
 }
 
@@ -272,7 +272,7 @@ func (r *IstioMeshGatewayReconciler) SetupWithManager(mgr ctrl.Manager) error {
 	return nil
 }
 
-func (r *IstioMeshGatewayReconciler) getRelatedIstioControlPlane(ctx context.Context, c client.Client, imgw *servicemeshv1alpha1.IstioMeshGateway, logger logr.Logger) (*servicemeshv1alpha1.IstioControlPlane, error) {
+func (r *IstioMeshGatewayReconciler) getRelatedIstioControlPlane(ctx context.Context, c client.Client, imgw *servicemeshv1alpha1.IstioMeshGateway, logger logger.Logger) (*servicemeshv1alpha1.IstioControlPlane, error) {
 	icp := &servicemeshv1alpha1.IstioControlPlane{}
 
 	err := c.Get(ctx, client.ObjectKey{
@@ -314,7 +314,7 @@ func (r *IstioMeshGatewayReconciler) getGatewayAddress(imgw *servicemeshv1alpha1
 	return ips, hasHostname, nil
 }
 
-func (r *IstioMeshGatewayReconciler) setGatewayAddress(ctx context.Context, c client.Client, imgw *servicemeshv1alpha1.IstioMeshGateway, logger logr.Logger, result ctrl.Result) (ctrl.Result, error) {
+func (r *IstioMeshGatewayReconciler) setGatewayAddress(ctx context.Context, c client.Client, imgw *servicemeshv1alpha1.IstioMeshGateway, logger logger.Logger, result ctrl.Result) (ctrl.Result, error) {
 	var gatewayHasHostname bool
 	var err error
 

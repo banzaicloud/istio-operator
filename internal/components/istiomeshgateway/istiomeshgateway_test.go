@@ -33,6 +33,7 @@ import (
 	"github.com/banzaicloud/istio-operator/v2/internal/components/istiomeshgateway"
 	"github.com/banzaicloud/istio-operator/v2/internal/util"
 	"github.com/banzaicloud/operator-tools/pkg/helm/templatereconciler"
+	"github.com/banzaicloud/operator-tools/pkg/logger"
 	"github.com/banzaicloud/operator-tools/pkg/reconciler"
 	"github.com/banzaicloud/operator-tools/pkg/utils"
 )
@@ -63,9 +64,7 @@ func TestIMGWResourceDump(t *testing.T) {
 	}
 
 	reconciler := istiomeshgateway.NewChartReconciler(
-		templatereconciler.NewHelmReconciler(nil, nil, testlogr.TestLogger{
-			T: t,
-		}, fake.NewSimpleClientset().Discovery(), []reconciler.NativeReconcilerOpt{
+		templatereconciler.NewHelmReconciler(nil, nil, testlogr.NewTestLogger(t), fake.NewSimpleClientset().Discovery(), []reconciler.NativeReconcilerOpt{
 			reconciler.NativeReconcilerSetControllerRef(),
 		}),
 		v1alpha1.IstioMeshGatewayProperties{
@@ -77,9 +76,7 @@ func TestIMGWResourceDump(t *testing.T) {
 			IstioControlPlane:       icp,
 			GenerateExternalService: true,
 		},
-		testlogr.TestLogger{
-			T: t,
-		},
+		logger.NewWithLogrLogger(testlogr.NewTestLogger(t)),
 	)
 
 	dd, err := reconciler.GetManifest(imgw)

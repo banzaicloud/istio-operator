@@ -20,15 +20,15 @@ import (
 	"context"
 
 	"emperror.dev/errors"
-	"github.com/go-logr/logr"
 	"k8s.io/client-go/rest"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
 	"github.com/banzaicloud/istio-operator/api/v2/v1alpha1"
 	"github.com/banzaicloud/istio-operator/v2/pkg/k8sutil"
+	"github.com/banzaicloud/operator-tools/pkg/logger"
 )
 
-func setDynamicDefaults(ctx context.Context, kubeClient client.Client, icp *v1alpha1.IstioControlPlane, k8sConfig *rest.Config, logger logr.Logger, clusterRegistryAPIEnabled bool) error {
+func setDynamicDefaults(ctx context.Context, kubeClient client.Client, icp *v1alpha1.IstioControlPlane, k8sConfig *rest.Config, logger logger.Logger, clusterRegistryAPIEnabled bool) error {
 	if icp.Spec.JwtPolicy == v1alpha1.JWTPolicyType_UNSPECIFIED {
 		// try to detect supported jwt policy
 		supportedJWTPolicy, err := k8sutil.DetectSupportedJWTPolicy(k8sConfig)
