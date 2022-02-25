@@ -27,7 +27,7 @@ spec:
       runAsNonRoot: false
       runAsUser: 0
   istioControlPlane:
-    name: icp-v111x-sample
+    name: icp-v112x-sample
     namespace: istio-system
   runAsRoot: true
   service:

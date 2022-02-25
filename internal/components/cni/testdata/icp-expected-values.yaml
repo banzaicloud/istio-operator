@@ -1,4 +1,4 @@
-revision: cp-v111x
+revision: cp-v112x
 cni:
   enabled: true
   chained: true

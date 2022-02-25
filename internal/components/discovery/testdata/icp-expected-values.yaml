@@ -92,21 +92,21 @@ pilot:
     mountPath: /etc/config
   env:
     - name: ISTIOD_CUSTOM_HOST
-      value: istiod-cp-v111x.istio-system.svc
+      value: istiod-cp-v112x.istio-system.svc
     - name: PILOT_ENABLE_STATUS
       value: "true"
     - name: INJECTION_WEBHOOK_CONFIG_NAME
-      value: istio-sidecar-injector-cp-v111x-istio-system
+      value: istio-sidecar-injector-cp-v112x-istio-system
     - name: VALIDATION_WEBHOOK_CONFIG_NAME
-      value: istio-validator-cp-v111x-istio-system
+      value: istio-validator-cp-v112x-istio-system
     - name: LEADER_ELECTION_NAME_SUFFIX
-      value: -cp-v111x
+      value: -cp-v112x
     - name: CACERT_CONFIG_NAME
-      value: istio-ca-root-cert-cp-v111x
+      value: istio-ca-root-cert-cp-v112x
     - name: MESHCONFIG_CONFIGMAP_NAME
-      value: istio-cp-v111x
+      value: istio-cp-v112x
     - name: INJECTOR_CONFIGMAP_NAME
-      value: istio-sidecar-injector-cp-v111x
+      value: istio-sidecar-injector-cp-v112x
     - name: TEST_ENV
       value: test-env-value
   resources:
@@ -165,7 +165,7 @@ pilot:
   traceSampling: 0.5
   enableProtocolSniffingForOutbound: false
   enableProtocolSniffingForInbound: false
-revision: cp-v111x
+revision: cp-v112x
 meshConfig:
   rootNamespace: istio-system
   connectTimeout: 5s

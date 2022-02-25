@@ -13,16 +13,16 @@ metadata:
   labels:
     app: istiod
     istio: istiod
-    istio.io/rev: cp-v111x.istio-system
+    istio.io/rev: cp-v112x.istio-system
     release: istio-operator-discovery
-  name: istiod-cp-v111x
+  name: istiod-cp-v112x
   namespace: istio-system
 spec:
   maxUnavailable: 5
   selector:
     matchLabels:
       app: istiod
-      istio.io/rev: cp-v111x.istio-system
+      istio.io/rev: cp-v112x.istio-system
 
 ---
 apiVersion: v1
@@ -33,7 +33,7 @@ data:
     - pem: <pem content from peer>
     connectTimeout: 5s
     defaultConfig:
-      discoveryAddress: istiod-cp-v111x.istio-system.svc:15012
+      discoveryAddress: istiod-cp-v112x.istio-system.svc:15012
       meshId: mesh1
       tracing:
         zipkin:
@@ -54,9 +54,9 @@ kind: ConfigMap
 metadata:
   labels:
     istio: meshconfig
-    istio.io/rev: cp-v111x.istio-system
+    istio.io/rev: cp-v112x.istio-system
     release: istio-operator-discovery
-  name: istio-cp-v111x
+  name: istio-cp-v112x
   namespace: istio-system
 
 ---
@@ -1248,7 +1248,7 @@ data:
         "chained": true,
         "enabled": true
       },
-      "revision": "cp-v111x",
+      "revision": "cp-v112x",
       "sidecarInjectorWebhook": {
         "alwaysInjectSelector": [],
         "defaultTemplates": [],
@@ -1270,9 +1270,9 @@ kind: ConfigMap
 metadata:
   labels:
     istio: sidecar-injector
-    istio.io/rev: cp-v111x.istio-system
+    istio.io/rev: cp-v112x.istio-system
     release: istio-operator-discovery
-  name: istio-sidecar-injector-cp-v111x
+  name: istio-sidecar-injector-cp-v112x
   namespace: istio-system
 
 ---
@@ -1285,7 +1285,7 @@ metadata:
   labels:
     app: istio-reader
     release: istio-operator-discovery
-  name: istio-reader-cp-v111x
+  name: istio-reader-cp-v112x
   namespace: istio-system
 
 ---
@@ -1298,7 +1298,7 @@ metadata:
   labels:
     app: istiod
     release: istio-operator-discovery
-  name: istiod-cp-v111x
+  name: istiod-cp-v112x
   namespace: istio-system
 
 ---
@@ -1308,7 +1308,7 @@ metadata:
   labels:
     app: istio-reader
     release: istio-operator-discovery
-  name: istio-reader-cp-v111x-istio-system
+  name: istio-reader-cp-v112x-istio-system
 rules:
 - apiGroups:
   - config.istio.io
@@ -1404,7 +1404,7 @@ metadata:
   labels:
     app: istiod
     release: istio-operator-discovery
-  name: istiod-cp-v111x-istio-system
+  name: istiod-cp-v112x-istio-system
 rules:
 - apiGroups:
   - admissionregistration.k8s.io
@@ -1596,7 +1596,7 @@ rules:
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRole
 metadata:
-  name: istiod-gateway-controller-cp-v111x-istio-system
+  name: istiod-gateway-controller-cp-v112x-istio-system
   labels:
     app: istiod
     release: istio-operator-discovery
@@ -1615,14 +1615,14 @@ metadata:
   labels:
     app: istio-reader
     release: istio-operator-discovery
-  name: istio-reader-cp-v111x-istio-system
+  name: istio-reader-cp-v112x-istio-system
 roleRef:
   apiGroup: rbac.authorization.k8s.io
   kind: ClusterRole
-  name: istio-reader-cp-v111x-istio-system
+  name: istio-reader-cp-v112x-istio-system
 subjects:
 - kind: ServiceAccount
-  name: istio-reader-cp-v111x
+  name: istio-reader-cp-v112x
   namespace: istio-system
 
 ---
@@ -1632,31 +1632,31 @@ metadata:
   labels:
     app: istiod
     release: istio-operator-discovery
-  name: istiod-cp-v111x-istio-system
+  name: istiod-cp-v112x-istio-system
 roleRef:
   apiGroup: rbac.authorization.k8s.io
   kind: ClusterRole
-  name: istiod-cp-v111x-istio-system
+  name: istiod-cp-v112x-istio-system
 subjects:
 - kind: ServiceAccount
-  name: istiod-cp-v111x
+  name: istiod-cp-v112x
   namespace: istio-system
 
 ---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRoleBinding
 metadata:
-  name: istiod-gateway-controller-cp-v111x-istio-system
+  name: istiod-gateway-controller-cp-v112x-istio-system
   labels:
     app: istiod
     release: istio-operator-discovery
 roleRef:
   apiGroup: rbac.authorization.k8s.io
   kind: ClusterRole
-  name: istiod-gateway-controller-cp-v111x-istio-system
+  name: istiod-gateway-controller-cp-v112x-istio-system
 subjects:
 - kind: ServiceAccount
-  name: istiod-cp-v111x
+  name: istiod-cp-v112x
   namespace: istio-system
 
 ---
@@ -1666,7 +1666,7 @@ metadata:
   labels:
     app: istiod
     release: istio-operator-discovery
-  name: istiod-cp-v111x
+  name: istiod-cp-v112x
   namespace: istio-system
 rules:
 - apiGroups:
@@ -1694,15 +1694,15 @@ metadata:
   labels:
     app: istiod
     release: istio-operator-discovery
-  name: istiod-cp-v111x
+  name: istiod-cp-v112x
   namespace: istio-system
 roleRef:
   apiGroup: rbac.authorization.k8s.io
   kind: Role
-  name: istiod-cp-v111x
+  name: istiod-cp-v112x
 subjects:
 - kind: ServiceAccount
-  name: istiod-cp-v111x
+  name: istiod-cp-v112x
   namespace: istio-system
 
 ---
@@ -1712,9 +1712,9 @@ metadata:
   labels:
     app: istiod
     istio: istiod
-    istio.io/rev: cp-v111x.istio-system
+    istio.io/rev: cp-v112x.istio-system
     release: istio-operator-discovery
-  name: istiod-cp-v111x
+  name: istiod-cp-v112x
   namespace: istio-system
 spec:
   type: ClusterIP
@@ -1734,7 +1734,7 @@ spec:
     protocol: TCP
   selector:
     app: istiod
-    istio.io/rev: cp-v111x.istio-system
+    istio.io/rev: cp-v112x.istio-system
 
 ---
 apiVersion: apps/v1
@@ -1745,17 +1745,17 @@ metadata:
   labels:
     app: istiod
     istio: istiod
-    istio.io/rev: cp-v111x.istio-system
+    istio.io/rev: cp-v112x.istio-system
     release: istio-operator-discovery
     testlabel.banzaicloud.io/name: value
     label-added-by-overlay-patch: "true"
-  name: istiod-cp-v111x
+  name: istiod-cp-v112x
   namespace: istio-system
 spec:
   selector:
     matchLabels:
       app: istiod
-      istio.io/rev: cp-v111x.istio-system
+      istio.io/rev: cp-v112x.istio-system
   strategy:
     rollingUpdate:
       maxSurge: 100%
@@ -1771,7 +1771,7 @@ spec:
       labels:
         app: istiod
         istio: istiod
-        istio.io/rev: cp-v111x.istio-system
+        istio.io/rev: cp-v112x.istio-system
         sidecar.istio.io/inject: "false"
         podlabel: podlabelvalue
     spec:
@@ -1805,7 +1805,7 @@ spec:
         - 30m
         env:
         - name: REVISION
-          value: cp-v111x.istio-system
+          value: cp-v112x.istio-system
         - name: JWT_POLICY
           value: third-party-jwt
         - name: PILOT_CERT_PROVIDER
@@ -1830,21 +1830,21 @@ spec:
         - name: CA_PROVIDER
           value: Citadel
         - name: ISTIOD_CUSTOM_HOST
-          value: istiod-cp-v111x.istio-system.svc
+          value: istiod-cp-v112x.istio-system.svc
         - name: PILOT_ENABLE_STATUS
           value: "true"
         - name: INJECTION_WEBHOOK_CONFIG_NAME
-          value: istio-sidecar-injector-cp-v111x-istio-system
+          value: istio-sidecar-injector-cp-v112x-istio-system
         - name: VALIDATION_WEBHOOK_CONFIG_NAME
-          value: istio-validator-cp-v111x-istio-system
+          value: istio-validator-cp-v112x-istio-system
         - name: LEADER_ELECTION_NAME_SUFFIX
-          value: -cp-v111x
+          value: -cp-v112x
         - name: CACERT_CONFIG_NAME
-          value: istio-ca-root-cert-cp-v111x
+          value: istio-ca-root-cert-cp-v112x
         - name: MESHCONFIG_CONFIGMAP_NAME
-          value: istio-cp-v111x
+          value: istio-cp-v112x
         - name: INJECTOR_CONFIGMAP_NAME
-          value: istio-sidecar-injector-cp-v111x
+          value: istio-sidecar-injector-cp-v112x
         - name: TEST_ENV
           value: test-env-value
         - name: PILOT_TRACE_SAMPLING
@@ -1854,7 +1854,7 @@ spec:
         - name: PILOT_ENABLE_PROTOCOL_SNIFFING_FOR_INBOUND
           value: "false"
         - name: ISTIOD_ADDR
-          value: istiod-cp-v111x.istio-system.svc:15012
+          value: istiod-cp-v112x.istio-system.svc:15012
         - name: PILOT_ENABLE_ANALYSIS
           value: "false"
         - name: CLUSTER_ID
@@ -1911,7 +1911,7 @@ spec:
       securityContext:
         fsGroup: 1337
         runAsUser: 1337
-      serviceAccountName: istiod-cp-v111x
+      serviceAccountName: istiod-cp-v112x
       tolerations:
       - effect: NoSchedule
         key: key1
@@ -1954,9 +1954,9 @@ kind: HorizontalPodAutoscaler
 metadata:
   labels:
     app: istiod
-    istio.io/rev: cp-v111x.istio-system
+    istio.io/rev: cp-v112x.istio-system
     release: istio-operator-discovery
-  name: istiod-cp-v111x
+  name: istiod-cp-v112x
   namespace: istio-system
 spec:
   maxReplicas: 5
@@ -1969,7 +1969,7 @@ spec:
   scaleTargetRef:
     apiVersion: apps/v1
     kind: Deployment
-    name: istiod-cp-v111x
+    name: istiod-cp-v112x
 
 ---
 apiVersion: admissionregistration.k8s.io/v1
@@ -1978,9 +1978,9 @@ metadata:
   labels:
     app: istiod
     istio: istiod
-    istio.io/rev: cp-v111x.istio-system
+    istio.io/rev: cp-v112x.istio-system
     release: istio-operator-discovery
-  name: istio-validator-cp-v111x-istio-system
+  name: istio-validator-cp-v112x-istio-system
 webhooks:
 - admissionReviewVersions:
   - v1beta1
@@ -1988,7 +1988,7 @@ webhooks:
   clientConfig:
     caBundle: ""
     service:
-      name: istiod-cp-v111x
+      name: istiod-cp-v112x
       namespace: istio-system
       path: /validate
   failurePolicy: Ignore
@@ -1998,7 +1998,7 @@ webhooks:
     - key: istio.io/rev
       operator: In
       values:
-      - cp-v111x.istio-system
+      - cp-v112x.istio-system
   rules:
   - apiGroups:
     - security.istio.io
@@ -2021,9 +2021,9 @@ kind: MutatingWebhookConfiguration
 metadata:
   labels:
     app: sidecar-injector
-    istio.io/rev: cp-v111x.istio-system
+    istio.io/rev: cp-v112x.istio-system
     release: istio-operator-discovery
-  name: istio-sidecar-injector-cp-v111x-istio-system
+  name: istio-sidecar-injector-cp-v112x-istio-system
 webhooks:
 - admissionReviewVersions:
   - v1beta1
@@ -2031,7 +2031,7 @@ webhooks:
   clientConfig:
     caBundle: ""
     service:
-      name: istiod-cp-v111x
+      name: istiod-cp-v112x
       namespace: istio-system
       path: /inject
       port: 443
@@ -2042,7 +2042,7 @@ webhooks:
     - key: istio.io/rev
       operator: In
       values:
-      - cp-v111x.istio-system
+      - cp-v112x.istio-system
     - key: istio-injection
       operator: DoesNotExist
   objectSelector:
@@ -2068,7 +2068,7 @@ webhooks:
   clientConfig:
     caBundle: ""
     service:
-      name: istiod-cp-v111x
+      name: istiod-cp-v112x
       namespace: istio-system
       path: /inject
       port: 443
@@ -2089,7 +2089,7 @@ webhooks:
     - key: istio.io/rev
       operator: In
       values:
-      - cp-v111x.istio-system
+      - cp-v112x.istio-system
   rules:
   - apiGroups:
     - ""
@@ -2107,8 +2107,8 @@ apiVersion: networking.istio.io/v1alpha3
 kind: EnvoyFilter
 metadata:
   labels:
-    istio.io/rev: cp-v111x.istio-system
-  name: metadata-exchange-1.10-cp-v111x
+    istio.io/rev: cp-v112x.istio-system
+  name: metadata-exchange-1.10-cp-v112x
   namespace: istio-system
 spec:
   configPatches:
@@ -2199,8 +2199,8 @@ apiVersion: networking.istio.io/v1alpha3
 kind: EnvoyFilter
 metadata:
   labels:
-    istio.io/rev: cp-v111x.istio-system
-  name: metadata-exchange-1.11-cp-v111x
+    istio.io/rev: cp-v112x.istio-system
+  name: metadata-exchange-1.11-cp-v112x
   namespace: istio-system
 spec:
   configPatches:
@@ -2291,8 +2291,8 @@ apiVersion: networking.istio.io/v1alpha3
 kind: EnvoyFilter
 metadata:
   labels:
-    istio.io/rev: cp-v111x.istio-system
-  name: stats-filter-1.10-cp-v111x
+    istio.io/rev: cp-v112x.istio-system
+  name: stats-filter-1.10-cp-v112x
   namespace: istio-system
 spec:
   configPatches:
@@ -2414,8 +2414,8 @@ apiVersion: networking.istio.io/v1alpha3
 kind: EnvoyFilter
 metadata:
   labels:
-    istio.io/rev: cp-v111x.istio-system
-  name: stats-filter-1.11-cp-v111x
+    istio.io/rev: cp-v112x.istio-system
+  name: stats-filter-1.11-cp-v112x
   namespace: istio-system
 spec:
   configPatches:
@@ -2536,10 +2536,10 @@ spec:
 apiVersion: networking.istio.io/v1alpha3
 kind: EnvoyFilter
 metadata:
-  name: stats-filter-1.12-cp-v111x
+  name: stats-filter-1.12-cp-v112x
   namespace: istio-system
   labels:
-    istio.io/rev: cp-v111x.istio-system
+    istio.io/rev: cp-v112x.istio-system
 spec:
   configPatches:
   - applyTo: HTTP_FILTER
@@ -2663,8 +2663,8 @@ apiVersion: networking.istio.io/v1alpha3
 kind: EnvoyFilter
 metadata:
   labels:
-    istio.io/rev: cp-v111x.istio-system
-  name: tcp-metadata-exchange-1.10-cp-v111x
+    istio.io/rev: cp-v112x.istio-system
+  name: tcp-metadata-exchange-1.10-cp-v112x
   namespace: istio-system
 spec:
   configPatches:
@@ -2721,8 +2721,8 @@ apiVersion: networking.istio.io/v1alpha3
 kind: EnvoyFilter
 metadata:
   labels:
-    istio.io/rev: cp-v111x.istio-system
-  name: tcp-metadata-exchange-1.11-cp-v111x
+    istio.io/rev: cp-v112x.istio-system
+  name: tcp-metadata-exchange-1.11-cp-v112x
   namespace: istio-system
 spec:
   configPatches:
@@ -2779,8 +2779,8 @@ apiVersion: networking.istio.io/v1alpha3
 kind: EnvoyFilter
 metadata:
   labels:
-    istio.io/rev: cp-v111x.istio-system
-  name: tcp-stats-filter-1.10-cp-v111x
+    istio.io/rev: cp-v112x.istio-system
+  name: tcp-stats-filter-1.10-cp-v112x
   namespace: istio-system
 spec:
   configPatches:
@@ -2894,8 +2894,8 @@ apiVersion: networking.istio.io/v1alpha3
 kind: EnvoyFilter
 metadata:
   labels:
-    istio.io/rev: cp-v111x.istio-system
-  name: tcp-stats-filter-1.11-cp-v111x
+    istio.io/rev: cp-v112x.istio-system
+  name: tcp-stats-filter-1.11-cp-v112x
   namespace: istio-system
 spec:
   configPatches:
@@ -3008,8 +3008,8 @@ apiVersion: networking.istio.io/v1alpha3
 kind: EnvoyFilter
 metadata:
   labels:
-    istio.io/rev: cp-v111x.istio-system
-  name: tcp-stats-filter-1.12-cp-v111x
+    istio.io/rev: cp-v112x.istio-system
+  name: tcp-stats-filter-1.12-cp-v112x
   namespace: istio-system
 spec:
   configPatches:

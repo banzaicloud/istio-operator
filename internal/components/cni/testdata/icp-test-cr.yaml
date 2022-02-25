@@ -1,10 +1,10 @@
 apiVersion: servicemesh.cisco.com/v1alpha1
 kind: IstioControlPlane
 metadata:
-  name: cp-v111x
+  name: cp-v112x
   namespace: istio-system
 spec:
-  version: "1.12.2"
+  version: "1.12.4"
   mode: ACTIVE
   containerImageConfiguration:
     hub: gcr.io/istio-testing
