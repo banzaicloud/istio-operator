@@ -213,7 +213,8 @@ func ConvertConfigStateToReconcileStatus(state v1alpha1.ConfigState) types.Recon
 }
 
 func UpdateStatus(ctx context.Context, c client.Client, object runtime.Object, status types.ReconcileStatus, message string) error {
-	if imgw, ok := object.(ObjectWithStatus); ok {
+	tmpObject := object.DeepCopyObject()
+	if imgw, ok := tmpObject.(ObjectWithStatus); ok {
 		current := &unstructured.Unstructured{}
 		current.SetGroupVersionKind(imgw.GetObjectKind().GroupVersionKind())
 		err := c.Get(context.TODO(), client.ObjectKey{
