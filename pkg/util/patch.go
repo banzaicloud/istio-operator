@@ -66,7 +66,7 @@ func (p *ProtoCompatibleK8sStrategicMergePatcher) CreateTwoWayMergePatch(origina
 func (p *ProtoCompatibleK8sStrategicMergePatcher) CreateThreeWayMergePatch(original, modified, current []byte, dataStruct interface{}) ([]byte, error) {
 	lookupPatchMeta, err := NewPatchMetaFromStruct(dataStruct)
 	if err != nil {
-		return nil, errors.WrapWithDetails(err, "Failed to lookup patch meta", "current object", dataStruct)
+		return nil, errors.WrapWithDetails(err, "failed to lookup patch meta", "current object", dataStruct)
 	}
 
 	return strategicpatch.CreateThreeWayMergePatch(original, modified, current, lookupPatchMeta, true, p.PreconditionFuncs...)
