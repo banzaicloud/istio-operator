@@ -9,4 +9,4 @@ global:
 meshConfig:
   connectTimeout: 5s
   rootNamespace: istio-system
-revision: cp-v111x
+revision: cp-v112x
