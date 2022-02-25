@@ -17,16 +17,18 @@ limitations under the License.
 package controllers
 
 import (
-	"github.com/go-logr/logr"
 	"k8s.io/client-go/discovery"
 	ctrl "sigs.k8s.io/controller-runtime"
 
 	"github.com/banzaicloud/istio-operator/v2/internal/components"
+	pkgUtil "github.com/banzaicloud/istio-operator/v2/pkg/util"
+	"github.com/banzaicloud/k8s-objectmatcher/patch"
 	"github.com/banzaicloud/operator-tools/pkg/helm/templatereconciler"
+	"github.com/banzaicloud/operator-tools/pkg/logger"
 	"github.com/banzaicloud/operator-tools/pkg/reconciler"
 )
 
-func NewComponentReconciler(r components.Reconciler, newComponentFunc components.NewComponentReconcilerFunc, logger logr.Logger) (components.ComponentReconciler, error) {
+func NewComponentReconciler(r components.Reconciler, newComponentFunc components.NewComponentReconcilerFunc, logger logger.Logger) (components.ComponentReconciler, error) {
 	config, err := ctrl.GetConfig()
 	if err != nil {
 		return nil, err
@@ -41,7 +43,7 @@ func NewComponentReconciler(r components.Reconciler, newComponentFunc components
 		templatereconciler.NewHelmReconcilerWith(
 			r.GetClient(),
 			r.GetScheme(),
-			logger,
+			logger.GetLogrLogger(),
 			d,
 			templatereconciler.WithNativeReconcilerOptions(
 				reconciler.NativeReconcilerSetControllerRef(),
@@ -49,6 +51,8 @@ func NewComponentReconciler(r components.Reconciler, newComponentFunc components
 			templatereconciler.WithGenericReconcilerOptions(
 				reconciler.WithEnableRecreateWorkload(),
 				reconciler.WithRecreateErrorMessageIgnored(),
+				reconciler.WithPatchMaker(pkgUtil.NewProtoCompatiblePatchMaker()),
+				reconciler.WithPatchCalculateOptions(patch.IgnoreStatusFields(), reconciler.IgnoreManagedFields()),
 			),
 			templatereconciler.ManageNamespace(false),
 		),

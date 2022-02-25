@@ -20,7 +20,6 @@ import (
 	"net/http"
 
 	"emperror.dev/errors"
-	"github.com/go-logr/logr"
 	admissionregistrationv1 "k8s.io/api/admissionregistration/v1"
 	corev1 "k8s.io/api/core/v1"
 	policyv1beta1 "k8s.io/api/policy/v1beta1"
@@ -31,9 +30,11 @@ import (
 	assets "github.com/banzaicloud/istio-operator/v2/internal/assets"
 	"github.com/banzaicloud/istio-operator/v2/internal/components"
 	"github.com/banzaicloud/istio-operator/v2/internal/util"
+	pkgUtil "github.com/banzaicloud/istio-operator/v2/pkg/util"
 	"github.com/banzaicloud/k8s-objectmatcher/patch"
 	"github.com/banzaicloud/operator-tools/pkg/helm"
 	"github.com/banzaicloud/operator-tools/pkg/helm/templatereconciler"
+	"github.com/banzaicloud/operator-tools/pkg/logger"
 	"github.com/banzaicloud/operator-tools/pkg/reconciler"
 )
 
@@ -49,10 +50,10 @@ var _ components.MinimalComponent = &Component{}
 
 type Component struct {
 	properties v1alpha1.IstioControlPlaneProperties
-	logger     logr.Logger
+	logger     logger.Logger
 }
 
-func NewChartReconciler(helmReconciler *templatereconciler.HelmReconciler, properties v1alpha1.IstioControlPlaneProperties, logger logr.Logger) components.ComponentReconciler {
+func NewChartReconciler(helmReconciler *templatereconciler.HelmReconciler, properties v1alpha1.IstioControlPlaneProperties, logger logger.Logger) components.ComponentReconciler {
 	return &components.Base{
 		HelmReconciler: helmReconciler,
 		Component: &Component{
@@ -107,7 +108,7 @@ func (rec *Component) ReleaseData(object runtime.Object) (*templatereconciler.Re
 						util.IgnoreWebhookFailurePolicy(),
 					}
 
-					patchResult, err := patch.DefaultPatchMaker.Calculate(current, desired, options...)
+					patchResult, err := pkgUtil.NewProtoCompatiblePatchMaker().Calculate(current, desired, options...)
 					if err != nil {
 						rec.logger.Error(err, "could not calculate patch result")
 
@@ -127,7 +128,7 @@ func (rec *Component) ReleaseData(object runtime.Object) (*templatereconciler.Re
 						patch.IgnorePDBSelector(),
 					}
 
-					patchResult, err := patch.DefaultPatchMaker.Calculate(current, desired, options...)
+					patchResult, err := pkgUtil.NewProtoCompatiblePatchMaker().Calculate(current, desired, options...)
 					if err != nil {
 						rec.logger.Error(err, "could not calculate patch result")
 

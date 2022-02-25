@@ -70,9 +70,7 @@ func testResourceSyncRuleResourceDump(t *testing.T, icpTestCR, rsrExpectedResour
 	}
 
 	reconciler := resourcesyncrule.NewChartReconciler(
-		templatereconciler.NewHelmReconciler(nil, nil, testlogr.TestLogger{
-			T: t,
-		}, fake.NewSimpleClientset().Discovery(), []reconciler.NativeReconcilerOpt{
+		templatereconciler.NewHelmReconciler(nil, nil, testlogr.NewTestLogger(t), fake.NewSimpleClientset().Discovery(), []reconciler.NativeReconcilerOpt{
 			reconciler.NativeReconcilerSetControllerRef(),
 		}),
 		true,

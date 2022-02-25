@@ -54,9 +54,7 @@ func TestICPCNIResourceDump(t *testing.T) {
 	}
 
 	reconciler := cni.NewChartReconciler(
-		templatereconciler.NewHelmReconciler(nil, nil, logr.TestLogger{
-			T: t,
-		}, fake.NewSimpleClientset().Discovery(), []reconciler.NativeReconcilerOpt{
+		templatereconciler.NewHelmReconciler(nil, nil, logr.NewTestLogger(t), fake.NewSimpleClientset().Discovery(), []reconciler.NativeReconcilerOpt{
 			reconciler.NativeReconcilerSetControllerRef(),
 		}),
 	)

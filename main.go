@@ -35,6 +35,7 @@ import (
 	"github.com/banzaicloud/istio-operator/v2/controllers"
 	"github.com/banzaicloud/istio-operator/v2/internal/models"
 	"github.com/banzaicloud/istio-operator/v2/pkg/util"
+	"github.com/banzaicloud/operator-tools/pkg/logger"
 	"github.com/banzaicloud/operator-tools/pkg/reconciler"
 )
 
@@ -95,13 +96,13 @@ func main() {
 		os.Exit(1)
 	}
 
-	istioControlPlaneLogger := ctrl.Log.WithName("controllers").WithName("IstioControlPlane")
+	istioControlPlaneLogger := logger.NewWithLogrLogger(ctrl.Log.WithName("controllers").WithName("IstioControlPlane"))
 	if err = (&controllers.IstioControlPlaneReconciler{
 		Client: mgr.GetClient(),
 		Log:    istioControlPlaneLogger,
 		Scheme: mgr.GetScheme(),
 		ResourceReconciler: reconciler.NewReconcilerWith(mgr.GetClient(),
-			reconciler.WithLog(istioControlPlaneLogger),
+			reconciler.WithLog(istioControlPlaneLogger.GetLogrLogger()),
 			reconciler.WithRecreateImmediately(),
 			reconciler.WithEnableRecreateWorkload(),
 			reconciler.WithRecreateEnabledForAll(),
@@ -117,7 +118,7 @@ func main() {
 	}
 	if err = (&controllers.IstioMeshGatewayReconciler{
 		Client: mgr.GetClient(),
-		Log:    ctrl.Log.WithName("controllers").WithName("IstioMeshGateway"),
+		Log:    logger.NewWithLogrLogger(ctrl.Log.WithName("controllers").WithName("IstioMeshGateway")),
 		Scheme: mgr.GetScheme(),
 	}).SetupWithManager(mgr); err != nil {
 		setupLog.Error(err, "unable to create controller", "controller", "IstioMeshGateway")

@@ -33,6 +33,7 @@ import (
 	"github.com/banzaicloud/istio-operator/v2/internal/components/base"
 	"github.com/banzaicloud/istio-operator/v2/internal/util"
 	"github.com/banzaicloud/operator-tools/pkg/helm/templatereconciler"
+	"github.com/banzaicloud/operator-tools/pkg/logger"
 	"github.com/banzaicloud/operator-tools/pkg/reconciler"
 )
 
@@ -54,14 +55,10 @@ func TestICPBaseResourceDump(t *testing.T) {
 	}
 
 	reconciler := base.NewComponentReconciler(
-		templatereconciler.NewHelmReconciler(nil, nil, logr.TestLogger{
-			T: t,
-		}, fake.NewSimpleClientset().Discovery(), []reconciler.NativeReconcilerOpt{
+		templatereconciler.NewHelmReconciler(nil, nil, logr.NewTestLogger(t), fake.NewSimpleClientset().Discovery(), []reconciler.NativeReconcilerOpt{
 			reconciler.NativeReconcilerSetControllerRef(),
 		}),
-		logr.TestLogger{
-			T: t,
-		},
+		logger.NewWithLogrLogger(logr.NewTestLogger(t)),
 		"1.12.2",
 	)
 

@@ -22,13 +22,14 @@ import (
 	"strings"
 
 	"emperror.dev/errors"
-	"github.com/go-logr/logr"
 	"sigs.k8s.io/controller-runtime/pkg/event"
 	"sigs.k8s.io/controller-runtime/pkg/predicate"
 
 	clusterregistryv1alpha1 "github.com/banzaicloud/cluster-registry/api/v1alpha1"
 	servicemeshv1alpha1 "github.com/banzaicloud/istio-operator/api/v2/v1alpha1"
+	pkgUtil "github.com/banzaicloud/istio-operator/v2/pkg/util"
 	"github.com/banzaicloud/k8s-objectmatcher/patch"
+	"github.com/banzaicloud/operator-tools/pkg/logger"
 	"github.com/banzaicloud/operator-tools/pkg/reconciler"
 )
 
@@ -37,7 +38,7 @@ type CalculateOption = patch.CalculateOption
 type ObjectChangePredicate struct {
 	predicate.Funcs
 	CalculateOptions []CalculateOption
-	Logger           logr.Logger
+	Logger           logger.Logger
 }
 
 func (p ObjectChangePredicate) Update(e event.UpdateEvent) bool {
@@ -51,7 +52,7 @@ func (p ObjectChangePredicate) Update(e event.UpdateEvent) bool {
 	}
 	options = append(options, p.CalculateOptions...)
 
-	patchResult, err := patch.DefaultPatchMaker.Calculate(e.ObjectOld, e.ObjectNew, options...)
+	patchResult, err := pkgUtil.NewProtoCompatiblePatchMaker().Calculate(e.ObjectOld, e.ObjectNew, options...)
 	if err != nil {
 		if p.Logger != nil {
 			p.Logger.Error(errors.WithStack(err), "could not calculate patch result")

@@ -27,7 +27,6 @@ import (
 	"time"
 
 	"emperror.dev/errors"
-	"github.com/go-logr/logr"
 	"github.com/gogo/protobuf/jsonpb"
 	"istio.io/api/mesh/v1alpha1"
 	istionetworkingv1alpha3 "istio.io/client-go/pkg/apis/networking/v1alpha3"
@@ -70,6 +69,7 @@ import (
 	"github.com/banzaicloud/istio-operator/v2/internal/util"
 	"github.com/banzaicloud/istio-operator/v2/pkg/k8sutil"
 	"github.com/banzaicloud/k8s-objectmatcher/patch"
+	"github.com/banzaicloud/operator-tools/pkg/logger"
 	"github.com/banzaicloud/operator-tools/pkg/reconciler"
 	"github.com/banzaicloud/operator-tools/pkg/utils"
 )
@@ -85,7 +85,7 @@ const (
 // IstioControlPlaneReconciler reconciles a IstioControlPlane object
 type IstioControlPlaneReconciler struct {
 	client.Client
-	Log                      logr.Logger
+	Log                      logger.Logger
 	Scheme                   *runtime.Scheme
 	ResourceReconciler       reconciler.ResourceReconciler
 	ClusterRegistry          models.ClusterRegistryConfiguration
@@ -206,7 +206,7 @@ func (r *IstioControlPlaneReconciler) Reconcile(ctx context.Context, req ctrl.Re
 	return result, nil
 }
 
-func (r *IstioControlPlaneReconciler) reconcile(ctx context.Context, icp *servicemeshv1alpha1.IstioControlPlane, logger logr.Logger) (ctrl.Result, error) {
+func (r *IstioControlPlaneReconciler) reconcile(ctx context.Context, icp *servicemeshv1alpha1.IstioControlPlane, logger logger.Logger) (ctrl.Result, error) {
 	logger.Info("reconciling")
 
 	// Get a config to talk to the apiserver
@@ -860,7 +860,7 @@ func (r *IstioControlPlaneReconciler) getMeshNetworks(ctx context.Context, icp *
 	}, nil
 }
 
-func (r *IstioControlPlaneReconciler) getRelatedIstioMesh(ctx context.Context, c client.Client, icp *servicemeshv1alpha1.IstioControlPlane, logger logr.Logger) (*servicemeshv1alpha1.IstioMesh, error) {
+func (r *IstioControlPlaneReconciler) getRelatedIstioMesh(ctx context.Context, c client.Client, icp *servicemeshv1alpha1.IstioControlPlane, logger logger.Logger) (*servicemeshv1alpha1.IstioMesh, error) {
 	mesh := &servicemeshv1alpha1.IstioMesh{}
 
 	err := c.Get(ctx, client.ObjectKey{
@@ -1144,7 +1144,7 @@ func (r *IstioControlPlaneReconciler) setInjectionNamespacesToStatus(ctx context
 // to gracefully handle the ACTIVE --> PASSIVE ICP mode switch and letting the cluster registry controller to recreate
 // the configmap for the passive cluster
 // NOTE: if cluster registry controller is not used, these configmaps need to be recreated manually
-func (r *IstioControlPlaneReconciler) deleteIstioRootCAConfigmapsOnPassive(ctx context.Context, icp *servicemeshv1alpha1.IstioControlPlane, logger logr.Logger) error {
+func (r *IstioControlPlaneReconciler) deleteIstioRootCAConfigmapsOnPassive(ctx context.Context, icp *servicemeshv1alpha1.IstioControlPlane, logger logger.Logger) error {
 	if icp.GetSpec().GetMode() == servicemeshv1alpha1.ModeType_ACTIVE {
 		return nil
 	}
