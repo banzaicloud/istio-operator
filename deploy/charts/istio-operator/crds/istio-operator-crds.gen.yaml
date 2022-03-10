@@ -6,7 +6,7 @@ metadata:
     "helm.sh/resource-policy": keep
   name: istiocontrolplanes.servicemesh.cisco.com
   labels:
-    resource.alpha.banzaicloud.io/revision: 1.12.4
+    resource.alpha.banzaicloud.io/revision: 1.12.5
 spec:
   group: servicemesh.cisco.com
   names:
@@ -7430,7 +7430,7 @@ metadata:
     "helm.sh/resource-policy": keep
   name: peeristiocontrolplanes.servicemesh.cisco.com
   labels:
-    resource.alpha.banzaicloud.io/revision: 1.12.4
+    resource.alpha.banzaicloud.io/revision: 1.12.5
 spec:
   group: servicemesh.cisco.com
   names:
@@ -14851,7 +14851,7 @@ metadata:
     "helm.sh/resource-policy": keep
   name: istiomeshes.servicemesh.cisco.com
   labels:
-    resource.alpha.banzaicloud.io/revision: 1.12.4
+    resource.alpha.banzaicloud.io/revision: 1.12.5
 spec:
   group: servicemesh.cisco.com
   names:
@@ -15843,7 +15843,7 @@ metadata:
     "helm.sh/resource-policy": keep
   name: istiomeshgateways.servicemesh.cisco.com
   labels:
-    resource.alpha.banzaicloud.io/revision: 1.12.4
+    resource.alpha.banzaicloud.io/revision: 1.12.5
 spec:
   group: servicemesh.cisco.com
   names:
