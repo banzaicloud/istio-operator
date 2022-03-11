@@ -4,7 +4,7 @@ metadata:
   name: cp-v112x
   namespace: istio-system
 spec:
-  version: "1.12.4"
+  version: "1.12.5"
   mode: PASSIVE
   distribution: cisco
   containerImageConfiguration:
