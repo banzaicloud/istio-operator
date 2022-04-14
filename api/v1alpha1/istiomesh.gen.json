@@ -484,6 +484,36 @@
                       "$ref": "#/components/schemas/istio.mesh.v1alpha1.MeshConfig.ExtensionProvider.EnvoyFileAccessLogProvider"
                     }
                   }
+                },
+                {
+                  "required": [
+                    "envoyHttpAls"
+                  ],
+                  "properties": {
+                    "envoyHttpAls": {
+                      "$ref": "#/components/schemas/istio.mesh.v1alpha1.MeshConfig.ExtensionProvider.EnvoyHttpGrpcV3LogProvider"
+                    }
+                  }
+                },
+                {
+                  "required": [
+                    "envoyTcpAls"
+                  ],
+                  "properties": {
+                    "envoyTcpAls": {
+                      "$ref": "#/components/schemas/istio.mesh.v1alpha1.MeshConfig.ExtensionProvider.EnvoyTcpGrpcV3LogProvider"
+                    }
+                  }
+                },
+                {
+                  "required": [
+                    "envoyOtelAls"
+                  ],
+                  "properties": {
+                    "envoyOtelAls": {
+                      "$ref": "#/components/schemas/istio.mesh.v1alpha1.MeshConfig.ExtensionProvider.EnvoyOpenTelemetryLogProvider"
+                    }
+                  }
                 }
               ]
             }
@@ -587,6 +617,36 @@
                 "$ref": "#/components/schemas/istio.mesh.v1alpha1.MeshConfig.ExtensionProvider.EnvoyFileAccessLogProvider"
               }
             }
+          },
+          {
+            "required": [
+              "envoyHttpAls"
+            ],
+            "properties": {
+              "envoyHttpAls": {
+                "$ref": "#/components/schemas/istio.mesh.v1alpha1.MeshConfig.ExtensionProvider.EnvoyHttpGrpcV3LogProvider"
+              }
+            }
+          },
+          {
+            "required": [
+              "envoyTcpAls"
+            ],
+            "properties": {
+              "envoyTcpAls": {
+                "$ref": "#/components/schemas/istio.mesh.v1alpha1.MeshConfig.ExtensionProvider.EnvoyTcpGrpcV3LogProvider"
+              }
+            }
+          },
+          {
+            "required": [
+              "envoyOtelAls"
+            ],
+            "properties": {
+              "envoyOtelAls": {
+                "$ref": "#/components/schemas/istio.mesh.v1alpha1.MeshConfig.ExtensionProvider.EnvoyOpenTelemetryLogProvider"
+              }
+            }
           }
         ]
       },
@@ -601,6 +661,15 @@
       },
       "istio.mesh.v1alpha1.MeshConfig.ExtensionProvider.EnvoyFileAccessLogProvider": {
         "$ref": "#/components/schemas/istio.mesh.v1alpha1.MeshConfig.ExtensionProvider.EnvoyFileAccessLogProvider"
+      },
+      "istio.mesh.v1alpha1.MeshConfig.ExtensionProvider.EnvoyHttpGrpcV3LogProvider": {
+        "$ref": "#/components/schemas/istio.mesh.v1alpha1.MeshConfig.ExtensionProvider.EnvoyHttpGrpcV3LogProvider"
+      },
+      "istio.mesh.v1alpha1.MeshConfig.ExtensionProvider.EnvoyOpenTelemetryLogProvider": {
+        "$ref": "#/components/schemas/istio.mesh.v1alpha1.MeshConfig.ExtensionProvider.EnvoyOpenTelemetryLogProvider"
+      },
+      "istio.mesh.v1alpha1.MeshConfig.ExtensionProvider.EnvoyTcpGrpcV3LogProvider": {
+        "$ref": "#/components/schemas/istio.mesh.v1alpha1.MeshConfig.ExtensionProvider.EnvoyTcpGrpcV3LogProvider"
       },
       "istio.mesh.v1alpha1.MeshConfig.ExtensionProvider.LightstepTracingProvider": {
         "$ref": "#/components/schemas/istio.mesh.v1alpha1.MeshConfig.ExtensionProvider.LightstepTracingProvider"
@@ -713,7 +782,7 @@
         "type": "object",
         "properties": {
           "image": {
-            "$ref": "#/components/schemas/istio.mesh.v1alpha1.ProxyImage"
+            "$ref": "#/components/schemas/istio.networking.v1beta1.ProxyImage"
           },
           "readinessProbe": {
             "$ref": "#/components/schemas/istio.networking.v1alpha3.ReadinessProbe"
@@ -721,16 +790,17 @@
           "tracing": {
             "$ref": "#/components/schemas/istio.mesh.v1alpha1.Tracing"
           },
+          "concurrency": {
+            "description": "The number of worker threads to run. If unset, this will be automatically determined based on CPU requests/limits. If set to 0, all cores on the machine will be used. Default is 2 worker threads.",
+            "type": "integer",
+            "nullable": true
+          },
           "configPath": {
             "description": "Path to the generated configuration file directory. Proxy agent generates the actual configuration and stores it in this directory.",
             "type": "string"
           },
           "binaryPath": {
             "description": "Path to the proxy binary",
-            "type": "string"
-          },
-          "serviceCluster": {
-            "description": "Service cluster defines the name for the `service_cluster` that is shared by all Envoy instances. This setting corresponds to `--service-cluster` flag in Envoy.  In a typical Envoy deployment, the `service-cluster` flag is used to identify the caller, for source-based routing scenarios. Since Istio does not assign a local `service/service` version to each Envoy instance, the name is same for all of them.  However, the source/caller's identity (e.g., IP address) is encoded in the `--service-node` flag when launching Envoy.  When the RDS service receives API calls from Envoy, it uses the value of the `service-node` flag to compute routes that are relative to the service instances located at that IP address.",
             "type": "string"
           },
           "drainDuration": {
@@ -782,11 +852,6 @@
             "description": "Maximum length of name field in Envoy's metrics. The length of the name field is determined by the length of a name field in a service and the set of labels that comprise a particular version of the service. The default value is set to 189 characters. Envoy's internal metrics take up 67 characters, for a total of 256 character name per metric. Increase the value of this field if you find that the metrics from Envoys are truncated.",
             "type": "integer",
             "format": "int32"
-          },
-          "concurrency": {
-            "description": "The number of worker threads to run. If unset, this will be automatically determined based on CPU requests/limits. If set to 0, all cores on the machine will be used. Default is 2 worker threads.",
-            "type": "integer",
-            "nullable": true
           },
           "proxyBootstrapTemplatePath": {
             "description": "Path to the proxy bootstrap template file",
@@ -849,7 +914,57 @@
               "type": "string"
             }
           }
-        }
+        },
+        "oneOf": [
+          {
+            "not": {
+              "anyOf": [
+                {
+                  "required": [
+                    "serviceCluster"
+                  ],
+                  "properties": {
+                    "serviceCluster": {
+                      "description": "Service cluster defines the name for the `service_cluster` that is shared by all Envoy instances. This setting corresponds to `--service-cluster` flag in Envoy.  In a typical Envoy deployment, the `service-cluster` flag is used to identify the caller, for source-based routing scenarios. Since Istio does not assign a local `service/service` version to each Envoy instance, the name is same for all of them.  However, the source/caller's identity (e.g., IP address) is encoded in the `--service-node` flag when launching Envoy.  When the RDS service receives API calls from Envoy, it uses the value of the `service-node` flag to compute routes that are relative to the service instances located at that IP address.",
+                      "type": "string"
+                    }
+                  }
+                },
+                {
+                  "required": [
+                    "tracingServiceName"
+                  ],
+                  "properties": {
+                    "tracingServiceName": {
+                      "$ref": "#/components/schemas/istio.mesh.v1alpha1.ProxyConfig.TracingServiceName"
+                    }
+                  }
+                }
+              ]
+            }
+          },
+          {
+            "required": [
+              "serviceCluster"
+            ],
+            "properties": {
+              "serviceCluster": {
+                "description": "Service cluster defines the name for the `service_cluster` that is shared by all Envoy instances. This setting corresponds to `--service-cluster` flag in Envoy.  In a typical Envoy deployment, the `service-cluster` flag is used to identify the caller, for source-based routing scenarios. Since Istio does not assign a local `service/service` version to each Envoy instance, the name is same for all of them.  However, the source/caller's identity (e.g., IP address) is encoded in the `--service-node` flag when launching Envoy.  When the RDS service receives API calls from Envoy, it uses the value of the `service-node` flag to compute routes that are relative to the service instances located at that IP address.",
+                "type": "string"
+              }
+            }
+          },
+          {
+            "required": [
+              "tracingServiceName"
+            ],
+            "properties": {
+              "tracingServiceName": {
+                "$ref": "#/components/schemas/istio.mesh.v1alpha1.ProxyConfig.TracingServiceName"
+              }
+            }
+          }
+        ]
       },
       "istio.mesh.v1alpha1.ProxyConfig.InboundInterceptionMode": {
         "description": "The mode used to redirect inbound traffic to Envoy. This setting has no effect on outbound traffic: iptables `REDIRECT` is always used for outbound connections.",
@@ -886,15 +1001,8 @@
           }
         }
       },
-      "istio.mesh.v1alpha1.ProxyImage": {
-        "description": "The following values are used to construct proxy image url. $hub/$image_name/$tag-$image_type example: docker.io/istio/proxyv2:1.11.1 or docker.io/istio/proxyv2:1.11.1-distroless This information was previously part of the Values API. $hide_from_docs",
-        "type": "object",
-        "properties": {
-          "imageType": {
-            "description": "The image type of the image. Istio publishes default, debug, and distroless images. Other values are allowed if those image types (example: centos) are published to the specified hub. supported values: default, debug, distroless.",
-            "type": "string"
-          }
-        }
+      "istio.mesh.v1alpha1.ProxyConfig.TracingServiceName": {
+        "$ref": "#/components/schemas/istio.mesh.v1alpha1.ProxyConfig.TracingServiceName"
       },
       "istio.mesh.v1alpha1.RemoteService": {
         "type": "object",
@@ -1528,6 +1636,16 @@
           },
           "host": {
             "description": "Host to connect to, defaults to localhost",
+            "type": "string"
+          }
+        }
+      },
+      "istio.networking.v1beta1.ProxyImage": {
+        "description": "The following values are used to construct proxy image url. $hub/$image_name/$tag-$image_type example: docker.io/istio/proxyv2:1.11.1 or docker.io/istio/proxyv2:1.11.1-distroless This information was previously part of the Values API.",
+        "type": "object",
+        "properties": {
+          "imageType": {
+            "description": "The image type of the image. Istio publishes default, debug, and distroless images. Other values are allowed if those image types (example: centos) are published to the specified hub. supported values: default, debug, distroless.",
             "type": "string"
           }
         }
