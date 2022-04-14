@@ -1,6 +1,6 @@
 # Istio-operator chart
 
-[Istio-operator](https://github.com/banzaicloud/istio-operator/tree/release-1.12) is a Kubernetes operator to deploy and manage [Istio](https://istio.io/) resources for a Kubernetes cluster.
+[Istio-operator](https://github.com/banzaicloud/istio-operator/tree/release-1.13) is a Kubernetes operator to deploy and manage [Istio](https://istio.io/) resources for a Kubernetes cluster.
 
 ## Prerequisites
 
