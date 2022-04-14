@@ -168,7 +168,7 @@ func CompareYAMLs(left, right []byte) (dyff.Report, error) {
 		Location:  "right",
 		Documents: y2,
 	},
-		dyff.IgnoreOrderChanges(false),
+		dyff.IgnoreOrderChanges(true),
 		dyff.KubernetesEntityDetection(true),
 	)
 }
