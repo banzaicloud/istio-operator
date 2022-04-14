@@ -1,10 +1,10 @@
 apiVersion: servicemesh.cisco.com/v1alpha1
 kind: IstioControlPlane
 metadata:
-  name: cp-v112x
+  name: cp-v113x
   namespace: istio-system
 spec:
-  version: "1.12.5"
+  version: "1.13.2"
   mode: PASSIVE
   distribution: cisco
   meshID: mesh1

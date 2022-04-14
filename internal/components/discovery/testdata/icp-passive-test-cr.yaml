@@ -1,12 +1,12 @@
 apiVersion: servicemesh.cisco.com/v1alpha1
 kind: IstioControlPlane
 metadata:
-  name: cp-v112x
+  name: cp-v113x
   namespace: istio-system
 spec:
   meshID: mesh1
   clusterID: demo-cluster2
-  version: "1.12.5"
+  version: "1.13.2"
   mode: PASSIVE
   networkName: network1
   caProvider: Citadel

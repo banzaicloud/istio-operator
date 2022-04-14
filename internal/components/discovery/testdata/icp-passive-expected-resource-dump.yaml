@@ -12,7 +12,7 @@ data:
   mesh: |-
     connectTimeout: 5s
     defaultConfig:
-      discoveryAddress: istiod-cp-v112x.istio-system.svc:15012
+      discoveryAddress: istiod-cp-v113x.istio-system.svc:15012
       meshId: mesh1
       tracing:
         zipkin:
@@ -25,9 +25,9 @@ kind: ConfigMap
 metadata:
   labels:
     istio: meshconfig
-    istio.io/rev: cp-v112x.istio-system
+    istio.io/rev: cp-v113x.istio-system
     release: istio-operator-discovery
-  name: istio-cp-v112x.istio-system
+  name: istio-cp-v113x.istio-system
   namespace: istio-system
 
 ---
@@ -1165,7 +1165,7 @@ data:
         "sts": {
           "servicePort": 0
         },
-        "tag": "1.12.5",
+        "tag": "1.13.2",
         "tracer": {
           "datadog": {
             "address": "$(HOST_IP):8126"
@@ -1190,7 +1190,7 @@ data:
         "chained": true,
         "enabled": false
       },
-      "revision": "cp-v112x",
+      "revision": "cp-v113x",
       "sidecarInjectorWebhook": {
         "alwaysInjectSelector": [],
         "defaultTemplates": [],
@@ -1209,9 +1209,9 @@ kind: ConfigMap
 metadata:
   labels:
     istio: sidecar-injector
-    istio.io/rev: cp-v112x.istio-system
+    istio.io/rev: cp-v113x.istio-system
     release: istio-operator-discovery
-  name: istio-sidecar-injector-cp-v112x.istio-system
+  name: istio-sidecar-injector-cp-v113x.istio-system
   namespace: istio-system
 
 ---
@@ -1221,7 +1221,7 @@ metadata:
   labels:
     app: istio-reader
     release: istio-operator-discovery
-  name: istio-reader-cp-v112x
+  name: istio-reader-cp-v113x
   namespace: istio-system
 
 ---
@@ -1231,7 +1231,7 @@ metadata:
   labels:
     app: istio-reader
     release: istio-operator-discovery
-  name: istio-reader-cp-v112x-istio-system
+  name: istio-reader-cp-v113x-istio-system
 rules:
 - apiGroups:
   - config.istio.io
@@ -1327,14 +1327,14 @@ metadata:
   labels:
     app: istio-reader
     release: istio-operator-discovery
-  name: istio-reader-cp-v112x-istio-system
+  name: istio-reader-cp-v113x-istio-system
 roleRef:
   apiGroup: rbac.authorization.k8s.io
   kind: ClusterRole
-  name: istio-reader-cp-v112x-istio-system
+  name: istio-reader-cp-v113x-istio-system
 subjects:
 - kind: ServiceAccount
-  name: istio-reader-cp-v112x
+  name: istio-reader-cp-v113x
   namespace: istio-system
 
 ---
@@ -1344,9 +1344,9 @@ metadata:
   labels:
     app: istiod
     istio: istiod
-    istio.io/rev: cp-v112x.istio-system
+    istio.io/rev: cp-v113x.istio-system
     release: istio-operator-discovery
-  name: istiod-cp-v112x
+  name: istiod-cp-v113x
   namespace: istio-system
 spec:
   type: ClusterIP
@@ -1374,9 +1374,9 @@ kind: MutatingWebhookConfiguration
 metadata:
   labels:
     app: sidecar-injector
-    istio.io/rev: cp-v112x.istio-system
+    istio.io/rev: cp-v113x.istio-system
     release: istio-operator-discovery
-  name: istio-sidecar-injector-cp-v112x.istio-system
+  name: istio-sidecar-injector-cp-v113x.istio-system
 webhooks:
 - admissionReviewVersions:
   - v1beta1
@@ -1384,7 +1384,7 @@ webhooks:
   clientConfig:
     caBundle: ""
     service:
-      name: istio-sidecar-injector-cp-v112x
+      name: istio-sidecar-injector-cp-v113x
       namespace: istio-system
       path: /inject
       port: 443
@@ -1395,7 +1395,7 @@ webhooks:
     - key: istio.io/rev
       operator: In
       values:
-      - cp-v112x.istio-system
+      - cp-v113x.istio-system
     - key: istio-injection
       operator: DoesNotExist
   objectSelector:
@@ -1421,7 +1421,7 @@ webhooks:
   clientConfig:
     caBundle: ""
     service:
-      name: istio-sidecar-injector-cp-v112x
+      name: istio-sidecar-injector-cp-v113x
       namespace: istio-system
       path: /inject
       port: 443
@@ -1442,7 +1442,7 @@ webhooks:
     - key: istio.io/rev
       operator: In
       values:
-      - cp-v112x.istio-system
+      - cp-v113x.istio-system
   rules:
   - apiGroups:
     - ""
