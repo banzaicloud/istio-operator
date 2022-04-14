@@ -259,7 +259,7 @@ global:
   # Dev builds from prow are on gcr.io
   hub: istio
   # Default tag for Istio images.
-  tag: "1.12.5"
+  tag: "1.13.2"
 
   # Specify image pull policy if default behavior isn't desired.
   # Default behavior: latest images will be Always else IfNotPresent.
