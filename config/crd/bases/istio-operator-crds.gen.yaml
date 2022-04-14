@@ -6,7 +6,7 @@ metadata:
     "helm.sh/resource-policy": keep
   name: istiocontrolplanes.servicemesh.cisco.com
   labels:
-    resource.alpha.banzaicloud.io/revision: 1.12.5
+    resource.alpha.banzaicloud.io/revision: 1.13.2
 spec:
   group: servicemesh.cisco.com
   names:
@@ -1473,6 +1473,17 @@ spec:
                     connectTimeout:
                       type: string
                     defaultConfig:
+                      oneOf:
+                        - not:
+                            anyOf:
+                              - required:
+                                  - serviceCluster
+                              - required:
+                                  - tracingServiceName
+                        - required:
+                            - serviceCluster
+                        - required:
+                            - tracingServiceName
                       properties:
                         availabilityZone:
                           type: string
@@ -1883,6 +1894,12 @@ spec:
                                   type: string
                               type: object
                           type: object
+                        tracingServiceName:
+                          enum:
+                            - APP_LABEL_AND_NAMESPACE
+                            - CANONICAL_NAME_ONLY
+                            - CANONICAL_NAME_AND_NAMESPACE
+                          type: string
                         zipkinAddress:
                           type: string
                       type: object
@@ -1989,6 +2006,12 @@ spec:
                                     - prometheus
                                 - required:
                                     - envoyFileAccessLog
+                                - required:
+                                    - envoyHttpAls
+                                - required:
+                                    - envoyTcpAls
+                                - required:
+                                    - envoyOtelAls
                           - required:
                               - envoyExtAuthzHttp
                           - required:
@@ -2009,6 +2032,12 @@ spec:
                               - prometheus
                           - required:
                               - envoyFileAccessLog
+                          - required:
+                              - envoyHttpAls
+                          - required:
+                              - envoyTcpAls
+                          - required:
+                              - envoyOtelAls
                         properties:
                           datadog:
                             properties:
@@ -2087,7 +2116,79 @@ spec:
                             type: object
                           envoyFileAccessLog:
                             properties:
+                              logFormat:
+                                oneOf:
+                                  - not:
+                                      anyOf:
+                                        - required:
+                                            - text
+                                        - required:
+                                            - labels
+                                  - required:
+                                      - text
+                                  - required:
+                                      - labels
+                                properties:
+                                  labels:
+                                    type: object
+                                  text:
+                                    type: string
+                                type: object
                               path:
+                                type: string
+                            type: object
+                          envoyHttpAls:
+                            properties:
+                              additionalRequestHeadersToLog:
+                                items:
+                                  type: string
+                                type: array
+                              additionalResponseHeadersToLog:
+                                items:
+                                  type: string
+                                type: array
+                              additionalResponseTrailersToLog:
+                                items:
+                                  type: string
+                                type: array
+                              filterStateObjectsToLog:
+                                items:
+                                  type: string
+                                type: array
+                              logName:
+                                type: string
+                              port:
+                                type: integer
+                              service:
+                                type: string
+                            type: object
+                          envoyOtelAls:
+                            properties:
+                              logFormat:
+                                properties:
+                                  labels:
+                                    type: object
+                                  text:
+                                    type: string
+                                type: object
+                              logName:
+                                type: string
+                              port:
+                                type: integer
+                              service:
+                                type: string
+                            type: object
+                          envoyTcpAls:
+                            properties:
+                              filterStateObjectsToLog:
+                                items:
+                                  type: string
+                                type: array
+                              logName:
+                                type: string
+                              port:
+                                type: integer
+                              service:
                                 type: string
                             type: object
                           lightstep:
@@ -2137,6 +2238,13 @@ spec:
                             properties:
                               debug:
                                 type: boolean
+                              logging:
+                                properties:
+                                  labels:
+                                    additionalProperties:
+                                      type: string
+                                    type: object
+                                type: object
                               maxNumberOfAnnotations:
                                 nullable: true
                                 type: integer
@@ -6599,6 +6707,17 @@ spec:
                     connectTimeout:
                       type: string
                     defaultConfig:
+                      oneOf:
+                        - not:
+                            anyOf:
+                              - required:
+                                  - serviceCluster
+                              - required:
+                                  - tracingServiceName
+                        - required:
+                            - serviceCluster
+                        - required:
+                            - tracingServiceName
                       properties:
                         availabilityZone:
                           type: string
@@ -7009,6 +7128,12 @@ spec:
                                   type: string
                               type: object
                           type: object
+                        tracingServiceName:
+                          enum:
+                            - APP_LABEL_AND_NAMESPACE
+                            - CANONICAL_NAME_ONLY
+                            - CANONICAL_NAME_AND_NAMESPACE
+                          type: string
                         zipkinAddress:
                           type: string
                       type: object
@@ -7115,6 +7240,12 @@ spec:
                                     - prometheus
                                 - required:
                                     - envoyFileAccessLog
+                                - required:
+                                    - envoyHttpAls
+                                - required:
+                                    - envoyTcpAls
+                                - required:
+                                    - envoyOtelAls
                           - required:
                               - envoyExtAuthzHttp
                           - required:
@@ -7135,6 +7266,12 @@ spec:
                               - prometheus
                           - required:
                               - envoyFileAccessLog
+                          - required:
+                              - envoyHttpAls
+                          - required:
+                              - envoyTcpAls
+                          - required:
+                              - envoyOtelAls
                         properties:
                           datadog:
                             properties:
@@ -7213,7 +7350,79 @@ spec:
                             type: object
                           envoyFileAccessLog:
                             properties:
+                              logFormat:
+                                oneOf:
+                                  - not:
+                                      anyOf:
+                                        - required:
+                                            - text
+                                        - required:
+                                            - labels
+                                  - required:
+                                      - text
+                                  - required:
+                                      - labels
+                                properties:
+                                  labels:
+                                    type: object
+                                  text:
+                                    type: string
+                                type: object
                               path:
+                                type: string
+                            type: object
+                          envoyHttpAls:
+                            properties:
+                              additionalRequestHeadersToLog:
+                                items:
+                                  type: string
+                                type: array
+                              additionalResponseHeadersToLog:
+                                items:
+                                  type: string
+                                type: array
+                              additionalResponseTrailersToLog:
+                                items:
+                                  type: string
+                                type: array
+                              filterStateObjectsToLog:
+                                items:
+                                  type: string
+                                type: array
+                              logName:
+                                type: string
+                              port:
+                                type: integer
+                              service:
+                                type: string
+                            type: object
+                          envoyOtelAls:
+                            properties:
+                              logFormat:
+                                properties:
+                                  labels:
+                                    type: object
+                                  text:
+                                    type: string
+                                type: object
+                              logName:
+                                type: string
+                              port:
+                                type: integer
+                              service:
+                                type: string
+                            type: object
+                          envoyTcpAls:
+                            properties:
+                              filterStateObjectsToLog:
+                                items:
+                                  type: string
+                                type: array
+                              logName:
+                                type: string
+                              port:
+                                type: integer
+                              service:
                                 type: string
                             type: object
                           lightstep:
@@ -7263,6 +7472,13 @@ spec:
                             properties:
                               debug:
                                 type: boolean
+                              logging:
+                                properties:
+                                  labels:
+                                    additionalProperties:
+                                      type: string
+                                    type: object
+                                type: object
                               maxNumberOfAnnotations:
                                 nullable: true
                                 type: integer
@@ -7430,7 +7646,7 @@ metadata:
     "helm.sh/resource-policy": keep
   name: peeristiocontrolplanes.servicemesh.cisco.com
   labels:
-    resource.alpha.banzaicloud.io/revision: 1.12.5
+    resource.alpha.banzaicloud.io/revision: 1.13.2
 spec:
   group: servicemesh.cisco.com
   names:
@@ -8894,6 +9110,17 @@ spec:
                     connectTimeout:
                       type: string
                     defaultConfig:
+                      oneOf:
+                        - not:
+                            anyOf:
+                              - required:
+                                  - serviceCluster
+                              - required:
+                                  - tracingServiceName
+                        - required:
+                            - serviceCluster
+                        - required:
+                            - tracingServiceName
                       properties:
                         availabilityZone:
                           type: string
@@ -9304,6 +9531,12 @@ spec:
                                   type: string
                               type: object
                           type: object
+                        tracingServiceName:
+                          enum:
+                            - APP_LABEL_AND_NAMESPACE
+                            - CANONICAL_NAME_ONLY
+                            - CANONICAL_NAME_AND_NAMESPACE
+                          type: string
                         zipkinAddress:
                           type: string
                       type: object
@@ -9410,6 +9643,12 @@ spec:
                                     - prometheus
                                 - required:
                                     - envoyFileAccessLog
+                                - required:
+                                    - envoyHttpAls
+                                - required:
+                                    - envoyTcpAls
+                                - required:
+                                    - envoyOtelAls
                           - required:
                               - envoyExtAuthzHttp
                           - required:
@@ -9430,6 +9669,12 @@ spec:
                               - prometheus
                           - required:
                               - envoyFileAccessLog
+                          - required:
+                              - envoyHttpAls
+                          - required:
+                              - envoyTcpAls
+                          - required:
+                              - envoyOtelAls
                         properties:
                           datadog:
                             properties:
@@ -9508,7 +9753,79 @@ spec:
                             type: object
                           envoyFileAccessLog:
                             properties:
+                              logFormat:
+                                oneOf:
+                                  - not:
+                                      anyOf:
+                                        - required:
+                                            - text
+                                        - required:
+                                            - labels
+                                  - required:
+                                      - text
+                                  - required:
+                                      - labels
+                                properties:
+                                  labels:
+                                    type: object
+                                  text:
+                                    type: string
+                                type: object
                               path:
+                                type: string
+                            type: object
+                          envoyHttpAls:
+                            properties:
+                              additionalRequestHeadersToLog:
+                                items:
+                                  type: string
+                                type: array
+                              additionalResponseHeadersToLog:
+                                items:
+                                  type: string
+                                type: array
+                              additionalResponseTrailersToLog:
+                                items:
+                                  type: string
+                                type: array
+                              filterStateObjectsToLog:
+                                items:
+                                  type: string
+                                type: array
+                              logName:
+                                type: string
+                              port:
+                                type: integer
+                              service:
+                                type: string
+                            type: object
+                          envoyOtelAls:
+                            properties:
+                              logFormat:
+                                properties:
+                                  labels:
+                                    type: object
+                                  text:
+                                    type: string
+                                type: object
+                              logName:
+                                type: string
+                              port:
+                                type: integer
+                              service:
+                                type: string
+                            type: object
+                          envoyTcpAls:
+                            properties:
+                              filterStateObjectsToLog:
+                                items:
+                                  type: string
+                                type: array
+                              logName:
+                                type: string
+                              port:
+                                type: integer
+                              service:
                                 type: string
                             type: object
                           lightstep:
@@ -9558,6 +9875,13 @@ spec:
                             properties:
                               debug:
                                 type: boolean
+                              logging:
+                                properties:
+                                  labels:
+                                    additionalProperties:
+                                      type: string
+                                    type: object
+                                type: object
                               maxNumberOfAnnotations:
                                 nullable: true
                                 type: integer
@@ -14020,6 +14344,17 @@ spec:
                     connectTimeout:
                       type: string
                     defaultConfig:
+                      oneOf:
+                        - not:
+                            anyOf:
+                              - required:
+                                  - serviceCluster
+                              - required:
+                                  - tracingServiceName
+                        - required:
+                            - serviceCluster
+                        - required:
+                            - tracingServiceName
                       properties:
                         availabilityZone:
                           type: string
@@ -14430,6 +14765,12 @@ spec:
                                   type: string
                               type: object
                           type: object
+                        tracingServiceName:
+                          enum:
+                            - APP_LABEL_AND_NAMESPACE
+                            - CANONICAL_NAME_ONLY
+                            - CANONICAL_NAME_AND_NAMESPACE
+                          type: string
                         zipkinAddress:
                           type: string
                       type: object
@@ -14536,6 +14877,12 @@ spec:
                                     - prometheus
                                 - required:
                                     - envoyFileAccessLog
+                                - required:
+                                    - envoyHttpAls
+                                - required:
+                                    - envoyTcpAls
+                                - required:
+                                    - envoyOtelAls
                           - required:
                               - envoyExtAuthzHttp
                           - required:
@@ -14556,6 +14903,12 @@ spec:
                               - prometheus
                           - required:
                               - envoyFileAccessLog
+                          - required:
+                              - envoyHttpAls
+                          - required:
+                              - envoyTcpAls
+                          - required:
+                              - envoyOtelAls
                         properties:
                           datadog:
                             properties:
@@ -14634,7 +14987,79 @@ spec:
                             type: object
                           envoyFileAccessLog:
                             properties:
+                              logFormat:
+                                oneOf:
+                                  - not:
+                                      anyOf:
+                                        - required:
+                                            - text
+                                        - required:
+                                            - labels
+                                  - required:
+                                      - text
+                                  - required:
+                                      - labels
+                                properties:
+                                  labels:
+                                    type: object
+                                  text:
+                                    type: string
+                                type: object
                               path:
+                                type: string
+                            type: object
+                          envoyHttpAls:
+                            properties:
+                              additionalRequestHeadersToLog:
+                                items:
+                                  type: string
+                                type: array
+                              additionalResponseHeadersToLog:
+                                items:
+                                  type: string
+                                type: array
+                              additionalResponseTrailersToLog:
+                                items:
+                                  type: string
+                                type: array
+                              filterStateObjectsToLog:
+                                items:
+                                  type: string
+                                type: array
+                              logName:
+                                type: string
+                              port:
+                                type: integer
+                              service:
+                                type: string
+                            type: object
+                          envoyOtelAls:
+                            properties:
+                              logFormat:
+                                properties:
+                                  labels:
+                                    type: object
+                                  text:
+                                    type: string
+                                type: object
+                              logName:
+                                type: string
+                              port:
+                                type: integer
+                              service:
+                                type: string
+                            type: object
+                          envoyTcpAls:
+                            properties:
+                              filterStateObjectsToLog:
+                                items:
+                                  type: string
+                                type: array
+                              logName:
+                                type: string
+                              port:
+                                type: integer
+                              service:
                                 type: string
                             type: object
                           lightstep:
@@ -14684,6 +15109,13 @@ spec:
                             properties:
                               debug:
                                 type: boolean
+                              logging:
+                                properties:
+                                  labels:
+                                    additionalProperties:
+                                      type: string
+                                    type: object
+                                type: object
                               maxNumberOfAnnotations:
                                 nullable: true
                                 type: integer
@@ -14851,7 +15283,7 @@ metadata:
     "helm.sh/resource-policy": keep
   name: istiomeshes.servicemesh.cisco.com
   labels:
-    resource.alpha.banzaicloud.io/revision: 1.12.5
+    resource.alpha.banzaicloud.io/revision: 1.13.2
 spec:
   group: servicemesh.cisco.com
   names:
@@ -15007,6 +15439,17 @@ spec:
                     connectTimeout:
                       type: string
                     defaultConfig:
+                      oneOf:
+                        - not:
+                            anyOf:
+                              - required:
+                                  - serviceCluster
+                              - required:
+                                  - tracingServiceName
+                        - required:
+                            - serviceCluster
+                        - required:
+                            - tracingServiceName
                       properties:
                         availabilityZone:
                           type: string
@@ -15417,6 +15860,12 @@ spec:
                                   type: string
                               type: object
                           type: object
+                        tracingServiceName:
+                          enum:
+                            - APP_LABEL_AND_NAMESPACE
+                            - CANONICAL_NAME_ONLY
+                            - CANONICAL_NAME_AND_NAMESPACE
+                          type: string
                         zipkinAddress:
                           type: string
                       type: object
@@ -15523,6 +15972,12 @@ spec:
                                     - prometheus
                                 - required:
                                     - envoyFileAccessLog
+                                - required:
+                                    - envoyHttpAls
+                                - required:
+                                    - envoyTcpAls
+                                - required:
+                                    - envoyOtelAls
                           - required:
                               - envoyExtAuthzHttp
                           - required:
@@ -15543,6 +15998,12 @@ spec:
                               - prometheus
                           - required:
                               - envoyFileAccessLog
+                          - required:
+                              - envoyHttpAls
+                          - required:
+                              - envoyTcpAls
+                          - required:
+                              - envoyOtelAls
                         properties:
                           datadog:
                             properties:
@@ -15621,7 +16082,79 @@ spec:
                             type: object
                           envoyFileAccessLog:
                             properties:
+                              logFormat:
+                                oneOf:
+                                  - not:
+                                      anyOf:
+                                        - required:
+                                            - text
+                                        - required:
+                                            - labels
+                                  - required:
+                                      - text
+                                  - required:
+                                      - labels
+                                properties:
+                                  labels:
+                                    type: object
+                                  text:
+                                    type: string
+                                type: object
                               path:
+                                type: string
+                            type: object
+                          envoyHttpAls:
+                            properties:
+                              additionalRequestHeadersToLog:
+                                items:
+                                  type: string
+                                type: array
+                              additionalResponseHeadersToLog:
+                                items:
+                                  type: string
+                                type: array
+                              additionalResponseTrailersToLog:
+                                items:
+                                  type: string
+                                type: array
+                              filterStateObjectsToLog:
+                                items:
+                                  type: string
+                                type: array
+                              logName:
+                                type: string
+                              port:
+                                type: integer
+                              service:
+                                type: string
+                            type: object
+                          envoyOtelAls:
+                            properties:
+                              logFormat:
+                                properties:
+                                  labels:
+                                    type: object
+                                  text:
+                                    type: string
+                                type: object
+                              logName:
+                                type: string
+                              port:
+                                type: integer
+                              service:
+                                type: string
+                            type: object
+                          envoyTcpAls:
+                            properties:
+                              filterStateObjectsToLog:
+                                items:
+                                  type: string
+                                type: array
+                              logName:
+                                type: string
+                              port:
+                                type: integer
+                              service:
                                 type: string
                             type: object
                           lightstep:
@@ -15671,6 +16204,13 @@ spec:
                             properties:
                               debug:
                                 type: boolean
+                              logging:
+                                properties:
+                                  labels:
+                                    additionalProperties:
+                                      type: string
+                                    type: object
+                                type: object
                               maxNumberOfAnnotations:
                                 nullable: true
                                 type: integer
@@ -15843,7 +16383,7 @@ metadata:
     "helm.sh/resource-policy": keep
   name: istiomeshgateways.servicemesh.cisco.com
   labels:
-    resource.alpha.banzaicloud.io/revision: 1.12.5
+    resource.alpha.banzaicloud.io/revision: 1.13.2
 spec:
   group: servicemesh.cisco.com
   names:
