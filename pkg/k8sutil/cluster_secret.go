@@ -33,7 +33,7 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/yaml"
 
-	clusterregistryv1alpha1 "github.com/banzaicloud/cluster-registry/api/v1alpha1"
+	clusterregistryv1alpha1 "github.com/cisco-open/cluster-registry-controller/api/v1alpha1"
 )
 
 func GetExternalAddressOfAPIServer(kubeConfig *rest.Config) (string, error) {
