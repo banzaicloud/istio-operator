@@ -50,7 +50,7 @@ linters-settings:
   gocyclo:
     min-complexity: 40
   goimports:
-    local-prefixes: github.com/banzaicloud
+    local-prefixes: github.com/banzaicloud,github.com/cisco-open
   gocritic:
     disabled-checks:
       - ifElseChain
