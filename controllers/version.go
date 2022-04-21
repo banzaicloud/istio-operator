@@ -19,11 +19,11 @@ package controllers
 import "regexp"
 
 const (
-	supportedIstioMinorVersionRegex = "^1\\.12(\\.[0-9]+)?(-.+)?$"
+	supportedIstioMinorVersionRegex = "^1\\.13(\\.[0-9]+)?(-.+)?$"
 )
 
 func IsIstioVersionSupported(version string) bool {
-	re, _ := regexp.Compile(supportedIstioMinorVersionRegex)
+	re := regexp.MustCompile(supportedIstioMinorVersionRegex)
 
 	return re.Match([]byte(version))
 }

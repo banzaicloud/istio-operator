@@ -17,7 +17,7 @@ echo "clone istio api repository"
 git clone -q -b ${version} https://github.com/istio/api
 
 echo "copy dependencies"
-cp -a api/mesh api/networking .
+cp -a api/mesh api/networking api/type .
 cp -a api/operator/fixup_structs .
 
 for i in `ls -1 api/common-protos`; do cp -a api/common-protos/$i $i; done

@@ -29,16 +29,16 @@ var _ = Describe("IsIstioVersionSupported()", func() {
 			Expect(controllers.IsIstioVersionSupported(version)).To(BeFalse(), "invalid: "+version)
 		}
 	})
-	It("should accept all 1.12 versions", func() {
-		Expect(controllers.IsIstioVersionSupported("1.12")).To(BeTrue())
+	It("should accept all 1.13 versions", func() {
+		Expect(controllers.IsIstioVersionSupported("1.13")).To(BeTrue())
 	})
-	It("should accept all 1.12 versions with qualifier", func() {
-		Expect(controllers.IsIstioVersionSupported("1.12-dev")).To(BeTrue())
+	It("should accept all 1.13 versions with qualifier", func() {
+		Expect(controllers.IsIstioVersionSupported("1.13-dev")).To(BeTrue())
 	})
 	It("should accept micro versions", func() {
-		Expect(controllers.IsIstioVersionSupported("1.12.1")).To(BeTrue())
+		Expect(controllers.IsIstioVersionSupported("1.13.1")).To(BeTrue())
 	})
 	It("should accept micro versions with qualifier", func() {
-		Expect(controllers.IsIstioVersionSupported("1.12.1-dev")).To(BeTrue())
+		Expect(controllers.IsIstioVersionSupported("1.13.1-dev")).To(BeTrue())
 	})
 })

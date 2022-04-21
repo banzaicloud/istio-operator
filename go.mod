@@ -1,16 +1,16 @@
 module github.com/banzaicloud/istio-operator/v2
 
-go 1.17
+go 1.18
 
 require (
 	cloud.google.com/go v0.99.0 // indirect
 	emperror.dev/errors v0.8.0
 	github.com/Masterminds/semver v1.5.0 // indirect
 	github.com/Masterminds/sprig v2.22.0+incompatible
-	github.com/banzaicloud/cluster-registry v0.0.8
 	github.com/banzaicloud/istio-operator/api/v2 v2.0.0
 	github.com/banzaicloud/k8s-objectmatcher v1.8.0
 	github.com/banzaicloud/operator-tools v0.28.2
+	github.com/cisco-open/cluster-registry-controller/api v0.1.9
 	github.com/fatih/color v1.13.0 // indirect
 	github.com/go-logr/logr v1.2.2
 	github.com/gogo/protobuf v1.3.2

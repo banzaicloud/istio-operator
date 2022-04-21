@@ -1,4 +1,4 @@
-revision: cp-v112x
+revision: cp-v113x
 deployment:
   image: banzaicloud/istio-sidecar-injector:v1.10.4-bzc.1
   metadata:

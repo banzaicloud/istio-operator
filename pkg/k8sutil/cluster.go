@@ -22,7 +22,7 @@ import (
 	"emperror.dev/errors"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
-	clusterregistryv1alpha1 "github.com/banzaicloud/cluster-registry/api/v1alpha1"
+	clusterregistryv1alpha1 "github.com/cisco-open/cluster-registry-controller/api/v1alpha1"
 )
 
 func GetLocalCluster(ctx context.Context, kubeClient client.Client) (*clusterregistryv1alpha1.Cluster, error) {

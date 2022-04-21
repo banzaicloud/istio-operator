@@ -6,11 +6,10 @@ spec:
   deployment:
     metadata:
       labels:
-        app: istio-meshexpansion-gateway
-        gateway-name: istio-meshexpansion-gateway-cp-v19x
+        app: imgw-sample
+        gateway-name: imgw-sample
         gateway-type: ingress
-        istio: meshexpansiongateway
-        istio.io/rev: cp-v19x.istio-system
+        istio: imgw-sample
     replicas:
       count: 1
       min: 1
@@ -27,18 +26,14 @@ spec:
       runAsNonRoot: false
       runAsUser: 0
   istioControlPlane:
-    name: icp-v112x-sample
+    name: icp-v113x-sample
     namespace: istio-system
   runAsRoot: true
   service:
     ports:
-    - name: tcp-als-tls
-      port: 50600
+    - name: http
+      port: 80
       protocol: TCP
-      targetPort: 50600
-    - name: tcp-zipkin-tls
-      port: 59411
-      protocol: TCP
-      targetPort: 59411
+      targetPort: 9080
     type: LoadBalancer
   type: ingress

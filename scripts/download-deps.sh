@@ -33,7 +33,7 @@ function ensure-binary-version() {
         if [ ! -z "${replacement_module_name}" ]; then
             go mod edit -replace=${download_location}=${replacement_module_name}@${bin_version}
         fi
-        GOBIN=${PWD} go get "${download_location}${download_uri}@${bin_version}"
+        GOBIN=${PWD} go install "${download_location}${download_uri}@${bin_version}"
         mkdir -p "${binpath}"
         mv "${bin_name}" "${binpath}/${target_name}"
         popd

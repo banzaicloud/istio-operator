@@ -20,6 +20,10 @@ linters:
     - forbidigo
     - golint
     - exhaustive
+    - varnamelen
+    - ireturn
+    - gci
+    - forcetypeassert
 
     # - goconst
     # - gocritic
@@ -50,7 +54,7 @@ linters-settings:
   gocyclo:
     min-complexity: 40
   goimports:
-    local-prefixes: github.com/banzaicloud
+    local-prefixes: github.com/banzaicloud,github.com/cisco-open
   gocritic:
     disabled-checks:
       - ifElseChain
@@ -58,6 +62,8 @@ linters-settings:
     replace-local: true
     replace-allow-list:
     - github.com/gogo/protobuf
+  maintidx:
+    under: 10 # todo: set a valid value
 
 issues:
   # mainly because of the operator, but we are using helm chart names

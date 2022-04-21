@@ -59,7 +59,7 @@ func TestICPBaseResourceDump(t *testing.T) {
 			reconciler.NativeReconcilerSetControllerRef(),
 		}),
 		logger.NewWithLogrLogger(logr.NewTestLogger(t)),
-		"1.12.5",
+		"1.13.3",
 	)
 
 	dd, err := reconciler.GetManifest(icp)

@@ -1,191 +1,11 @@
 {{- if and (eq .Values.global.mode "ACTIVE") .Values.telemetry.enabled .Values.telemetry.v2.enabled }}
-# Note: metadata exchange filter is wasm enabled only in sidecars.
-apiVersion: networking.istio.io/v1alpha3
-kind: EnvoyFilter
-metadata:
-  name: {{ include "name-with-revision" ( dict "name" "metadata-exchange-1.10" "context" $) }}
-  {{- if .Values.meshConfig.rootNamespace }}
-  namespace: {{ .Values.meshConfig.rootNamespace }}
-  {{- else }}
-  namespace: {{ .Release.Namespace }}
-  {{- end }}
-  labels:
-    istio.io/rev: {{ include "namespaced-revision" . }}
-spec:
-  configPatches:
-    - applyTo: HTTP_FILTER
-      match:
-        context: SIDECAR_INBOUND
-        proxy:
-          proxyVersion: '^1\.10.*'
-        listener:
-          filterChain:
-            filter:
-              name: "envoy.filters.network.http_connection_manager"
-      patch:
-        operation: INSERT_BEFORE
-        value:
-          name: istio.metadata_exchange
-          typed_config:
-            "@type": type.googleapis.com/udpa.type.v1.TypedStruct
-            type_url: type.googleapis.com/envoy.extensions.filters.http.wasm.v3.Wasm
-            value:
-              config:
-                configuration:
-                  "@type": "type.googleapis.com/google.protobuf.StringValue"
-                  value: |
-                    {}
-                vm_config:
-                  {{- if .Values.telemetry.v2.metadataExchange.wasmEnabled }}
-                  runtime: envoy.wasm.runtime.v8
-                  allow_precompiled: true
-                  code:
-                    local:
-                      filename: /etc/istio/extensions/metadata-exchange-filter.compiled.wasm
-                  {{- else }}
-                  runtime: envoy.wasm.runtime.null
-                  code:
-                    local:
-                      inline_string: envoy.wasm.metadata_exchange
-                  {{- end }}
-    - applyTo: HTTP_FILTER
-      match:
-        context: SIDECAR_OUTBOUND
-        proxy:
-          proxyVersion: '^1\.10.*'
-        listener:
-          filterChain:
-            filter:
-              name: "envoy.filters.network.http_connection_manager"
-      patch:
-        operation: INSERT_BEFORE
-        value:
-          name: istio.metadata_exchange
-          typed_config:
-            "@type": type.googleapis.com/udpa.type.v1.TypedStruct
-            type_url: type.googleapis.com/envoy.extensions.filters.http.wasm.v3.Wasm
-            value:
-              config:
-                configuration:
-                  "@type": "type.googleapis.com/google.protobuf.StringValue"
-                  value: |
-                    {}
-                vm_config:
-                  {{- if .Values.telemetry.v2.metadataExchange.wasmEnabled }}
-                  runtime: envoy.wasm.runtime.v8
-                  allow_precompiled: true
-                  code:
-                    local:
-                      filename: /etc/istio/extensions/metadata-exchange-filter.compiled.wasm
-                  {{- else }}
-                  runtime: envoy.wasm.runtime.null
-                  code:
-                    local:
-                      inline_string: envoy.wasm.metadata_exchange
-                  {{- end }}
-    - applyTo: HTTP_FILTER
-      match:
-        context: GATEWAY
-        proxy:
-          proxyVersion: '^1\.10.*'
-        listener:
-          filterChain:
-            filter:
-              name: "envoy.filters.network.http_connection_manager"
-      patch:
-        operation: INSERT_BEFORE
-        value:
-          name: istio.metadata_exchange
-          typed_config:
-            "@type": type.googleapis.com/udpa.type.v1.TypedStruct
-            type_url: type.googleapis.com/envoy.extensions.filters.http.wasm.v3.Wasm
-            value:
-              config:
-                configuration:
-                  "@type": "type.googleapis.com/google.protobuf.StringValue"
-                  value: |
-                    {}
-                vm_config:
-                  {{- if .Values.telemetry.v2.metadataExchange.wasmEnabled }}
-                  runtime: envoy.wasm.runtime.v8
-                  allow_precompiled: true
-                  code:
-                    local:
-                      filename: /etc/istio/extensions/metadata-exchange-filter.compiled.wasm
-                  {{- else }}
-                  runtime: envoy.wasm.runtime.null
-                  code:
-                    local:
-                      inline_string: envoy.wasm.metadata_exchange
-                  {{- end }}
----
-apiVersion: networking.istio.io/v1alpha3
-kind: EnvoyFilter
-metadata:
-  name: {{ include "name-with-revision" ( dict "name" "tcp-metadata-exchange-1.10" "context" $) }}
-  {{- if .Values.meshConfig.rootNamespace }}
-  namespace: {{ .Values.meshConfig.rootNamespace }}
-  {{- else }}
-  namespace: {{ .Release.Namespace }}
-  {{- end }}
-  labels:
-    istio.io/rev: {{ include "namespaced-revision" . }}
-spec:
-  configPatches:
-    - applyTo: NETWORK_FILTER
-      match:
-        context: SIDECAR_INBOUND
-        proxy:
-          proxyVersion: '^1\.10.*'
-        listener: {}
-      patch:
-        operation: INSERT_BEFORE
-        value:
-          name: istio.metadata_exchange
-          typed_config:
-            "@type": type.googleapis.com/udpa.type.v1.TypedStruct
-            type_url: type.googleapis.com/envoy.tcp.metadataexchange.config.MetadataExchange
-            value:
-              protocol: istio-peer-exchange
-    - applyTo: CLUSTER
-      match:
-        context: SIDECAR_OUTBOUND
-        proxy:
-          proxyVersion: '^1\.10.*'
-        cluster: {}
-      patch:
-        operation: MERGE
-        value:
-          filters:
-          - name: istio.metadata_exchange
-            typed_config:
-              "@type": type.googleapis.com/udpa.type.v1.TypedStruct
-              type_url: type.googleapis.com/envoy.tcp.metadataexchange.config.MetadataExchange
-              value:
-                protocol: istio-peer-exchange
-    - applyTo: CLUSTER
-      match:
-        context: GATEWAY
-        proxy:
-          proxyVersion: '^1\.10.*'
-        cluster: {}
-      patch:
-        operation: MERGE
-        value:
-          filters:
-          - name: istio.metadata_exchange
-            typed_config:
-              "@type": type.googleapis.com/udpa.type.v1.TypedStruct
-              type_url: type.googleapis.com/envoy.tcp.metadataexchange.config.MetadataExchange
-              value:
-                protocol: istio-peer-exchange
 ---
 # Note: http stats filter is wasm enabled only in sidecars.
 {{- if .Values.telemetry.v2.prometheus.enabled }}
 apiVersion: networking.istio.io/v1alpha3
 kind: EnvoyFilter
 metadata:
-  name: {{ include "name-with-revision" ( dict "name" "stats-filter-1.10" "context" $) }}
+  name: {{ include "name-with-revision" ( dict "name" "stats-filter-1.13" "context" $) }}
   {{- if .Values.meshConfig.rootNamespace }}
   namespace: {{ .Values.meshConfig.rootNamespace }}
   {{- else }}
@@ -199,7 +19,7 @@ spec:
       match:
         context: SIDECAR_OUTBOUND
         proxy:
-          proxyVersion: '^1\.10.*'
+          proxyVersion: '^1\.13.*'
         listener:
           filterChain:
             filter:
@@ -245,7 +65,7 @@ spec:
       match:
         context: SIDECAR_INBOUND
         proxy:
-          proxyVersion: '^1\.10.*'
+          proxyVersion: '^1\.13.*'
         listener:
           filterChain:
             filter:
@@ -300,7 +120,7 @@ spec:
       match:
         context: GATEWAY
         proxy:
-          proxyVersion: '^1\.10.*'
+          proxyVersion: '^1\.13.*'
         listener:
           filterChain:
             filter:
@@ -348,7 +168,7 @@ spec:
 apiVersion: networking.istio.io/v1alpha3
 kind: EnvoyFilter
 metadata:
-  name: {{ include "name-with-revision" ( dict "name" "tcp-stats-filter-1.10" "context" $) }}
+  name: {{ include "name-with-revision" ( dict "name" "tcp-stats-filter-1.13" "context" $) }}
   {{- if .Values.meshConfig.rootNamespace }}
   namespace: {{ .Values.meshConfig.rootNamespace }}
   {{- else }}
@@ -362,7 +182,7 @@ spec:
       match:
         context: SIDECAR_INBOUND
         proxy:
-          proxyVersion: '^1\.10.*'
+          proxyVersion: '^1\.13.*'
         listener:
           filterChain:
             filter:
@@ -414,7 +234,7 @@ spec:
       match:
         context: SIDECAR_OUTBOUND
         proxy:
-          proxyVersion: '^1\.10.*'
+          proxyVersion: '^1\.13.*'
         listener:
           filterChain:
             filter:
@@ -458,7 +278,7 @@ spec:
       match:
         context: GATEWAY
         proxy:
-          proxyVersion: '^1\.10.*'
+          proxyVersion: '^1\.13.*'
         listener:
           filterChain:
             filter:
@@ -504,7 +324,7 @@ spec:
 apiVersion: networking.istio.io/v1alpha3
 kind: EnvoyFilter
 metadata:
-  name: {{ include "name-with-revision" ( dict "name" "stackdriver-filter-1.10" "context" $) }}
+  name: {{ include "name-with-revision" ( dict "name" "stackdriver-filter-1.13" "context" $) }}
   {{- if .Values.meshConfig.rootNamespace }}
   namespace: {{ .Values.meshConfig.rootNamespace }}
   {{- else }}
@@ -519,7 +339,7 @@ spec:
       match:
         context: SIDECAR_OUTBOUND
         proxy:
-          proxyVersion: '^1\.10.*'
+          proxyVersion: '^1\.13.*'
         listener:
           filterChain:
             filter:
@@ -554,7 +374,7 @@ spec:
       match:
         context: SIDECAR_INBOUND
         proxy:
-          proxyVersion: '^1\.10.*'
+          proxyVersion: '^1\.13.*'
         listener:
           filterChain:
             filter:
@@ -588,7 +408,7 @@ spec:
       match:
         context: GATEWAY
         proxy:
-          proxyVersion: '^1\.10.*'
+          proxyVersion: '^1\.13.*'
         listener:
           filterChain:
             filter:
@@ -622,7 +442,7 @@ spec:
 apiVersion: networking.istio.io/v1alpha3
 kind: EnvoyFilter
 metadata:
-  name: {{ include "name-with-revision" ( dict "name" "tcp-stackdriver-filter-1.10" "context" $) }}
+  name: {{ include "name-with-revision" ( dict "name" "tcp-stackdriver-filter-1.13" "context" $) }}
   {{- if .Values.meshConfig.rootNamespace }}
   namespace: {{ .Values.meshConfig.rootNamespace }}
   {{- else }}
@@ -637,7 +457,7 @@ spec:
     match:
       context: SIDECAR_OUTBOUND
       proxy:
-        proxyVersion: '^1\.10.*'
+        proxyVersion: '^1\.13.*'
       listener:
         filterChain:
           filter:
@@ -670,7 +490,7 @@ spec:
     match:
       context: SIDECAR_INBOUND
       proxy:
-        proxyVersion: '^1\.10.*'
+        proxyVersion: '^1\.13.*'
       listener:
         filterChain:
           filter:
@@ -702,7 +522,7 @@ spec:
     match:
       context: GATEWAY
       proxy:
-        proxyVersion: '^1\.10.*'
+        proxyVersion: '^1\.13.*'
       listener:
         filterChain:
           filter:
@@ -735,7 +555,7 @@ spec:
 apiVersion: networking.istio.io/v1alpha3
 kind: EnvoyFilter
 metadata:
-  name: {{ include "name-with-revision" ( dict "name" "stackdriver-sampling-accesslog-filter-1.10" "context" $) }}
+  name: {{ include "name-with-revision" ( dict "name" "stackdriver-sampling-accesslog-filter-1.13" "context" $) }}
   {{- if .Values.meshConfig.rootNamespace }}
   namespace: {{ .Values.meshConfig.rootNamespace }}
   {{- else }}
@@ -749,7 +569,7 @@ spec:
       match:
         context: SIDECAR_INBOUND
         proxy:
-          proxyVersion: '1\.10.*'
+          proxyVersion: '1\.13.*'
         listener:
           filterChain:
             filter:
