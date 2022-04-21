@@ -10,7 +10,7 @@ spec:
         gateway-name: imgw-sample
         gateway-type: ingress
         istio: imgw-sample
-        istio.io/rev: cp-v113x.istio-system
+        istio.io/rev: icp-v113x.istio-system
     replicas:
       count: 1
       min: 1
@@ -35,6 +35,6 @@ spec:
     - name: http
       port: 80
       protocol: TCP
-      targetPort: 8080
+      targetPort: 9080
     type: LoadBalancer
   type: ingress
