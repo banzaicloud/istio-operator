@@ -23,7 +23,7 @@ const (
 )
 
 func IsIstioVersionSupported(version string) bool {
-	re, _ := regexp.Compile(supportedIstioMinorVersionRegex)
+	re := regexp.MustCompile(supportedIstioMinorVersionRegex)
 
 	return re.Match([]byte(version))
 }
