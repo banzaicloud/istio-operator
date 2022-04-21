@@ -10,7 +10,6 @@ spec:
         gateway-name: imgw-sample
         gateway-type: ingress
         istio: imgw-sample
-        istio.io/rev: icp-v113x.istio-system
     replicas:
       count: 1
       min: 1
