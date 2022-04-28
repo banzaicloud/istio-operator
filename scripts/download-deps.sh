@@ -7,7 +7,7 @@ controller_gen_version=v0.6.2
 istio_deps_version=v1.11.4-bzc.4
 istio_tools_replacement_module_name=github.com/waynz0r/istio-tools
 gogo_protobuf_version=v1.3.2
-yq_version=3.4.1
+yq_version=v4.24.5
 
 script_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" >/dev/null 2>&1 && pwd)"
 binpath=${script_dir}/../bin
@@ -33,9 +33,21 @@ function ensure-binary-version() {
         if [ ! -z "${replacement_module_name}" ]; then
             go mod edit -replace=${download_location}=${replacement_module_name}@${bin_version}
         fi
-        GOBIN=${PWD} go install "${download_location}${download_uri}@${bin_version}"
+        cat << EOF > dummy.go
+package main
+
+import (
+  _ "${download_location}${download_uri}"
+)
+EOF
+
+
+        mkdir -p ${PWD}/bin
+
+        GOBIN=${PWD}/bin go get "${download_location}${download_uri}@${bin_version}"
+        GOBIN=${PWD}/bin go install "${download_location}${download_uri}"
         mkdir -p "${binpath}"
-        mv "${bin_name}" "${binpath}/${target_name}"
+        mv "bin/${bin_name}" "${binpath}/${target_name}"
         popd
         rm -rf "${BUILD_DIR}"
         echo "${bin_name} ensured"
@@ -57,6 +69,6 @@ ensure-binary-version protoc-gen-deepcopy ${istio_deps_version} "istio.io/tools"
 ensure-binary-version protoc-gen-jsonshim ${istio_deps_version} "istio.io/tools" "/cmd/protoc-gen-jsonshim" "${istio_tools_replacement_module_name}"
 ensure-binary-version protoc-gen-docs ${istio_deps_version} "istio.io/tools" "/cmd/protoc-gen-docs" "${istio_tools_replacement_module_name}"
 ensure-binary-version protoc-gen-gogofast ${gogo_protobuf_version} "github.com/gogo" "/protobuf/protoc-gen-gogofast"
-ensure-binary-version yq ${yq_version} "github.com/mikefarah/yq" "/v3"
+ensure-binary-version yq ${yq_version} "github.com/mikefarah/yq" "/v4"
 
 go mod tidy
