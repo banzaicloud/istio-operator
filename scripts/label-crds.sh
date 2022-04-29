@@ -9,5 +9,6 @@ ISTIO_VERSION=${1:-"1.13.3"}
 for name in "$crdpath"/*.yaml; do
 	sed "$ d" $name > $name.changed
 	mv $name.changed $name
-	sed "s/{{ISTIO_VERSION}}/${ISTIO_VERSION}/" "$projectdir/hack/crd-labeling-yq.yaml" | "$projectdir"/bin/yq w -d'*' -i -s - "$name"
+
+    "$projectdir"/bin/yq ".metadata.labels.\"resource.alpha.banzaicloud.io/revision\" = \"$ISTIO_VERSION\"" -i "$name"
 done
