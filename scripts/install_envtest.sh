@@ -15,6 +15,13 @@ mkdir -p bin
 ln -s "${target_dir_name}" ${link_path}
 
 if [ ! -e bin/"${target_dir_name}" ]; then
-    curl -sSL "https://go.kubebuilder.io/test-tools/${version}/$(go env GOOS)/$(go env GOARCH)" | tar -xz -C /tmp/
+    os=$(go env GOOS)
+    arch=$(go env GOARCH)
+
+    # Temporary fix for Apple M1 until envtest is released for darwin-arm64 arch
+    if [ "$os" == "darwin" ] && [ "$arch" == "arm64" ]; then
+        arch="amd64"
+    fi
+    curl -sSL "https://go.kubebuilder.io/test-tools/$version/$os/$arch" | tar -xz -C /tmp/
     mv "/tmp/kubebuilder" bin/"${target_dir_name}"
 fi
