@@ -1,6 +1,6 @@
 # Image URL to use all building/pushing image targets
 TAG ?= $(shell git describe --tags --abbrev=0 --match 'v[0-9].*[0-9].*[0-9]' 2>/dev/null )
-IMAGE_REPOSITORY ?= banzaicloud/istio-operator
+IMAGE_REPOSITORY ?= ghcr.io/banzaicloud/istio-operator
 IMG ?= ${IMAGE_REPOSITORY}:$(TAG)
 
 CHART_VERSION ?= $(shell sed -nr '/version:/ s/.*version: ([^"]+).*/\1/p' deploy/charts/istio-operator/Chart.yaml)
