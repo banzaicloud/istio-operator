@@ -26,7 +26,7 @@ import (
 
 // define new type from k8s quantity to marshal/unmarshal jsonpb
 type Quantity struct {
-	resource.Quantity
+	resource.Quantity `json:"quantity,omitempty"`
 }
 
 // MarshalJSONPB implements the jsonpb.JSONPBMarshaler interface.
@@ -47,7 +47,7 @@ func (q *Quantity) UnmarshalJSONPB(_ *jsonpb.Unmarshaler, value []byte) error {
 
 // define new type from k8s intstr to marshal/unmarshal jsonpb
 type IntOrString struct {
-	intstr.IntOrString
+	intstr.IntOrString `json:"intorsting,omitempty"`
 }
 
 // MarshalJSONPB implements the jsonpb.JSONPBMarshaler interface.
