@@ -129,15 +129,15 @@ func NamespacedNameFromRevision(revision string) types.NamespacedName {
 
 // +kubebuilder:object:generate=false
 type IstioControlPlaneWithProperties struct {
-	*IstioControlPlane
-	Properties IstioControlPlaneProperties
+	*IstioControlPlane `json:"istioControlPlane,omitempty"`
+	Properties         IstioControlPlaneProperties `json:"properties,omitempty"`
 }
 
-// +kubebuilder:object:generate=false
+// Properties of the IstioControlPlane
 type IstioControlPlaneProperties struct {
-	Mesh                         *IstioMesh
-	MeshNetworks                 *v1alpha1.MeshNetworks
-	TrustedRootCACertificatePEMs []string
+	Mesh                         *IstioMesh             `json:"mesh,omitempty"`
+	MeshNetworks                 *v1alpha1.MeshNetworks `json:"meshNetworks,omitempty"`
+	TrustedRootCACertificatePEMs []string               `json:"trustedRootCACertificatePEMs,omitempty"`
 }
 
 func (p IstioControlPlaneProperties) GetMesh() *IstioMesh {
