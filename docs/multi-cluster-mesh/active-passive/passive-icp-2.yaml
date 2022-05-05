@@ -1,0 +1,11 @@
+apiVersion: servicemesh.cisco.com/v1alpha1
+kind: IstioControlPlane
+metadata:
+  name: icp-v113x
+spec:
+  version: 1.13.3
+  mode: PASSIVE
+  meshID: mesh1
+  networkName: network1
+  meshExpansion:
+    enabled: true

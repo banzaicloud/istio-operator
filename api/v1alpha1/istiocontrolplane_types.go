@@ -134,6 +134,7 @@ type IstioControlPlaneWithProperties struct {
 }
 
 // Properties of the IstioControlPlane
+// +kubebuilder:object:generate=false
 type IstioControlPlaneProperties struct {
 	Mesh                         *IstioMesh             `json:"mesh,omitempty"`
 	MeshNetworks                 *v1alpha1.MeshNetworks `json:"meshNetworks,omitempty"`
