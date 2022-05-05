@@ -171,3 +171,8 @@ release: check_release
 tidy: ## Execute go mod tidy
 	go mod tidy
 	go mod download all
+
+#Generate CRD docs
+.PHONY: docs
+docs:
+	go run cmd/docs.go
