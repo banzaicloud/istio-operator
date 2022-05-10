@@ -65,11 +65,11 @@ kubectl -n=istio-system apply -f https://raw.githubusercontent.com/banzaicloud/i
 ```
 kubectl label ns default istio.io/rev=icp-v113x.istio-system
 ```
-To all clusters:
+#### To all clusters:
 ```
 kubectl apply -n=default -f https://raw.githubusercontent.com/banzaicloud/istio-operator/release-1.10/docs/federation/flat/echo-service.yml
 ```
-Active:
+#### Active:
 ```
 kubectl run -n=default curl-test --image=radial/busyboxplus:curl -i --tty --rm
 for i in `seq 1 99 `; do curl -s echo | grep Hostname; done | sort | uniq –c
