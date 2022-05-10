@@ -13,10 +13,10 @@ The goal of the **Istio-operator** is to enable popular service mesh use cases (
 
 ## In this README
 
-- Getting started
-- Issues, feature requests
-- Contributing
-- Got stuck? Find help!
+- [Getting started](#getting-started)
+- [Issues, feature requests](#issues-feature-requests)
+- [Contributing](#contributing)
+- [Got stuck? Find help!](#got-stuck-find-help)
 
 ## Getting started
 
@@ -124,7 +124,7 @@ If you find this project useful here's how you can help:
 - Help new users with issues they may encounter
 - Support the development of this project and star this repo!
 
-## Istio operator support
+## Got stuck? Find help!
 
 ### Community support
 
