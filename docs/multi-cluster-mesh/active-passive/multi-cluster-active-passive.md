@@ -1,42 +1,41 @@
 # Single mesh multi cluster multiple networks with Istio operator
-This guide will walk through the process of configuring an active-passive multi-cluster Istio mesh discribed in the official [Istio documentation](https://istio.io/latest/docs/setup/install/multicluster/primary-remote_multi-network/), but without manual steps to set up connection and trust between the clusters. While this guide discuss a two cluster setup, multiple remote clusters can be added the same way.
-
-## Objective:
-Set up two clusters (one active – one passive) in a single mesh multi network (each in different network) setup with Istio operator.
-
+This guide will walk through the process of configuring an active-passive multi-cluster Istio mesh discribed in the official [Istio documentation](https://istio.io/latest/docs/setup/install/multicluster/primary-remote_multi-network/), but without manual steps to set up connection and trust between the clusters. While this guide discuss a two cluster setup, multiple remote clusters can be added the same way. The cluster roles in the official Istio documentation `primary, remote` are called `active, passive` here.
 ## Setup: 
 
-### Install Cluster Registry and Istio Operator:
-
+### Install Cluster Registry:
+For further information, chek out the [GitHub repo](https://github.com/cisco-open/cluster-registry-controller#quickstart).
 #### Active setup:
-1. Install cluster registry controller in the `istio-system` namespace:
+Install cluster registry controller, the `controller.apiServerEndpointAddress` value should be set to the public API endpoint address of the cluster (see [Cluster registry docs](https://github.com/cisco-open/cluster-registry-controller/tree/master/deploy/charts/cluster-registry#installing-the-chart)). This is needed, because with certain Kubernetes distributions, the default value can be a private IP address.:
 ```
-helm install --namespace=cluster-registry --create-namespace cluster-registry-controller deploy/charts/cluster-registry  --set image.tag=v0.1.9 --set localCluster.name=demo-active --set network.name=network1
+API_SERVER=$(kubectl config view -o jsonpath='{.clusters[0].cluster.server}')
+helm repo add cluster-registry https://cisco-open.github.io/cluster-registry-controller
+helm install --namespace=cluster-registry --create-namespace cluster-registry cluster-registry/cluster-registry --set localCluster.name=demo-active --set network.name=network1 --set controller.apiServerEndpointAddress=$API_SERVER
 ```
-2. Install istio operator in the `istio-system` namespace:
+#### Passive setup:
+Install cluster registry controller, the `controller.apiServerEndpointAddress` value should be set to the public API endpoint address of the cluster (see [Cluster registry docs](https://github.com/cisco-open/cluster-registry-controller/tree/master/deploy/charts/cluster-registry#installing-the-chart)). This is needed, because with certain Kubernetes distributions, the default value can be a private IP address.:
 ```
-helm install --namespace=istio-system --create-namespace istio-operator-v113x deploy/charts/istio-operator --set clusterRegistry.clusterAPI.enabled=true --set clusterRegistry.resourceSyncRules.enabled=true --set image.tag=v2.13.2
+API_SERVER=$(kubectl config view -o jsonpath='{.clusters[0].cluster.server}')
+helm repo add cluster-registry https://cisco-open.github.io/cluster-registry-controller
+helm install --namespace=cluster-registry --create-namespace cluster-registry cluster-registry/cluster-registry --set localCluster.name=demo-passive --set network.name=network2 --set controller.apiServerEndpointAddress=$API_SERVER
 ```
-3. Apply ACTIVE `IstioControlPlane` Custom Resource to the `istio-system` namespace:
+### Install Istio Operator:
+#### Active setup:
+1. Install istio operator in the `istio-system` namespace:
+```
+helm repo add banzaicloud-stable https://kubernetes-charts.banzaicloud.com
+helm install --namespace=istio-system --create-namespace istio-operator-v113x banzaicloud-stable/istio-operator --set clusterRegistry.clusterAPI.enabled=true --set clusterRegistry.resourceSyncRules.enabled=true
+```
+2. Apply ACTIVE `IstioControlPlane` Custom Resource to the `istio-system` namespace:
 ```
 kubectl -n=istio-system apply -f docs/multi-cluster-mesh/active-passive/active-icp.yaml
 ```
-
 #### Passive setup:
-- Install cluster registry controller (replace Kubernetes API server endpoint):
+1. Install istio operator in the `istio-system` namespace:
 ```
-helm install --namespace=cluster-registry --create-namespace cluster-registry-controller deploy/charts/cluster-registry  --set image.tag=v0.1.9 --set localCluster.name=demo-passive --set network.name=network2 --set controller.apiServerEndpointAddress=<KUBERNETES_API_SERVER_FOR_ACTIVE>
+helm repo add banzaicloud-stable https://kubernetes-charts.banzaicloud.com
+helm install --namespace=istio-system --create-namespace istio-operator-v113x banzaicloud-stable/istio-operator --set clusterRegistry.clusterAPI.enabled=true --set clusterRegistry.resourceSyncRules.enabled=true
 ```
-Copy/paste secret and cluster resources from active->passive and passive->active as well:
-```
-kubectl get secret,cluster demo-active -o yaml | pbcopy       pbpaste | kubectl apply -f -
-kubectl get secret,cluster demo-passive -o yaml | pbcopy     pbpaste | kubectl apply -f -
-```
-- Install istio operator in the `istio-system` namespace:
-```
-helm install --namespace=istio-system --create-namespace istio-operator-v113x deploy/charts/istio-operator --set image.repository=lac21/istio-operator --set clusterRegistry.clusterAPI.enabled=true --set clusterRegistry.resourceSyncRules.enabled=true --set image.tag=v2.13.2
-```
-- Apply PASSIVE `IstioControlPlane` Custom Resource to the istio-system namespace:
+2. Apply PASSIVE `IstioControlPlane` Custom Resource to the istio-system namespace:
 ```
 kubectl -n=istio-system apply -f docs/multi-cluster-mesh/active-passive/passive-icp.yaml
 ```
