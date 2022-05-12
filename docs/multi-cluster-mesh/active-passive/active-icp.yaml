@@ -2,7 +2,8 @@ apiVersion: servicemesh.cisco.com/v1alpha1
 kind: IstioControlPlane
 metadata:
   name: icp-v113x
-  labels:
+  namespace: istio-system
+  annotations:
    controlplane.istio.servicemesh.cisco.com/namespace-injection-source: "true"
 spec:
   version: 1.13.3
