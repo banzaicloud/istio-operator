@@ -75,7 +75,7 @@ serviceaccount/bookinfo-productpage created
 deployment.apps/productpage-v1 created
 ```
 
-Verify that all applications pods are running and have the sidecar proxy injected.
+Verify that all applications pods are running and have the sidecar proxy injected. The READY column shows the number of containers for the pod: this should be 1/1 for the gateway, and at least 2/2 for the other pods (the original container of the pods + the sidecar container).
 ```
 $ kubectl get pod -n demoapp
 NAME                              READY   STATUS    RESTARTS   AGE
