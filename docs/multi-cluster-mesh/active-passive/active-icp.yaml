@@ -8,7 +8,6 @@ metadata:
 spec:
   version: 1.13.3
   mode: ACTIVE
-  meshID: mesh1
   networkName: network1
   meshExpansion:
     enabled: true
