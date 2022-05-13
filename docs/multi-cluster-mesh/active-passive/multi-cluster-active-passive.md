@@ -1,4 +1,4 @@
-# Single mesh multi cluster multiple networks with Istio operator
+# Single mesh multi cluster active-passive on different networks with Istio operator
 This guide will walk through the process of configuring an active-passive multi-cluster Istio mesh discribed in the official [Istio documentation](https://istio.io/latest/docs/setup/install/multicluster/primary-remote_multi-network/), but without manual steps to set up connection and trust between the clusters. While this guide discuss a two cluster setup, multiple remote clusters can be added the same way. The cluster roles in the official Istio documentation `primary, remote` are called `active, passive` here.
 ## Setup: 
 
@@ -17,6 +17,12 @@ Install cluster registry controller, the `controller.apiServerEndpointAddress` v
 API_SERVER=$(kubectl config view -o jsonpath='{.clusters[0].cluster.server}')
 helm repo add cluster-registry https://cisco-open.github.io/cluster-registry-controller
 helm install --namespace=cluster-registry --create-namespace cluster-registry cluster-registry/cluster-registry --set localCluster.name=demo-passive --set network.name=network2 --set controller.apiServerEndpointAddress=$API_SERVER
+```
+#### Set up registry connection:
+Copy/paste secret and cluster resources from active->passive and passive->active as well: 
+```
+kubectl get -n=cluster-registry secret,cluster demo-active -o yaml | pbcopy       pbpaste | kubectl apply -f -
+kubectl get -n=cluster-registry secret,cluster demo-passive -o yaml | pbcopy     pbpaste | kubectl apply -f -
 ```
 ### Install Istio Operator:
 #### Active setup:
@@ -42,13 +48,13 @@ kubectl -n=istio-system apply -f docs/multi-cluster-mesh/active-passive/passive-
 
 ### Install distributed bookinfo:
 #### Active:
-Label the `default` namespace with the name and namespace of the Istio control plane. This will enable sidecar injection for the later deployed demo application. Deploy the demo application
+Label the `default` namespace with the name and namespace of the Istio control plane. This will enable sidecar injection for the later deployed demo application. Deploy the demo application:
 ```
 kubectl label ns default istio.io/rev=icp-v113x.istio-system
 kubectl apply -f docs/multi-cluster-mesh/active-passive/demoapp-1.yaml 
 ```
 #### Passive:
-The namespace labels are synchronized between the clusters by the Cluster Registry Controller, so only the demo application needs to be deployed.
+The namespace labels are synchronized between the clusters by the Istio Operator, so only the demo application needs to be deployed.
 ```
 kubectl apply -f docs/multi-cluster-mesh/active-passive/demoapp-2.yaml
 ```
