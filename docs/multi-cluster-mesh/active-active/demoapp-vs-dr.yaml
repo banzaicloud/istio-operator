@@ -1,0 +1,45 @@
+apiVersion: networking.istio.io/v1beta1
+kind: VirtualService
+metadata:
+  name: reviews
+  namespace: default
+spec:
+  hosts:
+  - reviews
+  http:
+  - match:
+    - port: 9080
+    route:
+    - destination:
+        host: reviews
+        port:
+          number: 9080
+        subset: v1
+      weight: 50
+    - destination:
+        host: reviews
+        port:
+          number: 9080
+        subset: v2
+      weight: 50
+---
+apiVersion: networking.istio.io/v1beta1
+kind: DestinationRule
+metadata:
+  name: reviews
+  namespace: default
+spec:
+  host: reviews
+  subsets:
+  - labels:
+      version: v1
+    name: v1
+  - labels:
+      version: v2
+    name: v2
+  - labels:
+      version: v3
+    name: v3
+  trafficPolicy:
+    tls:
+      mode: ISTIO_MUTUAL
