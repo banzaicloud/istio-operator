@@ -1,0 +1,20 @@
+apiVersion: servicemesh.cisco.com/v1alpha1
+kind: IstioControlPlane
+metadata:
+  name: icp-v113x
+  namespace: istio-system
+spec:
+  version: 1.13.3
+  mode: ACTIVE
+  networkName: network1
+  meshExpansion:
+    enabled: true
+  istiod:
+    deployment:
+      env:
+        - name: ISTIO_MULTIROOT_MESH
+          value: "true"
+  meshConfig:
+    defaultConfig:
+      proxyMetadata:
+        PROXY_CONFIG_XDS_AGENT: "true"

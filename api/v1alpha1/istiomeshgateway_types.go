@@ -53,9 +53,10 @@ func (imgw *IstioMeshGateway) GetSpec() *IstioMeshGatewaySpec {
 	return nil
 }
 
+// +kubebuilder:object:generate=false
 type IstioMeshGatewayWithProperties struct {
-	*IstioMeshGateway
-	Properties IstioMeshGatewayProperties
+	*IstioMeshGateway `json:"istiomeshgateway,omitempty"`
+	Properties        IstioMeshGatewayProperties `json:"properties,omitempty"`
 }
 
 func (p *IstioMeshGatewayWithProperties) SetDefaults() {
@@ -78,14 +79,15 @@ func (p *IstioMeshGatewayWithProperties) SetDefaults() {
 	p.IstioMeshGateway.GetSpec().GetDeployment().GetPodMetadata().Annotations = annotations
 }
 
+// Properties of the IstioMeshGateway
 type IstioMeshGatewayProperties struct {
-	Revision                string
-	EnablePrometheusMerge   *bool
-	InjectionTemplate       string
-	InjectionChecksum       string
-	MeshConfigChecksum      string
-	IstioControlPlane       *IstioControlPlane
-	GenerateExternalService bool
+	Revision                string             `json:"revision,omitempty"`
+	EnablePrometheusMerge   *bool              `json:"enablePrometheusMerge,omitempty"`
+	InjectionTemplate       string             `json:"injectionTemplate,omitempty"`
+	InjectionChecksum       string             `json:"injectionChecksum,omitempty"`
+	MeshConfigChecksum      string             `json:"meshConfigChecksum,omitempty"`
+	IstioControlPlane       *IstioControlPlane `json:"istioControlPlane,omitempty"`
+	GenerateExternalService bool               `json:"generateExternalService,omitempty"`
 }
 
 func (p IstioMeshGatewayProperties) GetIstioControlPlane() *IstioControlPlane {
