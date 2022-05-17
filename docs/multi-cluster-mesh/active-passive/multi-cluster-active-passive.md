@@ -29,7 +29,7 @@ kubectl get -n=cluster-registry secret,cluster demo-passive -o yaml | pbcopy    
 1. Install istio operator in the `istio-system` namespace:
 ```
 helm repo add banzaicloud-stable https://kubernetes-charts.banzaicloud.com
-helm install --namespace=istio-system --create-namespace istio-operator-v113x banzaicloud-stable/istio-operator --set clusterRegistry.clusterAPI.enabled=true --set clusterRegistry.resourceSyncRules.enabled=true
+helm install --namespace=istio-system --create-namespace istio-operator-v112x banzaicloud-stable/istio-operator --set clusterRegistry.clusterAPI.enabled=true --set clusterRegistry.resourceSyncRules.enabled=true
 ```
 2. Apply ACTIVE `IstioControlPlane` Custom Resource to the `istio-system` namespace:
 ```
@@ -39,7 +39,7 @@ kubectl -n=istio-system apply -f docs/multi-cluster-mesh/active-passive/active-i
 1. Install istio operator in the `istio-system` namespace:
 ```
 helm repo add banzaicloud-stable https://kubernetes-charts.banzaicloud.com
-helm install --namespace=istio-system --create-namespace istio-operator-v113x banzaicloud-stable/istio-operator --set clusterRegistry.clusterAPI.enabled=true --set clusterRegistry.resourceSyncRules.enabled=true
+helm install --namespace=istio-system --create-namespace istio-operator-v112x banzaicloud-stable/istio-operator --set clusterRegistry.clusterAPI.enabled=true --set clusterRegistry.resourceSyncRules.enabled=true
 ```
 2. Apply PASSIVE `IstioControlPlane` Custom Resource to the istio-system namespace:
 ```
@@ -50,7 +50,7 @@ kubectl -n=istio-system apply -f docs/multi-cluster-mesh/active-passive/passive-
 #### Active:
 Label the `default` namespace with the name and namespace of the Istio control plane. This will enable sidecar injection for the later deployed demo application. Deploy the demo application:
 ```
-kubectl label ns default istio.io/rev=icp-v113x.istio-system
+kubectl label ns default istio.io/rev=icp-v112x.istio-system
 kubectl apply -f docs/multi-cluster-mesh/active-passive/demoapp-1.yaml 
 ```
 #### Passive:
