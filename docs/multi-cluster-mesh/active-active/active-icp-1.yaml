@@ -3,6 +3,8 @@ kind: IstioControlPlane
 metadata:
   name: icp-v113x
   namespace: istio-system
+  annotations:
+    controlplane.istio.servicemesh.cisco.com/namespace-injection-source: "true"
 spec:
   version: 1.13.3
   mode: ACTIVE
