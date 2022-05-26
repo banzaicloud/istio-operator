@@ -15,7 +15,16 @@ mkdir -p bin
 ln -s "${target_name}" ${link_path}
 
 if [ ! -e bin/"${target_name}" ]; then
-    url="https://github.com/bufbuild/buf/releases/download/v${version}/buf-$(uname -s)-$(uname -m)"
-    curl -s -L "${url}" -o bin/"${target_name}"
+    
+    os=$(uname -s)
+    arch=$(uname -m)
+
+    # Temporary fix for Apple M1 until envtest is released for darwin-arm64 arch
+    if [ "$os" == "Darwin" ] && [ "$arch" == "arm64" ]; then
+        arch="x86_64"
+    fi
+
+    url="https://github.com/bufbuild/buf/releases/download/v${version}/buf-${os}-${arch}"
+    curl -f -s -L "${url}" -o bin/"${target_name}"
     chmod u+x bin/"${target_name}"
 fi

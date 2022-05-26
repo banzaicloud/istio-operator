@@ -1,0 +1,13 @@
+apiVersion: servicemesh.cisco.com/v1alpha1
+kind: IstioControlPlane
+metadata:
+  name: icp-v112x
+  namespace: istio-system
+  annotations:
+   controlplane.istio.servicemesh.cisco.com/namespace-injection-source: "true"
+spec:
+  version: 1.12.5
+  mode: ACTIVE
+  networkName: network1
+  meshExpansion:
+    enabled: true
