@@ -14,11 +14,7 @@ metadata:
     {{ $key }}: "{{ $val }}"
 {{- end }}
 spec:
-{{- if not .Values.pilot.autoscaleEnabled }}
-{{- if .Values.pilot.replicaCount }}
-  replicas: {{ .Values.pilot.replicaCount }}
-{{- end }}
-{{- end }}
+  replicas: {{ .Values.pilot.replicas.count | default 1 }}
 {{- if .Values.pilot.deploymentStrategy }}
   strategy:
 {{ .Values.pilot.deploymentStrategy | toYaml | indent 4 }}

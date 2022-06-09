@@ -1752,6 +1752,7 @@ metadata:
   name: istiod-cp-v113x
   namespace: istio-system
 spec:
+  replicas: 1
   selector:
     matchLabels:
       app: istiod
