@@ -2,8 +2,10 @@
 
 ## Discovery Settings
 pilot:
-  replicas:
-    targetCPUUtilizationPercentage: 80
+  autoscaleEnabled: true
+  autoscaleMin: 1
+  autoscaleMax: 5
+  replicaCount: 1
   deploymentStrategy:
     type: RollingUpdate
     rollingUpdate:
@@ -24,6 +26,9 @@ pilot:
       memory: 2048Mi
 
   env: []
+
+  cpu:
+    targetAverageUtilization: 80
 
   # if protocol sniffing is enabled for outbound
   enableProtocolSniffingForOutbound: true

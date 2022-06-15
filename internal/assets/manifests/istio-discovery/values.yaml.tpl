@@ -1,5 +1,25 @@
 # template for pilot values
 {{- define "pilot" }}
+{{- $replicaCount := default 1 .GetSpec.GetIstiod.GetDeployment.GetReplicas.GetCount | int }}
+{{- $autoscaleMin := default 0 .GetSpec.GetIstiod.GetDeployment.GetReplicas.GetMin | int }}
+{{- $autoscaleMax := default 5 .GetSpec.GetIstiod.GetDeployment.GetReplicas.GetMax | int }}
+{{- $autoscaleEnabled := false }}
+{{- if .GetSpec.GetIstiod.GetDeployment.GetReplicas.GetMax }}
+{{- $autoscaleMin = 1 }}
+{{- end }}
+{{- if and $autoscaleMin (gt $autoscaleMin $replicaCount) }}
+{{- $replicaCount = $autoscaleMin }}
+{{- end }}
+{{- if and (gt $autoscaleMin 0) (gt $autoscaleMax $autoscaleMin) }}
+{{- $autoscaleEnabled = true }}
+{{- end }}
+{{- if and $autoscaleEnabled (gt $replicaCount $autoscaleMax) }}
+{{- $replicaCount = $autoscaleMax }}
+{{- end }}
+autoscaleEnabled: {{ $autoscaleEnabled }}
+autoscaleMin: {{ $autoscaleMin }}
+autoscaleMax: {{ $autoscaleMax }}
+replicaCount: {{ $replicaCount }}
 {{ valueIf (dict "key" "image" "value" .GetSpec.GetIstiod.GetDeployment.GetImage) }}
 {{ valueIf (dict "key" "traceSampling" "value" .GetSpec.GetIstiod.GetTraceSampling) }}
 
@@ -48,7 +68,10 @@ env:
 {{ toYamlIf (dict "value" .GetSpec.GetIstiod.GetDeployment.GetPodSecurityContext "key" "podSecurityContext") }}
 {{ toYamlIf (dict "value" .GetSpec.GetIstiod.GetDeployment.GetMetadata.GetLabels "key" "deploymentLabels") }}
 {{ toYamlIf (dict "value" .GetSpec.GetIstiod.GetDeployment.GetMetadata.GetAnnotations "key" "deploymentAnnotations") }}
-{{ toYamlIf (dict "value" .GetSpec.GetIstiod.GetDeployment.GetReplicas "key" "replicas") }}
+{{- if .GetSpec.GetIstiod.GetDeployment.GetReplicas.GetTargetCPUUtilizationPercentage }}
+cpu:
+  targetAverageUtilization: {{ .GetSpec.GetIstiod.GetDeployment.GetReplicas.GetTargetCPUUtilizationPercentage }}
+{{- end }}
 {{ toYamlIf (dict "value" .GetSpec.GetIstiod.GetDeployment.GetDeploymentStrategy "key" "deploymentStrategy") }}
 {{- end }}
 

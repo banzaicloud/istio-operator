@@ -14,7 +14,9 @@ metadata:
     {{ $key }}: "{{ $val }}"
 {{- end }}
 spec:
-  replicas: {{ get (include "replicas" . | fromYaml) "count" }}
+{{- if .Values.pilot.replicaCount }}
+  replicas: {{ .Values.pilot.replicaCount }}
+{{- end }}
 {{- if .Values.pilot.deploymentStrategy }}
   strategy:
 {{ .Values.pilot.deploymentStrategy | toYaml | indent 4 }}

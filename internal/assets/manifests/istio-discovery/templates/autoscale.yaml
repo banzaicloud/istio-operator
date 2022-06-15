@@ -1,4 +1,4 @@
-{{- if and (eq .Values.global.mode "ACTIVE") (get (include "replicas" . | fromYaml) "autoscalingEnabled") }}
+{{- if and (eq .Values.global.mode "ACTIVE") .Values.pilot.autoscaleEnabled .Values.pilot.autoscaleMin .Values.pilot.autoscaleMax }}
 apiVersion: autoscaling/v2beta1
 kind: HorizontalPodAutoscaler
 metadata:
@@ -9,8 +9,8 @@ metadata:
     release: {{ .Release.Name }}
     istio.io/rev: {{ include "namespaced-revision" . }}
 spec:
-  maxReplicas: {{ get (include "replicas" . | fromYaml) "max" }}
-  minReplicas: {{ get (include "replicas" . | fromYaml) "min" }}
+  maxReplicas: {{ .Values.pilot.autoscaleMax }}
+  minReplicas: {{ .Values.pilot.autoscaleMin }}
   scaleTargetRef:
     apiVersion: apps/v1
     kind: Deployment
@@ -19,6 +19,6 @@ spec:
   - type: Resource
     resource:
       name: cpu
-      targetAverageUtilization: {{ get (include "replicas" . | fromYaml) "targetCPUUtilizationPercentage" }}
+      targetAverageUtilization: {{ .Values.pilot.cpu.targetAverageUtilization }}
 ---
 {{- end }}

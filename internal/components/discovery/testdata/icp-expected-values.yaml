@@ -149,11 +149,12 @@ pilot:
     operator: Equal
     tolerationSeconds: 5
     value: value1
-  replicas:
-    count: 1
-    min: 1
-    max: 5
-    targetCPUUtilizationPercentage: 80
+  autoscaleEnabled: true
+  autoscaleMax: 5
+  autoscaleMin: 1
+  replicaCount: 1
+  cpu:
+    targetAverageUtilization: 80
   podAnnotations:
     podannotation: podannotationvalue
   podLabels:
