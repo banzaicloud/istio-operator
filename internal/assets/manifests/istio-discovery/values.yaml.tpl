@@ -1,20 +1,19 @@
 # template for pilot values
 {{- define "pilot" }}
 {{- $replicaCount := default 1 .GetSpec.GetIstiod.GetDeployment.GetReplicas.GetCount | int }}
-{{- $autoscaleMin := default 0 .GetSpec.GetIstiod.GetDeployment.GetReplicas.GetMin | int }}
+{{- $autoscaleMin := default 1 .GetSpec.GetIstiod.GetDeployment.GetReplicas.GetMin | int }}
 {{- $autoscaleMax := default 5 .GetSpec.GetIstiod.GetDeployment.GetReplicas.GetMax | int }}
-{{- $autoscaleEnabled := false }}
-{{- if .GetSpec.GetIstiod.GetDeployment.GetReplicas.GetMax }}
-{{- $autoscaleMin = 1 }}
-{{- end }}
-{{- if and $autoscaleMin (gt $autoscaleMin $replicaCount) }}
-{{- $replicaCount = $autoscaleMin }}
-{{- end }}
-{{- if and (gt $autoscaleMin 0) (gt $autoscaleMax $autoscaleMin) }}
-{{- $autoscaleEnabled = true }}
+{{- $autoscaleEnabled := true }}
+{{- if or (and .GetSpec.GetIstiod.GetDeployment.GetReplicas.GetCount
+(not .GetSpec.GetIstiod.GetDeployment.GetReplicas.GetMin) (not .GetSpec.GetIstiod.GetDeployment.GetReplicas.GetMax))
+(ge $autoscaleMin $autoscaleMax) }}
+{{- $autoscaleEnabled = false }}
 {{- end }}
 {{- if and $autoscaleEnabled (gt $replicaCount $autoscaleMax) }}
 {{- $replicaCount = $autoscaleMax }}
+{{- end }}
+{{- if and $autoscaleEnabled (gt $autoscaleMin $replicaCount) }}
+{{- $replicaCount = $autoscaleMin }}
 {{- end }}
 autoscaleEnabled: {{ $autoscaleEnabled }}
 autoscaleMin: {{ $autoscaleMin }}
