@@ -3,9 +3,6 @@
 ## Discovery Settings
 pilot:
   replicas:
-    count: 1
-    min: 1
-    max: 5
     targetCPUUtilizationPercentage: 80
   deploymentStrategy:
     type: RollingUpdate

@@ -47,3 +47,28 @@ image: "{{ .image }}"
 image: "{{ .hub }}/{{ .image }}:{{ .tag }}"
 {{- end }}
 {{- end }}
+
+{{- define "replicas" }}
+{{- $count := default 1 .Values.pilot.replicas.count | int }}
+{{- $min := default 1 .Values.pilot.replicas.min | int }}
+{{- $max := default 5 .Values.pilot.replicas.max | int }}
+{{- $cpuUtilization := default 80 .Values.pilot.replicas.targetCPUUtilizationPercentage | int }}
+{{- $autoscalingEnabled := false }}
+{{- if and .Values.pilot.replicas.count (not .Values.pilot.replicas.min) (not .Values.pilot.replicas.max) }}
+{{- $min = 0 }}
+{{- end }}
+{{- if and $min (gt $min $count) }}
+{{- $count = $min }}
+{{- end }}
+{{- if and (gt $min 0) (gt $max $min) }}
+{{- $autoscalingEnabled = true }}
+{{- end }}
+{{- if and $autoscalingEnabled (gt $count $max) }}
+{{- $count = $max }}
+{{- end }}
+autoscalingEnabled: {{ $autoscalingEnabled }}
+count: {{ $count }}
+min: {{ $min }}
+max: {{ $max }}
+targetCPUUtilizationPercentage: {{ $cpuUtilization }}
+{{- end }}
