@@ -1,11 +1,24 @@
 # template for pilot values
 {{- define "pilot" }}
-{{- if and .GetSpec.GetIstiod.GetDeployment.GetReplicas.GetMin .GetSpec.GetIstiod.GetDeployment.GetReplicas.GetMax }}
-autoscaleEnabled: {{ and (gt (.GetSpec.GetIstiod.GetDeployment.GetReplicas.GetMin | int) 0) (gt (.GetSpec.GetIstiod.GetDeployment.GetReplicas.GetMax | int) (.GetSpec.GetIstiod.GetDeployment.GetReplicas.GetMin | int)) }}
+{{- $replicaCount := default 1 .GetSpec.GetIstiod.GetDeployment.GetReplicas.GetCount | int }}
+{{- $autoscaleMin := default 1 .GetSpec.GetIstiod.GetDeployment.GetReplicas.GetMin | int }}
+{{- $autoscaleMax := default 5 .GetSpec.GetIstiod.GetDeployment.GetReplicas.GetMax | int }}
+{{- $autoscaleEnabled := true }}
+{{- if or (and .GetSpec.GetIstiod.GetDeployment.GetReplicas.GetCount
+(not .GetSpec.GetIstiod.GetDeployment.GetReplicas.GetMin) (not .GetSpec.GetIstiod.GetDeployment.GetReplicas.GetMax))
+(ge $autoscaleMin $autoscaleMax) }}
+{{- $autoscaleEnabled = false }}
 {{- end }}
-{{ valueIf (dict "key" "autoscaleMin" "value" .GetSpec.GetIstiod.GetDeployment.GetReplicas.GetMin) }}
-{{ valueIf (dict "key" "autoscaleMax" "value" .GetSpec.GetIstiod.GetDeployment.GetReplicas.GetMax) }}
-{{ valueIf (dict "key" "replicaCount" "value" .GetSpec.GetIstiod.GetDeployment.GetReplicas.GetCount) }}
+{{- if and $autoscaleEnabled (gt $replicaCount $autoscaleMax) }}
+{{- $replicaCount = $autoscaleMax }}
+{{- end }}
+{{- if and $autoscaleEnabled (gt $autoscaleMin $replicaCount) }}
+{{- $replicaCount = $autoscaleMin }}
+{{- end }}
+autoscaleEnabled: {{ $autoscaleEnabled }}
+autoscaleMin: {{ $autoscaleMin }}
+autoscaleMax: {{ $autoscaleMax }}
+replicaCount: {{ $replicaCount }}
 {{ valueIf (dict "key" "image" "value" .GetSpec.GetIstiod.GetDeployment.GetImage) }}
 {{ valueIf (dict "key" "traceSampling" "value" .GetSpec.GetIstiod.GetTraceSampling) }}
 

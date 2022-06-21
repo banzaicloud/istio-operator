@@ -1,6 +1,6 @@
 # Single mesh multi cluster active-active on different networks with Istio operator
-This guide will walk through the process of configuring an active-active multi-cluster Istio mesh discribed in the official [Istio documentation](https://istio.io/latest/docs/setup/install/multicluster/primary-primary_multi-network/), but without manual steps to set up connection and trust between the clusters. While this guide discuss a two cluster setup, multiple remote clusters can be added the same way. The cluster roles in the official Istio documentation `primary, remote` are called `active, passive` here.
-## Setup: 
+This guide will walk through the process of configuring an active-active multi-cluster Istio mesh discribed in the official [Istio documentation](https://istio.io/latest/docs/setup/install/multicluster/multi-primary_multi-network/), but without manual steps to set up connection and trust between the clusters. While this guide discuss a two cluster setup, multiple remote clusters can be added the same way. The cluster roles in the official Istio documentation `primary, remote` are called `active, passive` here.
+## Setup:
 
 ### Install Cluster Registry:
 For further information, chek out the [GitHub repo](https://github.com/cisco-open/cluster-registry-controller#quickstart).
@@ -19,7 +19,7 @@ helm repo add cluster-registry https://cisco-open.github.io/cluster-registry-con
 helm install --namespace=cluster-registry --create-namespace cluster-registry cluster-registry/cluster-registry --set localCluster.name=demo-active-2 --set network.name=network2 --set controller.apiServerEndpointAddress=$API_SERVER
 ```
 #### Set up registry connection:
-Copy/paste secret and cluster resources from active-1->active-2 and active-2->active-1 as well: 
+Copy/paste secret and cluster resources from active-1->active-2 and active-2->active-1 as well:
 ```
 kubectl get -n=cluster-registry secret,cluster demo-active-1 -o yaml | pbcopy       pbpaste | kubectl apply -f -
 kubectl get -n=cluster-registry secret,cluster demo-active-2 -o yaml | pbcopy     pbpaste | kubectl apply -f -
@@ -51,7 +51,7 @@ kubectl -n=istio-system apply -f docs/multi-cluster-mesh/active-active/active-ic
 Label the `default` namespace with the name and namespace of the Istio control plane. This will enable sidecar injection for the later deployed demo application. Deploy the demo application:
 ```
 kubectl label ns default istio.io/rev=icp-v113x.istio-system
-kubectl apply -f docs/multi-cluster-mesh/active-active/demoapp-1.yaml 
+kubectl apply -f docs/multi-cluster-mesh/active-active/demoapp-1.yaml
 ```
 #### Active-2:
 The namespace labels are synchronized between the clusters by the Istio Operator, so only the demo application needs to be deployed.
@@ -71,5 +71,5 @@ for i in `seq 1 100`; do curl -s "http://${INGRESS_HOST}/productpage" |grep -i -
 
 Traffic split:
 ```
-kubectl apply -f docs/multi-cluster-mesh/active-active/demoapp-vs-dr.yaml 
+kubectl apply -f docs/multi-cluster-mesh/active-active/demoapp-vs-dr.yaml
 ```
