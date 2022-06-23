@@ -6,7 +6,7 @@ metadata:
 spec:
   meshID: mesh1
   clusterID: demo-cluster2
-  version: "1.13.3"
+  version: "1.13.5"
   mode: PASSIVE
   networkName: network1
   caProvider: Citadel
