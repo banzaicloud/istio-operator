@@ -68,7 +68,7 @@ func TestIMGWResourceDump(t *testing.T) {
 			reconciler.NativeReconcilerSetControllerRef(),
 		}),
 		v1alpha1.IstioMeshGatewayProperties{
-			Revision:                "cp-v110x.istio-system",
+			Revision:                "cp-v115x.istio-system",
 			EnablePrometheusMerge:   utils.BoolPointer(true),
 			InjectionTemplate:       "gateway",
 			InjectionChecksum:       "08fdba0c89f9bbd6624201d98758746d1bddc78e9004b00259f33b20b7f9efba",
