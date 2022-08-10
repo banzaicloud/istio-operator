@@ -1,9 +1,9 @@
 apiVersion: servicemesh.cisco.com/v1alpha1
 kind: IstioControlPlane
 metadata:
-  name: icp-v113x-sample
+  name: icp-v115x-sample
 spec:
-  version: 1.13.5
+  version: 1.15.0
   mode: ACTIVE
   meshID: mesh1
   networkName: network1
@@ -18,7 +18,7 @@ spec:
         min: 1
         max: 5
         count: 1
-      image: "gcr.io/istio-release/pilot:1.13.5"
+      image: "gcr.io/istio-release/pilot:1.15.0"
       resources:
         requests:
           cpu: 500m
@@ -42,7 +42,7 @@ spec:
       operatorEndpoints:
         enabled: false
   proxy:
-    image: "gcr.io/istio-release/proxyv2:1.13.5"
+    image: "gcr.io/istio-release/proxyv2:1.15.0"
     privileged: false
     enableCoreDump: false
     logLevel: "WARNING"
@@ -62,7 +62,7 @@ spec:
     excludeInboundPorts: ""
     excludeOutboundPorts: ""
   proxyInit:
-    image: "gcr.io/istio-release/proxyv2:1.13.5"
+    image: "gcr.io/istio-release/proxyv2:1.15.0"
     resources:
       limits:
         cpu: 2000m
