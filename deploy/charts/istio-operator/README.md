@@ -1,11 +1,11 @@
 # Istio-operator chart
 
-[Istio-operator](https://github.com/banzaicloud/istio-operator/tree/release-1.13) is a Kubernetes operator to deploy and manage [Istio](https://istio.io/) resources for a Kubernetes cluster.
+[Istio-operator](https://github.com/banzaicloud/istio-operator/tree/release-1.15) is a Kubernetes operator to deploy and manage [Istio](https://istio.io/) resources for a Kubernetes cluster.
 
 ## Prerequisites
 
 - Helm3
-- Kubernetes 1.19.0 - 1.22.x
+- Kubernetes 1.21.0 - 1.24.x
 
 ## Installing the chart
 
