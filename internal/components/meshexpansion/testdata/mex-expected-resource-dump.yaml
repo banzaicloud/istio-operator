@@ -111,6 +111,13 @@ spec:
       value: "true"
     - name: ISTIO_BOGUS_ENV
       value: "true"
+    volumes:
+    - name: workload-volume
+      volumeSource:
+        emptyDir: {}
+    volumeMounts:
+    - mountPath: /var/run/secrets/workload-spiffe-uds
+      name: workload-volume
   service:
     ports:
     - name: tcp-status-port

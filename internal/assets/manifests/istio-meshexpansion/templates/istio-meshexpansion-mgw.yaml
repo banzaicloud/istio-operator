@@ -36,6 +36,13 @@ env:
   value: "true"
 {{- end }}
 {{- include "toYamlIf" (dict "value" .Values.deployment.env) }}
+volumes:
+- name: workload-volume
+  volumeSource:
+    emptyDir: {}
+volumeMounts:
+- mountPath: /var/run/secrets/workload-spiffe-uds
+  name: workload-volume
 {{- end }}
 
 apiVersion: servicemesh.cisco.com/v1alpha1
