@@ -1,5 +1,9 @@
 {{- if and .Values.deployment.replicas.min .Values.deployment.replicas.max (gt (.Values.deployment.replicas.min | int) 0) (gt (.Values.deployment.replicas.max | int) (.Values.deployment.replicas.min | int)) }}
-apiVersion: autoscaling/v2beta1
+{{- if (semverCompare ">=1.23-0" .Capabilities.KubeVersion.GitVersion) }}
+apiVersion: autoscaling/v2
+{{- else }}
+apiVersion: autoscaling/v2beta2
+{{- end }}
 kind: HorizontalPodAutoscaler
 metadata:
   name: {{ include "name-with-revision" ( dict "name" "istio-sidecar-injector" "context" $) }}
@@ -17,6 +21,8 @@ spec:
     - type: Resource
       resource:
         name: cpu
-        targetAverageUtilization: {{ .Values.deployment.replicas.targetCPUUtilizationPercentage }}
+        target:
+          type: Utilization
+          averageUtilization: {{ .Values.deployment.replicas.targetCPUUtilizationPercentage }}
 ---
 {{- end }}

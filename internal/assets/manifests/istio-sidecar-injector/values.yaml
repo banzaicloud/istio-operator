@@ -32,6 +32,7 @@ deployment:
     runAsNonRoot: true
     runAsUser: 1337
   tolerations: []
+  topologySpreadConstraints: []
   volumeMounts: []
   volumes: []
   podDisruptionBudget: {}

@@ -40,6 +40,16 @@ spec:
 {{- if $gateway.priorityClassName }}
       priorityClassName: "{{ $gateway.priorityClassName }}"
 {{- end }}
+      volumes:
+        - emptyDir: {}
+          name: workload-socket
+        - emptyDir: {}
+          name: credential-socket
+        - emptyDir: {}
+          name: workload-certs
+        {{- if $gateway.volumes }}
+        {{ $gateway.volumes | toYaml | nindent 8 }}
+        {{- end }}
       containers:
         - name: istio-proxy
           image: auto
@@ -79,9 +89,18 @@ spec:
           - name: ISTIO_META_UNPRIVILEGED_POD
             value: "true"
           {{- end }}
+          volumeMounts:
+            - name: workload-socket
+              mountPath: /var/run/secrets/workload-spiffe-uds
+            - name: credential-socket
+              mountPath: /var/run/secrets/credential-uds
+            - name: workload-certs
+              mountPath: /var/run/secrets/workload-spiffe-credentials
+            {{- if $gateway.volumeMounts }}
+            {{ $gateway.volumeMounts | toYaml | nindent 12 }}
+            {{- end }}
 {{ include "toYamlIf" (dict "value" $gateway.env) | indent 10 }}
-{{ include "toYamlIf" (dict "value" $gateway.volumeMounts "key" "volumeMounts" "indent" 2) | indent 10 }}
-{{ include "toYamlIf" (dict "value" $gateway.volumes "key" "volumes" "indent" 2) | indent 6 }}
 {{ include "toYamlIf" (dict "value" $gateway.affinity "key" "affinity" "indent" 2) | indent 6 }}
 {{ include "toYamlIf" (dict "value" $gateway.nodeSelector "key" "nodeSelector" "indent" 2) | indent 6 }}
 {{ include "toYamlIf" (dict "value" $gateway.tolerations "key" "tolerations" "indent" 2) | indent 6 }}
+{{ include "toYamlIf" (dict "value" $gateway.topologySpreadConstraints "key" "topologySpreadConstraints" "indent" 2) | indent 6 }}

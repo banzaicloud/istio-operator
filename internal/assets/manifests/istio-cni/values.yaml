@@ -1,7 +1,10 @@
 cni:
   image: install-cni
 
-  logLevel: info
+  # Configuration log level of istio-cni binary
+  # by default istio-cni send all logs to UDS server
+  # if want to see them you need change global.logging.level with cni:debug
+  logLevel: debug
 
   # Configuration file to insert istio-cni plugin configuration
   # by default this will be the first file found in the cni-conf-dir
@@ -96,6 +99,10 @@ global:
   # Specify image pull policy if default behavior isn't desired.
   # Default behavior: latest images will be Always else IfNotPresent.
   imagePullPolicy: ""
+
+  # change cni scope level to control logging out of istio-cni-node DaemonSet
+  logging:
+    level: default:info,cni:info
 
   # ImagePullSecrets for all ServiceAccount, list of secrets in the same namespace
   # to use for pulling any images in pods that reference this ServiceAccount.

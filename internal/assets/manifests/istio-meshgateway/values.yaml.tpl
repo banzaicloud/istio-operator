@@ -28,6 +28,7 @@ deployment:
 {{ toYamlIf (dict "value" .GetResources "key" "resources") | indent 2 }}
 {{ toYamlIf (dict "value" .GetSecurityContext "key" "securityContext") | indent 2 }}
 {{ toYamlIf (dict "value" .GetTolerations "key" "tolerations") | indent 2 }}
+{{ toYamlIf (dict "value" .GetTopologySpreadConstraints "key" "topologySpreadConstraints") | indent 2 }}
 {{ toYamlIf (dict "value" .GetVolumeMounts "key" "volumeMounts") | indent 2 }}
 {{ toYamlIf (dict "value" .GetVolumes "key" "volumes") | indent 2 }}
 {{ toYamlIf (dict "value" .GetPodDisruptionBudget "key" "podDisruptionBudget") | indent 2 }}

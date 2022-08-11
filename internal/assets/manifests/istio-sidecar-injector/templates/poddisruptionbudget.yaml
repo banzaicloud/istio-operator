@@ -1,5 +1,9 @@
 {{- if or (gt (.Values.deployment.podDisruptionBudget.minAvailable | int) 0) (gt (.Values.deployment.podDisruptionBudget.maxUnavailable | int) 0) }}
+{{- if (semverCompare ">=1.21-0" .Capabilities.KubeVersion.GitVersion) }}
+apiVersion: policy/v1
+{{- else }}
 apiVersion: policy/v1beta1
+{{- end }}
 kind: PodDisruptionBudget
 metadata:
   name: {{ include "name-with-revision" ( dict "name" "istio-sidecar-injector" "context" $) }}

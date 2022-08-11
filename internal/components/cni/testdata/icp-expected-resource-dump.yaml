@@ -1,3 +1,4 @@
+---
 apiVersion: v1
 kind: Namespace
 metadata:
@@ -7,7 +8,6 @@ spec: {}
 status: {}
 
 ---
-
 apiVersion: v1
 kind: ResourceQuota
 metadata:
@@ -27,10 +27,21 @@ spec:
 ---
 apiVersion: v1
 data:
-  cni_network_config: "{\n  \"cniVersion\": \"0.3.1\",\n  \"name\": \"istio-cni\",\n
-    \ \"type\": \"istio-cni\",\n  \"log_level\": \"debug\",\n  \"log_uds_address\":
-    \"__LOG_UDS_ADDRESS__\",\n  \"kubernetes\": {\n      \"kubeconfig\": \"__KUBECONFIG_FILEPATH__\",\n
-    \     \"cni_bin_dir\": \"/home/kubernetes/bin\",\n      \"exclude_namespaces\": [ \"smm-system\" ],\n      \"include_namespaces\": [ \"smm-system\" ],\n      \"revision\": \"cp-v115x.istio-system\"\n  }\n}"
+  cni_network_config: |-
+    {
+      "cniVersion": "0.3.1",
+      "name": "istio-cni",
+      "type": "istio-cni",
+      "log_level": "debug",
+      "log_uds_address": "__LOG_UDS_ADDRESS__",
+      "kubernetes": {
+          "kubeconfig": "__KUBECONFIG_FILEPATH__",
+          "cni_bin_dir": "/home/kubernetes/bin",
+          "exclude_namespaces": [ "smm-system" ],
+          "include_namespaces": [ "smm-system" ],
+          "revision": "cp-v115x.istio-system"
+      }
+    }
 kind: ConfigMap
 metadata:
   labels:
@@ -41,24 +52,27 @@ metadata:
   namespace: istio-system
 
 ---
-
 apiVersion: v1
+data:
+  config: |-
+    - name: istio-cni-cp-v115x
+      selector: app=istio-cni-node,istio.io/rev=cp-v115x.istio-system
+      namespace: istio-system
 kind: ConfigMap
 metadata:
-  name: istio-cni-taint-cp-v115x
-  namespace: istio-system
   labels:
     app: istio-cni
-    release: istio-cni
     istio.io/rev: cp-v115x.istio-system
-data:
-  config: "- name: istio-cni-cp-v115x\n  selector: app=istio-cni-node,istio.io/rev=cp-v115x.istio-system\n  namespace: istio-system"
+    release: istio-cni
+  name: istio-cni-taint-cp-v115x
+  namespace: istio-system
+
 ---
 apiVersion: v1
-kind: ServiceAccount
 imagePullSecrets:
 - name: pullsecret-1
 - name: pullsecret-2
+kind: ServiceAccount
 metadata:
   labels:
     app: istio-cni
@@ -87,7 +101,6 @@ rules:
   - get
 
 ---
-
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRole
 metadata:
@@ -122,31 +135,52 @@ rules:
   - create
 
 ---
-
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRole
 metadata:
-  name: istio-cni-taint-cp-v115x-istio-system
   labels:
     app: istio-cni
-    release: istio-cni
     istio.io/rev: cp-v115x.istio-system
+    release: istio-cni
+  name: istio-cni-taint-cp-v115x-istio-system
 rules:
-  - apiGroups: [""]
-    resources: ["pods"]
-    verbs: ["get", "list", "watch", "patch"]
-  - apiGroups: [""]
-    resources: ["nodes"]
-    verbs: ["get", "list", "watch", "update", "patch"]
-  - apiGroups: [""]
-    resources: ["configmaps"]
-    verbs: ["get", "list"]
-  - apiGroups: ["coordination.k8s.io"]
-    resources: ["leases"]
-    verbs: ["get", "list", "create", "update"]
+- apiGroups:
+  - ""
+  resources:
+  - pods
+  verbs:
+  - get
+  - list
+  - watch
+  - patch
+- apiGroups:
+  - ""
+  resources:
+  - nodes
+  verbs:
+  - get
+  - list
+  - watch
+  - update
+  - patch
+- apiGroups:
+  - ""
+  resources:
+  - configmaps
+  verbs:
+  - get
+  - list
+- apiGroups:
+  - coordination.k8s.io
+  resources:
+  - leases
+  verbs:
+  - get
+  - list
+  - create
+  - update
 
 ---
-
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRoleBinding
 metadata:
@@ -183,34 +217,32 @@ subjects:
   namespace: istio-system
 
 ---
-
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRoleBinding
 metadata:
-  name: istio-cni-taint-cp-v115x-istio-system
   labels:
+    istio.io/rev: cp-v115x.istio-system
     k8s-app: istio-cni-taint
-    istio.io/rev: cp-v115x.istio-system
-subjects:
-  - kind: ServiceAccount
-    name: istio-cni-cp-v115x
-    namespace: istio-system
+  name: istio-cni-taint-cp-v115x-istio-system
 roleRef:
   apiGroup: rbac.authorization.k8s.io
   kind: ClusterRole
   name: istio-cni-taint-cp-v115x-istio-system
+subjects:
+- kind: ServiceAccount
+  name: istio-cni-cp-v115x
+  namespace: istio-system
 
 ---
-
 apiVersion: rbac.authorization.k8s.io/v1
 kind: RoleBinding
 metadata:
-  name: istio-cni-psp
-  namespace: istio-system
   labels:
     app: istio-cni
-    release: istio-cni
     istio.io/rev: cp-v115x.istio-system
+    release: istio-cni
+  name: istio-cni-psp
+  namespace: istio-system
 roleRef:
   apiGroup: rbac.authorization.k8s.io
   kind: ClusterRole
@@ -228,9 +260,9 @@ metadata:
     daemonset-annotation: value
   labels:
     app: istio-cni-node
+    daemonset-label: value
     istio.io/rev: cp-v115x.istio-system
     release: istio-cni
-    daemonset-label: value
   name: istio-cni-node-cp-v115x
   namespace: istio-system
 spec:
@@ -241,20 +273,40 @@ spec:
   template:
     metadata:
       annotations:
+        podannotation: podannotationvalue
         prometheus.io/path: /metrics
         prometheus.io/port: "15014"
         prometheus.io/scrape: "true"
-        scheduler.alpha.kubernetes.io/critical-pod: ""
         sidecar.istio.io/inject: "false"
-        podannotation: podannotationvalue
       labels:
         app: istio-cni-node
+        podlabel: podlabelvalue
         release: istio-cni
         sidecar.istio.io/inject: "false"
-        podlabel: podlabelvalue
     spec:
+      affinity:
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+            - matchExpressions:
+              - key: kubernetes.io/e2e-az-name
+                operator: In
+                values:
+                - e2e-az1
+                - e2e-az2
+        podAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+          - labelSelector:
+              matchExpressions:
+              - key: security
+                operator: In
+                values:
+                - S1
+            topologyKey: topology.kubernetes.io/zone
       containers:
-      - command:
+      - args:
+        - --log_output_level=default:info,cni:info
+        command:
         - install-cni
         env:
         - name: CNI_CONF_NAME
@@ -291,28 +343,14 @@ spec:
         - name: CNI_ENV_NAME
           value: "true"
         - name: CNI_ANOTHER_ENV_NAME
-          value: "standard"
+          value: standard
         image: gcr.io/istio-testing/install-cni:latest
         imagePullPolicy: Always
-        livenessProbe:
-          httpGet:
-            path: /healthz
-            port: 8000
-          initialDelaySeconds: 5
         name: install-cni
         readinessProbe:
           httpGet:
             path: /readyz
             port: 8000
-        volumeMounts:
-        - mountPath: /host/opt/cni/bin
-          name: cni-bin-dir
-        - mountPath: /host/etc/cni/net.d
-          name: cni-net-dir
-        - mountPath: /var/run/istio-cni
-          name: cni-log-dir
-        - name: config-vol
-          mountPath: /etc/config
         resources:
           limits:
             cpu: "3"
@@ -321,14 +359,20 @@ spec:
             cpu: 100m
             memory: 128Mi
         securityContext:
-          runAsGroup: 0
-          runAsUser: 0
-          runAsNonRoot: false
           allowPrivilegeEscalation: false
-      - name: taint-controller
-        image: "gcr.io/istio-testing/install-cni-taint:latest"
-        imagePullPolicy: Always
-        command:
+          runAsGroup: 0
+          runAsNonRoot: false
+          runAsUser: 0
+        volumeMounts:
+        - mountPath: /host/opt/cni/bin
+          name: cni-bin-dir
+        - mountPath: /host/etc/cni/net.d
+          name: cni-net-dir
+        - mountPath: /var/run/istio-cni
+          name: cni-log-dir
+        - mountPath: /etc/config
+          name: config-vol
+      - command:
         - /opt/local/bin/istio-cni-taint
         env:
         - name: TAINT_RUN-AS-DAEMON
@@ -339,9 +383,9 @@ spec:
           value: istio-system
         - name: TAINT_ADDITIONAL_ENV
           value: value
-        volumeMounts:
-        - name: taint-config-vol
-          mountPath: /etc/config
+        image: gcr.io/istio-testing/install-cni-taint:latest
+        imagePullPolicy: Always
+        name: taint-controller
         resources:
           limits:
             cpu: "2"
@@ -350,35 +394,19 @@ spec:
             cpu: 100m
             memory: 128Mi
         securityContext:
+          allowPrivilegeEscalation: false
           runAsGroup: 1337
           runAsNonRoot: true
           runAsUser: 1337
-          allowPrivilegeEscalation: false
+        volumeMounts:
+        - mountPath: /etc/config
+          name: taint-config-vol
       nodeSelector:
-        kubernetes.io/os: linux
         disktype: ssd
+        kubernetes.io/os: linux
       priorityClassName: system-node-critical
       serviceAccountName: istio-cni-cp-v115x
       terminationGracePeriodSeconds: 5
-      affinity:
-        nodeAffinity:
-          requiredDuringSchedulingIgnoredDuringExecution:
-            nodeSelectorTerms:
-            - matchExpressions:
-              - key: kubernetes.io/e2e-az-name
-                operator: In
-                values:
-                - e2e-az1
-                - e2e-az2
-        podAffinity:
-          requiredDuringSchedulingIgnoredDuringExecution:
-          - labelSelector:
-              matchExpressions:
-              - key: security
-                operator: In
-                values:
-                - S1
-            topologyKey: topology.kubernetes.io/zone
       tolerations:
       - effect: NoSchedule
         operator: Exists
@@ -386,8 +414,8 @@ spec:
         operator: Exists
       - effect: NoExecute
         operator: Exists
-      - key: key1
-        effect: NoSchedule
+      - effect: NoSchedule
+        key: key1
         operator: Equal
         tolerationSeconds: 5
         value: value1
@@ -405,12 +433,12 @@ spec:
         secret:
           optional: true
           secretName: ssname
-      - name: config-vol
-        configMap:
-          name: log-config
+      - configMap:
           items:
           - key: log_level
             path: log_level
+          name: log-config
+        name: config-vol
   updateStrategy:
     rollingUpdate:
       maxUnavailable: 1

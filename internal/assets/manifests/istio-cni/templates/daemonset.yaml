@@ -26,11 +26,6 @@ spec:
         sidecar.istio.io/inject: "false"
 {{- include "toYamlIf" (dict "value" .Values.cni.podMetadata.labels) | indent 8 }}
       annotations:
-        # This, along with the CriticalAddonsOnly toleration below,
-        # marks the pod as a critical add-on, ensuring it gets
-        # priority scheduling and that its resources are reserved
-        # if it ever gets evicted.
-        scheduler.alpha.kubernetes.io/critical-pod: ''
         sidecar.istio.io/inject: "false"
         # Add Prometheus Scrape annotations
         prometheus.io/scrape: 'true'
@@ -53,16 +48,15 @@ spec:
 {{- if .Values.global.imagePullPolicy }}
           imagePullPolicy: {{ .Values.global.imagePullPolicy }}
 {{- end }}
-          livenessProbe:
-            httpGet:
-              path: /healthz
-              port: 8000
-            initialDelaySeconds: 5
           readinessProbe:
             httpGet:
               path: /readyz
               port: 8000
           command: ["install-cni"]
+          args:
+            {{- if .Values.global.logging.level }}
+            - --log_output_level={{ .Values.global.logging.level }}
+            {{- end }}
           env:
 {{- if .Values.cni.cniConfFileName }}
             # Name of the CNI config file to create.
