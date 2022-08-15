@@ -21,7 +21,7 @@ LICENSEI_VERSION = 0.4.0
 ENVTEST_K8S_VERSION = 1.24.2
 KUSTOMIZE_VERSION = 4.1.2
 ISTIO_VERSION = 1.15.0-beta.0
-BUF_VERSION = 0.41.0
+BUF_VERSION = 1.7.0
 
 PATH := $(PATH):$(PWD)/bin
 
@@ -135,7 +135,6 @@ endif
 # Generate code
 generate: download-deps update-istio-deps
 	cd build && ../bin/buf generate --path api
-	go run ./build/fixup_structs/main.go -f api/v1alpha1/common.pb.go
 	cd api/v1alpha1 && ../../bin/controller-gen object:headerFile="../../hack/boilerplate.go.txt" paths="./..."
 
 # Check that code generation was checked in to git

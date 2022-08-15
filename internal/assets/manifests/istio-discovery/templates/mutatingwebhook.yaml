@@ -5,9 +5,9 @@
   "injectionPath" .Values.istiodRemote.injectionPath
   "injectionURL" .Values.istiodRemote.injectionURL
   "namespace" .Release.Namespace
-  "mode" .Values.global.mode }}
-{{- $istiodName := include "name-with-revision" ( dict "name" "istiod" "context" $) }}
-{{- $istioSidecarInjectorName := include "name-with-revision" ( dict "name" "istiod" "context" $) }}
+  "mode" .Values.global.mode
+  "istiodName" (include "name-with-revision" ( dict "name" "istiod" "context" $))
+  "istioSidecarInjectorName" (include "name-with-revision" ( dict "name" "istio-sidecar-injector" "context" $)) }}
 {{- define "core" }}
 {{- /* Kubernetes unfortunately requires a unique name for the webhook in some newer versions, so we assign
 a unique prefix to each. */}}

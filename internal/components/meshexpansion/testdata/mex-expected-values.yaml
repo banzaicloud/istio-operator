@@ -11,6 +11,7 @@ deployment:
   env:
   - name: ISTIO_BOGUS_ENV
     value: "true"
+  topologySpreadConstraints: {}
 metadata:
   annotations:
     imgw-annotation: annotationvalue

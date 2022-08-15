@@ -84,11 +84,6 @@ spec:
             readOnlyRootFilesystem: true
         {{- end }}
 {{ include "toYamlIf" (dict "value" $gateway.resources "key" "resources" "indent" 2) | indent 10 }}
-          env:
-          {{- if not .Values.runAsRoot }}
-          - name: ISTIO_META_UNPRIVILEGED_POD
-            value: "true"
-          {{- end }}
           volumeMounts:
             - name: workload-socket
               mountPath: /var/run/secrets/workload-spiffe-uds
@@ -99,6 +94,11 @@ spec:
             {{- if $gateway.volumeMounts }}
             {{ $gateway.volumeMounts | toYaml | nindent 12 }}
             {{- end }}
+          env:
+          {{- if not .Values.runAsRoot }}
+          - name: ISTIO_META_UNPRIVILEGED_POD
+            value: "true"
+          {{- end }}
 {{ include "toYamlIf" (dict "value" $gateway.env) | indent 10 }}
 {{ include "toYamlIf" (dict "value" $gateway.affinity "key" "affinity" "indent" 2) | indent 6 }}
 {{ include "toYamlIf" (dict "value" $gateway.nodeSelector "key" "nodeSelector" "indent" 2) | indent 6 }}

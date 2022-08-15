@@ -8,7 +8,7 @@ spec: {}
 status: {}
 
 ---
-apiVersion: policy/v1beta1
+apiVersion: policy/v1
 kind: PodDisruptionBudget
 metadata:
   labels:
@@ -254,6 +254,12 @@ spec:
           privileged: false
           readOnlyRootFilesystem: true
         volumeMounts:
+        - name: workload-socket
+          mountPath: /var/run/secrets/workload-spiffe-uds
+        - name: credential-socket
+          mountPath: /var/run/secrets/credential-uds
+        - name: workload-certs
+          mountPath: /var/run/secrets/workload-spiffe-credentials
         - mountPath: /etc/config
           name: config-vol
       nodeSelector:
@@ -271,6 +277,12 @@ spec:
         tolerationSeconds: 5
         value: value1
       volumes:
+      - name: workload-socket
+        emptyDir: {}
+      - name: credential-socket
+        emptyDir: {}
+      - name: workload-certs
+        emptyDir: {}
       - name: dddemo
         secret:
           optional: true
@@ -283,7 +295,7 @@ spec:
         name: config-vol
 
 ---
-apiVersion: autoscaling/v2beta1
+apiVersion: autoscaling/v2beta2
 kind: HorizontalPodAutoscaler
 metadata:
   name: demo-gw
@@ -305,7 +317,9 @@ spec:
     - type: Resource
       resource:
         name: cpu
-        targetAverageUtilization: 80
+        target:
+          type: Utilization
+          averageUtilization: 80
 
 ---
 apiVersion: v1

@@ -111,6 +111,7 @@ spec:
       value: "true"
     - name: ISTIO_BOGUS_ENV
       value: "true"
+    topologySpreadConstraints: {}
   service:
     ports:
     - name: tcp-status-port

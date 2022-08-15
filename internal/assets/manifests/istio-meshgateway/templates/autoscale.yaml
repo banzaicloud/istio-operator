@@ -1,10 +1,6 @@
 {{ $gateway := .Values.deployment }}
 {{- if and $gateway.replicas.min $gateway.replicas.max (gt ($gateway.replicas.min | int) 0) (gt ($gateway.replicas.max | int) ($gateway.replicas.min | int)) }}
-{{- if (semverCompare ">=1.23-0" .Capabilities.KubeVersion.GitVersion) }}
-apiVersion: autoscaling/v2
-{{- else }}
 apiVersion: autoscaling/v2beta2
-{{- end }}
 kind: HorizontalPodAutoscaler
 metadata:
   name: {{ $gateway.name }}
@@ -24,6 +20,6 @@ spec:
         name: cpu
         target:
           type: Utilization
-          averageUtilization: {{ $gateway.cpu.targetAverageUtilization }}
+          averageUtilization: {{ $gateway.replicas.targetCPUUtilizationPercentage }}
 ---
 {{- end }}

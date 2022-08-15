@@ -117,4 +117,4 @@ spec:
 {{ include "toYamlIf" (dict "value" .Values.deployment.affinity "key" "affinity" "indent" 2) | indent 6 }}
 {{ include "toYamlIf" (dict "value" .Values.deployment.nodeSelector "key" "nodeSelector" "indent" 2) | indent 6 }}
 {{ include "toYamlIf" (dict "value" .Values.deployment.tolerations "key" "tolerations" "indent" 2) | indent 6 }}
-{{ include "toYamlIf" (dict "value" $gateway.topologySpreadConstraints "key" "topologySpreadConstraints" "indent" 2) | indent 6 }}
+{{ include "toYamlIf" (dict "value" .Values.deployment.topologySpreadConstraints "key" "topologySpreadConstraints" "indent" 2) | indent 6 }}

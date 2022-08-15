@@ -2093,7 +2093,7 @@ spec:
         name: config-vol
 
 ---
-apiVersion: autoscaling/v2
+apiVersion: autoscaling/v2beta2
 kind: HorizontalPodAutoscaler
 metadata:
   labels:
@@ -2175,7 +2175,7 @@ webhooks:
   - v1
   clientConfig:
     service:
-      name: null
+      name: istiod-cp-v115x
       namespace: istio-system
       path: /inject
       port: 443
@@ -2211,7 +2211,7 @@ webhooks:
   - v1
   clientConfig:
     service:
-      name: null
+      name: istiod-cp-v115x
       namespace: istio-system
       path: /inject
       port: 443
