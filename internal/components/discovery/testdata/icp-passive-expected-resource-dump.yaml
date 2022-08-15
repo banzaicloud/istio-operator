@@ -1489,7 +1489,7 @@ webhooks:
   - v1
   clientConfig:
     service:
-      name: null
+      name: istio-sidecar-injector-cp-v115x
       namespace: istio-system
       path: /inject
       port: 443
@@ -1525,7 +1525,7 @@ webhooks:
   - v1
   clientConfig:
     service:
-      name: null
+      name: istio-sidecar-injector-cp-v115x
       namespace: istio-system
       path: /inject
       port: 443
