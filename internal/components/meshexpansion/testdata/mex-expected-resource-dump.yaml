@@ -40,7 +40,7 @@ spec:
     port:
       name: tls-istiod
       number: 15012
-      protocol: tls
+      protocol: TLS
     tls:
       mode: PASSTHROUGH
   - hosts:
@@ -48,7 +48,7 @@ spec:
     port:
       name: tls-istiodwebhook
       number: 15017
-      protocol: tls
+      protocol: TLS
     tls:
       mode: PASSTHROUGH
 
