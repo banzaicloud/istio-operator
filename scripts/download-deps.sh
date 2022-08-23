@@ -2,11 +2,12 @@
 
 set -euo pipefail
 
-code_generator_version=v0.22.0
-controller_gen_version=v0.6.2
-istio_deps_version=v1.11.4-bzc.4
+code_generator_version=v0.24.4
+controller_gen_version=v0.9.2
+istio_deps_version=1.15.0-beta.1
+golang_protoc_grpc_version=v1.2.0
+istio_deps_replacement_version=v1.11.4-bzc.4
 istio_tools_replacement_module_name=github.com/waynz0r/istio-tools
-gogo_protobuf_version=v1.3.2
 yq_version=v4.24.5
 
 script_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" >/dev/null 2>&1 && pwd)"
@@ -64,11 +65,11 @@ for name in ${cmds}; do
 done
 
 ensure-binary-version controller-gen ${controller_gen_version} "sigs.k8s.io/controller-tools" "/cmd/controller-gen"
-ensure-binary-version cue-gen ${istio_deps_version} "istio.io/tools" "/cmd/cue-gen" "${istio_tools_replacement_module_name}"
-ensure-binary-version protoc-gen-deepcopy ${istio_deps_version} "istio.io/tools" "/cmd/protoc-gen-deepcopy" "${istio_tools_replacement_module_name}"
-ensure-binary-version protoc-gen-jsonshim ${istio_deps_version} "istio.io/tools" "/cmd/protoc-gen-jsonshim" "${istio_tools_replacement_module_name}"
-ensure-binary-version protoc-gen-docs ${istio_deps_version} "istio.io/tools" "/cmd/protoc-gen-docs" "${istio_tools_replacement_module_name}"
-ensure-binary-version protoc-gen-gogofast ${gogo_protobuf_version} "github.com/gogo" "/protobuf/protoc-gen-gogofast"
+ensure-binary-version cue-gen ${istio_deps_replacement_version} "istio.io/tools" "/cmd/cue-gen" "${istio_tools_replacement_module_name}"
+ensure-binary-version protoc-gen-go-grpc ${golang_protoc_grpc_version} "google.golang.org/grpc" "/cmd/protoc-gen-go-grpc"
+ensure-binary-version protoc-gen-golang-deepcopy ${istio_deps_version} "istio.io/tools" "/cmd/protoc-gen-golang-deepcopy"
+ensure-binary-version protoc-gen-golang-jsonshim ${istio_deps_version} "istio.io/tools" "/cmd/protoc-gen-golang-jsonshim"
+ensure-binary-version protoc-gen-docs ${istio_deps_version} "istio.io/tools" "/cmd/protoc-gen-docs"
 ensure-binary-version yq ${yq_version} "github.com/mikefarah/yq" "/v4"
 
 go mod tidy

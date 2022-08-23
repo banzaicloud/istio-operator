@@ -30,3 +30,4 @@ cover.out
 
 /build/*
 !/build/buf.*
+!/build/fixup_structs
