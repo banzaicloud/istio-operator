@@ -15,11 +15,8 @@
 syntax = "proto3";
 
 import "google/protobuf/wrappers.proto";
-import "gogoproto/gogo.proto";
 import "google/api/field_behavior.proto";
 import "k8s.io/api/core/v1/generated.proto";
-import "k8s.io/api/apps/v1/generated.proto";
-import "k8s.io/apimachinery/pkg/apis/meta/v1/generated.proto";
 import "google/protobuf/descriptor.proto";
 import "api/options/options.proto";
 
@@ -60,7 +57,7 @@ message ContainerImageConfiguration {
 
     // ImagePullSecrets is an optional list of references to secrets to use for pulling any of the images.
     // +optional
-    repeated k8s.io.api.core.v1.LocalObjectReference imagePullSecrets = 4 [(gogoproto.nullable) = false];
+    repeated k8s.io.api.core.v1.LocalObjectReference imagePullSecrets = 4;
 }
 
 message BaseKubernetesContainerConfiguration {
@@ -68,7 +65,7 @@ message BaseKubernetesContainerConfiguration {
     string image = 1;
 
     // If present will be appended to the environment variables of the container
-    repeated k8s.io.api.core.v1.EnvVar env = 2 [(gogoproto.nullable) = false];
+    repeated k8s.io.api.core.v1.EnvVar env = 2;
 
     // Standard Kubernetes resource configuration, memory and CPU resource requirements
     ResourceRequirements resources = 3;
@@ -81,7 +78,7 @@ message BaseKubernetesContainerConfiguration {
     // +optional
     // +patchMergeKey=mountPath
     // +patchStrategy=merge
-    repeated k8s.io.api.core.v1.VolumeMount volumeMounts = 5 [(gogoproto.nullable) = false];
+    repeated k8s.io.api.core.v1.VolumeMount volumeMounts = 5;
 }
 
 message BaseKubernetesResourceConfig {
@@ -92,7 +89,7 @@ message BaseKubernetesResourceConfig {
     string image = 2;
 
     // If present will be appended to the environment variables of the container
-    repeated k8s.io.api.core.v1.EnvVar env = 3 [(gogoproto.nullable) = false];
+    repeated k8s.io.api.core.v1.EnvVar env = 3;
 
     // Standard Kubernetes resource configuration, memory and CPU resource requirements
     ResourceRequirements resources = 4;
@@ -114,7 +111,7 @@ message BaseKubernetesResourceConfig {
 
     // ImagePullSecrets is an optional list of references to secrets to use for pulling any of the images.
     // +optional
-    repeated k8s.io.api.core.v1.LocalObjectReference imagePullSecrets = 9 [(gogoproto.nullable) = false];
+    repeated k8s.io.api.core.v1.LocalObjectReference imagePullSecrets = 9;
 
     // If specified, indicates the pod's priority. "system-node-critical" and
     // "system-cluster-critical" are two special keywords which indicate the
@@ -125,24 +122,24 @@ message BaseKubernetesResourceConfig {
     // +optional
     string priorityClassName = 10;
 
-    // google.protobuf.Int32Value replicaCount = 1 [(gogoproto.wktpointer) = true];
+    // google.protobuf.Int32Value replicaCount = 1;
     // If specified, the pod's tolerations.
     // +optional
-    repeated k8s.io.api.core.v1.Toleration tolerations = 11 [(gogoproto.nullable) = false];
+    repeated k8s.io.api.core.v1.Toleration tolerations = 11;
 
     // List of volumes that can be mounted by containers belonging to the pod.
     // More info: https://kubernetes.io/docs/concepts/storage/volumes
     // +optional
     // +patchMergeKey=name
     // +patchStrategy=merge,retainKeys
-    repeated k8s.io.api.core.v1.Volume volumes = 12 [(gogoproto.nullable) = false];
+    repeated k8s.io.api.core.v1.Volume volumes = 12;
 
     // Pod volumes to mount into the container's filesystem.
     // Cannot be updated.
     // +optional
     // +patchMergeKey=mountPath
     // +patchStrategy=merge
-    repeated k8s.io.api.core.v1.VolumeMount volumeMounts = 13 [(gogoproto.nullable) = false];
+    repeated k8s.io.api.core.v1.VolumeMount volumeMounts = 13;
 
     // Replica configuration
     Replicas replicas = 14;
@@ -177,7 +174,7 @@ message BaseKubernetesResourceConfig {
     // This can help to achieve high availability as well as efficient resource utilization.
     // More info: https://kubernetes.io/docs/concepts/scheduling-eviction/topology-spread-constraints
     // +optional
-    k8s.io.api.core.v1.TopologySpreadConstraint topologySpreadConstraints = 21 [(gogoproto.nullable) = false];
+    k8s.io.api.core.v1.TopologySpreadConstraint topologySpreadConstraints = 21;
 }
 
 message DeploymentStrategy {
@@ -225,7 +222,7 @@ message Service {
     // +listMapKey=port
     // +listMapKey=protocol
     // +kubebuilder:validation:MinItems=1
-    repeated ServicePort ports = 1 [(google.api.field_behavior) = REQUIRED, (gogoproto.nullable) = false];
+    repeated ServicePort ports = 1 [(google.api.field_behavior) = REQUIRED];
 
     // Route service traffic to pods with label keys and values matching this
     // selector. If empty or not present, the service is assumed to have an
@@ -328,7 +325,7 @@ message Service {
     // to propagate SRV records for its Pods without respect to their readiness for purpose
     // of peer discovery.
     // +optional
-    google.protobuf.BoolValue publishNotReadyAddresses = 13 [(gogoproto.wktpointer) = true];
+    google.protobuf.BoolValue publishNotReadyAddresses = 13;
 
     // sessionAffinityConfig contains the configurations of session affinity.
     // +optional
@@ -356,7 +353,7 @@ message UnprotectedService {
     // +listType=map
     // +listMapKey=port
     // +listMapKey=protocol
-    repeated ServicePort ports = 1 [(gogoproto.nullable) = false];
+    repeated ServicePort ports = 1;
 
     // Route service traffic to pods with label keys and values matching this
     // selector. If empty or not present, the service is assumed to have an
@@ -459,7 +456,7 @@ message UnprotectedService {
     // to propagate SRV records for its Pods without respect to their readiness for purpose
     // of peer discovery.
     // +optional
-    google.protobuf.BoolValue publishNotReadyAddresses = 13 [(gogoproto.wktpointer) = true];
+    google.protobuf.BoolValue publishNotReadyAddresses = 13;
 
     // sessionAffinityConfig contains the configurations of session affinity.
     // +optional
@@ -542,25 +539,25 @@ message ResourceRequirements {
 message Replicas {
     // Standard Kubernetes replica count configuration
     // +kubebuilder:validation:Minimum=0
-    google.protobuf.Int32Value count = 1 [(gogoproto.wktpointer) = true];
+    google.protobuf.Int32Value count = 1;
 
     // min is the lower limit for the number of replicas to which the autoscaler
     // can scale down.
     // min and max both need to be set the turn on autoscaling.
     // +kubebuilder:validation:Minimum=0
-    google.protobuf.Int32Value min = 2 [(gogoproto.wktpointer) = true];
+    google.protobuf.Int32Value min = 2;
 
     // max is the upper limit for the number of replicas to which the autoscaler can scale up.
     // min and max both need to be set the turn on autoscaling.
     // It cannot be less than min.
     // +kubebuilder:validation:Minimum=1
-    google.protobuf.Int32Value max = 3 [(gogoproto.wktpointer) = true];
+    google.protobuf.Int32Value max = 3;
 
     // target average CPU utilization (represented as a percentage of requested CPU) over all the pods;
 	// default 80% will be used if not specified.
 	// +optional
     // +kubebuilder:validation:Minimum=0
-    google.protobuf.Int32Value targetCPUUtilizationPercentage = 4 [(gogoproto.wktpointer) = true];
+    google.protobuf.Int32Value targetCPUUtilizationPercentage = 4;
 }
 
 message K8sResourceOverlayPatch {
@@ -583,9 +580,9 @@ message K8sResourceOverlayPatch {
         Type type = 4;
     }
 
-    GroupVersionKind groupVersionKind = 1 [(gogoproto.nullable) = false];
+    GroupVersionKind groupVersionKind = 1;
     NamespacedName objectKey = 2;
-    repeated Patch patches = 3 [(gogoproto.nullable) = false];
+    repeated Patch patches = 3;
 }
 
 enum ConfigState {

@@ -325,7 +325,7 @@ No
 <td><code>tolerations</code></td>
 <td><code><a href="#k8s-io-api-core-v1-Toleration">Toleration[]</a></code></td>
 <td>
-<p>google.protobuf.Int32Value replicaCount = 1 [(gogoproto.wktpointer) = true];
+<p>google.protobuf.Int32Value replicaCount = 1;
 If specified, the pod&rsquo;s tolerations.
 +optional</p>
 
@@ -1142,7 +1142,7 @@ Yes
 <td><code><a href="#IntOrString">IntOrString</a></code></td>
 <td>
 <p>Number or name of the port to access on the pods targeted by the service.
-Number must be in the range 1 to 65535. Name must be an IANA<em>SVC</em>NAME.
+Number must be in the range 1 to 65535. Name must be an IANA_SVC_NAME.
 If this is a string, it will be looked up as a named port in the
 target Pod&rsquo;s container ports. If this is not specified, the value
 of the &lsquo;port&rsquo; field is used (an identity map).
@@ -1573,12 +1573,12 @@ No
 <td><code>value</code></td>
 <td><code>string</code></td>
 <td>
-<p>Variable references $(VAR<em>NAME) are expanded
+<p>Variable references $(VAR_NAME) are expanded
 using the previously defined environment variables in the container and
 any service environment variables. If a variable cannot be resolved,
 the reference in the input string will be unchanged. Double $$ are reduced
-to a single $, which allows for escaping the $(VAR</em>NAME) syntax: i.e.
-&ldquo;$$(VAR<em>NAME)&rdquo; will produce the string literal &ldquo;$(VAR</em>NAME)&rdquo;.
+to a single $, which allows for escaping the $(VAR_NAME) syntax: i.e.
+&ldquo;$$(VAR_NAME)&rdquo; will produce the string literal &ldquo;$(VAR_NAME)&rdquo;.
 Escaped references will never be expanded, regardless of whether the variable
 exists or not.
 Defaults to &ldquo;&rdquo;.
@@ -1749,10 +1749,10 @@ No
 <td>
 <p>AllowPrivilegeEscalation controls whether a process can gain more
 privileges than its parent process. This bool directly controls if
-the no<em>new</em>privs flag will be set on the container process.
+the no_new_privs flag will be set on the container process.
 AllowPrivilegeEscalation is true always when the container is:
 1) run as Privileged
-2) has CAP<em>SYS</em>ADMIN
+2) has CAP_SYS_ADMIN
 Note that this field cannot be set when spec.os.name is windows.
 +optional</p>
 

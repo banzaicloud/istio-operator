@@ -19,8 +19,8 @@ package v1alpha1
 import (
 	"strconv"
 
-	"github.com/gogo/protobuf/jsonpb"
-	"k8s.io/apimachinery/pkg/api/resource"
+	"github.com/golang/protobuf/jsonpb"
+	resource "k8s.io/apimachinery/pkg/api/resource"
 	"k8s.io/apimachinery/pkg/util/intstr"
 )
 
@@ -73,18 +73,4 @@ func FromInt(val int) IntOrString {
 // FromString creates an IntOrStringForPB object with a string value.
 func FromString(val string) IntOrString {
 	return IntOrString{intstr.FromString(val)}
-}
-
-func (m *PodDisruptionBudget) GetMinAvailable() *IntOrString {
-	if m != nil {
-		return m.MinAvailable
-	}
-	return nil
-}
-
-func (m *PodDisruptionBudget) GetMaxUnavailable() *IntOrString {
-	if m != nil {
-		return m.MaxUnavailable
-	}
-	return nil
 }

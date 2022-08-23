@@ -21,7 +21,6 @@ import (
 	"strings"
 
 	v1alpha1 "istio.io/api/mesh/v1alpha1"
-	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/types"
 )
@@ -174,52 +173,6 @@ func (icp *PeerIstioControlPlane) GetSpec() *IstioControlPlaneSpec {
 	}
 
 	return nil
-}
-
-func (r *ResourceRequirements) ConvertToK8sRR() *corev1.ResourceRequirements {
-	rr := &corev1.ResourceRequirements{
-		Limits:   make(corev1.ResourceList),
-		Requests: make(corev1.ResourceList),
-	}
-
-	if r == nil {
-		return rr
-	}
-
-	for k, v := range r.Limits {
-		rr.Limits[corev1.ResourceName(k)] = v.Quantity
-	}
-
-	for k, v := range r.Requests {
-		rr.Requests[corev1.ResourceName(k)] = v.Quantity
-	}
-
-	return rr
-}
-
-func InitResourceRequirementsFromK8sRR(rr *corev1.ResourceRequirements) *ResourceRequirements {
-	r := &ResourceRequirements{
-		Limits:   make(map[string]*Quantity),
-		Requests: make(map[string]*Quantity),
-	}
-
-	if rr == nil {
-		return r
-	}
-
-	for k, v := range rr.Limits {
-		r.Limits[string(k)] = &Quantity{
-			Quantity: v,
-		}
-	}
-
-	for k, v := range rr.Requests {
-		r.Requests[string(k)] = &Quantity{
-			Quantity: v,
-		}
-	}
-
-	return r
 }
 
 // PeerIstioControlPlaneList contains a list of PeerIstioControlPlane

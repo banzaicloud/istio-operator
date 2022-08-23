@@ -1810,7 +1810,7 @@
             "$ref": "#/components/schemas/k8s.io.api.core.v1.Affinity"
           },
           "tolerations": {
-            "description": "google.protobuf.Int32Value replicaCount = 1 [(gogoproto.wktpointer) = true]; If specified, the pod's tolerations.",
+            "description": "google.protobuf.Int32Value replicaCount = 1; If specified, the pod's tolerations.",
             "type": "array",
             "items": {
               "$ref": "#/components/schemas/k8s.io.api.core.v1.Toleration"
@@ -2230,7 +2230,7 @@
       "istio_operator.v2.api.v1alpha1.JWTPolicyType": {
         "type": "string",
         "enum": [
-          "UNSPECIFIED",
+          "JWTPolicyType_UNSPECIFIED",
           "THIRD_PARTY_JWT",
           "FIRST_PARTY_JWT"
         ]
@@ -2397,7 +2397,7 @@
       "istio_operator.v2.api.v1alpha1.ModeType": {
         "type": "string",
         "enum": [
-          "UNSPECIFIED",
+          "ModeType_UNSPECIFIED",
           "ACTIVE",
           "PASSIVE"
         ]
@@ -2438,7 +2438,7 @@
       "istio_operator.v2.api.v1alpha1.PilotCertProviderType": {
         "type": "string",
         "enum": [
-          "UNSPECIFIED",
+          "PilotCertProviderType_UNSPECIFIED",
           "KUBERNETES",
           "ISTIOD"
         ]
@@ -2530,7 +2530,7 @@
       "istio_operator.v2.api.v1alpha1.ProxyLogLevel": {
         "type": "string",
         "enum": [
-          "UNSPECIFIED",
+          "ProxyLogLevel_UNSPECIFIED",
           "TRACE",
           "DEBUG",
           "INFO",
