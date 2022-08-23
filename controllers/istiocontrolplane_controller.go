@@ -27,7 +27,7 @@ import (
 	"time"
 
 	"emperror.dev/errors"
-	"github.com/gogo/protobuf/jsonpb"
+	"github.com/golang/protobuf/jsonpb"
 	"istio.io/api/mesh/v1alpha1"
 	istionetworkingv1alpha3 "istio.io/client-go/pkg/apis/networking/v1alpha3"
 	istiosecurityv1beta1 "istio.io/client-go/pkg/apis/security/v1beta1"
@@ -987,7 +987,8 @@ func (r *IstioControlPlaneReconciler) removeFinalizerFromRelatedMeshGateways(ctx
 }
 
 func (r *IstioControlPlaneReconciler) waitForMeshExpansionGatewayRemoval(ctx context.Context, icp *servicemeshv1alpha1.IstioControlPlane) error {
-	if icp.DeletionTimestamp.IsZero() || !utils.PointerToBool(icp.GetSpec().GetMeshExpansion().GetEnabled()) {
+	getMeshExpansionEnabled := icp.GetSpec().GetMeshExpansion().GetEnabled().GetValue()
+	if icp.DeletionTimestamp.IsZero() || !utils.PointerToBool(&getMeshExpansionEnabled) {
 		return nil
 	}
 
@@ -1022,7 +1023,8 @@ func (r *IstioControlPlaneReconciler) setIstiodAddressesToStatus(ctx context.Con
 }
 
 func (r *IstioControlPlaneReconciler) setMeshExpansionGWAddressToStatus(ctx context.Context, icp *servicemeshv1alpha1.IstioControlPlane) error {
-	if icp.DeletionTimestamp.IsZero() && !utils.PointerToBool(icp.GetSpec().GetMeshExpansion().GetEnabled()) {
+	getMeshExpansionEnabled := icp.GetSpec().GetMeshExpansion().GetEnabled().GetValue()
+	if icp.DeletionTimestamp.IsZero() && !utils.PointerToBool(&getMeshExpansionEnabled) {
 		icp.Status.GatewayAddress = nil
 
 		return nil

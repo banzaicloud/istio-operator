@@ -56,7 +56,8 @@ func (rec *Component) Name() string {
 
 func (rec *Component) Enabled(object runtime.Object) bool {
 	if controlPlane, ok := object.(*v1alpha1.IstioControlPlane); ok {
-		return controlPlane.DeletionTimestamp.IsZero() && utils.PointerToBool(controlPlane.GetSpec().GetProxyInit().GetCni().GetEnabled())
+		getCniEnabled := controlPlane.GetSpec().GetProxyInit().GetCni().GetEnabled().GetValue()
+		return controlPlane.DeletionTimestamp.IsZero() && utils.PointerToBool(&getCniEnabled)
 	}
 
 	return true

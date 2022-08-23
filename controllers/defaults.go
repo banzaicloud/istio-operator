@@ -29,7 +29,7 @@ import (
 )
 
 func setDynamicDefaults(ctx context.Context, kubeClient client.Client, icp *v1alpha1.IstioControlPlane, k8sConfig *rest.Config, logger logger.Logger, clusterRegistryAPIEnabled bool) error {
-	if icp.Spec.JwtPolicy == v1alpha1.JWTPolicyType_UNSPECIFIED {
+	if icp.Spec.JwtPolicy == v1alpha1.JWTPolicyType_JWTPolicyType_UNSPECIFIED {
 		// try to detect supported jwt policy
 		supportedJWTPolicy, err := k8sutil.DetectSupportedJWTPolicy(k8sConfig)
 		if err != nil {

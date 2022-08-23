@@ -20,7 +20,7 @@ import (
 	"encoding/json"
 
 	"github.com/go-logr/logr"
-	"github.com/gogo/protobuf/jsonpb"
+	"github.com/golang/protobuf/jsonpb"
 	"github.com/imdario/mergo"
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"

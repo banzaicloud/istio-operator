@@ -1,8 +1,8 @@
 # template for pilot values
 {{- define "pilot" }}
-{{- $replicaCount := default 1 .GetSpec.GetIstiod.GetDeployment.GetReplicas.GetCount | int }}
-{{- $autoscaleMin := default 1 .GetSpec.GetIstiod.GetDeployment.GetReplicas.GetMin | int }}
-{{- $autoscaleMax := default 5 .GetSpec.GetIstiod.GetDeployment.GetReplicas.GetMax | int }}
+{{- $replicaCount := default 1 .GetSpec.GetIstiod.GetDeployment.GetReplicas.GetCount.GetValue | int }}
+{{- $autoscaleMin := default 1 .GetSpec.GetIstiod.GetDeployment.GetReplicas.GetMin.GetValue | int }}
+{{- $autoscaleMax := default 5 .GetSpec.GetIstiod.GetDeployment.GetReplicas.GetMax.GetValue | int }}
 {{- $autoscaleEnabled := true }}
 {{- if or (and .GetSpec.GetIstiod.GetDeployment.GetReplicas.GetCount
 (not .GetSpec.GetIstiod.GetDeployment.GetReplicas.GetMin) (not .GetSpec.GetIstiod.GetDeployment.GetReplicas.GetMax))
@@ -28,7 +28,7 @@ env:
     value: {{ .WithRevision "istiod" }}.{{ .Namespace }}.svc
   - name: PILOT_ENABLE_STATUS
 {{ if .GetSpec.GetIstiod.GetEnableStatus }}
-    value: "{{ .GetSpec.GetIstiod.GetEnableStatus }}"
+    value: "{{ .GetSpec.GetIstiod.GetEnableStatus.GetValue }}"
 {{ else }}
     value: "false"
 {{ end }}
@@ -69,7 +69,7 @@ env:
 {{ toYamlIf (dict "value" .GetSpec.GetIstiod.GetDeployment.GetMetadata.GetAnnotations "key" "deploymentAnnotations") }}
 {{- if .GetSpec.GetIstiod.GetDeployment.GetReplicas.GetTargetCPUUtilizationPercentage }}
 cpu:
-  targetAverageUtilization: {{ .GetSpec.GetIstiod.GetDeployment.GetReplicas.GetTargetCPUUtilizationPercentage }}
+  targetAverageUtilization: {{ .GetSpec.GetIstiod.GetDeployment.GetReplicas.GetTargetCPUUtilizationPercentage.GetValue }}
 {{- end }}
 {{ toYamlIf (dict "value" .GetSpec.GetIstiod.GetDeployment.GetDeploymentStrategy "key" "deploymentStrategy") }}
 {{- end }}
@@ -122,11 +122,11 @@ telemetry:
     {{- if .GetSpec.GetProxyWasm.GetEnabled }}
     metadataExchange:
       # Indicates whether to enable WebAssembly runtime for metadata exchange filter.
-      wasmEnabled: {{ .GetSpec.GetProxyWasm.GetEnabled }}
+      wasmEnabled: {{ .GetSpec.GetProxyWasm.GetEnabled.GetValue }}
     # Indicate if prometheus stats filter is enabled or not
     prometheus:
       # Indicates whether to enable WebAssembly runtime for stats filter.
-      wasmEnabled: {{ .GetSpec.GetProxyWasm.GetEnabled }}
+      wasmEnabled: {{ .GetSpec.GetProxyWasm.GetEnabled.GetValue }}
     {{- end }}
 {{- end }}
 
@@ -138,7 +138,7 @@ mode: {{ .GetSpec.GetMode | toString }}
 {{- end }}
 {{- if .GetSpec.GetIstiod.GetEnableAnalysis }}
 istiod:
-  enableAnalysis: {{ .GetSpec.GetIstiod.GetEnableAnalysis }}
+  enableAnalysis: {{ .GetSpec.GetIstiod.GetEnableAnalysis.GetValue }}
 {{- end }}
 {{ toYamlIf (dict "value" .GetSpec.GetLogging "key" "logging")}}
 {{ valueIf (dict "key" "oneNamespace" "value" .GetSpec.GetWatchOneNamespace) }}

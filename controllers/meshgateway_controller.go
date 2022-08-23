@@ -114,7 +114,7 @@ func (r *IstioMeshGatewayReconciler) Reconcile(ctx context.Context, req ctrl.Req
 
 	enablePrometheusMerge := true
 	if icp.Status.GetMeshConfig().GetEnablePrometheusMerge() != nil {
-		enablePrometheusMerge = icp.Status.GetMeshConfig().GetEnablePrometheusMerge().Value
+		enablePrometheusMerge = icp.Status.GetMeshConfig().GetEnablePrometheusMerge().GetValue()
 	}
 
 	generateExternalService := false
