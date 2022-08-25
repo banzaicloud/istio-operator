@@ -57,6 +57,7 @@ func (rec *Component) Name() string {
 func (rec *Component) Enabled(object runtime.Object) bool {
 	if controlPlane, ok := object.(*v1alpha1.IstioControlPlane); ok {
 		getMeshExpansionEnabled := controlPlane.GetSpec().GetMeshExpansion().GetEnabled().GetValue()
+
 		return controlPlane.DeletionTimestamp.IsZero() && utils.PointerToBool(&getMeshExpansionEnabled)
 	}
 
