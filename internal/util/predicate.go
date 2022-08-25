@@ -175,11 +175,11 @@ func (p ICPInjectorChangePredicate) Update(e event.UpdateEvent) bool {
 		return false
 	}
 
-	if oldICP.Status.GetChecksums().GetMeshConfig() != newICP.Status.GetChecksums().GetMeshConfig() {
+	if oldICP.GetStatus().GetChecksums().GetMeshConfig() != newICP.GetStatus().GetChecksums().GetMeshConfig() {
 		return true
 	}
 
-	if oldICP.Status.GetChecksums().GetSidecarInjector() != newICP.Status.GetChecksums().GetSidecarInjector() {
+	if oldICP.GetStatus().GetChecksums().GetSidecarInjector() != newICP.GetStatus().GetChecksums().GetSidecarInjector() {
 		return true
 	}
 

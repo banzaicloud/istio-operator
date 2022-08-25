@@ -27,16 +27,20 @@ type IstioMesh struct {
 	metav1.TypeMeta   `json:",inline"`
 	metav1.ObjectMeta `json:"metadata,omitempty" protobuf:"bytes,1,opt,name=metadata"`
 
-	Spec   *IstioMeshSpec  `json:"spec,omitempty" protobuf:"bytes,2,opt,name=spec"`
-	Status IstioMeshStatus `json:"status,omitempty"`
+	Spec   *IstioMeshSpec   `json:"spec,omitempty" protobuf:"bytes,2,opt,name=spec"`
+	Status *IstioMeshStatus `json:"status,omitempty"`
 }
 
 func (m *IstioMesh) SetStatus(status ConfigState, errorMessage string) {
-	m.Status.Status = status
-	m.Status.ErrorMessage = errorMessage
+	m.GetStatus().Status = status
+	m.GetStatus().ErrorMessage = errorMessage
 }
 
-func (m *IstioMesh) GetStatus() IstioMeshStatus {
+func (m *IstioMesh) GetStatus() *IstioMeshStatus {
+	if m.Status == nil {
+		m.Status = &IstioMeshStatus{}
+	}
+
 	return m.Status
 }
 

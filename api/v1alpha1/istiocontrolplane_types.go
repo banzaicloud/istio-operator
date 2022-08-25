@@ -53,16 +53,20 @@ type IstioControlPlane struct {
 	metav1.TypeMeta   `json:",inline"`
 	metav1.ObjectMeta `json:"metadata,omitempty"`
 
-	Spec   *IstioControlPlaneSpec  `json:"spec,omitempty"`
-	Status IstioControlPlaneStatus `json:"status,omitempty"`
+	Spec   *IstioControlPlaneSpec   `json:"spec,omitempty"`
+	Status *IstioControlPlaneStatus `json:"status,omitempty"`
 }
 
 func (icp *IstioControlPlane) SetStatus(status ConfigState, errorMessage string) {
-	icp.Status.Status = status
-	icp.Status.ErrorMessage = errorMessage
+	icp.GetStatus().Status = status
+	icp.GetStatus().ErrorMessage = errorMessage
 }
 
-func (icp *IstioControlPlane) GetStatus() IstioControlPlaneStatus {
+func (icp *IstioControlPlane) GetStatus() *IstioControlPlaneStatus {
+	if icp.Status == nil {
+		icp.Status = &IstioControlPlaneStatus{}
+	}
+
 	return icp.Status
 }
 
@@ -159,11 +163,15 @@ type PeerIstioControlPlane struct {
 	metav1.TypeMeta   `json:",inline"`
 	metav1.ObjectMeta `json:"metadata,omitempty"`
 
-	Spec   *IstioControlPlaneSpec  `json:"spec,omitempty"`
-	Status IstioControlPlaneStatus `json:"status,omitempty"`
+	Spec   *IstioControlPlaneSpec   `json:"spec,omitempty"`
+	Status *IstioControlPlaneStatus `json:"status,omitempty"`
 }
 
-func (icp *PeerIstioControlPlane) GetStatus() IstioControlPlaneStatus {
+func (icp *PeerIstioControlPlane) GetStatus() *IstioControlPlaneStatus {
+	if icp.Status == nil {
+		icp.Status = &IstioControlPlaneStatus{}
+	}
+
 	return icp.Status
 }
 
