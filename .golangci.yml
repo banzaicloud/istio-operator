@@ -60,6 +60,8 @@ linters-settings:
       - ifElseChain
   maintidx:
     under: 10 # todo: set a valid value
+  gomoddirectives:
+    replace-local: true
 
 issues:
   # mainly because of the operator, but we are using helm chart names
