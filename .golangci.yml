@@ -58,10 +58,6 @@ linters-settings:
   gocritic:
     disabled-checks:
       - ifElseChain
-  gomoddirectives:
-    replace-local: true
-    replace-allow-list:
-    - github.com/gogo/protobuf
   maintidx:
     under: 10 # todo: set a valid value
 
