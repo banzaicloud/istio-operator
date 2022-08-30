@@ -20,7 +20,7 @@ import (
 	"net/http"
 
 	"emperror.dev/errors"
-	policyv1beta1 "k8s.io/api/policy/v1beta1"
+	policyv1 "k8s.io/api/policy/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 
 	"github.com/banzaicloud/istio-operator/api/v2/v1alpha1"
@@ -93,7 +93,7 @@ func (rec *Component) ReleaseData(object runtime.Object) (*templatereconciler.Re
 			Layers:      overlays,
 			DesiredStateOverrides: map[reconciler.ObjectKeyWithGVK]reconciler.DesiredState{
 				{
-					GVK: policyv1beta1.SchemeGroupVersion.WithKind("PodDisruptionBudget"),
+					GVK: policyv1.SchemeGroupVersion.WithKind("PodDisruptionBudget"),
 				}: reconciler.DynamicDesiredState{
 					ShouldUpdateFunc: func(current, desired runtime.Object) (bool, error) {
 						options := []patch.CalculateOption{

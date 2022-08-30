@@ -1275,7 +1275,7 @@ data:
         "sts": {
           "servicePort": 0
         },
-        "tag": "1.15.0-beta.1",
+        "tag": "1.15.0-rc.0",
         "tracer": {
           "datadog": {
             "address": "$(HOST_IP):8126"

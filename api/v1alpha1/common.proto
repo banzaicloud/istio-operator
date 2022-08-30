@@ -122,7 +122,6 @@ message BaseKubernetesResourceConfig {
     // +optional
     string priorityClassName = 10;
 
-    // google.protobuf.Int32Value replicaCount = 1;
     // If specified, the pod's tolerations.
     // +optional
     repeated k8s.io.api.core.v1.Toleration tolerations = 11;

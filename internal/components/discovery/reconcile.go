@@ -22,7 +22,7 @@ import (
 	"emperror.dev/errors"
 	admissionregistrationv1 "k8s.io/api/admissionregistration/v1"
 	corev1 "k8s.io/api/core/v1"
-	policyv1beta1 "k8s.io/api/policy/v1beta1"
+	policyv1 "k8s.io/api/policy/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
@@ -119,7 +119,7 @@ func (rec *Component) ReleaseData(object runtime.Object) (*templatereconciler.Re
 				},
 			},
 			{
-				GVK: policyv1beta1.SchemeGroupVersion.WithKind("PodDisruptionBudget"),
+				GVK: policyv1.SchemeGroupVersion.WithKind("PodDisruptionBudget"),
 			}: reconciler.DynamicDesiredState{
 				ShouldUpdateFunc: func(current, desired runtime.Object) (bool, error) {
 					options := []patch.CalculateOption{

@@ -415,7 +415,6 @@ type BaseKubernetesResourceConfig struct {
 	// default.
 	// +optional
 	PriorityClassName string `protobuf:"bytes,10,opt,name=priorityClassName,proto3" json:"priorityClassName,omitempty"`
-	// google.protobuf.Int32Value replicaCount = 1;
 	// If specified, the pod's tolerations.
 	// +optional
 	Tolerations []*v1.Toleration `protobuf:"bytes,11,rep,name=tolerations,proto3" json:"tolerations,omitempty"`
