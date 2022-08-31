@@ -16,7 +16,6 @@ syntax = "proto3";
 
 import "google/protobuf/wrappers.proto";
 import "api/v1alpha1/common.proto";
-import "gogoproto/gogo.proto";
 import "google/api/field_behavior.proto";
 import "k8s.io/api/core/v1/generated.proto";
 
@@ -61,7 +60,7 @@ message IstioMeshGatewaySpec {
     Service service = 2 [(google.api.field_behavior) = REQUIRED];
 
     // Whether to run the gateway in a privileged container
-    google.protobuf.BoolValue runAsRoot = 3 [(gogoproto.wktpointer) = true];
+    google.protobuf.BoolValue runAsRoot = 3;
 
     // Type of gateway, either ingress or egress
     // +kubebuilder:validation:Enum=ingress;egress

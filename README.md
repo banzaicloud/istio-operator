@@ -41,12 +41,12 @@ istio-operator-controller-manager-6f764787c-rbnht   2/2     Running   0         
 Deploy the [Istio control plane sample](config/samples/servicemesh_v1alpha1_istiocontrolplane.yaml) to the `istio-system` namespace
 ```
 $ kubectl -n istio-system apply -f config/samples/servicemesh_v1alpha1_istiocontrolplane.yaml
-istiocontrolplane.servicemesh.cisco.com/icp-v113x-sample created
+istiocontrolplane.servicemesh.cisco.com/icp-v115x-sample created
 ```
 
 Label the namespace, where you would like to enable sidecar injection for your pods. The label should consist of the name of the deployed IstioControlPlane and the namespace where it is deployed.
 ```
-$ kubectl label namespace demoapp istio.io/rev=icp-v113x-sample.istio-system
+$ kubectl label namespace demoapp istio.io/rev=icp-v115x-sample.istio-system
 namespace/demoapp labeled
 ```
 
@@ -91,7 +91,7 @@ reviews-v3-84779c7bbc-t5rfq       2/2     Running   0          33s
 Deploy the VirtualService and Gateway needed for your application.
 **For the [demo bookinfo](https://raw.githubusercontent.com/istio/istio/master/samples/bookinfo/networking/bookinfo-gateway.yaml) application, you need to modify the Istio Gateway entry!** The `spec.selector.istio` field should be set from `ingressgateway` to `imgw-sample` so it will be applied to the sample IstioMeshGateway deployed before. The port needs to be set to the targetPort of the deployed IstioMeshGateway.
 ```
-curl https://raw.githubusercontent.com/istio/istio/master/samples/bookinfo/networking/bookinfo-gateway.yaml | sed 's/istio: ingressgateway # use istio default controller/istio: imgw-sample/g;s/number: 80/number: 9080/g' | kubectl apply -f - 
+curl https://raw.githubusercontent.com/istio/istio/master/samples/bookinfo/networking/bookinfo-gateway.yaml | sed 's/istio: ingressgateway # use istio default controller/istio: imgw-sample/g;s/number: 80/number: 9080/g' | kubectl apply -f -
 ```
 ```
 $ kubectl -n demoapp apply -f bookinfo-gateway.yaml

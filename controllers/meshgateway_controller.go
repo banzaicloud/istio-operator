@@ -26,7 +26,7 @@ import (
 	appsv1 "k8s.io/api/apps/v1"
 	autoscalingv1 "k8s.io/api/autoscaling/v1"
 	corev1 "k8s.io/api/core/v1"
-	policyv1beta1 "k8s.io/api/policy/v1beta1"
+	policyv1 "k8s.io/api/policy/v1"
 	rbacv1 "k8s.io/api/rbac/v1"
 	k8serrors "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -113,8 +113,8 @@ func (r *IstioMeshGatewayReconciler) Reconcile(ctx context.Context, req ctrl.Req
 	}
 
 	enablePrometheusMerge := true
-	if icp.Status.GetMeshConfig().GetEnablePrometheusMerge() != nil {
-		enablePrometheusMerge = icp.Status.GetMeshConfig().GetEnablePrometheusMerge().Value
+	if icp.GetStatus().GetMeshConfig().GetEnablePrometheusMerge() != nil {
+		enablePrometheusMerge = icp.GetStatus().GetMeshConfig().GetEnablePrometheusMerge().GetValue()
 	}
 
 	generateExternalService := false
@@ -127,8 +127,8 @@ func (r *IstioMeshGatewayReconciler) Reconcile(ctx context.Context, req ctrl.Req
 			Revision:                fmt.Sprintf("%s.%s", icp.GetName(), icp.GetNamespace()),
 			EnablePrometheusMerge:   utils.BoolPointer(enablePrometheusMerge),
 			InjectionTemplate:       "gateway",
-			InjectionChecksum:       icp.Status.GetChecksums().GetSidecarInjector(),
-			MeshConfigChecksum:      icp.Status.GetChecksums().GetMeshConfig(),
+			InjectionChecksum:       icp.GetStatus().GetChecksums().GetSidecarInjector(),
+			MeshConfigChecksum:      icp.GetStatus().GetChecksums().GetMeshConfig(),
 			IstioControlPlane:       icp,
 			GenerateExternalService: generateExternalService,
 		}, r.Log)
@@ -194,10 +194,10 @@ func (r *IstioMeshGatewayReconciler) SetupWithManager(mgr ctrl.Manager) error {
 				APIVersion: corev1.SchemeGroupVersion.String(),
 			},
 		}, ctrlBuilder.WithPredicates(objectChangePredicate)).
-		Owns(&policyv1beta1.PodDisruptionBudget{
+		Owns(&policyv1.PodDisruptionBudget{
 			TypeMeta: metav1.TypeMeta{
 				Kind:       "PodDisruptionBudget",
-				APIVersion: policyv1beta1.SchemeGroupVersion.String(),
+				APIVersion: policyv1.SchemeGroupVersion.String(),
 			},
 		}, ctrlBuilder.WithPredicates(objectChangePredicate)).
 		Owns(&rbacv1.Role{
@@ -322,8 +322,8 @@ func (r *IstioMeshGatewayReconciler) setGatewayAddress(ctx context.Context, c cl
 		return result, nil
 	}
 
-	currentGatewayAddress := imgw.Status.GatewayAddress
-	imgw.Status.GatewayAddress, gatewayHasHostname, err = r.getGatewayAddress(imgw)
+	currentGatewayAddress := imgw.GetStatus().GatewayAddress
+	imgw.GetStatus().GatewayAddress, gatewayHasHostname, err = r.getGatewayAddress(imgw)
 	if err != nil {
 		logger.Info(fmt.Sprintf("gateway address pending: %s", err.Error()))
 		updateErr := components.UpdateStatus(ctx, c, imgw, components.ConvertConfigStateToReconcileStatus(servicemeshv1alpha1.ConfigState_ReconcileFailed), errors.Cause(err).Error())
@@ -345,7 +345,7 @@ func (r *IstioMeshGatewayReconciler) setGatewayAddress(ctx context.Context, c cl
 		return result, errors.WithStack(err)
 	}
 
-	if !reflect.DeepEqual(currentGatewayAddress, imgw.Status.GatewayAddress) {
+	if !reflect.DeepEqual(currentGatewayAddress, imgw.GetStatus().GatewayAddress) {
 		logger.Info("gateway address has changed, trigger reconciler by requeuing")
 		result.Requeue = true
 	}

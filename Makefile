@@ -18,10 +18,10 @@ HELM_CHART_REL_TAG ?= chart/istio-operator/${CHART_VERSION}
 
 GOLANGCI_VERSION = 1.45.2
 LICENSEI_VERSION = 0.4.0
-ENVTEST_K8S_VERSION = 1.21.4
+ENVTEST_K8S_VERSION = 1.24.2
 KUSTOMIZE_VERSION = 4.1.2
-ISTIO_VERSION = 1.13.5
-BUF_VERSION = 0.41.0
+ISTIO_VERSION = 1.15.0-rc.0
+BUF_VERSION = 1.7.0
 
 PATH := $(PATH):$(PWD)/bin
 
@@ -109,7 +109,7 @@ manifests: download-deps update-istio-deps
 	bin/cue-gen -paths=build -f=cue.yaml
 	bin/cue-gen -paths=build -f=cue.yaml -crd
 	./scripts/label-crds.sh $(ISTIO_VERSION)
-	cp -a config/crd/bases/ deploy/charts/istio-operator/crds
+	cp -a config/crd/bases/* deploy/charts/istio-operator/crds
 
 # Run go fmt against code
 fmt:

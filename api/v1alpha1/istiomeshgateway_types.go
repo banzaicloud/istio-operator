@@ -32,16 +32,20 @@ type IstioMeshGateway struct {
 	metav1.TypeMeta   `json:",inline"`
 	metav1.ObjectMeta `json:"metadata,omitempty" protobuf:"bytes,1,opt,name=metadata"`
 
-	Spec   *IstioMeshGatewaySpec  `json:"spec,omitempty" protobuf:"bytes,2,opt,name=spec"`
-	Status IstioMeshGatewayStatus `json:"status,omitempty"`
+	Spec   *IstioMeshGatewaySpec   `json:"spec,omitempty" protobuf:"bytes,2,opt,name=spec"`
+	Status *IstioMeshGatewayStatus `json:"status,omitempty"`
 }
 
 func (imgw *IstioMeshGateway) SetStatus(status ConfigState, errorMessage string) {
-	imgw.Status.Status = status
-	imgw.Status.ErrorMessage = errorMessage
+	imgw.GetStatus().Status = status
+	imgw.GetStatus().ErrorMessage = errorMessage
 }
 
-func (imgw *IstioMeshGateway) GetStatus() IstioMeshGatewayStatus {
+func (imgw *IstioMeshGateway) GetStatus() *IstioMeshGatewayStatus {
+	if imgw.Status == nil {
+		imgw.Status = &IstioMeshGatewayStatus{}
+	}
+
 	return imgw.Status
 }
 

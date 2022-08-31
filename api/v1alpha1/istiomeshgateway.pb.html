@@ -299,8 +299,7 @@ No
 <td><code>tolerations</code></td>
 <td><code><a href="#k8s-io-api-core-v1-Toleration">Toleration[]</a></code></td>
 <td>
-<p>google.protobuf.Int32Value replicaCount = 1 [(gogoproto.wktpointer) = true];
-If specified, the pod&rsquo;s tolerations.
+<p>If specified, the pod&rsquo;s tolerations.
 +optional</p>
 
 </td>
@@ -416,6 +415,20 @@ No
 Container will be removed from service endpoints if the probe fails.
 Cannot be updated.
 More info: https://kubernetes.io/docs/concepts/workloads/pods/pod-lifecycle#container-probes
++optional</p>
+
+</td>
+<td>
+No
+</td>
+</tr>
+<tr id="BaseKubernetesResourceConfig-topologySpreadConstraints">
+<td><code>topologySpreadConstraints</code></td>
+<td><code><a href="#k8s-io-api-core-v1-TopologySpreadConstraint">TopologySpreadConstraint</a></code></td>
+<td>
+<p>Used to control how Pods are spread across a cluster among failure-domains.
+This can help to achieve high availability as well as efficient resource utilization.
+More info: https://kubernetes.io/docs/concepts/scheduling-eviction/topology-spread-constraints
 +optional</p>
 
 </td>

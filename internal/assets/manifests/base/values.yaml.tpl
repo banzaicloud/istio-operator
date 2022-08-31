@@ -9,10 +9,10 @@ global:
   istioNamespace: {{ .Namespace }}
 
   istiod:
-    enableAnalysis: {{ or .GetSpec.GetIstiod.GetEnableAnalysis false }}
+    enableAnalysis: {{ .GetSpec.GetIstiod.GetEnableAnalysis.GetValue }}
 
   configValidation: true
-  externalIstiod: {{ or .GetSpec.GetIstiod.GetExternalIstiod.GetEnabled false }}
+  externalIstiod: {{ .GetSpec.GetIstiod.GetExternalIstiod.GetEnabled.GetValue }}
 
   revision: "{{ .Name }}"
 

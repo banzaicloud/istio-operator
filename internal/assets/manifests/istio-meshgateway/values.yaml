@@ -44,6 +44,7 @@ deployment:
   podMetadata:
     labels: {}
     annotations: {}
+  topologySpreadConstraints: []
 
 service:
   type: ClusterIP

@@ -8,4 +8,4 @@ global:
   istioNamespace: istio-system
   istiod:
     enableAnalysis: false
-  revision: cp-v113x
+  revision: cp-v115x

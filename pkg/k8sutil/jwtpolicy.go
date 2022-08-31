@@ -26,12 +26,12 @@ import (
 func DetectSupportedJWTPolicy(k8sConfig *rest.Config) (servicemeshv1alpha1.JWTPolicyType, error) {
 	d, err := discovery.NewDiscoveryClientForConfig(k8sConfig)
 	if err != nil {
-		return servicemeshv1alpha1.JWTPolicyType_UNSPECIFIED, err
+		return servicemeshv1alpha1.JWTPolicyType_JWTPolicyType_UNSPECIFIED, err
 	}
 
 	_, s, err := d.ServerGroupsAndResources()
 	if err != nil {
-		return servicemeshv1alpha1.JWTPolicyType_UNSPECIFIED, err
+		return servicemeshv1alpha1.JWTPolicyType_JWTPolicyType_UNSPECIFIED, err
 	}
 
 	for _, res := range s {

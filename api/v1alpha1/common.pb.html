@@ -2,7 +2,7 @@
 title: istio_operator.v2.api.v1alpha1
 layout: protoc-gen-docs
 generator: protoc-gen-docs
-number_of_entries: 30
+number_of_entries: 31
 ---
 <h2 id="K8sObjectMeta">K8sObjectMeta</h2>
 <section>
@@ -325,8 +325,7 @@ No
 <td><code>tolerations</code></td>
 <td><code><a href="#k8s-io-api-core-v1-Toleration">Toleration[]</a></code></td>
 <td>
-<p>google.protobuf.Int32Value replicaCount = 1 [(gogoproto.wktpointer) = true];
-If specified, the pod&rsquo;s tolerations.
+<p>If specified, the pod&rsquo;s tolerations.
 +optional</p>
 
 </td>
@@ -442,6 +441,20 @@ No
 Container will be removed from service endpoints if the probe fails.
 Cannot be updated.
 More info: https://kubernetes.io/docs/concepts/workloads/pods/pod-lifecycle#container-probes
++optional</p>
+
+</td>
+<td>
+No
+</td>
+</tr>
+<tr id="BaseKubernetesResourceConfig-topologySpreadConstraints">
+<td><code>topologySpreadConstraints</code></td>
+<td><code><a href="#k8s-io-api-core-v1-TopologySpreadConstraint">TopologySpreadConstraint</a></code></td>
+<td>
+<p>Used to control how Pods are spread across a cluster among failure-domains.
+This can help to achieve high availability as well as efficient resource utilization.
+More info: https://kubernetes.io/docs/concepts/scheduling-eviction/topology-spread-constraints
 +optional</p>
 
 </td>
@@ -1128,7 +1141,7 @@ Yes
 <td><code><a href="#IntOrString">IntOrString</a></code></td>
 <td>
 <p>Number or name of the port to access on the pods targeted by the service.
-Number must be in the range 1 to 65535. Name must be an IANA<em>SVC</em>NAME.
+Number must be in the range 1 to 65535. Name must be an IANA_SVC_NAME.
 If this is a string, it will be looked up as a named port in the
 target Pod&rsquo;s container ports. If this is not specified, the value
 of the &lsquo;port&rsquo; field is used (an identity map).
@@ -1500,7 +1513,8 @@ No
 <h2 id="k8s-io-api-core-v1-LocalObjectReference">k8s.io.api.core.v1.LocalObjectReference</h2>
 <section>
 <p>LocalObjectReference contains enough information to let you locate the
-referenced object inside the same namespace.</p>
+referenced object inside the same namespace.
++structType=atomic</p>
 
 <table class="message-fields">
 <thead>
@@ -1558,12 +1572,13 @@ No
 <td><code>value</code></td>
 <td><code>string</code></td>
 <td>
-<p>Variable references $(VAR<em>NAME) are expanded
-using the previous defined environment variables in the container and
+<p>Variable references $(VAR_NAME) are expanded
+using the previously defined environment variables in the container and
 any service environment variables. If a variable cannot be resolved,
-the reference in the input string will be unchanged. The $(VAR</em>NAME)
-syntax can be escaped with a double $$, ie: $$(VAR_NAME). Escaped
-references will never be expanded, regardless of whether the variable
+the reference in the input string will be unchanged. Double $$ are reduced
+to a single $, which allows for escaping the $(VAR_NAME) syntax: i.e.
+&ldquo;$$(VAR_NAME)&rdquo; will produce the string literal &ldquo;$(VAR_NAME)&rdquo;.
+Escaped references will never be expanded, regardless of whether the variable
 exists or not.
 Defaults to &ldquo;&rdquo;.
 +optional</p>
@@ -1610,6 +1625,7 @@ are set, the values in SecurityContext take precedence.</p>
 <td>
 <p>The capabilities to add/drop when running containers.
 Defaults to the default set of capabilities granted by the container runtime.
+Note that this field cannot be set when spec.os.name is windows.
 +optional</p>
 
 </td>
@@ -1624,6 +1640,7 @@ No
 <p>Run container in privileged mode.
 Processes in privileged containers are essentially equivalent to root on the host.
 Defaults to false.
+Note that this field cannot be set when spec.os.name is windows.
 +optional</p>
 
 </td>
@@ -1639,6 +1656,7 @@ No
 If unspecified, the container runtime will allocate a random SELinux context for each
 container.  May also be set in PodSecurityContext.  If set in both SecurityContext and
 PodSecurityContext, the value specified in SecurityContext takes precedence.
+Note that this field cannot be set when spec.os.name is windows.
 +optional</p>
 
 </td>
@@ -1653,6 +1671,7 @@ No
 <p>The Windows specific settings applied to all containers.
 If unspecified, the options from the PodSecurityContext will be used.
 If set in both SecurityContext and PodSecurityContext, the value specified in SecurityContext takes precedence.
+Note that this field cannot be set when spec.os.name is linux.
 +optional</p>
 
 </td>
@@ -1668,6 +1687,7 @@ No
 Defaults to user specified in image metadata if unspecified.
 May also be set in PodSecurityContext.  If set in both SecurityContext and
 PodSecurityContext, the value specified in SecurityContext takes precedence.
+Note that this field cannot be set when spec.os.name is windows.
 +optional</p>
 
 </td>
@@ -1683,6 +1703,7 @@ No
 Uses runtime default if unset.
 May also be set in PodSecurityContext.  If set in both SecurityContext and
 PodSecurityContext, the value specified in SecurityContext takes precedence.
+Note that this field cannot be set when spec.os.name is windows.
 +optional</p>
 
 </td>
@@ -1713,6 +1734,7 @@ No
 <td>
 <p>Whether this container has a read-only root filesystem.
 Default is false.
+Note that this field cannot be set when spec.os.name is windows.
 +optional</p>
 
 </td>
@@ -1726,10 +1748,11 @@ No
 <td>
 <p>AllowPrivilegeEscalation controls whether a process can gain more
 privileges than its parent process. This bool directly controls if
-the no<em>new</em>privs flag will be set on the container process.
+the no_new_privs flag will be set on the container process.
 AllowPrivilegeEscalation is true always when the container is:
 1) run as Privileged
-2) has CAP<em>SYS</em>ADMIN
+2) has CAP_SYS_ADMIN
+Note that this field cannot be set when spec.os.name is windows.
 +optional</p>
 
 </td>
@@ -1745,6 +1768,22 @@ No
 The default is DefaultProcMount which uses the container runtime defaults for
 readonly paths and masked paths.
 This requires the ProcMountType feature flag to be enabled.
+Note that this field cannot be set when spec.os.name is windows.
++optional</p>
+
+</td>
+<td>
+No
+</td>
+</tr>
+<tr id="k8s-io-api-core-v1-SecurityContext-seccompProfile">
+<td><code>seccompProfile</code></td>
+<td><code><a href="#k8s-io-api-core-v1-SeccompProfile">SeccompProfile</a></code></td>
+<td>
+<p>The seccomp options to use by this container. If seccomp options are
+provided at both the pod &amp; container level, the container options
+override the pod options.
+Note that this field cannot be set when spec.os.name is windows.
 +optional</p>
 
 </td>
@@ -1841,7 +1880,6 @@ No
 Behaves similarly to SubPath but environment variable references $(VAR_NAME) are expanded using the container&rsquo;s environment.
 Defaults to &ldquo;&rdquo; (volume&rsquo;s root).
 SubPathExpr and SubPath are mutually exclusive.
-This field is beta in 1.15.
 +optional</p>
 
 </td>
@@ -2010,7 +2048,7 @@ No
 <td><code>name</code></td>
 <td><code>string</code></td>
 <td>
-<p>Volume&rsquo;s name.
+<p>name of the volume.
 Must be a DNS_LABEL and unique within the pod.
 More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names</p>
 
@@ -2023,7 +2061,7 @@ No
 <td><code>volumeSource</code></td>
 <td><code><a href="#k8s-io-api-core-v1-VolumeSource">VolumeSource</a></code></td>
 <td>
-<p>VolumeSource represents the location and type of the mounted volume.
+<p>volumeSource represents the location and type of the mounted volume.
 If not specified, the Volume is implied to be an EmptyDir.
 This implied behavior is deprecated and will be removed in a future version.</p>
 
@@ -2060,6 +2098,7 @@ If unspecified, the container runtime will allocate a random SELinux context for
 container.  May also be set in SecurityContext.  If set in
 both SecurityContext and PodSecurityContext, the value specified in SecurityContext
 takes precedence for that container.
+Note that this field cannot be set when spec.os.name is windows.
 +optional</p>
 
 </td>
@@ -2074,6 +2113,7 @@ No
 <p>The Windows specific settings applied to all containers.
 If unspecified, the options within a container&rsquo;s SecurityContext will be used.
 If set in both SecurityContext and PodSecurityContext, the value specified in SecurityContext takes precedence.
+Note that this field cannot be set when spec.os.name is linux.
 +optional</p>
 
 </td>
@@ -2090,6 +2130,7 @@ Defaults to user specified in image metadata if unspecified.
 May also be set in SecurityContext.  If set in both SecurityContext and
 PodSecurityContext, the value specified in SecurityContext takes precedence
 for that container.
+Note that this field cannot be set when spec.os.name is windows.
 +optional</p>
 
 </td>
@@ -2106,6 +2147,7 @@ Uses runtime default if unset.
 May also be set in SecurityContext.  If set in both SecurityContext and
 PodSecurityContext, the value specified in SecurityContext takes precedence
 for that container.
+Note that this field cannot be set when spec.os.name is windows.
 +optional</p>
 
 </td>
@@ -2137,6 +2179,7 @@ No
 <p>A list of groups applied to the first process run in each container, in addition
 to the container&rsquo;s primary GID.  If unspecified, no groups will be added to
 any container.
+Note that this field cannot be set when spec.os.name is windows.
 +optional</p>
 
 </td>
@@ -2159,6 +2202,7 @@ to be owned by the pod:</p>
 </ol>
 
 <p>If unset, the Kubelet will not modify the ownership and permissions of any volume.
+Note that this field cannot be set when spec.os.name is windows.
 +optional</p>
 
 </td>
@@ -2172,6 +2216,38 @@ No
 <td>
 <p>Sysctls hold a list of namespaced sysctls used for the pod. Pods with unsupported
 sysctls (by the container runtime) might fail to launch.
+Note that this field cannot be set when spec.os.name is windows.
++optional</p>
+
+</td>
+<td>
+No
+</td>
+</tr>
+<tr id="k8s-io-api-core-v1-PodSecurityContext-fsGroupChangePolicy">
+<td><code>fsGroupChangePolicy</code></td>
+<td><code>string</code></td>
+<td>
+<p>fsGroupChangePolicy defines behavior of changing ownership and permission of the volume
+before being exposed inside Pod. This field will only apply to
+volume types which support fsGroup based ownership(and permissions).
+It will have no effect on ephemeral volume types such as: secret, configmaps
+and emptydir.
+Valid values are &ldquo;OnRootMismatch&rdquo; and &ldquo;Always&rdquo;. If not specified, &ldquo;Always&rdquo; is used.
+Note that this field cannot be set when spec.os.name is windows.
++optional</p>
+
+</td>
+<td>
+No
+</td>
+</tr>
+<tr id="k8s-io-api-core-v1-PodSecurityContext-seccompProfile">
+<td><code>seccompProfile</code></td>
+<td><code><a href="#k8s-io-api-core-v1-SeccompProfile">SeccompProfile</a></code></td>
+<td>
+<p>The seccomp options to use by the containers in this pod.
+Note that this field cannot be set when spec.os.name is windows.
 +optional</p>
 
 </td>
@@ -2199,7 +2275,7 @@ alive or ready to receive traffic.</p>
 <tbody>
 <tr id="k8s-io-api-core-v1-Probe-handler">
 <td><code>handler</code></td>
-<td><code><a href="#k8s-io-api-core-v1-Handler">Handler</a></code></td>
+<td><code><a href="#k8s-io-api-core-v1-ProbeHandler">ProbeHandler</a></code></td>
 <td>
 <p>The action taken to determine the health of a container</p>
 
@@ -2253,7 +2329,7 @@ No
 <td><code>int32</code></td>
 <td>
 <p>Minimum consecutive successes for the probe to be considered successful after having failed.
-Defaults to 1. Must be 1 for liveness. Minimum value is 1.
+Defaults to 1. Must be 1 for liveness and startup. Minimum value is 1.
 +optional</p>
 
 </td>
@@ -2267,6 +2343,131 @@ No
 <td>
 <p>Minimum consecutive failures for the probe to be considered failed after having succeeded.
 Defaults to 3. Minimum value is 1.
++optional</p>
+
+</td>
+<td>
+No
+</td>
+</tr>
+<tr id="k8s-io-api-core-v1-Probe-terminationGracePeriodSeconds">
+<td><code>terminationGracePeriodSeconds</code></td>
+<td><code>int64</code></td>
+<td>
+<p>Optional duration in seconds the pod needs to terminate gracefully upon probe failure.
+The grace period is the duration in seconds after the processes running in the pod are sent
+a termination signal and the time when the processes are forcibly halted with a kill signal.
+Set this value longer than the expected cleanup time for your process.
+If this value is nil, the pod&rsquo;s terminationGracePeriodSeconds will be used. Otherwise, this
+value overrides the value provided by the pod spec.
+Value must be non-negative integer. The value zero indicates stop immediately via
+the kill signal (no opportunity to shut down).
+This is a beta field and requires enabling ProbeTerminationGracePeriod feature gate.
+Minimum value is 1. spec.terminationGracePeriodSeconds is used if unset.
++optional</p>
+
+</td>
+<td>
+No
+</td>
+</tr>
+</tbody>
+</table>
+</section>
+<h2 id="k8s-io-api-core-v1-TopologySpreadConstraint">k8s.io.api.core.v1.TopologySpreadConstraint</h2>
+<section>
+<p>TopologySpreadConstraint specifies how to spread matching pods among the given topology.</p>
+
+<table class="message-fields">
+<thead>
+<tr>
+<th>Field</th>
+<th>Type</th>
+<th>Description</th>
+<th>Required</th>
+</tr>
+</thead>
+<tbody>
+<tr id="k8s-io-api-core-v1-TopologySpreadConstraint-maxSkew">
+<td><code>maxSkew</code></td>
+<td><code>int32</code></td>
+<td>
+<p>MaxSkew describes the degree to which pods may be unevenly distributed.
+When <code>whenUnsatisfiable=DoNotSchedule</code>, it is the maximum permitted difference
+between the number of matching pods in the target topology and the global minimum.
+For example, in a 3-zone cluster, MaxSkew is set to 1, and pods with the same
+labelSelector spread as 1/1/0:
++&mdash;&mdash;-+&mdash;&mdash;-+&mdash;&mdash;-+
+| zone1 | zone2 | zone3 |
++&mdash;&mdash;-+&mdash;&mdash;-+&mdash;&mdash;-+
+|   P   |   P   |       |
++&mdash;&mdash;-+&mdash;&mdash;-+&mdash;&mdash;-+
+- if MaxSkew is 1, incoming pod can only be scheduled to zone3 to become 1/1/1;
+scheduling it onto zone1(zone2) would make the ActualSkew(2-0) on zone1(zone2)
+violate MaxSkew(1).
+- if MaxSkew is 2, incoming pod can be scheduled onto any zone.
+When <code>whenUnsatisfiable=ScheduleAnyway</code>, it is used to give higher precedence
+to topologies that satisfy it.
+It&rsquo;s a required field. Default value is 1 and 0 is not allowed.</p>
+
+</td>
+<td>
+No
+</td>
+</tr>
+<tr id="k8s-io-api-core-v1-TopologySpreadConstraint-topologyKey">
+<td><code>topologyKey</code></td>
+<td><code>string</code></td>
+<td>
+<p>TopologyKey is the key of node labels. Nodes that have a label with this key
+and identical values are considered to be in the same topology.
+We consider each <key, value> as a &ldquo;bucket&rdquo;, and try to put balanced number
+of pods into each bucket.
+It&rsquo;s a required field.</p>
+
+</td>
+<td>
+No
+</td>
+</tr>
+<tr id="k8s-io-api-core-v1-TopologySpreadConstraint-whenUnsatisfiable">
+<td><code>whenUnsatisfiable</code></td>
+<td><code>string</code></td>
+<td>
+<p>WhenUnsatisfiable indicates how to deal with a pod if it doesn&rsquo;t satisfy
+the spread constraint.
+- DoNotSchedule (default) tells the scheduler not to schedule it.
+- ScheduleAnyway tells the scheduler to schedule the pod in any location,
+  but giving higher precedence to topologies that would help reduce the
+  skew.
+A constraint is considered &ldquo;Unsatisfiable&rdquo; for an incoming pod
+if and only if every possible node assignment for that pod would violate
+&ldquo;MaxSkew&rdquo; on some topology.
+For example, in a 3-zone cluster, MaxSkew is set to 1, and pods with the same
+labelSelector spread as 3/1/1:
++&mdash;&mdash;-+&mdash;&mdash;-+&mdash;&mdash;-+
+| zone1 | zone2 | zone3 |
++&mdash;&mdash;-+&mdash;&mdash;-+&mdash;&mdash;-+
+| P P P |   P   |   P   |
++&mdash;&mdash;-+&mdash;&mdash;-+&mdash;&mdash;-+
+If WhenUnsatisfiable is set to DoNotSchedule, incoming pod can only be scheduled
+to zone2(zone3) to become 3/2/1(3/1/2) as ActualSkew(2-1) on zone2(zone3) satisfies
+MaxSkew(1). In other words, the cluster can still be imbalanced, but scheduler
+won&rsquo;t make it <em>more</em> imbalanced.
+It&rsquo;s a required field.</p>
+
+</td>
+<td>
+No
+</td>
+</tr>
+<tr id="k8s-io-api-core-v1-TopologySpreadConstraint-labelSelector">
+<td><code>labelSelector</code></td>
+<td><code><a href="#k8s-io-apimachinery-pkg-apis-meta-v1-LabelSelector">LabelSelector</a></code></td>
+<td>
+<p>LabelSelector is used to find matching pods.
+Pods that match this label selector are counted to determine the number of pods
+in their corresponding topology domain.
 +optional</p>
 
 </td>

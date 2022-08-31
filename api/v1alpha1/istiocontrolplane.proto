@@ -18,7 +18,6 @@ import "api/v1alpha1/common.proto";
 import "api/v1alpha1/istiomeshgateway.proto";
 import "k8s.io/api/core/v1/generated.proto";
 import "mesh/v1alpha1/config.proto";
-import "gogoproto/gogo.proto";
 import "google/api/field_behavior.proto";
 import "google/protobuf/wrappers.proto";
 
@@ -73,7 +72,7 @@ message IstioControlPlaneSpec {
     // Logging configurations.
     LoggingConfiguration logging = 3;
     // Use the user-specified, secret volume mounted key and certs for Pilot and workloads.
-    google.protobuf.BoolValue mountMtlsCerts = 4 [(gogoproto.wktpointer) = true];
+    google.protobuf.BoolValue mountMtlsCerts = 4;
     // Istiod configuration.
     IstiodConfiguration istiod = 5;
     // Proxy configuration options.
@@ -89,7 +88,7 @@ message IstioControlPlaneSpec {
     ProxyWasmConfiguration proxyWasm = 10;
     // Whether to restrict the applications namespace the controller manages.
     // If not set, controller watches all namespaces
-    google.protobuf.BoolValue watchOneNamespace = 11 [(gogoproto.wktpointer) = true];
+    google.protobuf.BoolValue watchOneNamespace = 11;
     // Configure the policy for validating JWT.
     // Currently, two options are supported: "third-party-jwt" and "first-party-jwt".
     // +kubebuilder:validation:Enum=THIRD_PARTY_JWT;FIRST_PARTY_JWT
@@ -126,7 +125,7 @@ message IstioControlPlaneSpec {
 }
 
 enum ModeType {
-    UNSPECIFIED = 0;
+    ModeType_UNSPECIFIED = 0;
     ACTIVE = 1;
     PASSIVE = 2;
 }
@@ -139,15 +138,15 @@ message SidecarInjectorConfiguration {
 }
 
 message MeshExpansionConfiguration {
-    google.protobuf.BoolValue enabled = 1 [(gogoproto.wktpointer) = true];
+    google.protobuf.BoolValue enabled = 1;
     message Istiod {
-        google.protobuf.BoolValue expose = 1 [(gogoproto.wktpointer) = true];
+        google.protobuf.BoolValue expose = 1;
     }
     message Webhook {
-        google.protobuf.BoolValue expose = 1 [(gogoproto.wktpointer) = true];
+        google.protobuf.BoolValue expose = 1;
     }
     message ClusterServices {
-        google.protobuf.BoolValue expose = 1 [(gogoproto.wktpointer) = true];
+        google.protobuf.BoolValue expose = 1;
     }
     message IstioMeshGatewayConfiguration {
         // Istio Mesh gateway metadata
@@ -157,7 +156,7 @@ message MeshExpansionConfiguration {
         // Service spec
         UnprotectedService service = 3;
         // Whether to run the gateway in a privileged container
-        google.protobuf.BoolValue runAsRoot = 4 [(gogoproto.wktpointer) = true];
+        google.protobuf.BoolValue runAsRoot = 4;
         // K8s resource overlay patches
         repeated K8sResourceOverlayPatch k8sResourceOverlays = 5;
     }
@@ -190,9 +189,9 @@ message SDSConfiguration {
 message ProxyConfiguration {
     string image = 1;
     // If set to true, istio-proxy container will have privileged securityContext
-    google.protobuf.BoolValue privileged = 2 [(gogoproto.wktpointer) = true];
+    google.protobuf.BoolValue privileged = 2;
     // If set, newly injected sidecars will have core dumps enabled.
-    google.protobuf.BoolValue enableCoreDump = 3 [(gogoproto.wktpointer) = true];
+    google.protobuf.BoolValue enableCoreDump = 3;
     // Log level for proxy, applies to gateways and sidecars. If left empty, "warning" is used.
     // Expected values are: trace|debug|info|warning|error|critical|off
     // +kubebuilder:validation:Enum=TRACE;DEBUG;INFO;WARNING;ERROR;CRITICAL;OFF
@@ -205,7 +204,7 @@ message ProxyConfiguration {
     // Controls if sidecar is injected at the front of the container list and blocks
     // the start of the other containers until the proxy is ready
     // Default value is 'false'.
-    google.protobuf.BoolValue holdApplicationUntilProxyStarts = 7 [(gogoproto.wktpointer) = true];
+    google.protobuf.BoolValue holdApplicationUntilProxyStarts = 7;
     k8s.io.api.core.v1.Lifecycle lifecycle = 8;
     ResourceRequirements resources = 9;
     // IncludeIPRanges the range where to capture egress traffic
@@ -219,7 +218,7 @@ message ProxyConfiguration {
 }
 
 enum ProxyLogLevel {
-    UNSPECIFIED = 0;
+    ProxyLogLevel_UNSPECIFIED = 0;
     TRACE = 1;
     DEBUG = 2;
     INFO = 3;
@@ -237,8 +236,8 @@ message ProxyInitConfiguration {
 }
 
 message CNIConfiguration {
-    google.protobuf.BoolValue enabled = 1 [(gogoproto.wktpointer) = true];
-    google.protobuf.BoolValue chained = 2 [(gogoproto.wktpointer) = true];
+    google.protobuf.BoolValue enabled = 1;
+    google.protobuf.BoolValue chained = 2;
     string binDir = 4;
     string confDir = 5;
     repeated string excludeNamespaces = 6;
@@ -248,9 +247,9 @@ message CNIConfiguration {
     string pspClusterRoleName = 10;
 
     message RepairConfiguration {
-        google.protobuf.BoolValue enabled = 1 [(gogoproto.wktpointer) = true];
-        google.protobuf.BoolValue labelPods = 2 [(gogoproto.wktpointer) = true];
-        google.protobuf.BoolValue deletePods = 3 [(gogoproto.wktpointer) = true];
+        google.protobuf.BoolValue enabled = 1;
+        google.protobuf.BoolValue labelPods = 2;
+        google.protobuf.BoolValue deletePods = 3;
         string initContainerName = 4;
         string brokenPodLabelKey = 5;
         string brokenPodLabelValue = 6;
@@ -258,13 +257,13 @@ message CNIConfiguration {
     RepairConfiguration repair = 11;
 
     message TaintConfiguration {
-        google.protobuf.BoolValue enabled = 1 [(gogoproto.wktpointer) = true];
+        google.protobuf.BoolValue enabled = 1;
         BaseKubernetesContainerConfiguration container = 2;
     }
     TaintConfiguration taint = 12;
 
     message ResourceQuotas {
-        google.protobuf.BoolValue enabled = 1 [(gogoproto.wktpointer) = true];
+        google.protobuf.BoolValue enabled = 1;
         string pods = 2;
         repeated string priorityClasses = 3;
     }
@@ -278,16 +277,16 @@ message IstiodConfiguration {
     // Deployment spec
     BaseKubernetesResourceConfig deployment = 1;
     // If enabled, pilot will run Istio analyzers and write analysis errors to the Status field of any Istio Resources
-    google.protobuf.BoolValue enableAnalysis = 2 [(gogoproto.wktpointer) = true];
+    google.protobuf.BoolValue enableAnalysis = 2;
     // If enabled, pilot will update the CRD Status field of all Istio resources with reconciliation status
-    google.protobuf.BoolValue enableStatus = 3 [(gogoproto.wktpointer) = true];
+    google.protobuf.BoolValue enableStatus = 3;
     // Settings for local istiod to control remote clusters as well
     ExternalIstiodConfiguration externalIstiod = 4;
-    google.protobuf.FloatValue traceSampling = 5 [(gogoproto.wktpointer) = true];
+    google.protobuf.FloatValue traceSampling = 5 [(google.api.field_behavior) = OUTPUT_ONLY];
     // If enabled, protocol sniffing will be used for outbound listeners whose port protocol is not specified or unsupported
-    google.protobuf.BoolValue enableProtocolSniffingOutbound = 6 [(gogoproto.wktpointer) = true];
+    google.protobuf.BoolValue enableProtocolSniffingOutbound = 6;
     // If enabled, protocol sniffing will be used for inbound listeners whose port protocol is not specified or unsupported
-    google.protobuf.BoolValue enableProtocolSniffingInbound = 7 [(gogoproto.wktpointer) = true];
+    google.protobuf.BoolValue enableProtocolSniffingInbound = 7;
     // Configure the certificate provider for control plane communication.
     // Currently, two providers are supported: "kubernetes" and "istiod".
     // As some platforms may not have kubernetes signing APIs,
@@ -300,11 +299,11 @@ message IstiodConfiguration {
 
 // ExternalIstiodConfiguration defines settings for local istiod to control remote clusters as well
 message ExternalIstiodConfiguration {
-    google.protobuf.BoolValue enabled = 1 [(gogoproto.wktpointer) = true];
+    google.protobuf.BoolValue enabled = 1;
 }
 
 enum PilotCertProviderType {
-    UNSPECIFIED = 0;
+    PilotCertProviderType_UNSPECIFIED = 0;
     KUBERNETES = 1;
     ISTIOD = 2;
 }
@@ -316,25 +315,25 @@ message SPIFFEConfiguration {
 
 // OperatorEndpointsConfiguration defines config options for automatic SPIFFE endpoints
 message OperatorEndpointsConfiguration {
-    google.protobuf.BoolValue enabled = 1 [(gogoproto.wktpointer) = true];
+    google.protobuf.BoolValue enabled = 1;
 }
 
 message TelemetryV2Configuration {
-    google.protobuf.BoolValue enabled = 1 [(gogoproto.wktpointer) = true];
+    google.protobuf.BoolValue enabled = 1;
 }
 
 // ProxyWasmConfiguration defines config options for Envoy wasm
 message ProxyWasmConfiguration {
-    google.protobuf.BoolValue enabled = 1 [(gogoproto.wktpointer) = true];
+    google.protobuf.BoolValue enabled = 1;
 }
 
 // PDBConfiguration holds Pod Disruption Budget related config options
 message PDBConfiguration {
-    google.protobuf.BoolValue enabled = 1 [(gogoproto.wktpointer) = true];
+    google.protobuf.BoolValue enabled = 1;
 }
 
 enum JWTPolicyType {
-    UNSPECIFIED = 0;
+    JWTPolicyType_UNSPECIFIED = 0;
     THIRD_PARTY_JWT = 1;
     FIRST_PARTY_JWT = 2;
 }

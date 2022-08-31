@@ -1,6 +1,6 @@
 {{ $gateway := .Values.deployment }}
 {{- if and $gateway.replicas.min $gateway.replicas.max (gt ($gateway.replicas.min | int) 0) (gt ($gateway.replicas.max | int) ($gateway.replicas.min | int)) }}
-apiVersion: autoscaling/v2beta1
+apiVersion: autoscaling/v2beta2
 kind: HorizontalPodAutoscaler
 metadata:
   name: {{ $gateway.name }}
@@ -18,6 +18,8 @@ spec:
     - type: Resource
       resource:
         name: cpu
-        targetAverageUtilization: {{ $gateway.replicas.targetCPUUtilizationPercentage }}
+        target:
+          type: Utilization
+          averageUtilization: {{ $gateway.replicas.targetCPUUtilizationPercentage }}
 ---
 {{- end }}

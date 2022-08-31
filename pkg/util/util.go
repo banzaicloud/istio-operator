@@ -20,7 +20,7 @@ import (
 	"encoding/json"
 
 	"github.com/go-logr/logr"
-	"github.com/gogo/protobuf/jsonpb"
+	"github.com/golang/protobuf/jsonpb"
 	"github.com/imdario/mergo"
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
@@ -59,7 +59,7 @@ func CreateLogger(debug bool, development bool) logr.Logger {
 
 type MergoOption = func(*mergo.Config)
 
-func MergeMeshConfigs(mergoOptions []MergoOption, meshConfigs ...v1alpha1.MeshConfig) (v1alpha1.MeshConfig, error) {
+func MergeMeshConfigs(mergoOptions []MergoOption, meshConfigs ...*v1alpha1.MeshConfig) (*v1alpha1.MeshConfig, error) {
 	m := jsonpb.Marshaler{}
 	dstMeshConfig := v1alpha1.MeshConfig{}
 	var dstMap map[string]interface{}
@@ -74,33 +74,33 @@ func MergeMeshConfigs(mergoOptions []MergoOption, meshConfigs ...v1alpha1.MeshCo
 
 	for _, mc := range meshConfigs {
 		mc := mc
-		y, err := m.MarshalToString(&mc)
+		y, err := m.MarshalToString(mc)
 		if err != nil {
-			return dstMeshConfig, err
+			return &dstMeshConfig, err
 		}
 
 		var sourceMap map[string]interface{}
 		err = json.Unmarshal([]byte(y), &sourceMap)
 		if err != nil {
-			return dstMeshConfig, err
+			return &dstMeshConfig, err
 		}
 		err = mergo.Merge(&dstMap, sourceMap, mergoOptions...)
 		if err != nil {
-			return dstMeshConfig, err
+			return &dstMeshConfig, err
 		}
 	}
 
 	jsonBytes, err := json.Marshal(&dstMap)
 	if err != nil {
-		return dstMeshConfig, err
+		return &dstMeshConfig, err
 	}
 
 	err = jsonpb.UnmarshalString(string(jsonBytes), &dstMeshConfig)
 	if err != nil {
-		return dstMeshConfig, err
+		return &dstMeshConfig, err
 	}
 
-	return dstMeshConfig, nil
+	return &dstMeshConfig, nil
 }
 
 func MergeYAMLs(mergoOptions []MergoOption, yamls ...string) ([]byte, error) {

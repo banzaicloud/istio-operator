@@ -1,6 +1,6 @@
 {{- if or (gt (.Values.deployment.podDisruptionBudget.minAvailable | int) 0) (gt (.Values.deployment.podDisruptionBudget.maxUnavailable | int) 0) }}
 {{- $gateway := .Values.deployment }}
-apiVersion: policy/v1beta1
+apiVersion: policy/v1
 kind: PodDisruptionBudget
 metadata:
   name: {{ $gateway.name }}

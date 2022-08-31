@@ -2,14 +2,14 @@
 
 ## Discovery Settings
 pilot:
-  autoscaleEnabled: {{ and (gt (.GetSpec.GetIstiod.GetDeployment.GetReplicas.GetMin | int) 0) (gt (.GetSpec.GetIstiod.GetDeployment.GetReplicas.GetMax | int) (.GetSpec.GetIstiod.GetDeployment.GetReplicas.GetMin | int)) }}
-  autoscaleMin: {{ or .GetSpec.GetIstiod.GetDeployment.GetReplicas.GetMin 1 }}
-  autoscaleMax: {{ or .GetSpec.GetIstiod.GetDeployment.GetReplicas.GetMax 5 }}
-  replicaCount: {{ or .GetSpec.GetIstiod.GetDeployment.GetReplicas.GetCount 1 }}
+  autoscaleEnabled: {{ and (gt (.GetSpec.GetIstiod.GetDeployment.GetReplicas.GetMin.GetValue | int) 0) (gt (.GetSpec.GetIstiod.GetDeployment.GetReplicas.GetMax.GetValue | int) (.GetSpec.GetIstiod.GetDeployment.GetReplicas.GetMin.GetValue | int)) }}
+  autoscaleMin: {{ or .GetSpec.GetIstiod.GetDeployment.GetReplicas.GetMin.GetValue 1 }}
+  autoscaleMax: {{ or .GetSpec.GetIstiod.GetDeployment.GetReplicas.GetMax.GetValue 5 }}
+  replicaCount: {{ or .GetSpec.GetIstiod.GetDeployment.GetReplicas.GetCount.GetValue 1 }}
 
   # Can be a full hub/image:tag
   image: {{ or .GetSpec.GetIstiod.GetDeployment.GetImage "istio-pilot" }}
-  traceSampling: {{ or .GetSpec.GetIstiod.GetTraceSampling 1.0 }}
+  traceSampling: {{ .GetSpec.GetIstiod.GetTraceSampling.GetValue }}
 
   # Resources for a small pilot install
 {{ if .GetSpec.GetIstiod.GetDeployment.GetResources }}
@@ -24,12 +24,12 @@ pilot:
     VALIDATION_WEBHOOK_CONFIG_NAME: istiod-{{ .Name }}-{{ .Namespace }}
     ISTIOD_CUSTOM_HOST: istiod-{{ .Name }}.{{ .Namespace }}.svc
     INJECTION_WEBHOOK_CONFIG_NAME: istio-sidecar-injector-{{ .Name }}-{{ .Namespace }}
-    PILOT_ENABLE_STATUS: {{ or .GetSpec.GetIstiod.GetEnableStatus false }}
+    PILOT_ENABLE_STATUS: {{ .GetSpec.GetIstiod.GetEnableStatus.GetValue }}
 
   # if protocol sniffing is enabled for outbound
-  enableProtocolSniffingForOutbound: {{ or .GetSpec.GetIstiod.GetEnableProtocolSniffingOutbound true }}
+  enableProtocolSniffingForOutbound: {{ .GetSpec.GetIstiod.GetEnableProtocolSniffingOutbound.GetValue }}
   # if protocol sniffing is enabled for inbound
-  enableProtocolSniffingForInbound: {{ or .GetSpec.GetIstiod.GetEnableProtocolSniffingInbound true }}
+  enableProtocolSniffingForInbound: {{ .GetSpec.GetIstiod.GetEnableProtocolSniffingInbound.GetValue }}
 
 {{ if .GetSpec.GetIstiod.GetDeployment.GetNodeSelector }}
   nodeSelector:
@@ -86,14 +86,14 @@ telemetry:
   v2:
     # For Null VM case now.
     # This also enables metadata exchange.
-    enabled: {{ or .GetSpec.GetTelemetryV2.GetEnabled true }}
+    enabled: {{ .GetSpec.GetTelemetryV2.GetEnabled.GetValue }}
     metadataExchange:
       # Indicates whether to enable WebAssembly runtime for metadata exchange filter.
-      wasmEnabled: {{ or .GetSpec.GetProxyWasm.GetEnabled false }}
+      wasmEnabled: {{ .GetSpec.GetProxyWasm.GetEnabled.GetValue }}
     # Indicate if prometheus stats filter is enabled or not
     prometheus:
       # Indicates whether to enable WebAssembly runtime for stats filter.
-      wasmEnabled: {{ or .GetSpec.GetProxyWasm.GetEnabled false }}
+      wasmEnabled: {{ .GetSpec.GetProxyWasm.GetEnabled.GetValue }}
 
 # Revision is set as 'version' label and part of the resource names when installing multiple control planes.
 revision: "{{ .Name }}"
@@ -107,7 +107,7 @@ global:
 
   # Enabled by default in master for maximising testing.
   istiod:
-    enableAnalysis: {{ or .GetSpec.GetIstiod.GetEnableAnalysis false}}
+    enableAnalysis: {{ .GetSpec.GetIstiod.GetEnableAnalysis.GetValue }}
 
   # Comma-separated minimum per-scope logging level of messages to output, in the form of <scope>:<level>,<scope>:<level>
   # The control plane has different scopes depending on component, but can configure default log level across all components
@@ -117,7 +117,7 @@ global:
 
   # Whether to restrict the applications namespace the controller manages;
   # If not set, controller watches all namespaces
-  oneNamespace: {{ or .GetSpec.GetWatchOneNamespace false }}
+  oneNamespace: {{ .GetSpec.GetWatchOneNamespace.GetValue }}
 
   proxy:
     image: {{ or .GetSpec.GetProxy.GetImage "proxyv2" }}
@@ -131,7 +131,7 @@ global:
     componentLogLevel: {{ or .GetSpec.GetProxy.GetComponentLogLevel "misc:error" }}
 
     # If set, newly injected sidecars will have core dumps enabled.
-    enableCoreDump: {{ or .GetSpec.GetProxy.GetEnableCoreDump false }}
+    enableCoreDump: {{ .GetSpec.GetProxy.GetEnableCoreDump.GetValue }}
 
     # istio ingress capture allowlist
     # examples:
@@ -152,7 +152,7 @@ global:
     logLevel: {{ or .GetSpec.GetProxy.GetLogLevel "warning" | toString | lower }}
 
     #If set to true, istio-proxy container will have privileged securityContext
-    privileged: {{ or .GetSpec.GetProxy.GetPrivileged false }}
+    privileged: {{ .GetSpec.GetProxy.GetPrivileged.GetValue }}
 
     # Resources for the sidecar.
 {{ if .GetSpec.GetProxy.GetResources }}
@@ -169,7 +169,7 @@ global:
 {{ end }}
 
     # Controls if sidecar is injected at the front of the container list and blocks the start of the other containers until the proxy is ready
-    holdApplicationUntilProxyStarts: {{ or .GetSpec.GetProxy.GetHoldApplicationUntilProxyStarts false }}
+    holdApplicationUntilProxyStarts: {{ .GetSpec.GetProxy.GetHoldApplicationUntilProxyStarts.GetValue }}
 
 {{ if .GetSpec.GetProxy.GetLifecycle }}
     lifecycle:
@@ -205,7 +205,7 @@ global:
   caAddress: "{{ or .GetSpec.GetCaAddress "" }}"
 
   # External istiod controls all remote clusters: disabled by default
-  externalIstiod: {{ or .GetSpec.GetIstiod.GetExternalIstiod.GetEnabled false }}
+  externalIstiod: {{ .GetSpec.GetIstiod.GetExternalIstiod.GetEnabled.GetValue }}
 
   # Configure the policy for validating JWT.
   # Currently, two options are supported: "third-party-jwt" and "first-party-jwt".
@@ -235,7 +235,7 @@ global:
   meshID: {{ or .GetSpec.GetMeshConfig.GetDefaultConfig.GetMeshId "cluster.local" }}
 
   # Use the user-specified, secret volume mounted key and certs for Pilot and workloads.
-  mountMtlsCerts: {{ or .GetSpec.GetMountMtlsCerts false }}
+  mountMtlsCerts: {{ .GetSpec.GetMountMtlsCerts.GetValue }}
 
   # Configure the certificate provider for control plane communication.
   # Currently, two providers are supported: "kubernetes" and "istiod".

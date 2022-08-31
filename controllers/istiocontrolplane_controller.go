@@ -27,7 +27,7 @@ import (
 	"time"
 
 	"emperror.dev/errors"
-	"github.com/gogo/protobuf/jsonpb"
+	"github.com/golang/protobuf/jsonpb"
 	"istio.io/api/mesh/v1alpha1"
 	istionetworkingv1alpha3 "istio.io/client-go/pkg/apis/networking/v1alpha3"
 	istiosecurityv1beta1 "istio.io/client-go/pkg/apis/security/v1beta1"
@@ -35,7 +35,7 @@ import (
 	appsv1 "k8s.io/api/apps/v1"
 	autoscalingv1 "k8s.io/api/autoscaling/v1"
 	corev1 "k8s.io/api/core/v1"
-	policyv1beta1 "k8s.io/api/policy/v1beta1"
+	policyv1 "k8s.io/api/policy/v1"
 	rbacv1 "k8s.io/api/rbac/v1"
 	k8serrors "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -131,6 +131,7 @@ type IstioControlPlaneReconciler struct {
 // +kubebuilder:rbac:groups=servicemesh.cisco.com,resources=istiocontrolplanes/status;peeristiocontrolplanes/status;istiomeshes/status,verbs=get;update;patch
 // +kubebuilder:rbac:groups=clusterregistry.k8s.cisco.com,resources=clusters,verbs=list;watch
 // +kubebuilder:rbac:groups=clusterregistry.k8s.cisco.com,resources=resourcesyncrules;clusterfeatures,verbs=get;list;watch;create;update;patch;delete
+// +kubebuilder:rbac:groups="gateway.networking.k8s.io",resources=gatewayclasses,verbs=create;update;patch;delete
 
 func (r *IstioControlPlaneReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Result, error) {
 	logger := r.Log.WithValues("istiocontrolplane", req.NamespacedName)
@@ -254,7 +255,7 @@ func (r *IstioControlPlaneReconciler) reconcile(ctx context.Context, icp *servic
 	}
 
 	// set cluster ID to status as it is not always in the stored spec
-	icp.Status.ClusterID = icp.Spec.ClusterID
+	icp.GetStatus().ClusterID = icp.Spec.ClusterID
 
 	meshNetworks, err := r.getMeshNetworks(ctx, icp)
 	if err != nil {
@@ -451,10 +452,10 @@ func (r *IstioControlPlaneReconciler) SetupWithManager(mgr ctrl.Manager) error {
 				APIVersion: corev1.SchemeGroupVersion.String(),
 			},
 		}, ctrlBuilder.WithPredicates(objectChangePredicate)).
-		Owns(&policyv1beta1.PodDisruptionBudget{
+		Owns(&policyv1.PodDisruptionBudget{
 			TypeMeta: metav1.TypeMeta{
 				Kind:       "PodDisruptionBudget",
-				APIVersion: policyv1beta1.SchemeGroupVersion.String(),
+				APIVersion: policyv1.SchemeGroupVersion.String(),
 			},
 		}, ctrlBuilder.WithPredicates(objectChangePredicate)).
 		Owns(&rbacv1.Role{
@@ -763,7 +764,7 @@ func (r *IstioControlPlaneReconciler) SetupWithManager(mgr ctrl.Manager) error {
 
 type ControlPlane interface {
 	GetName() string
-	GetStatus() servicemeshv1alpha1.IstioControlPlaneStatus
+	GetStatus() *servicemeshv1alpha1.IstioControlPlaneStatus
 	GetSpec() *servicemeshv1alpha1.IstioControlPlaneSpec
 }
 
@@ -794,7 +795,7 @@ func (r *IstioControlPlaneReconciler) getCACertificatesFromPeers(ctx context.Con
 
 	for _, picp := range picpList.Items {
 		picp := picp
-		if picp.Status.IstioControlPlaneName == icp.GetName() && picp.Spec.Mode == servicemeshv1alpha1.ModeType_ACTIVE {
+		if picp.GetStatus().IstioControlPlaneName == icp.GetName() && picp.Spec.Mode == servicemeshv1alpha1.ModeType_ACTIVE {
 			cps = append(cps, &picp)
 		}
 	}
@@ -824,7 +825,7 @@ func (r *IstioControlPlaneReconciler) getMeshNetworks(ctx context.Context, icp *
 
 	for _, picp := range picpList.Items {
 		picp := picp
-		if picp.Status.IstioControlPlaneName == icp.GetName() {
+		if picp.GetStatus().IstioControlPlaneName == icp.GetName() {
 			cps = append(cps, &picp)
 		}
 	}
@@ -987,7 +988,8 @@ func (r *IstioControlPlaneReconciler) removeFinalizerFromRelatedMeshGateways(ctx
 }
 
 func (r *IstioControlPlaneReconciler) waitForMeshExpansionGatewayRemoval(ctx context.Context, icp *servicemeshv1alpha1.IstioControlPlane) error {
-	if icp.DeletionTimestamp.IsZero() || !utils.PointerToBool(icp.GetSpec().GetMeshExpansion().GetEnabled()) {
+	getMeshExpansionEnabled := icp.GetSpec().GetMeshExpansion().GetEnabled().GetValue()
+	if icp.DeletionTimestamp.IsZero() || !utils.PointerToBool(&getMeshExpansionEnabled) {
 		return nil
 	}
 
@@ -1007,7 +1009,7 @@ func (r *IstioControlPlaneReconciler) waitForMeshExpansionGatewayRemoval(ctx con
 func (r *IstioControlPlaneReconciler) setIstiodAddressesToStatus(ctx context.Context, icp *servicemeshv1alpha1.IstioControlPlane) error {
 	if icp.GetSpec().GetMode() != servicemeshv1alpha1.ModeType_ACTIVE {
 		// istiod pods should only be present on ACTIVE clusters so it only make sense set pod IPs on those clusters
-		icp.Status.IstiodAddresses = nil
+		icp.GetStatus().IstiodAddresses = nil
 
 		return nil
 	}
@@ -1016,14 +1018,15 @@ func (r *IstioControlPlaneReconciler) setIstiodAddressesToStatus(ctx context.Con
 	if err != nil {
 		return errors.WithStackIf(err)
 	}
-	icp.Status.IstiodAddresses = k8sutil.GetIPsForEndpoints(endpoints)
+	icp.GetStatus().IstiodAddresses = k8sutil.GetIPsForEndpoints(endpoints)
 
 	return nil
 }
 
 func (r *IstioControlPlaneReconciler) setMeshExpansionGWAddressToStatus(ctx context.Context, icp *servicemeshv1alpha1.IstioControlPlane) error {
-	if icp.DeletionTimestamp.IsZero() && !utils.PointerToBool(icp.GetSpec().GetMeshExpansion().GetEnabled()) {
-		icp.Status.GatewayAddress = nil
+	getMeshExpansionEnabled := icp.GetSpec().GetMeshExpansion().GetEnabled().GetValue()
+	if icp.DeletionTimestamp.IsZero() && !utils.PointerToBool(&getMeshExpansionEnabled) {
+		icp.GetStatus().GatewayAddress = nil
 
 		return nil
 	}
@@ -1051,13 +1054,13 @@ func (r *IstioControlPlaneReconciler) setMeshExpansionGWAddressToStatus(ctx cont
 		return errors.New(imgw.GetStatus().ErrorMessage)
 	}
 
-	icp.Status.GatewayAddress = imgw.GetStatus().GatewayAddress
+	icp.GetStatus().GatewayAddress = imgw.GetStatus().GatewayAddress
 
 	return nil
 }
 
 func (r *IstioControlPlaneReconciler) setControlPlaneNameToStatus(icp *servicemeshv1alpha1.IstioControlPlane) {
-	icp.Status.IstioControlPlaneName = icp.GetName()
+	icp.GetStatus().IstioControlPlaneName = icp.GetName()
 }
 
 func (r *IstioControlPlaneReconciler) setMeshConfigToStatus(ctx context.Context, icp *servicemeshv1alpha1.IstioControlPlane) error {
@@ -1084,14 +1087,14 @@ func (r *IstioControlPlaneReconciler) setMeshConfigToStatus(ctx context.Context,
 		return errors.WithStackIf(err)
 	}
 
-	icp.Status.MeshConfig = &mc
+	icp.GetStatus().MeshConfig = &mc
 
-	cs := icp.Status.GetChecksums()
+	cs := icp.GetStatus().GetChecksums()
 	if cs == nil {
 		cs = &servicemeshv1alpha1.StatusChecksums{}
 	}
 	cs.MeshConfig = fmt.Sprintf("%x", sha256.Sum256([]byte(mcYAML)))
-	icp.Status.Checksums = cs
+	icp.GetStatus().Checksums = cs
 
 	return nil
 }
@@ -1110,12 +1113,12 @@ func (r *IstioControlPlaneReconciler) setSidecarInjectorChecksumToStatus(ctx con
 			return err
 		}
 
-		cs := icp.Status.GetChecksums()
+		cs := icp.GetStatus().GetChecksums()
 		if cs == nil {
 			cs = &servicemeshv1alpha1.StatusChecksums{}
 		}
 		cs.SidecarInjector = fmt.Sprintf("%x", sha256.Sum256(jm))
-		icp.Status.Checksums = cs
+		icp.GetStatus().Checksums = cs
 	}
 
 	return nil
@@ -1135,7 +1138,7 @@ func (r *IstioControlPlaneReconciler) setInjectionNamespacesToStatus(ctx context
 
 	sort.Strings(names)
 
-	icp.Status.InjectionNamespaces = names
+	icp.GetStatus().InjectionNamespaces = names
 
 	return nil
 }
@@ -1205,7 +1208,7 @@ func (r *IstioControlPlaneReconciler) deleteIstioRootCAConfigmapsOnPassive(ctx c
 
 func (r *IstioControlPlaneReconciler) setIstioCARootCertToStatus(ctx context.Context, icp *servicemeshv1alpha1.IstioControlPlane) error {
 	if icp.GetSpec().GetMode() != servicemeshv1alpha1.ModeType_ACTIVE {
-		icp.Status.CaRootCertificate = ""
+		icp.GetStatus().CaRootCertificate = ""
 
 		return nil
 	}
@@ -1216,7 +1219,7 @@ func (r *IstioControlPlaneReconciler) setIstioCARootCertToStatus(ctx context.Con
 		Namespace: icp.GetNamespace(),
 	}, secret)
 	if k8serrors.IsNotFound(err) {
-		icp.Status.CaRootCertificate = ""
+		icp.GetStatus().CaRootCertificate = ""
 
 		return nil
 	}
@@ -1224,7 +1227,7 @@ func (r *IstioControlPlaneReconciler) setIstioCARootCertToStatus(ctx context.Con
 		return err
 	}
 
-	icp.Status.CaRootCertificate = string(secret.Data["ca-cert.pem"])
+	icp.GetStatus().CaRootCertificate = string(secret.Data["ca-cert.pem"])
 
 	return nil
 }
@@ -1259,7 +1262,7 @@ func (r *IstioControlPlaneReconciler) getNamespaceInjectionSourcePICP(ctx contex
 	var sourceICP *servicemeshv1alpha1.PeerIstioControlPlane
 	for _, picp := range picpList.Items {
 		picp := picp
-		if v, ok := picp.GetAnnotations()[servicemeshv1alpha1.NamespaceInjectionSourceAnnotation]; ok && v == "true" && picp.Status.IstioControlPlaneName == cp.Name { // nolint:goconst
+		if v, ok := picp.GetAnnotations()[servicemeshv1alpha1.NamespaceInjectionSourceAnnotation]; ok && v == "true" && picp.GetStatus().IstioControlPlaneName == cp.Name { // nolint:goconst
 			sourceICP = &picp
 		}
 	}
@@ -1284,7 +1287,7 @@ func (r *IstioControlPlaneReconciler) reconcileNamespaceInjectionLabels(ctx cont
 	r.Log.Info("sync namespace injection labels")
 
 	namespaces := make(map[string]struct{})
-	for _, name := range sourceICP.Status.InjectionNamespaces {
+	for _, name := range sourceICP.GetStatus().InjectionNamespaces {
 		namespaces[name] = struct{}{}
 	}
 

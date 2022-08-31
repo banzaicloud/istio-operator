@@ -58,12 +58,10 @@ linters-settings:
   gocritic:
     disabled-checks:
       - ifElseChain
-  gomoddirectives:
-    replace-local: true
-    replace-allow-list:
-    - github.com/gogo/protobuf
   maintidx:
     under: 10 # todo: set a valid value
+  gomoddirectives:
+    replace-local: true
 
 issues:
   # mainly because of the operator, but we are using helm chart names

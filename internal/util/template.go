@@ -24,7 +24,7 @@ import (
 	"text/template"
 
 	"github.com/Masterminds/sprig"
-	"github.com/gogo/protobuf/jsonpb"
+	"github.com/golang/protobuf/jsonpb"
 	"github.com/golang/protobuf/proto"
 	"sigs.k8s.io/yaml"
 )
@@ -104,6 +104,11 @@ func valueIfTemplateFunc(value interface{}) (string, error) {
 
 		if key == "" {
 			return "", nil
+		}
+
+		m, ok := reflect.TypeOf(value).MethodByName("GetValue")
+		if ok {
+			value = m.Func.Call([]reflect.Value{reflect.ValueOf(value)})[0].Interface()
 		}
 
 		y, err := yaml.Marshal(value)

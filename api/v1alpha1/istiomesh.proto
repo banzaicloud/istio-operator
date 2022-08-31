@@ -17,7 +17,6 @@ syntax = "proto3";
 import "google/protobuf/wrappers.proto";
 import "api/v1alpha1/common.proto";
 import "mesh/v1alpha1/config.proto";
-import "gogoproto/gogo.proto";
 import "google/api/field_behavior.proto";
 import "k8s.io/api/core/v1/generated.proto";
 

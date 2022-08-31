@@ -20,14 +20,13 @@ import (
 	"fmt"
 	"os"
 	"testing"
-	"time"
 
 	"emperror.dev/errors"
 	"emperror.dev/errors/utils/keyval"
 	"github.com/go-logr/logr"
 	testlogr "github.com/go-logr/logr/testing"
-	"github.com/gogo/protobuf/types"
 	"github.com/homeport/dyff/pkg/dyff"
+	"google.golang.org/protobuf/types/known/durationpb"
 	istio_mesh_v1alpha1 "istio.io/api/mesh/v1alpha1"
 	"k8s.io/client-go/kubernetes/fake"
 	"sigs.k8s.io/yaml"
@@ -75,7 +74,9 @@ func TestICPDiscoveryResourceDump(t *testing.T) {
 			Mesh: &v1alpha1.IstioMesh{
 				Spec: &v1alpha1.IstioMeshSpec{
 					Config: &istio_mesh_v1alpha1.MeshConfig{
-						ConnectTimeout: types.DurationProto(5 * time.Second),
+						ConnectTimeout: &durationpb.Duration{
+							Seconds: 5,
+						},
 					},
 				},
 			},
@@ -147,7 +148,9 @@ func TestICPDiscoveryValuesTemplateTransform(t *testing.T) {
 			Mesh: &v1alpha1.IstioMesh{
 				Spec: &v1alpha1.IstioMeshSpec{
 					Config: &istio_mesh_v1alpha1.MeshConfig{
-						ConnectTimeout: types.DurationProto(5 * time.Second),
+						ConnectTimeout: &durationpb.Duration{
+							Seconds: 5,
+						},
 					},
 				},
 			},
@@ -203,7 +206,9 @@ func TestPassiveICPDiscoveryResourceDump(t *testing.T) {
 			Mesh: &v1alpha1.IstioMesh{
 				Spec: &v1alpha1.IstioMeshSpec{
 					Config: &istio_mesh_v1alpha1.MeshConfig{
-						ConnectTimeout: types.DurationProto(5 * time.Second),
+						ConnectTimeout: &durationpb.Duration{
+							Seconds: 5,
+						},
 					},
 				},
 			},
@@ -253,7 +258,9 @@ func TestPassiveICPDiscoveryValuesTemplateTransform(t *testing.T) {
 			Mesh: &v1alpha1.IstioMesh{
 				Spec: &v1alpha1.IstioMeshSpec{
 					Config: &istio_mesh_v1alpha1.MeshConfig{
-						ConnectTimeout: types.DurationProto(5 * time.Second),
+						ConnectTimeout: &durationpb.Duration{
+							Seconds: 5,
+						},
 					},
 				},
 			},
