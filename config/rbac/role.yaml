@@ -340,11 +340,8 @@ rules:
   verbs:
   - create
   - delete
-  - get
-  - list
   - patch
   - update
-  - watch
 - apiGroups:
   - servicemesh.cisco.com
   resources:
@@ -362,11 +359,8 @@ rules:
   verbs:
   - create
   - delete
-  - get
-  - list
   - patch
   - update
-  - watch
 - apiGroups:
   - servicemesh.cisco.com
   resources:
@@ -386,11 +380,8 @@ rules:
   verbs:
   - create
   - delete
-  - get
-  - list
   - patch
   - update
-  - watch
 - apiGroups:
   - servicemesh.cisco.com
   resources:
@@ -406,8 +397,5 @@ rules:
   verbs:
   - create
   - delete
-  - get
-  - list
   - patch
   - update
-  - watch
