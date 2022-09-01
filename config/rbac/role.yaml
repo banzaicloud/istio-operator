@@ -336,6 +336,18 @@ rules:
 - apiGroups:
   - servicemesh.cisco.com
   resources:
+  - istiocontrolplanes/finalizers
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
+- apiGroups:
+  - servicemesh.cisco.com
+  resources:
   - istiocontrolplanes/status
   - istiomeshes/status
   - peeristiocontrolplanes/status
@@ -346,7 +358,31 @@ rules:
 - apiGroups:
   - servicemesh.cisco.com
   resources:
+  - istiomeshes/finalizers
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
+- apiGroups:
+  - servicemesh.cisco.com
+  resources:
   - istiomeshgateways
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
+- apiGroups:
+  - servicemesh.cisco.com
+  resources:
+  - istiomeshgateways/finalizers
   verbs:
   - create
   - delete
@@ -363,3 +399,15 @@ rules:
   - get
   - patch
   - update
+- apiGroups:
+  - servicemesh.cisco.com
+  resources:
+  - peeristiocontrolplanes/finalizers
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
