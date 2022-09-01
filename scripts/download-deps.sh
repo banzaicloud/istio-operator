@@ -4,7 +4,7 @@ set -euo pipefail
 
 code_generator_version=v0.24.4
 controller_gen_version=v0.9.2
-istio_deps_version=1.15.0-rc.0
+istio_deps_version=1.15.0
 golang_protoc_grpc_version=v1.2.0
 golang_protoc_gen_go_version=v1.28.0
 istio_deps_replacement_version=v1.11.4-bzc.4
