@@ -1,0 +1,124 @@
+apiVersion: servicemesh.cisco.com/v1alpha1
+kind: IstioControlPlane
+metadata:
+  name: icp-v113x
+spec:
+  version: 1.13.5
+  mode: ACTIVE
+  meshID: mesh1
+  networkName: network1
+  logging:
+    level: "default:info"
+  mountMtlsCerts: false
+  meshExpansion:
+    enabled: false
+  istiod:
+    deployment:
+      replicas:
+        min: 1
+        max: 5
+        count: 1
+      image: "gcr.io/istio-release/pilot:1.13.5"
+      resources:
+        requests:
+          cpu: 500m
+          memory: 2048Mi
+      nodeSelector: {}
+      affinity: {}
+      tolerations: []
+      podMetadata:
+        labels: {}
+        annotations: {}
+      securityContext: {}
+    enableAnalysis: false
+    enableStatus: false
+    externalIstiod:
+      enabled: false
+    traceSampling: 1.0
+    enableProtocolSniffingOutbound: true
+    enableProtocolSniffingInbound: true
+    certProvider: ISTIOD
+    spiffe:
+      operatorEndpoints:
+        enabled: false
+  proxy:
+    image: "gcr.io/istio-release/proxyv2:1.13.5"
+    privileged: false
+    enableCoreDump: false
+    logLevel: "WARNING"
+    componentLogLevel: "misc:error"
+    clusterDomain: "cluster.local"
+    holdApplicationUntilProxyStarts: false
+    lifecycle: {}
+    resources:
+      requests:
+        cpu: 100m
+        memory: 128Mi
+      limits:
+        cpu: 2000m
+        memory: 1024Mi
+    includeIPRanges: "*"
+    excludeIPRanges: ""
+    excludeInboundPorts: ""
+    excludeOutboundPorts: ""
+  proxyInit:
+    cni:
+      enabled: true
+      binDir: /var/lib/cni/bin
+      confDir: /etc/cni/multus/net.d
+      confFileName: istio-cni.conf
+      chained: false
+      daemonset:
+        securityContext:
+          privileged: true
+    image: "gcr.io/istio-release/proxyv2:1.13.5"
+    resources:
+      limits:
+        cpu: 2000m
+        memory: 1024Mi
+      requests:
+        cpu: 10m
+        memory: 10Mi
+  telemetryV2:
+    enabled: true
+  sds:
+    tokenAudience: "istio-ca"
+  proxyWasm:
+    enabled: false
+  watchOneNamespace: false
+  caAddress: ""
+  distribution: "official"
+  httpProxyEnvs:
+    httpProxy: ""
+    httpsProxy: ""
+    noProxy: ""
+  meshConfig:
+    proxyListenPort: 15001
+    connectTimeout: 10s
+    protocolDetectionTimeout: 5s
+    ingressClass: istio
+    ingressService: imgw-sample
+    ingressControllerMode: STRICT
+    ingressSelector: imgw-sample
+    enableTracing: false
+    accessLogFile: /dev/stdout
+    accessLogFormat: ""
+    accessLogEncoding: TEXT
+    enableEnvoyAccessLogService: false
+    disableEnvoyListenerLog: false
+    defaultConfig:
+      configPath: ./etc/istio/proxy
+      binaryPath: /usr/local/bin/envoy
+      serviceCluster: istio-proxy
+      drainDuration: 45s
+      parentShutdownDuration: 60s
+      proxyAdminPort: 15000
+      controlPlaneAuthPolicy: MUTUAL_TLS
+      concurrency: 2
+    outboundTrafficPolicy:
+      mode: ALLOW_ANY
+    enableAutoMtls: true
+    trustDomain: cluster.local
+    trustDomainAliases: []
+    rootNamespace: istio-system
+    dnsRefreshRate: 5s
