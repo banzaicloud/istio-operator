@@ -338,11 +338,29 @@ rules:
 - apiGroups:
   - servicemesh.cisco.com
   resources:
+  - istiocontrolplanes/finalizers
+  verbs:
+  - create
+  - delete
+  - patch
+  - update
+- apiGroups:
+  - servicemesh.cisco.com
+  resources:
   - istiocontrolplanes/status
   - istiomeshes/status
   - peeristiocontrolplanes/status
   verbs:
   - get
+  - patch
+  - update
+- apiGroups:
+  - servicemesh.cisco.com
+  resources:
+  - istiomeshes/finalizers
+  verbs:
+  - create
+  - delete
   - patch
   - update
 - apiGroups:
@@ -360,6 +378,15 @@ rules:
 - apiGroups:
   - servicemesh.cisco.com
   resources:
+  - istiomeshgateways/finalizers
+  verbs:
+  - create
+  - delete
+  - patch
+  - update
+- apiGroups:
+  - servicemesh.cisco.com
+  resources:
   - istiomeshgateways/status
   verbs:
   - get
@@ -374,6 +401,15 @@ rules:
   - update
   - patch
   - delete
+- apiGroups:
+  - servicemesh.cisco.com
+  resources:
+  - peeristiocontrolplanes/finalizers
+  verbs:
+  - create
+  - delete
+  - patch
+  - update
 ---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRoleBinding
