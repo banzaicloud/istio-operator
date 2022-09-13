@@ -7,7 +7,7 @@ require (
 	emperror.dev/errors v0.8.0
 	github.com/Masterminds/semver v1.5.0 // indirect
 	github.com/Masterminds/sprig v2.22.0+incompatible
-	github.com/banzaicloud/istio-operator/api/v2 v2.0.0
+	github.com/banzaicloud/istio-operator/api/v2 v2.13.5
 	github.com/banzaicloud/k8s-objectmatcher v1.8.0
 	github.com/banzaicloud/operator-tools v0.28.2
 	github.com/cisco-open/cluster-registry-controller/api v0.1.9

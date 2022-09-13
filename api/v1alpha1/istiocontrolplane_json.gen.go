@@ -282,6 +282,6 @@ func (this *StatusChecksums) UnmarshalJSON(b []byte) error {
 }
 
 var (
-	IstiocontrolplaneMarshaler   = &jsonpb.Marshaler{Int64Uint64asIntegers: true}
+	IstiocontrolplaneMarshaler   = &jsonpb.Marshaler{}
 	IstiocontrolplaneUnmarshaler = &jsonpb.Unmarshaler{AllowUnknownFields: true}
 )

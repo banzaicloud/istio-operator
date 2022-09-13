@@ -205,6 +205,6 @@ func (this *IntOrString) UnmarshalJSON(b []byte) error {
 }
 
 var (
-	CommonMarshaler   = &jsonpb.Marshaler{Int64Uint64asIntegers: true}
+	CommonMarshaler   = &jsonpb.Marshaler{}
 	CommonUnmarshaler = &jsonpb.Unmarshaler{AllowUnknownFields: true}
 )
