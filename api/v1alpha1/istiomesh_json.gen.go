@@ -29,6 +29,6 @@ func (this *IstioMeshStatus) UnmarshalJSON(b []byte) error {
 }
 
 var (
-	IstiomeshMarshaler   = &jsonpb.Marshaler{}
+	IstiomeshMarshaler   = &jsonpb.Marshaler{Int64Uint64asIntegers: true}
 	IstiomeshUnmarshaler = &jsonpb.Unmarshaler{AllowUnknownFields: true}
 )

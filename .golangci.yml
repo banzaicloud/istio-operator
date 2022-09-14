@@ -62,6 +62,8 @@ linters-settings:
     under: 10 # todo: set a valid value
   gomoddirectives:
     replace-local: true
+    replace-allow-list:
+      - github.com/golang/protobuf
 
 issues:
   # mainly because of the operator, but we are using helm chart names

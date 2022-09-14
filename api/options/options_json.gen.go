@@ -6,6 +6,6 @@ import (
 )
 
 var (
-	OptionsMarshaler   = &jsonpb.Marshaler{}
+	OptionsMarshaler   = &jsonpb.Marshaler{Int64Uint64asIntegers: true}
 	OptionsUnmarshaler = &jsonpb.Unmarshaler{AllowUnknownFields: true}
 )
