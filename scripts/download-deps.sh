@@ -4,7 +4,7 @@ set -euo pipefail
 
 code_generator_version=v0.24.4
 controller_gen_version=v0.9.2
-istio_deps_version=1.15.0
+istio_deps_version=v0.0.0-20220914082557-e2eaae1fab30
 golang_protoc_grpc_version=v1.2.0
 golang_protoc_gen_go_version=v1.28.0
 istio_deps_replacement_version=v1.11.4-bzc.4
@@ -69,9 +69,9 @@ ensure-binary-version controller-gen ${controller_gen_version} "sigs.k8s.io/cont
 ensure-binary-version cue-gen ${istio_deps_replacement_version} "istio.io/tools" "/cmd/cue-gen" "${istio_tools_replacement_module_name}"
 ensure-binary-version protoc-gen-go-grpc ${golang_protoc_grpc_version} "google.golang.org/grpc" "/cmd/protoc-gen-go-grpc"
 ensure-binary-version protoc-gen-go ${golang_protoc_gen_go_version} "google.golang.org/protobuf" "/cmd/protoc-gen-go"
-ensure-binary-version protoc-gen-golang-deepcopy ${istio_deps_version} "istio.io/tools" "/cmd/protoc-gen-golang-deepcopy"
-ensure-binary-version protoc-gen-golang-jsonshim ${istio_deps_version} "istio.io/tools" "/cmd/protoc-gen-golang-jsonshim"
-ensure-binary-version protoc-gen-docs ${istio_deps_version} "istio.io/tools" "/cmd/protoc-gen-docs"
+ensure-binary-version protoc-gen-golang-deepcopy ${istio_deps_version} "github.com/luciferinlove/istio-tools" "/cmd/protoc-gen-golang-deepcopy"
+ensure-binary-version protoc-gen-golang-jsonshim ${istio_deps_version} "github.com/luciferinlove/istio-tools" "/cmd/protoc-gen-golang-jsonshim"
+ensure-binary-version protoc-gen-docs ${istio_deps_version} "github.com/luciferinlove/istio-tools" "/cmd/protoc-gen-docs"
 ensure-binary-version yq ${yq_version} "github.com/mikefarah/yq" "/v4"
 
 go mod tidy
