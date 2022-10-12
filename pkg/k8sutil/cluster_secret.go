@@ -17,7 +17,6 @@ limitations under the License.
 package k8sutil
 
 import (
-	"bytes"
 	"context"
 	"net"
 	"net/url"
@@ -28,10 +27,15 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/client-go/discovery"
+	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/rest"
 	k8sclientapiv1 "k8s.io/client-go/tools/clientcmd/api/v1"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/yaml"
+
+	ctrl "sigs.k8s.io/controller-runtime"
+
+	k8sErrors "k8s.io/apimachinery/pkg/api/errors"
 
 	clusterregistryv1alpha1 "github.com/cisco-open/cluster-registry-controller/api/v1alpha1"
 )
@@ -70,23 +74,46 @@ func GetReaderSecretForCluster(ctx context.Context, kubeClient client.Client, ku
 		return nil, errors.WithStackIf(err)
 	}
 
-	if len(sa.Secrets) == 0 {
-		return nil, errors.NewWithDetails("could not find secret reference for sa", "sa", saRef)
+	clientSet, _ := kubernetes.NewForConfig(ctrl.GetConfigOrDie())
+	// After K8s v1.24, Secret objects containing ServiceAccount tokens are no longer auto-generated, so we will have to manually create Secret in order to get the token.
+	// Reference: https://github.com/kubernetes/kubernetes/blob/master/CHANGELOG/CHANGELOG-1.24.md#no-really-you-must-read-this-before-you-upgrade
+	var secretObj *corev1.Secret
+
+	readerSecretName := saRef.Name + "-token"
+	if len(sa.Secrets) != 0 {
+		readerSecretName = sa.Secrets[0].Name
 	}
 
-	secret := &corev1.Secret{}
-	err = kubeClient.Get(ctx, types.NamespacedName{
-		Name:      sa.Secrets[0].Name,
-		Namespace: sa.GetNamespace(),
-	}, secret)
-	if err != nil {
-		return nil, errors.WithStackIf(err)
+	secretObj, err = clientSet.CoreV1().Secrets(saRef.Namespace).Get(ctx, readerSecretName, metav1.GetOptions{})
+	if err != nil &&
+		k8sErrors.IsNotFound(err) {
+		readerSATokenSecret := corev1.Secret{
+			ObjectMeta: metav1.ObjectMeta{
+				Name:      readerSecretName,
+				Namespace: saRef.Namespace,
+				Annotations: map[string]string{
+					"kubernetes.io/service-account.name": saRef.Name,
+				},
+			},
+			Type: "kubernetes.io/service-account-token",
+		}
+
+		secretObj, err = clientSet.CoreV1().Secrets(saRef.Namespace).Create(ctx, &readerSATokenSecret, metav1.CreateOptions{})
+		if err != nil {
+			return nil, errors.WrapIfWithDetails(err, "creating kubernetes secret failed", "namespace", saRef.Namespace, "secret", readerSecretName)
+		}
+	} else if err != nil {
+		return nil, errors.WrapIfWithDetails(
+			err,
+			"retrieving kubernetes secret failed with unexpected error",
+			"namespace", saRef.Namespace,
+			"secret", readerSecretName,
+		)
 	}
 
-	caData := secret.Data["ca.crt"]
-	if !bytes.Contains(caData, kubeConfig.CAData) {
-		caData = append(append(caData, []byte("\n")...), kubeConfig.CAData...)
-	}
+	// fetch CA certificate and token from secret associated with reader SA
+	saToken := string(secretObj.Data["token"])
+	caData := secretObj.Data["ca.crt"]
 
 	if clusterRegistryAPIEnabled {
 		cluster, err := GetLocalCluster(ctx, kubeClient)
@@ -114,7 +141,7 @@ func GetReaderSecretForCluster(ctx context.Context, kubeClient client.Client, ku
 		apiServerEndpointAddress = kubeConfig.Host
 	}
 
-	kubeconfig, err := GetKubeconfigWithSAToken(secretRef.Name, sa.GetName(), apiServerEndpointAddress, caData, string(secret.Data["token"]))
+	kubeconfig, err := GetKubeconfigWithSAToken(secretRef.Name, sa.GetName(), apiServerEndpointAddress, caData, saToken)
 	if err != nil {
 		return nil, errors.WithStackIf(err)
 	}
@@ -128,6 +155,7 @@ func GetReaderSecretForCluster(ctx context.Context, kubeClient client.Client, ku
 			Name:      secretRef.Name,
 			Namespace: secretRef.Namespace,
 		},
+		Type: clusterregistryv1alpha1.SecretTypeClusterRegistry,
 		Data: map[string][]byte{
 			clusterName: []byte(kubeconfig),
 		},
