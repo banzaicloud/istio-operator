@@ -6,7 +6,7 @@ metadata:
   annotations:
     controlplane.istio.servicemesh.cisco.com/namespace-injection-source: "true"
 spec:
-  version: 1.15.0
+  version: 1.15.2
   mode: ACTIVE
   networkName: network1
   meshExpansion:

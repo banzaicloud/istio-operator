@@ -4,7 +4,7 @@ metadata:
   name: cp-v115x
   namespace: istio-system
 spec:
-  version: "1.15.0"
+  version: "1.15.2"
   mode: PASSIVE
   distribution: cisco
   containerImageConfiguration:
@@ -30,7 +30,7 @@ spec:
         type: RollingUpdate
         rollingUpdate:
           maxUnavailable: 1
-      image: banzaicloud/istio-sidecar-injector:v1.15.0-bzc.1
+      image: banzaicloud/istio-sidecar-injector:v1.15.2-bzc.0
       env:
       - name: CNI_ENV_NAME
         value: "true"

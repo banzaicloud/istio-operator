@@ -175,7 +175,7 @@ spec:
               value: "true"
             - name: CNI_ANOTHER_ENV_NAME
               value: standard
-          image: banzaicloud/istio-sidecar-injector:v1.15.0-bzc.1
+          image: banzaicloud/istio-sidecar-injector:v1.15.2-bzc.0
           imagePullPolicy: Always
           livenessProbe:
             exec:
