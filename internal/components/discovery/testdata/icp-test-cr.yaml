@@ -6,7 +6,7 @@ metadata:
 spec:
   meshID: mesh1
   clusterID: demo-cluster1
-  version: "1.15.0"
+  version: "1.15.2"
   mode: ACTIVE
   networkName: network1
   containerImageConfiguration:
