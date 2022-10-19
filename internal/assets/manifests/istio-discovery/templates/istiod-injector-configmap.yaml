@@ -30,7 +30,7 @@ data:
     - {{ . }}
 {{- end }}
     {{- else }}
-    defaultTemplates: [sidecar]
+    defaultTemplates: [sidecar, sidecarOverrides]
     {{- end }}
     policy: {{ .Values.global.proxy.autoInject }}
     httpProxyEnvs:

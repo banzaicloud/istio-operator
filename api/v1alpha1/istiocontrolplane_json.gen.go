@@ -28,6 +28,17 @@ func (this *SidecarInjectorConfiguration) UnmarshalJSON(b []byte) error {
 	return IstiocontrolplaneUnmarshaler.Unmarshal(bytes.NewReader(b), this)
 }
 
+// MarshalJSON is a custom marshaler for Templates
+func (this *Templates) MarshalJSON() ([]byte, error) {
+	str, err := IstiocontrolplaneMarshaler.MarshalToString(this)
+	return []byte(str), err
+}
+
+// UnmarshalJSON is a custom unmarshaler for Templates
+func (this *Templates) UnmarshalJSON(b []byte) error {
+	return IstiocontrolplaneUnmarshaler.Unmarshal(bytes.NewReader(b), this)
+}
+
 // MarshalJSON is a custom marshaler for MeshExpansionConfiguration
 func (this *MeshExpansionConfiguration) MarshalJSON() ([]byte, error) {
 	str, err := IstiocontrolplaneMarshaler.MarshalToString(this)

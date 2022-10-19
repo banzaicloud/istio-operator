@@ -4,6 +4,29 @@ metadata:
   name: cp-v115x
   namespace: istio-system
 spec:
+  sidecarInjector:
+    templates:
+      sidecar: |
+        spec:
+          containers:
+          - name: istio-proxy
+            env:
+            - name: TEMPLATE
+              value: sidecar-passive
+      gateway: |
+        spec:
+          containers:
+          - name: istio-proxy
+            env:
+            - name: TEMPLATE
+              value: gateway-passive
+      custom: |
+        spec:
+          containers:
+          - name: istio-proxy
+            env:
+            - name: TEMPLATE
+              value: custom-passive
   meshID: mesh1
   clusterID: demo-cluster2
   version: "1.15.3"
