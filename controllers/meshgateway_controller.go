@@ -126,7 +126,7 @@ func (r *IstioMeshGatewayReconciler) Reconcile(ctx context.Context, req ctrl.Req
 		return istiomeshgateway.NewChartReconciler(helmReconciler, servicemeshv1alpha1.IstioMeshGatewayProperties{
 			Revision:                fmt.Sprintf("%s.%s", icp.GetName(), icp.GetNamespace()),
 			EnablePrometheusMerge:   utils.BoolPointer(enablePrometheusMerge),
-			InjectionTemplate:       "gateway",
+			InjectionTemplate:       "gateway, gatewayOverrides",
 			InjectionChecksum:       icp.GetStatus().GetChecksums().GetSidecarInjector(),
 			MeshConfigChecksum:      icp.GetStatus().GetChecksums().GetMeshConfig(),
 			IstioControlPlane:       icp,

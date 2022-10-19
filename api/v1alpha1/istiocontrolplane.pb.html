@@ -4,7 +4,7 @@ description: Istio control plane descriptor
 layout: protoc-gen-docs
 generator: protoc-gen-docs
 schema: istio-operator.api.v1alpha1.IstioControlPlaneSpec
-number_of_entries: 39
+number_of_entries: 40
 ---
 <h2 id="IstioControlPlaneSpec">IstioControlPlaneSpec</h2>
 <section>
@@ -331,6 +331,65 @@ No
 <td><code><a href="#Service">Service</a></code></td>
 <td>
 <p>Service spec</p>
+
+</td>
+<td>
+No
+</td>
+</tr>
+<tr id="SidecarInjectorConfiguration-templates">
+<td><code>templates</code></td>
+<td><code><a href="#Templates">Templates</a></code></td>
+<td>
+<p>Template spec</p>
+
+</td>
+<td>
+No
+</td>
+</tr>
+</tbody>
+</table>
+</section>
+<h2 id="Templates">Templates</h2>
+<section>
+<table class="message-fields">
+<thead>
+<tr>
+<th>Field</th>
+<th>Type</th>
+<th>Description</th>
+<th>Required</th>
+</tr>
+</thead>
+<tbody>
+<tr id="Templates-sidecar">
+<td><code>sidecar</code></td>
+<td><code>string</code></td>
+<td>
+<p>Overrides for sidecar templates (will be mapped as sidecarOverrides)</p>
+
+</td>
+<td>
+No
+</td>
+</tr>
+<tr id="Templates-gateway">
+<td><code>gateway</code></td>
+<td><code>string</code></td>
+<td>
+<p>Overrides for gateway templates (will be mapped as gatewayOverrides)</p>
+
+</td>
+<td>
+No
+</td>
+</tr>
+<tr id="Templates-custom">
+<td><code>custom</code></td>
+<td><code>string</code></td>
+<td>
+<p>Custom templates</p>
 
 </td>
 <td>

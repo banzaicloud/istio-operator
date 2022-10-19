@@ -41,6 +41,7 @@ require (
 	github.com/Masterminds/semver/v3 v3.1.1
 	github.com/hexops/gotextdiff v1.0.3
 	github.com/iancoleman/strcase v0.2.0
+	google.golang.org/genproto v0.0.0-20220628213854-d9e0b6570c03
 	google.golang.org/protobuf v1.28.0
 	gotest.tools/v3 v3.0.3
 )
@@ -167,7 +168,6 @@ require (
 	golang.org/x/time v0.0.0-20220210224613-90d013bbcef8 // indirect
 	gomodules.xyz/jsonpatch/v2 v2.2.0 // indirect
 	google.golang.org/appengine v1.6.7 // indirect
-	google.golang.org/genproto v0.0.0-20220628213854-d9e0b6570c03 // indirect
 	google.golang.org/grpc v1.47.0 // indirect
 	gopkg.in/inf.v0 v0.9.1 // indirect
 	gopkg.in/tomb.v1 v1.0.0-20141024135613-dd632973f1e7 // indirect

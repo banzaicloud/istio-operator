@@ -2910,6 +2910,9 @@
           },
           "deployment": {
             "$ref": "#/components/schemas/istio_operator.v2.api.v1alpha1.BaseKubernetesResourceConfig"
+          },
+          "templates": {
+            "$ref": "#/components/schemas/istio_operator.v2.api.v1alpha1.Templates"
           }
         }
       },
@@ -2930,6 +2933,23 @@
           "enabled": {
             "type": "boolean",
             "nullable": true
+          }
+        }
+      },
+      "istio_operator.v2.api.v1alpha1.Templates": {
+        "type": "object",
+        "properties": {
+          "gateway": {
+            "description": "Overrides for gateway templates (will be mapped as gatewayOverrides)",
+            "type": "string"
+          },
+          "sidecar": {
+            "description": "Overrides for sidecar templates (will be mapped as sidecarOverrides)",
+            "type": "string"
+          },
+          "custom": {
+            "description": "Custom templates",
+            "type": "string"
           }
         }
       },

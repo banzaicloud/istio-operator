@@ -182,6 +182,28 @@ telemetry:
     prometheus:
       wasmEnabled: false
 sidecarInjectorWebhook:
+  templates:
+    custom: |
+      spec:
+        containers:
+        - name: istio-proxy
+          env:
+          - name: TEMPLATE
+            value: custom
+    gatewayOverrides: |
+      spec:
+        containers:
+        - name: istio-proxy
+          env:
+          - name: TEMPLATE
+            value: gateway
+    sidecarOverrides: |
+      spec:
+        containers:
+        - name: istio-proxy
+          env:
+          - name: TEMPLATE
+            value: sidecar
   httpProxyEnvs:
     noProxy: localhost
 istio_cni:
