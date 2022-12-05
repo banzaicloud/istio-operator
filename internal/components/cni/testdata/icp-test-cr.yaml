@@ -4,7 +4,7 @@ metadata:
   name: cp-v115x
   namespace: istio-system
 spec:
-  version: "1.15.2"
+  version: "1.15.3"
   mode: ACTIVE
   containerImageConfiguration:
     hub: gcr.io/istio-testing
