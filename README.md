@@ -10,10 +10,46 @@ The goal of the **Istio-operator** is to enable popular service mesh use cases (
 
 ## In this README
 
+- [Istio operator vs Calisti](#istio-operator-vs-calisti)
 - [Getting started](#getting-started)
 - [Issues, feature requests](#issues-feature-requests)
 - [Contributing](#contributing)
 - [Got stuck? Find help!](#got-stuck-find-help)
+
+## Istio operator vs [Calisti](https://calisti.app/)
+
+[Calisti](https://calisti.app/) is an enterprise ready Istio platform for DevOps and SREs that automates lifecycle management and simplifies connectivity, security & observability for microservice based applications.
+The Cisco Istio operator is a core part of Calisti's Service Mesh Manager (SMM) component, which helps with installing, upgrading and managing an Istio mesh, but SMM provides many other components to conveniently secure, operate and observe Istio as well.
+
+The differences are presented in this table:
+
+|                           |     Istio operator      | Cisco Service Mesh Manager |
+|:-------------------------:|:-----------------------:|:--------------------------:|
+|       Install Istio       |   :heavy_check_mark:    |     :heavy_check_mark:     |
+|       Manage Istio        |   :heavy_check_mark:    |     :heavy_check_mark:     |
+|       Upgrade Istio       |   :heavy_check_mark:    |     :heavy_check_mark:     |
+|      Uninstall Istio      |   :heavy_check_mark:    |     :heavy_check_mark:     |
+| Multiple gateways support |   :heavy_check_mark:    |     :heavy_check_mark:     |
+|   Multi cluster support   | needs some manual steps |      fully automatic       |
+|        Prometheus         |                         |     :heavy_check_mark:     |
+|          Grafana          |                         |     :heavy_check_mark:     |
+|          Jaeger           |                         |     :heavy_check_mark:     |
+|       Cert manager        |                         |     :heavy_check_mark:     |
+|         Dashboard         |                         |     :heavy_check_mark:     |
+|            CLI            |                         |     :heavy_check_mark:     |
+|    OIDC authentication    |                         |     :heavy_check_mark:     |
+|      VM integration       |                         |     :heavy_check_mark:     |
+|      Topology graph       |                         |     :heavy_check_mark:     |
+|     Outlier detection     |                         |     :heavy_check_mark:     |
+| Service Level Objectives  |                         |     :heavy_check_mark:     |
+|     Live access logs      |                         |     :heavy_check_mark:     |
+|      mTLS management      |                         |     :heavy_check_mark:     |
+|    Gateway management     |                         |     :heavy_check_mark:     |
+| Istio traffic management  |                         |     :heavy_check_mark:     |
+|        Validations        |                         |     :heavy_check_mark:     |
+|          Support          |        Community        |         Enterprise         |
+
+For a complete list of SMM features please check out the [SMM docs](https://smm-docs.eticloud.io/docs/).
 
 ## Getting started
 
