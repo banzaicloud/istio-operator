@@ -2,9 +2,6 @@
 
 Istio operator is a Kubernetes operator to deploy and manage [Istio](https://istio.io/) resources for a Kubernetes cluster.
 
-This is the second/revamped version of the original Banzai Cloud Istio operator.
-Istio has evolved a lot over the last releases and while we kept up with that with the original Istio operator, we felt like a complete rewrite was needed to more naturally support the new Istio architecture and all of its new features.
-
 ## Overview
 
 [Istio](https://istio.io/) is an open platform to connect, manage, and secure microservices and it is emerging as the `standard` for building service meshes on Kubernetes.
@@ -22,7 +19,7 @@ The goal of the **Istio-operator** is to enable popular service mesh use cases (
 
 ### Prerequisites
 - kubectl installed
-- kubernetes cluster (version 1.20+)
+- kubernetes cluster (version 1.21+)
 - active kubecontext to the kubernetes cluster
 
 ###  Build and deploy
@@ -110,6 +107,7 @@ server: istio-envoy
 date: Mon, 02 May 2022 14:20:49 GMT
 x-envoy-upstream-service-time: 739
 ```
+
 ## Issues, feature requests
 
 Please note that the Istio operator is constantly under development and new releases might introduce breaking changes.
