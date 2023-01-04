@@ -6,7 +6,7 @@ require (
 	github.com/golang/protobuf v1.5.2
 	google.golang.org/genproto v0.0.0-20220628213854-d9e0b6570c03
 	google.golang.org/protobuf v1.28.0
-	istio.io/api v0.0.0-20220817131511-59047e057639
+	istio.io/api v0.0.0-20221208070204-0528cb6ce63b
 	k8s.io/api v0.24.2
 	k8s.io/apimachinery v0.24.2
 	sigs.k8s.io/controller-runtime v0.12.3

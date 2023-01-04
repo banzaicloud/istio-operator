@@ -36,7 +36,7 @@
         "type": "object",
         "properties": {
           "address": {
-            "description": "Address of the server implementing the Istio Mesh Configuration protocol (MCP). Can be IP address or a fully qualified DNS name. Use fs:/// to specify a file-based backend with absolute path to the directory.",
+            "description": "Address of the server implementing the Istio Mesh Configuration protocol (MCP). Can be IP address or a fully qualified DNS name. Use xds:// to specify a grpc-based xds backend, k8s:// to specify a k8s controller or fs:/// to specify a file-based backend with absolute path to the directory.",
             "type": "string"
           },
           "tlsSettings": {
@@ -194,7 +194,6 @@
             "type": "string"
           },
           "certificates": {
-            "description": "Configure the provision of certificates. Note: Deprecated, please refer to Cert-Manager or other cert provisioning solutions to sign DNS certificates.",
             "type": "array",
             "items": {
               "$ref": "#/components/schemas/istio.mesh.v1alpha1.Certificate"
@@ -469,6 +468,16 @@
                 },
                 {
                   "required": [
+                    "opentelemetry"
+                  ],
+                  "properties": {
+                    "opentelemetry": {
+                      "$ref": "#/components/schemas/istio.mesh.v1alpha1.MeshConfig.ExtensionProvider.OpenTelemetryTracingProvider"
+                    }
+                  }
+                },
+                {
+                  "required": [
                     "prometheus"
                   ],
                   "properties": {
@@ -516,7 +525,8 @@
                       "$ref": "#/components/schemas/istio.mesh.v1alpha1.MeshConfig.ExtensionProvider.EnvoyOpenTelemetryLogProvider"
                     }
                   }
-                }
+                },
+                {}
               ]
             }
           },
@@ -602,6 +612,16 @@
           },
           {
             "required": [
+              "opentelemetry"
+            ],
+            "properties": {
+              "opentelemetry": {
+                "$ref": "#/components/schemas/istio.mesh.v1alpha1.MeshConfig.ExtensionProvider.OpenTelemetryTracingProvider"
+              }
+            }
+          },
+          {
+            "required": [
               "prometheus"
             ],
             "properties": {
@@ -649,6 +669,153 @@
                 "$ref": "#/components/schemas/istio.mesh.v1alpha1.MeshConfig.ExtensionProvider.EnvoyOpenTelemetryLogProvider"
               }
             }
+          },
+          {
+            "not": {
+              "anyOf": [
+                {},
+                {
+                  "required": [
+                    "envoyExtAuthzHttp"
+                  ],
+                  "properties": {
+                    "envoyExtAuthzHttp": {
+                      "$ref": "#/components/schemas/istio.mesh.v1alpha1.MeshConfig.ExtensionProvider.EnvoyExternalAuthorizationHttpProvider"
+                    }
+                  }
+                },
+                {
+                  "required": [
+                    "envoyExtAuthzGrpc"
+                  ],
+                  "properties": {
+                    "envoyExtAuthzGrpc": {
+                      "$ref": "#/components/schemas/istio.mesh.v1alpha1.MeshConfig.ExtensionProvider.EnvoyExternalAuthorizationGrpcProvider"
+                    }
+                  }
+                },
+                {
+                  "required": [
+                    "zipkin"
+                  ],
+                  "properties": {
+                    "zipkin": {
+                      "$ref": "#/components/schemas/istio.mesh.v1alpha1.MeshConfig.ExtensionProvider.ZipkinTracingProvider"
+                    }
+                  }
+                },
+                {
+                  "required": [
+                    "lightstep"
+                  ],
+                  "properties": {
+                    "lightstep": {
+                      "$ref": "#/components/schemas/istio.mesh.v1alpha1.MeshConfig.ExtensionProvider.LightstepTracingProvider"
+                    }
+                  }
+                },
+                {
+                  "required": [
+                    "datadog"
+                  ],
+                  "properties": {
+                    "datadog": {
+                      "$ref": "#/components/schemas/istio.mesh.v1alpha1.MeshConfig.ExtensionProvider.DatadogTracingProvider"
+                    }
+                  }
+                },
+                {
+                  "required": [
+                    "stackdriver"
+                  ],
+                  "properties": {
+                    "stackdriver": {
+                      "$ref": "#/components/schemas/istio.mesh.v1alpha1.MeshConfig.ExtensionProvider.StackdriverProvider"
+                    }
+                  }
+                },
+                {
+                  "required": [
+                    "opencensus"
+                  ],
+                  "properties": {
+                    "opencensus": {
+                      "$ref": "#/components/schemas/istio.mesh.v1alpha1.MeshConfig.ExtensionProvider.OpenCensusAgentTracingProvider"
+                    }
+                  }
+                },
+                {
+                  "required": [
+                    "skywalking"
+                  ],
+                  "properties": {
+                    "skywalking": {
+                      "$ref": "#/components/schemas/istio.mesh.v1alpha1.MeshConfig.ExtensionProvider.SkyWalkingTracingProvider"
+                    }
+                  }
+                },
+                {
+                  "required": [
+                    "opentelemetry"
+                  ],
+                  "properties": {
+                    "opentelemetry": {
+                      "$ref": "#/components/schemas/istio.mesh.v1alpha1.MeshConfig.ExtensionProvider.OpenTelemetryTracingProvider"
+                    }
+                  }
+                },
+                {
+                  "required": [
+                    "prometheus"
+                  ],
+                  "properties": {
+                    "prometheus": {
+                      "$ref": "#/components/schemas/istio.mesh.v1alpha1.MeshConfig.ExtensionProvider.PrometheusMetricsProvider"
+                    }
+                  }
+                },
+                {
+                  "required": [
+                    "envoyFileAccessLog"
+                  ],
+                  "properties": {
+                    "envoyFileAccessLog": {
+                      "$ref": "#/components/schemas/istio.mesh.v1alpha1.MeshConfig.ExtensionProvider.EnvoyFileAccessLogProvider"
+                    }
+                  }
+                },
+                {
+                  "required": [
+                    "envoyHttpAls"
+                  ],
+                  "properties": {
+                    "envoyHttpAls": {
+                      "$ref": "#/components/schemas/istio.mesh.v1alpha1.MeshConfig.ExtensionProvider.EnvoyHttpGrpcV3LogProvider"
+                    }
+                  }
+                },
+                {
+                  "required": [
+                    "envoyTcpAls"
+                  ],
+                  "properties": {
+                    "envoyTcpAls": {
+                      "$ref": "#/components/schemas/istio.mesh.v1alpha1.MeshConfig.ExtensionProvider.EnvoyTcpGrpcV3LogProvider"
+                    }
+                  }
+                },
+                {
+                  "required": [
+                    "envoyOtelAls"
+                  ],
+                  "properties": {
+                    "envoyOtelAls": {
+                      "$ref": "#/components/schemas/istio.mesh.v1alpha1.MeshConfig.ExtensionProvider.EnvoyOpenTelemetryLogProvider"
+                    }
+                  }
+                }
+              ]
+            }
           }
         ]
       },
@@ -678,6 +845,9 @@
       },
       "istio.mesh.v1alpha1.MeshConfig.ExtensionProvider.OpenCensusAgentTracingProvider": {
         "$ref": "#/components/schemas/istio.mesh.v1alpha1.MeshConfig.ExtensionProvider.OpenCensusAgentTracingProvider"
+      },
+      "istio.mesh.v1alpha1.MeshConfig.ExtensionProvider.OpenTelemetryTracingProvider": {
+        "$ref": "#/components/schemas/istio.mesh.v1alpha1.MeshConfig.ExtensionProvider.OpenTelemetryTracingProvider"
       },
       "istio.mesh.v1alpha1.MeshConfig.ExtensionProvider.PrometheusMetricsProvider": {
         "$ref": "#/components/schemas/istio.mesh.v1alpha1.MeshConfig.ExtensionProvider.PrometheusMetricsProvider"

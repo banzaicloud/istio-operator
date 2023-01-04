@@ -1,10 +1,10 @@
 apiVersion: servicemesh.cisco.com/v1alpha1
 kind: IstioControlPlane
 metadata:
-  name: cp-v115x
+  name: cp-v116x
   namespace: istio-system
 spec:
-  version: "1.15.3"
+  version: "1.16.1"
   mode: PASSIVE
   distribution: cisco
   containerImageConfiguration:
@@ -30,7 +30,7 @@ spec:
         type: RollingUpdate
         rollingUpdate:
           maxUnavailable: 1
-      image: banzaicloud/istio-sidecar-injector:v1.15.3-bzc.0
+      image: banzaicloud/istio-sidecar-injector:v1.16.1-bzc.0
       env:
       - name: CNI_ENV_NAME
         value: "true"

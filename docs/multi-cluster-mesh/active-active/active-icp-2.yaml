@@ -1,10 +1,10 @@
 apiVersion: servicemesh.cisco.com/v1alpha1
 kind: IstioControlPlane
 metadata:
-  name: icp-v115x
+  name: icp-v116x
   namespace: istio-system
 spec:
-  version: 1.15.3
+  version: 1.16.1
   mode: ACTIVE
   networkName: network2
   meshExpansion:

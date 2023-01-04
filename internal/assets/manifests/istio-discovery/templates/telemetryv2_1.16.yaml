@@ -5,7 +5,7 @@
 apiVersion: networking.istio.io/v1alpha3
 kind: EnvoyFilter
 metadata:
-  name: {{ include "name-with-revision" ( dict "name" "stats-filter-1.13" "context" $) }}
+  name: {{ include "name-with-revision" ( dict "name" "stats-filter-1.16" "context" $) }}
   {{- if .Values.meshConfig.rootNamespace }}
   namespace: {{ .Values.meshConfig.rootNamespace }}
   {{- else }}
@@ -20,7 +20,7 @@ spec:
       match:
         context: SIDECAR_OUTBOUND
         proxy:
-          proxyVersion: '^1\.13.*'
+          proxyVersion: '^1\.16.*'
         listener:
           filterChain:
             filter:
@@ -66,7 +66,7 @@ spec:
       match:
         context: SIDECAR_INBOUND
         proxy:
-          proxyVersion: '^1\.13.*'
+          proxyVersion: '^1\.16.*'
         listener:
           filterChain:
             filter:
@@ -113,7 +113,7 @@ spec:
       match:
         context: GATEWAY
         proxy:
-          proxyVersion: '^1\.13.*'
+          proxyVersion: '^1\.16.*'
         listener:
           filterChain:
             filter:
@@ -161,7 +161,7 @@ spec:
 apiVersion: networking.istio.io/v1alpha3
 kind: EnvoyFilter
 metadata:
-  name: {{ include "name-with-revision" ( dict "name" "tcp-stats-filter-1.13" "context" $) }}
+  name: {{ include "name-with-revision" ( dict "name" "tcp-stats-filter-1.16" "context" $) }}
   {{- if .Values.meshConfig.rootNamespace }}
   namespace: {{ .Values.meshConfig.rootNamespace }}
   {{- else }}
@@ -176,7 +176,7 @@ spec:
       match:
         context: SIDECAR_INBOUND
         proxy:
-          proxyVersion: '^1\.13.*'
+          proxyVersion: '^1\.16.*'
         listener:
           filterChain:
             filter:
@@ -220,7 +220,7 @@ spec:
       match:
         context: SIDECAR_OUTBOUND
         proxy:
-          proxyVersion: '^1\.13.*'
+          proxyVersion: '^1\.16.*'
         listener:
           filterChain:
             filter:
@@ -264,7 +264,7 @@ spec:
       match:
         context: GATEWAY
         proxy:
-          proxyVersion: '^1\.13.*'
+          proxyVersion: '^1\.16.*'
         listener:
           filterChain:
             filter:
@@ -310,7 +310,7 @@ spec:
 apiVersion: networking.istio.io/v1alpha3
 kind: EnvoyFilter
 metadata:
-  name: {{ include "name-with-revision" ( dict "name" "stackdriver-filter-1.13" "context" $) }}
+  name: {{ include "name-with-revision" ( dict "name" "stackdriver-filter-1.16" "context" $) }}
   {{- if .Values.meshConfig.rootNamespace }}
   namespace: {{ .Values.meshConfig.rootNamespace }}
   {{- else }}
@@ -326,7 +326,7 @@ spec:
       match:
         context: SIDECAR_OUTBOUND
         proxy:
-          proxyVersion: '^1\.13.*'
+          proxyVersion: '^1\.16.*'
         listener:
           filterChain:
             filter:
@@ -361,7 +361,7 @@ spec:
       match:
         context: SIDECAR_INBOUND
         proxy:
-          proxyVersion: '^1\.13.*'
+          proxyVersion: '^1\.16.*'
         listener:
           filterChain:
             filter:
@@ -395,7 +395,7 @@ spec:
       match:
         context: GATEWAY
         proxy:
-          proxyVersion: '^1\.13.*'
+          proxyVersion: '^1\.16.*'
         listener:
           filterChain:
             filter:
@@ -429,7 +429,7 @@ spec:
 apiVersion: networking.istio.io/v1alpha3
 kind: EnvoyFilter
 metadata:
-  name: {{ include "name-with-revision" ( dict "name" "tcp-stackdriver-filter-1.13" "context" $) }}
+  name: {{ include "name-with-revision" ( dict "name" "tcp-stackdriver-filter-1.16" "context" $) }}
   {{- if .Values.meshConfig.rootNamespace }}
   namespace: {{ .Values.meshConfig.rootNamespace }}
   {{- else }}
@@ -445,7 +445,7 @@ spec:
     match:
       context: SIDECAR_OUTBOUND
       proxy:
-        proxyVersion: '^1\.13.*'
+        proxyVersion: '^1\.16.*'
       listener:
         filterChain:
           filter:
@@ -478,7 +478,7 @@ spec:
     match:
       context: SIDECAR_INBOUND
       proxy:
-        proxyVersion: '^1\.13.*'
+        proxyVersion: '^1\.16.*'
       listener:
         filterChain:
           filter:
@@ -510,7 +510,7 @@ spec:
     match:
       context: GATEWAY
       proxy:
-        proxyVersion: '^1\.13.*'
+        proxyVersion: '^1\.16.*'
       listener:
         filterChain:
           filter:
@@ -543,7 +543,7 @@ spec:
 apiVersion: networking.istio.io/v1alpha3
 kind: EnvoyFilter
 metadata:
-  name: {{ include "name-with-revision" ( dict "name" "stackdriver-sampling-accesslog-filter-1.13" "context" $) }}
+  name: {{ include "name-with-revision" ( dict "name" "stackdriver-sampling-accesslog-filter-1.16" "context" $) }}
   {{- if .Values.meshConfig.rootNamespace }}
   namespace: {{ .Values.meshConfig.rootNamespace }}
   {{- else }}
@@ -558,7 +558,7 @@ spec:
       match:
         context: SIDECAR_INBOUND
         proxy:
-          proxyVersion: '1\.13.*'
+          proxyVersion: '1\.16.*'
         listener:
           filterChain:
             filter:
