@@ -750,8 +750,7 @@ type SDSConfiguration struct {
 
 	// The JWT token for SDS and the aud field of such JWT. See RFC 7519, section 4.1.3.
 	// When a CSR is sent from Citadel Agent to the CA (e.g. Citadel), this aud is to make sure the
-	//
-	//	JWT is intended for the CA.
+	// 	JWT is intended for the CA.
 	TokenAudience string `protobuf:"bytes,1,opt,name=tokenAudience,proto3" json:"tokenAudience,omitempty"`
 }
 
