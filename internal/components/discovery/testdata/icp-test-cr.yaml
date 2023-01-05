@@ -5,6 +5,10 @@ metadata:
   namespace: istio-system
 spec:
   sidecarInjector:
+    defaultSidecarTemplates:
+    - sidecar
+    - sidecarOverrides
+    - custom1
     templates:
       sidecar: |
         spec:
@@ -20,13 +24,23 @@ spec:
             env:
             - name: TEMPLATE
               value: gateway
-      custom: |
-        spec:
-          containers:
-          - name: istio-proxy
-            env:
-            - name: TEMPLATE
-              value: custom
+      customTemplates:
+        - name: "custom1"
+          template: |
+            spec:
+              containers:
+              - name: istio-proxy
+                env:
+                - name: TEMPLATE
+                  value: custom1
+        - name: "custom2"
+          template: |
+            spec:
+              containers:
+              - name: istio-proxy
+                env:
+                - name: TEMPLATE
+                  value: custom2
   meshID: mesh1
   clusterID: demo-cluster1
   version: "1.15.3"

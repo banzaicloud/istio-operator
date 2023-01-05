@@ -6302,6 +6302,10 @@ spec:
                   type: object
                 sidecarInjector:
                   properties:
+                    defaultSidecarTemplates:
+                      items:
+                        type: string
+                      type: array
                     deployment:
                       properties:
                         affinity:
@@ -7884,8 +7888,15 @@ spec:
                       type: object
                     templates:
                       properties:
-                        custom:
-                          type: string
+                        customTemplates:
+                          items:
+                            properties:
+                              name:
+                                type: string
+                              template:
+                                type: string
+                            type: object
+                          type: array
                         gateway:
                           type: string
                         sidecar:
@@ -15335,6 +15346,10 @@ spec:
                   type: object
                 sidecarInjector:
                   properties:
+                    defaultSidecarTemplates:
+                      items:
+                        type: string
+                      type: array
                     deployment:
                       properties:
                         affinity:
@@ -16917,8 +16932,15 @@ spec:
                       type: object
                     templates:
                       properties:
-                        custom:
-                          type: string
+                        customTemplates:
+                          items:
+                            properties:
+                              name:
+                                type: string
+                              template:
+                                type: string
+                            type: object
+                          type: array
                         gateway:
                           type: string
                         sidecar:

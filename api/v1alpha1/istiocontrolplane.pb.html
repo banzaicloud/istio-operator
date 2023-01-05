@@ -4,7 +4,7 @@ description: Istio control plane descriptor
 layout: protoc-gen-docs
 generator: protoc-gen-docs
 schema: istio-operator.api.v1alpha1.IstioControlPlaneSpec
-number_of_entries: 40
+number_of_entries: 41
 ---
 <h2 id="IstioControlPlaneSpec">IstioControlPlaneSpec</h2>
 <section>
@@ -339,9 +339,20 @@ No
 </tr>
 <tr id="SidecarInjectorConfiguration-templates">
 <td><code>templates</code></td>
-<td><code><a href="#Templates">Templates</a></code></td>
+<td><code><a href="#SidecarInjectionTemplates">SidecarInjectionTemplates</a></code></td>
 <td>
-<p>Template spec</p>
+<p>SidecarInjectionTemplates spec</p>
+
+</td>
+<td>
+No
+</td>
+</tr>
+<tr id="SidecarInjectorConfiguration-defaultSidecarTemplates">
+<td><code>defaultSidecarTemplates</code></td>
+<td><code>string[]</code></td>
+<td>
+<p>Default templates to be injected</p>
 
 </td>
 <td>
@@ -351,7 +362,7 @@ No
 </tbody>
 </table>
 </section>
-<h2 id="Templates">Templates</h2>
+<h2 id="SidecarInjectionTemplates">SidecarInjectionTemplates</h2>
 <section>
 <table class="message-fields">
 <thead>
@@ -363,34 +374,67 @@ No
 </tr>
 </thead>
 <tbody>
-<tr id="Templates-sidecar">
+<tr id="SidecarInjectionTemplates-sidecar">
 <td><code>sidecar</code></td>
 <td><code>string</code></td>
 <td>
-<p>Overrides for sidecar templates (will be mapped as sidecarOverrides)</p>
+<p>Overrides for the default &ldquo;sidecar&rdquo; injection template</p>
 
 </td>
 <td>
 No
 </td>
 </tr>
-<tr id="Templates-gateway">
+<tr id="SidecarInjectionTemplates-gateway">
 <td><code>gateway</code></td>
 <td><code>string</code></td>
 <td>
-<p>Overrides for gateway templates (will be mapped as gatewayOverrides)</p>
+<p>Overrides for the default &ldquo;gateway&rdquo; injection template</p>
 
 </td>
 <td>
 No
 </td>
 </tr>
-<tr id="Templates-custom">
-<td><code>custom</code></td>
-<td><code>string</code></td>
+<tr id="SidecarInjectionTemplates-customTemplates">
+<td><code>customTemplates</code></td>
+<td><code><a href="#CustomSidecarInjectionTemplates">CustomSidecarInjectionTemplates[]</a></code></td>
 <td>
 <p>Custom templates</p>
 
+</td>
+<td>
+No
+</td>
+</tr>
+</tbody>
+</table>
+</section>
+<h2 id="CustomSidecarInjectionTemplates">CustomSidecarInjectionTemplates</h2>
+<section>
+<table class="message-fields">
+<thead>
+<tr>
+<th>Field</th>
+<th>Type</th>
+<th>Description</th>
+<th>Required</th>
+</tr>
+</thead>
+<tbody>
+<tr id="CustomSidecarInjectionTemplates-name">
+<td><code>name</code></td>
+<td><code>string</code></td>
+<td>
+</td>
+<td>
+No
+</td>
+</tr>
+<tr id="CustomSidecarInjectionTemplates-template">
+<td><code>template</code></td>
+<td><code>string</code></td>
+<td>
 </td>
 <td>
 No

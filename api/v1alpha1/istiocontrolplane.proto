@@ -135,17 +135,24 @@ message SidecarInjectorConfiguration {
     BaseKubernetesResourceConfig deployment = 1;
     // Service spec
     Service service = 2;
-    // Template spec
-    Templates templates = 3;
+    // SidecarInjectionTemplates spec
+    SidecarInjectionTemplates templates = 3;
+    // Default templates to be injected
+    repeated string defaultSidecarTemplates = 4;
 }
 
-message Templates {
-    // Overrides for sidecar templates (will be mapped as sidecarOverrides)
+message SidecarInjectionTemplates {
+    // Overrides for the default "sidecar" injection template
     string sidecar = 1;
-    // Overrides for gateway templates (will be mapped as gatewayOverrides)
+    // Overrides for the default "gateway" injection template
     string gateway = 2;
     // Custom templates
-    string custom = 3;
+    repeated CustomSidecarInjectionTemplates customTemplates = 3;
+}
+
+message CustomSidecarInjectionTemplates {
+    string name = 1;
+    string template = 2;
 }
 
 message MeshExpansionConfiguration {
