@@ -2153,6 +2153,17 @@
           }
         }
       },
+      "istio_operator.v2.api.v1alpha1.CustomSidecarInjectionTemplates": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "template": {
+            "type": "string"
+          }
+        }
+      },
       "istio_operator.v2.api.v1alpha1.DeploymentStrategy": {
         "type": "object",
         "properties": {
@@ -2902,6 +2913,26 @@
           }
         }
       },
+      "istio_operator.v2.api.v1alpha1.SidecarInjectionTemplates": {
+        "type": "object",
+        "properties": {
+          "gateway": {
+            "description": "Overrides for the default \"gateway\" injection template",
+            "type": "string"
+          },
+          "sidecar": {
+            "description": "Overrides for the default \"sidecar\" injection template",
+            "type": "string"
+          },
+          "customTemplates": {
+            "description": "Custom templates",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/istio_operator.v2.api.v1alpha1.CustomSidecarInjectionTemplates"
+            }
+          }
+        }
+      },
       "istio_operator.v2.api.v1alpha1.SidecarInjectorConfiguration": {
         "type": "object",
         "properties": {
@@ -2912,7 +2943,14 @@
             "$ref": "#/components/schemas/istio_operator.v2.api.v1alpha1.BaseKubernetesResourceConfig"
           },
           "templates": {
-            "$ref": "#/components/schemas/istio_operator.v2.api.v1alpha1.Templates"
+            "$ref": "#/components/schemas/istio_operator.v2.api.v1alpha1.SidecarInjectionTemplates"
+          },
+          "defaultSidecarTemplates": {
+            "description": "Default templates to be injected",
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
           }
         }
       },
@@ -2933,23 +2971,6 @@
           "enabled": {
             "type": "boolean",
             "nullable": true
-          }
-        }
-      },
-      "istio_operator.v2.api.v1alpha1.Templates": {
-        "type": "object",
-        "properties": {
-          "gateway": {
-            "description": "Overrides for gateway templates (will be mapped as gatewayOverrides)",
-            "type": "string"
-          },
-          "sidecar": {
-            "description": "Overrides for sidecar templates (will be mapped as sidecarOverrides)",
-            "type": "string"
-          },
-          "custom": {
-            "description": "Custom templates",
-            "type": "string"
           }
         }
       },

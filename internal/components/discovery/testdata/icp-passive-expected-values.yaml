@@ -11,14 +11,24 @@ meshConfig:
   rootNamespace: istio-system
 revision: cp-v116x
 sidecarInjectorWebhook:
+  defaultTemplates:
+    - sidecar
+    - sidecarOverrides
   templates:
-    custom: |
+    custom1: |
       spec:
         containers:
         - name: istio-proxy
           env:
           - name: TEMPLATE
-            value: custom-passive
+            value: custom-passive1
+    custom2: |
+      spec:
+        containers:
+        - name: istio-proxy
+          env:
+          - name: TEMPLATE
+            value: custom-passive2
     gatewayOverrides: |
       spec:
         containers:
