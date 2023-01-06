@@ -561,7 +561,7 @@ type SidecarInjectorConfiguration struct {
 	Deployment *BaseKubernetesResourceConfig `protobuf:"bytes,1,opt,name=deployment,proto3" json:"deployment,omitempty"`
 	// Service spec
 	Service *Service `protobuf:"bytes,2,opt,name=service,proto3" json:"service,omitempty"`
-	// SidecarInjectionTemplates spec
+	// Fields to introduce sidecar injection template customizations
 	Templates *SidecarInjectionTemplates `protobuf:"bytes,3,opt,name=templates,proto3" json:"templates,omitempty"`
 }
 
