@@ -42,3 +42,172 @@ spec:
   version: "1.16.1"
   mode: ACTIVE
   networkName: network1
+  containerImageConfiguration:
+    hub: gcr.io/istio-testing
+    tag: latest
+    imagePullPolicy: Never
+    imagePullSecrets:
+    - name: pullsecret-1
+    - name: pullsecret-2
+  logging:
+    level: "default:warning"
+  mountMtlsCerts: false
+  istiod:
+    deployment:
+      metadata:
+        annotations:
+          testannotation.banzaicloud.io/name: "value"
+        labels:
+          testlabel.banzaicloud.io/name: "value"
+      image: container-hub/image-name:tag
+      volumes:
+      - name: "dddemo"
+        volumeSource:
+          secret:
+            secretName: "ssname"
+            optional: true
+      - name: config-vol
+        volumeSource:
+          configMap:
+            localObjectReference:
+              name: log-config
+            items:
+              - key: log_level
+                path: log_level
+      volumeMounts:
+      - name: config-vol
+        mountPath: /etc/config
+      env:
+      - name: TEST_ENV
+        value: test-env-value
+      resources:
+        limits:
+          cpu: "2"
+          memory: 1Gi
+        requests:
+          cpu: 100m
+          memory: 128Mi
+      nodeSelector:
+        disktype: ssd
+      affinity:
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+            - matchExpressions:
+              - key: kubernetes.io/e2e-az-name
+                operator: In
+                values:
+                - e2e-az1
+                - e2e-az2
+        podAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+          - labelSelector:
+              matchExpressions:
+              - key: security
+                operator: In
+                values:
+                - S1
+            topologyKey: topology.kubernetes.io/zone
+      podSecurityContext:
+        runAsUser: 1337
+      securityContext:
+        runAsUser: 1337
+        runAsGroup: 1337
+        runAsNonRoot: true
+      imagePullPolicy: Never
+      imagePullSecrets:
+      - name: pullsecret-1
+      - name: pullsecret-2
+      priorityClassName: "high-priority"
+      tolerations:
+      - key: "key1"
+        operator: "Equal"
+        value: "value1"
+        effect: "NoSchedule"
+        tolerationSeconds: 5
+      replicas:
+        count: 1
+        min: 1
+        max: 5
+        targetCPUUtilizationPercentage: 80
+      podMetadata:
+        annotations:
+          podannotation: podannotationvalue
+        labels:
+          podlabel: podlabelvalue
+      podDisruptionBudget:
+        minAvailable: 1
+        maxUnavailable: 5
+      deploymentStrategy:
+        type: RollingUpdate
+        rollingUpdate:
+          maxUnavailable: 30%
+          maxSurge: 100%
+    enableAnalysis: false
+    enableStatus: true
+    externalIstiod:
+      enabled: false
+    traceSampling: 0.5
+    enableProtocolSniffingOutbound: false
+    enableProtocolSniffingInbound: false
+    certProvider: ISTIOD
+  proxy:
+    image: proxyv2
+    privileged: false
+    enableCoreDump: false
+    logLevel: WARNING
+    componentLogLevel: "misc:debug"
+    clusterDomain: "acme.corp"
+    holdApplicationUntilProxyStarts: true
+    lifecycle:
+      postStart:
+        exec:
+          command:
+          - pilot-agent
+          - wait
+    resources:
+      limits:
+        cpu: 500m
+        memory: 512Mi
+      requests:
+        cpu: 100m
+        memory: 128Mi
+    includeIPRanges: "*"
+    excludeIPRanges: ""
+    excludeInboundPorts: ""
+    excludeOutboundPorts: ""
+  proxyInit:
+    cni:
+      enabled: true
+    image: proxyv2
+    resources:
+      limits:
+        cpu: 100m
+        memory: 64Mi
+      requests:
+        cpu: 50m
+        memory: 32Mi
+  telemetryV2:
+    enabled: true
+  sds:
+    tokenAudience: "istio-ca"
+  proxyWasm:
+    enabled: false
+  watchOneNamespace: false
+  jwtPolicy: THIRD_PARTY_JWT
+  caAddress: localhost
+  caProvider: Citadel
+  distribution: cisco
+  httpProxyEnvs:
+    noProxy: "localhost"
+  meshConfig:
+    rootNamespace: "istio-system"
+    caCertificates:
+    - pem: "<pem content>"
+  k8sResourceOverlays:
+  - groupVersionKind:
+      kind: Deployment
+    patches:
+    - type: replace
+      path: /metadata?/labels?/label-added-by-overlay-patch?
+      value: "true"
