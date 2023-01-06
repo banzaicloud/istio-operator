@@ -367,7 +367,7 @@ No
 <td><code>sidecar</code></td>
 <td><code>string</code></td>
 <td>
-<p>Overrides for the default &ldquo;sidecar&rdquo; injection template</p>
+<p>Overrides for the default &ldquo;sidecar&rdquo; injection template. This template will be merged with the default &ldquo;sidecar&rdquo; template, overwriting values, if existing.</p>
 
 </td>
 <td>
@@ -378,7 +378,7 @@ No
 <td><code>gateway</code></td>
 <td><code>string</code></td>
 <td>
-<p>Overrides for the default &ldquo;gateway&rdquo; injection template</p>
+<p>Overrides for the default &ldquo;gateway&rdquo; injection template. This template will be merged with the default &ldquo;gateway&rdquo; template, overwriting values, if existing.</p>
 
 </td>
 <td>
@@ -389,7 +389,7 @@ No
 <td><code>customTemplates</code></td>
 <td><code><a href="#CustomSidecarInjectionTemplates">CustomSidecarInjectionTemplates[]</a></code></td>
 <td>
-<p>Custom templates</p>
+<p>Custom templates can be defined for sidecar injection. These templates can be applied by annotating pods with &ldquo;inject.istio.io/templates=<name of custom template>&rdquo;. See https://istio.io/latest/docs/setup/additional-setup/sidecar-injection/#custom-templates-experimental.</p>
 
 </td>
 <td>
