@@ -122,11 +122,16 @@ func (r *IstioMeshGatewayReconciler) Reconcile(ctx context.Context, req ctrl.Req
 		generateExternalService = true
 	}
 
+	injectionTemplate := "gateway"
+	if icp.GetSpec().GetSidecarInjector().GetTemplates().GetGateway() != "" {
+		injectionTemplate = "gateway, gatewayOverrides"
+	}
+
 	reconciler, err := NewComponentReconciler(r, func(helmReconciler *components.HelmReconciler) components.ComponentReconciler {
 		return istiomeshgateway.NewChartReconciler(helmReconciler, servicemeshv1alpha1.IstioMeshGatewayProperties{
 			Revision:                fmt.Sprintf("%s.%s", icp.GetName(), icp.GetNamespace()),
 			EnablePrometheusMerge:   utils.BoolPointer(enablePrometheusMerge),
-			InjectionTemplate:       "gateway, gatewayOverrides",
+			InjectionTemplate:       injectionTemplate,
 			InjectionChecksum:       icp.GetStatus().GetChecksums().GetSidecarInjector(),
 			MeshConfigChecksum:      icp.GetStatus().GetChecksums().GetMeshConfig(),
 			IstioControlPlane:       icp,

@@ -6347,10 +6347,6 @@ spec:
                   type: object
                 sidecarInjector:
                   properties:
-                    defaultSidecarTemplates:
-                      items:
-                        type: string
-                      type: array
                     deployment:
                       properties:
                         affinity:
@@ -15481,10 +15477,6 @@ spec:
                   type: object
                 sidecarInjector:
                   properties:
-                    defaultSidecarTemplates:
-                      items:
-                        type: string
-                      type: array
                     deployment:
                       properties:
                         affinity:

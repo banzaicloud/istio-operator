@@ -68,7 +68,6 @@ data:
     defaultTemplates:
     - sidecar
     - sidecarOverrides
-    - custom1
     policy: enabled
     httpProxyEnvs:
       noProxy: localhost
@@ -1417,8 +1416,7 @@ data:
         "alwaysInjectSelector": [],
         "defaultTemplates": [
           "sidecar",
-          "sidecarOverrides",
-          "custom1"
+          "sidecarOverrides"
         ],
         "enableNamespacesByDefault": false,
         "httpProxyEnvs": {
