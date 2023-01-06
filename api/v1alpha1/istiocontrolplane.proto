@@ -137,8 +137,6 @@ message SidecarInjectorConfiguration {
     Service service = 2;
     // SidecarInjectionTemplates spec
     SidecarInjectionTemplates templates = 3;
-    // Default templates to be injected
-    repeated string defaultSidecarTemplates = 4;
 }
 
 message SidecarInjectionTemplates {

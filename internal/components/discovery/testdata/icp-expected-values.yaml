@@ -182,7 +182,7 @@ telemetry:
     prometheus:
       wasmEnabled: false
 sidecarInjectorWebhook:
-  defaultTemplates: [ sidecar, sidecarOverrides, custom1 ]
+  defaultTemplates: [ sidecar, sidecarOverrides ]
   templates:
     custom1: |
       spec:

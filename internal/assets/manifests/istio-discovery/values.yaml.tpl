@@ -128,9 +128,7 @@ sidecarInjectorWebhook:
 {{ valueIf (dict "key" $customTemplate.Name "value" $customTemplate.Template) | indent 4 }}
 {{ end }}
 {{- end }}
-{{- if .GetSpec.GetSidecarInjector.GetDefaultSidecarTemplates }}
-{{ toYamlIf (dict "key" "defaultTemplates" "value" .GetSpec.GetSidecarInjector.GetDefaultSidecarTemplates) | indent 2 }}
-{{- else if and (not .GetSpec.GetSidecarInjector.GetDefaultSidecarTemplates) .GetSpec.GetSidecarInjector.GetTemplates.GetSidecar }}
+{{- if .GetSpec.GetSidecarInjector.GetTemplates.GetSidecar }}
   defaultTemplates:
   - sidecar
   - sidecarOverrides

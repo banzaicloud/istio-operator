@@ -2774,13 +2774,6 @@
           },
           "templates": {
             "$ref": "#/components/schemas/istio_operator.v2.api.v1alpha1.SidecarInjectionTemplates"
-          },
-          "defaultSidecarTemplates": {
-            "description": "Default templates to be injected",
-            "type": "array",
-            "items": {
-              "type": "string"
-            }
           }
         }
       },
