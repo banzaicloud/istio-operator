@@ -2917,15 +2917,15 @@
         "type": "object",
         "properties": {
           "gateway": {
-            "description": "Overrides for the default \"gateway\" injection template",
+            "description": "Overrides for the default \"gateway\" injection template. This template will be merged with the default \"gateway\" template, overwriting values, if existing.",
             "type": "string"
           },
           "sidecar": {
-            "description": "Overrides for the default \"sidecar\" injection template",
+            "description": "Overrides for the default \"sidecar\" injection template. This template will be merged with the default \"sidecar\" template, overwriting values, if existing.",
             "type": "string"
           },
           "customTemplates": {
-            "description": "Custom templates",
+            "description": "Custom templates can be defined for sidecar injection. These templates can be applied by annotating pods with \"inject.istio.io/templates=\u003cname of custom template\u003e\". See https://istio.io/latest/docs/setup/additional-setup/sidecar-injection/#custom-templates-experimental.",
             "type": "array",
             "items": {
               "$ref": "#/components/schemas/istio_operator.v2.api.v1alpha1.CustomSidecarInjectionTemplates"

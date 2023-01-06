@@ -140,11 +140,11 @@ message SidecarInjectorConfiguration {
 }
 
 message SidecarInjectionTemplates {
-    // Overrides for the default "sidecar" injection template
+    // Overrides for the default "sidecar" injection template. This template will be merged with the default "sidecar" template, overwriting values, if existing.
     string sidecar = 1;
-    // Overrides for the default "gateway" injection template
+    // Overrides for the default "gateway" injection template. This template will be merged with the default "gateway" template, overwriting values, if existing.
     string gateway = 2;
-    // Custom templates
+    // Custom templates can be defined for sidecar injection. These templates can be applied by annotating pods with "inject.istio.io/templates=<name of custom template>". See https://istio.io/latest/docs/setup/additional-setup/sidecar-injection/#custom-templates-experimental.
     repeated CustomSidecarInjectionTemplates customTemplates = 3;
 }
 

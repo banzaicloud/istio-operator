@@ -623,11 +623,11 @@ type SidecarInjectionTemplates struct {
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	// Overrides for the default "sidecar" injection template
+	// Overrides for the default "sidecar" injection template. This template will be merged with the default "sidecar" template, overwriting values, if existing.
 	Sidecar string `protobuf:"bytes,1,opt,name=sidecar,proto3" json:"sidecar,omitempty"`
-	// Overrides for the default "gateway" injection template
+	// Overrides for the default "gateway" injection template. This template will be merged with the default "gateway" template, overwriting values, if existing.
 	Gateway string `protobuf:"bytes,2,opt,name=gateway,proto3" json:"gateway,omitempty"`
-	// Custom templates
+	// Custom templates can be defined for sidecar injection. These templates can be applied by annotating pods with "inject.istio.io/templates=<name of custom template>". See https://istio.io/latest/docs/setup/additional-setup/sidecar-injection/#custom-templates-experimental.
 	CustomTemplates []*CustomSidecarInjectionTemplates `protobuf:"bytes,3,rep,name=customTemplates,proto3" json:"customTemplates,omitempty"`
 }
 
