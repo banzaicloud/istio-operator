@@ -135,7 +135,7 @@ message SidecarInjectorConfiguration {
     BaseKubernetesResourceConfig deployment = 1;
     // Service spec
     Service service = 2;
-    // SidecarInjectionTemplates spec
+    // Fields to introduce sidecar injection template customizations
     SidecarInjectionTemplates templates = 3;
 }
 
