@@ -36,7 +36,9 @@ apiVersion: v1
 data:
   config: |-
     # defaultTemplates defines the default template to use for pods that do not explicitly specify a template
-    defaultTemplates: [sidecar]
+    defaultTemplates:
+    - sidecar
+    - sidecarOverrides
     policy: enabled
     httpProxyEnvs:
       null
@@ -1188,6 +1190,34 @@ data:
           securityContext:
             fsGroup: 1337
           {{- end }}
+      custom1: |
+        spec:
+          containers:
+          - name: istio-proxy
+            env:
+            - name: TEMPLATE
+              value: custom-passive1
+      custom2: |
+        spec:
+          containers:
+          - name: istio-proxy
+            env:
+            - name: TEMPLATE
+              value: custom-passive2
+      gatewayOverrides: |
+        spec:
+          containers:
+          - name: istio-proxy
+            env:
+            - name: TEMPLATE
+              value: gateway-passive
+      sidecarOverrides: |
+        spec:
+          containers:
+          - name: istio-proxy
+            env:
+            - name: TEMPLATE
+              value: sidecar-passive
   values: |-
     {
       "global": {
@@ -1303,12 +1333,20 @@ data:
       "revision": "cp-v115x",
       "sidecarInjectorWebhook": {
         "alwaysInjectSelector": [],
-        "defaultTemplates": [],
+        "defaultTemplates": [
+          "sidecar",
+          "sidecarOverrides"
+        ],
         "enableNamespacesByDefault": false,
         "injectedAnnotations": {},
         "neverInjectSelector": [],
         "rewriteAppHTTPProbe": true,
-        "templates": {}
+        "templates": {
+          "custom1": "spec:\n  containers:\n  - name: istio-proxy\n    env:\n    - name: TEMPLATE\n      value: custom-passive1\n",
+          "custom2": "spec:\n  containers:\n  - name: istio-proxy\n    env:\n    - name: TEMPLATE\n      value: custom-passive2\n",
+          "gatewayOverrides": "spec:\n  containers:\n  - name: istio-proxy\n    env:\n    - name: TEMPLATE\n      value: gateway-passive\n",
+          "sidecarOverrides": "spec:\n  containers:\n  - name: istio-proxy\n    env:\n    - name: TEMPLATE\n      value: sidecar-passive\n"
+        }
       }
     }
 kind: ConfigMap

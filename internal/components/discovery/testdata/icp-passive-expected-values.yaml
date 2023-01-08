@@ -10,3 +10,36 @@ meshConfig:
   connectTimeout: 5s
   rootNamespace: istio-system
 revision: cp-v115x
+sidecarInjectorWebhook:
+  defaultTemplates:
+    - sidecar
+    - sidecarOverrides
+  templates:
+    custom1: |
+      spec:
+        containers:
+        - name: istio-proxy
+          env:
+          - name: TEMPLATE
+            value: custom-passive1
+    custom2: |
+      spec:
+        containers:
+        - name: istio-proxy
+          env:
+          - name: TEMPLATE
+            value: custom-passive2
+    gatewayOverrides: |
+      spec:
+        containers:
+        - name: istio-proxy
+          env:
+          - name: TEMPLATE
+            value: gateway-passive
+    sidecarOverrides: |
+      spec:
+        containers:
+        - name: istio-proxy
+          env:
+          - name: TEMPLATE
+            value: sidecar-passive

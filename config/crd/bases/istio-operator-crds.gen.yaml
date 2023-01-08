@@ -7882,6 +7882,22 @@ spec:
                         - ports
                         - type
                       type: object
+                    templates:
+                      properties:
+                        customTemplates:
+                          items:
+                            properties:
+                              name:
+                                type: string
+                              template:
+                                type: string
+                            type: object
+                          type: array
+                        gateway:
+                          type: string
+                        sidecar:
+                          type: string
+                      type: object
                   type: object
                 telemetryV2:
                   properties:
@@ -16905,6 +16921,22 @@ spec:
                       required:
                         - ports
                         - type
+                      type: object
+                    templates:
+                      properties:
+                        customTemplates:
+                          items:
+                            properties:
+                              name:
+                                type: string
+                              template:
+                                type: string
+                            type: object
+                          type: array
+                        gateway:
+                          type: string
+                        sidecar:
+                          type: string
                       type: object
                   type: object
                 telemetryV2:

@@ -107,11 +107,29 @@ pilot:
 {{ $x | indent 2 }}
 {{- end }}
 
-{{- if .GetSpec.GetHttpProxyEnvs }}
 sidecarInjectorWebhook:
   # Supported only in Cisco provided istio-proxy images
 {{ toYamlIf (dict "value" .GetSpec.GetHttpProxyEnvs "key" "httpProxyEnvs") | indent 2 }}
+  templates:
+{{- if .GetSpec.GetSidecarInjector.GetTemplates.GetGateway }}
+{{ valueIf (dict "key" "gatewayOverrides" "value" .GetSpec.GetSidecarInjector.GetTemplates.GetGateway) | indent 4 }}
+{{- else }}
+    gatewayOverrides: ""
 {{- end }}
+{{- if .GetSpec.GetSidecarInjector.GetTemplates.GetCustomTemplates }}
+{{ range $customTemplate := .GetSpec.GetSidecarInjector.GetTemplates.GetCustomTemplates }}
+{{ valueIf (dict "key" $customTemplate.Name "value" $customTemplate.Template) | indent 4 }}
+{{ end }}
+{{- end }}
+{{- if .GetSpec.GetSidecarInjector.GetTemplates.GetSidecar }}
+{{ valueIf (dict "key" "sidecarOverrides" "value" .GetSpec.GetSidecarInjector.GetTemplates.GetSidecar) | indent 4 }}
+  defaultTemplates:
+  - sidecar
+  - sidecarOverrides
+{{- else }}
+    sidecarOverrides: ""
+{{- end }}
+
 
 {{- if or .GetSpec.GetTelemetryV2.GetEnabled .GetSpec.GetProxyWasm.GetEnabled }}
 telemetry:
