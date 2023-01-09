@@ -1829,6 +1829,12 @@ rules:
   - list
   - update
   - delete
+- resources:
+  - configmaps
+  apiGroups:
+  - ""
+  verbs:
+  - delete
 
 ---
 apiVersion: rbac.authorization.k8s.io/v1
