@@ -2,9 +2,6 @@
 
 ## Discovery Settings
 pilot:
-  autoscaleEnabled: true
-  autoscaleMin: 1
-  autoscaleMax: 5
   replicaCount: 1
   deploymentStrategy:
     type: RollingUpdate

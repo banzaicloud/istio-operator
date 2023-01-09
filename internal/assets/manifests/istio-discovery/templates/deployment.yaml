@@ -14,8 +14,10 @@ metadata:
     {{ $key }}: "{{ $val }}"
 {{- end }}
 spec:
+{{- if not .Values.pilot.autoscaleEnabled }}
 {{- if .Values.pilot.replicaCount }}
   replicas: {{ .Values.pilot.replicaCount }}
+{{- end }}
 {{- end }}
 {{- if .Values.pilot.deploymentStrategy }}
   strategy:
