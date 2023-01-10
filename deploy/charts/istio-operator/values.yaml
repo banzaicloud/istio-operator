@@ -19,7 +19,6 @@ securityContext:
   capabilities:
     drop:
       - ALL
-  seccompProfile: {}
 nodeSelector: {}
 tolerations: []
 affinity: {}
