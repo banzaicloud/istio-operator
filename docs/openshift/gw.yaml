@@ -1,0 +1,68 @@
+apiVersion: servicemesh.cisco.com/v1alpha1
+kind: IstioMeshGateway
+metadata:
+  labels:
+    app: bookinfo
+  name: demo-imgw
+  namespace: demoapp
+spec:
+  istioControlPlane:
+    name: icp-v115x
+    namespace: istio-system
+  deployment:
+    metadata:
+      labels:
+        app: bookinfo
+  service:
+    ports:
+      - name: http
+        port: 80
+        protocol: TCP
+        targetPort: 8080
+    type: LoadBalancer
+  runAsRoot: true
+  type: ingress
+---
+apiVersion: networking.istio.io/v1alpha3
+kind: Gateway
+metadata:
+  name: bookinfo-gateway
+  namespace: demoapp
+spec:
+  selector:
+    app: bookinfo
+  servers:
+    - port:
+        number: 80
+        name: http
+        protocol: HTTP
+      hosts:
+        - "*"
+---
+apiVersion: networking.istio.io/v1alpha3
+kind: VirtualService
+metadata:
+  name: bookinfo
+  namespace: demoapp
+spec:
+  hosts:
+    - "*"
+  gateways:
+    - bookinfo-gateway
+  http:
+    - match:
+        - uri:
+            exact: /productpage
+        - uri:
+            prefix: /static
+        - uri:
+            exact: /login
+        - uri:
+            exact: /logout
+        - uri:
+            prefix: /api/v1/products
+      route:
+        - destination:
+            host: productpage
+            port:
+              number: 9080
