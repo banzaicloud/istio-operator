@@ -1,11 +1,11 @@
 # Istio-operator chart
 
-[Istio-operator](https://github.com/banzaicloud/istio-operator/tree/release-1.15) is a Kubernetes operator to deploy and manage [Istio](https://istio.io/) resources for a Kubernetes cluster.
+[Istio-operator](https://github.com/banzaicloud/istio-operator/tree/release-1.16) is a Kubernetes operator to deploy and manage [Istio](https://istio.io/) resources for a Kubernetes cluster.
 
 ## Prerequisites
 
 - Helm3
-- Kubernetes 1.21.0 - 1.24.x
+- Kubernetes 1.22.0 - 1.25.x
 
 ## Installing the chart
 
@@ -33,7 +33,7 @@ The following table lists the configurable parameters of the Banzaicloud Istio O
 | Parameter                                      | Description                                                                                                                                                                                         | Default                                                                                  |
 |------------------------------------------------|-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|------------------------------------------------------------------------------------------|
 | `image.repository`                             | Operator container image repository                                                                                                                                                                 | `ghcr.io/banzaicloud/istio-operator`                                                     |
-| `image.tag`                                    | Operator container image tag                                                                                                                                                                        | `v2.15.3`                                                                           |
+| `image.tag`                                    | Operator container image tag                                                                                                                                                                        | `v2.16.0`                                                                           |
 | `image.pullPolicy`                             | Operator container image pull policy                                                                                                                                                                | `IfNotPresent`                                                                           |
 | `replicaCount`                                 | Operator deployment replica count                                                                                                                                                                   | `1`                                                                                      |
 | `extraArgs`                                    | Operator deployment arguments                                                                                                                                                                       | `[]`                                                                                     |

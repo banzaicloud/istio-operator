@@ -10,10 +10,10 @@ status: {}
 apiVersion: networking.istio.io/v1alpha3
 kind: Gateway
 metadata:
-  name: istio-cross-network-cp-v115x
+  name: istio-cross-network-cp-v116x
 spec:
   selector:
-    gateway-name: istio-meshexpansion-cp-v115x
+    gateway-name: istio-meshexpansion-cp-v116x
     gateway-type: ingress
   servers:
   - hosts:
@@ -29,10 +29,10 @@ spec:
 apiVersion: networking.istio.io/v1alpha3
 kind: Gateway
 metadata:
-  name: istiod-expansion-cp-v115x
+  name: istiod-expansion-cp-v116x
 spec:
   selector:
-    gateway-name: istio-meshexpansion-cp-v115x
+    gateway-name: istio-meshexpansion-cp-v116x
     gateway-type: ingress
   servers:
   - hosts:
@@ -56,10 +56,10 @@ spec:
 apiVersion: networking.istio.io/v1alpha3
 kind: VirtualService
 metadata:
-  name: istiod-expansion-cp-v115x
+  name: istiod-expansion-cp-v116x
 spec:
   gateways:
-  - istiod-expansion-cp-v115x
+  - istiod-expansion-cp-v116x
   hosts:
   - '*'
   tls:
@@ -69,7 +69,7 @@ spec:
       - '*'
     route:
     - destination:
-        host: istiod-cp-v115x.istio-system.svc.cluster.local
+        host: istiod-cp-v116x.istio-system.svc.cluster.local
         port:
           number: 15012
   - match:
@@ -78,7 +78,7 @@ spec:
       - '*'
     route:
     - destination:
-        host: istiod-cp-v115x.istio-system.svc.cluster.local
+        host: istiod-cp-v116x.istio-system.svc.cluster.local
         port:
           number: 443
 
@@ -86,16 +86,16 @@ spec:
 apiVersion: servicemesh.cisco.com/v1alpha1
 kind: IstioMeshGateway
 metadata:
-  name: istio-meshexpansion-cp-v115x
+  name: istio-meshexpansion-cp-v116x
   annotations:
     imgw-annotation: annotationvalue
   labels:
     app: istio-meshexpansion-gateway
     imgw-label: labelvalue
-    istio.io/rev: cp-v115x.istio-system
+    istio.io/rev: cp-v116x.istio-system
 spec:
   istioControlPlane:
-    name: cp-v115x
+    name: cp-v116x
     namespace: istio-system
   runAsRoot: true
   deployment:

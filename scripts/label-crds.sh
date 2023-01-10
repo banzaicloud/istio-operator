@@ -4,7 +4,7 @@ dirname=$(dirname "$0")
 projectdir=$PWD/$dirname/..
 crdpath=$projectdir/config/crd/bases
 
-ISTIO_VERSION=${1:-"1.15.3"}
+ISTIO_VERSION=${1:-"1.16.1"}
 
 for name in "$crdpath"/*.yaml; do
 	sed "$ d" $name > $name.changed

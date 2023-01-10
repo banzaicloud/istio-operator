@@ -1,6 +1,6 @@
-revision: cp-v115x
+revision: cp-v116x
 deployment:
-  image: banzaicloud/istio-sidecar-injector:v1.15.3-bzc.0
+  image: banzaicloud/istio-sidecar-injector:v1.16.1-bzc.0
   metadata:
     annotations:
       daemonset-annotation: value

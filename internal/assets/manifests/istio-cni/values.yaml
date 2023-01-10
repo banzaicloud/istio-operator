@@ -1,4 +1,7 @@
 cni:
+  hub: ""
+  tag: ""
+  variant: ""
   image: install-cni
 
   # Configuration log level of istio-cni binary
@@ -13,7 +16,7 @@ cni:
 
   # CNI bin and conf dir override settings
   # defaults:
-  cniBinDir: /opt/cni/bin
+  cniBinDir: "" # Auto-detected based on version; defaults to /opt/cni/bin.
   cniConfDir: /etc/cni/net.d
   cniConfFileName: ""
 
@@ -47,10 +50,6 @@ cni:
   # Experimental taint controller for further race condition mitigation
   taint:
     enabled: false
-    securityContext:
-      runAsUser: 1337
-      runAsGroup: 1337
-      runAsNonRoot: true
 
   resourceQuotas:
     enabled: true
@@ -76,11 +75,14 @@ cni:
   tolerations: []
   volumes: []
   volumeMounts: []
-  resources: {}
-  securityContext:
-    runAsGroup: 0
-    runAsUser: 0
-    runAsNonRoot: false
+
+  # Set to `type: RuntimeDefault` to use the default profile if available.
+  seccompProfile: {}
+
+  resources:
+    requests:
+      cpu: 100m
+      memory: 100Mi
 
   priorityClassName: system-node-critical
 
@@ -95,6 +97,10 @@ global:
 
   # Default tag for Istio images.
   tag: latest
+
+  # Variant of the image to use.
+  # Currently supported are: [debug, distroless]
+  variant: ""
 
   # Specify image pull policy if default behavior isn't desired.
   # Default behavior: latest images will be Always else IfNotPresent.

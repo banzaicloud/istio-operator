@@ -14,8 +14,10 @@ metadata:
     {{ $key }}: "{{ $val }}"
 {{- end }}
 spec:
+{{- if not .Values.pilot.autoscaleEnabled }}
 {{- if .Values.pilot.replicaCount }}
   replicas: {{ .Values.pilot.replicaCount }}
+{{- end }}
 {{- end }}
 {{- if .Values.pilot.deploymentStrategy }}
   strategy:
@@ -53,7 +55,11 @@ spec:
         {{- toYaml .Values.pilot.podSecurityContext | nindent 8 }}
       containers:
         - name: discovery
-{{- include "dockerImage" (dict "image" .Values.pilot.image "hub" .Values.global.hub "tag" .Values.global.tag) | indent 10 -}}
+{{- if contains "/" .Values.pilot.image }}
+          image: "{{ .Values.pilot.image }}"
+{{- else }}
+          image: "{{ .Values.pilot.hub | default .Values.global.hub }}/{{ .Values.pilot.image | default "pilot" }}:{{ .Values.pilot.tag | default .Values.global.tag }}{{with (.Values.pilot.variant | default .Values.global.variant)}}-{{.}}{{end}}"
+{{- end }}
 {{- if .Values.global.imagePullPolicy }}
           imagePullPolicy: {{ .Values.global.imagePullPolicy }}
 {{- end }}
@@ -141,7 +147,18 @@ spec:
 {{ toYaml .Values.global.defaultResources | trim | indent 12 }}
 {{- end }}
           securityContext:
-            {{- toYaml .Values.pilot.securityContext | nindent 12 }}
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            runAsUser: 1337
+            runAsGroup: 1337
+            runAsNonRoot: true
+            capabilities:
+              drop:
+              - ALL
+{{- if .Values.pilot.seccompProfile }}
+            seccompProfile:
+{{ toYaml .Values.pilot.seccompProfile | trim | indent 14 }}
+{{- end }}
           volumeMounts:
           {{- if eq .Values.global.jwtPolicy "third-party-jwt" }}
           - name: istio-token
@@ -160,6 +177,12 @@ spec:
           - name: extracacerts
             mountPath: /cacerts
           {{- end }}
+          - name: istio-csr-dns-cert
+            mountPath: /var/run/secrets/istiod/tls
+            readOnly: true
+          - name: istio-csr-ca-configmap
+            mountPath: /var/run/secrets/istiod/ca
+            readOnly: true
 {{ include "toYamlIf" (dict "value" .Values.pilot.volumeMounts) | indent 10 }}
       volumes:
       # Technically not needed on this pod - but it helps debugging/testing SDS
@@ -184,6 +207,16 @@ spec:
       - name: istio-kubeconfig
         secret:
           secretName: istio-kubeconfig
+          optional: true
+      # Optional: istio-csr dns pilot certs
+      - name: istio-csr-dns-cert
+        secret:
+          secretName: istiod-tls
+          optional: true
+      - name: istio-csr-ca-configmap
+        configMap:
+          name: istio-ca-root-cert
+          defaultMode: 420
           optional: true
   {{- if .Values.pilot.jwksResolverExtraRootCA }}
       - name: extracacerts

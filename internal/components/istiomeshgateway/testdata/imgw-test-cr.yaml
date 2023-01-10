@@ -137,7 +137,7 @@ spec:
   - groupVersionKind:
       kind: DestinationRule
     objectKey:
-      name: meshexpansion-dr-istiod-cp-v115x
+      name: meshexpansion-dr-istiod-cp-v116x
     patches:
     - parseValue: true
       path: /spec/trafficPolicy?/loadBalancer?

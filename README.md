@@ -10,11 +10,19 @@ The goal of the **Istio-operator** is to enable popular service mesh use cases (
 
 ## In this README
 
-- [Istio operator vs Calisti](#istio-operator-vs-calisti)
-- [Getting started](#getting-started)
-- [Issues, feature requests](#issues-feature-requests)
-- [Contributing](#contributing)
-- [Got stuck? Find help!](#got-stuck-find-help)
+- [Istio operator](#istio-operator)
+  - [Overview](#overview)
+  - [In this README](#in-this-readme)
+  - [Istio operator vs Calisti](#istio-operator-vs-calisti)
+  - [Getting started](#getting-started)
+    - [Prerequisites](#prerequisites)
+    - [Build and deploy](#build-and-deploy)
+  - [Issues, feature requests](#issues-feature-requests)
+  - [Contributing](#contributing)
+  - [Got stuck? Find help!](#got-stuck-find-help)
+    - [Community support](#community-support)
+    - [Engineering blog](#engineering-blog)
+  - [License](#license)
 
 ## Istio operator vs [Calisti](https://calisti.app/)
 
@@ -55,7 +63,7 @@ For a complete list of SMM features please check out the [SMM docs](https://smm-
 
 ### Prerequisites
 - kubectl installed
-- kubernetes cluster (version 1.21+)
+- kubernetes cluster (version 1.22+)
 - active kubecontext to the kubernetes cluster
 
 ###  Build and deploy
@@ -74,12 +82,12 @@ istio-operator-controller-manager-6f764787c-rbnht   2/2     Running   0         
 Deploy the [Istio control plane sample](config/samples/servicemesh_v1alpha1_istiocontrolplane.yaml) to the `istio-system` namespace
 ```
 $ kubectl -n istio-system apply -f config/samples/servicemesh_v1alpha1_istiocontrolplane.yaml
-istiocontrolplane.servicemesh.cisco.com/icp-v115x-sample created
+istiocontrolplane.servicemesh.cisco.com/icp-v116x-sample created
 ```
 
 Label the namespace, where you would like to enable sidecar injection for your pods. The label should consist of the name of the deployed IstioControlPlane and the namespace where it is deployed.
 ```
-$ kubectl label namespace demoapp istio.io/rev=icp-v115x-sample.istio-system
+$ kubectl label namespace demoapp istio.io/rev=icp-v116x-sample.istio-system
 namespace/demoapp labeled
 ```
 

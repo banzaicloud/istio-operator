@@ -13,7 +13,7 @@ data:
   mesh: |-
     connectTimeout: 5s
     defaultConfig:
-      discoveryAddress: istiod-cp-v115x.istio-system.svc:15012
+      discoveryAddress: istiod-cp-v116x.istio-system.svc:15012
       meshId: mesh1
       tracing:
         zipkin:
@@ -26,9 +26,9 @@ kind: ConfigMap
 metadata:
   labels:
     istio: meshconfig
-    istio.io/rev: cp-v115x.istio-system
+    istio.io/rev: cp-v116x.istio-system
     release: istio-operator-discovery
-  name: istio-cp-v115x.istio-system
+  name: istio-cp-v116x.istio-system
   namespace: istio-system
 
 ---
@@ -53,6 +53,9 @@ data:
         metadata:
           labels:
             security.istio.io/tlsMode: {{ index .ObjectMeta.Labels `security.istio.io/tlsMode` | default "istio"  | quote }}
+            {{- if eq (index .ProxyConfig.ProxyMetadata "ISTIO_META_ENABLE_HBONE") "true" }}
+            networking.istio.io/tunnel: {{ index .ObjectMeta.Labels `networking.istio.io/tunnel` | default "http"  | quote }}
+            {{- end }}
             service.istio.io/canonical-name: {{ index .ObjectMeta.Labels `service.istio.io/canonical-name` | default (index .ObjectMeta.Labels `app.kubernetes.io/name`) | default (index .ObjectMeta.Labels `app`) | default .DeploymentMeta.Name  | quote }}
             service.istio.io/canonical-revision: {{ index .ObjectMeta.Labels `service.istio.io/canonical-revision` | default (index .ObjectMeta.Labels `app.kubernetes.io/version`) | default (index .ObjectMeta.Labels `version`) | default "latest"  | quote }}
             istio.io/rev: {{ .Revision | default "default" | quote }}
@@ -455,6 +458,10 @@ data:
             - mountPath: /var/run/secrets/istio
               name: istiod-ca-cert
             {{- end }}
+            {{- if eq .Values.global.pilotCertProvider "kubernetes" }}
+            - mountPath: /var/run/secrets/istio/kubernetes
+              name: kube-ca-cert
+            {{- end }}
             - mountPath: /var/lib/istio/data
               name: istio-data
             {{ if (isset .ObjectMeta.Annotations `sidecar.istio.io/bootstrapOverride`) }}
@@ -538,6 +545,11 @@ data:
               name: istio-ca-root-cert
               {{- end }}
           {{- end }}
+          {{- if eq .Values.global.pilotCertProvider "kubernetes" }}
+          - name: kube-ca-cert
+            configMap:
+              name: kube-root-ca.crt
+          {{- end }}
           {{- if .Values.global.mountMtlsCerts }}
           # Use the key and cert mounted to /etc/certs/ for the in-cluster mTLS communications.
           - name: istio-certs
@@ -567,7 +579,7 @@ data:
             - name: {{ . }}
             {{- end }}
           {{- end }}
-          {{- if eq (env "ENABLE_LEGACY_FSGROUP_INJECTION" "true") "true" }}
+          {{- if eq (env "ENABLE_LEGACY_FSGROUP_INJECTION" "false") "true" }}
           securityContext:
             fsGroup: 1337
           {{- end }}
@@ -801,7 +813,7 @@ data:
             - name: {{ . }}
             {{- end }}
           {{- end }}
-          {{- if eq (env "ENABLE_LEGACY_FSGROUP_INJECTION" "true") "true" }}
+          {{- if eq (env "ENABLE_LEGACY_FSGROUP_INJECTION" "false") "true" }}
           securityContext:
             fsGroup: 1337
           {{- end }}
@@ -1184,7 +1196,7 @@ data:
             - name: {{ . }}
             {{- end }}
           {{- end }}
-          {{- if eq (env "ENABLE_LEGACY_FSGROUP_INJECTION" "true") "true" }}
+          {{- if eq (env "ENABLE_LEGACY_FSGROUP_INJECTION" "false") "true" }}
           securityContext:
             fsGroup: 1337
           {{- end }}
@@ -1275,7 +1287,7 @@ data:
         "sts": {
           "servicePort": 0
         },
-        "tag": "1.15.3",
+        "tag": "1.16.1",
         "tracer": {
           "datadog": {
             "address": "$(HOST_IP):8126"
@@ -1294,13 +1306,14 @@ data:
             "address": ""
           }
         },
-        "useMCP": false
+        "useMCP": false,
+        "variant": ""
       },
       "istio_cni": {
         "chained": true,
         "enabled": false
       },
-      "revision": "cp-v115x",
+      "revision": "cp-v116x",
       "sidecarInjectorWebhook": {
         "alwaysInjectSelector": [],
         "defaultTemplates": [],
@@ -1315,9 +1328,9 @@ kind: ConfigMap
 metadata:
   labels:
     istio: sidecar-injector
-    istio.io/rev: cp-v115x.istio-system
+    istio.io/rev: cp-v116x.istio-system
     release: istio-operator-discovery
-  name: istio-sidecar-injector-cp-v115x.istio-system
+  name: istio-sidecar-injector-cp-v116x.istio-system
   namespace: istio-system
 
 ---
@@ -1327,7 +1340,7 @@ metadata:
   labels:
     app: istio-reader
     release: istio-operator-discovery
-  name: istio-reader-cp-v115x
+  name: istio-reader-cp-v116x
   namespace: istio-system
 
 ---
@@ -1337,7 +1350,7 @@ metadata:
   labels:
     app: istio-reader
     release: istio-operator-discovery
-  name: istio-reader-cp-v115x-istio-system
+  name: istio-reader-cp-v116x-istio-system
 rules:
 - apiGroups:
   - config.istio.io
@@ -1433,14 +1446,14 @@ metadata:
   labels:
     app: istio-reader
     release: istio-operator-discovery
-  name: istio-reader-cp-v115x-istio-system
+  name: istio-reader-cp-v116x-istio-system
 roleRef:
   apiGroup: rbac.authorization.k8s.io
   kind: ClusterRole
-  name: istio-reader-cp-v115x-istio-system
+  name: istio-reader-cp-v116x-istio-system
 subjects:
 - kind: ServiceAccount
-  name: istio-reader-cp-v115x
+  name: istio-reader-cp-v116x
   namespace: istio-system
 
 ---
@@ -1450,9 +1463,9 @@ metadata:
   labels:
     app: istiod
     istio: istiod
-    istio.io/rev: cp-v115x.istio-system
+    istio.io/rev: cp-v116x.istio-system
     release: istio-operator-discovery
-  name: istiod-cp-v115x
+  name: istiod-cp-v116x
   namespace: istio-system
 spec:
   clusterIP: None
@@ -1480,16 +1493,16 @@ kind: MutatingWebhookConfiguration
 metadata:
   labels:
     app: sidecar-injector
-    istio.io/rev: cp-v115x.istio-system
+    istio.io/rev: cp-v116x.istio-system
     release: istio-operator-discovery
-  name: istio-sidecar-injector-cp-v115x.istio-system
+  name: istio-sidecar-injector-cp-v116x.istio-system
 webhooks:
 - admissionReviewVersions:
   - v1beta1
   - v1
   clientConfig:
     service:
-      name: istio-sidecar-injector-cp-v115x
+      name: istio-sidecar-injector-cp-v116x
       namespace: istio-system
       path: /inject
       port: 443
@@ -1500,7 +1513,7 @@ webhooks:
     - key: istio.io/rev
       operator: In
       values:
-      - cp-v115x.istio-system
+      - cp-v116x.istio-system
     - key: istio-injection
       operator: DoesNotExist
   objectSelector:
@@ -1525,7 +1538,7 @@ webhooks:
   - v1
   clientConfig:
     service:
-      name: istio-sidecar-injector-cp-v115x
+      name: istio-sidecar-injector-cp-v116x
       namespace: istio-system
       path: /inject
       port: 443
@@ -1546,7 +1559,7 @@ webhooks:
     - key: istio.io/rev
       operator: In
       values:
-      - cp-v115x.istio-system
+      - cp-v116x.istio-system
   rules:
   - apiGroups:
     - ""
