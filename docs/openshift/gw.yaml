@@ -7,7 +7,7 @@ metadata:
   namespace: demoapp
 spec:
   istioControlPlane:
-    name: icp-v113x
+    name: icp-v115x
     namespace: istio-system
   deployment:
     metadata:
