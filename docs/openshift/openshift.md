@@ -8,7 +8,7 @@ k apply -n istio-system -f docs/openshift/icp-openshift.yaml
 
 k create ns demoapp
 
-k label namespace demoapp istio.io/rev=icp-v113x.istio-system
+k label namespace demoapp istio.io/rev=icp-v115x.istio-system
 
 k apply -n demoapp -f docs/openshift/gw.yaml
 
