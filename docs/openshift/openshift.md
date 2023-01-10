@@ -4,6 +4,8 @@ oc adm policy add-scc-to-group anyuid system:serviceaccounts:istio-system
 
 oc adm policy add-scc-to-group anyuid system:serviceaccounts:demoapp
 
+oc adm policy add-scc-to-group privileged system:serviceaccounts:istio-system
+
 k apply -n istio-system -f docs/openshift/icp-openshift.yaml
 
 k create ns demoapp
