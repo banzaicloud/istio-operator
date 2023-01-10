@@ -5,7 +5,7 @@
 ## Prerequisites
 
 - Helm3
-- Kubernetes 1.21.0 - 1.24.x
+- Kubernetes 1.22.0 - 1.25.x
 
 ## Installing the chart
 
