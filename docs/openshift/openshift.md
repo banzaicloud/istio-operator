@@ -1,4 +1,4 @@
-#Installing Istio-operator on OpenShift
+# Installing Istio-operator on OpenShift
 Istio-operator supports OpenShift clusters with full functionality. There are some permissions that are needed for certain Istio components to function.
 ## Enable OpenShift specific permissions
 Allow Istio CP components to run as UID 1337
