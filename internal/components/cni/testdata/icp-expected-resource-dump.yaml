@@ -359,10 +359,10 @@ spec:
             cpu: 100m
             memory: 128Mi
         securityContext:
-          allowPrivilegeEscalation: false
           runAsGroup: 0
           runAsNonRoot: false
           runAsUser: 0
+          privileged: null
         volumeMounts:
         - mountPath: /host/opt/cni/bin
           name: cni-bin-dir
@@ -383,7 +383,7 @@ spec:
           value: istio-system
         - name: TAINT_ADDITIONAL_ENV
           value: value
-        image: gcr.io/istio-testing/install-cni-taint:latest
+        image: gcr.io/istio-testing/install-cni:latest
         imagePullPolicy: Always
         name: taint-controller
         resources:
@@ -394,7 +394,6 @@ spec:
             cpu: 100m
             memory: 128Mi
         securityContext:
-          allowPrivilegeEscalation: false
           runAsGroup: 1337
           runAsNonRoot: true
           runAsUser: 1337
