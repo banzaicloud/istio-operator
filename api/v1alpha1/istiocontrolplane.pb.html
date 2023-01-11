@@ -4,7 +4,7 @@ description: Istio control plane descriptor
 layout: protoc-gen-docs
 generator: protoc-gen-docs
 schema: istio-operator.api.v1alpha1.IstioControlPlaneSpec
-number_of_entries: 39
+number_of_entries: 41
 ---
 <h2 id="IstioControlPlaneSpec">IstioControlPlaneSpec</h2>
 <section>
@@ -332,6 +332,98 @@ No
 <td>
 <p>Service spec</p>
 
+</td>
+<td>
+No
+</td>
+</tr>
+<tr id="SidecarInjectorConfiguration-templates">
+<td><code>templates</code></td>
+<td><code><a href="#SidecarInjectionTemplates">SidecarInjectionTemplates</a></code></td>
+<td>
+<p>Fields to introduce sidecar injection template customizations</p>
+
+</td>
+<td>
+No
+</td>
+</tr>
+</tbody>
+</table>
+</section>
+<h2 id="SidecarInjectionTemplates">SidecarInjectionTemplates</h2>
+<section>
+<table class="message-fields">
+<thead>
+<tr>
+<th>Field</th>
+<th>Type</th>
+<th>Description</th>
+<th>Required</th>
+</tr>
+</thead>
+<tbody>
+<tr id="SidecarInjectionTemplates-sidecar">
+<td><code>sidecar</code></td>
+<td><code>string</code></td>
+<td>
+<p>Overrides for the default &ldquo;sidecar&rdquo; injection template. This template will be merged with the default &ldquo;sidecar&rdquo; template, overwriting values, if existing.</p>
+
+</td>
+<td>
+No
+</td>
+</tr>
+<tr id="SidecarInjectionTemplates-gateway">
+<td><code>gateway</code></td>
+<td><code>string</code></td>
+<td>
+<p>Overrides for the default &ldquo;gateway&rdquo; injection template. This template will be merged with the default &ldquo;gateway&rdquo; template, overwriting values, if existing.</p>
+
+</td>
+<td>
+No
+</td>
+</tr>
+<tr id="SidecarInjectionTemplates-customTemplates">
+<td><code>customTemplates</code></td>
+<td><code><a href="#CustomSidecarInjectionTemplates">CustomSidecarInjectionTemplates[]</a></code></td>
+<td>
+<p>Custom templates can be defined for sidecar injection. These templates can be applied by annotating pods with &ldquo;inject.istio.io/templates=<name of custom template>&rdquo;. See https://istio.io/latest/docs/setup/additional-setup/sidecar-injection/#custom-templates-experimental.</p>
+
+</td>
+<td>
+No
+</td>
+</tr>
+</tbody>
+</table>
+</section>
+<h2 id="CustomSidecarInjectionTemplates">CustomSidecarInjectionTemplates</h2>
+<section>
+<table class="message-fields">
+<thead>
+<tr>
+<th>Field</th>
+<th>Type</th>
+<th>Description</th>
+<th>Required</th>
+</tr>
+</thead>
+<tbody>
+<tr id="CustomSidecarInjectionTemplates-name">
+<td><code>name</code></td>
+<td><code>string</code></td>
+<td>
+</td>
+<td>
+No
+</td>
+</tr>
+<tr id="CustomSidecarInjectionTemplates-template">
+<td><code>template</code></td>
+<td><code>string</code></td>
+<td>
 </td>
 <td>
 No

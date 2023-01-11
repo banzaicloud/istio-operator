@@ -4,6 +4,39 @@ metadata:
   name: cp-v116x
   namespace: istio-system
 spec:
+  sidecarInjector:
+    templates:
+      sidecar: |
+        spec:
+          containers:
+          - name: istio-proxy
+            env:
+            - name: TEMPLATE
+              value: sidecar
+      gateway: |
+        spec:
+          containers:
+          - name: istio-proxy
+            env:
+            - name: TEMPLATE
+              value: gateway
+      customTemplates:
+        - name: "custom1"
+          template: |
+            spec:
+              containers:
+              - name: istio-proxy
+                env:
+                - name: TEMPLATE
+                  value: custom1
+        - name: "custom2"
+          template: |
+            spec:
+              containers:
+              - name: istio-proxy
+                env:
+                - name: TEMPLATE
+                  value: custom2
   meshID: mesh1
   clusterID: demo-cluster1
   version: "1.16.1"

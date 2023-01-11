@@ -135,6 +135,22 @@ message SidecarInjectorConfiguration {
     BaseKubernetesResourceConfig deployment = 1;
     // Service spec
     Service service = 2;
+    // Fields to introduce sidecar injection template customizations
+    SidecarInjectionTemplates templates = 3;
+}
+
+message SidecarInjectionTemplates {
+    // Overrides for the default "sidecar" injection template. This template will be merged with the default "sidecar" template, overwriting values, if existing.
+    string sidecar = 1;
+    // Overrides for the default "gateway" injection template. This template will be merged with the default "gateway" template, overwriting values, if existing.
+    string gateway = 2;
+    // Custom templates can be defined for sidecar injection. These templates can be applied by annotating pods with "inject.istio.io/templates=<name of custom template>". See https://istio.io/latest/docs/setup/additional-setup/sidecar-injection/#custom-templates-experimental.
+    repeated CustomSidecarInjectionTemplates customTemplates = 3;
+}
+
+message CustomSidecarInjectionTemplates {
+    string name = 1;
+    string template = 2;
 }
 
 message MeshExpansionConfiguration {
