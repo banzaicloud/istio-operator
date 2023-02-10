@@ -1,6 +1,6 @@
 image:
   repository: ghcr.io/banzaicloud/istio-operator
-  tag: "v2.15.4"
+  tag: "v2.15.5"
   pullPolicy: IfNotPresent
 replicaCount: 1
 extraArgs: []
@@ -11,11 +11,11 @@ resources:
 podAnnotations:
   sidecar.istio.io/inject: "false"
 podSecurityContext:
-  fsGroup: 1337
-securityContext:
-  runAsUser: 1337
-  runAsGroup: 1337
   runAsNonRoot: true
+  seccompProfile:
+    type: RuntimeDefault
+securityContext:
+  allowPrivilegeEscalation: false
   capabilities:
     drop:
       - ALL
