@@ -8,6 +8,7 @@ type: ingress
 runAsRoot: true
 
 deployment:
+  replicaCount: 1
   enablePrometheusMerge: true
   deploymentStrategy:
     type: RollingUpdate
@@ -18,14 +19,11 @@ deployment:
     labels: {}
     annotations: {}
   env: {}
+  cpu:
+    targetAverageUtilization: 80
   affinity: {}
   nodeSelector: {}
   priorityClassName: ""
-  replicas:
-    count: 1
-    min: 1
-    max: 1
-    targetCPUUtilizationPercentage: 80
   resources:
     limits:
       cpu: "2"

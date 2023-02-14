@@ -15,16 +15,30 @@ global:
 {{- end }}
 
 deployment:
-  name: {{ .Name | quote }}
-{{ valueIf (dict "key" "enablePrometheusMerge" "value" .Properties.EnablePrometheusMerge) | indent 2 }}
+{{ valueIf (dict "value" .Name "key" "name") | indent 2 }}
+{{ valueIf (dict "value" .Properties.EnablePrometheusMerge "key" "enablePrometheusMerge") | indent 2 }}
 {{- with .GetSpec.GetDeployment }}
+{{- $replicaCount := .GetReplicas.GetCount.GetValue | int }}
+{{- $autoscaleMin := .GetReplicas.GetMin.GetValue | int }}
+{{- $autoscaleMax := .GetReplicas.GetMax.GetValue | int }}
+{{- $targetCPUUtilization := .GetReplicas.GetTargetCPUUtilizationPercentage.GetValue | int }}
+{{- $autoscaleEnabled := false }}
+{{- if and $autoscaleMin $autoscaleMax }}
+{{- $autoscaleEnabled = and (gt $autoscaleMin 0) (gt $autoscaleMax $autoscaleMin) }}
+{{- end }}
+{{ valueIf (dict "value" $autoscaleEnabled "key" "autoscaleEnabled") | indent 2 }}
+{{ valueIf (dict "value" $autoscaleMin "key" "autoscaleMin") | indent 2 }}
+{{ valueIf (dict "value" $autoscaleMax "key" "autoscaleMax") | indent 2 }}
+{{ valueIf (dict "value" $replicaCount "key" "replicaCount") | indent 2 }}
+{{- if gt $targetCPUUtilization 0 }}
+{{ toYaml (dict "cpu" (dict "targetAverageUtilization" $targetCPUUtilization)) | indent 2 }}
+{{- end }}
 {{ toYamlIf (dict "value" .GetDeploymentStrategy "key" "deploymentStrategy") | indent 2 }}
 {{ toYamlIf (dict "value" .GetMetadata "key" "metadata") | indent 2 }}
 {{ toYamlIf (dict "value" .GetEnv "key" "env") | indent 2 }}
 {{ toYamlIf (dict "value" .GetAffinity "key" "affinity") | indent 2 }}
 {{ toYamlIf (dict "value" .GetNodeSelector "key" "nodeSelector") | indent 2 }}
 {{ valueIf (dict "value" .GetPriorityClassName "key" "priorityClassName") | indent 2 }}
-{{ toYamlIf (dict "value" .GetReplicas "key" "replicas") | indent 2 }}
 {{ toYamlIf (dict "value" .GetResources "key" "resources") | indent 2 }}
 {{ toYamlIf (dict "value" .GetSecurityContext "key" "securityContext") | indent 2 }}
 {{ toYamlIf (dict "value" .GetTolerations "key" "tolerations") | indent 2 }}

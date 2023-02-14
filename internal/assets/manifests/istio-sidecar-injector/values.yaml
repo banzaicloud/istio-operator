@@ -1,6 +1,7 @@
 revision: "default"
 
 deployment:
+  replicaCount: 1
   image: banzaicloud/istio-sidecar-injector:v1.10.4-bzc.1
   enablePrometheusMerge: true
   deploymentStrategy:
@@ -12,13 +13,11 @@ deployment:
     labels: {}
     annotations: {}
   env: {}
+  cpu:
+    targetAverageUtilization: 80
   affinity: {}
   nodeSelector: {}
   priorityClassName: ""
-  replicas:
-    count: 1
-    min: 1
-    max: 1
   resources:
     limits:
       cpu: "250m"

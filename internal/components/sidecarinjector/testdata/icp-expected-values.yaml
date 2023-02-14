@@ -20,6 +20,8 @@ deployment:
     value: "true"
   - name: CNI_ANOTHER_ENV_NAME
     value: "standard"
+  cpu:
+    targetAverageUtilization: 80
   nodeSelector:
     disktype: ssd
   affinity:

@@ -80,6 +80,8 @@ spec:
       volumeMounts:
       - name: config-vol
         mountPath: /etc/config
+      replicas:
+        targetCPUUtilizationPercentage: 80
       readinessProbe:
         handler:
           exec:
