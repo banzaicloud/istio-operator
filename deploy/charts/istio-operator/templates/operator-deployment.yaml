@@ -43,6 +43,8 @@ spec:
         ports:
           - containerPort: 8443
             name: https
+        securityContext:
+          {{- toYaml .Values.securityContext | nindent 10 }}
       {{- end }}
       - command:
         - /manager

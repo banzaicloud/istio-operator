@@ -1,5 +1,14 @@
+ARG GID=1000
+ARG UID=1000
+
 # Build the manager binary
 FROM golang:1.18 as builder
+ARG GID
+ARG UID
+
+# Create user and group
+RUN groupadd -g ${GID} appgroup && \
+    useradd -u ${UID} --gid appgroup appuser
 
 WORKDIR /workspace
 # Copy the Go Modules manifests
@@ -29,8 +38,14 @@ RUN CGO_ENABLED=0 GOOS=linux GOARCH=amd64 make build
 # Use distroless as minimal base image to package the manager binary
 # Refer to https://github.com/GoogleContainerTools/distroless for more details
 FROM gcr.io/distroless/static:nonroot
+ARG GID
+ARG UID
+
 WORKDIR /
 COPY --from=builder /workspace/bin/manager /manager
-USER nonroot:nonroot
+
+COPY --from=builder /etc/passwd /etc/passwd
+COPY --from=builder /etc/group /etc/group
+USER ${UID}:${GID}
 
 ENTRYPOINT ["/manager"]
