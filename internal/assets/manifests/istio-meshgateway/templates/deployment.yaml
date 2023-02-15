@@ -9,7 +9,11 @@ metadata:
 {{- include "deployment.labels" . | indent 4 }}
 {{- include "toYamlIf" (dict "value" $gateway.metadata.annotations "key" "annotations" "indent" 2) | indent 2 }}
 spec:
-  replicas: {{ $gateway.replicas.count | default 1 }}
+{{- if not $gateway.autoscaleEnabled }}
+{{- if $gateway.replicaCount }}
+  replicas: {{ $gateway.replicaCount }}
+{{- end }}
+{{- end }}
   selector:
     matchLabels:
 {{- include "pod.labels" . | indent 6 }}

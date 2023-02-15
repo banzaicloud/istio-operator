@@ -55,10 +55,12 @@ deployment:
   nodeSelector:
     disktype: ssd
   priorityClassName: "high-priority"
-  replicas:
-    count: 1
-    min: 1
-    max: 3
+  autoscaleEnabled: true
+  autoscaleMax: 3
+  autoscaleMin: 1
+  replicaCount: 1
+  cpu:
+    targetAverageUtilization: 80
   resources:
     limits:
       cpu: "2"

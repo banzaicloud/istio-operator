@@ -1,4 +1,4 @@
-{{- if and .Values.deployment.replicas.min .Values.deployment.replicas.max (gt (.Values.deployment.replicas.min | int) 0) (gt (.Values.deployment.replicas.max | int) (.Values.deployment.replicas.min | int)) }}
+{{- if and .Values.deployment.autoscaleEnabled .Values.deployment.autoscaleMin .Values.deployment.autoscaleMax }}
 apiVersion: autoscaling/v2beta2
 kind: HorizontalPodAutoscaler
 metadata:
@@ -7,8 +7,8 @@ metadata:
   labels:
 {{- include "generic.labels" . | indent 4 }}
 spec:
-  maxReplicas: {{ .Values.deployment.replicas.max }}
-  minReplicas: {{ .Values.deployment.replicas.min }}
+  maxReplicas: {{ .Values.deployment.autoscaleMax }}
+  minReplicas: {{ .Values.deployment.autoscaleMin }}
   scaleTargetRef:
     apiVersion: apps/v1
     kind: Deployment
@@ -19,6 +19,6 @@ spec:
         name: cpu
         target:
           type: Utilization
-          averageUtilization: {{ .Values.deployment.replicas.targetCPUUtilizationPercentage }}
+          averageUtilization: {{ .Values.deployment.cpu.targetAverageUtilization }}
 ---
 {{- end }}

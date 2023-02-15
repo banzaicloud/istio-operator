@@ -18,7 +18,22 @@ global:
 {{- end }}
 
 {{ define "deployment" }}
-{{ with .GetSpec.GetSidecarInjector.GetDeployment }}
+{{- with .GetSpec.GetSidecarInjector.GetDeployment }}
+{{- $replicaCount := .GetReplicas.GetCount.GetValue | int }}
+{{- $autoscaleMin := .GetReplicas.GetMin.GetValue | int }}
+{{- $autoscaleMax := .GetReplicas.GetMax.GetValue | int }}
+{{- $targetCPUUtilization := .GetReplicas.GetTargetCPUUtilizationPercentage.GetValue | int }}
+{{- $autoscaleEnabled := false }}
+{{- if and $autoscaleMin $autoscaleMax }}
+{{- $autoscaleEnabled = and (gt $autoscaleMin 0) (gt $autoscaleMax $autoscaleMin) }}
+{{- end }}
+{{ valueIf (dict "value" $autoscaleEnabled "key" "autoscaleEnabled") }}
+{{ valueIf (dict "value" $autoscaleMin "key" "autoscaleMin") }}
+{{ valueIf (dict "value" $autoscaleMax "key" "autoscaleMax") }}
+{{ valueIf (dict "value" $replicaCount "key" "replicaCount") }}
+{{- if gt $targetCPUUtilization 0 }}
+{{ toYaml (dict "cpu" (dict "targetAverageUtilization" $targetCPUUtilization)) }}
+{{- end }}
 {{ valueIf (dict "key" "image" "value" .GetImage) }}
 {{ toYamlIf (dict "value" .GetDeploymentStrategy "key" "deploymentStrategy") }}
 {{ toYamlIf (dict "value" .GetMetadata "key" "metadata") }}
@@ -26,18 +41,17 @@ global:
 {{ toYamlIf (dict "value" .GetAffinity "key" "affinity") }}
 {{ toYamlIf (dict "value" .GetNodeSelector "key" "nodeSelector") }}
 {{ valueIf (dict "value" .GetPriorityClassName "key" "priorityClassName") }}
-{{ toYamlIf (dict "value" .GetReplicas "key" "replicas") }}
 {{ toYamlIf (dict "value" .GetResources "key" "resources") }}
 {{ toYamlIf (dict "value" .GetSecurityContext "key" "securityContext") }}
 {{ toYamlIf (dict "value" .GetTolerations "key" "tolerations") }}
-{{ toYamlIf (dict "value" .GetTopologySpreadConstraints "key" "topologySpreadConstraints") | indent 2 }}
+{{ toYamlIf (dict "value" .GetTopologySpreadConstraints "key" "topologySpreadConstraints") }}
 {{ toYamlIf (dict "value" .GetVolumeMounts "key" "volumeMounts") }}
 {{ toYamlIf (dict "value" .GetVolumes "key" "volumes") }}
 {{ toYamlIf (dict "value" .GetPodDisruptionBudget "key" "podDisruptionBudget") }}
 {{ toYamlIf (dict "value" .GetPodMetadata "key" "podMetadata") }}
 {{ toYamlIf (dict "value" .GetLivenessProbe "key" "livenessProbe") }}
 {{ toYamlIf (dict "value" .GetReadinessProbe "key" "readinessProbe") }}
-{{ end }}
+{{- end }}
 {{ end }}
 
 

@@ -162,7 +162,6 @@ metadata:
   name: demo-gw
   namespace: default
 spec:
-  replicas: 1
   selector:
     matchLabels:
       app: demo-gw

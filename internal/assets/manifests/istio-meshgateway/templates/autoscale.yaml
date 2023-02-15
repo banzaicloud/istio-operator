@@ -1,5 +1,5 @@
 {{ $gateway := .Values.deployment }}
-{{- if and $gateway.replicas.min $gateway.replicas.max (gt ($gateway.replicas.min | int) 0) (gt ($gateway.replicas.max | int) ($gateway.replicas.min | int)) }}
+{{- if and $gateway.autoscaleEnabled $gateway.autoscaleMin $gateway.autoscaleMax }}
 apiVersion: autoscaling/v2beta2
 kind: HorizontalPodAutoscaler
 metadata:
@@ -8,8 +8,8 @@ metadata:
   labels:
 {{- include "deployment.labels" . | indent 4 }}
 spec:
-  maxReplicas: {{ $gateway.replicas.max }}
-  minReplicas: {{ $gateway.replicas.min }}
+  maxReplicas: {{ $gateway.autoscaleMax }}
+  minReplicas: {{ $gateway.autoscaleMin }}
   scaleTargetRef:
     apiVersion: apps/v1
     kind: Deployment
@@ -20,6 +20,6 @@ spec:
         name: cpu
         target:
           type: Utilization
-          averageUtilization: {{ $gateway.replicas.targetCPUUtilizationPercentage }}
+          averageUtilization: {{ $gateway.cpu.targetAverageUtilization }}
 ---
 {{- end }}
