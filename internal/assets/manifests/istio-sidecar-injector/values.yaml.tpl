@@ -30,7 +30,7 @@ global:
 {{ toYamlIf (dict "value" .GetResources "key" "resources") }}
 {{ toYamlIf (dict "value" .GetSecurityContext "key" "securityContext") }}
 {{ toYamlIf (dict "value" .GetTolerations "key" "tolerations") }}
-{{ toYamlIf (dict "value" .GetTopologySpreadConstraints "key" "topologySpreadConstraints") | indent 2 }}
+{{ toYamlIf (dict "value" .GetTopologySpreadConstraints "key" "topologySpreadConstraints") }}
 {{ toYamlIf (dict "value" .GetVolumeMounts "key" "volumeMounts") }}
 {{ toYamlIf (dict "value" .GetVolumes "key" "volumes") }}
 {{ toYamlIf (dict "value" .GetPodDisruptionBudget "key" "podDisruptionBudget") }}
