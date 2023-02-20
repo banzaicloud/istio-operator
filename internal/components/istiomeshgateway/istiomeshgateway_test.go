@@ -5,7 +5,7 @@ Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
 You may obtain a copy of the License at
 
-    http://www.apache.org/licenses/LICENSE-2.0
+	http://www.apache.org/licenses/LICENSE-2.0
 
 Unless required by applicable law or agreed to in writing, software
 distributed under the License is distributed on an "AS IS" BASIS,
@@ -68,7 +68,7 @@ func TestIMGWResourceDump(t *testing.T) {
 			reconciler.NativeReconcilerSetControllerRef(),
 		}),
 		v1alpha1.IstioMeshGatewayProperties{
-			Revision:                "cp-v116x.istio-system",
+			Revision:                "cp-v117x.istio-system",
 			EnablePrometheusMerge:   utils.BoolPointer(true),
 			InjectionTemplate:       "gateway",
 			InjectionChecksum:       "08fdba0c89f9bbd6624201d98758746d1bddc78e9004b00259f33b20b7f9efba",

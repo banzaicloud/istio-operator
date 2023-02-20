@@ -29,7 +29,7 @@ kubectl get -n=cluster-registry secret,cluster demo-active-2 -o yaml | pbcopy   
 1. Install istio operator in the `istio-system` namespace:
 ```
 helm repo add banzaicloud-stable https://kubernetes-charts.banzaicloud.com
-helm install --namespace=istio-system --create-namespace istio-operator-v116x banzaicloud-stable/istio-operator --set clusterRegistry.clusterAPI.enabled=true --set clusterRegistry.resourceSyncRules.enabled=true
+helm install --namespace=istio-system --create-namespace istio-operator-v117x banzaicloud-stable/istio-operator --set clusterRegistry.clusterAPI.enabled=true --set clusterRegistry.resourceSyncRules.enabled=true
 ```
 2. Apply ACTIVE-1 `IstioControlPlane` Custom Resource to the `istio-system` namespace:
 ```
@@ -39,7 +39,7 @@ kubectl -n=istio-system apply -f docs/multi-cluster-mesh/active-active/active-ic
 1. Install istio operator in the `istio-system` namespace:
 ```
 helm repo add banzaicloud-stable https://kubernetes-charts.banzaicloud.com
-helm install --namespace=istio-system --create-namespace istio-operator-v116x banzaicloud-stable/istio-operator --set clusterRegistry.clusterAPI.enabled=true --set clusterRegistry.resourceSyncRules.enabled=true
+helm install --namespace=istio-system --create-namespace istio-operator-v117x banzaicloud-stable/istio-operator --set clusterRegistry.clusterAPI.enabled=true --set clusterRegistry.resourceSyncRules.enabled=true
 ```
 2. Apply ACTIVE-2 `IstioControlPlane` Custom Resource to the istio-system namespace:
 ```
@@ -50,7 +50,7 @@ kubectl -n=istio-system apply -f docs/multi-cluster-mesh/active-active/active-ic
 #### Active-1:
 Label the `default` namespace with the name and namespace of the Istio control plane. This will enable sidecar injection for the later deployed demo application. Deploy the demo application:
 ```
-kubectl label ns default istio.io/rev=icp-v116x.istio-system
+kubectl label ns default istio.io/rev=icp-v117x.istio-system
 kubectl apply -f docs/multi-cluster-mesh/active-active/demoapp-1.yaml
 ```
 #### Active-2:

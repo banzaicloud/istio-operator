@@ -76,7 +76,7 @@ var (
 	regexJSONTagIllegal = regexp.MustCompile(`json\:"_`)
 )
 
-//nolint: gocognit
+// nolint: gocognit
 func main() {
 	var filePath string
 

@@ -1,7 +1,7 @@
 apiVersion: servicemesh.cisco.com/v1alpha1
 kind: IstioControlPlane
 metadata:
-  name: cp-v116x
+  name: cp-v117x
   namespace: istio-system
 spec:
   sidecarInjector:
@@ -39,7 +39,7 @@ spec:
                   value: custom2
   meshID: mesh1
   clusterID: demo-cluster1
-  version: "1.16.1"
+  version: "1.17.0"
   mode: ACTIVE
   networkName: network1
   containerImageConfiguration:

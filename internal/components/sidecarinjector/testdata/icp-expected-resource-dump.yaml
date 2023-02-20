@@ -16,9 +16,9 @@ metadata:
   labels:
     app: istio-sidecar-injector
     istio: sidecar-injector
-    istio.io/rev: cp-v116x.istio-system
+    istio.io/rev: cp-v117x.istio-system
     release: istio-sidecar-injector
-  name: istio-sidecar-injector-cp-v116x
+  name: istio-sidecar-injector-cp-v117x
   namespace: istio-system
 
 ---
@@ -28,7 +28,7 @@ metadata:
   labels:
     app: istio-sidecar-injector
     release: istio-sidecar-injector
-  name: istio-sidecar-injector-cp-v116x-istio-system
+  name: istio-sidecar-injector-cp-v117x-istio-system
 rules:
   - apiGroups:
       - ""
@@ -56,14 +56,14 @@ metadata:
   labels:
     app: istio-sidecar-injector
     release: istio-sidecar-injector
-  name: istio-sidecar-injector-cp-v116x-istio-system
+  name: istio-sidecar-injector-cp-v117x-istio-system
 roleRef:
   apiGroup: rbac.authorization.k8s.io
   kind: ClusterRole
-  name: istio-sidecar-injector-cp-v116x-istio-system
+  name: istio-sidecar-injector-cp-v117x-istio-system
 subjects:
   - kind: ServiceAccount
-    name: istio-sidecar-injector-cp-v116x
+    name: istio-sidecar-injector-cp-v117x
     namespace: istio-system
 
 ---
@@ -73,9 +73,9 @@ metadata:
   labels:
     app: istio-sidecar-injector
     istio: sidecar-injector
-    istio.io/rev: cp-v116x.istio-system
+    istio.io/rev: cp-v117x.istio-system
     release: istio-sidecar-injector
-  name: istio-sidecar-injector-cp-v116x
+  name: istio-sidecar-injector-cp-v117x
   namespace: istio-system
 spec:
   ports:
@@ -90,7 +90,7 @@ spec:
   selector:
     app: istio-sidecar-injector
     istio: sidecar-injector
-    istio.io/rev: cp-v116x.istio-system
+    istio.io/rev: cp-v117x.istio-system
     podlabel: podlabelvalue
     release: istio-sidecar-injector
   type: ClusterIP
@@ -104,9 +104,9 @@ metadata:
   labels:
     app: istio-sidecar-injector
     istio: sidecar-injector
-    istio.io/rev: cp-v116x.istio-system
+    istio.io/rev: cp-v117x.istio-system
     release: istio-sidecar-injector
-  name: istio-sidecar-injector-cp-v116x
+  name: istio-sidecar-injector-cp-v117x
   namespace: istio-system
 spec:
   replicas: 1
@@ -114,7 +114,7 @@ spec:
     matchLabels:
       app: istio-sidecar-injector
       istio: sidecar-injector
-      istio.io/rev: cp-v116x.istio-system
+      istio.io/rev: cp-v117x.istio-system
       podlabel: podlabelvalue
       release: istio-sidecar-injector
   strategy:
@@ -131,7 +131,7 @@ spec:
       labels:
         app: istio-sidecar-injector
         istio: sidecar-injector
-        istio.io/rev: cp-v116x.istio-system
+        istio.io/rev: cp-v117x.istio-system
         podlabel: podlabelvalue
         release: istio-sidecar-injector
         sidecar.istio.io/inject: "false"
@@ -165,17 +165,17 @@ spec:
             - --healthCheckInterval=2s
             - --healthCheckFile=/tmp/health
             - --reconcileWebhookConfig=true
-            - --webhookConfigName=istio-sidecar-injector-cp-v116x-istio-system
+            - --webhookConfigName=istio-sidecar-injector-cp-v117x-istio-system
           env:
             - name: REVISION
-              value: cp-v116x.istio-system
+              value: cp-v117x.istio-system
             - name: CERT_DNS_NAMES
-              value: istio-sidecar-injector-cp-v116x.istio-system,istio-sidecar-injector-cp-v116x.istio-system.svc,istio-sidecar-injector-cp-v116x.istio-system.svc.cluster.local
+              value: istio-sidecar-injector-cp-v117x.istio-system,istio-sidecar-injector-cp-v117x.istio-system.svc,istio-sidecar-injector-cp-v117x.istio-system.svc.cluster.local
             - name: CNI_ENV_NAME
               value: "true"
             - name: CNI_ANOTHER_ENV_NAME
               value: standard
-          image: banzaicloud/istio-sidecar-injector:v1.16.1-bzc.0
+          image: banzaicloud/istio-sidecar-injector:v1.17.0-bzc.0
           imagePullPolicy: Always
           livenessProbe:
             exec:
@@ -248,7 +248,7 @@ spec:
         runAsGroup: 1337
         runAsNonRoot: true
         runAsUser: 1337
-      serviceAccountName: istio-sidecar-injector-cp-v116x
+      serviceAccountName: istio-sidecar-injector-cp-v117x
       tolerations:
         - effect: NoSchedule
           key: key1
@@ -258,7 +258,7 @@ spec:
       volumes:
         - configMap:
             defaultMode: 420
-            name: istio-cp-v116x
+            name: istio-cp-v117x
           name: config-volume
         - configMap:
             defaultMode: 420
@@ -267,7 +267,7 @@ spec:
                 path: config
               - key: values
                 path: values
-            name: istio-sidecar-injector-cp-v116x
+            name: istio-sidecar-injector-cp-v117x
           name: inject-config
         - emptyDir:
             medium: Memory

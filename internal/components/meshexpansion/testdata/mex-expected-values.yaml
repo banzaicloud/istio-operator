@@ -1,4 +1,4 @@
-revision: cp-v116x
+revision: cp-v117x
 network: network-bogus
 distribution: cisco
 exposeClusterServices: true

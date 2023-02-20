@@ -199,9 +199,6 @@
               "$ref": "#/components/schemas/istio.mesh.v1alpha1.Certificate"
             }
           },
-          "thriftConfig": {
-            "$ref": "#/components/schemas/istio.mesh.v1alpha1.MeshConfig.ThriftConfig"
-          },
           "serviceSettings": {
             "type": "array",
             "items": {
@@ -422,7 +419,8 @@
                   ],
                   "properties": {
                     "lightstep": {
-                      "$ref": "#/components/schemas/istio.mesh.v1alpha1.MeshConfig.ExtensionProvider.LightstepTracingProvider"
+                      "$ref": "#/components/schemas/istio.mesh.v1alpha1.MeshConfig.ExtensionProvider.LightstepTracingProvider",
+                      "deprecated": true
                     }
                   }
                 },
@@ -566,7 +564,8 @@
             ],
             "properties": {
               "lightstep": {
-                "$ref": "#/components/schemas/istio.mesh.v1alpha1.MeshConfig.ExtensionProvider.LightstepTracingProvider"
+                "$ref": "#/components/schemas/istio.mesh.v1alpha1.MeshConfig.ExtensionProvider.LightstepTracingProvider",
+                "deprecated": true
               }
             }
           },
@@ -710,7 +709,8 @@
                   ],
                   "properties": {
                     "lightstep": {
-                      "$ref": "#/components/schemas/istio.mesh.v1alpha1.MeshConfig.ExtensionProvider.LightstepTracingProvider"
+                      "$ref": "#/components/schemas/istio.mesh.v1alpha1.MeshConfig.ExtensionProvider.LightstepTracingProvider",
+                      "deprecated": true
                     }
                   }
                 },
@@ -841,7 +841,8 @@
         "$ref": "#/components/schemas/istio.mesh.v1alpha1.MeshConfig.ExtensionProvider.EnvoyTcpGrpcV3LogProvider"
       },
       "istio.mesh.v1alpha1.MeshConfig.ExtensionProvider.LightstepTracingProvider": {
-        "$ref": "#/components/schemas/istio.mesh.v1alpha1.MeshConfig.ExtensionProvider.LightstepTracingProvider"
+        "$ref": "#/components/schemas/istio.mesh.v1alpha1.MeshConfig.ExtensionProvider.LightstepTracingProvider",
+        "deprecated": true
       },
       "istio.mesh.v1alpha1.MeshConfig.ExtensionProvider.OpenCensusAgentTracingProvider": {
         "$ref": "#/components/schemas/istio.mesh.v1alpha1.MeshConfig.ExtensionProvider.OpenCensusAgentTracingProvider"
@@ -953,19 +954,6 @@
           "TLSV1_3"
         ]
       },
-      "istio.mesh.v1alpha1.MeshConfig.ThriftConfig": {
-        "type": "object",
-        "properties": {
-          "rateLimitUrl": {
-            "description": "Specify thrift rate limit service URL. If pilot has thrift protocol support enabled, this will enable the rate limit service for destinations that have matching rate limit configurations.",
-            "type": "string"
-          },
-          "rateLimitTimeout": {
-            "description": "Specify thrift rate limit service timeout, in milliseconds. Default is `50ms`",
-            "type": "string"
-          }
-        }
-      },
       "istio.mesh.v1alpha1.PrivateKeyProvider": {
         "description": "PrivateKeyProvider defines private key configuration for gateways and sidecars. This can be configured mesh wide or individual per-workload basis.",
         "type": "object",
@@ -982,6 +970,16 @@
                       "$ref": "#/components/schemas/istio.mesh.v1alpha1.PrivateKeyProvider.CryptoMb"
                     }
                   }
+                },
+                {
+                  "required": [
+                    "qat"
+                  ],
+                  "properties": {
+                    "qat": {
+                      "$ref": "#/components/schemas/istio.mesh.v1alpha1.PrivateKeyProvider.QAT"
+                    }
+                  }
                 }
               ]
             }
@@ -995,11 +993,24 @@
                 "$ref": "#/components/schemas/istio.mesh.v1alpha1.PrivateKeyProvider.CryptoMb"
               }
             }
+          },
+          {
+            "required": [
+              "qat"
+            ],
+            "properties": {
+              "qat": {
+                "$ref": "#/components/schemas/istio.mesh.v1alpha1.PrivateKeyProvider.QAT"
+              }
+            }
           }
         ]
       },
       "istio.mesh.v1alpha1.PrivateKeyProvider.CryptoMb": {
         "$ref": "#/components/schemas/istio.mesh.v1alpha1.PrivateKeyProvider.CryptoMb"
+      },
+      "istio.mesh.v1alpha1.PrivateKeyProvider.QAT": {
+        "$ref": "#/components/schemas/istio.mesh.v1alpha1.PrivateKeyProvider.QAT"
       },
       "istio.mesh.v1alpha1.ProxyConfig": {
         "description": "ProxyConfig defines variables for individual Envoy instances. This can be configured on a per-workload basis as well as by the mesh-wide defaults. To set the mesh wide defaults, configure the `defaultConfig` section of `meshConfig`. For example: ``` meshConfig: defaultConfig: discoveryAddress: istiod:15012 ``` This can also be configured on a per-workload basis by configuring the `proxy.istio.io/config` annotation on the pod. For example: ``` annotations: proxy.istio.io/config: | discoveryAddress: istiod:15012 ``` If both are configured, the two are merged with per field semantics; the field set in annotation will fully replace the field from mesh config defaults. This is different than a deep merge provided by protobuf. For example, `\"tracing\": { \"sampling\": 5 }` would completely override a setting configuring a tracing provider such as `\"tracing\": { \"zipkin\": { \"address\": \"...\" } }`. Note: fields in ProxyConfig are not dynamically configured; changes will require restart of workloads to take effect.",
@@ -1029,10 +1040,6 @@
           },
           "drainDuration": {
             "description": "The time in seconds that Envoy will drain connections during a hot restart. MUST be \u003e=1s (e.g., _1s/1m/1h_) Default drain duration is `45s`.",
-            "type": "string"
-          },
-          "parentShutdownDuration": {
-            "description": "The time in seconds that Envoy will wait before shutting down the parent process during a hot restart. MUST be \u003e=1s (e.g., `1s/1m/1h`). MUST BE greater than `drain_duration` parameter. Default shutdown duration is `60s`.",
             "type": "string"
           },
           "discoveryAddress": {
@@ -1580,7 +1587,7 @@
             "type": "string"
           },
           "subjectAltNames": {
-            "description": "A list of alternate names to verify the subject identity in the certificate. If specified, the proxy will verify that the server certificate's subject alt name matches one of the specified values. If specified, this list overrides the value of subject_alt_names from the ServiceEntry. If unspecified, automatic validation of upstream presented certificate for new upstream connections will be done based on the downstream HTTP host/authority header, provided `VERIFY_CERT_AT_CLIENT` and `ENABLE_AUTO_SNI` environmental variables are set to `true`.",
+            "description": "A list of alternate names to verify the subject identity in the certificate. If specified, the proxy will verify that the server certificate's subject alt name matches one of the specified values. If specified, this list overrides the value of subject_alt_names from the ServiceEntry. If unspecified, automatic validation of upstream presented certificate for new upstream connections will be done based on the downstream HTTP host/authority header, provided `VERIFY_CERTIFICATE_AT_CLIENT` and `ENABLE_AUTO_SNI` environmental variables are set to `true`.",
             "type": "array",
             "items": {
               "type": "string"
