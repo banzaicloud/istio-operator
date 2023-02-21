@@ -5,3 +5,4 @@ kind: Kustomization
 images:
 - name: controller
   newName: ghcr.io/banzaicloud/istio-operator
+  newTag: v2.16.0

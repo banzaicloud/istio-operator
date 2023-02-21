@@ -122,6 +122,7 @@ message IstioControlPlaneSpec {
     string networkName = 23;
     // Standalone sidecar injector configuration.
     SidecarInjectorConfiguration sidecarInjector = 24;
+    AmbientTopology ambientTopology = 25;
 }
 
 enum ModeType {
@@ -358,6 +359,11 @@ message HTTPProxyEnvsConfiguration {
     string httpProxy = 1;
     string httpsProxy = 2;
     string noProxy = 3;
+}
+
+// Ambient sets Istiod in an ambient topology
+message AmbientTopology {
+    google.protobuf.BoolValue enabled = 1;
 }
 
 // <!-- go code generation tags

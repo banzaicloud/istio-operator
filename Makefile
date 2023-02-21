@@ -74,8 +74,9 @@ ifneq (${SKIP_TESTS}, 1)
 endif
 
 # Build manager binary
+#manager: generate manifests fmt vet build
 .PHONY: manager
-manager: generate manifests fmt vet build
+manager: generate manifests fmt build
 
 # Build manager binary
 .PHONY: build

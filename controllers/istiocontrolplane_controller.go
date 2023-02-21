@@ -64,6 +64,7 @@ import (
 	"github.com/banzaicloud/istio-operator/v2/internal/components/meshexpansion"
 	"github.com/banzaicloud/istio-operator/v2/internal/components/resourcesyncrule"
 	"github.com/banzaicloud/istio-operator/v2/internal/components/sidecarinjector"
+	"github.com/banzaicloud/istio-operator/v2/internal/components/ztunnel"
 	"github.com/banzaicloud/istio-operator/v2/internal/models"
 	"github.com/banzaicloud/istio-operator/v2/internal/util"
 	"github.com/banzaicloud/istio-operator/v2/pkg/k8sutil"
@@ -140,6 +141,7 @@ type IstioControlPlaneReconciler struct {
 func (r *IstioControlPlaneReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Result, error) {
 	logger := r.Log.WithValues("istiocontrolplane", req.NamespacedName)
 
+	logger.Info("JAJ in reconcile")
 	icp := &servicemeshv1alpha1.IstioControlPlane{}
 	err := r.Get(ctx, req.NamespacedName, icp)
 	if err != nil {
@@ -288,6 +290,12 @@ func (r *IstioControlPlaneReconciler) reconcile(ctx context.Context, icp *servic
 		return ctrl.Result{}, err
 	}
 	componentReconcilers = append(componentReconcilers, cniReconciler)
+
+	ztunnelReconciler, err := NewComponentReconciler(r, ztunnel.NewChartReconciler, r.Log.WithName("cni"))
+	if err != nil {
+		return ctrl.Result{}, err
+	}
+	componentReconcilers = append(componentReconcilers, ztunnelReconciler)
 
 	meshExpansionReconciler, err := NewComponentReconciler(r, meshexpansion.NewChartReconciler, r.Log.WithName("meshexpansion"))
 	if err != nil {
