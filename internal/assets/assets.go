@@ -56,6 +56,11 @@ var (
 	//go:embed manifests/resource-sync-rule/templates/_helpers.tpl
 	resourceSyncRule embed.FS
 	ResourceSyncRule = GetSubFS(resourceSyncRule, "manifests/resource-sync-rule")
+
+	//go:embed manifests/ztunnel
+	//go:embed manifests/ztunnel/templates/_helpers.tpl
+	ztunnelChart embed.FS
+	ZtunnelChart = GetSubFS(ztunnelChart, "manifests/ztunnel")
 )
 
 func GetSubFS(fsys fs.FS, dir string) (subFS fs.FS) {

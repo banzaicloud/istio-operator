@@ -23,7 +23,8 @@ KUSTOMIZE_VERSION = 4.1.2
 ISTIO_VERSION = 1.16.1
 BUF_VERSION = 1.7.0
 
-PATH := $(PATH):$(PWD)/bin
+#PATH := $(PATH):$(PWD)/bin
+PATH := $(PWD)/bin:$(PATH)
 
 all: check manager
 
@@ -70,8 +71,9 @@ ifneq (${SKIP_TESTS}, 1)
 endif
 
 # Build manager binary
+#manager: generate manifests fmt vet build
 .PHONY: manager
-manager: generate manifests fmt vet build
+manager: generate manifests fmt build
 
 # Build manager binary
 .PHONY: build

@@ -54,6 +54,12 @@ spec:
           properties:
             spec:
               properties:
+                ambientTopology:
+                  properties:
+                    enabled:
+                      nullable: true
+                      type: boolean
+                  type: object
                 caAddress:
                   type: string
                 caProvider:
@@ -9184,6 +9190,12 @@ spec:
           properties:
             spec:
               properties:
+                ambientTopology:
+                  properties:
+                    enabled:
+                      nullable: true
+                      type: boolean
+                  type: object
                 caAddress:
                   type: string
                 caProvider:
