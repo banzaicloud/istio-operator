@@ -63,10 +63,10 @@
             }
           },
           "livenessProbe": {
-            "$ref": "#/components/schemas/k8s.io.api.core.v1.Probe"
+            "$ref": "#/components/schemas/istio_operator.v2.api.v1alpha1.Probe"
           },
           "readinessProbe": {
-            "$ref": "#/components/schemas/k8s.io.api.core.v1.Probe"
+            "$ref": "#/components/schemas/istio_operator.v2.api.v1alpha1.Probe"
           },
           "imagePullPolicy": {
             "description": "Image pull policy. One of Always, Never, IfNotPresent. Defaults to Always if :latest tag is specified, or IfNotPresent otherwise.",
@@ -192,6 +192,34 @@
           }
         }
       },
+      "istio_operator.v2.api.v1alpha1.HTTPGetAction": {
+        "description": "HTTPGetAction describes an action based on HTTP Get requests.",
+        "type": "object",
+        "properties": {
+          "path": {
+            "description": "Path to access on the HTTP server.",
+            "type": "string"
+          },
+          "port": {
+            "$ref": "#/components/schemas/istio_operator.v2.api.v1alpha1.IntOrString"
+          },
+          "host": {
+            "description": "Host name to connect to, defaults to the pod IP. You probably want to set \"Host\" in httpHeaders instead.",
+            "type": "string"
+          },
+          "scheme": {
+            "description": "Scheme to use for connecting to the host. Defaults to HTTP.",
+            "type": "string"
+          },
+          "httpHeaders": {
+            "description": "Custom headers to set in the request. HTTP allows repeated headers.",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/k8s.io.api.core.v1.HTTPHeader"
+            }
+          }
+        }
+      },
       "istio_operator.v2.api.v1alpha1.IntOrString": {
         "description": "IntOrString is a type that can hold an int32 or a string. When used in JSON or YAML marshalling and unmarshalling, it produces or consumes the inner type. This allows you to have, for example, a JSON field that can accept a name or number. GOTYPE: *IntOrString",
         "oneOf": [
@@ -303,6 +331,130 @@
             "$ref": "#/components/schemas/istio_operator.v2.api.v1alpha1.IntOrString"
           }
         }
+      },
+      "istio_operator.v2.api.v1alpha1.Probe": {
+        "description": "Probe describes a health check to be performed against a container to determine whether it is alive or ready to receive traffic.",
+        "type": "object",
+        "properties": {
+          "timeoutSeconds": {
+            "description": "Number of seconds after which the probe times out. Defaults to 1 second. Minimum value is 1. More info: https://kubernetes.io/docs/concepts/workloads/pods/pod-lifecycle#container-probes",
+            "type": "integer",
+            "format": "int32"
+          },
+          "terminationGracePeriodSeconds": {
+            "description": "Optional duration in seconds the pod needs to terminate gracefully upon probe failure. The grace period is the duration in seconds after the processes running in the pod are sent a termination signal and the time when the processes are forcibly halted with a kill signal. Set this value longer than the expected cleanup time for your process. If this value is nil, the pod's terminationGracePeriodSeconds will be used. Otherwise, this value overrides the value provided by the pod spec. Value must be non-negative integer. The value zero indicates stop immediately via the kill signal (no opportunity to shut down). This is a beta field and requires enabling ProbeTerminationGracePeriod feature gate. Minimum value is 1. spec.terminationGracePeriodSeconds is used if unset.",
+            "type": "integer",
+            "format": "int64"
+          },
+          "initialDelaySeconds": {
+            "description": "Number of seconds after the container has started before liveness probes are initiated. More info: https://kubernetes.io/docs/concepts/workloads/pods/pod-lifecycle#container-probes",
+            "type": "integer",
+            "format": "int32"
+          },
+          "periodSeconds": {
+            "description": "How often (in seconds) to perform the probe. Default to 10 seconds. Minimum value is 1.",
+            "type": "integer",
+            "format": "int32"
+          },
+          "successThreshold": {
+            "description": "Minimum consecutive successes for the probe to be considered successful after having failed. Defaults to 1. Must be 1 for liveness and startup. Minimum value is 1.",
+            "type": "integer",
+            "format": "int32"
+          },
+          "failureThreshold": {
+            "description": "Minimum consecutive failures for the probe to be considered failed after having succeeded. Defaults to 3. Minimum value is 1.",
+            "type": "integer",
+            "format": "int32"
+          }
+        },
+        "oneOf": [
+          {
+            "not": {
+              "anyOf": [
+                {
+                  "required": [
+                    "exec"
+                  ],
+                  "properties": {
+                    "exec": {
+                      "$ref": "#/components/schemas/k8s.io.api.core.v1.ExecAction"
+                    }
+                  }
+                },
+                {
+                  "required": [
+                    "httpGet"
+                  ],
+                  "properties": {
+                    "httpGet": {
+                      "$ref": "#/components/schemas/istio_operator.v2.api.v1alpha1.HTTPGetAction"
+                    }
+                  }
+                },
+                {
+                  "required": [
+                    "tcpSocket"
+                  ],
+                  "properties": {
+                    "tcpSocket": {
+                      "$ref": "#/components/schemas/istio_operator.v2.api.v1alpha1.TCPSocketAction"
+                    }
+                  }
+                },
+                {
+                  "required": [
+                    "grpc"
+                  ],
+                  "properties": {
+                    "grpc": {
+                      "$ref": "#/components/schemas/k8s.io.api.core.v1.GRPCAction"
+                    }
+                  }
+                }
+              ]
+            }
+          },
+          {
+            "required": [
+              "exec"
+            ],
+            "properties": {
+              "exec": {
+                "$ref": "#/components/schemas/k8s.io.api.core.v1.ExecAction"
+              }
+            }
+          },
+          {
+            "required": [
+              "httpGet"
+            ],
+            "properties": {
+              "httpGet": {
+                "$ref": "#/components/schemas/istio_operator.v2.api.v1alpha1.HTTPGetAction"
+              }
+            }
+          },
+          {
+            "required": [
+              "tcpSocket"
+            ],
+            "properties": {
+              "tcpSocket": {
+                "$ref": "#/components/schemas/istio_operator.v2.api.v1alpha1.TCPSocketAction"
+              }
+            }
+          },
+          {
+            "required": [
+              "grpc"
+            ],
+            "properties": {
+              "grpc": {
+                "$ref": "#/components/schemas/k8s.io.api.core.v1.GRPCAction"
+              }
+            }
+          }
+        ]
       },
       "istio_operator.v2.api.v1alpha1.Quantity": {
         "description": "Quantity is a fixed-point representation of a number. It provides convenient marshaling/unmarshaling in JSON and YAML, in addition to String() and Int64() accessors. GOTYPE: *Quantity",
@@ -464,6 +616,19 @@
             "description": "The port on each node on which this service is exposed when type=NodePort or LoadBalancer. Usually assigned by the system. If specified, it will be allocated to the service if unused or else creation of the service will fail. Default is to auto-allocate a port if the ServiceType of this Service requires one. More info: https://kubernetes.io/docs/concepts/services-networking/service/#type-nodeport",
             "type": "integer",
             "format": "int32"
+          }
+        }
+      },
+      "istio_operator.v2.api.v1alpha1.TCPSocketAction": {
+        "description": "TCPSocketAction describes an action based on opening a socket",
+        "type": "object",
+        "properties": {
+          "port": {
+            "$ref": "#/components/schemas/istio_operator.v2.api.v1alpha1.IntOrString"
+          },
+          "host": {
+            "description": "Optional: Host name to connect to, defaults to the pod IP.",
+            "type": "string"
           }
         }
       },
@@ -1075,34 +1240,6 @@
           }
         }
       },
-      "k8s.io.api.core.v1.HTTPGetAction": {
-        "description": "HTTPGetAction describes an action based on HTTP Get requests.",
-        "type": "object",
-        "properties": {
-          "path": {
-            "description": "Path to access on the HTTP server.",
-            "type": "string"
-          },
-          "port": {
-            "$ref": "#/components/schemas/k8s.io.apimachinery.pkg.util.intstr.IntOrString"
-          },
-          "host": {
-            "description": "Host name to connect to, defaults to the pod IP. You probably want to set \"Host\" in httpHeaders instead.",
-            "type": "string"
-          },
-          "scheme": {
-            "description": "Scheme to use for connecting to the host. Defaults to HTTP.",
-            "type": "string"
-          },
-          "httpHeaders": {
-            "description": "Custom headers to set in the request. HTTP allows repeated headers.",
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/k8s.io.api.core.v1.HTTPHeader"
-            }
-          }
-        }
-      },
       "k8s.io.api.core.v1.HTTPHeader": {
         "description": "HTTPHeader describes a custom header to be used in HTTP probes",
         "type": "object",
@@ -1540,63 +1677,6 @@
           }
         }
       },
-      "k8s.io.api.core.v1.Probe": {
-        "description": "Probe describes a health check to be performed against a container to determine whether it is alive or ready to receive traffic.",
-        "type": "object",
-        "properties": {
-          "timeoutSeconds": {
-            "description": "Number of seconds after which the probe times out. Defaults to 1 second. Minimum value is 1. More info: https://kubernetes.io/docs/concepts/workloads/pods/pod-lifecycle#container-probes",
-            "type": "integer",
-            "format": "int32"
-          },
-          "terminationGracePeriodSeconds": {
-            "description": "Optional duration in seconds the pod needs to terminate gracefully upon probe failure. The grace period is the duration in seconds after the processes running in the pod are sent a termination signal and the time when the processes are forcibly halted with a kill signal. Set this value longer than the expected cleanup time for your process. If this value is nil, the pod's terminationGracePeriodSeconds will be used. Otherwise, this value overrides the value provided by the pod spec. Value must be non-negative integer. The value zero indicates stop immediately via the kill signal (no opportunity to shut down). This is a beta field and requires enabling ProbeTerminationGracePeriod feature gate. Minimum value is 1. spec.terminationGracePeriodSeconds is used if unset.",
-            "type": "integer",
-            "format": "int64"
-          },
-          "handler": {
-            "$ref": "#/components/schemas/k8s.io.api.core.v1.ProbeHandler"
-          },
-          "initialDelaySeconds": {
-            "description": "Number of seconds after the container has started before liveness probes are initiated. More info: https://kubernetes.io/docs/concepts/workloads/pods/pod-lifecycle#container-probes",
-            "type": "integer",
-            "format": "int32"
-          },
-          "periodSeconds": {
-            "description": "How often (in seconds) to perform the probe. Default to 10 seconds. Minimum value is 1.",
-            "type": "integer",
-            "format": "int32"
-          },
-          "successThreshold": {
-            "description": "Minimum consecutive successes for the probe to be considered successful after having failed. Defaults to 1. Must be 1 for liveness and startup. Minimum value is 1.",
-            "type": "integer",
-            "format": "int32"
-          },
-          "failureThreshold": {
-            "description": "Minimum consecutive failures for the probe to be considered failed after having succeeded. Defaults to 3. Minimum value is 1.",
-            "type": "integer",
-            "format": "int32"
-          }
-        }
-      },
-      "k8s.io.api.core.v1.ProbeHandler": {
-        "description": "ProbeHandler defines a specific action that should be taken in a probe. One and only one of the fields must be specified.",
-        "type": "object",
-        "properties": {
-          "exec": {
-            "$ref": "#/components/schemas/k8s.io.api.core.v1.ExecAction"
-          },
-          "httpGet": {
-            "$ref": "#/components/schemas/k8s.io.api.core.v1.HTTPGetAction"
-          },
-          "tcpSocket": {
-            "$ref": "#/components/schemas/k8s.io.api.core.v1.TCPSocketAction"
-          },
-          "grpc": {
-            "$ref": "#/components/schemas/k8s.io.api.core.v1.GRPCAction"
-          }
-        }
-      },
       "k8s.io.api.core.v1.ProjectedVolumeSource": {
         "description": "Represents a projected volume source",
         "type": "object",
@@ -1977,19 +2057,6 @@
           },
           "value": {
             "description": "Value of a property to set",
-            "type": "string"
-          }
-        }
-      },
-      "k8s.io.api.core.v1.TCPSocketAction": {
-        "description": "TCPSocketAction describes an action based on opening a socket",
-        "type": "object",
-        "properties": {
-          "port": {
-            "$ref": "#/components/schemas/k8s.io.apimachinery.pkg.util.intstr.IntOrString"
-          },
-          "host": {
-            "description": "Optional: Host name to connect to, defaults to the pod IP.",
             "type": "string"
           }
         }
@@ -2494,23 +2561,6 @@
             "description": "Non-negative fractions of a second at nanosecond resolution. Negative second values with fractions must still have non-negative nanos values that count forward in time. Must be from 0 to 999,999,999 inclusive. This field may be limited in precision depending on context.",
             "type": "integer",
             "format": "int32"
-          }
-        }
-      },
-      "k8s.io.apimachinery.pkg.util.intstr.IntOrString": {
-        "description": "IntOrString is a type that can hold an int32 or a string.  When used in JSON or YAML marshalling and unmarshalling, it produces or consumes the inner type.  This allows you to have, for example, a JSON field that can accept a name or number. TODO: Rename to Int32OrString",
-        "type": "object",
-        "properties": {
-          "type": {
-            "type": "integer",
-            "format": "int64"
-          },
-          "intVal": {
-            "type": "integer",
-            "format": "int32"
-          },
-          "strVal": {
-            "type": "string"
           }
         }
       }

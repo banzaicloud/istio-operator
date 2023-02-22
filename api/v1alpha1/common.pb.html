@@ -2,7 +2,7 @@
 title: istio_operator.v2.api.v1alpha1
 layout: protoc-gen-docs
 generator: protoc-gen-docs
-number_of_entries: 31
+number_of_entries: 36
 ---
 <h2 id="K8sObjectMeta">K8sObjectMeta</h2>
 <section>
@@ -420,7 +420,7 @@ No
 </tr>
 <tr id="BaseKubernetesResourceConfig-livenessProbe">
 <td><code>livenessProbe</code></td>
-<td><code><a href="#k8s-io-api-core-v1-Probe">Probe</a></code></td>
+<td><code><a href="#Probe">Probe</a></code></td>
 <td>
 <p>Periodic probe of container liveness.
 Container will be restarted if the probe fails.
@@ -435,7 +435,7 @@ No
 </tr>
 <tr id="BaseKubernetesResourceConfig-readinessProbe">
 <td><code>readinessProbe</code></td>
-<td><code><a href="#k8s-io-api-core-v1-Probe">Probe</a></code></td>
+<td><code><a href="#Probe">Probe</a></code></td>
 <td>
 <p>Periodic probe of container service readiness.
 Container will be removed from service endpoints if the probe fails.
@@ -542,6 +542,283 @@ No
 &ldquo;selector&rdquo; are unavailable after the eviction, i.e. even in absence of
 the evicted pod. For example, one can prevent all voluntary evictions
 by specifying 0. This is a mutually exclusive setting with &ldquo;minAvailable&rdquo;.
++optional</p>
+
+</td>
+<td>
+No
+</td>
+</tr>
+</tbody>
+</table>
+</section>
+<h2 id="Probe">Probe</h2>
+<section>
+<p>Probe describes a health check to be performed against a container to determine whether it is
+alive or ready to receive traffic.</p>
+
+<table class="message-fields">
+<thead>
+<tr>
+<th>Field</th>
+<th>Type</th>
+<th>Description</th>
+<th>Required</th>
+</tr>
+</thead>
+<tbody>
+<tr id="Probe-exec" class="oneof oneof-start">
+<td><code>exec</code></td>
+<td><code><a href="#k8s-io-api-core-v1-ExecAction">ExecAction (oneof)</a></code></td>
+<td>
+<p>Exec specifies the action to take.
++optional</p>
+
+</td>
+<td>
+No
+</td>
+</tr>
+<tr id="Probe-httpGet" class="oneof">
+<td><code>httpGet</code></td>
+<td><code><a href="#HTTPGetAction">HTTPGetAction (oneof)</a></code></td>
+<td>
+<p>HTTPGet specifies the http request to perform.
++optional</p>
+
+</td>
+<td>
+No
+</td>
+</tr>
+<tr id="Probe-tcpSocket" class="oneof">
+<td><code>tcpSocket</code></td>
+<td><code><a href="#TCPSocketAction">TCPSocketAction (oneof)</a></code></td>
+<td>
+<p>TCPSocket specifies an action involving a TCP port.
++optional</p>
+
+</td>
+<td>
+No
+</td>
+</tr>
+<tr id="Probe-grpc" class="oneof">
+<td><code>grpc</code></td>
+<td><code><a href="#k8s-io-api-core-v1-GRPCAction">GRPCAction (oneof)</a></code></td>
+<td>
+<p>GRPC specifies an action involving a GRPC port.
+This is a beta field and requires enabling GRPCContainerProbe feature gate.
++featureGate=GRPCContainerProbe
++optional</p>
+
+</td>
+<td>
+No
+</td>
+</tr>
+<tr id="Probe-initialDelaySeconds">
+<td><code>initialDelaySeconds</code></td>
+<td><code>int32</code></td>
+<td>
+<p>Number of seconds after the container has started before liveness probes are initiated.
+More info: https://kubernetes.io/docs/concepts/workloads/pods/pod-lifecycle#container-probes
++optional</p>
+
+</td>
+<td>
+No
+</td>
+</tr>
+<tr id="Probe-timeoutSeconds">
+<td><code>timeoutSeconds</code></td>
+<td><code>int32</code></td>
+<td>
+<p>Number of seconds after which the probe times out.
+Defaults to 1 second. Minimum value is 1.
+More info: https://kubernetes.io/docs/concepts/workloads/pods/pod-lifecycle#container-probes
++optional</p>
+
+</td>
+<td>
+No
+</td>
+</tr>
+<tr id="Probe-periodSeconds">
+<td><code>periodSeconds</code></td>
+<td><code>int32</code></td>
+<td>
+<p>How often (in seconds) to perform the probe.
+Default to 10 seconds. Minimum value is 1.
++optional</p>
+
+</td>
+<td>
+No
+</td>
+</tr>
+<tr id="Probe-successThreshold">
+<td><code>successThreshold</code></td>
+<td><code>int32</code></td>
+<td>
+<p>Minimum consecutive successes for the probe to be considered successful after having failed.
+Defaults to 1. Must be 1 for liveness and startup. Minimum value is 1.
++optional</p>
+
+</td>
+<td>
+No
+</td>
+</tr>
+<tr id="Probe-failureThreshold">
+<td><code>failureThreshold</code></td>
+<td><code>int32</code></td>
+<td>
+<p>Minimum consecutive failures for the probe to be considered failed after having succeeded.
+Defaults to 3. Minimum value is 1.
++optional</p>
+
+</td>
+<td>
+No
+</td>
+</tr>
+<tr id="Probe-terminationGracePeriodSeconds">
+<td><code>terminationGracePeriodSeconds</code></td>
+<td><code>int64</code></td>
+<td>
+<p>Optional duration in seconds the pod needs to terminate gracefully upon probe failure.
+The grace period is the duration in seconds after the processes running in the pod are sent
+a termination signal and the time when the processes are forcibly halted with a kill signal.
+Set this value longer than the expected cleanup time for your process.
+If this value is nil, the pod&rsquo;s terminationGracePeriodSeconds will be used. Otherwise, this
+value overrides the value provided by the pod spec.
+Value must be non-negative integer. The value zero indicates stop immediately via
+the kill signal (no opportunity to shut down).
+This is a beta field and requires enabling ProbeTerminationGracePeriod feature gate.
+Minimum value is 1. spec.terminationGracePeriodSeconds is used if unset.
++optional</p>
+
+</td>
+<td>
+No
+</td>
+</tr>
+</tbody>
+</table>
+</section>
+<h2 id="HTTPGetAction">HTTPGetAction</h2>
+<section>
+<p>HTTPGetAction describes an action based on HTTP Get requests.</p>
+
+<table class="message-fields">
+<thead>
+<tr>
+<th>Field</th>
+<th>Type</th>
+<th>Description</th>
+<th>Required</th>
+</tr>
+</thead>
+<tbody>
+<tr id="HTTPGetAction-path">
+<td><code>path</code></td>
+<td><code>string</code></td>
+<td>
+<p>Path to access on the HTTP server.
++optional</p>
+
+</td>
+<td>
+No
+</td>
+</tr>
+<tr id="HTTPGetAction-port">
+<td><code>port</code></td>
+<td><code><a href="#IntOrString">IntOrString</a></code></td>
+<td>
+<p>Name or number of the port to access on the container.
+Number must be in the range 1 to 65535.
+Name must be an IANA_SVC_NAME.</p>
+
+</td>
+<td>
+No
+</td>
+</tr>
+<tr id="HTTPGetAction-host">
+<td><code>host</code></td>
+<td><code>string</code></td>
+<td>
+<p>Host name to connect to, defaults to the pod IP. You probably want to set
+&ldquo;Host&rdquo; in httpHeaders instead.
++optional</p>
+
+</td>
+<td>
+No
+</td>
+</tr>
+<tr id="HTTPGetAction-scheme">
+<td><code>scheme</code></td>
+<td><code>string</code></td>
+<td>
+<p>Scheme to use for connecting to the host.
+Defaults to HTTP.
++optional</p>
+
+</td>
+<td>
+No
+</td>
+</tr>
+<tr id="HTTPGetAction-httpHeaders">
+<td><code>httpHeaders</code></td>
+<td><code><a href="#k8s-io-api-core-v1-HTTPHeader">HTTPHeader[]</a></code></td>
+<td>
+<p>Custom headers to set in the request. HTTP allows repeated headers.
++optional</p>
+
+</td>
+<td>
+No
+</td>
+</tr>
+</tbody>
+</table>
+</section>
+<h2 id="TCPSocketAction">TCPSocketAction</h2>
+<section>
+<p>TCPSocketAction describes an action based on opening a socket</p>
+
+<table class="message-fields">
+<thead>
+<tr>
+<th>Field</th>
+<th>Type</th>
+<th>Description</th>
+<th>Required</th>
+</tr>
+</thead>
+<tbody>
+<tr id="TCPSocketAction-port">
+<td><code>port</code></td>
+<td><code><a href="#IntOrString">IntOrString</a></code></td>
+<td>
+<p>Number or name of the port to access on the container.
+Number must be in the range 1 to 65535.
+Name must be an IANA_SVC_NAME.</p>
+
+</td>
+<td>
+No
+</td>
+</tr>
+<tr id="TCPSocketAction-host">
+<td><code>host</code></td>
+<td><code>string</code></td>
+<td>
+<p>Optional: Host name to connect to, defaults to the pod IP.
 +optional</p>
 
 </td>
@@ -2258,122 +2535,6 @@ No
 </tbody>
 </table>
 </section>
-<h2 id="k8s-io-api-core-v1-Probe">k8s.io.api.core.v1.Probe</h2>
-<section>
-<p>Probe describes a health check to be performed against a container to determine whether it is
-alive or ready to receive traffic.</p>
-
-<table class="message-fields">
-<thead>
-<tr>
-<th>Field</th>
-<th>Type</th>
-<th>Description</th>
-<th>Required</th>
-</tr>
-</thead>
-<tbody>
-<tr id="k8s-io-api-core-v1-Probe-handler">
-<td><code>handler</code></td>
-<td><code><a href="#k8s-io-api-core-v1-ProbeHandler">ProbeHandler</a></code></td>
-<td>
-<p>The action taken to determine the health of a container</p>
-
-</td>
-<td>
-No
-</td>
-</tr>
-<tr id="k8s-io-api-core-v1-Probe-initialDelaySeconds">
-<td><code>initialDelaySeconds</code></td>
-<td><code>int32</code></td>
-<td>
-<p>Number of seconds after the container has started before liveness probes are initiated.
-More info: https://kubernetes.io/docs/concepts/workloads/pods/pod-lifecycle#container-probes
-+optional</p>
-
-</td>
-<td>
-No
-</td>
-</tr>
-<tr id="k8s-io-api-core-v1-Probe-timeoutSeconds">
-<td><code>timeoutSeconds</code></td>
-<td><code>int32</code></td>
-<td>
-<p>Number of seconds after which the probe times out.
-Defaults to 1 second. Minimum value is 1.
-More info: https://kubernetes.io/docs/concepts/workloads/pods/pod-lifecycle#container-probes
-+optional</p>
-
-</td>
-<td>
-No
-</td>
-</tr>
-<tr id="k8s-io-api-core-v1-Probe-periodSeconds">
-<td><code>periodSeconds</code></td>
-<td><code>int32</code></td>
-<td>
-<p>How often (in seconds) to perform the probe.
-Default to 10 seconds. Minimum value is 1.
-+optional</p>
-
-</td>
-<td>
-No
-</td>
-</tr>
-<tr id="k8s-io-api-core-v1-Probe-successThreshold">
-<td><code>successThreshold</code></td>
-<td><code>int32</code></td>
-<td>
-<p>Minimum consecutive successes for the probe to be considered successful after having failed.
-Defaults to 1. Must be 1 for liveness and startup. Minimum value is 1.
-+optional</p>
-
-</td>
-<td>
-No
-</td>
-</tr>
-<tr id="k8s-io-api-core-v1-Probe-failureThreshold">
-<td><code>failureThreshold</code></td>
-<td><code>int32</code></td>
-<td>
-<p>Minimum consecutive failures for the probe to be considered failed after having succeeded.
-Defaults to 3. Minimum value is 1.
-+optional</p>
-
-</td>
-<td>
-No
-</td>
-</tr>
-<tr id="k8s-io-api-core-v1-Probe-terminationGracePeriodSeconds">
-<td><code>terminationGracePeriodSeconds</code></td>
-<td><code>int64</code></td>
-<td>
-<p>Optional duration in seconds the pod needs to terminate gracefully upon probe failure.
-The grace period is the duration in seconds after the processes running in the pod are sent
-a termination signal and the time when the processes are forcibly halted with a kill signal.
-Set this value longer than the expected cleanup time for your process.
-If this value is nil, the pod&rsquo;s terminationGracePeriodSeconds will be used. Otherwise, this
-value overrides the value provided by the pod spec.
-Value must be non-negative integer. The value zero indicates stop immediately via
-the kill signal (no opportunity to shut down).
-This is a beta field and requires enabling ProbeTerminationGracePeriod feature gate.
-Minimum value is 1. spec.terminationGracePeriodSeconds is used if unset.
-+optional</p>
-
-</td>
-<td>
-No
-</td>
-</tr>
-</tbody>
-</table>
-</section>
 <h2 id="k8s-io-api-core-v1-TopologySpreadConstraint">k8s.io.api.core.v1.TopologySpreadConstraint</h2>
 <section>
 <p>TopologySpreadConstraint specifies how to spread matching pods among the given topology.</p>
@@ -2469,6 +2630,120 @@ No
 Pods that match this label selector are counted to determine the number of pods
 in their corresponding topology domain.
 +optional</p>
+
+</td>
+<td>
+No
+</td>
+</tr>
+</tbody>
+</table>
+</section>
+<h2 id="k8s-io-api-core-v1-ExecAction">k8s.io.api.core.v1.ExecAction</h2>
+<section>
+<p>ExecAction describes a &ldquo;run in container&rdquo; action.</p>
+
+<table class="message-fields">
+<thead>
+<tr>
+<th>Field</th>
+<th>Type</th>
+<th>Description</th>
+<th>Required</th>
+</tr>
+</thead>
+<tbody>
+<tr id="k8s-io-api-core-v1-ExecAction-command">
+<td><code>command</code></td>
+<td><code>string[]</code></td>
+<td>
+<p>Command is the command line to execute inside the container, the working directory for the
+command  is root (&lsquo;/&rsquo;) in the container&rsquo;s filesystem. The command is simply exec&rsquo;d, it is
+not run inside a shell, so traditional shell instructions (&lsquo;|&rsquo;, etc) won&rsquo;t work. To use
+a shell, you need to explicitly call out to that shell.
+Exit status of 0 is treated as live/healthy and non-zero is unhealthy.
++optional</p>
+
+</td>
+<td>
+No
+</td>
+</tr>
+</tbody>
+</table>
+</section>
+<h2 id="k8s-io-api-core-v1-GRPCAction">k8s.io.api.core.v1.GRPCAction</h2>
+<section>
+<table class="message-fields">
+<thead>
+<tr>
+<th>Field</th>
+<th>Type</th>
+<th>Description</th>
+<th>Required</th>
+</tr>
+</thead>
+<tbody>
+<tr id="k8s-io-api-core-v1-GRPCAction-port">
+<td><code>port</code></td>
+<td><code>int32</code></td>
+<td>
+<p>Port number of the gRPC service. Number must be in the range 1 to 65535.</p>
+
+</td>
+<td>
+No
+</td>
+</tr>
+<tr id="k8s-io-api-core-v1-GRPCAction-service">
+<td><code>service</code></td>
+<td><code>string</code></td>
+<td>
+<p>Service is the name of the service to place in the gRPC HealthCheckRequest
+(see https://github.com/grpc/grpc/blob/master/doc/health-checking.md).</p>
+
+<p>If this is not specified, the default behavior is defined by gRPC.
++optional
++default=&ldquo;&rdquo;</p>
+
+</td>
+<td>
+No
+</td>
+</tr>
+</tbody>
+</table>
+</section>
+<h2 id="k8s-io-api-core-v1-HTTPHeader">k8s.io.api.core.v1.HTTPHeader</h2>
+<section>
+<p>HTTPHeader describes a custom header to be used in HTTP probes</p>
+
+<table class="message-fields">
+<thead>
+<tr>
+<th>Field</th>
+<th>Type</th>
+<th>Description</th>
+<th>Required</th>
+</tr>
+</thead>
+<tbody>
+<tr id="k8s-io-api-core-v1-HTTPHeader-name">
+<td><code>name</code></td>
+<td><code>string</code></td>
+<td>
+<p>The header field name</p>
+
+</td>
+<td>
+No
+</td>
+</tr>
+<tr id="k8s-io-api-core-v1-HTTPHeader-value">
+<td><code>value</code></td>
+<td><code>string</code></td>
+<td>
+<p>The header field value</p>
 
 </td>
 <td>
