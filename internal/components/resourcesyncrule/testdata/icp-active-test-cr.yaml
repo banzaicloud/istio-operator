@@ -4,7 +4,7 @@ metadata:
   name: cp-v117x
   namespace: istio-system
 spec:
-  version: "1.17.0"
+  version: "1.17.1"
   mode: ACTIVE
   distribution: cisco
   meshID: mesh1

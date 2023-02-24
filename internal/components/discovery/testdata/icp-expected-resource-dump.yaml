@@ -372,6 +372,10 @@ data:
               value: "{{ $containers | join "," }}"
             - name: ISTIO_META_CLUSTER_ID
               value: "{{ valueOrDefault .Values.global.multiCluster.clusterName `Kubernetes` }}"
+            - name: ISTIO_META_NODE_NAME
+              valueFrom:
+                fieldRef:
+                  fieldPath: spec.nodeName
             - name: ISTIO_META_INTERCEPTION_MODE
               value: "{{ or (index .ObjectMeta.Annotations `sidecar.istio.io/interceptionMode`) .ProxyConfig.InterceptionMode.String }}"
             {{- if .Values.global.network }}
@@ -709,6 +713,10 @@ data:
               value: "{{ $containers | join "," }}"
             - name: ISTIO_META_CLUSTER_ID
               value: "{{ valueOrDefault .Values.global.multiCluster.clusterName `Kubernetes` }}"
+            - name: ISTIO_META_NODE_NAME
+              valueFrom:
+                fieldRef:
+                  fieldPath: spec.nodeName
             - name: ISTIO_META_INTERCEPTION_MODE
               value: "{{ .ProxyConfig.InterceptionMode.String }}"
             {{- if .Values.global.network }}
@@ -1048,6 +1056,10 @@ data:
               value: "{{ $containers | join "," }}"
             - name: ISTIO_META_CLUSTER_ID
               value: "{{ valueOrDefault .Values.global.multiCluster.clusterName `Kubernetes` }}"
+            - name: ISTIO_META_NODE_NAME
+              valueFrom:
+                fieldRef:
+                  fieldPath: spec.nodeName
             {{- if .Values.global.network }}
             - name: ISTIO_META_NETWORK
               value: "{{ .Values.global.network }}"
@@ -1264,6 +1276,7 @@ data:
       "global": {
         "caAddress": "localhost",
         "caName": "Citadel",
+        "certSigners": [],
         "configCluster": false,
         "configValidation": true,
         "defaultPodDisruptionBudget": {
@@ -2460,23 +2473,8 @@ spec:
         name: istio.stats
         typed_config:
           '@type': type.googleapis.com/udpa.type.v1.TypedStruct
-          type_url: type.googleapis.com/envoy.extensions.filters.http.wasm.v3.Wasm
-          value:
-            config:
-              configuration:
-                '@type': type.googleapis.com/google.protobuf.StringValue
-                value: |
-                  {
-                    "debug": "false",
-                    "stat_prefix": "istio"
-                  }
-              root_id: stats_outbound
-              vm_config:
-                code:
-                  local:
-                    inline_string: envoy.wasm.stats
-                runtime: envoy.wasm.runtime.null
-                vm_id: stats_outbound
+          type_url: type.googleapis.com/stats.PluginConfig
+          value: {}
   - applyTo: HTTP_FILTER
     match:
       context: SIDECAR_INBOUND
@@ -2494,24 +2492,9 @@ spec:
         name: istio.stats
         typed_config:
           '@type': type.googleapis.com/udpa.type.v1.TypedStruct
-          type_url: type.googleapis.com/envoy.extensions.filters.http.wasm.v3.Wasm
+          type_url: type.googleapis.com/stats.PluginConfig
           value:
-            config:
-              configuration:
-                '@type': type.googleapis.com/google.protobuf.StringValue
-                value: |
-                  {
-                    "debug": "false",
-                    "stat_prefix": "istio",
-                    "disable_host_header_fallback": true
-                  }
-              root_id: stats_inbound
-              vm_config:
-                code:
-                  local:
-                    inline_string: envoy.wasm.stats
-                runtime: envoy.wasm.runtime.null
-                vm_id: stats_inbound
+            disable_host_header_fallback: true
   - applyTo: HTTP_FILTER
     match:
       context: GATEWAY
@@ -2529,24 +2512,9 @@ spec:
         name: istio.stats
         typed_config:
           '@type': type.googleapis.com/udpa.type.v1.TypedStruct
-          type_url: type.googleapis.com/envoy.extensions.filters.http.wasm.v3.Wasm
+          type_url: type.googleapis.com/stats.PluginConfig
           value:
-            config:
-              configuration:
-                '@type': type.googleapis.com/google.protobuf.StringValue
-                value: |
-                  {
-                    "debug": "false",
-                    "stat_prefix": "istio",
-                    "disable_host_header_fallback": true
-                  }
-              root_id: stats_outbound
-              vm_config:
-                code:
-                  local:
-                    inline_string: envoy.wasm.stats
-                runtime: envoy.wasm.runtime.null
-                vm_id: stats_outbound
+            disable_host_header_fallback: true
   priority: -1
 
 ---
@@ -2682,23 +2650,8 @@ spec:
         name: istio.stats
         typed_config:
           '@type': type.googleapis.com/udpa.type.v1.TypedStruct
-          type_url: type.googleapis.com/envoy.extensions.filters.network.wasm.v3.Wasm
-          value:
-            config:
-              configuration:
-                '@type': type.googleapis.com/google.protobuf.StringValue
-                value: |
-                  {
-                    "debug": "false",
-                    "stat_prefix": "istio"
-                  }
-              root_id: stats_inbound
-              vm_config:
-                code:
-                  local:
-                    inline_string: envoy.wasm.stats
-                runtime: envoy.wasm.runtime.null
-                vm_id: tcp_stats_inbound
+          type_url: type.googleapis.com/stats.PluginConfig
+          value: {}
   - applyTo: NETWORK_FILTER
     match:
       context: SIDECAR_OUTBOUND
@@ -2714,23 +2667,8 @@ spec:
         name: istio.stats
         typed_config:
           '@type': type.googleapis.com/udpa.type.v1.TypedStruct
-          type_url: type.googleapis.com/envoy.extensions.filters.network.wasm.v3.Wasm
-          value:
-            config:
-              configuration:
-                '@type': type.googleapis.com/google.protobuf.StringValue
-                value: |
-                  {
-                    "debug": "false",
-                    "stat_prefix": "istio"
-                  }
-              root_id: stats_outbound
-              vm_config:
-                code:
-                  local:
-                    inline_string: envoy.wasm.stats
-                runtime: envoy.wasm.runtime.null
-                vm_id: tcp_stats_outbound
+          type_url: type.googleapis.com/stats.PluginConfig
+          value: {}
   - applyTo: NETWORK_FILTER
     match:
       context: GATEWAY
@@ -2746,21 +2684,6 @@ spec:
         name: istio.stats
         typed_config:
           '@type': type.googleapis.com/udpa.type.v1.TypedStruct
-          type_url: type.googleapis.com/envoy.extensions.filters.network.wasm.v3.Wasm
-          value:
-            config:
-              configuration:
-                '@type': type.googleapis.com/google.protobuf.StringValue
-                value: |
-                  {
-                    "debug": "false",
-                    "stat_prefix": "istio"
-                  }
-              root_id: stats_outbound
-              vm_config:
-                code:
-                  local:
-                    inline_string: envoy.wasm.stats
-                runtime: envoy.wasm.runtime.null
-                vm_id: tcp_stats_outbound
+          type_url: type.googleapis.com/stats.PluginConfig
+          value: {}
   priority: -1

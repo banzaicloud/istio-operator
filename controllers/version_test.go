@@ -36,9 +36,9 @@ var _ = Describe("IsIstioVersionSupported()", func() {
 		Expect(controllers.IsIstioVersionSupported("1.17-dev")).To(BeTrue())
 	})
 	It("should accept micro versions", func() {
-		Expect(controllers.IsIstioVersionSupported("1.17.0")).To(BeTrue())
+		Expect(controllers.IsIstioVersionSupported("1.17.1")).To(BeTrue())
 	})
 	It("should accept micro versions with qualifier", func() {
-		Expect(controllers.IsIstioVersionSupported("1.17.0-dev")).To(BeTrue())
+		Expect(controllers.IsIstioVersionSupported("1.17.1-dev")).To(BeTrue())
 	})
 })

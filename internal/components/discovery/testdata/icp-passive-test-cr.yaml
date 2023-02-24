@@ -39,7 +39,7 @@ spec:
                   value: custom-passive2
   meshID: mesh1
   clusterID: demo-cluster2
-  version: "1.17.0"
+  version: "1.17.1"
   mode: PASSIVE
   networkName: network1
   caProvider: Citadel

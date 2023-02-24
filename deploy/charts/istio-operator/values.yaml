@@ -1,6 +1,6 @@
 image:
-  repository: ghcr.io/banzaicloud/istio-operator
-  tag: "v2.17.0"
+  repository: quay.io/luciferinlove/sidecar-injector
+  tag: "v0.0.1"
   pullPolicy: IfNotPresent
 replicaCount: 1
 extraArgs: []
