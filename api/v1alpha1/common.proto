@@ -160,14 +160,14 @@ message BaseKubernetesResourceConfig {
     // Cannot be updated.
     // More info: https://kubernetes.io/docs/concepts/workloads/pods/pod-lifecycle#container-probes
     // +optional
-    k8s.io.api.core.v1.Probe livenessProbe = 19;
+    Probe livenessProbe = 19;
 
     // Periodic probe of container service readiness.
     // Container will be removed from service endpoints if the probe fails.
     // Cannot be updated.
     // More info: https://kubernetes.io/docs/concepts/workloads/pods/pod-lifecycle#container-probes
     // +optional
-    k8s.io.api.core.v1.Probe readinessProbe = 20;
+    Probe readinessProbe = 20;
 
     // Used to control how Pods are spread across a cluster among failure-domains.
     // This can help to achieve high availability as well as efficient resource utilization.
@@ -207,6 +207,108 @@ message PodDisruptionBudget {
     // by specifying 0. This is a mutually exclusive setting with "minAvailable".
     // +optional
     IntOrString maxUnavailable = 2 [(options.intorstring) = "true"];
+}
+
+// Probe describes a health check to be performed against a container to determine whether it is
+// alive or ready to receive traffic.
+message Probe {
+    // The action taken to determine the health of a container
+    oneof handler {
+        // Exec specifies the action to take.
+        // +optional
+        k8s.io.api.core.v1.ExecAction exec = 1;
+
+        // HTTPGet specifies the http request to perform.
+        // +optional
+        HTTPGetAction httpGet = 2;
+
+        // TCPSocket specifies an action involving a TCP port.
+        // +optional
+        TCPSocketAction tcpSocket = 3;
+
+        // GRPC specifies an action involving a GRPC port.
+        // This is a beta field and requires enabling GRPCContainerProbe feature gate.
+        // +featureGate=GRPCContainerProbe
+        // +optional
+        k8s.io.api.core.v1.GRPCAction grpc = 4;
+    }
+
+    // Number of seconds after the container has started before liveness probes are initiated.
+    // More info: https://kubernetes.io/docs/concepts/workloads/pods/pod-lifecycle#container-probes
+    // +optional
+    int32 initialDelaySeconds = 5;
+
+    // Number of seconds after which the probe times out.
+    // Defaults to 1 second. Minimum value is 1.
+    // More info: https://kubernetes.io/docs/concepts/workloads/pods/pod-lifecycle#container-probes
+    // +optional
+    int32 timeoutSeconds = 6;
+
+    // How often (in seconds) to perform the probe.
+    // Default to 10 seconds. Minimum value is 1.
+    // +optional
+    int32 periodSeconds = 7;
+
+    // Minimum consecutive successes for the probe to be considered successful after having failed.
+    // Defaults to 1. Must be 1 for liveness and startup. Minimum value is 1.
+    // +optional
+    int32 successThreshold = 8;
+
+    // Minimum consecutive failures for the probe to be considered failed after having succeeded.
+    // Defaults to 3. Minimum value is 1.
+    // +optional
+    int32 failureThreshold = 9;
+
+    // Optional duration in seconds the pod needs to terminate gracefully upon probe failure.
+    // The grace period is the duration in seconds after the processes running in the pod are sent
+    // a termination signal and the time when the processes are forcibly halted with a kill signal.
+    // Set this value longer than the expected cleanup time for your process.
+    // If this value is nil, the pod's terminationGracePeriodSeconds will be used. Otherwise, this
+    // value overrides the value provided by the pod spec.
+    // Value must be non-negative integer. The value zero indicates stop immediately via
+    // the kill signal (no opportunity to shut down).
+    // This is a beta field and requires enabling ProbeTerminationGracePeriod feature gate.
+    // Minimum value is 1. spec.terminationGracePeriodSeconds is used if unset.
+    // +optional
+    int64 terminationGracePeriodSeconds = 10;
+}
+
+// HTTPGetAction describes an action based on HTTP Get requests.
+message HTTPGetAction {
+    // Path to access on the HTTP server.
+    // +optional
+    string path = 1;
+
+    // Name or number of the port to access on the container.
+    // Number must be in the range 1 to 65535.
+    // Name must be an IANA_SVC_NAME.
+    IntOrString port = 2 [(options.intorstring) = "true"];
+
+    // Host name to connect to, defaults to the pod IP. You probably want to set
+    // "Host" in httpHeaders instead.
+    // +optional
+    string host = 3;
+
+    // Scheme to use for connecting to the host.
+    // Defaults to HTTP.
+    // +optional
+    string scheme = 4;
+
+    // Custom headers to set in the request. HTTP allows repeated headers.
+    // +optional
+    repeated k8s.io.api.core.v1.HTTPHeader httpHeaders = 5;
+}
+
+// TCPSocketAction describes an action based on opening a socket
+message TCPSocketAction {
+    // Number or name of the port to access on the container.
+    // Number must be in the range 1 to 65535.
+    // Name must be an IANA_SVC_NAME.
+    IntOrString port = 1 [(options.intorstring) = "true"];
+
+    // Optional: Host name to connect to, defaults to the pod IP.
+    // +optional
+    string host = 2;
 }
 
 // Service describes the attributes that a user creates on a service.
