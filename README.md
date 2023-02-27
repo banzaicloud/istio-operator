@@ -82,12 +82,12 @@ istio-operator-controller-manager-6f764787c-rbnht   2/2     Running   0         
 Deploy the [Istio control plane sample](config/samples/servicemesh_v1alpha1_istiocontrolplane.yaml) to the `istio-system` namespace
 ```
 $ kubectl -n istio-system apply -f config/samples/servicemesh_v1alpha1_istiocontrolplane.yaml
-istiocontrolplane.servicemesh.cisco.com/icp-v116x-sample created
+istiocontrolplane.servicemesh.cisco.com/icp-v117x-sample created
 ```
 
 Label the namespace, where you would like to enable sidecar injection for your pods. The label should consist of the name of the deployed IstioControlPlane and the namespace where it is deployed.
 ```
-$ kubectl label namespace demoapp istio.io/rev=icp-v116x-sample.istio-system
+$ kubectl label namespace demoapp istio.io/rev=icp-v117x-sample.istio-system
 namespace/demoapp labeled
 ```
 

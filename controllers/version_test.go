@@ -25,20 +25,20 @@ import (
 
 var _ = Describe("IsIstioVersionSupported()", func() {
 	It("should deny unsupported versions", func() {
-		for _, version := range []string{"2.11", "2.11.1", "2.11.1-dev", "1.11", "1.11.1", "1.11.1-dev"} {
+		for _, version := range []string{"2.15", "2.15.3", "2.15.3-dev", "1.15", "1.15.3", "1.15.3-dev"} {
 			Expect(controllers.IsIstioVersionSupported(version)).To(BeFalse(), "invalid: "+version)
 		}
 	})
-	It("should accept all 1.16 versions", func() {
-		Expect(controllers.IsIstioVersionSupported("1.16")).To(BeTrue())
+	It("should accept all 1.17 versions", func() {
+		Expect(controllers.IsIstioVersionSupported("1.17")).To(BeTrue())
 	})
-	It("should accept all 1.16 versions with qualifier", func() {
-		Expect(controllers.IsIstioVersionSupported("1.16-dev")).To(BeTrue())
+	It("should accept all 1.17 versions with qualifier", func() {
+		Expect(controllers.IsIstioVersionSupported("1.17-dev")).To(BeTrue())
 	})
 	It("should accept micro versions", func() {
-		Expect(controllers.IsIstioVersionSupported("1.16.1")).To(BeTrue())
+		Expect(controllers.IsIstioVersionSupported("1.17.1")).To(BeTrue())
 	})
 	It("should accept micro versions with qualifier", func() {
-		Expect(controllers.IsIstioVersionSupported("1.16.1-dev")).To(BeTrue())
+		Expect(controllers.IsIstioVersionSupported("1.17.1-dev")).To(BeTrue())
 	})
 })

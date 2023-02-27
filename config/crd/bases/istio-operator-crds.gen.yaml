@@ -6,7 +6,7 @@ metadata:
     "helm.sh/resource-policy": keep
   name: istiocontrolplanes.servicemesh.cisco.com
   labels:
-    resource.alpha.banzaicloud.io/revision: 1.16.1
+    resource.alpha.banzaicloud.io/revision: 1.17.1
 spec:
   group: servicemesh.cisco.com
   names:
@@ -1964,18 +1964,25 @@ spec:
                           type: string
                         meshId:
                           type: string
-                        parentShutdownDuration:
-                          type: string
                         privateKeyProvider:
                           oneOf:
                             - not:
                                 anyOf:
                                   - required:
                                       - cryptomb
+                                  - required:
+                                      - qat
                             - required:
                                 - cryptomb
+                            - required:
+                                - qat
                           properties:
                             cryptomb:
+                              properties:
+                                pollDelay:
+                                  type: string
+                              type: object
+                            qat:
                               properties:
                                 pollDelay:
                                   type: string
@@ -2342,7 +2349,9 @@ spec:
                                     - envoyExtAuthzGrpc
                                 - required:
                                     - zipkin
-                                - required:
+                                - properties:
+                                    lightstep: {}
+                                  required:
                                     - lightstep
                                 - required:
                                     - datadog
@@ -2371,7 +2380,9 @@ spec:
                               - envoyExtAuthzGrpc
                           - required:
                               - zipkin
-                          - required:
+                          - properties:
+                              lightstep: {}
+                            required:
                               - lightstep
                           - required:
                               - datadog
@@ -2402,7 +2413,9 @@ spec:
                                     - envoyExtAuthzGrpc
                                 - required:
                                     - zipkin
-                                - required:
+                                - properties:
+                                    lightstep: {}
+                                  required:
                                     - lightstep
                                 - required:
                                     - datadog
@@ -2778,13 +2791,6 @@ spec:
                         probes:
                           type: integer
                         time:
-                          type: string
-                      type: object
-                    thriftConfig:
-                      properties:
-                        rateLimitTimeout:
-                          type: string
-                        rateLimitUrl:
                           type: string
                       type: object
                     trustDomain:
@@ -8291,18 +8297,25 @@ spec:
                           type: string
                         meshId:
                           type: string
-                        parentShutdownDuration:
-                          type: string
                         privateKeyProvider:
                           oneOf:
                             - not:
                                 anyOf:
                                   - required:
                                       - cryptomb
+                                  - required:
+                                      - qat
                             - required:
                                 - cryptomb
+                            - required:
+                                - qat
                           properties:
                             cryptomb:
+                              properties:
+                                pollDelay:
+                                  type: string
+                              type: object
+                            qat:
                               properties:
                                 pollDelay:
                                   type: string
@@ -8669,7 +8682,9 @@ spec:
                                     - envoyExtAuthzGrpc
                                 - required:
                                     - zipkin
-                                - required:
+                                - properties:
+                                    lightstep: {}
+                                  required:
                                     - lightstep
                                 - required:
                                     - datadog
@@ -8698,7 +8713,9 @@ spec:
                               - envoyExtAuthzGrpc
                           - required:
                               - zipkin
-                          - required:
+                          - properties:
+                              lightstep: {}
+                            required:
                               - lightstep
                           - required:
                               - datadog
@@ -8729,7 +8746,9 @@ spec:
                                     - envoyExtAuthzGrpc
                                 - required:
                                     - zipkin
-                                - required:
+                                - properties:
+                                    lightstep: {}
+                                  required:
                                     - lightstep
                                 - required:
                                     - datadog
@@ -9107,13 +9126,6 @@ spec:
                         time:
                           type: string
                       type: object
-                    thriftConfig:
-                      properties:
-                        rateLimitTimeout:
-                          type: string
-                        rateLimitUrl:
-                          type: string
-                      type: object
                     trustDomain:
                       type: string
                     trustDomainAliases:
@@ -9147,7 +9159,7 @@ metadata:
     "helm.sh/resource-policy": keep
   name: peeristiocontrolplanes.servicemesh.cisco.com
   labels:
-    resource.alpha.banzaicloud.io/revision: 1.16.1
+    resource.alpha.banzaicloud.io/revision: 1.17.1
 spec:
   group: servicemesh.cisco.com
   names:
@@ -11102,18 +11114,25 @@ spec:
                           type: string
                         meshId:
                           type: string
-                        parentShutdownDuration:
-                          type: string
                         privateKeyProvider:
                           oneOf:
                             - not:
                                 anyOf:
                                   - required:
                                       - cryptomb
+                                  - required:
+                                      - qat
                             - required:
                                 - cryptomb
+                            - required:
+                                - qat
                           properties:
                             cryptomb:
+                              properties:
+                                pollDelay:
+                                  type: string
+                              type: object
+                            qat:
                               properties:
                                 pollDelay:
                                   type: string
@@ -11480,7 +11499,9 @@ spec:
                                     - envoyExtAuthzGrpc
                                 - required:
                                     - zipkin
-                                - required:
+                                - properties:
+                                    lightstep: {}
+                                  required:
                                     - lightstep
                                 - required:
                                     - datadog
@@ -11509,7 +11530,9 @@ spec:
                               - envoyExtAuthzGrpc
                           - required:
                               - zipkin
-                          - required:
+                          - properties:
+                              lightstep: {}
+                            required:
                               - lightstep
                           - required:
                               - datadog
@@ -11540,7 +11563,9 @@ spec:
                                     - envoyExtAuthzGrpc
                                 - required:
                                     - zipkin
-                                - required:
+                                - properties:
+                                    lightstep: {}
+                                  required:
                                     - lightstep
                                 - required:
                                     - datadog
@@ -11916,13 +11941,6 @@ spec:
                         probes:
                           type: integer
                         time:
-                          type: string
-                      type: object
-                    thriftConfig:
-                      properties:
-                        rateLimitTimeout:
-                          type: string
-                        rateLimitUrl:
                           type: string
                       type: object
                     trustDomain:
@@ -17429,18 +17447,25 @@ spec:
                           type: string
                         meshId:
                           type: string
-                        parentShutdownDuration:
-                          type: string
                         privateKeyProvider:
                           oneOf:
                             - not:
                                 anyOf:
                                   - required:
                                       - cryptomb
+                                  - required:
+                                      - qat
                             - required:
                                 - cryptomb
+                            - required:
+                                - qat
                           properties:
                             cryptomb:
+                              properties:
+                                pollDelay:
+                                  type: string
+                              type: object
+                            qat:
                               properties:
                                 pollDelay:
                                   type: string
@@ -17807,7 +17832,9 @@ spec:
                                     - envoyExtAuthzGrpc
                                 - required:
                                     - zipkin
-                                - required:
+                                - properties:
+                                    lightstep: {}
+                                  required:
                                     - lightstep
                                 - required:
                                     - datadog
@@ -17836,7 +17863,9 @@ spec:
                               - envoyExtAuthzGrpc
                           - required:
                               - zipkin
-                          - required:
+                          - properties:
+                              lightstep: {}
+                            required:
                               - lightstep
                           - required:
                               - datadog
@@ -17867,7 +17896,9 @@ spec:
                                     - envoyExtAuthzGrpc
                                 - required:
                                     - zipkin
-                                - required:
+                                - properties:
+                                    lightstep: {}
+                                  required:
                                     - lightstep
                                 - required:
                                     - datadog
@@ -18245,13 +18276,6 @@ spec:
                         time:
                           type: string
                       type: object
-                    thriftConfig:
-                      properties:
-                        rateLimitTimeout:
-                          type: string
-                        rateLimitUrl:
-                          type: string
-                      type: object
                     trustDomain:
                       type: string
                     trustDomainAliases:
@@ -18285,7 +18309,7 @@ metadata:
     "helm.sh/resource-policy": keep
   name: istiomeshes.servicemesh.cisco.com
   labels:
-    resource.alpha.banzaicloud.io/revision: 1.16.1
+    resource.alpha.banzaicloud.io/revision: 1.17.1
 spec:
   group: servicemesh.cisco.com
   names:
@@ -18602,18 +18626,25 @@ spec:
                           type: string
                         meshId:
                           type: string
-                        parentShutdownDuration:
-                          type: string
                         privateKeyProvider:
                           oneOf:
                             - not:
                                 anyOf:
                                   - required:
                                       - cryptomb
+                                  - required:
+                                      - qat
                             - required:
                                 - cryptomb
+                            - required:
+                                - qat
                           properties:
                             cryptomb:
+                              properties:
+                                pollDelay:
+                                  type: string
+                              type: object
+                            qat:
                               properties:
                                 pollDelay:
                                   type: string
@@ -18980,7 +19011,9 @@ spec:
                                     - envoyExtAuthzGrpc
                                 - required:
                                     - zipkin
-                                - required:
+                                - properties:
+                                    lightstep: {}
+                                  required:
                                     - lightstep
                                 - required:
                                     - datadog
@@ -19009,7 +19042,9 @@ spec:
                               - envoyExtAuthzGrpc
                           - required:
                               - zipkin
-                          - required:
+                          - properties:
+                              lightstep: {}
+                            required:
                               - lightstep
                           - required:
                               - datadog
@@ -19040,7 +19075,9 @@ spec:
                                     - envoyExtAuthzGrpc
                                 - required:
                                     - zipkin
-                                - required:
+                                - properties:
+                                    lightstep: {}
+                                  required:
                                     - lightstep
                                 - required:
                                     - datadog
@@ -19418,13 +19455,6 @@ spec:
                         time:
                           type: string
                       type: object
-                    thriftConfig:
-                      properties:
-                        rateLimitTimeout:
-                          type: string
-                        rateLimitUrl:
-                          type: string
-                      type: object
                     trustDomain:
                       type: string
                     trustDomainAliases:
@@ -19463,7 +19493,7 @@ metadata:
     "helm.sh/resource-policy": keep
   name: istiomeshgateways.servicemesh.cisco.com
   labels:
-    resource.alpha.banzaicloud.io/revision: 1.16.1
+    resource.alpha.banzaicloud.io/revision: 1.17.1
 spec:
   group: servicemesh.cisco.com
   names:

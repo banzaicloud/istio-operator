@@ -11,7 +11,7 @@ status: {}
 apiVersion: v1
 kind: ResourceQuota
 metadata:
-  name: istio-cni-cp-v116x
+  name: istio-cni-cp-v117x
   namespace: istio-system
 spec:
   hard:
@@ -39,32 +39,32 @@ data:
           "cni_bin_dir": "/home/kubernetes/bin",
           "exclude_namespaces": [ "smm-system" ],
           "include_namespaces": [ "smm-system" ],
-          "revision": "cp-v116x.istio-system"
+          "revision": "cp-v117x.istio-system"
       }
     }
 kind: ConfigMap
 metadata:
   labels:
     app: istio-cni
-    istio.io/rev: cp-v116x.istio-system
+    istio.io/rev: cp-v117x.istio-system
     release: istio-cni
-  name: istio-cni-cp-v116x
+  name: istio-cni-cp-v117x
   namespace: istio-system
 
 ---
 apiVersion: v1
 data:
   config: |-
-    - name: istio-cni-cp-v116x
-      selector: app=istio-cni-node,istio.io/rev=cp-v116x.istio-system
+    - name: istio-cni-cp-v117x
+      selector: app=istio-cni-node,istio.io/rev=cp-v117x.istio-system
       namespace: istio-system
 kind: ConfigMap
 metadata:
   labels:
     app: istio-cni
-    istio.io/rev: cp-v116x.istio-system
+    istio.io/rev: cp-v117x.istio-system
     release: istio-cni
-  name: istio-cni-taint-cp-v116x
+  name: istio-cni-taint-cp-v117x
   namespace: istio-system
 
 ---
@@ -76,9 +76,9 @@ kind: ServiceAccount
 metadata:
   labels:
     app: istio-cni
-    istio.io/rev: cp-v116x.istio-system
+    istio.io/rev: cp-v117x.istio-system
     release: istio-cni
-  name: istio-cni-cp-v116x
+  name: istio-cni-cp-v117x
   namespace: istio-system
 
 ---
@@ -87,9 +87,9 @@ kind: ClusterRole
 metadata:
   labels:
     app: istio-cni
-    istio.io/rev: cp-v116x.istio-system
+    istio.io/rev: cp-v117x.istio-system
     release: istio-cni
-  name: istio-cni-cp-v116x-istio-system
+  name: istio-cni-cp-v117x-istio-system
 rules:
 - apiGroups:
   - ""
@@ -106,9 +106,9 @@ kind: ClusterRole
 metadata:
   labels:
     app: istio-cni
-    istio.io/rev: cp-v116x.istio-system
+    istio.io/rev: cp-v117x.istio-system
     release: istio-cni
-  name: istio-cni-repair-cp-v116x-istio-system
+  name: istio-cni-repair-cp-v117x-istio-system
 rules:
 - apiGroups:
   - ""
@@ -140,9 +140,9 @@ kind: ClusterRole
 metadata:
   labels:
     app: istio-cni
-    istio.io/rev: cp-v116x.istio-system
+    istio.io/rev: cp-v117x.istio-system
     release: istio-cni
-  name: istio-cni-taint-cp-v116x-istio-system
+  name: istio-cni-taint-cp-v117x-istio-system
 rules:
 - apiGroups:
   - ""
@@ -186,16 +186,16 @@ kind: ClusterRoleBinding
 metadata:
   labels:
     app: istio-cni
-    istio.io/rev: cp-v116x.istio-system
+    istio.io/rev: cp-v117x.istio-system
     release: istio-cni
-  name: istio-cni-cp-v116x-istio-system
+  name: istio-cni-cp-v117x-istio-system
 roleRef:
   apiGroup: rbac.authorization.k8s.io
   kind: ClusterRole
-  name: istio-cni-cp-v116x-istio-system
+  name: istio-cni-cp-v117x-istio-system
 subjects:
 - kind: ServiceAccount
-  name: istio-cni-cp-v116x
+  name: istio-cni-cp-v117x
   namespace: istio-system
 
 ---
@@ -204,16 +204,16 @@ kind: ClusterRoleBinding
 metadata:
   labels:
     app: istio-cni
-    istio.io/rev: cp-v116x.istio-system
+    istio.io/rev: cp-v117x.istio-system
     release: istio-cni
-  name: istio-cni-repair-cp-v116x-istio-system
+  name: istio-cni-repair-cp-v117x-istio-system
 roleRef:
   apiGroup: rbac.authorization.k8s.io
   kind: ClusterRole
-  name: istio-cni-repair-cp-v116x-istio-system
+  name: istio-cni-repair-cp-v117x-istio-system
 subjects:
 - kind: ServiceAccount
-  name: istio-cni-cp-v116x
+  name: istio-cni-cp-v117x
   namespace: istio-system
 
 ---
@@ -221,16 +221,16 @@ apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRoleBinding
 metadata:
   labels:
-    istio.io/rev: cp-v116x.istio-system
+    istio.io/rev: cp-v117x.istio-system
     k8s-app: istio-cni-taint
-  name: istio-cni-taint-cp-v116x-istio-system
+  name: istio-cni-taint-cp-v117x-istio-system
 roleRef:
   apiGroup: rbac.authorization.k8s.io
   kind: ClusterRole
-  name: istio-cni-taint-cp-v116x-istio-system
+  name: istio-cni-taint-cp-v117x-istio-system
 subjects:
 - kind: ServiceAccount
-  name: istio-cni-cp-v116x
+  name: istio-cni-cp-v117x
   namespace: istio-system
 
 ---
@@ -239,7 +239,7 @@ kind: RoleBinding
 metadata:
   labels:
     app: istio-cni
-    istio.io/rev: cp-v116x.istio-system
+    istio.io/rev: cp-v117x.istio-system
     release: istio-cni
   name: istio-cni-psp
   namespace: istio-system
@@ -249,7 +249,7 @@ roleRef:
   name: istio-cni-psp
 subjects:
 - kind: ServiceAccount
-  name: istio-cni-cp-v116x
+  name: istio-cni-cp-v117x
   namespace: istio-system
 
 ---
@@ -261,9 +261,9 @@ metadata:
   labels:
     app: istio-cni-node
     daemonset-label: value
-    istio.io/rev: cp-v116x.istio-system
+    istio.io/rev: cp-v117x.istio-system
     release: istio-cni
-  name: istio-cni-node-cp-v116x
+  name: istio-cni-node-cp-v117x
   namespace: istio-system
 spec:
   selector:
@@ -315,7 +315,7 @@ spec:
           valueFrom:
             configMapKeyRef:
               key: cni_network_config
-              name: istio-cni-cp-v116x
+              name: istio-cni-cp-v117x
         - name: CNI_NET_DIR
           value: /etc/cni/conf.d
         - name: CHAINED_CNI_PLUGIN
@@ -404,7 +404,7 @@ spec:
         disktype: ssd
         kubernetes.io/os: linux
       priorityClassName: system-node-critical
-      serviceAccountName: istio-cni-cp-v116x
+      serviceAccountName: istio-cni-cp-v117x
       terminationGracePeriodSeconds: 5
       tolerations:
       - effect: NoSchedule

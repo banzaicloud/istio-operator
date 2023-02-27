@@ -11,5 +11,5 @@ icon: https://istio.io/latest/img/istio-whitelogo-bluebackground-framed.svg
 # Based on support status of Istio releases: https://istio.io/latest/docs/releases/supported-releases/#support-status-of-istio-releases
 kubeVersion: ">= 1.22.0-0 < 1.26.0-0"
 
-version: 2.1.1
-appVersion: "v2.16.1"
+version: 2.1.2
+appVersion: "v2.17.0"

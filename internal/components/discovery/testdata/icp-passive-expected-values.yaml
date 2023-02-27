@@ -9,7 +9,7 @@ global:
 meshConfig:
   connectTimeout: 5s
   rootNamespace: istio-system
-revision: cp-v116x
+revision: cp-v117x
 sidecarInjectorWebhook:
   defaultTemplates:
     - sidecar
