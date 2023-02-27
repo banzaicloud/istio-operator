@@ -485,61 +485,67 @@ spec:
                             type: object
                           type: array
                         livenessProbe:
+                          oneOf:
+                            - not:
+                                anyOf:
+                                  - required:
+                                      - exec
+                                  - required:
+                                      - httpGet
+                                  - required:
+                                      - tcpSocket
+                                  - required:
+                                      - grpc
+                            - required:
+                                - exec
+                            - required:
+                                - httpGet
+                            - required:
+                                - tcpSocket
+                            - required:
+                                - grpc
                           properties:
+                            exec:
+                              properties:
+                                command:
+                                  items:
+                                    type: string
+                                  type: array
+                              type: object
                             failureThreshold:
                               format: int32
                               type: integer
-                            handler:
+                            grpc:
                               properties:
-                                exec:
-                                  properties:
-                                    command:
-                                      items:
+                                port:
+                                  format: int32
+                                  type: integer
+                                service:
+                                  default: ""
+                                  type: string
+                              type: object
+                            httpGet:
+                              properties:
+                                host:
+                                  type: string
+                                httpHeaders:
+                                  items:
+                                    properties:
+                                      name:
                                         type: string
-                                      type: array
-                                  type: object
-                                grpc:
-                                  properties:
-                                    port:
-                                      format: int32
-                                      type: integer
-                                    service:
-                                      default: ""
-                                      type: string
-                                  type: object
-                                httpGet:
-                                  properties:
-                                    host:
-                                      type: string
-                                    httpHeaders:
-                                      items:
-                                        properties:
-                                          name:
-                                            type: string
-                                          value:
-                                            type: string
-                                        type: object
-                                      type: array
-                                    path:
-                                      type: string
-                                    port:
-                                      anyOf:
-                                        - type: integer
-                                        - type: string
-                                      x-kubernetes-int-or-string: true
-                                    scheme:
-                                      type: string
-                                  type: object
-                                tcpSocket:
-                                  properties:
-                                    host:
-                                      type: string
-                                    port:
-                                      anyOf:
-                                        - type: integer
-                                        - type: string
-                                      x-kubernetes-int-or-string: true
-                                  type: object
+                                      value:
+                                        type: string
+                                    type: object
+                                  type: array
+                                path:
+                                  type: string
+                                port:
+                                  anyOf:
+                                    - type: integer
+                                    - type: string
+                                  x-kubernetes-int-or-string: true
+                                scheme:
+                                  type: string
                               type: object
                             initialDelaySeconds:
                               format: int32
@@ -550,6 +556,16 @@ spec:
                             successThreshold:
                               format: int32
                               type: integer
+                            tcpSocket:
+                              properties:
+                                host:
+                                  type: string
+                                port:
+                                  anyOf:
+                                    - type: integer
+                                    - type: string
+                                  x-kubernetes-int-or-string: true
+                              type: object
                             terminationGracePeriodSeconds:
                               format: int64
                               type: integer
@@ -658,61 +674,67 @@ spec:
                         priorityClassName:
                           type: string
                         readinessProbe:
+                          oneOf:
+                            - not:
+                                anyOf:
+                                  - required:
+                                      - exec
+                                  - required:
+                                      - httpGet
+                                  - required:
+                                      - tcpSocket
+                                  - required:
+                                      - grpc
+                            - required:
+                                - exec
+                            - required:
+                                - httpGet
+                            - required:
+                                - tcpSocket
+                            - required:
+                                - grpc
                           properties:
+                            exec:
+                              properties:
+                                command:
+                                  items:
+                                    type: string
+                                  type: array
+                              type: object
                             failureThreshold:
                               format: int32
                               type: integer
-                            handler:
+                            grpc:
                               properties:
-                                exec:
-                                  properties:
-                                    command:
-                                      items:
+                                port:
+                                  format: int32
+                                  type: integer
+                                service:
+                                  default: ""
+                                  type: string
+                              type: object
+                            httpGet:
+                              properties:
+                                host:
+                                  type: string
+                                httpHeaders:
+                                  items:
+                                    properties:
+                                      name:
                                         type: string
-                                      type: array
-                                  type: object
-                                grpc:
-                                  properties:
-                                    port:
-                                      format: int32
-                                      type: integer
-                                    service:
-                                      default: ""
-                                      type: string
-                                  type: object
-                                httpGet:
-                                  properties:
-                                    host:
-                                      type: string
-                                    httpHeaders:
-                                      items:
-                                        properties:
-                                          name:
-                                            type: string
-                                          value:
-                                            type: string
-                                        type: object
-                                      type: array
-                                    path:
-                                      type: string
-                                    port:
-                                      anyOf:
-                                        - type: integer
-                                        - type: string
-                                      x-kubernetes-int-or-string: true
-                                    scheme:
-                                      type: string
-                                  type: object
-                                tcpSocket:
-                                  properties:
-                                    host:
-                                      type: string
-                                    port:
-                                      anyOf:
-                                        - type: integer
-                                        - type: string
-                                      x-kubernetes-int-or-string: true
-                                  type: object
+                                      value:
+                                        type: string
+                                    type: object
+                                  type: array
+                                path:
+                                  type: string
+                                port:
+                                  anyOf:
+                                    - type: integer
+                                    - type: string
+                                  x-kubernetes-int-or-string: true
+                                scheme:
+                                  type: string
                               type: object
                             initialDelaySeconds:
                               format: int32
@@ -723,6 +745,16 @@ spec:
                             successThreshold:
                               format: int32
                               type: integer
+                            tcpSocket:
+                              properties:
+                                host:
+                                  type: string
+                                port:
+                                  anyOf:
+                                    - type: integer
+                                    - type: string
+                                  x-kubernetes-int-or-string: true
+                              type: object
                             terminationGracePeriodSeconds:
                               format: int64
                               type: integer
@@ -3203,61 +3235,67 @@ spec:
                                 type: object
                               type: array
                             livenessProbe:
+                              oneOf:
+                                - not:
+                                    anyOf:
+                                      - required:
+                                          - exec
+                                      - required:
+                                          - httpGet
+                                      - required:
+                                          - tcpSocket
+                                      - required:
+                                          - grpc
+                                - required:
+                                    - exec
+                                - required:
+                                    - httpGet
+                                - required:
+                                    - tcpSocket
+                                - required:
+                                    - grpc
                               properties:
+                                exec:
+                                  properties:
+                                    command:
+                                      items:
+                                        type: string
+                                      type: array
+                                  type: object
                                 failureThreshold:
                                   format: int32
                                   type: integer
-                                handler:
+                                grpc:
                                   properties:
-                                    exec:
-                                      properties:
-                                        command:
-                                          items:
+                                    port:
+                                      format: int32
+                                      type: integer
+                                    service:
+                                      default: ""
+                                      type: string
+                                  type: object
+                                httpGet:
+                                  properties:
+                                    host:
+                                      type: string
+                                    httpHeaders:
+                                      items:
+                                        properties:
+                                          name:
                                             type: string
-                                          type: array
-                                      type: object
-                                    grpc:
-                                      properties:
-                                        port:
-                                          format: int32
-                                          type: integer
-                                        service:
-                                          default: ""
-                                          type: string
-                                      type: object
-                                    httpGet:
-                                      properties:
-                                        host:
-                                          type: string
-                                        httpHeaders:
-                                          items:
-                                            properties:
-                                              name:
-                                                type: string
-                                              value:
-                                                type: string
-                                            type: object
-                                          type: array
-                                        path:
-                                          type: string
-                                        port:
-                                          anyOf:
-                                            - type: integer
-                                            - type: string
-                                          x-kubernetes-int-or-string: true
-                                        scheme:
-                                          type: string
-                                      type: object
-                                    tcpSocket:
-                                      properties:
-                                        host:
-                                          type: string
-                                        port:
-                                          anyOf:
-                                            - type: integer
-                                            - type: string
-                                          x-kubernetes-int-or-string: true
-                                      type: object
+                                          value:
+                                            type: string
+                                        type: object
+                                      type: array
+                                    path:
+                                      type: string
+                                    port:
+                                      anyOf:
+                                        - type: integer
+                                        - type: string
+                                      x-kubernetes-int-or-string: true
+                                    scheme:
+                                      type: string
                                   type: object
                                 initialDelaySeconds:
                                   format: int32
@@ -3268,6 +3306,16 @@ spec:
                                 successThreshold:
                                   format: int32
                                   type: integer
+                                tcpSocket:
+                                  properties:
+                                    host:
+                                      type: string
+                                    port:
+                                      anyOf:
+                                        - type: integer
+                                        - type: string
+                                      x-kubernetes-int-or-string: true
+                                  type: object
                                 terminationGracePeriodSeconds:
                                   format: int64
                                   type: integer
@@ -3376,61 +3424,67 @@ spec:
                             priorityClassName:
                               type: string
                             readinessProbe:
+                              oneOf:
+                                - not:
+                                    anyOf:
+                                      - required:
+                                          - exec
+                                      - required:
+                                          - httpGet
+                                      - required:
+                                          - tcpSocket
+                                      - required:
+                                          - grpc
+                                - required:
+                                    - exec
+                                - required:
+                                    - httpGet
+                                - required:
+                                    - tcpSocket
+                                - required:
+                                    - grpc
                               properties:
+                                exec:
+                                  properties:
+                                    command:
+                                      items:
+                                        type: string
+                                      type: array
+                                  type: object
                                 failureThreshold:
                                   format: int32
                                   type: integer
-                                handler:
+                                grpc:
                                   properties:
-                                    exec:
-                                      properties:
-                                        command:
-                                          items:
+                                    port:
+                                      format: int32
+                                      type: integer
+                                    service:
+                                      default: ""
+                                      type: string
+                                  type: object
+                                httpGet:
+                                  properties:
+                                    host:
+                                      type: string
+                                    httpHeaders:
+                                      items:
+                                        properties:
+                                          name:
                                             type: string
-                                          type: array
-                                      type: object
-                                    grpc:
-                                      properties:
-                                        port:
-                                          format: int32
-                                          type: integer
-                                        service:
-                                          default: ""
-                                          type: string
-                                      type: object
-                                    httpGet:
-                                      properties:
-                                        host:
-                                          type: string
-                                        httpHeaders:
-                                          items:
-                                            properties:
-                                              name:
-                                                type: string
-                                              value:
-                                                type: string
-                                            type: object
-                                          type: array
-                                        path:
-                                          type: string
-                                        port:
-                                          anyOf:
-                                            - type: integer
-                                            - type: string
-                                          x-kubernetes-int-or-string: true
-                                        scheme:
-                                          type: string
-                                      type: object
-                                    tcpSocket:
-                                      properties:
-                                        host:
-                                          type: string
-                                        port:
-                                          anyOf:
-                                            - type: integer
-                                            - type: string
-                                          x-kubernetes-int-or-string: true
-                                      type: object
+                                          value:
+                                            type: string
+                                        type: object
+                                      type: array
+                                    path:
+                                      type: string
+                                    port:
+                                      anyOf:
+                                        - type: integer
+                                        - type: string
+                                      x-kubernetes-int-or-string: true
+                                    scheme:
+                                      type: string
                                   type: object
                                 initialDelaySeconds:
                                   format: int32
@@ -3441,6 +3495,16 @@ spec:
                                 successThreshold:
                                   format: int32
                                   type: integer
+                                tcpSocket:
+                                  properties:
+                                    host:
+                                      type: string
+                                    port:
+                                      anyOf:
+                                        - type: integer
+                                        - type: string
+                                      x-kubernetes-int-or-string: true
+                                  type: object
                                 terminationGracePeriodSeconds:
                                   format: int64
                                   type: integer
@@ -5015,61 +5079,67 @@ spec:
                                 type: object
                               type: array
                             livenessProbe:
+                              oneOf:
+                                - not:
+                                    anyOf:
+                                      - required:
+                                          - exec
+                                      - required:
+                                          - httpGet
+                                      - required:
+                                          - tcpSocket
+                                      - required:
+                                          - grpc
+                                - required:
+                                    - exec
+                                - required:
+                                    - httpGet
+                                - required:
+                                    - tcpSocket
+                                - required:
+                                    - grpc
                               properties:
+                                exec:
+                                  properties:
+                                    command:
+                                      items:
+                                        type: string
+                                      type: array
+                                  type: object
                                 failureThreshold:
                                   format: int32
                                   type: integer
-                                handler:
+                                grpc:
                                   properties:
-                                    exec:
-                                      properties:
-                                        command:
-                                          items:
+                                    port:
+                                      format: int32
+                                      type: integer
+                                    service:
+                                      default: ""
+                                      type: string
+                                  type: object
+                                httpGet:
+                                  properties:
+                                    host:
+                                      type: string
+                                    httpHeaders:
+                                      items:
+                                        properties:
+                                          name:
                                             type: string
-                                          type: array
-                                      type: object
-                                    grpc:
-                                      properties:
-                                        port:
-                                          format: int32
-                                          type: integer
-                                        service:
-                                          default: ""
-                                          type: string
-                                      type: object
-                                    httpGet:
-                                      properties:
-                                        host:
-                                          type: string
-                                        httpHeaders:
-                                          items:
-                                            properties:
-                                              name:
-                                                type: string
-                                              value:
-                                                type: string
-                                            type: object
-                                          type: array
-                                        path:
-                                          type: string
-                                        port:
-                                          anyOf:
-                                            - type: integer
-                                            - type: string
-                                          x-kubernetes-int-or-string: true
-                                        scheme:
-                                          type: string
-                                      type: object
-                                    tcpSocket:
-                                      properties:
-                                        host:
-                                          type: string
-                                        port:
-                                          anyOf:
-                                            - type: integer
-                                            - type: string
-                                          x-kubernetes-int-or-string: true
-                                      type: object
+                                          value:
+                                            type: string
+                                        type: object
+                                      type: array
+                                    path:
+                                      type: string
+                                    port:
+                                      anyOf:
+                                        - type: integer
+                                        - type: string
+                                      x-kubernetes-int-or-string: true
+                                    scheme:
+                                      type: string
                                   type: object
                                 initialDelaySeconds:
                                   format: int32
@@ -5080,6 +5150,16 @@ spec:
                                 successThreshold:
                                   format: int32
                                   type: integer
+                                tcpSocket:
+                                  properties:
+                                    host:
+                                      type: string
+                                    port:
+                                      anyOf:
+                                        - type: integer
+                                        - type: string
+                                      x-kubernetes-int-or-string: true
+                                  type: object
                                 terminationGracePeriodSeconds:
                                   format: int64
                                   type: integer
@@ -5188,61 +5268,67 @@ spec:
                             priorityClassName:
                               type: string
                             readinessProbe:
+                              oneOf:
+                                - not:
+                                    anyOf:
+                                      - required:
+                                          - exec
+                                      - required:
+                                          - httpGet
+                                      - required:
+                                          - tcpSocket
+                                      - required:
+                                          - grpc
+                                - required:
+                                    - exec
+                                - required:
+                                    - httpGet
+                                - required:
+                                    - tcpSocket
+                                - required:
+                                    - grpc
                               properties:
+                                exec:
+                                  properties:
+                                    command:
+                                      items:
+                                        type: string
+                                      type: array
+                                  type: object
                                 failureThreshold:
                                   format: int32
                                   type: integer
-                                handler:
+                                grpc:
                                   properties:
-                                    exec:
-                                      properties:
-                                        command:
-                                          items:
+                                    port:
+                                      format: int32
+                                      type: integer
+                                    service:
+                                      default: ""
+                                      type: string
+                                  type: object
+                                httpGet:
+                                  properties:
+                                    host:
+                                      type: string
+                                    httpHeaders:
+                                      items:
+                                        properties:
+                                          name:
                                             type: string
-                                          type: array
-                                      type: object
-                                    grpc:
-                                      properties:
-                                        port:
-                                          format: int32
-                                          type: integer
-                                        service:
-                                          default: ""
-                                          type: string
-                                      type: object
-                                    httpGet:
-                                      properties:
-                                        host:
-                                          type: string
-                                        httpHeaders:
-                                          items:
-                                            properties:
-                                              name:
-                                                type: string
-                                              value:
-                                                type: string
-                                            type: object
-                                          type: array
-                                        path:
-                                          type: string
-                                        port:
-                                          anyOf:
-                                            - type: integer
-                                            - type: string
-                                          x-kubernetes-int-or-string: true
-                                        scheme:
-                                          type: string
-                                      type: object
-                                    tcpSocket:
-                                      properties:
-                                        host:
-                                          type: string
-                                        port:
-                                          anyOf:
-                                            - type: integer
-                                            - type: string
-                                          x-kubernetes-int-or-string: true
-                                      type: object
+                                          value:
+                                            type: string
+                                        type: object
+                                      type: array
+                                    path:
+                                      type: string
+                                    port:
+                                      anyOf:
+                                        - type: integer
+                                        - type: string
+                                      x-kubernetes-int-or-string: true
+                                    scheme:
+                                      type: string
                                   type: object
                                 initialDelaySeconds:
                                   format: int32
@@ -5253,6 +5339,16 @@ spec:
                                 successThreshold:
                                   format: int32
                                   type: integer
+                                tcpSocket:
+                                  properties:
+                                    host:
+                                      type: string
+                                    port:
+                                      anyOf:
+                                        - type: integer
+                                        - type: string
+                                      x-kubernetes-int-or-string: true
+                                  type: object
                                 terminationGracePeriodSeconds:
                                   format: int64
                                   type: integer
@@ -6746,61 +6842,67 @@ spec:
                             type: object
                           type: array
                         livenessProbe:
+                          oneOf:
+                            - not:
+                                anyOf:
+                                  - required:
+                                      - exec
+                                  - required:
+                                      - httpGet
+                                  - required:
+                                      - tcpSocket
+                                  - required:
+                                      - grpc
+                            - required:
+                                - exec
+                            - required:
+                                - httpGet
+                            - required:
+                                - tcpSocket
+                            - required:
+                                - grpc
                           properties:
+                            exec:
+                              properties:
+                                command:
+                                  items:
+                                    type: string
+                                  type: array
+                              type: object
                             failureThreshold:
                               format: int32
                               type: integer
-                            handler:
+                            grpc:
                               properties:
-                                exec:
-                                  properties:
-                                    command:
-                                      items:
+                                port:
+                                  format: int32
+                                  type: integer
+                                service:
+                                  default: ""
+                                  type: string
+                              type: object
+                            httpGet:
+                              properties:
+                                host:
+                                  type: string
+                                httpHeaders:
+                                  items:
+                                    properties:
+                                      name:
                                         type: string
-                                      type: array
-                                  type: object
-                                grpc:
-                                  properties:
-                                    port:
-                                      format: int32
-                                      type: integer
-                                    service:
-                                      default: ""
-                                      type: string
-                                  type: object
-                                httpGet:
-                                  properties:
-                                    host:
-                                      type: string
-                                    httpHeaders:
-                                      items:
-                                        properties:
-                                          name:
-                                            type: string
-                                          value:
-                                            type: string
-                                        type: object
-                                      type: array
-                                    path:
-                                      type: string
-                                    port:
-                                      anyOf:
-                                        - type: integer
-                                        - type: string
-                                      x-kubernetes-int-or-string: true
-                                    scheme:
-                                      type: string
-                                  type: object
-                                tcpSocket:
-                                  properties:
-                                    host:
-                                      type: string
-                                    port:
-                                      anyOf:
-                                        - type: integer
-                                        - type: string
-                                      x-kubernetes-int-or-string: true
-                                  type: object
+                                      value:
+                                        type: string
+                                    type: object
+                                  type: array
+                                path:
+                                  type: string
+                                port:
+                                  anyOf:
+                                    - type: integer
+                                    - type: string
+                                  x-kubernetes-int-or-string: true
+                                scheme:
+                                  type: string
                               type: object
                             initialDelaySeconds:
                               format: int32
@@ -6811,6 +6913,16 @@ spec:
                             successThreshold:
                               format: int32
                               type: integer
+                            tcpSocket:
+                              properties:
+                                host:
+                                  type: string
+                                port:
+                                  anyOf:
+                                    - type: integer
+                                    - type: string
+                                  x-kubernetes-int-or-string: true
+                              type: object
                             terminationGracePeriodSeconds:
                               format: int64
                               type: integer
@@ -6919,61 +7031,67 @@ spec:
                         priorityClassName:
                           type: string
                         readinessProbe:
+                          oneOf:
+                            - not:
+                                anyOf:
+                                  - required:
+                                      - exec
+                                  - required:
+                                      - httpGet
+                                  - required:
+                                      - tcpSocket
+                                  - required:
+                                      - grpc
+                            - required:
+                                - exec
+                            - required:
+                                - httpGet
+                            - required:
+                                - tcpSocket
+                            - required:
+                                - grpc
                           properties:
+                            exec:
+                              properties:
+                                command:
+                                  items:
+                                    type: string
+                                  type: array
+                              type: object
                             failureThreshold:
                               format: int32
                               type: integer
-                            handler:
+                            grpc:
                               properties:
-                                exec:
-                                  properties:
-                                    command:
-                                      items:
+                                port:
+                                  format: int32
+                                  type: integer
+                                service:
+                                  default: ""
+                                  type: string
+                              type: object
+                            httpGet:
+                              properties:
+                                host:
+                                  type: string
+                                httpHeaders:
+                                  items:
+                                    properties:
+                                      name:
                                         type: string
-                                      type: array
-                                  type: object
-                                grpc:
-                                  properties:
-                                    port:
-                                      format: int32
-                                      type: integer
-                                    service:
-                                      default: ""
-                                      type: string
-                                  type: object
-                                httpGet:
-                                  properties:
-                                    host:
-                                      type: string
-                                    httpHeaders:
-                                      items:
-                                        properties:
-                                          name:
-                                            type: string
-                                          value:
-                                            type: string
-                                        type: object
-                                      type: array
-                                    path:
-                                      type: string
-                                    port:
-                                      anyOf:
-                                        - type: integer
-                                        - type: string
-                                      x-kubernetes-int-or-string: true
-                                    scheme:
-                                      type: string
-                                  type: object
-                                tcpSocket:
-                                  properties:
-                                    host:
-                                      type: string
-                                    port:
-                                      anyOf:
-                                        - type: integer
-                                        - type: string
-                                      x-kubernetes-int-or-string: true
-                                  type: object
+                                      value:
+                                        type: string
+                                    type: object
+                                  type: array
+                                path:
+                                  type: string
+                                port:
+                                  anyOf:
+                                    - type: integer
+                                    - type: string
+                                  x-kubernetes-int-or-string: true
+                                scheme:
+                                  type: string
                               type: object
                             initialDelaySeconds:
                               format: int32
@@ -6984,6 +7102,16 @@ spec:
                             successThreshold:
                               format: int32
                               type: integer
+                            tcpSocket:
+                              properties:
+                                host:
+                                  type: string
+                                port:
+                                  anyOf:
+                                    - type: integer
+                                    - type: string
+                                  x-kubernetes-int-or-string: true
+                              type: object
                             terminationGracePeriodSeconds:
                               format: int64
                               type: integer
@@ -9635,61 +9763,67 @@ spec:
                             type: object
                           type: array
                         livenessProbe:
+                          oneOf:
+                            - not:
+                                anyOf:
+                                  - required:
+                                      - exec
+                                  - required:
+                                      - httpGet
+                                  - required:
+                                      - tcpSocket
+                                  - required:
+                                      - grpc
+                            - required:
+                                - exec
+                            - required:
+                                - httpGet
+                            - required:
+                                - tcpSocket
+                            - required:
+                                - grpc
                           properties:
+                            exec:
+                              properties:
+                                command:
+                                  items:
+                                    type: string
+                                  type: array
+                              type: object
                             failureThreshold:
                               format: int32
                               type: integer
-                            handler:
+                            grpc:
                               properties:
-                                exec:
-                                  properties:
-                                    command:
-                                      items:
+                                port:
+                                  format: int32
+                                  type: integer
+                                service:
+                                  default: ""
+                                  type: string
+                              type: object
+                            httpGet:
+                              properties:
+                                host:
+                                  type: string
+                                httpHeaders:
+                                  items:
+                                    properties:
+                                      name:
                                         type: string
-                                      type: array
-                                  type: object
-                                grpc:
-                                  properties:
-                                    port:
-                                      format: int32
-                                      type: integer
-                                    service:
-                                      default: ""
-                                      type: string
-                                  type: object
-                                httpGet:
-                                  properties:
-                                    host:
-                                      type: string
-                                    httpHeaders:
-                                      items:
-                                        properties:
-                                          name:
-                                            type: string
-                                          value:
-                                            type: string
-                                        type: object
-                                      type: array
-                                    path:
-                                      type: string
-                                    port:
-                                      anyOf:
-                                        - type: integer
-                                        - type: string
-                                      x-kubernetes-int-or-string: true
-                                    scheme:
-                                      type: string
-                                  type: object
-                                tcpSocket:
-                                  properties:
-                                    host:
-                                      type: string
-                                    port:
-                                      anyOf:
-                                        - type: integer
-                                        - type: string
-                                      x-kubernetes-int-or-string: true
-                                  type: object
+                                      value:
+                                        type: string
+                                    type: object
+                                  type: array
+                                path:
+                                  type: string
+                                port:
+                                  anyOf:
+                                    - type: integer
+                                    - type: string
+                                  x-kubernetes-int-or-string: true
+                                scheme:
+                                  type: string
                               type: object
                             initialDelaySeconds:
                               format: int32
@@ -9700,6 +9834,16 @@ spec:
                             successThreshold:
                               format: int32
                               type: integer
+                            tcpSocket:
+                              properties:
+                                host:
+                                  type: string
+                                port:
+                                  anyOf:
+                                    - type: integer
+                                    - type: string
+                                  x-kubernetes-int-or-string: true
+                              type: object
                             terminationGracePeriodSeconds:
                               format: int64
                               type: integer
@@ -9808,61 +9952,67 @@ spec:
                         priorityClassName:
                           type: string
                         readinessProbe:
+                          oneOf:
+                            - not:
+                                anyOf:
+                                  - required:
+                                      - exec
+                                  - required:
+                                      - httpGet
+                                  - required:
+                                      - tcpSocket
+                                  - required:
+                                      - grpc
+                            - required:
+                                - exec
+                            - required:
+                                - httpGet
+                            - required:
+                                - tcpSocket
+                            - required:
+                                - grpc
                           properties:
+                            exec:
+                              properties:
+                                command:
+                                  items:
+                                    type: string
+                                  type: array
+                              type: object
                             failureThreshold:
                               format: int32
                               type: integer
-                            handler:
+                            grpc:
                               properties:
-                                exec:
-                                  properties:
-                                    command:
-                                      items:
+                                port:
+                                  format: int32
+                                  type: integer
+                                service:
+                                  default: ""
+                                  type: string
+                              type: object
+                            httpGet:
+                              properties:
+                                host:
+                                  type: string
+                                httpHeaders:
+                                  items:
+                                    properties:
+                                      name:
                                         type: string
-                                      type: array
-                                  type: object
-                                grpc:
-                                  properties:
-                                    port:
-                                      format: int32
-                                      type: integer
-                                    service:
-                                      default: ""
-                                      type: string
-                                  type: object
-                                httpGet:
-                                  properties:
-                                    host:
-                                      type: string
-                                    httpHeaders:
-                                      items:
-                                        properties:
-                                          name:
-                                            type: string
-                                          value:
-                                            type: string
-                                        type: object
-                                      type: array
-                                    path:
-                                      type: string
-                                    port:
-                                      anyOf:
-                                        - type: integer
-                                        - type: string
-                                      x-kubernetes-int-or-string: true
-                                    scheme:
-                                      type: string
-                                  type: object
-                                tcpSocket:
-                                  properties:
-                                    host:
-                                      type: string
-                                    port:
-                                      anyOf:
-                                        - type: integer
-                                        - type: string
-                                      x-kubernetes-int-or-string: true
-                                  type: object
+                                      value:
+                                        type: string
+                                    type: object
+                                  type: array
+                                path:
+                                  type: string
+                                port:
+                                  anyOf:
+                                    - type: integer
+                                    - type: string
+                                  x-kubernetes-int-or-string: true
+                                scheme:
+                                  type: string
                               type: object
                             initialDelaySeconds:
                               format: int32
@@ -9873,6 +10023,16 @@ spec:
                             successThreshold:
                               format: int32
                               type: integer
+                            tcpSocket:
+                              properties:
+                                host:
+                                  type: string
+                                port:
+                                  anyOf:
+                                    - type: integer
+                                    - type: string
+                                  x-kubernetes-int-or-string: true
+                              type: object
                             terminationGracePeriodSeconds:
                               format: int64
                               type: integer
@@ -12353,61 +12513,67 @@ spec:
                                 type: object
                               type: array
                             livenessProbe:
+                              oneOf:
+                                - not:
+                                    anyOf:
+                                      - required:
+                                          - exec
+                                      - required:
+                                          - httpGet
+                                      - required:
+                                          - tcpSocket
+                                      - required:
+                                          - grpc
+                                - required:
+                                    - exec
+                                - required:
+                                    - httpGet
+                                - required:
+                                    - tcpSocket
+                                - required:
+                                    - grpc
                               properties:
+                                exec:
+                                  properties:
+                                    command:
+                                      items:
+                                        type: string
+                                      type: array
+                                  type: object
                                 failureThreshold:
                                   format: int32
                                   type: integer
-                                handler:
+                                grpc:
                                   properties:
-                                    exec:
-                                      properties:
-                                        command:
-                                          items:
+                                    port:
+                                      format: int32
+                                      type: integer
+                                    service:
+                                      default: ""
+                                      type: string
+                                  type: object
+                                httpGet:
+                                  properties:
+                                    host:
+                                      type: string
+                                    httpHeaders:
+                                      items:
+                                        properties:
+                                          name:
                                             type: string
-                                          type: array
-                                      type: object
-                                    grpc:
-                                      properties:
-                                        port:
-                                          format: int32
-                                          type: integer
-                                        service:
-                                          default: ""
-                                          type: string
-                                      type: object
-                                    httpGet:
-                                      properties:
-                                        host:
-                                          type: string
-                                        httpHeaders:
-                                          items:
-                                            properties:
-                                              name:
-                                                type: string
-                                              value:
-                                                type: string
-                                            type: object
-                                          type: array
-                                        path:
-                                          type: string
-                                        port:
-                                          anyOf:
-                                            - type: integer
-                                            - type: string
-                                          x-kubernetes-int-or-string: true
-                                        scheme:
-                                          type: string
-                                      type: object
-                                    tcpSocket:
-                                      properties:
-                                        host:
-                                          type: string
-                                        port:
-                                          anyOf:
-                                            - type: integer
-                                            - type: string
-                                          x-kubernetes-int-or-string: true
-                                      type: object
+                                          value:
+                                            type: string
+                                        type: object
+                                      type: array
+                                    path:
+                                      type: string
+                                    port:
+                                      anyOf:
+                                        - type: integer
+                                        - type: string
+                                      x-kubernetes-int-or-string: true
+                                    scheme:
+                                      type: string
                                   type: object
                                 initialDelaySeconds:
                                   format: int32
@@ -12418,6 +12584,16 @@ spec:
                                 successThreshold:
                                   format: int32
                                   type: integer
+                                tcpSocket:
+                                  properties:
+                                    host:
+                                      type: string
+                                    port:
+                                      anyOf:
+                                        - type: integer
+                                        - type: string
+                                      x-kubernetes-int-or-string: true
+                                  type: object
                                 terminationGracePeriodSeconds:
                                   format: int64
                                   type: integer
@@ -12526,61 +12702,67 @@ spec:
                             priorityClassName:
                               type: string
                             readinessProbe:
+                              oneOf:
+                                - not:
+                                    anyOf:
+                                      - required:
+                                          - exec
+                                      - required:
+                                          - httpGet
+                                      - required:
+                                          - tcpSocket
+                                      - required:
+                                          - grpc
+                                - required:
+                                    - exec
+                                - required:
+                                    - httpGet
+                                - required:
+                                    - tcpSocket
+                                - required:
+                                    - grpc
                               properties:
+                                exec:
+                                  properties:
+                                    command:
+                                      items:
+                                        type: string
+                                      type: array
+                                  type: object
                                 failureThreshold:
                                   format: int32
                                   type: integer
-                                handler:
+                                grpc:
                                   properties:
-                                    exec:
-                                      properties:
-                                        command:
-                                          items:
+                                    port:
+                                      format: int32
+                                      type: integer
+                                    service:
+                                      default: ""
+                                      type: string
+                                  type: object
+                                httpGet:
+                                  properties:
+                                    host:
+                                      type: string
+                                    httpHeaders:
+                                      items:
+                                        properties:
+                                          name:
                                             type: string
-                                          type: array
-                                      type: object
-                                    grpc:
-                                      properties:
-                                        port:
-                                          format: int32
-                                          type: integer
-                                        service:
-                                          default: ""
-                                          type: string
-                                      type: object
-                                    httpGet:
-                                      properties:
-                                        host:
-                                          type: string
-                                        httpHeaders:
-                                          items:
-                                            properties:
-                                              name:
-                                                type: string
-                                              value:
-                                                type: string
-                                            type: object
-                                          type: array
-                                        path:
-                                          type: string
-                                        port:
-                                          anyOf:
-                                            - type: integer
-                                            - type: string
-                                          x-kubernetes-int-or-string: true
-                                        scheme:
-                                          type: string
-                                      type: object
-                                    tcpSocket:
-                                      properties:
-                                        host:
-                                          type: string
-                                        port:
-                                          anyOf:
-                                            - type: integer
-                                            - type: string
-                                          x-kubernetes-int-or-string: true
-                                      type: object
+                                          value:
+                                            type: string
+                                        type: object
+                                      type: array
+                                    path:
+                                      type: string
+                                    port:
+                                      anyOf:
+                                        - type: integer
+                                        - type: string
+                                      x-kubernetes-int-or-string: true
+                                    scheme:
+                                      type: string
                                   type: object
                                 initialDelaySeconds:
                                   format: int32
@@ -12591,6 +12773,16 @@ spec:
                                 successThreshold:
                                   format: int32
                                   type: integer
+                                tcpSocket:
+                                  properties:
+                                    host:
+                                      type: string
+                                    port:
+                                      anyOf:
+                                        - type: integer
+                                        - type: string
+                                      x-kubernetes-int-or-string: true
+                                  type: object
                                 terminationGracePeriodSeconds:
                                   format: int64
                                   type: integer
@@ -14165,61 +14357,67 @@ spec:
                                 type: object
                               type: array
                             livenessProbe:
+                              oneOf:
+                                - not:
+                                    anyOf:
+                                      - required:
+                                          - exec
+                                      - required:
+                                          - httpGet
+                                      - required:
+                                          - tcpSocket
+                                      - required:
+                                          - grpc
+                                - required:
+                                    - exec
+                                - required:
+                                    - httpGet
+                                - required:
+                                    - tcpSocket
+                                - required:
+                                    - grpc
                               properties:
+                                exec:
+                                  properties:
+                                    command:
+                                      items:
+                                        type: string
+                                      type: array
+                                  type: object
                                 failureThreshold:
                                   format: int32
                                   type: integer
-                                handler:
+                                grpc:
                                   properties:
-                                    exec:
-                                      properties:
-                                        command:
-                                          items:
+                                    port:
+                                      format: int32
+                                      type: integer
+                                    service:
+                                      default: ""
+                                      type: string
+                                  type: object
+                                httpGet:
+                                  properties:
+                                    host:
+                                      type: string
+                                    httpHeaders:
+                                      items:
+                                        properties:
+                                          name:
                                             type: string
-                                          type: array
-                                      type: object
-                                    grpc:
-                                      properties:
-                                        port:
-                                          format: int32
-                                          type: integer
-                                        service:
-                                          default: ""
-                                          type: string
-                                      type: object
-                                    httpGet:
-                                      properties:
-                                        host:
-                                          type: string
-                                        httpHeaders:
-                                          items:
-                                            properties:
-                                              name:
-                                                type: string
-                                              value:
-                                                type: string
-                                            type: object
-                                          type: array
-                                        path:
-                                          type: string
-                                        port:
-                                          anyOf:
-                                            - type: integer
-                                            - type: string
-                                          x-kubernetes-int-or-string: true
-                                        scheme:
-                                          type: string
-                                      type: object
-                                    tcpSocket:
-                                      properties:
-                                        host:
-                                          type: string
-                                        port:
-                                          anyOf:
-                                            - type: integer
-                                            - type: string
-                                          x-kubernetes-int-or-string: true
-                                      type: object
+                                          value:
+                                            type: string
+                                        type: object
+                                      type: array
+                                    path:
+                                      type: string
+                                    port:
+                                      anyOf:
+                                        - type: integer
+                                        - type: string
+                                      x-kubernetes-int-or-string: true
+                                    scheme:
+                                      type: string
                                   type: object
                                 initialDelaySeconds:
                                   format: int32
@@ -14230,6 +14428,16 @@ spec:
                                 successThreshold:
                                   format: int32
                                   type: integer
+                                tcpSocket:
+                                  properties:
+                                    host:
+                                      type: string
+                                    port:
+                                      anyOf:
+                                        - type: integer
+                                        - type: string
+                                      x-kubernetes-int-or-string: true
+                                  type: object
                                 terminationGracePeriodSeconds:
                                   format: int64
                                   type: integer
@@ -14338,61 +14546,67 @@ spec:
                             priorityClassName:
                               type: string
                             readinessProbe:
+                              oneOf:
+                                - not:
+                                    anyOf:
+                                      - required:
+                                          - exec
+                                      - required:
+                                          - httpGet
+                                      - required:
+                                          - tcpSocket
+                                      - required:
+                                          - grpc
+                                - required:
+                                    - exec
+                                - required:
+                                    - httpGet
+                                - required:
+                                    - tcpSocket
+                                - required:
+                                    - grpc
                               properties:
+                                exec:
+                                  properties:
+                                    command:
+                                      items:
+                                        type: string
+                                      type: array
+                                  type: object
                                 failureThreshold:
                                   format: int32
                                   type: integer
-                                handler:
+                                grpc:
                                   properties:
-                                    exec:
-                                      properties:
-                                        command:
-                                          items:
+                                    port:
+                                      format: int32
+                                      type: integer
+                                    service:
+                                      default: ""
+                                      type: string
+                                  type: object
+                                httpGet:
+                                  properties:
+                                    host:
+                                      type: string
+                                    httpHeaders:
+                                      items:
+                                        properties:
+                                          name:
                                             type: string
-                                          type: array
-                                      type: object
-                                    grpc:
-                                      properties:
-                                        port:
-                                          format: int32
-                                          type: integer
-                                        service:
-                                          default: ""
-                                          type: string
-                                      type: object
-                                    httpGet:
-                                      properties:
-                                        host:
-                                          type: string
-                                        httpHeaders:
-                                          items:
-                                            properties:
-                                              name:
-                                                type: string
-                                              value:
-                                                type: string
-                                            type: object
-                                          type: array
-                                        path:
-                                          type: string
-                                        port:
-                                          anyOf:
-                                            - type: integer
-                                            - type: string
-                                          x-kubernetes-int-or-string: true
-                                        scheme:
-                                          type: string
-                                      type: object
-                                    tcpSocket:
-                                      properties:
-                                        host:
-                                          type: string
-                                        port:
-                                          anyOf:
-                                            - type: integer
-                                            - type: string
-                                          x-kubernetes-int-or-string: true
-                                      type: object
+                                          value:
+                                            type: string
+                                        type: object
+                                      type: array
+                                    path:
+                                      type: string
+                                    port:
+                                      anyOf:
+                                        - type: integer
+                                        - type: string
+                                      x-kubernetes-int-or-string: true
+                                    scheme:
+                                      type: string
                                   type: object
                                 initialDelaySeconds:
                                   format: int32
@@ -14403,6 +14617,16 @@ spec:
                                 successThreshold:
                                   format: int32
                                   type: integer
+                                tcpSocket:
+                                  properties:
+                                    host:
+                                      type: string
+                                    port:
+                                      anyOf:
+                                        - type: integer
+                                        - type: string
+                                      x-kubernetes-int-or-string: true
+                                  type: object
                                 terminationGracePeriodSeconds:
                                   format: int64
                                   type: integer
@@ -15896,61 +16120,67 @@ spec:
                             type: object
                           type: array
                         livenessProbe:
+                          oneOf:
+                            - not:
+                                anyOf:
+                                  - required:
+                                      - exec
+                                  - required:
+                                      - httpGet
+                                  - required:
+                                      - tcpSocket
+                                  - required:
+                                      - grpc
+                            - required:
+                                - exec
+                            - required:
+                                - httpGet
+                            - required:
+                                - tcpSocket
+                            - required:
+                                - grpc
                           properties:
+                            exec:
+                              properties:
+                                command:
+                                  items:
+                                    type: string
+                                  type: array
+                              type: object
                             failureThreshold:
                               format: int32
                               type: integer
-                            handler:
+                            grpc:
                               properties:
-                                exec:
-                                  properties:
-                                    command:
-                                      items:
+                                port:
+                                  format: int32
+                                  type: integer
+                                service:
+                                  default: ""
+                                  type: string
+                              type: object
+                            httpGet:
+                              properties:
+                                host:
+                                  type: string
+                                httpHeaders:
+                                  items:
+                                    properties:
+                                      name:
                                         type: string
-                                      type: array
-                                  type: object
-                                grpc:
-                                  properties:
-                                    port:
-                                      format: int32
-                                      type: integer
-                                    service:
-                                      default: ""
-                                      type: string
-                                  type: object
-                                httpGet:
-                                  properties:
-                                    host:
-                                      type: string
-                                    httpHeaders:
-                                      items:
-                                        properties:
-                                          name:
-                                            type: string
-                                          value:
-                                            type: string
-                                        type: object
-                                      type: array
-                                    path:
-                                      type: string
-                                    port:
-                                      anyOf:
-                                        - type: integer
-                                        - type: string
-                                      x-kubernetes-int-or-string: true
-                                    scheme:
-                                      type: string
-                                  type: object
-                                tcpSocket:
-                                  properties:
-                                    host:
-                                      type: string
-                                    port:
-                                      anyOf:
-                                        - type: integer
-                                        - type: string
-                                      x-kubernetes-int-or-string: true
-                                  type: object
+                                      value:
+                                        type: string
+                                    type: object
+                                  type: array
+                                path:
+                                  type: string
+                                port:
+                                  anyOf:
+                                    - type: integer
+                                    - type: string
+                                  x-kubernetes-int-or-string: true
+                                scheme:
+                                  type: string
                               type: object
                             initialDelaySeconds:
                               format: int32
@@ -15961,6 +16191,16 @@ spec:
                             successThreshold:
                               format: int32
                               type: integer
+                            tcpSocket:
+                              properties:
+                                host:
+                                  type: string
+                                port:
+                                  anyOf:
+                                    - type: integer
+                                    - type: string
+                                  x-kubernetes-int-or-string: true
+                              type: object
                             terminationGracePeriodSeconds:
                               format: int64
                               type: integer
@@ -16069,61 +16309,67 @@ spec:
                         priorityClassName:
                           type: string
                         readinessProbe:
+                          oneOf:
+                            - not:
+                                anyOf:
+                                  - required:
+                                      - exec
+                                  - required:
+                                      - httpGet
+                                  - required:
+                                      - tcpSocket
+                                  - required:
+                                      - grpc
+                            - required:
+                                - exec
+                            - required:
+                                - httpGet
+                            - required:
+                                - tcpSocket
+                            - required:
+                                - grpc
                           properties:
+                            exec:
+                              properties:
+                                command:
+                                  items:
+                                    type: string
+                                  type: array
+                              type: object
                             failureThreshold:
                               format: int32
                               type: integer
-                            handler:
+                            grpc:
                               properties:
-                                exec:
-                                  properties:
-                                    command:
-                                      items:
+                                port:
+                                  format: int32
+                                  type: integer
+                                service:
+                                  default: ""
+                                  type: string
+                              type: object
+                            httpGet:
+                              properties:
+                                host:
+                                  type: string
+                                httpHeaders:
+                                  items:
+                                    properties:
+                                      name:
                                         type: string
-                                      type: array
-                                  type: object
-                                grpc:
-                                  properties:
-                                    port:
-                                      format: int32
-                                      type: integer
-                                    service:
-                                      default: ""
-                                      type: string
-                                  type: object
-                                httpGet:
-                                  properties:
-                                    host:
-                                      type: string
-                                    httpHeaders:
-                                      items:
-                                        properties:
-                                          name:
-                                            type: string
-                                          value:
-                                            type: string
-                                        type: object
-                                      type: array
-                                    path:
-                                      type: string
-                                    port:
-                                      anyOf:
-                                        - type: integer
-                                        - type: string
-                                      x-kubernetes-int-or-string: true
-                                    scheme:
-                                      type: string
-                                  type: object
-                                tcpSocket:
-                                  properties:
-                                    host:
-                                      type: string
-                                    port:
-                                      anyOf:
-                                        - type: integer
-                                        - type: string
-                                      x-kubernetes-int-or-string: true
-                                  type: object
+                                      value:
+                                        type: string
+                                    type: object
+                                  type: array
+                                path:
+                                  type: string
+                                port:
+                                  anyOf:
+                                    - type: integer
+                                    - type: string
+                                  x-kubernetes-int-or-string: true
+                                scheme:
+                                  type: string
                               type: object
                             initialDelaySeconds:
                               format: int32
@@ -16134,6 +16380,16 @@ spec:
                             successThreshold:
                               format: int32
                               type: integer
+                            tcpSocket:
+                              properties:
+                                host:
+                                  type: string
+                                port:
+                                  anyOf:
+                                    - type: integer
+                                    - type: string
+                                  x-kubernetes-int-or-string: true
+                              type: object
                             terminationGracePeriodSeconds:
                               format: int64
                               type: integer
@@ -19926,61 +20182,67 @@ spec:
                         type: object
                       type: array
                     livenessProbe:
+                      oneOf:
+                        - not:
+                            anyOf:
+                              - required:
+                                  - exec
+                              - required:
+                                  - httpGet
+                              - required:
+                                  - tcpSocket
+                              - required:
+                                  - grpc
+                        - required:
+                            - exec
+                        - required:
+                            - httpGet
+                        - required:
+                            - tcpSocket
+                        - required:
+                            - grpc
                       properties:
+                        exec:
+                          properties:
+                            command:
+                              items:
+                                type: string
+                              type: array
+                          type: object
                         failureThreshold:
                           format: int32
                           type: integer
-                        handler:
+                        grpc:
                           properties:
-                            exec:
-                              properties:
-                                command:
-                                  items:
+                            port:
+                              format: int32
+                              type: integer
+                            service:
+                              default: ""
+                              type: string
+                          type: object
+                        httpGet:
+                          properties:
+                            host:
+                              type: string
+                            httpHeaders:
+                              items:
+                                properties:
+                                  name:
                                     type: string
-                                  type: array
-                              type: object
-                            grpc:
-                              properties:
-                                port:
-                                  format: int32
-                                  type: integer
-                                service:
-                                  default: ""
-                                  type: string
-                              type: object
-                            httpGet:
-                              properties:
-                                host:
-                                  type: string
-                                httpHeaders:
-                                  items:
-                                    properties:
-                                      name:
-                                        type: string
-                                      value:
-                                        type: string
-                                    type: object
-                                  type: array
-                                path:
-                                  type: string
-                                port:
-                                  anyOf:
-                                    - type: integer
-                                    - type: string
-                                  x-kubernetes-int-or-string: true
-                                scheme:
-                                  type: string
-                              type: object
-                            tcpSocket:
-                              properties:
-                                host:
-                                  type: string
-                                port:
-                                  anyOf:
-                                    - type: integer
-                                    - type: string
-                                  x-kubernetes-int-or-string: true
-                              type: object
+                                  value:
+                                    type: string
+                                type: object
+                              type: array
+                            path:
+                              type: string
+                            port:
+                              anyOf:
+                                - type: integer
+                                - type: string
+                              x-kubernetes-int-or-string: true
+                            scheme:
+                              type: string
                           type: object
                         initialDelaySeconds:
                           format: int32
@@ -19991,6 +20253,16 @@ spec:
                         successThreshold:
                           format: int32
                           type: integer
+                        tcpSocket:
+                          properties:
+                            host:
+                              type: string
+                            port:
+                              anyOf:
+                                - type: integer
+                                - type: string
+                              x-kubernetes-int-or-string: true
+                          type: object
                         terminationGracePeriodSeconds:
                           format: int64
                           type: integer
@@ -20099,61 +20371,67 @@ spec:
                     priorityClassName:
                       type: string
                     readinessProbe:
+                      oneOf:
+                        - not:
+                            anyOf:
+                              - required:
+                                  - exec
+                              - required:
+                                  - httpGet
+                              - required:
+                                  - tcpSocket
+                              - required:
+                                  - grpc
+                        - required:
+                            - exec
+                        - required:
+                            - httpGet
+                        - required:
+                            - tcpSocket
+                        - required:
+                            - grpc
                       properties:
+                        exec:
+                          properties:
+                            command:
+                              items:
+                                type: string
+                              type: array
+                          type: object
                         failureThreshold:
                           format: int32
                           type: integer
-                        handler:
+                        grpc:
                           properties:
-                            exec:
-                              properties:
-                                command:
-                                  items:
+                            port:
+                              format: int32
+                              type: integer
+                            service:
+                              default: ""
+                              type: string
+                          type: object
+                        httpGet:
+                          properties:
+                            host:
+                              type: string
+                            httpHeaders:
+                              items:
+                                properties:
+                                  name:
                                     type: string
-                                  type: array
-                              type: object
-                            grpc:
-                              properties:
-                                port:
-                                  format: int32
-                                  type: integer
-                                service:
-                                  default: ""
-                                  type: string
-                              type: object
-                            httpGet:
-                              properties:
-                                host:
-                                  type: string
-                                httpHeaders:
-                                  items:
-                                    properties:
-                                      name:
-                                        type: string
-                                      value:
-                                        type: string
-                                    type: object
-                                  type: array
-                                path:
-                                  type: string
-                                port:
-                                  anyOf:
-                                    - type: integer
-                                    - type: string
-                                  x-kubernetes-int-or-string: true
-                                scheme:
-                                  type: string
-                              type: object
-                            tcpSocket:
-                              properties:
-                                host:
-                                  type: string
-                                port:
-                                  anyOf:
-                                    - type: integer
-                                    - type: string
-                                  x-kubernetes-int-or-string: true
-                              type: object
+                                  value:
+                                    type: string
+                                type: object
+                              type: array
+                            path:
+                              type: string
+                            port:
+                              anyOf:
+                                - type: integer
+                                - type: string
+                              x-kubernetes-int-or-string: true
+                            scheme:
+                              type: string
                           type: object
                         initialDelaySeconds:
                           format: int32
@@ -20164,6 +20442,16 @@ spec:
                         successThreshold:
                           format: int32
                           type: integer
+                        tcpSocket:
+                          properties:
+                            host:
+                              type: string
+                            port:
+                              anyOf:
+                                - type: integer
+                                - type: string
+                              x-kubernetes-int-or-string: true
+                          type: object
                         terminationGracePeriodSeconds:
                           format: int64
                           type: integer

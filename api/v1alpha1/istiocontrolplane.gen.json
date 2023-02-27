@@ -1950,10 +1950,10 @@
             }
           },
           "livenessProbe": {
-            "$ref": "#/components/schemas/k8s.io.api.core.v1.Probe"
+            "$ref": "#/components/schemas/istio_operator.v2.api.v1alpha1.Probe"
           },
           "readinessProbe": {
-            "$ref": "#/components/schemas/k8s.io.api.core.v1.Probe"
+            "$ref": "#/components/schemas/istio_operator.v2.api.v1alpha1.Probe"
           },
           "imagePullPolicy": {
             "description": "Image pull policy. One of Always, Never, IfNotPresent. Defaults to Always if :latest tag is specified, or IfNotPresent otherwise.",
@@ -2205,6 +2205,34 @@
           "enabled": {
             "type": "boolean",
             "nullable": true
+          }
+        }
+      },
+      "istio_operator.v2.api.v1alpha1.HTTPGetAction": {
+        "description": "HTTPGetAction describes an action based on HTTP Get requests.",
+        "type": "object",
+        "properties": {
+          "path": {
+            "description": "Path to access on the HTTP server.",
+            "type": "string"
+          },
+          "port": {
+            "$ref": "#/components/schemas/istio_operator.v2.api.v1alpha1.IntOrString"
+          },
+          "host": {
+            "description": "Host name to connect to, defaults to the pod IP. You probably want to set \"Host\" in httpHeaders instead.",
+            "type": "string"
+          },
+          "scheme": {
+            "description": "Scheme to use for connecting to the host. Defaults to HTTP.",
+            "type": "string"
+          },
+          "httpHeaders": {
+            "description": "Custom headers to set in the request. HTTP allows repeated headers.",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/k8s.io.api.core.v1.HTTPHeader"
+            }
           }
         }
       },
@@ -2647,6 +2675,130 @@
           }
         }
       },
+      "istio_operator.v2.api.v1alpha1.Probe": {
+        "description": "Probe describes a health check to be performed against a container to determine whether it is alive or ready to receive traffic.",
+        "type": "object",
+        "properties": {
+          "timeoutSeconds": {
+            "description": "Number of seconds after which the probe times out. Defaults to 1 second. Minimum value is 1. More info: https://kubernetes.io/docs/concepts/workloads/pods/pod-lifecycle#container-probes",
+            "type": "integer",
+            "format": "int32"
+          },
+          "terminationGracePeriodSeconds": {
+            "description": "Optional duration in seconds the pod needs to terminate gracefully upon probe failure. The grace period is the duration in seconds after the processes running in the pod are sent a termination signal and the time when the processes are forcibly halted with a kill signal. Set this value longer than the expected cleanup time for your process. If this value is nil, the pod's terminationGracePeriodSeconds will be used. Otherwise, this value overrides the value provided by the pod spec. Value must be non-negative integer. The value zero indicates stop immediately via the kill signal (no opportunity to shut down). This is a beta field and requires enabling ProbeTerminationGracePeriod feature gate. Minimum value is 1. spec.terminationGracePeriodSeconds is used if unset.",
+            "type": "integer",
+            "format": "int64"
+          },
+          "initialDelaySeconds": {
+            "description": "Number of seconds after the container has started before liveness probes are initiated. More info: https://kubernetes.io/docs/concepts/workloads/pods/pod-lifecycle#container-probes",
+            "type": "integer",
+            "format": "int32"
+          },
+          "periodSeconds": {
+            "description": "How often (in seconds) to perform the probe. Default to 10 seconds. Minimum value is 1.",
+            "type": "integer",
+            "format": "int32"
+          },
+          "successThreshold": {
+            "description": "Minimum consecutive successes for the probe to be considered successful after having failed. Defaults to 1. Must be 1 for liveness and startup. Minimum value is 1.",
+            "type": "integer",
+            "format": "int32"
+          },
+          "failureThreshold": {
+            "description": "Minimum consecutive failures for the probe to be considered failed after having succeeded. Defaults to 3. Minimum value is 1.",
+            "type": "integer",
+            "format": "int32"
+          }
+        },
+        "oneOf": [
+          {
+            "not": {
+              "anyOf": [
+                {
+                  "required": [
+                    "exec"
+                  ],
+                  "properties": {
+                    "exec": {
+                      "$ref": "#/components/schemas/k8s.io.api.core.v1.ExecAction"
+                    }
+                  }
+                },
+                {
+                  "required": [
+                    "httpGet"
+                  ],
+                  "properties": {
+                    "httpGet": {
+                      "$ref": "#/components/schemas/istio_operator.v2.api.v1alpha1.HTTPGetAction"
+                    }
+                  }
+                },
+                {
+                  "required": [
+                    "tcpSocket"
+                  ],
+                  "properties": {
+                    "tcpSocket": {
+                      "$ref": "#/components/schemas/istio_operator.v2.api.v1alpha1.TCPSocketAction"
+                    }
+                  }
+                },
+                {
+                  "required": [
+                    "grpc"
+                  ],
+                  "properties": {
+                    "grpc": {
+                      "$ref": "#/components/schemas/k8s.io.api.core.v1.GRPCAction"
+                    }
+                  }
+                }
+              ]
+            }
+          },
+          {
+            "required": [
+              "exec"
+            ],
+            "properties": {
+              "exec": {
+                "$ref": "#/components/schemas/k8s.io.api.core.v1.ExecAction"
+              }
+            }
+          },
+          {
+            "required": [
+              "httpGet"
+            ],
+            "properties": {
+              "httpGet": {
+                "$ref": "#/components/schemas/istio_operator.v2.api.v1alpha1.HTTPGetAction"
+              }
+            }
+          },
+          {
+            "required": [
+              "tcpSocket"
+            ],
+            "properties": {
+              "tcpSocket": {
+                "$ref": "#/components/schemas/istio_operator.v2.api.v1alpha1.TCPSocketAction"
+              }
+            }
+          },
+          {
+            "required": [
+              "grpc"
+            ],
+            "properties": {
+              "grpc": {
+                "$ref": "#/components/schemas/k8s.io.api.core.v1.GRPCAction"
+              }
+            }
+          }
+        ]
+      },
       "istio_operator.v2.api.v1alpha1.ProxyConfiguration": {
         "description": "ProxyConfiguration defines config options for Proxy",
         "type": "object",
@@ -2965,6 +3117,19 @@
             "type": "string"
           },
           "sidecarInjector": {
+            "type": "string"
+          }
+        }
+      },
+      "istio_operator.v2.api.v1alpha1.TCPSocketAction": {
+        "description": "TCPSocketAction describes an action based on opening a socket",
+        "type": "object",
+        "properties": {
+          "port": {
+            "$ref": "#/components/schemas/istio_operator.v2.api.v1alpha1.IntOrString"
+          },
+          "host": {
+            "description": "Optional: Host name to connect to, defaults to the pod IP.",
             "type": "string"
           }
         }
@@ -4075,63 +4240,6 @@
           },
           "preference": {
             "$ref": "#/components/schemas/k8s.io.api.core.v1.NodeSelectorTerm"
-          }
-        }
-      },
-      "k8s.io.api.core.v1.Probe": {
-        "description": "Probe describes a health check to be performed against a container to determine whether it is alive or ready to receive traffic.",
-        "type": "object",
-        "properties": {
-          "timeoutSeconds": {
-            "description": "Number of seconds after which the probe times out. Defaults to 1 second. Minimum value is 1. More info: https://kubernetes.io/docs/concepts/workloads/pods/pod-lifecycle#container-probes",
-            "type": "integer",
-            "format": "int32"
-          },
-          "terminationGracePeriodSeconds": {
-            "description": "Optional duration in seconds the pod needs to terminate gracefully upon probe failure. The grace period is the duration in seconds after the processes running in the pod are sent a termination signal and the time when the processes are forcibly halted with a kill signal. Set this value longer than the expected cleanup time for your process. If this value is nil, the pod's terminationGracePeriodSeconds will be used. Otherwise, this value overrides the value provided by the pod spec. Value must be non-negative integer. The value zero indicates stop immediately via the kill signal (no opportunity to shut down). This is a beta field and requires enabling ProbeTerminationGracePeriod feature gate. Minimum value is 1. spec.terminationGracePeriodSeconds is used if unset.",
-            "type": "integer",
-            "format": "int64"
-          },
-          "handler": {
-            "$ref": "#/components/schemas/k8s.io.api.core.v1.ProbeHandler"
-          },
-          "initialDelaySeconds": {
-            "description": "Number of seconds after the container has started before liveness probes are initiated. More info: https://kubernetes.io/docs/concepts/workloads/pods/pod-lifecycle#container-probes",
-            "type": "integer",
-            "format": "int32"
-          },
-          "periodSeconds": {
-            "description": "How often (in seconds) to perform the probe. Default to 10 seconds. Minimum value is 1.",
-            "type": "integer",
-            "format": "int32"
-          },
-          "successThreshold": {
-            "description": "Minimum consecutive successes for the probe to be considered successful after having failed. Defaults to 1. Must be 1 for liveness and startup. Minimum value is 1.",
-            "type": "integer",
-            "format": "int32"
-          },
-          "failureThreshold": {
-            "description": "Minimum consecutive failures for the probe to be considered failed after having succeeded. Defaults to 3. Minimum value is 1.",
-            "type": "integer",
-            "format": "int32"
-          }
-        }
-      },
-      "k8s.io.api.core.v1.ProbeHandler": {
-        "description": "ProbeHandler defines a specific action that should be taken in a probe. One and only one of the fields must be specified.",
-        "type": "object",
-        "properties": {
-          "exec": {
-            "$ref": "#/components/schemas/k8s.io.api.core.v1.ExecAction"
-          },
-          "httpGet": {
-            "$ref": "#/components/schemas/k8s.io.api.core.v1.HTTPGetAction"
-          },
-          "tcpSocket": {
-            "$ref": "#/components/schemas/k8s.io.api.core.v1.TCPSocketAction"
-          },
-          "grpc": {
-            "$ref": "#/components/schemas/k8s.io.api.core.v1.GRPCAction"
           }
         }
       },

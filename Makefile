@@ -23,7 +23,7 @@ KUSTOMIZE_VERSION = 4.1.2
 ISTIO_VERSION = 1.17.1
 BUF_VERSION = 1.7.0
 
-PATH := $(PATH):$(PWD)/bin
+PATH := $(PWD)/bin:$(PATH)
 
 all: check manager
 
