@@ -63,7 +63,7 @@ For a complete list of SMM features please check out the [SMM docs](https://smm-
 
 ### Prerequisites
 - kubectl installed
-- kubernetes cluster (version 1.22+)
+- kubernetes cluster (version 1.23+)
 - active kubecontext to the kubernetes cluster
 
 ###  Build and deploy
