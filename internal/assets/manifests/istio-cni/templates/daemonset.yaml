@@ -23,6 +23,7 @@ spec:
       labels:
         app: istio-cni-node
         release: {{ .Release.Name }}
+        istio.io/rev: {{ include "namespaced-revision" . }}
         sidecar.istio.io/inject: "false"
 {{- include "toYamlIf" (dict "value" .Values.cni.podMetadata.labels) | indent 8 }}
       annotations:
