@@ -29,7 +29,8 @@ ignored = [
 
 [header]
 ignorePaths = [
-    "build"
+    "build",
+    "vendor"
 ]
 
 ignoreFiles = [
