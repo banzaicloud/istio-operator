@@ -66,10 +66,17 @@ jobs:
           GITHUB_TOKEN: ${{ github.token }} # Note: this is required for licensei auth in steps to avoid rate-limiting.
         run: ./bin/licensei list
 
+      - name: Vendor dependencies to retrieve licenses locally
+        # Vendor deps before running https://github.com/goph/licensei
+        # to avoid false-positive when modules github repo could not be determined
+        run: go mod vendor -o vendor
+
       - name: Check dependency licenses
         env:
           GITHUB_TOKEN: ${{ github.token }} # Note: this is required for licensei auth in steps to avoid rate-limiting.
-        run: make license-check
+        run: |
+          make license-check
+          make vendor-clean
 
       - name: Run unit tests, linter, etc.
         run: make check
