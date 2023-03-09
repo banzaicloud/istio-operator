@@ -62,6 +62,10 @@ license-check: bin/licensei ## Run license check
 license-cache: bin/licensei ## Generate license cache
 	bin/licensei cache
 
+.PHONY: vendor-clean
+vendor-clean: ## Clean vendor cache
+	rm -rf ${PWD}/vendor
+
 # Run tests
 .PHONY: test
 test: install-envtest
