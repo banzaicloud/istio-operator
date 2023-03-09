@@ -22,7 +22,7 @@ data:
               "cni_bin_dir": {{ quote .Values.cni.cniBinDir }},
               "exclude_namespaces": [ {{ range $idx, $ns := .Values.cni.excludeNamespaces }}{{ if $idx }}, {{ end }}{{ quote $ns }}{{ end }} ],
               "include_namespaces": [ {{ range $idx, $ns := .Values.cni.includeNamespaces }}{{ if $idx }}, {{ end }}{{ quote $ns }}{{ end }} ],
-              "revision": "{{ include "namespaced-revision" . }}"
+              "revision": "__ISTIO_REVISION__"
           }
         }
 ---
