@@ -542,3 +542,4 @@ base:
 istio_cni:
   enabled: false
   chained: true
+  name: "istio-cni"
