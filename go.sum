@@ -139,8 +139,10 @@ github.com/chai2010/gettext-go v0.0.0-20160711120539-c6fed771bfd5/go.mod h1:/iP1
 github.com/chzyer/logex v1.1.10/go.mod h1:+Ywpsq7O8HXn0nuIou7OrIPyXbp3wmkHB+jjWRnGsAI=
 github.com/chzyer/readline v0.0.0-20180603132655-2972be24d48e/go.mod h1:nSuG5e5PlCu98SY8svDHJxuZscDgtXS6KTTbou5AhLI=
 github.com/chzyer/test v0.0.0-20180213035817-a1ea475d72b1/go.mod h1:Q3SI9o4m/ZMnBNeIyt5eFwwo7qiLfzFZmjNmxjkiQlU=
-github.com/cisco-open/cluster-registry-controller/api v0.1.9 h1:dJfvj2umr1fIIOeNDxRR2u1WEpjT0zW+giOczCV/rBY=
-github.com/cisco-open/cluster-registry-controller/api v0.1.9/go.mod h1:+SGsAzdHbD+v+CovGDNqbfEg48p/EiopbLvYZj56Vgg=
+github.com/cisco-open/cluster-registry-controller v0.2.9 h1:qoX/XBhcox8nHo7XPfmC1Il9e/P3KHkQXqzW1QnxT84=
+github.com/cisco-open/cluster-registry-controller v0.2.9/go.mod h1:03/ZLLJpwtaL2bPKJv5T1sgzmRwhIxkTEYhCu0wg0EA=
+github.com/cisco-open/cluster-registry-controller/api v0.2.9 h1:7upLfS9iImYt+8u+2D7Q5eAeuuJokygEHunhrcq2Onk=
+github.com/cisco-open/cluster-registry-controller/api v0.2.9/go.mod h1:+SGsAzdHbD+v+CovGDNqbfEg48p/EiopbLvYZj56Vgg=
 github.com/client9/misspell v0.3.4/go.mod h1:qj6jICC3Q7zFZvVWo7KLAzC3yx5G7kyvSDkc90ppPyw=
 github.com/cncf/udpa/go v0.0.0-20191209042840-269d4d468f6f/go.mod h1:M8M6+tZqaGXZJjfX53e64911xZQV5JYwmTeXPW+k8Sc=
 github.com/cncf/udpa/go v0.0.0-20200629203442-efcf912fb354/go.mod h1:WmhPx2Nbnhtbo57+VJT5O0JRkEi1Wbu0z5j0R8u5Hbk=
@@ -316,7 +318,7 @@ github.com/golang/mock v1.5.0/go.mod h1:CWnOUgYIOo4TcNZ0wHX3YZCqsaM1I1Jvs6v3mP3K
 github.com/golang/mock v1.6.0/go.mod h1:p6yTPP+5HYm5mzsMV8JkE6ZKdX+/wYM6Hr+LicevLPs=
 github.com/golang/snappy v0.0.3/go.mod h1:/XxbfmMg8lxefKM7IXC3fBNl/7bRcc72aCRzEWrmP2Q=
 github.com/golangplus/testing v0.0.0-20180327235837-af21d9c3145e/go.mod h1:0AA//k/eakGydO4jKRoRL2j92ZKSzTgj9tclaCrvXHk=
-github.com/gomodule/redigo v1.8.2 h1:H5XSIre1MB5NbPYFp+i1NBbb5qN1W8Y8YAQoAYbkm8k=
+github.com/gomodule/redigo v1.8.4 h1:Z5JUg94HMTR1XpwBaSH4vq3+PNSIykBLxMdglbw10gg=
 github.com/gonvenience/bunt v1.3.3 h1:a751qSbJIgWGbazGYr9hyuudOg7wMHh2m4JjE3tfURE=
 github.com/gonvenience/bunt v1.3.3/go.mod h1:XjlODZ8sTL9jQs9c4Kj1ZBTrHSsbUGdoRy7ROCtw8nU=
 github.com/gonvenience/neat v1.3.9 h1:c3nbMP8ysGtaekkkY3Veg2OPa76fK8r45ontZdSPUw0=
