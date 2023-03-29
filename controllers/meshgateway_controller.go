@@ -42,6 +42,7 @@ import (
 	"github.com/banzaicloud/istio-operator/v2/internal/components"
 	"github.com/banzaicloud/istio-operator/v2/internal/components/istiomeshgateway"
 	"github.com/banzaicloud/istio-operator/v2/internal/util"
+	"github.com/banzaicloud/istio-operator/v2/internal/util/openshift"
 	"github.com/banzaicloud/istio-operator/v2/pkg/k8sutil"
 	"github.com/banzaicloud/k8s-objectmatcher/patch"
 	"github.com/banzaicloud/operator-tools/pkg/logger"
@@ -198,7 +199,12 @@ func (r *IstioMeshGatewayReconciler) SetupWithManager(mgr ctrl.Manager) error {
 				Kind:       "ServiceAccount",
 				APIVersion: corev1.SchemeGroupVersion.String(),
 			},
-		}, ctrlBuilder.WithPredicates(objectChangePredicate)).
+		}, ctrlBuilder.WithPredicates(util.ObjectChangePredicate{
+			Logger: r.Log,
+			CalculateOptions: []util.CalculateOption{
+				openshift.IgnoreOpenshiftImagePullSecrets(mgr.GetClient()),
+			},
+		})).
 		Owns(&policyv1.PodDisruptionBudget{
 			TypeMeta: metav1.TypeMeta{
 				Kind:       "PodDisruptionBudget",
