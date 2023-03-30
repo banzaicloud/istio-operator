@@ -63,10 +63,13 @@ repair:
 {{- define "global" }}
 {{ valueIf (dict "key" "hub" "value" .GetSpec.GetContainerImageConfiguration.GetHub) }}
 {{ valueIf (dict "key" "tag" "value" .GetSpec.GetContainerImageConfiguration.GetTag) }}
+{{ valueIf (dict "key" "tag" "value" .GetSpec.GetContainerImageConfiguration.GetTag) }}
 {{- with .GetSpec.GetProxyInit.GetCni }}
 {{ valueIf (dict "key" "imagePullPolicy" "value" (default $.GetSpec.GetContainerImageConfiguration.GetImagePullPolicy .GetDaemonset.GetImagePullPolicy) ) }}
 {{ toYamlIf (dict "value" (default $.GetSpec.GetContainerImageConfiguration.GetImagePullSecrets .GetDaemonset.GetImagePullSecrets) "key" "imagePullSecrets") }}
 {{ end }}
+  ambient:
+{{ valueIf (dict "key" "enabled" "value" .GetSpec.GetAmbientTopology) }}
 {{ end }}
 
 {{- $x := (include "cni" .) | reformatYaml }}
