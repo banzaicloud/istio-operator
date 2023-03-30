@@ -36,6 +36,14 @@ cni:
   # Some k8s flavors (e.g. OpenShift) do not support the chain approach, set to false if this is the case
   chained: true
 
+  # Configure ambient settings
+  # JAJ TODO need to double check this
+  ambient:
+    # If enabled, ambient redirection will be enabled
+    enabled: false
+    # Set ambient redirection mode: "iptables" or "ebpf"
+    redirectMode: "iptables"
+
   repair:
     enabled: true
 

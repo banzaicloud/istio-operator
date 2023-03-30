@@ -1,13 +1,17 @@
 # Hub to pull from. Image will be `Hub/Image:Tag-Variant`
-hub: "gcr.io/istio-testing"
+#hub: "gcr.io/istio-testing"
+hub: "docker.io/istio"
 # Tag to pull from. Image will be `Hub/Image:Tag-Variant`
-tag: "latest"
+#TODO tag: "latest"
+tag: "1.18.0-alpha.0"
+
 # Variant to pull. Options are "debug" or "distroless". Unset will use the default for the given version.
 variant: ""
 
 # Image name to pull from. Image will be `Hub/Image:Tag-Variant`
 # If Image contains a "/", it will replace the entire `image` in the pod.
 image: ztunnel
+#OLD image: proxyv2
 
 # Labels to apply to all top level resources
 labels: {}
