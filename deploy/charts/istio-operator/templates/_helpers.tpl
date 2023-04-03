@@ -77,6 +77,14 @@ app.kubernetes.io/component: operator
 {{- end }}
 
 {{/*
+Operator template labels
+*/}}
+{{- define "istio-operator.operatorTemplateLabels" -}}
+{{ include "istio-operator.operatorSelectorLabels" . }}
+sidecar.istio.io/inject: "false"
+{{- end }}
+
+{{/*
 Authproxy resource name
 */}}
 {{- define "istio-operator.authProxyName" -}}
