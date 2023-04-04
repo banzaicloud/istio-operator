@@ -1886,16 +1886,6 @@
           }
         }
       },
-      "istio_operator.v2.api.v1alpha1.AmbientTopology": {
-        "description": "Ambient sets Istiod in an ambient topology",
-        "type": "object",
-        "properties": {
-          "enabled": {
-            "type": "boolean",
-            "nullable": true
-          }
-        }
-      },
       "istio_operator.v2.api.v1alpha1.BaseKubernetesContainerConfiguration": {
         "type": "object",
         "properties": {
@@ -2324,7 +2314,9 @@
             "$ref": "#/components/schemas/istio_operator.v2.api.v1alpha1.SidecarInjectorConfiguration"
           },
           "ambientTopology": {
-            "$ref": "#/components/schemas/istio_operator.v2.api.v1alpha1.AmbientTopology"
+            "description": "ambientTopology deploys and configures an ambient topology",
+            "type": "boolean",
+            "nullable": true
           }
         }
       },

@@ -24,11 +24,11 @@ env:
 {{ else }}
     value: "false"
 {{ end }}
-{{ if eq .GetSpec.GetAmbientTopology }}
-    - name: PILOT_ENABLE_AMBIENT_CONTROLLERS
-      value: "true"
-    - name: PILOT_ENABLE_HBONE
-      value: "true" 
+{{ if .GetSpec.GetAmbientTopology }}
+  - name: PILOT_ENABLE_AMBIENT_CONTROLLERS
+    value: "true"
+  - name: PILOT_ENABLE_HBONE
+    value: "true"
 {{ end }}
 {{ if eq .GetSpec.GetDistribution "cisco" }}
   - name: INJECTION_WEBHOOK_CONFIG_NAME
