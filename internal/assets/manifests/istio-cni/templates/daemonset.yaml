@@ -29,6 +29,7 @@ spec:
         app: istio-cni-node
         release: {{ .Release.Name }}
         sidecar.istio.io/inject: "false"
+        # TODO Need a label for the ambient case
 {{- include "toYamlIf" (dict "value" .Values.cni.podMetadata.labels) | indent 8 }}
       annotations:
         sidecar.istio.io/inject: "false"
@@ -38,6 +39,7 @@ spec:
         prometheus.io/path: '/metrics'
 {{- include "toYamlIf" (dict "value" .Values.cni.podMetadata.annotations) | indent 8 }}
     spec:
+      {{if .Values.cni.ambient.enabled }}hostNetwork: true{{ end }}
 {{- if .Values.cni.priorityClassName }}
       priorityClassName: {{ .Values.cni.priorityClassName }}
 {{- end }}
@@ -116,6 +118,15 @@ spec:
               value: "{{ .Values.cni.repair.brokenPodLabelKey }}"
             - name: REPAIR_BROKEN_POD_LABEL_VALUE
               value: "{{ .Values.cni.repair.brokenPodLabelValue }}"
+            - name: NODE_NAME
+              valueFrom:
+                fieldRef:
+                  apiVersion: v1
+                  fieldPath: spec.nodeName
+            {{- if .Values.cni.ambient.enabled }}
+            - name: AMBIENT_ENABLED
+              value: "true"
+            {{- end }}
 {{ include "toYamlIf" (dict "value" .Values.cni.env) | indent 12 }}
           volumeMounts:
             - mountPath: /host/opt/cni/bin
@@ -124,6 +135,13 @@ spec:
               name: cni-net-dir
             - mountPath: /var/run/istio-cni
               name: cni-log-dir
+            {{- if .Values.cni.ambient.enabled }}
+            - mountPath: /etc/ambient-config
+              name: cni-ambientconfig
+            - mountPath: /var/run/netns
+              mountPropagation: HostToContainer
+              name: cni-netns-dir
+            {{ end }}
 {{ include "toYamlIf" (dict "value" .Values.cni.volumeMounts) | indent 12 }}
 {{ include "toYamlIf" (dict "value" .Values.cni.resources "key" "resources" "indent" 2) | indent 10 }}
 {{- if .Values.cni.taint.enabled }}
@@ -161,9 +179,17 @@ spec:
         - name: cni-bin-dir
           hostPath:
             path: {{ .Values.cni.cniBinDir | default $defaultBinDir }}
+        {{- if .Values.cni.ambient.enabled }}
+        - name: cni-ambientconfig
+          hostPath:
+            path: /etc/ambient-config
+        {{- end }}
         - name: cni-net-dir
           hostPath:
             path: {{ default "/etc/cni/net.d" .Values.cni.cniConfDir }}
+        - name: cni-netns-dir
+          hostPath:
+            path: /var/run/netns
         # Used for UDS log
         - name: cni-log-dir
           hostPath:

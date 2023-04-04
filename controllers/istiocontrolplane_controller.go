@@ -140,7 +140,6 @@ type IstioControlPlaneReconciler struct {
 func (r *IstioControlPlaneReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Result, error) {
 	logger := r.Log.WithValues("istiocontrolplane", req.NamespacedName)
 
-	logger.Info("JAJ JAJ in reconcile")
 	icp := &servicemeshv1alpha1.IstioControlPlane{}
 	err := r.Get(ctx, req.NamespacedName, icp)
 	if err != nil {
@@ -290,7 +289,7 @@ func (r *IstioControlPlaneReconciler) reconcile(ctx context.Context, icp *servic
 	}
 	componentReconcilers = append(componentReconcilers, cniReconciler)
 
-	ztunnelReconciler, err := NewComponentReconciler(r, ztunnel.NewChartReconciler, r.Log.WithName("cni"))
+	ztunnelReconciler, err := NewComponentReconciler(r, ztunnel.NewChartReconciler, r.Log.WithName("ztunnel"))
 	if err != nil {
 		return ctrl.Result{}, err
 	}

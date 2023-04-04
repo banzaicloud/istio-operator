@@ -28,7 +28,6 @@ import (
 	"github.com/banzaicloud/istio-operator/v2/internal/util"
 	"github.com/banzaicloud/operator-tools/pkg/helm"
 	"github.com/banzaicloud/operator-tools/pkg/helm/templatereconciler"
-	"github.com/banzaicloud/operator-tools/pkg/utils"
 )
 
 const (
@@ -56,8 +55,9 @@ func (rec *Component) Name() string {
 
 func (rec *Component) Enabled(object runtime.Object) bool {
 	if controlPlane, ok := object.(*v1alpha1.IstioControlPlane); ok {
-		getZtunnelEnabled := controlPlane.GetSpec().GetAmbientTopology().GetEnabled().GetValue()
-		return controlPlane.DeletionTimestamp.IsZero() && utils.PointerToBool(&getZtunnelEnabled)
+		getZtunnelEnabled := controlPlane.GetSpec().GetAmbientTopology()
+		enabled := getZtunnelEnabled.GetValue()
+		return controlPlane.DeletionTimestamp.IsZero() && enabled
 	}
 
 	return true
@@ -97,7 +97,7 @@ func (rec *Component) values(object runtime.Object) (helm.Strimap, error) {
 
 	values, err := util.TransformStructToStriMapWithTemplate(icp, assets.ZtunnelChart, valuesTemplateFileName)
 	if err != nil {
-		return nil, errors.WrapIff(err, "JAJ IstioControlPlane spec cannot be converted into a map[string]interface{}: %+v", icp.Spec)
+		return nil, errors.WrapIff(err, "IstioControlPlane spec cannot be converted into a map[string]interface{}: %+v", icp.Spec)
 	}
 
 	return values, nil

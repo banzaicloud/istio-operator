@@ -21,7 +21,8 @@ cni:
   cniConfFileName: ""
 
   excludeNamespaces:
-    - istio-system
+    # TODO need to conditionally include this
+    # - istio-system
     - kube-system
 
   includeNamespaces: []
@@ -37,10 +38,11 @@ cni:
   chained: true
 
   # Configure ambient settings
-  # JAJ TODO need to double check this
   ambient:
     # If enabled, ambient redirection will be enabled
-    enabled: false
+    # TODO should be defaulted to false here but updated
+    # in .tpl file to true if ambient enabled
+    enabled: true
     # Set ambient redirection mode: "iptables" or "ebpf"
     redirectMode: "iptables"
 
@@ -71,7 +73,8 @@ cni:
     annotations: {}
   podMetadata:
     labels: {}
-    annotations: {}
+    # TODO This should only be added when Ambient enabled
+    annotations: {ambient.istio.io/redirection: disabled}
   deploymentStrategy:
     type: RollingUpdate
     rollingUpdate:
@@ -93,6 +96,9 @@ cni:
       memory: 100Mi
 
   priorityClassName: system-node-critical
+
+  # TODO Shouldn't this always be privileged
+  privileged: true
 
 # Revision is set as 'version' label and part of the resource names when installing multiple control planes.
 revision: ""

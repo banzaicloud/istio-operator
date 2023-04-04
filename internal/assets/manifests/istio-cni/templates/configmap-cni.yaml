@@ -12,7 +12,6 @@ metadata:
     app: istio-cni
     release: {{ .Release.Name }}
     istio.io/rev: {{ include "namespaced-revision" . }}
-    {{if .Values.cni.ambient.enabled}} "ambient.istio.io/redirection: disabled"{{end}}
 data:
   # The CNI network configuration to add to the plugin chain on each node.  The special
   # values in this config will be automatically populated.
@@ -43,7 +42,6 @@ metadata:
     app: istio-cni
     release: {{ .Release.Name }}
     istio.io/rev: {{ include "namespaced-revision" . }}
-    {{if .Values.cni.ambient.enabled}} "ambient.istio.io/redirection: disabled"{{end}}
 data:
   config: |
         - name: {{ include "name-with-revision" ( dict "name" "istio-cni" "context" $) }}

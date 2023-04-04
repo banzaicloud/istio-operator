@@ -4,7 +4,7 @@ description: Istio control plane descriptor
 layout: protoc-gen-docs
 generator: protoc-gen-docs
 schema: istio-operator.api.v1alpha1.IstioControlPlaneSpec
-number_of_entries: 42
+number_of_entries: 41
 ---
 <h2 id="IstioControlPlaneSpec">IstioControlPlaneSpec</h2>
 <section>
@@ -302,8 +302,10 @@ No
 </tr>
 <tr id="IstioControlPlaneSpec-ambientTopology">
 <td><code>ambientTopology</code></td>
-<td><code><a href="#AmbientTopology">AmbientTopology</a></code></td>
+<td><code><a href="https://developers.google.com/protocol-buffers/docs/reference/google.protobuf#boolvalue">BoolValue</a></code></td>
 <td>
+<p>ambientTopology deploys and configures an ambient topology</p>
+
 </td>
 <td>
 No
@@ -1207,32 +1209,6 @@ No
 <tr id="HTTPProxyEnvsConfiguration-noProxy">
 <td><code>noProxy</code></td>
 <td><code>string</code></td>
-<td>
-</td>
-<td>
-No
-</td>
-</tr>
-</tbody>
-</table>
-</section>
-<h2 id="AmbientTopology">AmbientTopology</h2>
-<section>
-<p>Ambient sets Istiod in an ambient topology</p>
-
-<table class="message-fields">
-<thead>
-<tr>
-<th>Field</th>
-<th>Type</th>
-<th>Description</th>
-<th>Required</th>
-</tr>
-</thead>
-<tbody>
-<tr id="AmbientTopology-enabled">
-<td><code>enabled</code></td>
-<td><code><a href="https://developers.google.com/protocol-buffers/docs/reference/google.protobuf#boolvalue">BoolValue</a></code></td>
 <td>
 </td>
 <td>

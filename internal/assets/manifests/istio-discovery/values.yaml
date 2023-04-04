@@ -60,6 +60,7 @@ pilot:
 
   # Additional labels to apply to the deployment.
   deploymentLabels: {}
+  # TODO need an annotation for ambient. Set in CR for testing
   deploymentAnnotations: {}
 
   ## Mesh config settings
