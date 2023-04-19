@@ -21,7 +21,7 @@ cni:
   cniConfFileName: ""
 
   excludeNamespaces:
-    # TODO need to conditionally include this
+    # TODO JAJ - recheck this is commented out in working diffs
     # - istio-system
     - kube-system
 
@@ -40,9 +40,7 @@ cni:
   # Configure ambient settings
   ambient:
     # If enabled, ambient redirection will be enabled
-    # TODO should be defaulted to false here but updated
-    # in .tpl file to true if ambient enabled
-    enabled: true
+    enabled: false
     # Set ambient redirection mode: "iptables" or "ebpf"
     redirectMode: "iptables"
 
@@ -73,8 +71,7 @@ cni:
     annotations: {}
   podMetadata:
     labels: {}
-    # TODO This should only be added when Ambient enabled
-    annotations: {ambient.istio.io/redirection: disabled}
+    # TODO JAJ test - annotations: {ambient.istio.io/redirection: disabled}
   deploymentStrategy:
     type: RollingUpdate
     rollingUpdate:
