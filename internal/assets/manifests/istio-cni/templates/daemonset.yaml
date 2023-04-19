@@ -29,7 +29,6 @@ spec:
         app: istio-cni-node
         release: {{ .Release.Name }}
         sidecar.istio.io/inject: "false"
-        # TODO Need a label for the ambient case
 {{- include "toYamlIf" (dict "value" .Values.cni.podMetadata.labels) | indent 8 }}
       annotations:
         sidecar.istio.io/inject: "false"
@@ -38,6 +37,10 @@ spec:
         prometheus.io/port: "15014"
         prometheus.io/path: '/metrics'
 {{- include "toYamlIf" (dict "value" .Values.cni.podMetadata.annotations) | indent 8 }}
+        # TODO JAJ needs testing
+        {{if .Values.cni.ambient.enabled }}
+        ambient.istio.io/redirection: "disabled"
+        {{ end }}
     spec:
       {{if .Values.cni.ambient.enabled }}hostNetwork: true{{ end }}
 {{- if .Values.cni.priorityClassName }}
@@ -187,9 +190,11 @@ spec:
         - name: cni-net-dir
           hostPath:
             path: {{ default "/etc/cni/net.d" .Values.cni.cniConfDir }}
+        {{- if .Values.cni.ambient.enabled }}
         - name: cni-netns-dir
           hostPath:
             path: /var/run/netns
+        {{- end }}
         # Used for UDS log
         - name: cni-log-dir
           hostPath:

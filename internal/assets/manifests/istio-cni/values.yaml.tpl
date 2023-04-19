@@ -16,7 +16,19 @@
 {{ valueIf (dict "key" "brokenPodLabelValue" "value" .GetBrokenPodLabelValue ) }}
 {{- end }}
 
+{{- define "ambient" }}
+{{- with .GetSpec }}
+{{ valueIf (dict "key" "enabled" "value" .GetAmbientTopology ) }}
+{{ end }}
+{{ end }}
+
 {{- define "cni" }}
+{{- $x := (include "ambient" .) | reformatYaml }}
+{{- if ne $x "" }}
+ambient:
+{{ $x | indent 2 }}
+{{- end }}
+
 {{- with .GetSpec.GetProxyInit.GetCni }}
 
 {{ valueIf (dict "key" "enabled" "value" .GetEnabled ) }}

@@ -99,6 +99,8 @@ rules:
   - nodes
   verbs:
   - get
+  - list
+  - watch
 
 ---
 apiVersion: rbac.authorization.k8s.io/v1
@@ -340,6 +342,11 @@ spec:
           value: cni.istio.io/uninitialized
         - name: REPAIR_BROKEN_POD_LABEL_VALUE
           value: "true"
+        - name: NODE_NAME
+          valueFrom:
+            fieldRef:
+              apiVersion: v1
+              fieldPath: spec.nodeName
         - name: CNI_ENV_NAME
           value: "true"
         - name: CNI_ANOTHER_ENV_NAME
@@ -362,7 +369,7 @@ spec:
           runAsGroup: 0
           runAsNonRoot: false
           runAsUser: 0
-          privileged: null
+          privileged: true
         volumeMounts:
         - mountPath: /host/opt/cni/bin
           name: cni-bin-dir
