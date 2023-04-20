@@ -49,8 +49,9 @@ multiCluster:
 meshConfig:
   defaultConfig:
     {{ if .GetSpec.GetAmbientTopology }}
-    # TODO change this to match name-with-revision
-    proxyMetadata: {XDS_ADDRESS: istiod-icp-v116x-sample:15012}
+    # TODO change this to match name-with-revision and namespace
+    # needs to match the installed environment
+    proxyMetadata: {XDS_ADDRESS: https://istiod-icp-v116x-sample.istio-system.svc:15012, CA_ADDRESS: https://istiod-icp-v116x-sample.istio-system.svc:15012}
     {{ else }}
     proxyMetadata: {}
     {{ end }}

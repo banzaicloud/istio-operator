@@ -29,6 +29,12 @@ env:
     value: "true"
   - name: PILOT_ENABLE_HBONE
     value: "true"
+  - name: VERIFY_CERTIFICATE_AT_CLIENT
+    value: "true"
+  - name: ENABLE_AUTO_SNI
+    value: "true"
+  - name: CA_TRUSTED_NODE_ACCOUNTS 
+    value: "istio-system/ztunnel,kube-system/ztunnel"
 {{ end }}
 {{ if eq .GetSpec.GetDistribution "cisco" }}
   - name: INJECTION_WEBHOOK_CONFIG_NAME
