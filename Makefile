@@ -23,8 +23,7 @@ KUSTOMIZE_VERSION = 4.1.2
 ISTIO_VERSION = 1.16.1
 BUF_VERSION = 1.7.0
 
-#PATH := $(PATH):$(PWD)/bin
-PATH := $(PWD)/bin:$(PATH)
+PATH := $(PATH):$(PWD)/bin
 
 all: check manager
 
@@ -71,9 +70,8 @@ ifneq (${SKIP_TESTS}, 1)
 endif
 
 # Build manager binary
-#manager: generate manifests fmt vet build
 .PHONY: manager
-manager: generate manifests fmt build
+manager: generate manifests fmt vet build
 
 # Build manager binary
 .PHONY: build
@@ -149,8 +147,7 @@ check-manifests: manifests
 	git diff --exit-code
 
 # Build the docker image
-#docker-build: test
-docker-build:
+docker-build: test
 	docker build . -t ${IMG}
 
 # Push the docker image
