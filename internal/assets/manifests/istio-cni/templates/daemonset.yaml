@@ -37,7 +37,6 @@ spec:
         prometheus.io/port: "15014"
         prometheus.io/path: '/metrics'
 {{- include "toYamlIf" (dict "value" .Values.cni.podMetadata.annotations) | indent 8 }}
-        # TODO JAJ needs testing
         {{if .Values.cni.ambient.enabled }}
         ambient.istio.io/redirection: "disabled"
         {{ end }}

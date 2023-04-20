@@ -1,10 +1,9 @@
 # Hub to pull from. Image will be `Hub/Image:Tag-Variant`
-#hub: "gcr.io/istio-testing"
-hub: "docker.io/istio"
+hub: "gcr.io/istio-testing"
+#JAJ hub: "docker.io/istio"
 # Tag to pull from. Image will be `Hub/Image:Tag-Variant`
-#TODO tag: "latest"
-#tag: "0.0.0-ambient.191fe680b52c1754ee72a06b3e0d3f9d116f2e82"
-tag: "1.18.0-alpha.0"
+tag: "latest"
+#JAJ tag: "1.18.0-alpha.0"
 # Variant to pull. Options are "debug" or "distroless". Unset will use the default for the given version.
 variant: ""
 

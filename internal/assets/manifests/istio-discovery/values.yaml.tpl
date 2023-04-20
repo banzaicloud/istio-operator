@@ -97,8 +97,6 @@ logLevel: {{ .GetSpec.GetProxy.GetLogLevel | toString | lower }}
 {{- toYamlIf (dict "value" .GetSpec.GetProxyInit.GetResources "key" "resources") }}
 {{- end }}
 
-# TODO Could make revision null string based on ambient
-# to have service name = istiod
 {{ valueIf (dict "key" "revision" "value" .Name) }}
 
 {{- $x := (include "pilot" .) | reformatYaml }}

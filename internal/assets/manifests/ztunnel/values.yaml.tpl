@@ -1,9 +1,5 @@
-# Hub to pull from. Image will be `Hub/Image:Tag-Variant`
-#hub: "gcr.io/istio-testing"
-hub: "docker.io/istio"
-# Tag to pull from. Image will be `Hub/Image:Tag-Variant`
-#TODO tag: "latest"
-tag: "1.18.0-alpha.0"
+{{ valueIf (dict "key" "hub" "value" .GetSpec.GetContainerImageConfiguration.GetHub) }}
+{{ valueIf (dict "key" "tag" "value" .GetSpec.GetContainerImageConfiguration.GetTag) }}
 
 # Variant to pull. Options are "debug" or "distroless". Unset will use the default for the given version.
 variant: ""
@@ -11,7 +7,6 @@ variant: ""
 # Image name to pull from. Image will be `Hub/Image:Tag-Variant`
 # If Image contains a "/", it will replace the entire `image` in the pod.
 image: ztunnel
-#OLD image: proxyv2
 
 # Labels to apply to all top level resources
 labels: {}
@@ -53,4 +48,9 @@ multiCluster:
 # TODO: https://github.com/istio/istio/issues/43248
 meshConfig:
   defaultConfig:
+    {{ if .GetSpec.GetAmbientTopology }}
+    # TODO change this to match name-with-revision
+    proxyMetadata: {XDS_ADDRESS: istiod-icp-v116x-sample:15012}
+    {{ else }}
     proxyMetadata: {}
+    {{ end }}

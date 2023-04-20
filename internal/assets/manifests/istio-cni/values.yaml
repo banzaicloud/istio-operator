@@ -71,7 +71,6 @@ cni:
     annotations: {}
   podMetadata:
     labels: {}
-    # TODO JAJ test - annotations: {ambient.istio.io/redirection: disabled}
   deploymentStrategy:
     type: RollingUpdate
     rollingUpdate:
