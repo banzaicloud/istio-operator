@@ -16,3 +16,7 @@ To get your pull request merged, Golang files must be formatted using the `go fm
 #### Linting
 
 Go code must pass [`lint`](https://github.com/golang/lint) checks.
+
+#### Developer Tasks
+The Makefile includes targets for most tasks a contributor would
+want to use before submitting a pull request.

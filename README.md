@@ -69,7 +69,22 @@ For a complete list of SMM features please check out the [SMM docs](https://smm-
 ###  Build and deploy
 Download or check out the latest stable release.
 
-Run `make deploy` to deploy the operator controller-manager on your kubernetes cluster.
+#### Build your own image
+You can use `make docker-build` to build your image. You will
+want to set the IMAGE_REPOSITORY and TAG env variables
+appropriately to ensure the operator image you have built is
+used in the deploy step.
+
+#### Deploy
+
+Run `make deploy` to deploy the operator controller-manager on your
+kubernetes cluster.  It will load all necessary CRDs and start the
+operator.  It is necessary to ensure the appropriate image can
+be pulled into your cluster.  If you have not built your own images
+the image will be pulled from `ghcr.io/banzaicloud/istio-operator`
+with the TAG calculated based on the branch you checked out.
+
+#### Check Status
 
 Check if the controller is running in the `istio-system` namespace:
 ```
@@ -165,6 +180,7 @@ If you find this project useful here's how you can help:
 - Send a pull request with your new features and bug fixes
 - Help new users with issues they may encounter
 - Support the development of this project and star this repo!
+- The [contributing guide](CONTRIBUTING.md) has more information
 
 ## Got stuck? Find help!
 
@@ -175,6 +191,12 @@ If you encounter any problems that is not addressed in our documentation, [open 
 ### Engineering blog
 
 We occasionally write blog posts about [Istio](https://ciscotechblog.com/tags/istio/) itself and the [Istio operator](https://ciscotechblog.com/tags/istio-operator/).
+
+### Example deployment topologies
+
+The docs directory includes a few sample topologies
+that can be tried.  Included is both a sample icp CR to drive
+the operator and some documentation regarding the topology and usage.
 
 ## License
 
