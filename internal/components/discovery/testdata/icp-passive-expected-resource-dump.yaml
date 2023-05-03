@@ -1517,6 +1517,8 @@ spec:
 apiVersion: admissionregistration.k8s.io/v1
 kind: MutatingWebhookConfiguration
 metadata:
+  annotations:
+    admissions.enforcer/disabled: "true"
   labels:
     app: sidecar-injector
     istio.io/rev: cp-v115x.istio-system
