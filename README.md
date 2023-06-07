@@ -170,7 +170,7 @@ If you find this project useful here's how you can help:
 
 ### Community support
 
-If you encounter any problems that is not addressed in our documentation, [open an issue](https://github.com/banzaicloud/istio-operator/issues) or talk to us on the [Banzai Cloud Slack channel #istio-operator.](https://pages.banzaicloud.com/invite-slack).
+If you encounter any problems that is not addressed in our documentation, [open an issue](https://github.com/banzaicloud/istio-operator/issues) or talk to us on the [Cisco ETI Slack channel #istio-operator.](https://eti.cisco.com/slack).
 
 ### Engineering blog
 
@@ -178,7 +178,7 @@ We occasionally write blog posts about [Istio](https://ciscotechblog.com/tags/is
 
 ## License
 
-Copyright (c) 2021 Cisco Systems, Inc. and/or its affiliates
+Copyright (c) 2021-2023 Cisco Systems, Inc. and/or its affiliates
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
