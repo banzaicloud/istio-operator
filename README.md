@@ -170,7 +170,7 @@ If you find this project useful here's how you can help:
 
 ### Community support
 
-If you encounter any problems that is not addressed in our documentation, [open an issue](https://github.com/banzaicloud/istio-operator/issues) or talk to us on the [Cisco ETI Slack channel #istio-operator.](https://eti.cisco.com/slack).
+If you encounter any problems that is not addressed in our documentation, [open an issue](https://github.com/banzaicloud/istio-operator/issues) or talk to us on the [Outshift Slack channel #istio-operator.](https://eti.cisco.com/slack).
 
 ### Engineering blog
 
