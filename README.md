@@ -26,8 +26,8 @@ The goal of the **Istio-operator** is to enable popular service mesh use cases (
 
 ## Istio operator vs [Calisti](https://calisti.app/)
 
-[Calisti](https://calisti.app/) is an enterprise ready Istio platform for DevOps and SREs that automates lifecycle management and simplifies connectivity, security & observability for microservice based applications.
-The Cisco Istio operator is a core part of Calisti's Service Mesh Manager (SMM) component, which helps with installing, upgrading and managing an Istio mesh, but SMM provides many other components to conveniently secure, operate and observe Istio as well.
+[Calisti](https://calisti.app/) is an enterprise-ready Istio platform for DevOps and SREs that automates lifecycle management and simplifies connectivity, security & observability for microservice-based applications.
+The Cisco Istio operator is the core part of Calisti's Service Mesh Manager (SMM) component, which helps install, upgrade and manage Istio meshes. Still, SMM also provides many other features to secure, operate and observe Istio conveniently.
 
 The differences are presented in this table:
 
@@ -57,7 +57,7 @@ The differences are presented in this table:
 |        Validations        |                         |     :heavy_check_mark:     |
 |          Support          |        Community        |         Enterprise         |
 
-For a complete list of SMM features please check out the [SMM docs](https://smm-docs.eticloud.io/docs/).
+For a complete list of SMM features, please check out the [SMM docs](https://smm-docs.eticloud.io/docs/).
 
 ## Getting started
 
@@ -69,7 +69,7 @@ For a complete list of SMM features please check out the [SMM docs](https://smm-
 ###  Build and deploy
 Download or check out the latest stable release.
 
-Run `make deploy` to deploy the operator controller-manager on your kubernetes cluster.
+Run `make deploy` to deploy the operator's controller-manager on your kubernetes cluster.
 
 Check if the controller is running in the `istio-system` namespace:
 ```
@@ -116,7 +116,7 @@ serviceaccount/bookinfo-productpage created
 deployment.apps/productpage-v1 created
 ```
 
-Verify that all applications pods are running and have the sidecar proxy injected. The READY column shows the number of containers for the pod: this should be 1/1 for the gateway, and at least 2/2 for the other pods (the original container of the pods + the sidecar container).
+Verify that all applications' pods are running and have the sidecar proxy injected. The READY column shows the number of containers for the pod: this should be 1/1 for the gateway, and at least 2/2 for the other pods (the original container of the pods + the sidecar container).
 ```
 $ kubectl get pod -n demoapp
 NAME                              READY   STATUS    RESTARTS   AGE
@@ -154,13 +154,13 @@ x-envoy-upstream-service-time: 739
 
 ## Issues, feature requests
 
-Please note that the Istio operator is constantly under development and new releases might introduce breaking changes.
-We are striving to keep backward compatibility as much as possible while adding new features at a fast pace.
+Please note that the Istio operator is constantly under development, and new releases might introduce breaking changes.
+We are striving to keep backward compatibility as much as possible while adding new features at a rapid pace.
 Issues, new features or bugs are tracked on the projects [GitHub page](https://github.com/banzaicloud/istio-operator/issues) - please feel free to add yours!
 
 ## Contributing
 
-If you find this project useful here's how you can help:
+If you find this project useful, here's how you can help:
 
 - Send a pull request with your new features and bug fixes
 - Help new users with issues they may encounter
@@ -170,7 +170,7 @@ If you find this project useful here's how you can help:
 
 ### Community support
 
-If you encounter any problems that is not addressed in our documentation, [open an issue](https://github.com/banzaicloud/istio-operator/issues) or talk to us on the [Outshift Slack channel #istio-operator.](https://eti.cisco.com/slack).
+If you encounter any problems not addressed in our documentation, [open an issue](https://github.com/banzaicloud/istio-operator/issues) or talk to us on the [Outshift Slack channel #istio-operator](https://eti.cisco.com/slack).
 
 ### Engineering blog
 
