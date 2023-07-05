@@ -209,12 +209,16 @@ spec:
           operator: DoesNotExist
         - key: istio.io/rev
           operator: DoesNotExist
+      namespaces:
+        - istio-system
     - labels:
       - matchExpressions:
         - key: banzaicloud.io/related-to
           operator: DoesNotExist
         matchLabels:
           istio.io/rev: cp-v115x.istio-system
+      namespaces:
+        - istio-system
 
 ---
 apiVersion: clusterregistry.k8s.cisco.com/v1alpha1
@@ -242,12 +246,16 @@ spec:
           operator: DoesNotExist
         - key: istio.io/rev
           operator: DoesNotExist
+      namespaces:
+        - istio-system
     - labels:
       - matchExpressions:
         - key: banzaicloud.io/related-to
           operator: DoesNotExist
         matchLabels:
           istio.io/rev: cp-v115x.istio-system
+      namespaces:
+        - istio-system
 
 ---
 apiVersion: clusterregistry.k8s.cisco.com/v1alpha1
@@ -275,12 +283,16 @@ spec:
           operator: DoesNotExist
         - key: istio.io/rev
           operator: DoesNotExist
+      namespaces:
+        - istio-system
     - labels:
       - matchExpressions:
         - key: banzaicloud.io/related-to
           operator: DoesNotExist
         matchLabels:
           istio.io/rev: cp-v115x.istio-system
+      namespaces:
+        - istio-system
 
 ---
 apiVersion: clusterregistry.k8s.cisco.com/v1alpha1
@@ -308,12 +320,16 @@ spec:
           operator: DoesNotExist
         - key: istio.io/rev
           operator: DoesNotExist
+      namespaces:
+        - istio-system
     - labels:
       - matchExpressions:
         - key: banzaicloud.io/related-to
           operator: DoesNotExist
         matchLabels:
           istio.io/rev: cp-v115x.istio-system
+      namespaces:
+        - istio-system
 ---
 apiVersion: clusterregistry.k8s.cisco.com/v1alpha1
 kind: ResourceSyncRule
@@ -339,6 +355,8 @@ spec:
           labels:
             - matchLabels:
                 istio.io/rev: cp-v115x.istio-system
+          namespaces:
+            - istio-system
       mutations:
         labels:
           add:
@@ -370,12 +388,16 @@ spec:
           operator: DoesNotExist
         - key: istio.io/rev
           operator: DoesNotExist
+      namespaces:
+        - istio-system
     - labels:
       - matchExpressions:
         - key: banzaicloud.io/related-to
           operator: DoesNotExist
         matchLabels:
           istio.io/rev: cp-v115x.istio-system
+      namespaces:
+        - istio-system
 
 ---
 apiVersion: clusterregistry.k8s.cisco.com/v1alpha1
@@ -400,6 +422,8 @@ spec:
         - objectKey:
             name: cp-v115x
             namespace: istio-system
+          namespaces:
+            - istio-system
       mutations:
         groupVersionKind:
           kind: PeerIstioControlPlane
@@ -436,12 +460,16 @@ spec:
           operator: DoesNotExist
         - key: istio.io/rev
           operator: DoesNotExist
+      namespaces:
+        - istio-system
     - labels:
       - matchExpressions:
         - key: banzaicloud.io/related-to
           operator: DoesNotExist
         matchLabels:
           istio.io/rev: cp-v115x.istio-system
+      namespaces:
+        - istio-system
 
 ---
 apiVersion: clusterregistry.k8s.cisco.com/v1alpha1
@@ -469,12 +497,16 @@ spec:
           operator: DoesNotExist
         - key: istio.io/rev
           operator: DoesNotExist
+      namespaces:
+        - istio-system
     - labels:
       - matchExpressions:
         - key: banzaicloud.io/related-to
           operator: DoesNotExist
         matchLabels:
           istio.io/rev: cp-v115x.istio-system
+      namespaces:
+        - istio-system
 
 ---
 apiVersion: clusterregistry.k8s.cisco.com/v1alpha1
@@ -502,12 +534,16 @@ spec:
           operator: DoesNotExist
         - key: istio.io/rev
           operator: DoesNotExist
+      namespaces:
+        - istio-system
     - labels:
       - matchExpressions:
         - key: banzaicloud.io/related-to
           operator: DoesNotExist
         matchLabels:
           istio.io/rev: cp-v115x.istio-system
+      namespaces:
+        - istio-system
 
 ---
 apiVersion: clusterregistry.k8s.cisco.com/v1alpha1
@@ -535,12 +571,16 @@ spec:
           operator: DoesNotExist
         - key: istio.io/rev
           operator: DoesNotExist
+      namespaces:
+        - istio-system
     - labels:
       - matchExpressions:
         - key: banzaicloud.io/related-to
           operator: DoesNotExist
         matchLabels:
           istio.io/rev: cp-v115x.istio-system
+      namespaces:
+        - istio-system
 
 ---
 apiVersion: clusterregistry.k8s.cisco.com/v1alpha1
@@ -568,12 +608,16 @@ spec:
           operator: DoesNotExist
         - key: istio.io/rev
           operator: DoesNotExist
+      namespaces:
+        - istio-system
     - labels:
       - matchExpressions:
         - key: banzaicloud.io/related-to
           operator: DoesNotExist
         matchLabels:
           istio.io/rev: cp-v115x.istio-system
+      namespaces:
+        - istio-system
 
 ---
 apiVersion: clusterregistry.k8s.cisco.com/v1alpha1
@@ -601,12 +645,16 @@ spec:
           operator: DoesNotExist
         - key: istio.io/rev
           operator: DoesNotExist
+      namespaces:
+        - istio-system
     - labels:
       - matchExpressions:
         - key: banzaicloud.io/related-to
           operator: DoesNotExist
         matchLabels:
           istio.io/rev: cp-v115x.istio-system
+      namespaces:
+        - istio-system
 
 ---
 apiVersion: clusterregistry.k8s.cisco.com/v1alpha1
@@ -634,9 +682,13 @@ spec:
           operator: DoesNotExist
         - key: istio.io/rev
           operator: DoesNotExist
+      namespaces:
+        - istio-system
     - labels:
       - matchExpressions:
         - key: banzaicloud.io/related-to
           operator: DoesNotExist
         matchLabels:
           istio.io/rev: cp-v115x.istio-system
+      namespaces:
+        - istio-system

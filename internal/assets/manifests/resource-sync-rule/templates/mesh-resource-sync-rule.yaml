@@ -21,5 +21,7 @@ spec:
     - objectKey:
         name: {{ .Values.meshID }}
         namespace: {{ .Release.Namespace }}
+      namespaces:
+        - {{ .Release.Namespace }}
       syncStatus: true
 {{- end }}

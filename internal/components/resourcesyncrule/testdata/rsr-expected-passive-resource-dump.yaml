@@ -202,6 +202,8 @@ spec:
             name: mesh1
             namespace: istio-system
           syncStatus: true
+          namespaces:
+            - istio-system
 ---
 apiVersion: clusterregistry.k8s.cisco.com/v1alpha1
 kind: ResourceSyncRule
@@ -225,6 +227,8 @@ spec:
         - objectKey:
             name: cp-v115x
             namespace: istio-system
+          namespaces:
+            - istio-system
       mutations:
         groupVersionKind:
           kind: PeerIstioControlPlane

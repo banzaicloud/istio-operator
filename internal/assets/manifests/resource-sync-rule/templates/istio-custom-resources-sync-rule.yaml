@@ -24,12 +24,16 @@ spec:
           operator: DoesNotExist
         - key: istio.io/rev
           operator: DoesNotExist
+      namespaces:
+        - {{ .Release.Namespace }}
     - labels:
       - matchExpressions:
         - key: banzaicloud.io/related-to
           operator: DoesNotExist
         matchLabels:
           istio.io/rev: {{ include "namespaced-revision" . }}
+      namespaces:
+        - {{ .Release.Namespace }}
 ---
 apiVersion: clusterregistry.k8s.cisco.com/v1alpha1
 kind: ResourceSyncRule
@@ -56,12 +60,16 @@ spec:
           operator: DoesNotExist
         - key: istio.io/rev
           operator: DoesNotExist
+      namespaces:
+        - {{ .Release.Namespace }}
     - labels:
       - matchExpressions:
         - key: banzaicloud.io/related-to
           operator: DoesNotExist
         matchLabels:
           istio.io/rev: {{ include "namespaced-revision" . }}
+      namespaces:
+        - {{ .Release.Namespace }}
 ---
 apiVersion: clusterregistry.k8s.cisco.com/v1alpha1
 kind: ResourceSyncRule
@@ -88,12 +96,16 @@ spec:
           operator: DoesNotExist
         - key: istio.io/rev
           operator: DoesNotExist
+      namespaces:
+        - {{ .Release.Namespace }}
     - labels:
       - matchExpressions:
         - key: banzaicloud.io/related-to
           operator: DoesNotExist
         matchLabels:
           istio.io/rev: {{ include "namespaced-revision" . }}
+      namespaces:
+        - {{ .Release.Namespace }}
 ---
 apiVersion: clusterregistry.k8s.cisco.com/v1alpha1
 kind: ResourceSyncRule
@@ -120,12 +132,16 @@ spec:
           operator: DoesNotExist
         - key: istio.io/rev
           operator: DoesNotExist
+      namespaces:
+        - {{ .Release.Namespace }}
     - labels:
       - matchExpressions:
         - key: banzaicloud.io/related-to
           operator: DoesNotExist
         matchLabels:
           istio.io/rev: {{ include "namespaced-revision" . }}
+      namespaces:
+        - {{ .Release.Namespace }}
 ---
 apiVersion: clusterregistry.k8s.cisco.com/v1alpha1
 kind: ResourceSyncRule
@@ -152,12 +168,16 @@ spec:
           operator: DoesNotExist
         - key: istio.io/rev
           operator: DoesNotExist
+      namespaces:
+        - {{ .Release.Namespace }}
     - labels:
       - matchExpressions:
         - key: banzaicloud.io/related-to
           operator: DoesNotExist
         matchLabels:
           istio.io/rev: {{ include "namespaced-revision" . }}
+      namespaces:
+        - {{ .Release.Namespace }}
 ---
 apiVersion: clusterregistry.k8s.cisco.com/v1alpha1
 kind: ResourceSyncRule
@@ -184,12 +204,16 @@ spec:
           operator: DoesNotExist
         - key: istio.io/rev
           operator: DoesNotExist
+      namespaces:
+        - {{ .Release.Namespace }}
     - labels:
       - matchExpressions:
         - key: banzaicloud.io/related-to
           operator: DoesNotExist
         matchLabels:
           istio.io/rev: {{ include "namespaced-revision" . }}
+      namespaces:
+        - {{ .Release.Namespace }}
 ---
 apiVersion: clusterregistry.k8s.cisco.com/v1alpha1
 kind: ResourceSyncRule
@@ -216,12 +240,16 @@ spec:
           operator: DoesNotExist
         - key: istio.io/rev
           operator: DoesNotExist
+      namespaces:
+        - {{ .Release.Namespace }}
     - labels:
       - matchExpressions:
         - key: banzaicloud.io/related-to
           operator: DoesNotExist
         matchLabels:
           istio.io/rev: {{ include "namespaced-revision" . }}
+      namespaces:
+        - {{ .Release.Namespace }}
 ---
 apiVersion: clusterregistry.k8s.cisco.com/v1alpha1
 kind: ResourceSyncRule
@@ -248,12 +276,16 @@ spec:
           operator: DoesNotExist
         - key: istio.io/rev
           operator: DoesNotExist
+      namespaces:
+        - {{ .Release.Namespace }}
     - labels:
       - matchExpressions:
         - key: banzaicloud.io/related-to
           operator: DoesNotExist
         matchLabels:
           istio.io/rev: {{ include "namespaced-revision" . }}
+      namespaces:
+        - {{ .Release.Namespace }}
 ---
 apiVersion: clusterregistry.k8s.cisco.com/v1alpha1
 kind: ResourceSyncRule
@@ -280,12 +312,16 @@ spec:
           operator: DoesNotExist
         - key: istio.io/rev
           operator: DoesNotExist
+      namespaces:
+        - {{ .Release.Namespace }}
     - labels:
       - matchExpressions:
         - key: banzaicloud.io/related-to
           operator: DoesNotExist
         matchLabels:
           istio.io/rev: {{ include "namespaced-revision" . }}
+      namespaces:
+        - {{ .Release.Namespace }}
 ---
 apiVersion: clusterregistry.k8s.cisco.com/v1alpha1
 kind: ResourceSyncRule
@@ -312,12 +348,16 @@ spec:
           operator: DoesNotExist
         - key: istio.io/rev
           operator: DoesNotExist
+      namespaces:
+        - {{ .Release.Namespace }}
     - labels:
       - matchExpressions:
         - key: banzaicloud.io/related-to
           operator: DoesNotExist
         matchLabels:
           istio.io/rev: {{ include "namespaced-revision" . }}
+      namespaces:
+        - {{ .Release.Namespace }}
 ---
 apiVersion: clusterregistry.k8s.cisco.com/v1alpha1
 kind: ResourceSyncRule
@@ -344,12 +384,16 @@ spec:
           operator: DoesNotExist
         - key: istio.io/rev
           operator: DoesNotExist
+      namespaces:
+        - {{ .Release.Namespace }}
     - labels:
       - matchExpressions:
         - key: banzaicloud.io/related-to
           operator: DoesNotExist
         matchLabels:
           istio.io/rev: {{ include "namespaced-revision" . }}
+      namespaces:
+        - {{ .Release.Namespace }}
 ---
 apiVersion: clusterregistry.k8s.cisco.com/v1alpha1
 kind: ResourceSyncRule
@@ -376,10 +420,14 @@ spec:
           operator: DoesNotExist
         - key: istio.io/rev
           operator: DoesNotExist
+      namespaces:
+        - {{ .Release.Namespace }}
     - labels:
       - matchExpressions:
         - key: banzaicloud.io/related-to
           operator: DoesNotExist
         matchLabels:
           istio.io/rev: {{ include "namespaced-revision" . }}
+      namespaces:
+        - {{ .Release.Namespace }}
 {{- end }}
