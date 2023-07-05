@@ -20,6 +20,8 @@ spec:
     - objectKey:
         name: {{ .Values.revision }}
         namespace: {{ .Release.Namespace }}
+      namespaces:
+        - {{ .Release.Namespace }}
     mutations:
       groupVersionKind:
         kind: PeerIstioControlPlane

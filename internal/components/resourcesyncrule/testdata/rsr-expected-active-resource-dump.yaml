@@ -339,6 +339,8 @@ spec:
           labels:
             - matchLabels:
                 istio.io/rev: cp-v115x.istio-system
+          namespaces:
+            - istio-system
       mutations:
         labels:
           add:
@@ -400,6 +402,8 @@ spec:
         - objectKey:
             name: cp-v115x
             namespace: istio-system
+          namespaces:
+            - istio-system
       mutations:
         groupVersionKind:
           kind: PeerIstioControlPlane
