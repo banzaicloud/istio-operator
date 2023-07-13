@@ -92,6 +92,8 @@ spec:
                   key: cni_network_config
             - name: CNI_NET_DIR
               value: {{ default "/etc/cni/net.d" .Values.cni.cniConfDir }}
+            - name: ISTIO_REVISION
+              value: {{ include "namespaced-revision" . }}
             # Deploy as a standalone CNI plugin or as chained?
             - name: CHAINED_CNI_PLUGIN
               value: "{{ .Values.cni.chained }}"

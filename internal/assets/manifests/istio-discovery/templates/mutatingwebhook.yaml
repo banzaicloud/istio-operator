@@ -54,6 +54,8 @@ metadata:
     istio.io/rev: {{ include "namespaced-revision" . }}
     app: sidecar-injector
     release: {{ .Release.Name }}
+  annotations:
+    admissions.enforcer/disabled: "true"
 webhooks:
 {{- /* Set up the selectors. First section is for revision, rest is for "default" revision */}}
 

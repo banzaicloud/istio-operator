@@ -255,4 +255,7 @@ meshConfig:
 istio_cni:
 {{ valueIf (dict "key" "enabled" "value" .GetSpec.GetProxyInit.GetCni.GetEnabled) | indent 2 }}
 {{ valueIf (dict "key" "chained" "value" .GetSpec.GetProxyInit.GetCni.GetChained) | indent 2 }}
+{{ if eq .GetSpec.GetDistribution "cisco" }}
+  name: {{ .WithNamespacedRevision "istio-cni" }}
+{{- end }}
 {{- end }}
