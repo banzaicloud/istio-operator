@@ -216,4 +216,4 @@ sidecarInjectorWebhook:
     noProxy: localhost
 istio_cni:
   enabled: true
-  name: istio-cni-cp-v115x-istio-system
+  name: istio-cni-cp-v117x-istio-system

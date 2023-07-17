@@ -1423,7 +1423,7 @@ data:
       "istio_cni": {
         "chained": true,
         "enabled": true,
-        "name": "istio-cni-cp-v115x-istio-system"
+        "name": "istio-cni-cp-v117x-istio-system"
       },
       "revision": "cp-v117x",
       "sidecarInjectorWebhook": {

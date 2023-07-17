@@ -319,7 +319,7 @@ spec:
         - name: CNI_NET_DIR
           value: /etc/cni/conf.d
         - name: ISTIO_REVISION
-          value: cp-v115x.istio-system
+          value: cp-v117x.istio-system
         - name: CHAINED_CNI_PLUGIN
           value: "true"
         - name: REPAIR_ENABLED
