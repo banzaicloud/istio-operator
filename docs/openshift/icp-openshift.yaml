@@ -1,7 +1,7 @@
 apiVersion: servicemesh.cisco.com/v1alpha1
 kind: IstioControlPlane
 metadata:
-  name: icp-v115x
+  name: icp-v117x
 spec:
   version: 1.15.3
   mode: ACTIVE
