@@ -19,10 +19,21 @@ helm repo add cluster-registry https://cisco-open.github.io/cluster-registry-con
 helm install --namespace=cluster-registry --create-namespace cluster-registry cluster-registry/cluster-registry --set localCluster.name=demo-active-2 --set network.name=network2 --set controller.apiServerEndpointAddress=$API_SERVER
 ```
 #### Set up registry connection:
-Copy/paste secret and cluster resources from active-1->active-2 and active-2->active-1 as well:
+On Active-1 cluster, save cluster resources at `/tmp/demo-active-1.yaml`
 ```
-kubectl get -n=cluster-registry secret,cluster demo-active-1 -o yaml | pbcopy       pbpaste | kubectl apply -f -
-kubectl get -n=cluster-registry secret,cluster demo-active-2 -o yaml | pbcopy     pbpaste | kubectl apply -f -
+kubectl get -n=cluster-registry cluster demo-active-1 -o yaml > /tmp/demo-active-1.yaml
+```
+On Active-2 cluster, save cluster resources at `/tmp/demo-active-2.yaml`
+```
+kubectl get -n=cluster-registry cluster demo-active-2 -o yaml > /tmp/demo-active-2.yaml
+```
+On Active-1 cluster, set up connection to Active-2
+```
+kubectl apply -f /tmp/demo-active-2.yaml 
+```
+On Active-2 cluster, set up connection to Active-1
+```
+kubectl apply -f /tmp/demo-active-1.yaml 
 ```
 ### Install Istio Operator:
 #### Active-1 setup:
@@ -64,9 +75,15 @@ kubectl apply -f docs/multi-cluster-mesh/active-active/demoapp-2.yaml
 INGRESS_HOST=$(kubectl -n default get service demo-imgw -o jsonpath='{.status.loadBalancer.ingress[0].ip}')
 open http://$INGRESS_HOST/productpage
 ```
+*Note: on AWS clusters, run: 
+```
+INGRESS_HOST=$(kubectl -n default get service demo-imgw -o jsonpath='{.status.loadBalancer.ingress[0].hostname}')
+open http://$INGRESS_HOST/productpage
+``` 
+
 (the first two numbers should be divided by two, that’s how many requests went to reviews-v1 and reviews-v2 received, reviews v3 received the rest out of the 100)
 ```
-for i in `seq 1 100`; do curl -s "http://${INGRESS_HOST}/productpage" |grep -i -e "</html>" -e color=\"; done | sort | uniq –c
+for i in `seq 1 100`; do curl -s "http://${INGRESS_HOST}/productpage" |grep -i -e "</html>" -e color=\"; done | sort | uniq -c
 ```
 
 Traffic split:
