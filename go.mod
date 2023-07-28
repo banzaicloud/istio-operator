@@ -9,7 +9,7 @@ require (
 	github.com/banzaicloud/istio-operator/api/v2 v2.13.5
 	github.com/banzaicloud/k8s-objectmatcher v1.8.0
 	github.com/banzaicloud/operator-tools v0.28.2
-	github.com/cisco-open/cluster-registry-controller/api v0.1.9
+	github.com/cisco-open/cluster-registry-controller/api v0.2.9
 	github.com/fatih/color v1.13.0 // indirect
 	github.com/go-logr/logr v1.2.3
 	github.com/gogo/protobuf v1.3.2 // indirect
@@ -38,6 +38,7 @@ require (
 require (
 	github.com/MakeNowJust/heredoc v1.0.0
 	github.com/Masterminds/semver/v3 v3.1.1
+	github.com/cisco-open/cluster-registry-controller v0.2.9
 	github.com/hexops/gotextdiff v1.0.3
 	github.com/iancoleman/strcase v0.2.0
 	google.golang.org/protobuf v1.28.1
