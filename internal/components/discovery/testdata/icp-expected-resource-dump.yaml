@@ -101,7 +101,7 @@ data:
             {{- end }}
         {{- if .Values.istio_cni.enabled }}
             {{- if not .Values.istio_cni.chained }}
-            k8s.v1.cni.cncf.io/networks: '{{ appendMultusNetwork (index .ObjectMeta.Annotations `k8s.v1.cni.cncf.io/networks`) `istio-cni` }}',
+            k8s.v1.cni.cncf.io/networks: '{{ appendMultusNetwork (index .ObjectMeta.Annotations `k8s.v1.cni.cncf.io/networks`) .Values.istio_cni.name }}',
             {{- end }}
             sidecar.istio.io/interceptionMode: "{{ annotation .ObjectMeta `sidecar.istio.io/interceptionMode` .ProxyConfig.InterceptionMode }}",
             {{ with annotation .ObjectMeta `traffic.sidecar.istio.io/includeOutboundIPRanges` .Values.global.proxy.includeIPRanges }}traffic.sidecar.istio.io/includeOutboundIPRanges: "{{.}}",{{ end }}
@@ -1422,7 +1422,8 @@ data:
       },
       "istio_cni": {
         "chained": true,
-        "enabled": true
+        "enabled": true,
+        "name": "istio-cni-cp-v117x-istio-system"
       },
       "revision": "cp-v117x",
       "sidecarInjectorWebhook": {
@@ -2249,6 +2250,8 @@ webhooks:
 apiVersion: admissionregistration.k8s.io/v1
 kind: MutatingWebhookConfiguration
 metadata:
+  annotations:
+    admissions.enforcer/disabled: "true"
   labels:
     app: sidecar-injector
     istio.io/rev: cp-v117x.istio-system

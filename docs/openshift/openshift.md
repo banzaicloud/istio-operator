@@ -19,7 +19,7 @@ Allow Istio sidecar proxies to run as UID 1337 in the demoapp namespace. This st
 ## Deploy Demo app and Istio Gateway
 ```
 kubectl create ns demoapp
-kubectl label namespace demoapp istio.io/rev=icp-v115x.istio-system
+kubectl label namespace demoapp istio.io/rev=icp-v117x.istio-system
 kubectl apply -n demoapp -f docs/openshift/gw.yaml
 kubectl apply -n demoapp -f docs/openshift/nad.yaml
 kubectl -n demoapp apply -f https://raw.githubusercontent.com/istio/istio/master/samples/bookinfo/platform/kube/bookinfo.yaml

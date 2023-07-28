@@ -39,7 +39,7 @@ data:
           "cni_bin_dir": "/home/kubernetes/bin",
           "exclude_namespaces": [ "smm-system" ],
           "include_namespaces": [ "smm-system" ],
-          "revision": "cp-v117x.istio-system"
+          "revision": "__ISTIO_REVISION__"
       }
     }
 kind: ConfigMap
@@ -318,6 +318,8 @@ spec:
               name: istio-cni-cp-v117x
         - name: CNI_NET_DIR
           value: /etc/cni/conf.d
+        - name: ISTIO_REVISION
+          value: cp-v117x.istio-system
         - name: CHAINED_CNI_PLUGIN
           value: "true"
         - name: REPAIR_ENABLED
