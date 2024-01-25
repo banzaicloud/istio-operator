@@ -774,6 +774,7 @@ type Probe struct {
 	// The action taken to determine the health of a container
 	//
 	// Types that are assignable to Handler:
+	//
 	//	*Probe_Exec
 	//	*Probe_HttpGet
 	//	*Probe_TcpSocket

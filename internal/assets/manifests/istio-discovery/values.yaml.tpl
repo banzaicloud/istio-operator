@@ -83,6 +83,9 @@ logLevel: {{ .GetSpec.GetProxy.GetLogLevel | toString | lower }}
 {{ valueIf (dict "key" "holdApplicationUntilProxyStarts" "value" .GetSpec.GetProxy.GetHoldApplicationUntilProxyStarts) }}
 {{ toYamlIf (dict "value" .GetSpec.GetProxy.GetResources "key" "resources") }}
 {{ toYamlIf (dict "value" .GetSpec.GetProxy.GetLifecycle "key" "lifecycle") }}
+{{- if (and .GetSpec.GetProxy .GetSpec.GetProxy.Tracer) }}
+{{ valueIf (dict "key" "tracer" "value" .GetSpec.GetProxy.Tracer) }}
+{{- end }}
 {{- end }}
 
 # template for proxy init values
@@ -216,6 +219,9 @@ sds:
 multiCluster:
 {{ valueIf (dict "key" "clusterName" "value" .GetSpec.GetClusterID) | indent 2 }}
 {{ end }}
+{{- if (and .GetSpec .GetSpec.Tracer) }}
+{{ toYamlIf (dict "value" (.GetSpec.Tracer | toJsonPB | fromJson) "key" "tracer")}}
+{{- end }}
 {{- end }}
 
 {{- $x := (include "global" .) | reformatYaml }}
