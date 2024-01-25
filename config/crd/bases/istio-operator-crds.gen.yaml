@@ -4678,6 +4678,8 @@ spec:
                             x-kubernetes-int-or-string: true
                           type: object
                       type: object
+                    tracer:
+                      type: string
                   type: object
                 proxyInit:
                   properties:
@@ -8091,6 +8093,151 @@ spec:
                     enabled:
                       nullable: true
                       type: boolean
+                  type: object
+                tracer:
+                  oneOf:
+                    - not:
+                        anyOf:
+                          - required:
+                              - zipkin
+                          - required:
+                              - lightstep
+                          - required:
+                              - datadog
+                          - required:
+                              - stackdriver
+                          - required:
+                              - openCensusAgent
+                    - required:
+                        - zipkin
+                    - required:
+                        - lightstep
+                    - required:
+                        - datadog
+                    - required:
+                        - stackdriver
+                    - required:
+                        - openCensusAgent
+                  properties:
+                    customTags:
+                      additionalProperties:
+                        oneOf:
+                          - not:
+                              anyOf:
+                                - required:
+                                    - literal
+                                - required:
+                                    - environment
+                                - required:
+                                    - header
+                          - required:
+                              - literal
+                          - required:
+                              - environment
+                          - required:
+                              - header
+                        properties:
+                          environment:
+                            properties:
+                              defaultValue:
+                                type: string
+                              name:
+                                type: string
+                            type: object
+                          header:
+                            properties:
+                              defaultValue:
+                                type: string
+                              name:
+                                type: string
+                            type: object
+                          literal:
+                            properties:
+                              value:
+                                type: string
+                            type: object
+                        type: object
+                      type: object
+                    datadog:
+                      properties:
+                        address:
+                          type: string
+                      type: object
+                    lightstep:
+                      properties:
+                        accessToken:
+                          type: string
+                        address:
+                          type: string
+                      type: object
+                    maxPathTagLength:
+                      type: integer
+                    openCensusAgent:
+                      properties:
+                        address:
+                          type: string
+                        context:
+                          items:
+                            enum:
+                              - UNSPECIFIED
+                              - W3C_TRACE_CONTEXT
+                              - GRPC_BIN
+                              - CLOUD_TRACE_CONTEXT
+                              - B3
+                            type: string
+                          type: array
+                      type: object
+                    sampling:
+                      format: double
+                      type: number
+                    stackdriver:
+                      properties:
+                        debug:
+                          type: boolean
+                        maxNumberOfAnnotations:
+                          nullable: true
+                          type: integer
+                        maxNumberOfAttributes:
+                          nullable: true
+                          type: integer
+                        maxNumberOfMessageEvents:
+                          nullable: true
+                          type: integer
+                      type: object
+                    tlsSettings:
+                      properties:
+                        caCertificates:
+                          type: string
+                        clientCertificate:
+                          type: string
+                        credentialName:
+                          type: string
+                        insecureSkipVerify:
+                          nullable: true
+                          type: boolean
+                        mode:
+                          enum:
+                            - DISABLE
+                            - SIMPLE
+                            - MUTUAL
+                            - ISTIO_MUTUAL
+                          type: string
+                        privateKey:
+                          type: string
+                        sni:
+                          type: string
+                        subjectAltNames:
+                          items:
+                            type: string
+                          type: array
+                      required:
+                        - mode
+                      type: object
+                    zipkin:
+                      properties:
+                        address:
+                          type: string
+                      type: object
                   type: object
                 version:
                   pattern: ^1\.
@@ -13956,6 +14103,8 @@ spec:
                             x-kubernetes-int-or-string: true
                           type: object
                       type: object
+                    tracer:
+                      type: string
                   type: object
                 proxyInit:
                   properties:
@@ -17369,6 +17518,151 @@ spec:
                     enabled:
                       nullable: true
                       type: boolean
+                  type: object
+                tracer:
+                  oneOf:
+                    - not:
+                        anyOf:
+                          - required:
+                              - zipkin
+                          - required:
+                              - lightstep
+                          - required:
+                              - datadog
+                          - required:
+                              - stackdriver
+                          - required:
+                              - openCensusAgent
+                    - required:
+                        - zipkin
+                    - required:
+                        - lightstep
+                    - required:
+                        - datadog
+                    - required:
+                        - stackdriver
+                    - required:
+                        - openCensusAgent
+                  properties:
+                    customTags:
+                      additionalProperties:
+                        oneOf:
+                          - not:
+                              anyOf:
+                                - required:
+                                    - literal
+                                - required:
+                                    - environment
+                                - required:
+                                    - header
+                          - required:
+                              - literal
+                          - required:
+                              - environment
+                          - required:
+                              - header
+                        properties:
+                          environment:
+                            properties:
+                              defaultValue:
+                                type: string
+                              name:
+                                type: string
+                            type: object
+                          header:
+                            properties:
+                              defaultValue:
+                                type: string
+                              name:
+                                type: string
+                            type: object
+                          literal:
+                            properties:
+                              value:
+                                type: string
+                            type: object
+                        type: object
+                      type: object
+                    datadog:
+                      properties:
+                        address:
+                          type: string
+                      type: object
+                    lightstep:
+                      properties:
+                        accessToken:
+                          type: string
+                        address:
+                          type: string
+                      type: object
+                    maxPathTagLength:
+                      type: integer
+                    openCensusAgent:
+                      properties:
+                        address:
+                          type: string
+                        context:
+                          items:
+                            enum:
+                              - UNSPECIFIED
+                              - W3C_TRACE_CONTEXT
+                              - GRPC_BIN
+                              - CLOUD_TRACE_CONTEXT
+                              - B3
+                            type: string
+                          type: array
+                      type: object
+                    sampling:
+                      format: double
+                      type: number
+                    stackdriver:
+                      properties:
+                        debug:
+                          type: boolean
+                        maxNumberOfAnnotations:
+                          nullable: true
+                          type: integer
+                        maxNumberOfAttributes:
+                          nullable: true
+                          type: integer
+                        maxNumberOfMessageEvents:
+                          nullable: true
+                          type: integer
+                      type: object
+                    tlsSettings:
+                      properties:
+                        caCertificates:
+                          type: string
+                        clientCertificate:
+                          type: string
+                        credentialName:
+                          type: string
+                        insecureSkipVerify:
+                          nullable: true
+                          type: boolean
+                        mode:
+                          enum:
+                            - DISABLE
+                            - SIMPLE
+                            - MUTUAL
+                            - ISTIO_MUTUAL
+                          type: string
+                        privateKey:
+                          type: string
+                        sni:
+                          type: string
+                        subjectAltNames:
+                          items:
+                            type: string
+                          type: array
+                      required:
+                        - mode
+                      type: object
+                    zipkin:
+                      properties:
+                        address:
+                          type: string
+                      type: object
                   type: object
                 version:
                   pattern: ^1\.
