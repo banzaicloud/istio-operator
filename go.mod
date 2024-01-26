@@ -1,6 +1,6 @@
 module github.com/banzaicloud/istio-operator/v2
 
-go 1.18
+go 1.21
 
 require (
 	emperror.dev/errors v0.8.0
