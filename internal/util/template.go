@@ -86,7 +86,7 @@ func fromYamlTemplateFunc(value string) (map[string]interface{}, error) {
 }
 
 func valueIfTemplateFunc(value interface{}) (string, error) {
-	if dict, ok := value.(map[string]interface{}); ok { // nolint:nestif
+	if dict, ok := value.(map[string]interface{}); ok { //nolint:nestif
 		var value interface{}
 		var key string
 
@@ -148,7 +148,7 @@ func reformatYamlTemplateFunc(value interface{}) (string, error) {
 func toYamlIfTemplateFunc(value interface{}) (string, error) {
 	sprig.TxtFuncMap()
 	body := []string{}
-	if dict, ok := value.(map[string]interface{}); ok { // nolint:nestif
+	if dict, ok := value.(map[string]interface{}); ok { //nolint:nestif
 		if key, ok := dict["key"]; ok {
 			body = append(body, fmt.Sprintf("%s:", key))
 		}

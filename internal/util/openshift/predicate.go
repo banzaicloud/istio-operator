@@ -95,7 +95,7 @@ func removeSecretsFromServiceAccount(client client.Client, obj []byte) ([]byte, 
 
 func removeSecretsFromField(client client.Client, secretsField []interface{}, namespace string) ([]interface{}, error) {
 	for i, s := range secretsField {
-		if secret, ok := s.(map[string]interface{}); ok { // nolint:nestif
+		if secret, ok := s.(map[string]interface{}); ok { //nolint:nestif
 			value, mapHasKey := secret["name"]
 			secretName, ok := value.(string)
 			secret := &corev1.Secret{}
