@@ -32,6 +32,13 @@ linters:
     # - nestif
     # - testpackage
 
+    - mirror
+    - revive
+    - contextcheck
+    - depguard
+    - exhaustruct
+    - nonamedreturns
+
     # special cases only
     - exhaustivestruct
 
@@ -39,6 +46,11 @@ linters:
     - maligned
     - interfacer
     - scopelint
+    - varcheck
+    - structcheck
+    - nosnakecase
+    - deadcode
+    - ifshort
 
 linters-settings:
   gomnd:

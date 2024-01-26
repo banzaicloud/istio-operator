@@ -79,7 +79,7 @@ const (
 	istioControlPlaneFinalizerID               = "istio-controlplane.servicemesh.cisco.com"
 	meshExpansionGatewayRemovalRequeueDuration = time.Second * 30
 	readerServiceAccountName                   = "istio-reader"
-	// nolint:gosec
+	//nolint:gosec
 	readerSecretType = "k8s.cisco.com/istio-reader-secret"
 )
 
@@ -850,7 +850,7 @@ func (r *IstioControlPlaneReconciler) getMeshNetworks(ctx context.Context, icp *
 				Gw: &v1alpha1.Network_IstioNetworkGateway_Address{
 					Address: address,
 				},
-				Port: 15443, // nolint:gomnd
+				Port: 15443, //nolint:gomnd
 			})
 		}
 
@@ -1272,7 +1272,7 @@ func (r *IstioControlPlaneReconciler) getNamespaceInjectionSourcePICP(ctx contex
 	var sourceICP *servicemeshv1alpha1.PeerIstioControlPlane
 	for _, picp := range picpList.Items {
 		picp := picp
-		if v, ok := picp.GetAnnotations()[servicemeshv1alpha1.NamespaceInjectionSourceAnnotation]; ok && v == "true" && picp.GetStatus().IstioControlPlaneName == cp.Name { // nolint:goconst
+		if v, ok := picp.GetAnnotations()[servicemeshv1alpha1.NamespaceInjectionSourceAnnotation]; ok && v == "true" && picp.GetStatus().IstioControlPlaneName == cp.Name { //nolint:goconst
 			sourceICP = &picp
 		}
 	}
