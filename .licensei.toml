@@ -1,44 +1,36 @@
-approved = [
-  "mit",
-  "apache-2.0",
-  "bsd-3-clause",
-  "bsd-2-clause",
-  "mpl-2.0",
-]
+approved = ["mit", "apache-2.0", "bsd-3-clause", "bsd-2-clause", "mpl-2.0"]
 
 ignored = [
-  "github.com/ghodss/yaml",
-  "github.com/gogo/protobuf",
-  "google.golang.org/protobuf",
-  "sigs.k8s.io/yaml",
-  "gopkg.in/fsnotify.v1",
+    "github.com/ghodss/yaml",
+    "github.com/gogo/protobuf",
+    "google.golang.org/protobuf",
+    "sigs.k8s.io/yaml",
+    "gopkg.in/fsnotify.v1",
 
-  "github.com/davecgh/go-spew", # ISC license
-  "github.com/russross/blackfriday", # BSD-2
-  "github.com/russross/blackfriday/v2", # BSD-2
-  "github.com/xeipuuv/gojsonpointer", # Apache2
-  "github.com/xeipuuv/gojsonreference", # Apache2
-  "github.com/xeipuuv/gojsonschema", # Apache2
-  "github.com/russross/blackfriday", # Simplifed BSD
-  "gomodules.xyz/jsonpatch/v2", # Apache2
+    "github.com/davecgh/go-spew",         # ISC license
+    "github.com/russross/blackfriday",    # BSD-2
+    "github.com/russross/blackfriday/v2", # BSD-2
+    "github.com/xeipuuv/gojsonpointer",   # Apache2
+    "github.com/xeipuuv/gojsonreference", # Apache2
+    "github.com/xeipuuv/gojsonschema",    # Apache2
+    "github.com/russross/blackfriday",    # Simplifed BSD
+    "gomodules.xyz/jsonpatch/v2",         # Apache2
 
-  # Unsupported VCS
-  "cloud.google.com/go",
-  "google.golang.org/api",
+    # Unsupported VCS
+    "cloud.google.com/go",
+    "google.golang.org/api",
 ]
 
 [header]
-ignorePaths = [
-    "build",
-    "vendor"
-]
+ignorePaths = ["build", "vendor"]
 
 ignoreFiles = [
-  "*.pb.go",
-  "*.gen.go",
-  "*.gogen.go",
-  "generated.go",
-  "zz_generated.deepcopy.go",
+    "*.pb.go",
+    "*.gen.go",
+    "*.gogen.go",
+    "generated.go",
+    "zz_generated.deepcopy.go",
+    "*_test.go",
 ]
 
 template = """/*
