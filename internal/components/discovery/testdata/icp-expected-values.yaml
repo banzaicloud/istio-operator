@@ -22,6 +22,7 @@ global:
         cpu: 100m
         memory: 128Mi
     includeIPRanges: "*"
+    tracer: "zipkin"
   proxy_init:
     image: proxyv2
     resources:
