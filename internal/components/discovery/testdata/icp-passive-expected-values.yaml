@@ -6,6 +6,8 @@ global:
     clusterName: demo-cluster2
   network: network1
   caName: Citadel
+  proxy:
+    tracer: zipkin
 meshConfig:
   connectTimeout: 5s
   rootNamespace: istio-system

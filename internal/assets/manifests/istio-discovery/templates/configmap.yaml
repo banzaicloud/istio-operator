@@ -17,7 +17,7 @@
       image:
         imageType: {{. | quote}}
       {{- end }}
-      {{- if ne .Values.global.proxy.tracer "" }}
+      {{- if and (ne .Values.global.proxy.tracer "") .Values.global.proxy.tracer }}
       tracing:
       {{- if eq .Values.global.proxy.tracer "lightstep" }}
         lightstep:

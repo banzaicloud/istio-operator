@@ -83,8 +83,12 @@ logLevel: {{ .GetSpec.GetProxy.GetLogLevel | toString | lower }}
 {{ valueIf (dict "key" "holdApplicationUntilProxyStarts" "value" .GetSpec.GetProxy.GetHoldApplicationUntilProxyStarts) }}
 {{ toYamlIf (dict "value" .GetSpec.GetProxy.GetResources "key" "resources") }}
 {{ toYamlIf (dict "value" .GetSpec.GetProxy.GetLifecycle "key" "lifecycle") }}
-{{- if (and .GetSpec.GetProxy .GetSpec.GetProxy.Tracer) }}
+{{- if and .GetSpec.GetProxy .GetSpec.GetProxy.Tracer }}
+{{- if ne .GetSpec.GetProxy.GetTracer "" }}
 {{ valueIf (dict "key" "tracer" "value" .GetSpec.GetProxy.Tracer) }}
+{{- end }}
+{{- else }}
+tracer: zipkin
 {{- end }}
 {{- end }}
 
