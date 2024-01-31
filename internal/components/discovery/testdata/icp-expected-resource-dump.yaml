@@ -858,7 +858,8 @@ data:
           {{- end }}
       grpc-simple: |
         metadata:
-          sidecar.istio.io/rewriteAppHTTPProbers: "false"
+          annotations:
+            sidecar.istio.io/rewriteAppHTTPProbers: "false"
         spec:
           initContainers:
             - name: grpc-bootstrap-init

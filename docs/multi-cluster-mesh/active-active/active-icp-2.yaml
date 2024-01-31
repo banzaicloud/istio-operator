@@ -4,7 +4,7 @@ metadata:
   name: icp-v117x
   namespace: istio-system
 spec:
-  version: 1.17.1
+  version: 1.17.8
   mode: ACTIVE
   networkName: network2
   meshExpansion:

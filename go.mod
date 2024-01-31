@@ -25,8 +25,8 @@ require (
 	github.com/onsi/ginkgo v1.16.5
 	github.com/onsi/gomega v1.24.1
 	go.uber.org/zap v1.24.0
-	istio.io/api v0.0.0-20230217221049-9d422bf48675
-	istio.io/client-go v1.17.1
+	istio.io/api v0.0.0-20231011001129-b6bd6cd1b885
+	istio.io/client-go v1.17.8
 	k8s.io/api v0.26.1
 	k8s.io/apiextensions-apiserver v0.26.1
 	k8s.io/apimachinery v0.26.1

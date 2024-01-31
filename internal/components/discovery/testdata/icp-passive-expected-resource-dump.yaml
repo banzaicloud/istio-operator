@@ -829,7 +829,8 @@ data:
           {{- end }}
       grpc-simple: |
         metadata:
-          sidecar.istio.io/rewriteAppHTTPProbers: "false"
+          annotations:
+            sidecar.istio.io/rewriteAppHTTPProbers: "false"
         spec:
           initContainers:
             - name: grpc-bootstrap-init
@@ -1330,7 +1331,7 @@ data:
         "sts": {
           "servicePort": 0
         },
-        "tag": "1.17.1",
+        "tag": "1.17.8",
         "tracer": {
           "datadog": {
             "address": "$(HOST_IP):8126"
