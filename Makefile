@@ -176,7 +176,14 @@ tidy: ## Execute go mod tidy
 	go mod tidy
 	go mod download all
 
-#Generate CRD docs
+# Generate CRD docs
 .PHONY: docs
 docs:
 	go run cmd/docs.go
+
+# Bump versions
+--run-bump-script:
+	./scripts/bump-versions.sh
+
+.PHONY: bump-versions
+bump-versions: --run-bump-script tidy generate manifests
