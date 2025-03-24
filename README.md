@@ -1,3 +1,5 @@
+⚠️ **This Istio operator project is no longer maintained. Please refer to the [official Istio operator](https://github.com/istio/istio/tree/master/operator) instead.** ⚠️
+
 # Istio operator
 
 Istio operator is a Kubernetes operator to deploy and manage [Istio](https://istio.io/) resources for a Kubernetes cluster.
